@@ -8,7 +8,7 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/3rd Party/src/commons-httpclient-3.1-src.zip!/commons-httpclient-3.1/docs/apidocs"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/3rd Party/lib/jackson-core-asl-1.9.9.jar" sourcepath="/3rd Party/src/jackson-core-asl-1.9.4-sources.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/jackson-core-asl-1.9.13.jar" sourcepath="/3rd Party/src/jackson-core-asl-1.9.13-sources.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/chemistry-opencmis-commons-api-0.10.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DataModel"/>
 	<classpathentry kind="output" path="build/classes"/>
