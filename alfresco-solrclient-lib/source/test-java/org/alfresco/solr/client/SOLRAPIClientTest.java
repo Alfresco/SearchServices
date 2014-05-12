@@ -378,7 +378,8 @@ public class SOLRAPIClientTest extends TestCase
                     aclIds.add(aclId);
                     if (!aclIdUniqueCheck.add(aclId))
                     {
-                        fail("ACL already processed: " + aclId);
+                        // ignore duplicates for lazy/eager shared acl creation
+                        //fail("ACL already processed: " + aclId);
                     }
                     // Check that we are ascending
                     if (nextAclId != null)
