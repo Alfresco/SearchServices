@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -59,6 +62,7 @@ import org.alfresco.opencmis.mapping.RuntimePropertyLuceneBuilderMapping;
 import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
+import org.alfresco.repo.dictionary.CompiledModelsCache;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.DictionaryRegistry;
 import org.alfresco.repo.dictionary.M2Model;
@@ -68,7 +72,10 @@ import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.DynamicallySizedThreadPoolExecutor;
 import org.alfresco.util.Pair;
+import org.alfresco.util.TraceableThreadFactory;
+import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -141,10 +148,23 @@ public class SOLRAPIClientTest extends TestCase
             dictionaryDAO = new DictionaryDAOImpl();
             namespaceDAO = dictionaryDAO;
             dictionaryDAO.setTenantService(tenantService);
-            dictionaryDAO.setDictionaryRegistryCache(new MemoryCache<String, DictionaryRegistry>());
+            
+            CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
+            compiledModelsCache.setDictionaryDAO(dictionaryDAO);
+            compiledModelsCache.setTenantService(tenantService);
+            compiledModelsCache.setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
+            TraceableThreadFactory threadFactory = new TraceableThreadFactory();
+            threadFactory.setThreadDaemon(true);
+            threadFactory.setThreadPriority(Thread.NORM_PRIORITY);
+            
+            ThreadPoolExecutor threadPoolExecutor = new DynamicallySizedThreadPoolExecutor(20, 20, 90, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory,
+                    new ThreadPoolExecutor.CallerRunsPolicy());
+            compiledModelsCache.setThreadPoolExecutor(threadPoolExecutor);
+            dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
             // TODO: use config ....
             dictionaryDAO.setDefaultAnalyserResourceBundleName("alfresco/model/dataTypeAnalyzers");
             dictionaryDAO.setResourceClassLoader(getResourceClassLoader());
+            dictionaryDAO.init();
 
             dictionaryComponent = new DictionaryComponent();
             dictionaryComponent.setDictionaryDAO(dictionaryDAO);
