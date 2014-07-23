@@ -164,6 +164,8 @@ public class SOLRAPIClientTest extends TestCase
             cmisDictionaryService.setDictionaryService(dictionaryComponent);
             cmisDictionaryService.setDictionaryDAO(dictionaryDAO);
             cmisDictionaryService.setSingletonCache(new MemoryCache<String, CMISDictionaryRegistry>());
+            cmisDictionaryService.setTenantService(tenantService);
+            cmisDictionaryService.init();
 
             RuntimePropertyLuceneBuilderMapping luceneBuilderMapping = new RuntimePropertyLuceneBuilderMapping();
             luceneBuilderMapping.setDictionaryService(dictionaryComponent);
