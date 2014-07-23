@@ -65,8 +65,6 @@ public interface InformationServer
     void deleteByNodeId(Long nodeId) throws IOException;
 
     void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException;
-    
-    void indexNodes(List<Node> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 
     NodeReport checkNodeCommon(NodeReport nodeReport);
 
@@ -114,5 +112,4 @@ public interface InformationServer
 
     IndexHealthReport checkIndexTransactions(IndexHealthReport indexHealthReport, Long minTxId, Long minAclTxId,
                 IOpenBitSet txIdsInDb, long maxTxId, IOpenBitSet aclTxIdsInDb, long maxAclTxId) throws IOException;
-
 }
