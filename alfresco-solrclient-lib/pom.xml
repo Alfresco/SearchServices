@@ -46,7 +46,7 @@
                 <configuration>
                 	<excludes>
                 	    <!-- Excluding this test, because it requires the keystore which is a part of SystemBuildTest.
-                	         TODO: Consider moving this test into that project or making it pass on it own. -->
+                	         TODO: Consider moving this test into that project or making it pass on its own. -->
                 		<exclude>**/SOLRAPIClientTest.java</exclude>
                		</excludes>
                 </configuration>
