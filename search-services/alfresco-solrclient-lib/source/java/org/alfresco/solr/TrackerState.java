@@ -228,5 +228,23 @@ public class TrackerState
     {
         this.timeBeforeWhichThereCanBeNoHoles = timeBeforeWhichThereCanBeNoHoles;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return "TrackerState [lastChangeSetIdOnServer="
+                + lastChangeSetIdOnServer + ", lastChangeSetCommitTimeOnServer=" + lastChangeSetCommitTimeOnServer + ", lastIndexedChangeSetId=" + lastIndexedChangeSetId
+                + ", lastIndexedTxCommitTime=" + lastIndexedTxCommitTime + ", lastIndexedTxId=" + lastIndexedTxId + ", lastIndexedChangeSetCommitTime="
+                + lastIndexedChangeSetCommitTime + ", lastTxCommitTimeOnServer=" + lastTxCommitTimeOnServer + ", lastTxIdOnServer=" + lastTxIdOnServer
+                + ", lastIndexedTxIdBeforeHoles=" + lastIndexedTxIdBeforeHoles + ", lastIndexedChangeSetIdBeforeHoles=" + lastIndexedChangeSetIdBeforeHoles + ", running="
+                + running + ", checkedFirstTransactionTime=" + checkedFirstTransactionTime + ", check=" + check + ", timeToStopIndexing=" + timeToStopIndexing
+                + ", lastGoodChangeSetCommitTimeInIndex=" + lastGoodChangeSetCommitTimeInIndex + ", lastGoodTxCommitTimeInIndex=" + lastGoodTxCommitTimeInIndex
+                + ", timeBeforeWhichThereCanBeNoHoles=" + timeBeforeWhichThereCanBeNoHoles + "]";
+    }
+    
+    
 }
 
