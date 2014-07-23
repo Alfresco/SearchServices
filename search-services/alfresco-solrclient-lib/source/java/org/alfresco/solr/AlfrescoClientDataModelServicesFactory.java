@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.opencmis.dictionary.CMISAbstractDictionaryService;
+import org.alfresco.opencmis.dictionary.CMISDictionaryRegistry;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.opencmis.dictionary.FilteredDictionaryComponent;
 import org.alfresco.opencmis.dictionary.QNameFilter;
@@ -109,13 +110,14 @@ public class AlfrescoClientDataModelServicesFactory
         cmisDictionaryService.setCmisMapping(cmisMapping);
         cmisDictionaryService.setDictionaryService(dictionaryService);
         cmisDictionaryService.setDictionaryDAO(dictionaryDAO);
-        cmisDictionaryService.setSingletonCache(new MemoryCache<String, CMISStrictDictionaryService.DictionaryRegistry>());
-        
+        cmisDictionaryService.setSingletonCache(new MemoryCache<String, CMISDictionaryRegistry>());
+
         RuntimePropertyLuceneBuilderMapping luceneBuilderMapping = new RuntimePropertyLuceneBuilderMapping();
         luceneBuilderMapping.setDictionaryService(dictionaryService);
         luceneBuilderMapping.setCmisDictionaryService(cmisDictionaryService);
         cmisDictionaryService.setPropertyLuceneBuilderMapping(luceneBuilderMapping);
         luceneBuilderMapping.afterPropertiesSet();
+        cmisDictionaryService.init();
         return cmisDictionaryService;
     }
 

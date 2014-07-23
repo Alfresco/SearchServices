@@ -29,8 +29,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AlgorithmParameters;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,25 +52,21 @@ import org.alfresco.httpclient.EncryptionService;
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.httpclient.MD5EncryptionParameters;
+import org.alfresco.opencmis.dictionary.CMISDictionaryRegistry;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.opencmis.mapping.RuntimePropertyLuceneBuilderMapping;
 import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.dictionary.DictionaryComponent;
-import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
-import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
+import org.alfresco.repo.dictionary.DictionaryRegistry;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Namespace;
 import org.alfresco.repo.dictionary.NamespaceDAO;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceRegistry;
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.namespace.NamespaceException;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
@@ -105,7 +99,7 @@ public class SOLRAPIClientTest extends TestCase
 
     private TenantService tenantService;
 
-    private NamespaceDAOImpl namespaceDAO;
+    private NamespaceDAO namespaceDAO;
 
     private DictionaryDAOImpl dictionaryDAO;
 
@@ -143,11 +137,9 @@ public class SOLRAPIClientTest extends TestCase
         if(client == null)
         {
             tenantService = new SingleTServiceImpl();
-            namespaceDAO = new NamespaceDAOImpl();
-            namespaceDAO.setTenantService(tenantService);
-            namespaceDAO.setNamespaceRegistryCache(new MemoryCache<String, NamespaceRegistry>());
 
-            dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+            dictionaryDAO = new DictionaryDAOImpl();
+            namespaceDAO = dictionaryDAO;
             dictionaryDAO.setTenantService(tenantService);
             dictionaryDAO.setDictionaryRegistryCache(new MemoryCache<String, DictionaryRegistry>());
             // TODO: use config ....
@@ -171,7 +163,7 @@ public class SOLRAPIClientTest extends TestCase
             cmisDictionaryService.setCmisMapping(cmisMapping);
             cmisDictionaryService.setDictionaryService(dictionaryComponent);
             cmisDictionaryService.setDictionaryDAO(dictionaryDAO);
-            cmisDictionaryService.setSingletonCache(new MemoryCache<String, CMISStrictDictionaryService.DictionaryRegistry>());
+            cmisDictionaryService.setSingletonCache(new MemoryCache<String, CMISDictionaryRegistry>());
 
             RuntimePropertyLuceneBuilderMapping luceneBuilderMapping = new RuntimePropertyLuceneBuilderMapping();
             luceneBuilderMapping.setDictionaryService(dictionaryComponent);
@@ -182,7 +174,7 @@ public class SOLRAPIClientTest extends TestCase
 
             // Load the key store from the classpath
             ClasspathKeyResourceLoader keyResourceLoader = new ClasspathKeyResourceLoader();
-            client = new SOLRAPIClient(getRepoClient(keyResourceLoader), dictionaryComponent, namespaceDAO);
+            client = new SOLRAPIClient(getRepoClient(keyResourceLoader), dictionaryComponent, dictionaryDAO);
             trackModels();
         }
     }
@@ -607,123 +599,6 @@ public class SOLRAPIClientTest extends TestCase
             }
         }
     }
-
-    /*
-     * public void testGetTextContent() { try { SOLRAPIClient.GetTextContentResponse response =
-     * client.getTextContent(Long.valueOf(35617l), null, null); logger.debug("Status = " + response.getStatus());
-     * logger.debug("Transform Status = " + response.getTransformStatus()); logger.debug("Transform Exception = " +
-     * response.getTransformException()); logger.debug("Request took " + response.getRequestDuration() + " ms");
-     * outputTextContent(response); // test cache Long modifiedSince = System.currentTimeMillis(); response =
-     * client.getTextContent(Long.valueOf(35617l), null, modifiedSince); logger.debug("Status = " +
-     * response.getStatus()); logger.debug("Transform Status = " + response.getTransformStatus());
-     * logger.debug("Transform Exception = " + response.getTransformException()); logger.debug("Request took " +
-     * response.getRequestDuration() + " ms"); response = client.getTextContent(Long.valueOf(35618l), null, null);
-     * logger.debug("Status = " + response.getStatus()); logger.debug("Transform Status = " +
-     * response.getTransformStatus()); logger.debug("Transform Exception = " + response.getTransformException());
-     * logger.debug("Request took " + response.getRequestDuration() + " ms"); outputTextContent(response); response =
-     * client.getTextContent(Long.valueOf(35619l), null, null); logger.debug("Status = " + response.getStatus());
-     * logger.debug("Transform Status = " + response.getTransformStatus()); logger.debug("Transform Exception = " +
-     * response.getTransformException()); logger.debug("Request took " + response.getRequestDuration() + " ms");
-     * outputTextContent(response); response = client.getTextContent(Long.valueOf(35620l), null, null);
-     * logger.debug("Status = " + response.getStatus()); logger.debug("Transform Status = " +
-     * response.getTransformStatus()); logger.debug("Transform Exception = " + response.getTransformException());
-     * logger.debug("Request took " + response.getRequestDuration() + " ms"); outputTextContent(response); }
-     * catch(Exception e) { e.printStackTrace(); } }
-     */
-    private class TestNamespaceDAO implements NamespaceDAO
-    {
-        private Map<String, String> prefixMappings = new HashMap<String, String>(10);
-
-        private Map<String, List<String>> prefixReverseMappings = new HashMap<String, List<String>>(10);
-
-        TestNamespaceDAO()
-        {
-            prefixMappings.put(NamespaceService.CONTENT_MODEL_PREFIX, NamespaceService.CONTENT_MODEL_1_0_URI);
-            prefixMappings.put(NamespaceService.SYSTEM_MODEL_PREFIX, NamespaceService.SYSTEM_MODEL_1_0_URI);
-            prefixMappings.put(NamespaceService.DEFAULT_PREFIX, NamespaceService.DEFAULT_URI);
-            prefixMappings.put(NamespaceService.DICTIONARY_MODEL_PREFIX, NamespaceService.DICTIONARY_MODEL_1_0_URI);
-            prefixMappings.put(NamespaceService.APP_MODEL_PREFIX, NamespaceService.APP_MODEL_1_0_URI);
-            prefixMappings.put("ver", "http://www.alfresco.org/model/versionstore/1.0");
-            prefixMappings.put("ver2", "http://www.alfresco.org/model/versionstore/2.0");
-
-            prefixReverseMappings.put(NamespaceService.CONTENT_MODEL_1_0_URI, Arrays.asList(NamespaceService.CONTENT_MODEL_PREFIX));
-            prefixReverseMappings.put(NamespaceService.SYSTEM_MODEL_PREFIX, Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI));
-            prefixReverseMappings.put(NamespaceService.DEFAULT_PREFIX, Arrays.asList(NamespaceService.DEFAULT_URI));
-            prefixReverseMappings.put(NamespaceService.DICTIONARY_MODEL_PREFIX, Arrays.asList(NamespaceService.DICTIONARY_MODEL_1_0_URI));
-            prefixReverseMappings.put(NamespaceService.APP_MODEL_PREFIX, Arrays.asList(NamespaceService.APP_MODEL_1_0_URI));
-            prefixReverseMappings.put("ver", Arrays.asList("http://www.alfresco.org/model/versionstore/1.0"));
-            prefixReverseMappings.put("ver2", Arrays.asList("http://www.alfresco.org/model/versionstore/2.0"));
-        }
-
-        @Override
-        public String getNamespaceURI(String prefix) throws NamespaceException
-        {
-            return prefixMappings.get(prefix);
-        }
-
-        @Override
-        public Collection<String> getPrefixes(String namespaceURI) throws NamespaceException
-        {
-            return prefixReverseMappings.get(namespaceURI);
-        }
-
-        @Override
-        public Collection<String> getPrefixes()
-        {
-            return null;
-        }
-
-        @Override
-        public Collection<String> getURIs()
-        {
-            return null;
-        }
-
-        @Override
-        public void addURI(String uri)
-        {
-        }
-
-        @Override
-        public void removeURI(String uri)
-        {
-        }
-
-        @Override
-        public void addPrefix(String prefix, String uri)
-        {
-        }
-
-        @Override
-        public void removePrefix(String prefix)
-        {
-        }
-
-        @Override
-        public void init()
-        {
-        }
-
-        @Override
-        public void afterDictionaryInit()
-        {
-        }
-
-        @Override
-        public void destroy()
-        {
-        }
-
-        @Override
-        public void registerDictionary(DictionaryDAO dictionaryDAO)
-        {
-        }
-
-        @Override
-        public void clearNamespaceLocal()
-        {
-        }
-    };
 
     /**
      * Overrides request encryption to create dodgy MAC and timestamp on requests
