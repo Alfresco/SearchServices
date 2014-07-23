@@ -35,6 +35,7 @@ import org.alfresco.solr.client.AclReaders;
 import org.alfresco.solr.client.AlfrescoModel;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.Tracker;
 import org.json.JSONException;
 
@@ -103,5 +104,12 @@ public interface InformationServer
     boolean putModel(M2Model model);
 
     M2Model getM2Model(QName modelQName);
+
+    long getHoleRetention();
+
+    AclReport checkAclInIndex(Long aclid, AclReport aclReport);
+
+    IndexHealthReport checkIndexTransactions(IndexHealthReport indexHealthReport, Long minTxId, Long minAclTxId,
+                IOpenBitSet txIdsInDb, long maxTxId, IOpenBitSet aclTxIdsInDb, long maxAclTxId) throws IOException;
 
 }

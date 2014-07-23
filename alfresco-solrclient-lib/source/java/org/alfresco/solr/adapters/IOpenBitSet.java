@@ -11,5 +11,7 @@ public interface IOpenBitSet
     long nextSetBit(long l);
 
     long cardinality();
+
+    boolean get(long i);
     
 }
