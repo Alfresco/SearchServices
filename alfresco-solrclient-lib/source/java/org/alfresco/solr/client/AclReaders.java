@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr.client;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,18 +52,21 @@ public class AclReaders
         return "AclReaders [id=" + id + ", readers=" + readers + ", denied=" + denied + ", tenantDomain=" + tenantDomain + "]";
     }
 
+    /**
+     * ID should be enough for hashCode() and equals().
+     */
     @Override
     public int hashCode()
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (aclChangeSetId ^ (aclChangeSetId >>> 32));
         result = prime * result + (int) (id ^ (id >>> 32));
-        result = prime * result + ((readers == null) ? 0 : readers.hashCode());
-        result = prime * result + ((denied == null) ? 0 : denied.hashCode());
         return result;
     }
 
+    /**
+     * ID should be enough for hashCode() and equals().
+     */
     @Override
     public boolean equals(Object obj)
     {
@@ -75,23 +77,7 @@ public class AclReaders
         if (getClass() != obj.getClass())
             return false;
         AclReaders other = (AclReaders) obj;
-        if (aclChangeSetId != other.aclChangeSetId)
-            return false;
         if (id != other.id)
-            return false;
-        if (readers == null)
-        {
-            if (other.readers != null)
-                return false;
-        }
-        else if (!readers.equals(other.readers))
-            return false;
-        if (denied == null)
-        {
-            if (other.denied != null)
-                return false;
-        }
-        else if (!denied.equals(other.denied))
             return false;
         return true;
     }
@@ -108,7 +94,7 @@ public class AclReaders
 
     public List<String> getDenied()
     {
-        return readers;
+        return denied;
     }
 
     public long getAclChangeSetId()
