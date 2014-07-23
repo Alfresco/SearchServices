@@ -348,12 +348,9 @@ public class SOLRAPIClient
             JSONObject aclReadersJSON = aclsReadersJSON.getJSONObject(i);
             long aclId = aclReadersJSON.getLong("aclId");
             JSONArray readersJSON = aclReadersJSON.getJSONArray("readers");
-            List<String> readers = new ArrayList<String>(aclReadersJSON.length());
-            for (int j = 0; j < readersJSON.length(); j++)
-            {
-                String readerJSON = readersJSON.getString(j);
-                readers.add(readerJSON);
-            }
+            List<String> readers = authorityListFromJSON(readersJSON);
+            JSONArray deniedJSON = aclReadersJSON.getJSONArray("denied");
+            List<String> denied = authorityListFromJSON(deniedJSON);
             long aclChangeSetId = aclReadersJSON.getLong("aclChangeSetId");
             
             String tenantDomain = aclReadersJSON.getString("tenantDomain");
@@ -362,11 +359,29 @@ public class SOLRAPIClient
                 tenantDomain = TenantService.DEFAULT_DOMAIN;
             }
             
-            AclReaders aclReaders = new AclReaders(aclId, readers, aclChangeSetId, tenantDomain);
+            AclReaders aclReaders = new AclReaders(aclId, readers, denied, aclChangeSetId, tenantDomain);
             aclsReaders.add(aclReaders);
         }
         // Done
         return aclsReaders;
+    }
+    
+    /**
+     * Convert a JSON array of authorities to a simple Java List&lt;String&gt;
+     * 
+     * @param jsonArray
+     * @return List&lt;String&gt;
+     * @throws JSONException
+     */
+    private List<String> authorityListFromJSON(JSONArray jsonArray) throws JSONException
+    {
+        List<String> authorities = new ArrayList<String>(jsonArray.length());
+        for (int j = 0; j < jsonArray.length(); j++)
+        {
+            String authority = jsonArray.getString(j);
+            authorities.add(authority);
+        }
+        return authorities;
     }
     
     public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults) throws AuthenticationException, IOException, JSONException
