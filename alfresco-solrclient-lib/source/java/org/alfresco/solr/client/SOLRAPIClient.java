@@ -650,7 +650,9 @@ public class SOLRAPIClient
             String encoding = o.has("encoding") ? o.getString("encoding") : null;
             String mimetype = o.has("mimetype") ? o.getString("mimetype") : null;
 
-            ret = new ContentPropertyValue(locale, size, encoding, mimetype);
+            Long id = o.has("contentId") ? o.getLong("contentId") : null;
+            
+            ret = new ContentPropertyValue(locale, size, encoding, mimetype, id);
         }
         else
         {
