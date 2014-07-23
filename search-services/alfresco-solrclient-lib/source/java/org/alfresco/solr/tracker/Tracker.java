@@ -35,22 +35,13 @@ import org.json.JSONException;
 public interface Tracker
 {
 
+    // move to infoserver
     int getMaxLiveSearchers();
 
+    // Will be track - common for all
     void updateIndex();
 
-    void indexAclChangeSets() throws AuthenticationException, IOException, JSONException;
-
-    void indexAcls() throws AuthenticationException, IOException, JSONException;
-
-    void reindexAclChangeSets() throws AuthenticationException, IOException, JSONException;
-
-    void reindexAcls() throws AuthenticationException, IOException, JSONException;
-
-    void purgeAclChangeSets() throws AuthenticationException, IOException, JSONException;
-
-    void purgeAcls() throws AuthenticationException, IOException, JSONException;
-
+    // MetadataTracker 
     void addTransactionToReindex(Long transactionToReindex);
 
     void addTransactionToIndex(Long transactionToIndex);
@@ -63,6 +54,8 @@ public interface Tracker
 
     void addNodeToPurge(Long nodeToPurge);
 
+
+    // AclTracker
     void addAclChangeSetToReindex(Long aclChangeSetToReindex);
 
     void addAclChangeSetToIndex(Long aclChangeSetToIndex);
@@ -75,39 +68,50 @@ public interface Tracker
 
     void addAclToPurge(Long aclToPurge);
 
-    void trackRepository() throws IOException, AuthenticationException, JSONException;
-
+    
+// All trackers (check() = what things that it tracks are ok)
     IndexHealthReport checkIndex(Long fromTx, Long toTx, Long fromAclTx, Long toAclTx, Long fromTime,
                 Long toTime) throws AuthenticationException, IOException, JSONException;
 
+    // MetadataTracker
     NodeReport checkNode(Node node);
 
     NodeReport checkNode(Long dbid);
 
+    // more thought
     List<Node> getFullNodesForDbTransaction(Long txid);
 
     List<Long> getAclsForDbAclTransaction(Long acltxid);
 
     AclReport checkAcl(Long aclid);
 
+    
+    // Changed for solr4. 
     void close();
 
+    
+    // ModelTracker
     void trackModels(boolean onlyFirstTime) throws AuthenticationException, IOException, JSONException;
 
     void ensureFirstModelSync();
 
+    // Common
     void setShutdown(boolean shutdown);
 
+    // MetadataTracker
     List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults)
                 throws AuthenticationException, IOException, JSONException;
 
+    // ContentTracker
     GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince)
                 throws AuthenticationException, IOException;
 
     boolean canAddContentPropertyToDoc();
 
+    // Move to inforSrv, but needs more thought
     TrackerStats getTrackerStats();
 
+    // Move to AdminHandler
     String getAlfrescoVersion();
 
 }
