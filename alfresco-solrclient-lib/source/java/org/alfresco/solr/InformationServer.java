@@ -46,6 +46,7 @@ import org.json.JSONException;
  */
 public interface InformationServer
 {
+    public static final String PROP_PREFIX_PARENT_TYPE = "alfresco.metadata.ignore.datatype.";
 
     void rollback() throws IOException;
 
