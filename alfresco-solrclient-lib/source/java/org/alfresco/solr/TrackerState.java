@@ -21,6 +21,7 @@ package org.alfresco.solr;
 
 /**
  * This class was moved from org.alfresco.solr.tracker.CoreTracker 
+ * The data in this class is relevant for a particular Solr index.
  */
 public class TrackerState
 {
