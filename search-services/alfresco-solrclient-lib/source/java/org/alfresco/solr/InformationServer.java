@@ -65,6 +65,8 @@ public interface InformationServer
     void deleteByNodeId(Long nodeId) throws IOException;
 
     void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException;
+    
+    void indexNodes(List<Node> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 
     NodeReport checkNodeCommon(NodeReport nodeReport);
 
