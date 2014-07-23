@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.client;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,15 +31,18 @@ public class AclReaders
     private final long id;
 
     private final List<String> readers;
+    
+    private final List<String> denied;
 
     private final long aclChangeSetId;
     
     private final String tenantDomain;
 
-    public AclReaders(long id, List<String> readers, long aclChangeSetId, String tenantDomain)
+    public AclReaders(long id, List<String> readers, List<String> denied, long aclChangeSetId, String tenantDomain)
     {
         this.id = id;
         this.readers = readers;
+        this.denied = denied;
         this.aclChangeSetId = aclChangeSetId;
         this.tenantDomain = tenantDomain;
     }
@@ -46,7 +50,7 @@ public class AclReaders
     @Override
     public String toString()
     {
-        return "AclReaders [id=" + id + ", readers=" + readers + ", tenantDomain=" + tenantDomain + "]";
+        return "AclReaders [id=" + id + ", readers=" + readers + ", denied=" + denied + ", tenantDomain=" + tenantDomain + "]";
     }
 
     @Override
@@ -57,6 +61,7 @@ public class AclReaders
         result = prime * result + (int) (aclChangeSetId ^ (aclChangeSetId >>> 32));
         result = prime * result + (int) (id ^ (id >>> 32));
         result = prime * result + ((readers == null) ? 0 : readers.hashCode());
+        result = prime * result + ((denied == null) ? 0 : denied.hashCode());
         return result;
     }
 
@@ -81,6 +86,13 @@ public class AclReaders
         }
         else if (!readers.equals(other.readers))
             return false;
+        if (denied == null)
+        {
+            if (other.denied != null)
+                return false;
+        }
+        else if (!denied.equals(other.denied))
+            return false;
         return true;
     }
 
@@ -90,6 +102,11 @@ public class AclReaders
     }
 
     public List<String> getReaders()
+    {
+        return readers;
+    }
+
+    public List<String> getDenied()
     {
         return readers;
     }
