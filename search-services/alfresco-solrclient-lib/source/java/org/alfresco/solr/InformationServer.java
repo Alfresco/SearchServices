@@ -36,7 +36,7 @@ import org.alfresco.solr.client.AlfrescoModel;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.tracker.IndexHealthReport;
-import org.alfresco.solr.tracker.Tracker;
+import org.alfresco.solr.tracker.TrackerStats;
 import org.json.JSONException;
 
 /**
@@ -85,7 +85,7 @@ public interface InformationServer
 
     Iterable<Map.Entry<String, Object>> getCoreStats() throws IOException;
 
-    Tracker getTracker();
+    TrackerStats getTrackerStats();
 
     Map<String, Set<String>> getModelErrors();
 
