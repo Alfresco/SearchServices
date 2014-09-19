@@ -38,6 +38,7 @@ public class NodeReport
     private Long indexLeafTx;
     
     private Long indexAuxTx;
+    private Long indexedNodeDocCount;
     
 
     /**
@@ -157,6 +158,13 @@ public class NodeReport
         this.indexAuxTx = indexAuxTx;
     }
 
-    
+    public Long getIndexedNodeDocCount()
+    {
+        return indexedNodeDocCount;
+    }
 
+    public void setIndexedNodeDocCount(Long indexedNodeDocCount)
+    {
+        this.indexedNodeDocCount = indexedNodeDocCount;
+    }
 }

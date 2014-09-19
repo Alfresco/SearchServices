@@ -32,6 +32,7 @@ public class AclReport
     private Long indexAclDoc;
     
     private Long indexAclTx;
+    private Long indexedAclDocCount;
 
     /**
      * @return the aclId
@@ -96,7 +97,14 @@ public class AclReport
     {
         this.indexAclTx = indexAclTx;
     }
-    
-    
-    
+
+    public Long getIndexedAclDocCount()
+    {
+        return indexedAclDocCount;
+    }
+
+    public void setIndexedAclDocCount(Long indexedAclDocCount)
+    {
+        this.indexedAclDocCount = indexedAclDocCount;
+    }
 }
