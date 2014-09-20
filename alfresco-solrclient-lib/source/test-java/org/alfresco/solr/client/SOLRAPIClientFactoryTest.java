@@ -57,8 +57,8 @@ public class SOLRAPIClientFactoryTest
         when(props.getProperty("alfresco.port.ssl", "8443")).thenReturn("8443");
         when(props.getProperty("alfresco.maxTotalConnections", "40")).thenReturn("40");
         when(props.getProperty("alfresco.maxHostConnections", "40")).thenReturn("40");
-        when(props.getProperty("alfresco.socketTimeout", "0")).thenReturn("0");
-        when(props.getProperty("alfresco.secureComms", "https")).thenReturn("none");
+        when(props.getProperty("alfresco.socketTimeout", "60000")).thenReturn("0");
+        when(props.getProperty("alfresco.secureComms", "none")).thenReturn("none");
         when(props.getProperty("alfresco.encryption.ssl.keystore.location",
                         "ssl.repo.client.keystore")).thenReturn("ssl.repo.client.keystore");
         when(props.getProperty("alfresco.encryption.ssl.truststore.location",
