@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr;
 
+package org.alfresco.solr;
 
 /**
  * This class was moved from org.alfresco.solr.tracker.CoreTracker 
@@ -48,6 +48,9 @@ public class TrackerState
     private volatile boolean running = false;
 
     private volatile boolean checkedFirstTransactionTime = false;
+    private volatile boolean checkedFirstAclTransactionTime = false;
+    private volatile boolean checkedLastAclTransactionTime = false;
+    private volatile boolean checkedLastTransactionTime = false;
 
     private volatile boolean check = false;
 
@@ -55,7 +58,7 @@ public class TrackerState
 
     private long lastGoodChangeSetCommitTimeInIndex;
 
-    private long lastGoodTxCommitTimeInIndex ;
+    private long lastGoodTxCommitTimeInIndex;
 
     private long timeBeforeWhichThereCanBeNoHoles;
 
@@ -229,22 +232,63 @@ public class TrackerState
         this.timeBeforeWhichThereCanBeNoHoles = timeBeforeWhichThereCanBeNoHoles;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString()
     {
-        return "TrackerState [lastChangeSetIdOnServer="
-                + lastChangeSetIdOnServer + ", lastChangeSetCommitTimeOnServer=" + lastChangeSetCommitTimeOnServer + ", lastIndexedChangeSetId=" + lastIndexedChangeSetId
-                + ", lastIndexedTxCommitTime=" + lastIndexedTxCommitTime + ", lastIndexedTxId=" + lastIndexedTxId + ", lastIndexedChangeSetCommitTime="
-                + lastIndexedChangeSetCommitTime + ", lastTxCommitTimeOnServer=" + lastTxCommitTimeOnServer + ", lastTxIdOnServer=" + lastTxIdOnServer
-                + ", lastIndexedTxIdBeforeHoles=" + lastIndexedTxIdBeforeHoles + ", lastIndexedChangeSetIdBeforeHoles=" + lastIndexedChangeSetIdBeforeHoles + ", running="
-                + running + ", checkedFirstTransactionTime=" + checkedFirstTransactionTime + ", check=" + check + ", timeToStopIndexing=" + timeToStopIndexing
-                + ", lastGoodChangeSetCommitTimeInIndex=" + lastGoodChangeSetCommitTimeInIndex + ", lastGoodTxCommitTimeInIndex=" + lastGoodTxCommitTimeInIndex
-                + ", timeBeforeWhichThereCanBeNoHoles=" + timeBeforeWhichThereCanBeNoHoles + "]";
+        return "TrackerState [lastChangeSetIdOnServer=" + lastChangeSetIdOnServer
+                    + ", lastChangeSetCommitTimeOnServer=" + lastChangeSetCommitTimeOnServer
+                    + ", lastIndexedChangeSetId=" + lastIndexedChangeSetId 
+                    + ", lastIndexedTxCommitTime=" + lastIndexedTxCommitTime 
+                    + ", lastIndexedTxId=" + lastIndexedTxId
+                    + ", lastIndexedChangeSetCommitTime=" + lastIndexedChangeSetCommitTime
+                    + ", lastTxCommitTimeOnServer=" + lastTxCommitTimeOnServer 
+                    + ", lastTxIdOnServer=" + lastTxIdOnServer 
+                    + ", lastIndexedTxIdBeforeHoles=" + lastIndexedTxIdBeforeHoles
+                    + ", lastIndexedChangeSetIdBeforeHoles=" + lastIndexedChangeSetIdBeforeHoles 
+                    + ", running=" + running 
+                    + ", checkedFirstTransactionTime=" + checkedFirstTransactionTime
+                    + ", checkedFirstAclTransactionTime=" + this.checkedFirstAclTransactionTime
+                    + ", checkedLastTransactionTime=" + this.checkedLastTransactionTime
+                    + ", checkedLastAclTransactionTime=" + this.checkedLastAclTransactionTime 
+                    + ", check=" + check
+                    + ", timeToStopIndexing=" + timeToStopIndexing 
+                    + ", lastGoodChangeSetCommitTimeInIndex=" + lastGoodChangeSetCommitTimeInIndex 
+                    + ", lastGoodTxCommitTimeInIndex=" + lastGoodTxCommitTimeInIndex 
+                    + ", timeBeforeWhichThereCanBeNoHoles=" + timeBeforeWhichThereCanBeNoHoles + "]";
     }
-    
-    
-}
 
+    public boolean isCheckedFirstAclTransactionTime()
+    {
+        return checkedFirstAclTransactionTime;
+    }
+
+    public void setCheckedFirstAclTransactionTime(boolean checkedFirstAclTransactionTime)
+    {
+        this.checkedFirstAclTransactionTime = checkedFirstAclTransactionTime;
+    }
+
+    public boolean isCheckedLastTransactionTime()
+    {
+        return checkedLastTransactionTime;
+    }
+
+    public void setCheckedLastTransactionTime(boolean checkedLastTransactionTime)
+    {
+        this.checkedLastTransactionTime = checkedLastTransactionTime;
+    }
+
+    public boolean isCheckedLastAclTransactionTime()
+    {
+        return checkedLastAclTransactionTime;
+    }
+
+    public void setCheckedLastAclTransactionTime(boolean checkedLastAclTransactionTime)
+    {
+        this.checkedLastAclTransactionTime = checkedLastAclTransactionTime;
+    }
+
+}

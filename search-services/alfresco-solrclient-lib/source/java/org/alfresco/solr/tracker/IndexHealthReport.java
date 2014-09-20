@@ -366,12 +366,11 @@ public class IndexHealthReport
     }
 
     /**
-     * @param txid
+     * @param dbId
      */
-    public void setDuplicatedUnindexedInIndex(long txid)
+    public void setDuplicatedUnindexedInIndex(long dbId)
     {
-        duplicatedUnindexedInIndex.set(txid);
-        
+        duplicatedUnindexedInIndex.set(dbId);
     }
 
     /**
@@ -383,11 +382,11 @@ public class IndexHealthReport
     }
 
     /**
-     * @param txid
+     * @param dbId
      */
-    public void setDuplicatedErrorInIndex(long txid)
+    public void setDuplicatedErrorInIndex(long dbId)
     {
-        duplicatedErrorInIndex.set(txid);
+        duplicatedErrorInIndex.set(dbId);
         
     }
 
