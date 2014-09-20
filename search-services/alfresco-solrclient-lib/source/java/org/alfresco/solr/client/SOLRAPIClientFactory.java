@@ -135,7 +135,7 @@ public class SOLRAPIClientFactory
             keyStoreProvider = props.getProperty("alfresco.encryption.keystore.provider");
             passwordFileLocation = props.getProperty("alfresco.encryption.keystore.passwordFileLocation");
             keyStoreLocation = props.getProperty("alfresco.encryption.keystore.location");
-            sslKeyStoreType = props.getProperty("alfresco.encryption.ssl.keystore.type");
+            sslKeyStoreType = props.getProperty("alfresco.encryption.ssl.keystore.type", "JCEKS");
             sslKeyStoreProvider = props.getProperty("alfresco.encryption.ssl.keystore.provider", "");
             sslKeyStoreLocation = props.getProperty("alfresco.encryption.ssl.keystore.location",
                         "ssl.repo.client.keystore");
@@ -148,10 +148,10 @@ public class SOLRAPIClientFactory
             sslTrustStorePasswordFileLocation = props.getProperty(
                         "alfresco.encryption.ssl.truststore.passwordFileLocation",
                         "ssl-truststore-passwords.properties");
-            secureCommsType = props.getProperty("alfresco.secureComms", "https");
+            secureCommsType = props.getProperty("alfresco.secureComms", "none");
             maxTotalConnections = Integer.parseInt(props.getProperty("alfresco.maxTotalConnections", "40"));
             maxHostConnections = Integer.parseInt(props.getProperty("alfresco.maxHostConnections", "40"));
-            socketTimeout = Integer.parseInt(props.getProperty("alfresco.socketTimeout", "0"));
+            socketTimeout = Integer.parseInt(props.getProperty("alfresco.socketTimeout", "60000"));
 
             client = new SOLRAPIClient(getRepoClient(keyResourceLoader), dictionaryService, namespaceDAO);
             setCachedClient(alfrescoHost, alfrescoPort, alfrescoPortSSL, client);
