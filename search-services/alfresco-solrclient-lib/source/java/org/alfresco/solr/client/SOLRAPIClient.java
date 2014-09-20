@@ -867,6 +867,25 @@ public class SOLRAPIClient
                 metaData.setPaths(paths);
             }
             
+            if(jsonNodeInfo.has("namePaths"))
+            {
+                JSONArray jsonNamePaths = jsonNodeInfo.getJSONArray("namePaths");
+                List<List<String>> namePaths = new ArrayList<List<String>>(jsonNamePaths.length());
+                for(int j = 0; j < jsonNamePaths.length(); j++)
+                {
+                    JSONObject jsonNamePath = jsonNamePaths.getJSONObject(j);
+                    JSONArray jsonNameElements = jsonNamePath.getJSONArray("namePath");
+                    List<String> namePath = new ArrayList<String>(jsonNameElements.length());
+                    for(int k = 0; k < jsonNameElements.length(); k++)
+                    {
+                        String namePathElement =  jsonNameElements.getString(k);
+                        namePath.add(namePathElement);
+                    }
+                    namePaths.add(namePath);
+                }
+                metaData.setNamePaths(namePaths);
+            }
+            
             if(jsonNodeInfo.has("ancestors"))
             {
                 JSONArray jsonAncestors = jsonNodeInfo.getJSONArray("ancestors");
