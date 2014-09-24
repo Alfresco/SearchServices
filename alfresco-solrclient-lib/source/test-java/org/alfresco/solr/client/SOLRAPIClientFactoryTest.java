@@ -19,10 +19,10 @@
 
 package org.alfresco.solr.client;
 
+import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
@@ -52,17 +52,17 @@ public class SOLRAPIClientFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        when(props.getProperty("alfresco.host", "localhost")).thenReturn("localhost");
-        when(props.getProperty("alfresco.port", "8080")).thenReturn("8080");
-        when(props.getProperty("alfresco.port.ssl", "8443")).thenReturn("8443");
-        when(props.getProperty("alfresco.maxTotalConnections", "40")).thenReturn("40");
-        when(props.getProperty("alfresco.maxHostConnections", "40")).thenReturn("40");
-        when(props.getProperty("alfresco.socketTimeout", "60000")).thenReturn("0");
-        when(props.getProperty("alfresco.secureComms", "none")).thenReturn("none");
-        when(props.getProperty("alfresco.encryption.ssl.keystore.location",
-                        "ssl.repo.client.keystore")).thenReturn("ssl.repo.client.keystore");
-        when(props.getProperty("alfresco.encryption.ssl.truststore.location",
-                        "ssl.repo.client.truststore")).thenReturn("ssl.repo.client.truststore");
+        when(props.getProperty(eq("alfresco.host"), anyString())).thenReturn("localhost");
+        when(props.getProperty(eq("alfresco.port"), anyString())).thenReturn("8080");
+        when(props.getProperty(eq("alfresco.port.ssl"), anyString())).thenReturn("8443");
+        when(props.getProperty(eq("alfresco.maxTotalConnections"), anyString())).thenReturn("40");
+        when(props.getProperty(eq("alfresco.maxHostConnections"), anyString())).thenReturn("40");
+        when(props.getProperty(eq("alfresco.socketTimeout"), anyString())).thenReturn("0");
+        when(props.getProperty(eq("alfresco.secureComms"), anyString())).thenReturn("none");
+        when(props.getProperty(eq("alfresco.encryption.ssl.keystore.location"), anyString()))
+            .thenReturn("ssl.repo.client.keystore");
+        when(props.getProperty(eq("alfresco.encryption.ssl.truststore.location"), anyString()))
+            .thenReturn("ssl.repo.client.truststore");
 
         this.factory = new SOLRAPIClientFactory();
     }
