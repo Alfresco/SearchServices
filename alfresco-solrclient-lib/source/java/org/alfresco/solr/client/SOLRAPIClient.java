@@ -588,6 +588,16 @@ public class SOLRAPIClient
             {
                 nodeInfo.setTxnId(jsonNodeInfo.getLong("txnId"));
             }
+            
+            if(jsonNodeInfo.has("aclId"))
+            {
+                nodeInfo.setAclId(jsonNodeInfo.getLong("aclId"));
+            }
+            
+            if(jsonNodeInfo.has("tenant"))
+            {
+                nodeInfo.setTenant(jsonNodeInfo.getString("tenant"));
+            }
 
             if(jsonNodeInfo.has("status"))
             {
