@@ -29,6 +29,9 @@ public class Node
     private String nodeRef;
     private long txnId;
     private SolrApiNodeStatus status;
+    private String tenant;
+    private long aclId;
+    
     public long getId()
     {
         return id;
@@ -61,9 +64,41 @@ public class Node
     {
         this.status = status;
     }
+    /**
+     * @return the tenant
+     */
+    public String getTenant()
+    {
+        return tenant;
+    }
+    /**
+     * @param tenant the tenant to set
+     */
+    public void setTenant(String tenant)
+    {
+        this.tenant = tenant;
+    }
+    /**
+     * @return the aclId
+     */
+    public long getAclId()
+    {
+        return aclId;
+    }
+    /**
+     * @param aclId the aclId to set
+     */
+    public void setAclId(long aclId)
+    {
+        this.aclId = aclId;
+    }
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString()
     {
-        return "NodeInfo [id=" + id + ", txnId=" + txnId + ", status=" + status + "]";
+        return "Node [id=" + id + ", nodeRef=" + nodeRef + ", txnId=" + txnId + ", status=" + status + ", tenant=" + tenant + ", aclId=" + aclId + "]";
     }
+   
 }
