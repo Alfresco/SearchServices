@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -71,6 +71,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 // TODO error handling, including dealing with a repository that is not responsive (ConnectException in sendRemoteRequest)
 // TODO get text content transform status handling
@@ -104,7 +105,7 @@ public class SOLRAPIClient
             DictionaryService dictionaryService,
             NamespaceDAO namespaceDAO)
     {
-    	this.repositoryHttpClient = repositoryHttpClient;
+        this.repositoryHttpClient = repositoryHttpClient;
         this.dictionaryService = dictionaryService;
         this.namespaceDAO = namespaceDAO;
         this.deserializer = new SOLRDeserializer(namespaceDAO);
@@ -151,22 +152,22 @@ public class SOLRAPIClient
         JSONObject json = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
+            response = repositoryHttpClient.sendRequest(req);
 
-	        if (response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException(GET_ACL_CHANGESETS_URL + " return status:" + response.getStatus());
-	        }
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException(GET_ACL_CHANGESETS_URL + " return status:" + response.getStatus());
+            }
 
-	        Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-	        json = new JSONObject(new JSONTokener(reader));
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
         
         if (log.isDebugEnabled())
@@ -250,22 +251,22 @@ public class SOLRAPIClient
         JSONObject json = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
+            response = repositoryHttpClient.sendRequest(req);
 
-	        if (response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException(GET_ACL_CHANGESETS_URL + " return status:" + response.getStatus());
-	        }
-	        
-	        Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-	        json = new JSONObject(new JSONTokener(reader));
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException(GET_ACL_CHANGESETS_URL + " return status:" + response.getStatus());
+            }
+            
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
         
         if (log.isDebugEnabled())
@@ -318,22 +319,22 @@ public class SOLRAPIClient
         JSONObject json = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
+            response = repositoryHttpClient.sendRequest(req);
 
-	        if (response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException(GET_ACLS_READERS + " return status:" + response.getStatus());
-	        }
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException(GET_ACLS_READERS + " return status:" + response.getStatus());
+            }
         
-	        Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-	        json = new JSONObject(new JSONTokener(reader));
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
         
         if (log.isDebugEnabled())
@@ -418,72 +419,71 @@ public class SOLRAPIClient
         Long maxTxnIdOnServer = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
-	        if(response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException("GetTransactions return status is " + response.getStatus());
-	        }
+            response = repositoryHttpClient.sendRequest(req);
+            if(response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException("GetTransactions return status is " + response.getStatus());
+            }
 
             Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-	        JsonParser parser = jsonFactory.createJsonParser(reader);
-	        
-	        JsonToken token = parser.nextValue();
-	        while (token != null) 
-	        {
-	            if ("transactions".equals(parser.getCurrentName()))
-	            {
-	                token = parser.nextToken(); //START_ARRAY
-	                while (token == JsonToken.START_OBJECT)
-	                {
-	                    token = parser.nextValue();
-	                    long id = parser.getLongValue();  
-	                    
-	                    token = parser.nextValue();
-	                    long commitTime = parser.getLongValue();
-	                    
-	                    token = parser.nextValue();
-	                    long updates = parser.getLongValue();
-	                    
-	                    token = parser.nextValue();
-	                    long deletes = parser.getLongValue();
+            JsonParser parser = jsonFactory.createJsonParser(reader);
+            
+            JsonToken token = parser.nextValue();
+            while (token != null) 
+            {
+                if ("transactions".equals(parser.getCurrentName()))
+                {
+                    token = parser.nextToken(); //START_ARRAY
+                    while (token == JsonToken.START_OBJECT)
+                    {
+                        token = parser.nextValue();
+                        long id = parser.getLongValue();  
+                        
+                        token = parser.nextValue();
+                        long commitTime = parser.getLongValue();
+                        
+                        token = parser.nextValue();
+                        long updates = parser.getLongValue();
+                        
+                        token = parser.nextValue();
+                        long deletes = parser.getLongValue();
 
-	                    Transaction txn = new Transaction();
-	                    txn.setCommitTimeMs(commitTime);
-	                    txn.setDeletes(deletes);
-	                    txn.setId(id);
-	                    txn.setUpdates(updates);
-	                    
-	                    transactions.add(txn);
-	                    
-	                    token = parser.nextToken(); //END_OBJECT
-	                    token = parser.nextToken(); // START_OBJECT or END_ARRAY;
-	                }
-	            }
-	            else if ("maxTxnCommitTime".equals(parser.getCurrentName()))
-	            {
-	                maxTxnCommitTime = parser.getLongValue();
-	            }
-	            else if ("maxTxnId".equals(parser.getCurrentName()))
-	            {
-	                maxTxnIdOnServer = parser.getLongValue();
-	            }
-	            token = parser.nextValue();
-	        }
-	        parser.close();
-	        reader.close();
+                        Transaction txn = new Transaction();
+                        txn.setCommitTimeMs(commitTime);
+                        txn.setDeletes(deletes);
+                        txn.setId(id);
+                        txn.setUpdates(updates);
+                        
+                        transactions.add(txn);
+                        
+                        token = parser.nextToken(); //END_OBJECT
+                        token = parser.nextToken(); // START_OBJECT or END_ARRAY;
+                    }
+                }
+                else if ("maxTxnCommitTime".equals(parser.getCurrentName()))
+                {
+                    maxTxnCommitTime = parser.getLongValue();
+                }
+                else if ("maxTxnId".equals(parser.getCurrentName()))
+                {
+                    maxTxnIdOnServer = parser.getLongValue();
+                }
+                token = parser.nextValue();
+            }
+            parser.close();
+            reader.close();
 
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
 
         return new Transactions(transactions, maxTxnCommitTime, maxTxnIdOnServer);
     }
-  
     
     public List<Node> getNodes(GetNodesParameters parameters, int maxResults) throws AuthenticationException, IOException, JSONException
     {
@@ -546,21 +546,21 @@ public class SOLRAPIClient
         JSONObject json = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
-	        if(response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException("GetNodes return status is " + response.getStatus());
-	        }
+            response = repositoryHttpClient.sendRequest(req);
+            if(response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException("GetNodes return status is " + response.getStatus());
+            }
 
-	        Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-	        json = new JSONObject(new JSONTokener(reader));
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
         
         if(log.isDebugEnabled())
@@ -791,21 +791,21 @@ public class SOLRAPIClient
         JSONObject json = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
-	        if(response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException("GetNodeMetaData return status is " + response.getStatus());
-	        }
+            response = repositoryHttpClient.sendRequest(req);
+            if(response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException("GetNodeMetaData return status is " + response.getStatus());
+            }
         
-	        Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-	        json = new JSONObject(new JSONTokener(reader));
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
 
         if (log.isDebugEnabled())
@@ -981,11 +981,8 @@ public class SOLRAPIClient
             {
                 metaData.setOwner(jsonNodeInfo.getString("owner"));
             }
-           
             
             nodes.add(metaData);
-            
-         
         }
 
         return nodes;
@@ -993,9 +990,10 @@ public class SOLRAPIClient
     
     public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
     {
-        StringBuilder url = new StringBuilder(GET_CONTENT);
+        StringBuilder url = new StringBuilder(128);
+        url.append(GET_CONTENT);
         
-        StringBuilder args = new StringBuilder();
+        StringBuilder args = new StringBuilder(128);
         if(nodeId != null)
         {
             args.append("?");
@@ -1005,7 +1003,7 @@ public class SOLRAPIClient
         }
         else
         {
-            throw new NullPointerException();
+            throw new NullPointerException("getTextContent(): nodeId cannot be null.");
         }
         if(propertyQName != null)
         {
@@ -1019,22 +1017,20 @@ public class SOLRAPIClient
             }
             args.append("propertyQName");
             args.append("=");
-            URLCodec encoder = new URLCodec();
-            args.append(encoder.encode(propertyQName.toString(), "UTF-8"));
+            args.append(URLEncoder.encode(propertyQName.toString()));
         }
-       
+        
         url.append(args);
         
         GetRequest req = new GetRequest(url.toString());
-        Map<String, String> headers = new HashMap<String, String>(2);
         
         if(modifiedSince != null)
         {
+            Map<String, String> headers = new HashMap<String, String>(1, 1.0f);
             headers.put("If-Modified-Since", String.valueOf(DateUtil.formatDate(new Date(modifiedSince))));
+            req.setHeaders(headers);
         }
 
-        req.setHeaders(headers);
-        
         Response response = repositoryHttpClient.sendRequest(req);
         
         if(response.getStatus() != Status.STATUS_NOT_MODIFIED && response.getStatus() != Status.STATUS_NO_CONTENT && response.getStatus() != Status.STATUS_OK)
@@ -1060,21 +1056,21 @@ public class SOLRAPIClient
         Response response = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
-        	if(response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException("GetModel return status is " + response.getStatus());
-	        }
+            response = repositoryHttpClient.sendRequest(req);
+            if(response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException("GetModel return status is " + response.getStatus());
+            }
 
-	        return new AlfrescoModel(M2Model.createModel(response.getContentAsStream()),
-	                Long.valueOf(response.getHeader(CHECKSUM_HEADER)));
+            return new AlfrescoModel(M2Model.createModel(response.getContentAsStream()),
+                    Long.valueOf(response.getHeader(CHECKSUM_HEADER)));
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
     }
     
@@ -1099,21 +1095,21 @@ public class SOLRAPIClient
         JSONObject json = null;
         try
         {
-        	response = repositoryHttpClient.sendRequest(req);
-	        if(response.getStatus() != HttpStatus.SC_OK)
-	        {
-	            throw new AlfrescoRuntimeException("GetModelsDiff return status is " + response.getStatus());
-	        }
-	
-	        Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-	        json = new JSONObject(new JSONTokener(reader));
+            response = repositoryHttpClient.sendRequest(req);
+            if(response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException("GetModelsDiff return status is " + response.getStatus());
+            }
+    
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
         }
         finally
         {
-        	if(response != null)
-        	{
-        		response.release();
-        	}
+            if(response != null)
+            {
+                response.release();
+            }
         }
         
         if(log.isDebugEnabled())
@@ -1388,31 +1384,6 @@ public class SOLRAPIClient
             }
         }
     }
-    
-/*    public static enum TRANSFORM_STATUS
-    {
-        OK, FAILED, NO_TRANSFORM, UNKNOWN;
-        
-        public static TRANSFORM_STATUS getStatus(String statusStr)
-        {
-            if(statusStr.equals("ok"))
-            {
-                return OK;
-            }
-            else if(statusStr.equals("failed"))
-            {
-                return FAILED;
-            }
-            else if(statusStr.equals("noTransform"))
-            {
-                return NO_TRANSFORM;
-            }
-            else
-            {
-                return UNKNOWN;
-            }
-        }
-    }*/
 
     // TODO register a stream close listener that release the response when the response has been read
     public static class GetTextContentResponse extends SOLRResponse
@@ -1427,18 +1398,11 @@ public class SOLRAPIClient
         {
             super(response);
 
-//            try
-//            {
-	            this.content = response.getContentAsStream();
-	            this.transformStatusStr = response.getHeader("X-Alfresco-transformStatus");
-	            this.transformException = response.getHeader("X-Alfresco-transformException");
-	            String tmp = response.getHeader("X-Alfresco-transformDuration");
-	            this.transformDuration = (tmp != null ? Long.valueOf(tmp) : null);
-//            }
-//            finally
-//            {
-//            	response.release();
-//            }
+            this.content = response.getContentAsStream();
+            this.transformStatusStr = response.getHeader("X-Alfresco-transformStatus");
+            this.transformException = response.getHeader("X-Alfresco-transformException");
+            String tmp = response.getHeader("X-Alfresco-transformDuration");
+            this.transformDuration = (tmp != null ? Long.valueOf(tmp) : null);
             setStatus();
         }
 
@@ -1498,21 +1462,17 @@ public class SOLRAPIClient
         
         public void release()
         {
-        	response.release();
+            response.release();
         }
         
         public Long getTransformDuration()
         {
-        	return transformDuration;
+            return transformDuration;
         }
     }
 
-    /**
-     * 
-     */
     public void close()
     {
        repositoryHttpClient.close();
-        
     }
 }
