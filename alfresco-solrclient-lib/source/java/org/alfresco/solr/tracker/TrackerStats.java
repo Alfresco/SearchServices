@@ -47,6 +47,12 @@ public class TrackerStats
     ConcurrentHashMap<String, IncrementalStats> docTransformationTimes = new ConcurrentHashMap<String, IncrementalStats>();
 
     ConcurrentHashMap<String, IncrementalStats> nodeTimes = new ConcurrentHashMap<String, IncrementalStats>();
+    
+    ConcurrentHashMap<String, IncrementalStats> elapsedNodeTimes = new ConcurrentHashMap<String, IncrementalStats>();
+    
+    ConcurrentHashMap<String, IncrementalStats> elapsedAclTimes = new ConcurrentHashMap<String, IncrementalStats>();
+    
+    ConcurrentHashMap<String, IncrementalStats> elapsedContentTimes = new ConcurrentHashMap<String, IncrementalStats>();
 
     private InformationServer infoSrv;
     
@@ -164,6 +170,21 @@ public class TrackerStats
     public double getMeanNodeIndexTime()
     {
         return aggregateResults(nodeTimes).getMean();
+    }
+    
+    public double getMeanNodeElapsedIndexTime()
+    {
+        return aggregateResults(elapsedNodeTimes).getMean();
+    }
+    
+    public double getMeanAclElapsedIndexTime()
+    {
+        return aggregateResults(elapsedAclTimes).getMean();
+    }
+    
+    public double getMeanContentElapsedIndexTime()
+    {
+        return aggregateResults(elapsedContentTimes).getMean();
     }
 
     public double getNodeIndexingThreadCount()
@@ -788,6 +809,66 @@ public class TrackerStats
     }
 
     /**
+     * @param docCount
+     * @param l
+     */
+    public void addElapsedNodeTime(int docCount, long time)
+    {
+        IncrementalStats stats = elapsedNodeTimes.get(Thread.currentThread().getName());
+        if (stats == null)
+        {
+            stats = new IncrementalStats(TIME_SCALE, 50, this.infoSrv);
+            elapsedNodeTimes.put(Thread.currentThread().getName(), stats);
+        }
+        long meanTime = time / docCount;
+        for(int i = 0; i < docCount; i++)
+        {
+            stats.add(meanTime);
+        }
+        
+    }
+    
+    /**
+     * @param docCount
+     * @param l
+     */
+    public void addElapsedAclTime(int docCount, long time)
+    {
+        IncrementalStats stats = elapsedAclTimes.get(Thread.currentThread().getName());
+        if (stats == null)
+        {
+            stats = new IncrementalStats(TIME_SCALE, 50, this.infoSrv);
+            elapsedAclTimes.put(Thread.currentThread().getName(), stats);
+        }
+        long meanTime = time / docCount;
+        for(int i = 0; i < docCount; i++)
+        {
+            stats.add(meanTime);
+        }
+        
+    }
+    
+    /**
+     * @param docCount
+     * @param l
+     */
+    public void addElapsedContentTime(int docCount, long time)
+    {
+        IncrementalStats stats = elapsedContentTimes.get(Thread.currentThread().getName());
+        if (stats == null)
+        {
+            stats = new IncrementalStats(TIME_SCALE, 50, this.infoSrv);
+            elapsedContentTimes.put(Thread.currentThread().getName(), stats);
+        }
+        long meanTime = time / docCount;
+        for(int i = 0; i < docCount; i++)
+        {
+            stats.add(meanTime);
+        }
+        
+    }
+    
+    /**
      * @param size
      */
     public void addTxDocs(int size)
@@ -854,4 +935,5 @@ public class TrackerStats
         nodeTimes.clear();
     }
 
+ 
 }
