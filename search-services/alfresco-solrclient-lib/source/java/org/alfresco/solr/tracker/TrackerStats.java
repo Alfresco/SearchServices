@@ -814,6 +814,10 @@ public class TrackerStats
      */
     public void addElapsedNodeTime(int docCount, long time)
     {
+        if(docCount < 1)
+        {
+            return;
+        }
         IncrementalStats stats = elapsedNodeTimes.get(Thread.currentThread().getName());
         if (stats == null)
         {
@@ -834,6 +838,10 @@ public class TrackerStats
      */
     public void addElapsedAclTime(int docCount, long time)
     {
+        if(docCount < 1)
+        {
+            return;
+        }
         IncrementalStats stats = elapsedAclTimes.get(Thread.currentThread().getName());
         if (stats == null)
         {
@@ -854,6 +862,10 @@ public class TrackerStats
      */
     public void addElapsedContentTime(int docCount, long time)
     {
+        if(docCount < 1)
+        {
+            return;
+        }
         IncrementalStats stats = elapsedContentTimes.get(Thread.currentThread().getName());
         if (stats == null)
         {
