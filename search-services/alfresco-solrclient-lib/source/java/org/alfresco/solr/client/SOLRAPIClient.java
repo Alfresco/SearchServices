@@ -216,11 +216,6 @@ public class SOLRAPIClient
      */
     public List<Acl> getAcls(List<AclChangeSet> aclChangeSets, Long minAclId, int maxResults) throws AuthenticationException, IOException, JSONException
     {
-        if (aclChangeSets.size() > 512)
-        {
-            throw new IllegalArgumentException("Cannot query for more than 512 ACL ChangeSets.");
-        }
-
         StringBuilder url = new StringBuilder(GET_ACLS);
         StringBuilder args = new StringBuilder();
         if (minAclId != null)
@@ -296,11 +291,6 @@ public class SOLRAPIClient
      */
     public List<AclReaders> getAclReaders(List<Acl> acls) throws AuthenticationException, IOException, JSONException
     {
-        if (acls.size() > 512)
-        {
-            throw new IllegalArgumentException("Cannot query for more than 512 ACLs.");
-        }
-
         StringBuilder url = new StringBuilder(GET_ACLS_READERS);
         
         JSONObject jsonReq = new JSONObject();
