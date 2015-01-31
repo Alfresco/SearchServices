@@ -18,7 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.InformationServer;
+import org.alfresco.solr.InformationServerCollectionProvider;
 import org.alfresco.solr.adapters.IOpenBitSet;
 
 
@@ -68,7 +68,7 @@ public class IndexHealthReport
     
     long unindexedDocCountInIndex;
 
-    public IndexHealthReport(InformationServer srv)
+    public IndexHealthReport(InformationServerCollectionProvider srv)
     {
         this.missingTxFromIndex = srv.getOpenBitSetInstance();
         this.duplicatedTxInIndex = srv.getOpenBitSetInstance();
