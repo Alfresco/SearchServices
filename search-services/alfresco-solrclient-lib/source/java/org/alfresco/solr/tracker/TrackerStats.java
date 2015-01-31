@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.alfresco.solr.InformationServer;
+import org.alfresco.solr.InformationServerCollectionProvider;
 import org.alfresco.solr.adapters.ISimpleOrderedMap;
 import org.alfresco.util.Pair;
 
@@ -54,9 +54,9 @@ public class TrackerStats
     
     ConcurrentHashMap<String, IncrementalStats> elapsedContentTimes = new ConcurrentHashMap<String, IncrementalStats>();
 
-    private InformationServer infoSrv;
+    private InformationServerCollectionProvider infoSrv;
     
-    public TrackerStats(InformationServer server)
+    public TrackerStats(InformationServerCollectionProvider server)
     {
         infoSrv = server;
     }
@@ -210,10 +210,10 @@ public class TrackerStats
     public static class SimpleStats
     {
         HashMap<String, IncrementalStats> copies = new HashMap<String, IncrementalStats>();
-        private InformationServer server;
+        private InformationServerCollectionProvider server;
         int scale;
 
-        SimpleStats(int scale, InformationServer server)
+        SimpleStats(int scale, InformationServerCollectionProvider server)
         {
             this.scale = scale;
             this.server = server;
@@ -393,9 +393,9 @@ public class TrackerStats
 
         List<Bucket> hist;
         
-        InformationServer server;
+        InformationServerCollectionProvider server;
 
-        IncrementalStats(int scale, int buckets, InformationServer infoSrv)
+        IncrementalStats(int scale, int buckets, InformationServerCollectionProvider infoSrv)
         {
             this.scale = scale;
             this.buckets = buckets;
