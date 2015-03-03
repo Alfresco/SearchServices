@@ -1245,7 +1245,7 @@ public class SOLRAPIClient
             {
                 public QName convert(String source)
                 {
-                    return QName.createQName(source, SOLRTypeConverter.this.namespaceDAO);
+                    return QName.resolveToQName(SOLRTypeConverter.this.namespaceDAO, source);
                 }
             });
             
