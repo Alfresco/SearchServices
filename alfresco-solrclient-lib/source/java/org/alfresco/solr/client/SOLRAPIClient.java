@@ -207,7 +207,7 @@ public class SOLRAPIClient
     /**
      * Get the ACLs associated with a given list of ACL ChangeSets.  The ACLs may be truncated for
      * the last ACL ChangeSet in the return values - the ACL count from the
-     * {@link #getAclChangeSets(Long, Long, int) ACL ChangeSets}.
+     * {@link #getAclChangeSets(Long, Long, Long, Long, int) ACL ChangeSets}.
      * 
      * @param aclChangeSets                 the ACL ChangeSets to include
      * @param minAclId                      the lowest ACL ID (may be <tt>null</tt>)

@@ -70,7 +70,7 @@ public class TrackerStats
     }
 
     /**
-     * @param modelTimes2
+     * @param all
      * @return
      */
     private SimpleStats aggregateResults(ConcurrentHashMap<String, IncrementalStats> all)
@@ -767,7 +767,7 @@ public class TrackerStats
     }
 
     /**
-     * @param l
+     * @param time
      */
     public void addModelTime(long time)
     {
@@ -781,7 +781,7 @@ public class TrackerStats
     }
 
     /**
-     * @param l
+     * @param time
      */
     public void addAclTime(long time)
     {
@@ -795,7 +795,7 @@ public class TrackerStats
     }
 
     /**
-     * @param l
+     * @param time
      */
     public void addNodeTime(long time)
     {
@@ -810,7 +810,7 @@ public class TrackerStats
 
     /**
      * @param docCount
-     * @param l
+     * @param time
      */
     public void addElapsedNodeTime(int docCount, long time)
     {
@@ -834,7 +834,7 @@ public class TrackerStats
     
     /**
      * @param docCount
-     * @param l
+     * @param time
      */
     public void addElapsedAclTime(int docCount, long time)
     {
@@ -858,7 +858,7 @@ public class TrackerStats
     
     /**
      * @param docCount
-     * @param l
+     * @param time
      */
     public void addElapsedContentTime(int docCount, long time)
     {
@@ -909,7 +909,7 @@ public class TrackerStats
     }
 
     /**
-     * @param l
+     * @param time
      */
     public void addDocTransformationTime(long time)
     {
