@@ -97,7 +97,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param leafCount
+     * @param leafDocCountInIndex
      */
     public void setLeafDocCountInIndex(long leafDocCountInIndex)
     {
@@ -113,7 +113,7 @@ public class IndexHealthReport
     }
     
     /**
-     * @param auxCount
+     * @param auxDocCountInIndex
      */
     public void setAuxDocCountInIndex(long auxDocCountInIndex)
     {
@@ -172,7 +172,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param transactionDocsInIndex
+     * @param aclTransactionDocsInIndex
      *            the transactionDocsInIndex to set
      */
     public void setAclTransactionDocsInIndex(long aclTransactionDocsInIndex)
@@ -276,7 +276,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param lastIndexCommitTime
+     * @param lastIndexedCommitTime
      *            the lastIndexCommitTime to set
      */
     public void setLastIndexedCommitTime(long lastIndexedCommitTime)
@@ -302,7 +302,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param cardinality
+     * @param dbAclTransactionCount
      */
     public void setDbAclTransactionCount(long dbAclTransactionCount)
     {
@@ -358,7 +358,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param unindexedCount
+     * @param unindexedDocCountInIndex
      */
     public void setUnindexedDocCountInIndex(long unindexedDocCountInIndex)
     {
@@ -374,7 +374,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param errorCount
+     * @param errorDocCountInIndex
      */
     public void setErrorDocCountInIndex(long errorDocCountInIndex)
     {
