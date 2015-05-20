@@ -51,7 +51,6 @@ import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AlfrescoHttpClient;
 import org.alfresco.httpclient.AuthenticationException;
-import org.alfresco.httpclient.EncryptionService;
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.httpclient.MD5EncryptionParameters;
@@ -95,8 +94,6 @@ public class SOLRAPIClientTest extends TestCase
     private static Log logger = LogFactory.getLog(SOLRAPIClientTest.class);
 
     // private static final String TEST_MODEL = "org/alfresco/repo/dictionary/dictionarydaotest_model.xml";
-
-    private TamperWithEncryptionService tamperWithEncryptionService;
 
     private SOLRAPIClient client;
 
@@ -676,36 +673,6 @@ public class SOLRAPIClientTest extends TestCase
             }
             // prevent replays
             setRequestTimestamp(method, requestTimestamp);
-        }
-    }
-
-    private static class TamperWithEncryptionService extends EncryptionService
-    {
-        TamperWithEncryptionService(String alfrescoHost, int alfrescoPort, KeyResourceLoader keyResourceLoader, KeyStoreParameters keyStoreParameters,
-                MD5EncryptionParameters encryptionParameters)
-                {
-            super(alfrescoHost, alfrescoPort, keyResourceLoader, keyStoreParameters, encryptionParameters);
-                }
-
-        @Override
-        protected void setupEncryptionUtils()
-        {
-            encryptionUtils = new TestEncryptionUtils();
-            TestEncryptionUtils testEncryptionUtils = (TestEncryptionUtils) encryptionUtils;
-            testEncryptionUtils.setEncryptor(getEncryptor());
-            testEncryptionUtils.setMacUtils(getMacUtils());
-            testEncryptionUtils.setMessageTimeout(encryptionParameters.getMessageTimeout());
-            testEncryptionUtils.setRemoteIP(alfrescoHost);
-        }
-
-        public void setOverrideTimestamp(boolean overrideTimestamp)
-        {
-            ((TestEncryptionUtils) encryptionUtils).setOverrideTimestamp(overrideTimestamp);
-        }
-
-        public void setOverrideMAC(boolean overrideMAC)
-        {
-            ((TestEncryptionUtils) encryptionUtils).setOverrideMAC(overrideMAC);
         }
     }
 }
