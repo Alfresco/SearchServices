@@ -97,7 +97,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param leafDocCountInIndex
+     * @param leafDocCountInIndex long
      */
     public void setLeafDocCountInIndex(long leafDocCountInIndex)
     {
@@ -113,7 +113,7 @@ public class IndexHealthReport
     }
     
     /**
-     * @param auxDocCountInIndex
+     * @param auxDocCountInIndex long
      */
     public void setAuxDocCountInIndex(long auxDocCountInIndex)
     {
@@ -129,7 +129,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param txid
+     * @param txid long
      */
     public void setDuplicatedLeafInIndex(long txid)
     {
@@ -146,7 +146,7 @@ public class IndexHealthReport
     }
     
     /**
-     * @param txid
+     * @param txid long
      */
     public void setDuplicatedAuxInIndex(long txid)
     {
@@ -302,7 +302,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param dbAclTransactionCount
+     * @param dbAclTransactionCount long
      */
     public void setDbAclTransactionCount(long dbAclTransactionCount)
     {
@@ -358,7 +358,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param unindexedDocCountInIndex
+     * @param unindexedDocCountInIndex long
      */
     public void setUnindexedDocCountInIndex(long unindexedDocCountInIndex)
     {
@@ -366,7 +366,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param dbId
+     * @param dbId long
      */
     public void setDuplicatedUnindexedInIndex(long dbId)
     {
@@ -374,7 +374,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param errorDocCountInIndex
+     * @param errorDocCountInIndex long
      */
     public void setErrorDocCountInIndex(long errorDocCountInIndex)
     {
@@ -382,7 +382,7 @@ public class IndexHealthReport
     }
 
     /**
-     * @param dbId
+     * @param dbId long
      */
     public void setDuplicatedErrorInIndex(long dbId)
     {

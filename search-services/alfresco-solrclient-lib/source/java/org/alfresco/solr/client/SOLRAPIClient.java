@@ -360,7 +360,7 @@ public class SOLRAPIClient
     /**
      * Convert a JSON array of authorities to a simple Java List&lt;String&gt;
      * 
-     * @param jsonArray
+     * @param jsonArray JSONArray
      * @return List&lt;String&gt;
      * @throws JSONException
      */
