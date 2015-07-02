@@ -70,8 +70,8 @@ public class TrackerStats
     }
 
     /**
-     * @param all
-     * @return
+     * @param all ConcurrentHashMap<String, IncrementalStats>
+     * @return SimpleStats
      */
     private SimpleStats aggregateResults(ConcurrentHashMap<String, IncrementalStats> all)
     {
@@ -405,7 +405,7 @@ public class TrackerStats
         }
 
         /**
-         * @return
+         * @return ISimpleOrderedMap
          */
         public ISimpleOrderedMap<Object> getNamedList(boolean includeHist, boolean includeValues)
         {
@@ -795,7 +795,7 @@ public class TrackerStats
     }
 
     /**
-     * @param time
+     * @param time long
      */
     public void addModelTime(long time)
     {
@@ -809,7 +809,7 @@ public class TrackerStats
     }
 
     /**
-     * @param time
+     * @param time long
      */
     public void addAclTime(long time)
     {
@@ -823,7 +823,7 @@ public class TrackerStats
     }
 
     /**
-     * @param time
+     * @param time long
      */
     public void addNodeTime(long time)
     {
@@ -837,8 +837,8 @@ public class TrackerStats
     }
 
     /**
-     * @param docCount
-     * @param time
+     * @param docCount int
+     * @param time long
      */
     public void addElapsedNodeTime(int docCount, long time)
     {
@@ -861,8 +861,8 @@ public class TrackerStats
     }
     
     /**
-     * @param docCount
-     * @param time
+     * @param docCount int
+     * @param time long
      */
     public void addElapsedAclTime(int docCount, long time)
     {
@@ -885,8 +885,8 @@ public class TrackerStats
     }
     
     /**
-     * @param docCount
-     * @param time
+     * @param docCount int
+     * @param time long
      */
     public void addElapsedContentTime(int docCount, long time)
     {
@@ -909,7 +909,7 @@ public class TrackerStats
     }
     
     /**
-     * @param size
+     * @param size int
      */
     public void addTxDocs(int size)
     {
@@ -923,7 +923,7 @@ public class TrackerStats
     }
 
     /**
-     * @param size
+     * @param size int
      */
     public void addChangeSetAcls(int size)
     {
@@ -937,7 +937,7 @@ public class TrackerStats
     }
 
     /**
-     * @param time
+     * @param time long
      */
     public void addDocTransformationTime(long time)
     {

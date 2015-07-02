@@ -73,10 +73,10 @@ public class SOLRAPIClientFactory
     /**
      * Gets the client resource from the pool.
      * 
-     * @param alfrescoHost
-     * @param alfrescoPort
-     * @param alfrescoPortSSL
-     * @return
+     * @param alfrescoHost String
+     * @param alfrescoPort int
+     * @param alfrescoPortSSL int
+     * @return SOLRAPIClient
      */
     private SOLRAPIClient getCachedClient(String alfrescoHost, int alfrescoPort, int alfrescoPortSSL)
     {
@@ -87,9 +87,9 @@ public class SOLRAPIClientFactory
     /**
      * Constructs a key to identify a unique alfresco instance to which the client will connect.
      * 
-     * @param alfrescoHost
-     * @param alfrescoPort
-     * @param alfrescoPortSSL
+     * @param alfrescoHost String
+     * @param alfrescoPort int
+     * @param alfrescoPortSSL int
      * @return the key to get a client
      */
     private String constructKey(String alfrescoHost, int alfrescoPort, int alfrescoPortSSL)
@@ -100,10 +100,10 @@ public class SOLRAPIClientFactory
     /**
      * Sets the client in the resource pool.
      * 
-     * @param alfrescoHost
-     * @param alfrescoPort
-     * @param alfrescoPortSSL
-     * @param client
+     * @param alfrescoHost String
+     * @param alfrescoPort int
+     * @param alfrescoPortSSL int
+     * @param client SOLRAPIClient
      */
     private void setCachedClient(String alfrescoHost, int alfrescoPort, int alfrescoPortSSL, SOLRAPIClient client)
     {

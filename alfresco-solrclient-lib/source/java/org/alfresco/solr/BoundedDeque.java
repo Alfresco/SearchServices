@@ -17,7 +17,7 @@ public class BoundedDeque<T> implements Iterable<T>
     }
 
     /**
-     * @return
+     * @return int
      */
     public int size()
     {

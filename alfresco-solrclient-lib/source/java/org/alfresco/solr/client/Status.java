@@ -95,7 +95,7 @@ public class Status
     }
     
     /**
-     * @param exception
+     * @param exception Throwable
      */
     public void setException(Throwable exception)
     {
@@ -111,7 +111,7 @@ public class Status
     }
     
     /**
-     * @param message
+     * @param message String
      */
     public void setMessage(String message)
     {

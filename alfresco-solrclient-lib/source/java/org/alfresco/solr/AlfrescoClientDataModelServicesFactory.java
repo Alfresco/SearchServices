@@ -31,11 +31,11 @@ public class AlfrescoClientDataModelServicesFactory
     /**
      * Constructs a dictionary by default.
      * 
-     * @param qnameFilter
-     * @param namespaceDAO
-     * @param dictionaryService
-     * @param dictionaryDAO
-     * @return Map<String,CMISDictionaryService> 
+     * @param qnameFilter QNameFilter
+     * @param namespaceDAO NamespaceDAO
+     * @param dictionaryService DictionaryComponent
+     * @param dictionaryDAO DictionaryDAO
+     * @return Map
      */
     public static Map<DictionaryKey,CMISAbstractDictionaryService> constructDictionaries(QNameFilter qnameFilter, NamespaceDAO namespaceDAO,
     		DictionaryComponent dictionaryService, DictionaryDAO dictionaryDAO) 
@@ -77,8 +77,9 @@ public class AlfrescoClientDataModelServicesFactory
     /**
      * Constructs a dictionary by default.
      * 
-     * @param dictionaryDAO
-     * @return Map<String,CMISDictionaryService> 
+     * @param qnameFilter QNameFilter
+     * @param dictionaryDAO DictionaryDAOImpl
+     * @return Map
      */
     public static Map<String, DictionaryComponent> constructDictionaryServices(QNameFilter qnameFilter, DictionaryDAOImpl dictionaryDAO)
     {
