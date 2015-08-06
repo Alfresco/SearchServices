@@ -22,7 +22,7 @@ public class Node
 {
     public static enum SolrApiNodeStatus
     {
-        UPDATED, DELETED, UNKNOWN;
+        UPDATED, DELETED, UNKNOWN, SHARD_DELETED;
     };
 
     private long id;
