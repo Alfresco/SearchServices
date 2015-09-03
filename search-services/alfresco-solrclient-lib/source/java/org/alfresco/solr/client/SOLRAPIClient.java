@@ -423,6 +423,25 @@ public class SOLRAPIClient
             args.append(encoder.encode("baseUrl")).append("=").append(encoder.encode(shardState.getShardInstance().getBaseUrl()));
             args.append("&").append(encoder.encode("hostName")).append("=").append(encoder.encode(shardState.getShardInstance().getHostName()));
             args.append("&").append(encoder.encode("template")).append("=").append(encoder.encode(shardState.getShardInstance().getShard().getFloc().getTemplate()));
+            
+            for(String key : shardState.getShardInstance().getShard().getFloc().getPropertyBag().keySet())
+            {
+                String value = shardState.getShardInstance().getShard().getFloc().getPropertyBag().get(key);
+                if(value != null)
+                {
+                    args.append("&").append(encoder.encode("floc.property."+key)).append("=").append(encoder.encode(value));
+                }
+            }
+            
+            for(String key : shardState.getPropertyBag().keySet())
+            {
+                String value = shardState.getPropertyBag().get(key);
+                if(value != null)
+                {
+                    args.append("&").append(encoder.encode("state.property."+key)).append("=").append(encoder.encode(value));
+                }
+            }
+            
             args.append("&").append(encoder.encode("instance")).append("=").append(encoder.encode("" + shardState.getShardInstance().getShard().getInstance()));
             args.append("&").append(encoder.encode("numberOfShards")).append("=").append(encoder.encode("" + shardState.getShardInstance().getShard().getFloc().getNumberOfShards()));
             args.append("&").append(encoder.encode("port")).append("=").append(encoder.encode("" + shardState.getShardInstance().getPort()));
@@ -438,6 +457,12 @@ public class SOLRAPIClient
             args.append("&").append(encoder.encode("isMaster")).append("=").append(encoder.encode("" + shardState.isMaster()));
             args.append("&").append(encoder.encode("hasContent")).append("=").append(encoder.encode("" + shardState.getShardInstance().getShard().getFloc().hasContent()));
             args.append("&").append(encoder.encode("shardMethod")).append("=").append(encoder.encode(shardState.getShardInstance().getShard().getFloc().getShardMethod().toString()));
+            
+            args.append("&").append(encoder.encode("lastUpdated")).append("=").append(encoder.encode("" + shardState.getLastUpdated()));
+            args.append("&").append(encoder.encode("lastIndexedChangeSetCommitTime")).append("=").append(encoder.encode("" + shardState.getLastIndexedChangeSetCommitTime()));
+            args.append("&").append(encoder.encode("lastIndexedChangeSetId")).append("=").append(encoder.encode("" + shardState.getLastIndexedChangeSetId()));
+            args.append("&").append(encoder.encode("lastIndexedTxCommitTime")).append("=").append(encoder.encode("" + shardState.getLastIndexedTxCommitTime()));
+            args.append("&").append(encoder.encode("lastIndexedTxId")).append("=").append(encoder.encode("" + shardState.getLastIndexedTxId()));
            
         }
         
