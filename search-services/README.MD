@@ -3,11 +3,14 @@ Alfresco Solr 6
 ### Get the code
 
 Git:
-	git clone https://gitlab.alfresco.com/search_discovery/solr.git
-	cd alfresco-solr
+	
+git clone https://gitlab.alfresco.com/search_discovery/solr.git
+	
+cd alfresco-solr
 
 ### Use Maven
 1. Build
+
 ```
 mvn clean install
 ```
