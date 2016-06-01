@@ -1,0 +1,385 @@
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>alfresco-solr6</artifactId>
+    <name>Alfresco Solr 6</name>
+    <packaging>war</packaging>
+
+	<repositories>
+	    <repository>
+		    <id>apache.snapshots</id>
+		    <name>Apache Snapshot Repository</name>
+		    <url>http://repository.apache.org/snapshots</url>
+		    <releases>
+			    <enabled>false</enabled>
+		    </releases>
+	    </repository>
+    </repositories>
+
+    <parent>
+        <artifactId>alfresco-parent</artifactId>
+        <groupId>org.alfresco</groupId>
+        <version>5.1-K_2-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <maven.tomcat.path>/solr6</maven.tomcat.path>
+        <m2eclipse.wtp.contextRoot>${maven.tomcat.path}</m2eclipse.wtp.contextRoot>
+        <maven.tomcat.port>${tomcat.default.solr6.port}</maven.tomcat.port>
+        <maven.tomcat.httpsPort>${tomcat.default.solr6.ssl.port}</maven.tomcat.httpsPort>
+        <solr.instance.source.folder>source/solr/instance</solr.instance.source.folder>
+        <!-- This gets filtered in the solr-tomcat-context.xml and in solrcore.properties when running embedded -->
+        <solr.ssl.instance.target.folder>${project.build.directory}/solr-instance-ssl</solr.ssl.instance.target.folder>
+        <solr.nossl.instance.target.folder>${project.build.directory}/solr-instance-nossl</solr.nossl.instance.target.folder>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-test-framework</artifactId>
+            <version>6.0.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-solrclient</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- provided dependencies -->
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-core</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.orbit</groupId>
+                    <artifactId>javax.servlet</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jdk.tools</groupId>
+                    <artifactId>jdk.tools</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-analysis-extras</artifactId>
+            <version>6.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.orbit</groupId>
+                    <artifactId>javax.servlet</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+	    <groupId>org.apache.solr</groupId>
+	    <artifactId>solr-langid</artifactId>
+	    <version>6.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.orbit</groupId>
+                    <artifactId>javax.servlet</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+	    <groupId>org.apache.solr</groupId>
+	    <artifactId>solr-clustering</artifactId>
+	    <version>6.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.orbit</groupId>
+                    <artifactId>javax.servlet</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+        </dependency>
+        <dependency>
+	    <groupId>com.spatial4j</groupId>
+	    <artifactId>spatial4j</artifactId>
+	    <version>0.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+            <version>1.13</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--  NLP  -->
+        <dependency>
+            <groupId>edu.emory.mathcs.nlp</groupId>
+            <artifactId>nlp4j</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.emory.mathcs.nlp</groupId>
+            <artifactId>nlp4j-english</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>solr6</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/CMISDataCreatorTest.java</exclude> <!-- Run in system-build-test -->
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>write-alfresco-version</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <replaceregexp byline="true">
+                                    <regexp pattern="alfresco.version=.*$" />
+                                    <substitution expression="alfresco.version=${version.major}.${version.minor}.${version.revision}${version.label} (${version.build})" />
+                                    <fileset dir="${project.build.directory}"
+                                        includes="solr-instance-*/*-SpacesStore/conf/solrcore.properties" />
+                                </replaceregexp>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Replaces solrcore.properties with SSL value for secureComms -->
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <executions>
+                    <execution>
+                        <id>replace-solrcore-properties</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>${solr.ssl.instance.target.folder}/*-SpacesStore/conf/solrcore.properties</include>
+                            </includes>
+                            <replacements>
+                                <replacement>
+                                    <token><![CDATA[alfresco.secureComms=none]]></token>
+                                    <value><![CDATA[alfresco.secureComms=https]]></value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <attachClasses>true</attachClasses>
+                    <archiveClasses>true</archiveClasses>
+                </configuration>
+                <!-- This allows overlays to be prepared on the FS for minification and faster run -->
+                <executions>
+                    <execution>
+                        <id>prepare-exploded-war</id>
+                        <goals>
+                            <goal>exploded</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-instance-resources</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <outputDirectory>${solr.nossl.instance.target.folder}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${solr.instance.source.folder}</directory>
+                                    <excludes>
+                                        <exclude>**/ssl.repo*</exclude>
+                                    </excludes>
+                                    <filtering>true</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>${solr.instance.source.folder}</directory>
+                                    <includes>
+                                        <include>**/ssl.repo*</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                            <useDefaultDelimiters>false</useDefaultDelimiters>
+                            <delimiters>
+                                <delimiter>@@</delimiter>
+                            </delimiters>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-instance-ssl</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <outputDirectory>${solr.ssl.instance.target.folder}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${solr.nossl.instance.target.folder}</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>package-config-zip</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <attach>true</attach>
+                            <descriptors>
+                                <descriptor>
+                                    source/assembly/solr-instance-zip-nossl.xml
+                                </descriptor>
+                                <descriptor>
+                                    source/assembly/solr-instance-zip-ssl.xml
+                                </descriptor>
+                                <descriptor>
+                                    source/assembly/solr-instance-zip-sharding.xml
+                                </descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Profile to run the webapp on HTTP -->
+        <profile>
+            <id>run</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <webResources>
+                                <!-- To add log4j.properties and other test run resources -->
+                                <resource>
+                                    <directory>source/test-resources</directory>
+                                    <filtering>true</filtering>
+                                    <targetPath>WEB-INF/classes</targetPath>
+                                </resource>
+                            </webResources>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.tomcat.maven</groupId>
+                        <artifactId>tomcat7-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>run-exploded-webapp</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run-war-only</goal>
+                                </goals>
+                                <configuration>
+                                    <warDirectory>${solr.war.exploded.folder}</warDirectory>
+                                    <systemProperties>
+                                        <solr.solr.home>${solr.nossl.instance.target.folder}</solr.solr.home>
+                                        <solr.solr.model.dir>${solr.nossl.instance.target.folder}/alfrescoModels</solr.solr.model.dir>
+                                        <solr.solr.content.dir>@@ALFRESCO_SOLR6_CONTENT_DIR@@</solr.solr.content.dir>
+                                    </systemProperties>
+                                    <tomcatUsers>${highest.basedir}/packaging/installer/src/main/resources/bitrock/bitrock/alfresco/shared/tomcat-users.xml</tomcatUsers>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
