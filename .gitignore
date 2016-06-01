@@ -7,7 +7,6 @@ target
 
 alf_data_dev
 alfresco.log*
-
 # OS generated files #
 ######################
 .DS_Store
@@ -17,3 +16,8 @@ alfresco.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+#############
+# Test data #
+#############
+test_files
