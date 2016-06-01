@@ -8,15 +8,15 @@
     <name>Alfresco Solr 6</name>
     <packaging>war</packaging>
 
-	<repositories>
-	    <repository>
-		    <id>apache.snapshots</id>
-		    <name>Apache Snapshot Repository</name>
-		    <url>http://repository.apache.org/snapshots</url>
-		    <releases>
-			    <enabled>false</enabled>
-		    </releases>
-	    </repository>
+    <repositories>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>Apache Snapshot Repository</name>
+            <url>http://repository.apache.org/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
     </repositories>
 
     <parent>
@@ -93,9 +93,9 @@
             </exclusions>
         </dependency>
         <dependency>
-	    <groupId>org.apache.solr</groupId>
-	    <artifactId>solr-langid</artifactId>
-	    <version>6.0.0</version>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-langid</artifactId>
+        <version>6.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -108,9 +108,9 @@
             </exclusions>
         </dependency>
         <dependency>
-	    <groupId>org.apache.solr</groupId>
-	    <artifactId>solr-clustering</artifactId>
-	    <version>6.0.0</version>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-clustering</artifactId>
+        <version>6.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -135,9 +135,9 @@
             <artifactId>jackson-mapper-asl</artifactId>
         </dependency>
         <dependency>
-	    <groupId>com.spatial4j</groupId>
-	    <artifactId>spatial4j</artifactId>
-	    <version>0.4.1</version>
+        <groupId>com.spatial4j</groupId>
+        <artifactId>spatial4j</artifactId>
+        <version>0.4.1</version>
         </dependency>
         <dependency>
             <groupId>com.vividsolutions</groupId>
