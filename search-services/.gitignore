@@ -4,7 +4,7 @@ target
 .project
 .idea/
 *.iml
-
+.metadata
 alf_data_dev
 alfresco.log*
 # OS generated files #
@@ -20,5 +20,5 @@ Thumbs.db
 #############
 # Test data #
 #############
-**/test-files
-**/test-filesContentStore
+test-files
+test-filesContentStore
