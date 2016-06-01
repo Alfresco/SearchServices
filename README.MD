@@ -3,7 +3,7 @@ Alfresco Solr 6
 
 ### Quick start
 ```
-mvn install
+mvn clean install
 ```
 
 ### License
