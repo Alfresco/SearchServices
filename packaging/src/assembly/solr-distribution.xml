@@ -1,0 +1,47 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>distribution</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <baseDirectory>alfresco-solr</baseDirectory>
+    <fileSets>
+        <!-- Solr war dependency unpacked earlier to get rid of the root dir -->
+        <fileSet>
+            <directory>target/solr-${solr.version}</directory>
+            <outputDirectory></outputDirectory>
+        </fileSet>
+    </fileSets>
+    <dependencySets>
+        <!-- Solr config -->
+        <dependencySet>
+            <includes>
+                <include>*:alfresco-solr6:zip:config*</include>
+            </includes>
+            <outputDirectory>server/solr/</outputDirectory>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <excludes>
+                    <exclude>context.xml</exclude>
+                </excludes>
+            </unpackOptions>
+            <useStrictFiltering>true</useStrictFiltering>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+        <dependencySet>
+            <includes>
+                <include>org.alfresco:alfresco-solr6:war</include>
+            </includes>
+            <outputDirectory>server/solr-webapp/webapp</outputDirectory>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <includes>
+                    <include>WEB-INF/lib/*.jar</include>
+                </includes>
+            </unpackOptions>
+            <useStrictFiltering>true</useStrictFiltering>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+    </dependencySets>
+
+</assembly>
