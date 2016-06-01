@@ -21,12 +21,15 @@ package org.alfresco.solr.query;
 
 import org.alfresco.solr.AlfrescoSolrTestCaseJ4;
 import org.apache.lucene.util.LuceneTestCase;
+import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
+@SolrTestCaseJ4.SuppressSSL
+
 public class SolrAuthTest extends AlfrescoSolrTestCaseJ4 {
 
     @BeforeClass
