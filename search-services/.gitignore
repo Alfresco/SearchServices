@@ -20,4 +20,5 @@ Thumbs.db
 #############
 # Test data #
 #############
-test_files
+**/test-files
+**/test-filesContentStore
