@@ -6,7 +6,7 @@ Git:
 	
 	git clone https://gitlab.alfresco.com/search_discovery/solr.git
 	
-	cd alfresco-solr
+	cd solr/alfresco-solr
 
 ### Use Maven
 1. Build
