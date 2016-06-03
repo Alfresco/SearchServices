@@ -48,9 +48,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.quartz.SchedulerException;
 
+/*
 @RunWith(MockitoJUnitRunner.class)
+*/
 public class AlfrescoSolrCloseHookTest implements SolrTestFiles
 {
+    /*
     private SolrCore core;
     private AlfrescoSolrCloseHook hook;
 
@@ -125,4 +128,5 @@ public class AlfrescoSolrCloseHookTest implements SolrTestFiles
         verify(scheduler).deleteTrackerJobs(CORE_NAME, coreTrackers);
         verify(scheduler).deleteTrackerJob(CORE_NAME, modelTracker);
     }
+    */
 }
