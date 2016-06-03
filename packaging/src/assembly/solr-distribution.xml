@@ -4,12 +4,20 @@
     <formats>
         <format>zip</format>
     </formats>
-    <baseDirectory>alfresco-solr</baseDirectory>
+    <includeBaseDirectory>false</includeBaseDirectory>    
     <fileSets>
         <!-- Solr war dependency unpacked earlier to get rid of the root dir -->
         <fileSet>
             <directory>target/solr-${solr.version}</directory>
-            <outputDirectory></outputDirectory>
+            <outputDirectory>solr</outputDirectory>
+        </fileSet>
+        <!-- Just create an empty data directory -->
+        <fileSet>
+          <directory>src/assembly</directory>
+          <outputDirectory>data</outputDirectory>
+          <excludes>
+            <exclude>*</exclude>
+          </excludes>
         </fileSet>
     </fileSets>
     <dependencySets>
@@ -18,7 +26,7 @@
             <includes>
                 <include>*:alfresco-solr6:zip:config*</include>
             </includes>
-            <outputDirectory>server/solr/</outputDirectory>
+            <outputDirectory>solr/server/solr/</outputDirectory>
             <unpack>true</unpack>
             <unpackOptions>
                 <excludes>
@@ -34,7 +42,7 @@
             <includes>
                 <include>org.alfresco:alfresco-solr6:war</include>
             </includes>
-            <outputDirectory>server/solr-webapp/webapp</outputDirectory>
+            <outputDirectory>solr/server/solr-webapp/webapp</outputDirectory>
             <unpack>true</unpack>
             <unpackOptions>
                 <includes>
