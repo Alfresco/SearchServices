@@ -30,8 +30,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  *
  * @author Matt Ward
  */
+/*
 @RunWith(MockitoJUnitRunner.class)
-public class SolrInformationServerTest extends SolrCoreTestBase
+*/
+public class SolrInformationServerTest //extends SolrCoreTestBase
 { /*
     private SolrInformationServer infoServer;
     @Mock
