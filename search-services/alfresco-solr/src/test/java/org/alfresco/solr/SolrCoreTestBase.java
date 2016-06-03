@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.alfresco.solr.content.SolrContentStore;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.CoreDescriptor;
@@ -57,7 +56,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author Ahmed Owian
  */
 @RunWith(MockitoJUnitRunner.class)
-public abstract class SolrCoreTestBase
+public abstract class SolrCoreTestBase implements SolrTestFiles
 {
     protected @Mock
     AlfrescoCoreAdminHandler adminHandler;
@@ -89,11 +88,11 @@ public abstract class SolrCoreTestBase
           properties.put("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
           properties.put("solr.tests.mergePolicy", "org.apache.lucene.index.TieredMergePolicy");
           
-          coreContainer = new CoreContainer("../source/test-files");
-          resourceLoader = new SolrResourceLoader(Paths.get("../source/test-files/collection1/conf/"), null, properties);
+          coreContainer = new CoreContainer(TEST_FILES_LOCATION);
+          resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
           SolrConfig solrConfig = new SolrConfig(resourceLoader, "solrconfig-afts.xml", null);
           IndexSchemaFactory.buildIndexSchema("schema-afts.xml", solrConfig);
-          coreDescriptor = new CoreDescriptor(coreContainer, "name", Paths.get("../source/test-files/collection1/"));
+          coreDescriptor = new CoreDescriptor(coreContainer, "name", Paths.get(TEST_SOLR_COLLECTION));
         
         // SolrCore is final, we can't mock with mockito
         core = new SolrCore("name", null, solrConfig, null, null, coreDescriptor, null, null, null);

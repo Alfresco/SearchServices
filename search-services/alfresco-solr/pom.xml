@@ -4,8 +4,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.alfresco</groupId>
     <artifactId>alfresco-solr6</artifactId>
     <name>Alfresco Solr 6</name>
+    <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <repositories>
@@ -19,21 +21,28 @@
         </repository>
     </repositories>
 
-    <parent>
-        <artifactId>alfresco-parent</artifactId>
+   <!--  <parent>
         <groupId>org.alfresco</groupId>
-        <version>5.1-K_2-SNAPSHOT</version>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>6</version>
     </parent>
-
+ -->
     <properties>
         <maven.tomcat.path>/solr6</maven.tomcat.path>
         <m2eclipse.wtp.contextRoot>${maven.tomcat.path}</m2eclipse.wtp.contextRoot>
         <maven.tomcat.port>${tomcat.default.solr6.port}</maven.tomcat.port>
         <maven.tomcat.httpsPort>${tomcat.default.solr6.ssl.port}</maven.tomcat.httpsPort>
-        <solr.instance.source.folder>source/solr/instance</solr.instance.source.folder>
+        <solr.version>6.0.0</solr.version>
+        <solr.instance.source.folder>src/main/resources/solr/instance</solr.instance.source.folder>
         <!-- This gets filtered in the solr-tomcat-context.xml and in solrcore.properties when running embedded -->
         <solr.ssl.instance.target.folder>${project.build.directory}/solr-instance-ssl</solr.ssl.instance.target.folder>
         <solr.nossl.instance.target.folder>${project.build.directory}/solr-instance-nossl</solr.nossl.instance.target.folder>
+        <tomcat.default.alfresco.port>8080</tomcat.default.alfresco.port>
+        <tomcat.default.alfresco.ssl.port>8443</tomcat.default.alfresco.ssl.port>
+        <tomcat.default.solr.port>8082</tomcat.default.solr.port>
+        <tomcat.default.solr.ssl.port>8445</tomcat.default.solr.ssl.port>
+        <tomcat.default.solr4.port>8083</tomcat.default.solr4.port>
+        <tomcat.default.solr4.ssl.port>8446</tomcat.default.solr4.ssl.port>
     </properties>
 
     <dependencies>
@@ -41,34 +50,36 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-test-framework</artifactId>
-            <version>6.0.0</version>
+            <version>${solr.version}</version>
             <scope>test</scope>
         </dependency>
-
+        
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solrclient</artifactId>
-            <version>${project.version}</version>
+            <version>5.1-K_2-SNAPSHOT</version>
         </dependency>
+
 
         <!-- provided dependencies -->
 
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>6.0.0</version>
+            <version>${solr.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
-            <version>6.0.0</version>
+            <version>${solr.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -84,7 +95,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-analysis-extras</artifactId>
-            <version>6.0.0</version>
+            <version>${solr.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -95,7 +106,7 @@
         <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-langid</artifactId>
-        <version>6.0.0</version>
+        <version>${solr.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -110,7 +121,7 @@
         <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-clustering</artifactId>
-        <version>6.0.0</version>
+        <version>${solr.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -125,14 +136,17 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>1.7.12</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.12</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
         </dependency>
         <dependency>
         <groupId>com.spatial4j</groupId>
@@ -167,11 +181,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -179,6 +195,16 @@
     <build>
         <finalName>solr6</finalName>
         <plugins>
+            <!-- Set to compile with java 8 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -243,6 +269,7 @@
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <archiveClasses>true</archiveClasses>
+                    <webXml>src\main\webapp\WEB-INF\web.xml</webXml>
                 </configuration>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
                 <executions>
@@ -256,7 +283,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
+<!--             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
@@ -334,7 +361,8 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
+        -->
+        </plugins> 
     </build>
 
     <profiles>
@@ -349,7 +377,7 @@
                             <webResources>
                                 <!-- To add log4j.properties and other test run resources -->
                                 <resource>
-                                    <directory>source/test-resources</directory>
+                                    <directory>src/test/resources</directory>
                                     <filtering>true</filtering>
                                     <targetPath>WEB-INF/classes</targetPath>
                                 </resource>

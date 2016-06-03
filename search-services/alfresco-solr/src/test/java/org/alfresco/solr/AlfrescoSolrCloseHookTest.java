@@ -49,7 +49,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.quartz.SchedulerException;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AlfrescoSolrCloseHookTest
+public class AlfrescoSolrCloseHookTest implements SolrTestFiles
 {
     private SolrCore core;
     private AlfrescoSolrCloseHook hook;
@@ -89,11 +89,14 @@ public class AlfrescoSolrCloseHookTest
         properties.put("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
         properties.put("solr.tests.mergePolicy", "org.apache.lucene.index.TieredMergePolicy");
         
-        CoreContainer coreContainer = new CoreContainer("../source/test-files");
-        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get("../source/test-files/collection1/conf/"), null, properties);
+        CoreContainer coreContainer = new CoreContainer(TEST_FILES_LOCATION);
+        System.out.println("=====================");
+        System.out.println("getting container from: " + TEST_FILES_LOCATION);
+        System.out.println("=====================");
+        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
         SolrConfig solrConfig = new SolrConfig(resourceLoader, "solrconfig-afts.xml", null);
         IndexSchemaFactory.buildIndexSchema("schema-afts.xml", solrConfig);
-        CoreDescriptor coreDescriptor = new CoreDescriptor(coreContainer, "name", Paths.get("../source/test-files/collection1/"));
+        CoreDescriptor coreDescriptor = new CoreDescriptor(coreContainer, "name", Paths.get(TEST_SOLR_COLLECTION));
         
         core = new SolrCore(CORE_NAME, null, solrConfig, null, null, coreDescriptor, null, null, null);
         hook = new AlfrescoSolrCloseHook(adminHandler);
