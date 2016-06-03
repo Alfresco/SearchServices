@@ -11,6 +11,16 @@
             <directory>target/solr-${solr.version}</directory>
             <outputDirectory>solr</outputDirectory>
         </fileSet>
+        <!-- Solr config -->
+        <fileSet>
+            <directory>target/solr/instance</directory>
+            <outputDirectory>solr/server/solr/</outputDirectory>
+            <excludes>
+                <exclude>**/workspace-SpacesStore/**</exclude>
+                <exclude>**/archive-SpacesStore/**</exclude>
+                <exclude>context.xml</exclude>
+            </excludes>
+        </fileSet>
         <!-- Just create an empty data directory -->
         <fileSet>
           <directory>src/assembly</directory>
@@ -21,14 +31,17 @@
         </fileSet>
     </fileSets>
     <dependencySets>
-        <!-- Solr config -->
-        <dependencySet>
+
+        <!--dependencySet>
             <includes>
-                <include>*:alfresco-solr6:zip:config*</include>
+                <include>org.alfresco:alfresco-solr6:jar:classes*</include>
             </includes>
             <outputDirectory>solr/server/solr/</outputDirectory>
             <unpack>true</unpack>
             <unpackOptions>
+                <includes>
+                    <include>solr/instance/**.*</include>
+                </includes>
                 <excludes>
                     <exclude>**/workspace-SpacesStore/**</exclude>
                     <exclude>**/archive-SpacesStore/**</exclude>
@@ -37,7 +50,7 @@
             </unpackOptions>
             <useStrictFiltering>true</useStrictFiltering>
             <useProjectArtifact>false</useProjectArtifact>
-        </dependencySet>
+        </dependencySet-->
         <dependencySet>
             <includes>
                 <include>org.alfresco:alfresco-solr6:war</include>

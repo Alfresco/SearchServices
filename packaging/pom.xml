@@ -19,15 +19,8 @@
       <dependency>
           <groupId>org.alfresco</groupId>
           <artifactId>alfresco-solr6</artifactId>
-          <version>${alfresco-solr.version}</version>
+          <version>${project.version}</version>
           <type>war</type>
-      </dependency>
-      <dependency>
-          <groupId>org.alfresco</groupId>
-          <artifactId>alfresco-solr6</artifactId>
-          <version>${alfresco-solr.version}</version>
-          <classifier>config-sharding</classifier>
-          <type>zip</type>
       </dependency>
     </dependencies>
     <build>
@@ -55,6 +48,25 @@
                             <excludes>**/*solr.xml</excludes>
                           </artifactItem>
                         </artifactItems>
+                      </configuration>
+                  </execution>
+                  <execution>
+                      <id>unpack-solr-config</id>
+                      <phase>validate</phase>
+                      <goals>
+                          <goal>unpack</goal>
+                      </goals>
+                      <configuration>
+                          <artifactItems>
+                              <artifactItem>
+                                  <groupId>org.alfresco</groupId>
+                                  <artifactId>alfresco-solr6</artifactId>
+                                  <version>${project.version}</version>
+                                  <classifier>classes</classifier>
+                                  <outputDirectory>${project.build.directory}</outputDirectory>
+                                  <includes>solr/instance/**/*</includes>
+                              </artifactItem>
+                          </artifactItems>
                       </configuration>
                   </execution>
               </executions>
