@@ -23,10 +23,10 @@ mvn test -Dtest={testname}
 |   ├── /main                   # Main application folder.
 |   |    ├── /java              # Application code.
 |   |    ├── /resources         # Main application resource.
-|   |    |   ├── /solr          # solr resource.
+|   |    |   ├── /solr          # Solr resource.
 |   |    ├── /webapp            # Web application code.
 |   ├── /test/                  # Test folder.
 |   |    ├── /java              # Java test class folder.
 |   |    ├── /resources         # Test resource directory.
-|   |    |   ├── /test-files    # solr test data directory and test solr location.
+|   |    |   ├── /test-files    # Solr test data directory and test solr location.
 ```
