@@ -23,7 +23,16 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,7 +42,16 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.ContentPropertyValue;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.PropertyValue;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
@@ -57,7 +75,6 @@ import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
 import org.apache.solr.util.TestHarness;
 import org.apache.solr.util.TestHarness.TestCoresLocator;
-import org.junit.AfterClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -67,7 +84,7 @@ import org.xml.sax.SAXException;
  * @author Joel
  *
  */
-public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4
+public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFiles
 {
     private long id = 0;
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/solrtest";
@@ -75,7 +92,7 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static File HOME() {
-        return getFile("../source/test-files");
+        return getFile(TEST_FILES_LOCATION);
     }
 
     public static class SolrServletRequest extends SolrQueryRequestBase {
@@ -116,7 +133,7 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4
         ignoreException("ignore_exception");
 
         System.setProperty("solr.directoryFactory","solr.RAMDirectoryFactory");
-        System.setProperty("solr.solr.home", getFile("../source/test-files").toString());
+        System.setProperty("solr.solr.home", getFile(TEST_FILES_LOCATION).toString());
 
         System.setProperty("solr.tests.maxBufferedDocs", "1000");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
@@ -145,8 +162,8 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4
         properties.put("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
         properties.put("solr.tests.mergePolicy", "org.apache.lucene.index.TieredMergePolicy");
         
-        CoreContainer coreContainer = new CoreContainer("../source/test-files");
-        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get("../source/test-files/collection1/conf"), null, properties);
+        CoreContainer coreContainer = new CoreContainer(TEST_FILES_LOCATION);
+        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
         SolrConfig solrConfig = new SolrConfig(resourceLoader, config, null);
         IndexSchema indexSchema = IndexSchemaFactory.buildIndexSchema(schema, solrConfig);
         //CoreDescriptor coreDescriptor = new CoreDescriptor(coreContainer, SolrTestCaseJ4.DEFAULT_TEST_CORENAME, SolrTestCaseJ4.DEFAULT_TEST_CORENAME);

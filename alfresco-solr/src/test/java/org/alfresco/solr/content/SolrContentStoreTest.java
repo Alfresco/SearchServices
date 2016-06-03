@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -48,6 +49,7 @@ public class SolrContentStoreTest
     @Before
     public void setUp() throws IOException
     {
+        System.setProperty("solr.solr.content.dir","target");
         File tempFile = File.createTempFile("SolrContentStoreTest-", ".bin");
         File tempFolder = tempFile.getParentFile();
         rootStr = tempFolder.getAbsolutePath() + "/" + System.currentTimeMillis();
