@@ -22,6 +22,8 @@
             <unpack>true</unpack>
             <unpackOptions>
                 <excludes>
+                    <exclude>**/workspace-SpacesStore/**</exclude>
+                    <exclude>**/archive-SpacesStore/**</exclude>
                     <exclude>context.xml</exclude>
                 </excludes>
             </unpackOptions>

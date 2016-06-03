@@ -27,7 +27,7 @@
           <groupId>org.alfresco</groupId>
           <artifactId>alfresco-solr6</artifactId>
           <version>${alfresco-solr.version}</version>
-          <classifier>config</classifier>
+          <classifier>config-sharding</classifier>
           <type>zip</type>
       </dependency>
     </dependencies>
