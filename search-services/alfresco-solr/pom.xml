@@ -4,10 +4,8 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.alfresco</groupId>
     <artifactId>alfresco-solr6</artifactId>
     <name>Alfresco Solr 6</name>
-    <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -20,16 +18,6 @@
         <m2eclipse.wtp.contextRoot>${maven.tomcat.path}</m2eclipse.wtp.contextRoot>
         <maven.tomcat.port>${tomcat.default.solr6.port}</maven.tomcat.port>
         <maven.tomcat.httpsPort>${tomcat.default.solr6.ssl.port}</maven.tomcat.httpsPort>
-        <solr.instance.source.folder>src/main/resources/solr/instance</solr.instance.source.folder>
-        <!-- This gets filtered in the solr-tomcat-context.xml and in solrcore.properties when running embedded -->
-        <solr.ssl.instance.target.folder>${project.build.directory}/solr-instance-ssl</solr.ssl.instance.target.folder>
-        <solr.nossl.instance.target.folder>${project.build.directory}/solr-instance-nossl</solr.nossl.instance.target.folder>
-        <tomcat.default.alfresco.port>8080</tomcat.default.alfresco.port>
-        <tomcat.default.alfresco.ssl.port>8443</tomcat.default.alfresco.ssl.port>
-        <tomcat.default.solr.port>8082</tomcat.default.solr.port>
-        <tomcat.default.solr.ssl.port>8445</tomcat.default.solr.ssl.port>
-        <tomcat.default.solr4.port>8083</tomcat.default.solr4.port>
-        <tomcat.default.solr4.ssl.port>8446</tomcat.default.solr4.ssl.port>
     </properties>
 
     <dependencies>
@@ -225,32 +213,6 @@
                 </executions>
             </plugin>
 
-            <!-- Replaces solrcore.properties with SSL value for secureComms -->
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <executions>
-                    <execution>
-                        <id>replace-solrcore-properties</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>${solr.ssl.instance.target.folder}/*-SpacesStore/conf/solrcore.properties</include>
-                            </includes>
-                            <replacements>
-                                <replacement>
-                                    <token><![CDATA[alfresco.secureComms=none]]></token>
-                                    <value><![CDATA[alfresco.secureComms=https]]></value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
@@ -271,50 +233,6 @@
             </plugin>
         </plugins>
     </build>
-
     <profiles>
-        <!-- Profile to run the webapp on HTTP -->
-        <profile>
-            <id>run</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <webResources>
-                                <!-- To add log4j.properties and other test run resources -->
-                                <resource>
-                                    <directory>src/test/resources</directory>
-                                    <filtering>true</filtering>
-                                    <targetPath>WEB-INF/classes</targetPath>
-                                </resource>
-                            </webResources>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.tomcat.maven</groupId>
-                        <artifactId>tomcat7-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>run-exploded-webapp</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>run-war-only</goal>
-                                </goals>
-                                <configuration>
-                                    <warDirectory>${solr.war.exploded.folder}</warDirectory>
-                                    <systemProperties>
-                                        <solr.solr.home>${solr.nossl.instance.target.folder}</solr.solr.home>
-                                        <solr.solr.model.dir>${solr.nossl.instance.target.folder}/alfrescoModels</solr.solr.model.dir>
-                                        <solr.solr.content.dir>@@ALFRESCO_SOLR6_CONTENT_DIR@@</solr.solr.content.dir>
-                                    </systemProperties>
-                                    <tomcatUsers>${highest.basedir}/packaging/installer/src/main/resources/bitrock/bitrock/alfresco/shared/tomcat-users.xml</tomcatUsers>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 </project>
