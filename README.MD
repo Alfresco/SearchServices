@@ -3,10 +3,10 @@ Alfresco Solr 6
 ### Get the code
 
 Git:
-	
+
 	git clone https://gitlab.alfresco.com/search_discovery/solr.git
-	
-	cd solr/alfresco-solr
+
+	cd solr
 
 ### Use Maven
 1. Build
@@ -14,6 +14,14 @@ Git:
 ```
 mvn clean install
 ```
+
+### Docker
+To build the docker image, first run the maven build then
+```
+cd packaging
+./build.sh
+```
+
 
 ### License
 Copyright (C) 2016 Alfresco Software Limited
