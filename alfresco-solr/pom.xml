@@ -21,21 +21,12 @@
     </properties>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-test-framework</artifactId>
-            <version>${solr.version}</version>
-            <scope>test</scope>
-        </dependency>
-
+    
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solrclient</artifactId>
             <version>${alfresco-solr.version}</version>
         </dependency>
-
-
         <!-- provided dependencies -->
 
         <dependency>
@@ -71,6 +62,7 @@
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-analysis-extras</artifactId>
             <version>${solr.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -80,8 +72,9 @@
         </dependency>
         <dependency>
         <groupId>org.apache.solr</groupId>
-        <artifactId>solr-langid</artifactId>
-        <version>${solr.version}</version>
+            <artifactId>solr-langid</artifactId>
+            <version>${solr.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -94,9 +87,10 @@
             </exclusions>
         </dependency>
         <dependency>
-        <groupId>org.apache.solr</groupId>
-        <artifactId>solr-clustering</artifactId>
-        <version>${solr.version}</version>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-clustering</artifactId>
+            <version>${solr.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.jetty.orbit</groupId>
@@ -124,9 +118,9 @@
             <version>1.9.13</version>
         </dependency>
         <dependency>
-        <groupId>com.spatial4j</groupId>
-        <artifactId>spatial4j</artifactId>
-        <version>0.4.1</version>
+            <groupId>com.spatial4j</groupId>
+            <artifactId>spatial4j</artifactId>
+            <version>0.4.1</version>
         </dependency>
         <dependency>
             <groupId>com.vividsolutions</groupId>
@@ -165,6 +159,13 @@
             <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-test-framework</artifactId>
+            <version>${solr.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
     </dependencies>
 
     <build>
