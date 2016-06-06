@@ -4,8 +4,8 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>alfresco-solr6</artifactId>
-    <name>Alfresco Solr 6</name>
+    <artifactId>alfresco-solr</artifactId>
+    <name>Alfresco Solr</name>
     <packaging>war</packaging>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -13,12 +13,6 @@
         <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <properties>
-        <maven.tomcat.path>/solr6</maven.tomcat.path>
-        <m2eclipse.wtp.contextRoot>${maven.tomcat.path}</m2eclipse.wtp.contextRoot>
-        <maven.tomcat.port>${tomcat.default.solr6.port}</maven.tomcat.port>
-        <maven.tomcat.httpsPort>${tomcat.default.solr6.ssl.port}</maven.tomcat.httpsPort>
-    </properties>
 
     <dependencies>
     
@@ -169,13 +163,12 @@
     </dependencies>
 
     <build>
-        <finalName>solr6</finalName>
+        <finalName>alfresco-solr</finalName>
         <plugins>
             <!-- Set to compile with java 8 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
