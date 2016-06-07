@@ -53,7 +53,7 @@
         </dependencySet-->
         <dependencySet>
             <includes>
-                <include>org.alfresco:alfresco-solr6:war</include>
+                <include>org.alfresco:alfresco-solr:war</include>
             </includes>
             <outputDirectory>solr/server/solr-webapp/webapp</outputDirectory>
             <unpack>true</unpack>
