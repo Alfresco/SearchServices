@@ -2,7 +2,7 @@
 rm -rf target/alfresco-solr
 rm -rf target/solr-*
 rm -rf target/dependency-maven-plugin-markers
-export SOLR_VER=1.0-SNAPSHOT
-docker build --build-arg SOLR_ZIP=target/alfresco-solr-distribution-${SOLR_VER}.zip -t dockerreg.alfresco.com/alfresco-solr:6.0${bamboo_buildNumber} -t dockerreg.alfresco.com/alfresco-solr:latest .
+
+docker build -t dockerreg.alfresco.com/alfresco-solr:6.0${bamboo_buildNumber} -t dockerreg.alfresco.com/alfresco-solr:latest .
 
 echo "Now type: docker run --rm -p 8983:8983 dockerreg.alfresco.com/alfresco-solr:6.0${bamboo_buildNumber}"
