@@ -22,8 +22,6 @@ package org.alfresco.solr;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Unit tests for the {@link SolrInformationServer} class.

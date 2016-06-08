@@ -19,35 +19,6 @@
 
 package org.alfresco.solr;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Properties;
-
-import org.alfresco.solr.tracker.AclTracker;
-import org.alfresco.solr.tracker.ContentTracker;
-import org.alfresco.solr.tracker.MetadataTracker;
-import org.alfresco.solr.tracker.ModelTracker;
-import org.alfresco.solr.tracker.SolrTrackerScheduler;
-import org.alfresco.solr.tracker.Tracker;
-import org.alfresco.solr.tracker.TrackerRegistry;
-import org.apache.solr.core.CoreContainer;
-import org.apache.solr.core.CoreDescriptor;
-import org.apache.solr.core.SolrConfig;
-import org.apache.solr.core.SolrCore;
-import org.apache.solr.core.SolrResourceLoader;
-import org.apache.solr.schema.IndexSchemaFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.quartz.SchedulerException;
-
 /*
 @RunWith(MockitoJUnitRunner.class)
 */

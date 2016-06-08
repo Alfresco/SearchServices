@@ -18,32 +18,6 @@
  */
 package org.alfresco.solr;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.request.SolrQueryRequest;
-import org.apache.solr.response.ResultContext;
-import org.apache.solr.response.SolrQueryResponse;
-import org.apache.solr.search.DocList;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-/*
-@RunWith(MockitoJUnitRunner.class)
-*/
-
 public class CloudTest //extends SolrCoreTestBase
 {
     /*
