@@ -15,13 +15,13 @@
     </parent>
 
     <dependencies>
-    
+
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solrclient</artifactId>
             <version>${alfresco-solr.version}</version>
         </dependency>
-        
+
         <!-- provided dependencies -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
@@ -29,7 +29,7 @@
             <version>${solr.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
@@ -42,40 +42,40 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-analysis-extras</artifactId>
             <version>${solr.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-langid</artifactId>
             <version>${solr.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-clustering</artifactId>
             <version>${solr.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.12</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.12</version>
         </dependency>
-  
+
 
         <!--  NLP  -->
         <dependency>
@@ -83,7 +83,7 @@
             <artifactId>nlp4j</artifactId>
             <version>RELEASE</version>
         </dependency>
-        
+
         <dependency>
             <groupId>edu.emory.mathcs.nlp</groupId>
             <artifactId>nlp4j-english</artifactId>
@@ -97,32 +97,41 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-test-framework</artifactId>
             <version>${solr.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-client-impl</artifactId>
             <version>0.11.0</version>
             <scope>test</scope>
         </dependency>
-        
+
     </dependencies>
 
     <build>
         <finalName>alfresco-solr</finalName>
+        <resources>
+                 <resource>
+                       <targetPath>webapp</targetPath>
+                       <directory>src/main/webapp</directory>
+                 </resource>
+                 <resource>
+                       <directory>src/main/resources</directory>
+                 </resource>
+               </resources>
         <plugins>
             <!-- Set to compile with java 8 -->
             <plugin>
@@ -165,22 +174,19 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <attachClasses>true</attachClasses>
-                    <archiveClasses>true</archiveClasses>
-                    <webXml>src\main\webapp\WEB-INF\web.xml</webXml>
-                </configuration>
-                <!-- This allows overlays to be prepared on the FS for minification and faster run -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
                 <executions>
                     <execution>
-                        <id>prepare-exploded-war</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>exploded</goal>
+                            <goal>shade</goal>
                         </goals>
-                        <phase>prepare-package</phase>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

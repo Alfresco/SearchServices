@@ -4,12 +4,15 @@
     <formats>
         <format>zip</format>
     </formats>
-    <includeBaseDirectory>false</includeBaseDirectory>    
+    <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <!-- Solr war dependency unpacked earlier to get rid of the root dir -->
         <fileSet>
             <directory>target/solr-${solr.version}</directory>
             <outputDirectory>solr</outputDirectory>
+            <excludes>
+                <exclude>**/web.xml</exclude>
+            </excludes>
         </fileSet>
         <!-- Solr config -->
         <fileSet>
@@ -29,42 +32,39 @@
             <exclude>*</exclude>
           </excludes>
         </fileSet>
-    </fileSets>
-    <dependencySets>
 
-        <!--dependencySet>
+        <!-- Include all classes from alfresco-solr -->
+        <fileSet>
+            <directory>target/alfresco-solr</directory>
+            <outputDirectory>solr/server/solr-webapp/webapp/WEB-INF/classes</outputDirectory>
             <includes>
-                <include>org.alfresco:alfresco-solr6:jar:classes*</include>
+                <include>**/*</include>
             </includes>
-            <outputDirectory>solr/server/solr/</outputDirectory>
-            <unpack>true</unpack>
-            <unpackOptions>
-                <includes>
-                    <include>solr/instance/**.*</include>
-                </includes>
-                <excludes>
-                    <exclude>**/workspace-SpacesStore/**</exclude>
-                    <exclude>**/archive-SpacesStore/**</exclude>
-                    <exclude>context.xml</exclude>
-                </excludes>
-            </unpackOptions>
-            <useStrictFiltering>true</useStrictFiltering>
-            <useProjectArtifact>false</useProjectArtifact>
-        </dependencySet-->
-        <dependencySet>
-            <includes>
-                <include>org.alfresco:alfresco-solr:jar</include>
-            </includes>
+            <excludes>
+                <exclude>solr</exclude>
+                <exclude>webapp</exclude>
+            </excludes>
+        </fileSet>
+        <!-- Replace web.xml with alfresco solr config -->
+        <fileSet>
+            <directory>target/alfresco-solr/webapp</directory>
             <outputDirectory>solr/server/solr-webapp/webapp</outputDirectory>
-            <unpack>true</unpack>
-            <unpackOptions>
-                <includes>
-                    <include>WEB-INF/lib/*.jar</include>
-                </includes>
-            </unpackOptions>
-            <useStrictFiltering>true</useStrictFiltering>
-            <useProjectArtifact>false</useProjectArtifact>
-        </dependencySet>
-    </dependencySets>
-
+            <includes>
+                <include>**/web.xml</include>
+            </includes>
+        </fileSet>
+        <!-- Port over solr alfresco stores -->
+        <fileSet>
+            <directory>target/alfresco-solr/solr</directory>
+            <outputDirectory>solr/server/solr/</outputDirectory>
+            <includes>
+                <include>instance/**.*</include>
+            </includes>
+            <excludes>
+                <exclude>**/workspace-SpacesStore/**</exclude>
+                <exclude>**/archive-SpacesStore/**</exclude>
+                <exclude>context.xml</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
 </assembly>
