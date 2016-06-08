@@ -123,15 +123,6 @@
 
     <build>
         <finalName>alfresco-solr</finalName>
-        <resources>
-                 <resource>
-                       <targetPath>webapp</targetPath>
-                       <directory>src/main/webapp</directory>
-                 </resource>
-                 <resource>
-                       <directory>src/main/resources</directory>
-                 </resource>
-               </resources>
         <plugins>
             <!-- Set to compile with java 8 -->
             <plugin>
@@ -176,20 +167,46 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <minimizeJar>true</minimizeJar>
+                            <outputDirectory>${project.build.directory}/classes/webapp/WEB-INF/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>theMainClass</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
+        <resources>
+             <resource>
+                   <targetPath>webapp</targetPath>
+                   <directory>src/main/webapp</directory>
+             </resource>
+             <resource>
+                   <targetPath>lib</targetPath>
+                   <directory>target/lib</directory>
+             </resource>
+        </resources>
     </build>
 </project>
