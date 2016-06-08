@@ -49,21 +49,14 @@ public class SolrContentStoreTest
     @Before
     public void setUp() throws IOException
     {
-        System.setProperty("solr.solr.content.dir","target");
-        File tempFile = File.createTempFile("SolrContentStoreTest-", ".bin");
-        File tempFolder = tempFile.getParentFile();
-        rootStr = tempFolder.getAbsolutePath() + "/" + System.currentTimeMillis();
-        rootStr = new File(rootStr).getAbsolutePath();          // Ensure we handle separator char for this test
+        System.setProperty("solr.solr.home","target");
     }
     
     @After
     public void tearDown() throws IOException
     {
-        if (rootStr != null)
-        {
-            File rootDir = new File(rootStr);
-            FileUtils.deleteDirectory(rootDir);
-        }
+        File rootDir = new File(SolrContentStore.getSolrContentStore().getRootLocation());
+        FileUtils.deleteDirectory(rootDir);
     }
     
     /**
@@ -78,43 +71,24 @@ public class SolrContentStoreTest
     @Test
     public void rootLocation()
     {
-        SolrContentStore store = new SolrContentStore(rootStr);
-        File rootDir = new File(rootStr);
+        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        File rootDir = new File(store.getRootLocation());
         Assert.assertTrue(rootDir.exists());
         Assert.assertTrue(rootDir.isDirectory());
-        
-        Assert.assertEquals(rootStr, store.getRootLocation());
-    }
-    
-    @Test
-    public void failedRootLocation() throws IOException
-    {
-        File rootFile = new File(rootStr);
-        rootFile.createNewFile();
-        try
-        {
-            new SolrContentStore(rootStr);
-            Assert.fail("Failed to handle file in root location.");
-        }
-        catch (RuntimeException e)
-        {
-            // Expected
-        }
-        rootFile.delete();
     }
     
     @Test
     public void reconstruct()
     {
-        new SolrContentStore(rootStr);
-        new SolrContentStore(rootStr);
+        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        store = SolrContentStore.getSolrContentStore();
     }
     
     @Test
     public void getWriter()
     {
-        SolrContentStore store = new SolrContentStore(rootStr);
-        
+        SolrContentStore store = SolrContentStore.getSolrContentStore();
+
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
         String url = writer.getContentUrl();
@@ -126,12 +100,12 @@ public class SolrContentStoreTest
     @Test
     public void contentByString()
     {
-        SolrContentStore store = new SolrContentStore(rootStr);
-        
+        SolrContentStore store = SolrContentStore.getSolrContentStore();
+
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
         
-        File file = new File(rootStr + "/" + writer.getContentUrl().replace("solr://", ""));
+        File file = new File(store.getRootLocation() + "/" + writer.getContentUrl().replace("solr://", ""));
         Assert.assertFalse("File was created before anything was written", file.exists());
 
         String content = "Quick brown fox jumps over the lazy dog.";
@@ -158,8 +132,8 @@ public class SolrContentStoreTest
     @Test
     public void contentByStream() throws Exception
     {
-        SolrContentStore store = new SolrContentStore(rootStr);
-        
+        SolrContentStore store = SolrContentStore.getSolrContentStore();
+
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
         
@@ -180,8 +154,8 @@ public class SolrContentStoreTest
     @Test
     public void delete() throws Exception
     {
-        SolrContentStore store = new SolrContentStore(rootStr);
-        
+        SolrContentStore store = SolrContentStore.getSolrContentStore();
+
         ContentContext ctx = createContentContext("abc");
         String url = ctx.getContentUrl();
         ContentWriter writer = store.getWriter(ctx);
@@ -201,42 +175,15 @@ public class SolrContentStoreTest
         // Delete when already gone; should just not fail
         store.delete(url);
     }
-//
-//    See ACE-2896.  There is actually no way of ensuring that the cached document is latest or perfect.
-//    /**
-//     * This store allows the same URL to be used but does redirection to the latest version under the covers
-//     */
-//    @Test
-//    public void rewrite() throws Exception
-//    {
-//        SolrContentStore store = new SolrContentStore(rootStr);
-//        
-//        ContentContext ctx = createContentContext("abc");
-//        ContentWriter writer1 = store.getWriter(ctx);
-//        ContentWriter writer2 = store.getWriter(ctx);
-//        assertNotEquals(
-//                "Different writers should use different URLs: writer1=" + writer1 + ", writer2=" + writer2,
-//                writer1.getContentUrl(), writer2.getContentUrl());
-//        assertTrue(
-//                "Second URL must be 'greater' than first: writer1=" + writer1 + ", writer2=" + writer2,
-//                writer1.getContentUrl().compareTo(writer2.getContentUrl()) < 0);
-//        
-//        writer1.putContent("Text1");
-//        writer2.putContent("Text2");
-//        
-//        // Now get the reader
-//        ContentReader reader = store.getReader(ctx.getContentUrl());
-//        assertEquals("Text2", reader.getContentString());
-//    }
-    
+
     /**
      * A demonstration of how the store might be used.
      */
     @Test
     public void exampleUsage()
     {
-        SolrContentStore store = new SolrContentStore(rootStr);
-        
+        SolrContentStore store = SolrContentStore.getSolrContentStore();
+
         String tenant = "alfresco.com";
         long dbId = 12345;
         String otherData = "sdfklsfdl";

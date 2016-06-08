@@ -110,9 +110,8 @@ public class CoreWatcherJob implements Job
             SOLRAPIClient repositoryClient = clientFactory.getSOLRAPIClient(props, keyResourceLoader,
                         AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                         AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
-            SolrContentStore solrContentStore = this.getSolrContentStore(coreContainer);
             SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient,
-                        solrContentStore);
+                    SolrContentStore.getSolrContentStore());
             adminHandler.getInformationServers().put(coreName, srv);
 
             log.info("Starting to track " + coreName);
@@ -174,58 +173,6 @@ public class CoreWatcherJob implements Job
             CommitTracker commitTracker = new CommitTracker(props, repositoryClient, coreName, srv, trackers);
             trackerRegistry.register(coreName, commitTracker);
             scheduler.schedule(commitTracker, coreName, props);
-        }
-    }
-
-    private SolrContentStore getSolrContentStore(CoreContainer coreContainer) throws JobExecutionException
-    {
-        // TODO: Could specify the rootStr from a properties file.
-        return new SolrContentStore(locateContentHome(coreContainer.getSolrHome()));
-    }
-    
-    public static String locateContentHome(String solrHome)
-    {
-        String contentDir = null;
-        // Try JNDI
-        try
-        {
-            Context c = new InitialContext();
-            contentDir = (String) c.lookup("java:comp/env/solr/content/dir");
-            log.info("Using JNDI solr.content.dir: " + contentDir);
-        }
-        catch (NoInitialContextException e)
-        {
-            log.info("JNDI not configured for solr (NoInitialContextEx)");
-        }
-        catch (NamingException e)
-        {
-            log.info("No solr/content/dir in JNDI");
-        }
-        catch (RuntimeException ex)
-        {
-            log.warn("Odd RuntimeException while testing for JNDI: " + ex.getMessage());
-        }
-
-        // Now try system property
-        if (contentDir == null)
-        {
-            String prop = "solr.solr.content.dir";
-            contentDir = System.getProperty(prop);
-            if (contentDir != null)
-            {
-                log.info("using system property " + prop + ": " + contentDir);
-            }
-        }
-
-        // if all else fails, try
-        if (contentDir == null)
-        {
-            return solrHome + "ContentStore";
-
-        }
-        else
-        {
-            return contentDir;
         }
     }
 }
