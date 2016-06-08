@@ -61,8 +61,7 @@
                                   <groupId>org.alfresco</groupId>
                                   <artifactId>alfresco-solr</artifactId>
                                   <version>${project.version}</version>
-                                  <outputDirectory>${project.build.directory}</outputDirectory>
-                                  <includes>solr/instance/**/*</includes>
+                                  <outputDirectory>${project.build.directory}/alfresco-solr</outputDirectory>
                               </artifactItem>
                           </artifactItems>
                       </configuration>
