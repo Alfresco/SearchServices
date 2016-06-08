@@ -43,9 +43,6 @@ public class ConfigUtilTest {
         System.setProperty("find.me", "iamfoundagain");
         assertEquals("iamfoundagain", ConfigUtil.locateProperty("find.me", "king"));
         System.clearProperty("find.me");
-
-        //Assumes there is always a PATH environment variable
-        assertNotEquals("king", ConfigUtil.locateProperty("PATH", "king"));
     }
 
     @Test
@@ -59,10 +56,10 @@ public class ConfigUtilTest {
 
     @Test
     public void convertPropertyNameToEnvironmentParam() throws Exception {
-        assertEquals("GETHIN",ConfigUtil.convertPropertyNameToEnvironmentParam("gethin"));
-        assertEquals("SOLR_CONTENT_DIR",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.content.dir"));
-        assertEquals("SOLR_MODEL_DIR",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.model.dir"));
-        assertEquals("SOLR_HOST",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.host"));
+        assertEquals("SOLR_GETHIN",ConfigUtil.convertPropertyNameToEnvironmentParam("gethin"));
+        assertEquals("SOLR_SOLR_CONTENT_DIR",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.content.dir"));
+        assertEquals("SOLR_SOLR_MODEL_DIR",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.model.dir"));
+        assertEquals("SOLR_SOLR_HOST",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.host"));
     }
 
 }

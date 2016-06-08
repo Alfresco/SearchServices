@@ -18,22 +18,39 @@
  */
 package org.apache.solr.core;
 
+import com.google.common.collect.ImmutableList;
+import org.alfresco.solr.config.ConfigUtil;
+
 import java.util.Properties;
 
 /**
- * This class was created solely for the purpose of exposing the coreProperties of the CoreDescriptor
+ * This class was created solely for the purpose of exposing the coreProperties of the CoreDescriptor.
+ * It is now possible to substitute a sub-set of properties using the rules specified here @see ConfigUtil#locateProperty()
+ *
+ * The Substitutable Properties are defined in the substitutableProperties list.
  * @author Ahmed Owian
+ * @author Gethin James
  */
 public class CoreDescriptorDecorator {
-	private CoreDescriptor descriptor;
+	private final Properties properties = new Properties();
+
+	public static ImmutableList<String> substitutableProperties = ImmutableList.of(
+			"alfresco.host",
+			"alfresco.port",
+			"alfresco.baseUrl",
+			"alfresco.port.ssl"
+	);
 
 	public CoreDescriptorDecorator(CoreDescriptor descriptor)
 	{
-		this.descriptor = descriptor;
+		properties.putAll(descriptor.coreProperties);
+		substitutableProperties.forEach(prop ->
+				properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
+		);
 	}
 	
-	public Properties getCoreProperties()
+	public Properties getProperties()
 	{
-		return this.descriptor.coreProperties;
+		return this.properties;
 	}
 }

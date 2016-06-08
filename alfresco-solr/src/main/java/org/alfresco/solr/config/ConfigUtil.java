@@ -36,6 +36,8 @@ public class ConfigUtil {
     protected final static Logger log = LoggerFactory.getLogger(ConfigUtil.class);
 
     private static final String JNDI_PREFIX = "java:comp/env/";
+    private static final String ENV_PREFIX = "SOLR_";
+
     /**
      * Finds the property based on looking up the value in one of three places (in order of preference):
      * <ol>
@@ -107,6 +109,6 @@ public class ConfigUtil {
     protected static String convertPropertyNameToEnvironmentParam(String propertyName)
     {
         if (propertyName == null) propertyName = "";
-        return propertyName.replace('.','_').toUpperCase();
+        return ENV_PREFIX+propertyName.replace('.','_').toUpperCase();
     }
 }

@@ -97,7 +97,7 @@ public class CoreWatcherJob implements Job
     private void registerForCore(AlfrescoCoreAdminHandler adminHandler, CoreContainer coreContainer, SolrCore core,
                 String coreName, TrackerRegistry trackerRegistry) throws JobExecutionException
     {
-        Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getCoreProperties();
+        Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
         boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))
         {
