@@ -87,13 +87,7 @@ public class SOLRAPIClientTest extends TestCase
 
     private SOLRAPIClient tamperWithClient;
 
-    private TenantService tenantService;
-
-    private NamespaceDAO namespaceDAO;
-
     private DictionaryDAOImpl dictionaryDAO;
-
-    private DictionaryComponent dictionaryComponent;
 
     private CMISStrictDictionaryService cmisDictionaryService;
 
@@ -126,10 +120,10 @@ public class SOLRAPIClientTest extends TestCase
     {
         if(client == null)
         {
-            tenantService = new SingleTServiceImpl();
+            TenantService tenantService = new SingleTServiceImpl();
 
             dictionaryDAO = new DictionaryDAOImpl();
-            namespaceDAO = dictionaryDAO;
+            NamespaceDAO namespaceDAO = dictionaryDAO;
             dictionaryDAO.setTenantService(tenantService);
             
             CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
@@ -149,7 +143,7 @@ public class SOLRAPIClientTest extends TestCase
             dictionaryDAO.setResourceClassLoader(getResourceClassLoader());
             dictionaryDAO.init();
 
-            dictionaryComponent = new DictionaryComponent();
+            DictionaryComponent dictionaryComponent = new DictionaryComponent();
             dictionaryComponent.setDictionaryDAO(dictionaryDAO);
             dictionaryComponent.setMessageLookup(new StaticMessageLookup());
 
