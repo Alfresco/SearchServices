@@ -3,7 +3,7 @@
 FROM java:8
 MAINTAINER Gethin James, gethin.james@alfresco.com
 
-ARG SOLR_ZIP
+ENV SOLR_ZIP target/alfresco-solr-distribution-*.zip
 ENV DIST_DIR /opt/alfresco-solr
 
 RUN groupadd -r solr && useradd -r -g solr -s /bin/bash solr
