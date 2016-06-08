@@ -38,10 +38,10 @@
             <directory>target/alfresco-solr</directory>
             <outputDirectory>solr/server/solr-webapp/webapp/WEB-INF/classes</outputDirectory>
             <includes>
-                <include>**/*</include>
+                <include>org/**/*</include>
             </includes>
             <excludes>
-                <exclude>solr</exclude>
+                <exclude>META-INF</exclude>
                 <exclude>webapp</exclude>
             </excludes>
         </fileSet>
@@ -52,6 +52,9 @@
             <includes>
                 <include>**/web.xml</include>
             </includes>
+            <excludes>
+                <exclude></exclude>
+            </excludes>
         </fileSet>
         <!-- Port over solr alfresco stores -->
         <fileSet>
