@@ -1851,7 +1851,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
          parser.setSearchParameters(searchParameters);
          parser.setAllowLeadingWildcard(true);
          
-         Properties props = new CoreDescriptorDecorator(req.getCore().getCoreDescriptor()).getCoreProperties();
+         Properties props = new CoreDescriptorDecorator(req.getCore().getCoreDescriptor()).getProperties();
          int topTermSpanRewriteLimit = Integer.parseInt(props.getProperty("alfresco.topTermSpanRewriteLimit", "1000"));
          parser.setTopTermSpanRewriteLimit(topTermSpanRewriteLimit);
 

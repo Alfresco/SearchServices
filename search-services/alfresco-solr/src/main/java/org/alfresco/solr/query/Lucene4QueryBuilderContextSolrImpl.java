@@ -72,7 +72,7 @@ public class Lucene4QueryBuilderContextSolrImpl implements LuceneQueryBuilderCon
 //        lqp.setAllowLeadingWildcard(true);
 //        this.namespacePrefixResolver = namespacePrefixResolver;
         
-          Properties props = new CoreDescriptorDecorator(req.getCore().getCoreDescriptor()).getCoreProperties();
+          Properties props = new CoreDescriptorDecorator(req.getCore().getCoreDescriptor()).getProperties();
           int topTermSpanRewriteLimit = Integer.parseInt(props.getProperty("alfresco.topTermSpanRewriteLimit", "1000"));
           lqp.setTopTermSpanRewriteLimit(topTermSpanRewriteLimit);
           
