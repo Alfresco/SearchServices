@@ -33,6 +33,8 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -49,6 +51,8 @@ import org.junit.Test;
 @SolrTestCaseJ4.SuppressSSL
 public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
 {
+    private static Log logger = LogFactory.getLog(AlfrescoSolrTrackerTest.class);
+    private static long MAX_WAIT_TIME = 40000;
     @BeforeClass
     public static void beforeClass() throws Exception {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
@@ -71,7 +75,7 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         * Create and index an AclChangeSet.
         */
 
-        System.out.println("######### Starting tracker test ###########");
+        logger.info("######### Starting tracker test ###########");
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
         Acl acl = getAcl(aclChangeSet);
@@ -94,7 +98,7 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         BooleanQuery waitForQuery = builder.build();
         waitForDocCount(waitForQuery, 1, 80000);
 
-        System.out.println("#################### Passed First Test ##############################");
+        logger.info("#################### Passed First Test ##############################");
 
 
         /*
@@ -108,7 +112,7 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         Node folderNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node fileNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node errorNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
-        System.out.println("######### error node:"+errorNode.getId());
+        logger.info("######### error node:"+errorNode.getId());
 
         //Next create the NodeMetaData for each node. TODO: Add more metadata
         NodeMetaData folderMetaData = getNodeMetaData(folderNode, txn, acl, "mike", null, false);
@@ -123,25 +127,25 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
                          list(errorMetaData, folderMetaData, fileMetaData));
 
         //Check for the TXN state stamp.
-        System.out.println("#################### Started Second Test ##############################");
+        logger.info("#################### Started Second Test ##############################");
         builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!TX")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_TXID, txn.getId(), txn.getId() + 1, true, false), BooleanClause.Occur.MUST));
         waitForQuery = builder.build();
 
-        waitForDocCount(waitForQuery, 1, 80000);
-        System.out.println("#################### Passed Second Test ##############################");
+        waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
+        logger.info("#################### Passed Second Test ##############################");
 
 
 
         /*
         * Query the index for the content
         */
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 80000);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, 80000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Third Test ##############################");
+        logger.info("#################### Passed Third Test ##############################");
 
 
 
@@ -156,16 +160,16 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         assertQ(req, "*[count(//doc)=1]",
                 "//result/doc[1]/long[@name='DBID'][.='"+fileNode.getId()+"']");
 
-        System.out.println("#################### Passed Fourth Test ##############################");
+        logger.info("#################### Passed Fourth Test ##############################");
 
 
 
 
         //Check for the error doc
 
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_DOC_TYPE, "ErrorNode")), 1, 80000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_DOC_TYPE, "ErrorNode")), 1, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Fifth Test ##############################");
+        logger.info("#################### Passed Fifth Test ##############################");
 
 
 
@@ -183,23 +187,23 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         fileMetaData.setAncestors(ancestors(nodeRef));
 
         //This will add the PROP_CASCADE_TX property to the folder.
-        System.out.println("################### ADDING CASCADE TRANSACTION #################");
+        logger.info("################### ADDING CASCADE TRANSACTION #################");
         indexTransaction(txn1, list(folderNode), list(folderMetaData));
 
         //Check for the TXN state stamp.
         builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!TX")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_TXID, txn1.getId(), txn1.getId() + 1, true, false), BooleanClause.Occur.MUST));
-        waitForDocCount(builder.build(), 1, 80000);
+        waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Sixth Test ##############################");
+        logger.info("#################### Passed Sixth Test ##############################");
 
 
 
 
         TermQuery termQuery1 = new TermQuery(new Term(QueryConstants.FIELD_ANCESTOR, nodeRef.toString()));
 
-        waitForDocCount(termQuery1, 1, 80000);
+        waitForDocCount(termQuery1, 1, MAX_WAIT_TIME);
 
         params = new ModifiableSolrParams();
         params.add("q", QueryConstants.FIELD_ANCESTOR+":\"" + nodeRef.toString()+"\"");
@@ -213,13 +217,13 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
                 "//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
 
 
-        System.out.println("#################### Passed Seventh Test ##############################");
+        logger.info("#################### Passed Seventh Test ##############################");
 
 
         //Check that both documents have been indexed and have content.
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 80000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Eighth Test ##############################");
+        logger.info("#################### Passed Eighth Test ##############################");
 
 
         //Try bulk loading
@@ -237,11 +241,11 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
             nodeMetaDatas.add(nm);
         }
 
-        System.out.println("############################ Bulk Nodes:" + nodes.size());
+        logger.info("############################ Bulk Nodes:" + nodes.size());
         indexTransaction(txn2, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 552, 80000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 552, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Ninth Test ##############################");
+        logger.info("#################### Passed Ninth Test ##############################");
 
         for(int i=0; i<1000; i++)
         {
@@ -255,9 +259,9 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
             indexTransaction(txnX, nodesX, nodeMetaDatasX);
         }
 
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1552, 80000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1552, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Tenth Test ##############################");
+        logger.info("#################### Passed Tenth Test ##############################");
 
 
         //Test the maintenance methods
@@ -272,18 +276,18 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "amy")), BooleanClause.Occur.MUST));
-        waitForDocCount(builder.build(), 1, 80000);
+        waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Eleventh Test ##############################");
+        logger.info("#################### Passed Eleventh Test ##############################");
 
 
         // Wait for a document that has the new owner and the content populated.
         builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "jill")), BooleanClause.Occur.MUST));
-        waitForDocCount(builder.build(), 1, 80000);
+        waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Twelth Test ##############################");
+        logger.info("#################### Passed Twelth Test ##############################");
 
 
 
@@ -298,7 +302,7 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         assertQ(req, "*[count(//doc)=1]",
                 "//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
 
-        System.out.println("#################### Passed Fourteenth Test ##############################");
+        logger.info("#################### Passed Fourteenth Test ##############################");
 
 
 
@@ -313,7 +317,7 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         assertQ(req, "*[count(//doc)=1]",
                 "//result/doc[1]/long[@name='DBID'][.='" + folderNode.getId() + "']");
 
-        System.out.println("#################### Passed Fifteenth Test ##############################");
+        logger.info("#################### Passed Fifteenth Test ##############################");
 
 
         List<String> readers = aclReaders.getReaders();
@@ -325,11 +329,11 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         reindexAclId(acl2.getId());
 
 
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "andy")), 1, 80000);
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "ice")), 1, 80000); //Ice should have replaced jim in acl2.
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 0, 80000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "andy")), 1, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "ice")), 1, MAX_WAIT_TIME); //Ice should have replaced jim in acl2.
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 0, MAX_WAIT_TIME);
 
-        System.out.println("#################### Passed Sixteenth Test ##############################");
+        logger.info("#################### Passed Sixteenth Test ##############################");
 
 
         params = new ModifiableSolrParams();
@@ -343,7 +347,7 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         assertQ(req, "*[count(//doc)=1]",
                 "//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
 
-        System.out.println("#################### Passed Seventeenth Test ##############################");
+        logger.info("#################### Passed Seventeenth Test ##############################");
 
         readers.set(0, "alan"); // Change the aclReader
         readers2.set(0, "paul"); // Change the aclReader
@@ -351,12 +355,12 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         reindexAclChangeSetId(aclChangeSet.getId()); //This should replace "andy" and "ice" with "alan" and "paul"
 
         //Test that "alan" and "paul" are in the index
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "alan")), 1, 80000);
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "paul")), 1, 80000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "alan")), 1, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "paul")), 1, MAX_WAIT_TIME);
 
         //Test that "andy" and "ice" are removed
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "andy")), 0, 80000);
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "ice")), 0, 80000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "andy")), 0, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "ice")), 0, MAX_WAIT_TIME);
 
 
         //Test Maintenance acl purge
@@ -367,27 +371,27 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
 
         purgeTransactionId(txn2.getId());
 
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "paul")), 0, 80000); //paul should be purged
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 0, 80000);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1001, 80000); // Refects the purged node and transaction
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "paul")), 0, MAX_WAIT_TIME); //paul should be purged
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 0, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1001, MAX_WAIT_TIME); // Refects the purged node and transaction
 
-        System.out.println("#################### Passed Eighteenth Test ##############################");
+        logger.info("#################### Passed Eighteenth Test ##############################");
 
 
         purgeAclChangeSetId(aclChangeSet.getId());
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "alan")), 0, 80000); //alan should be purged
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "alan")), 0, MAX_WAIT_TIME); //alan should be purged
 
         //Fix the error node
         errorMetaData.setNodeRef(new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID()));
         //Reload the error node.
 
-        System.out.println("Retry the error node");
+        logger.info("Retry the error node");
         retry();
         //The error in the index should disappear.
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_DOC_TYPE, "ErrorNode")), 0, 80000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_DOC_TYPE, "ErrorNode")), 0, MAX_WAIT_TIME);
         //And the error node should be present
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(errorNode.getId()))), 1, 80000);
-        System.out.println("#################### Passed Nineteenth Test ##############################");
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(errorNode.getId()))), 1, MAX_WAIT_TIME);
+        logger.info("#################### Passed Nineteenth Test ##############################");
         //assert(false);
     }
 }

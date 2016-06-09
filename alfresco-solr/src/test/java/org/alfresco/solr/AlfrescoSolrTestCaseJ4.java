@@ -124,7 +124,7 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
     */
 
     public static void initAlfrescoCore(String config, String schema) throws Exception {
-        System.out.println("##################################### init Alfresco core ##############");
+        log.info("##################################### init Alfresco core ##############");
         log.info("####initCore");
 
         configString = config;
