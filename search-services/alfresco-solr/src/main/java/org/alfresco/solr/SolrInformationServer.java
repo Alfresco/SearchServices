@@ -314,7 +314,12 @@ public class SolrInformationServer implements InformationServer
 
         hostName = ConfigUtil.locateProperty("solr.host", props.getProperty("solr.host"));
         String portNumber = ConfigUtil.locateProperty("solr.port", props.getProperty("solr.port"));
-        port = Integer.parseInt(portNumber);
+        try {
+            port = Integer.parseInt(portNumber);
+        } catch (NumberFormatException e) {
+            log.error("Failed to find a valid solr.port number, the default value is in shared.properties");
+            throw e;
+        }
         baseUrl = ConfigUtil.locateProperty("solr.baseurl", props.getProperty("solr.baseurl"));
         baseUrl = (baseUrl.startsWith("/") ? "" : "/") + baseUrl + "/" + core.getName() + "/";
     }
