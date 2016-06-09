@@ -156,9 +156,9 @@
                             <target>
                                 <replaceregexp byline="true">
                                     <regexp pattern="alfresco.version=.*$" />
-                                    <substitution expression="alfresco.version=${version.major}.${version.minor}.${version.revision}${version.label} (${version.build})" />
-                                    <fileset dir="${project.build.directory}"
-                                        includes="solr-instance-*/*-SpacesStore/conf/solrcore.properties" />
+                                    <substitution expression="alfresco.version=${alfresco-solr.version}" />
+                                    <fileset dir="${project.build.outputDirectory}"
+                                             includes="solr/instance/**/solrcore.properties" />
                                 </replaceregexp>
                             </target>
                         </configuration>
