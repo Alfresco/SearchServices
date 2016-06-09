@@ -176,7 +176,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/classes/webapp/WEB-INF/lib</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}/libs</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
@@ -187,26 +187,31 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>theMainClass</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <configuration>
+                            <excludes>
+                                <exclude>libs/**/*</exclude>
+                                <exclude>webapp/**/*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>package-libs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>libs</classifier>
+                            <includes>
+                                <include>libs/*.jar</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
-        <resources>
-             <resource>
-                   <targetPath>webapp</targetPath>
-                   <directory>src/main/webapp</directory>
-             </resource>
-             <resource>
-                   <targetPath>lib</targetPath>
-                   <directory>target/lib</directory>
-             </resource>
-        </resources>
     </build>
 </project>
