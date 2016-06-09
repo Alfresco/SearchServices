@@ -21,6 +21,12 @@
           <artifactId>alfresco-solr</artifactId>
           <version>${project.version}</version>
       </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-solr</artifactId>
+            <version>${project.version}</version>
+            <classifier>libs</classifier>
+        </dependency>
     </dependencies>
     <build>
         <finalName>alfresco-solr-distribution-${project.version}</finalName>
@@ -66,6 +72,46 @@
                           </artifactItems>
                       </configuration>
                   </execution>
+                  <execution>
+                      <id>unpack-solr-libs</id>
+                      <phase>validate</phase>
+                      <goals>
+                          <goal>unpack</goal>
+                      </goals>
+                      <configuration>
+                          <artifactItems>
+                              <artifactItem>
+                                  <groupId>org.alfresco</groupId>
+                                  <artifactId>alfresco-solr</artifactId>
+                                  <version>${project.version}</version>
+                                  <classifier>libs</classifier>
+                                  <outputDirectory>${project.build.directory}/solr-libs</outputDirectory>
+                              </artifactItem>
+                          </artifactItems>
+                      </configuration>
+                  </execution>
+                  <execution>
+                      <id>copy</id>
+                      <phase>validate</phase>
+                      <goals>
+                          <goal>copy</goal>
+                      </goals>
+                      <configuration>
+                          <artifactItems>
+                              <artifactItem>
+                                  <groupId>org.alfresco</groupId>
+                                  <artifactId>alfresco-solr</artifactId>
+                                  <version>${project.version}</version>
+                                  <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>
+                              </artifactItem>
+                          </artifactItems>
+                          <outputDirectory>${project.build.directory}/wars</outputDirectory>
+                          <overWriteReleases>false</overWriteReleases>
+                          <overWriteSnapshots>true</overWriteSnapshots>
+                      </configuration>
+                  </execution>
+
+
               </executions>
           </plugin>
             <plugin>

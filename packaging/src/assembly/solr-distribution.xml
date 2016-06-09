@@ -10,14 +10,21 @@
         <fileSet>
             <directory>target/solr-${solr.version}</directory>
             <outputDirectory>solr</outputDirectory>
-            <excludes>
-                <exclude>**/web.xml</exclude>
-            </excludes>
         </fileSet>
         <!-- Solr config -->
         <fileSet>
-            <directory>target/solr/instance</directory>
+            <directory>target/alfresco-solr/solr/instance</directory>
             <outputDirectory>solr/server/solr/</outputDirectory>
+            <excludes>
+                <exclude>**/workspace-SpacesStore/**</exclude>
+                <exclude>**/archive-SpacesStore/**</exclude>
+                <exclude>context.xml</exclude>
+            </excludes>
+        </fileSet>
+        <!-- Solr libs -->
+        <fileSet>
+            <directory>target/solr-libs/libs</directory>
+            <outputDirectory>solr/server/solr-webapp/webapp/WEB-INF/lib</outputDirectory>
             <excludes>
                 <exclude>**/workspace-SpacesStore/**</exclude>
                 <exclude>**/archive-SpacesStore/**</exclude>
@@ -31,43 +38,6 @@
           <excludes>
             <exclude>*</exclude>
           </excludes>
-        </fileSet>
-
-        <!-- Include all classes from alfresco-solr -->
-        <fileSet>
-            <directory>target/alfresco-solr</directory>
-            <outputDirectory>solr/server/solr-webapp/webapp/WEB-INF/classes</outputDirectory>
-            <includes>
-                <include>org/**/*</include>
-            </includes>
-            <excludes>
-                <exclude>META-INF</exclude>
-                <exclude>webapp</exclude>
-            </excludes>
-        </fileSet>
-        <!-- Replace web.xml with alfresco solr config -->
-        <fileSet>
-            <directory>target/alfresco-solr/webapp</directory>
-            <outputDirectory>solr/server/solr-webapp/webapp</outputDirectory>
-            <includes>
-                <include>**/web.xml</include>
-            </includes>
-            <excludes>
-                <exclude></exclude>
-            </excludes>
-        </fileSet>
-        <!-- Port over solr alfresco stores -->
-        <fileSet>
-            <directory>target/alfresco-solr/solr</directory>
-            <outputDirectory>solr/server/solr/</outputDirectory>
-            <includes>
-                <include>instance/**.*</include>
-            </includes>
-            <excludes>
-                <exclude>**/workspace-SpacesStore/**</exclude>
-                <exclude>**/archive-SpacesStore/**</exclude>
-                <exclude>context.xml</exclude>
-            </excludes>
         </fileSet>
     </fileSets>
 </assembly>
