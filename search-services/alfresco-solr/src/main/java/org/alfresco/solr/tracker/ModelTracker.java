@@ -49,6 +49,8 @@ import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.AlfrescoModel;
 import org.alfresco.solr.client.AlfrescoModelDiff;
 import org.alfresco.solr.client.SOLRAPIClient;
+import org.alfresco.solr.config.ConfigUtil;
+import org.apache.solr.core.SolrResourceLoader;
 import org.json.JSONException;
 
 /**
@@ -107,7 +109,8 @@ public class ModelTracker extends AbstractTracker implements Tracker
                 InformationServer informationServer)
     {
         super(p, client, coreName, informationServer);
-        alfrescoModelDir = locateModelHome(solrHome);
+        String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
+        alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
         log.info("Alfresco Model dir " + alfrescoModelDir);
         if (!alfrescoModelDir.exists())
         {
@@ -564,53 +567,6 @@ public class ModelTracker extends AbstractTracker implements Tracker
     private String getModelFileName(M2Model model)
     {
         return model.getName().replace(":", ".") + "." + model.getChecksum(XMLBindingType.DEFAULT) + ".xml";
-    }
-    
-    public static File locateModelHome(String solrHome)
-    {
-        String modelDir = null;
-        // Try JNDI
-        try
-        {
-            Context c = new InitialContext();
-            modelDir = (String) c.lookup("java:comp/env/solr/model/dir");
-            log.info("Using JNDI solr.model.dir: " + modelDir);
-        }
-        catch (NoInitialContextException e)
-        {
-            log.info("JNDI not configured for solr (NoInitialContextEx)");
-        }
-        catch (NamingException e)
-        {
-            log.info("No solr/model/dir in JNDI");
-        }
-        catch (RuntimeException ex)
-        {
-            log.warn("Odd RuntimeException while testing for JNDI: " + ex.getMessage());
-        }
-
-        // Now try system property
-        if (modelDir == null)
-        {
-            String prop = "solr.solr.model.dir";
-            modelDir = System.getProperty(prop);
-            if (modelDir != null)
-            {
-                log.info("using system property " + prop + ": " + modelDir);
-            }
-        }
-
-        // if all else fails, try
-        if (modelDir == null)
-        {
-            File answer = new File(solrHome, "alfrescoModels");
-            log.info("solr home defaulted to " + answer + "(could not find system property or JNDI)");
-            return answer;
-        }
-        else
-        {
-            return new File(modelDir);
-        }
     }
 
     public boolean hasModels()
