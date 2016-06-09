@@ -10,11 +10,15 @@
         <fileSet>
             <directory>target/solr-${solr.version}</directory>
             <outputDirectory>solr</outputDirectory>
+            <excludes>
+                <exclude>**/server/solr/**</exclude>
+                <exclude>**/example/**</exclude>
+            </excludes>
         </fileSet>
         <!-- Solr config -->
         <fileSet>
             <directory>target/alfresco-solr/solr/instance</directory>
-            <outputDirectory>solr/server/solr/</outputDirectory>
+            <outputDirectory>solrhome</outputDirectory>
             <excludes>
                 <exclude>**/workspace-SpacesStore/**</exclude>
                 <exclude>**/archive-SpacesStore/**</exclude>
