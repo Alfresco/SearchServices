@@ -52,7 +52,7 @@ import org.junit.Test;
 public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
 {
     private static Log logger = LogFactory.getLog(AlfrescoSolrTrackerTest.class);
-    private static long MAX_WAIT_TIME = 40000;
+    private static long MAX_WAIT_TIME = 80000;
     @BeforeClass
     public static void beforeClass() throws Exception {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
@@ -96,7 +96,7 @@ public class AlfrescoSolrTrackerTest extends AlfrescoSolrTestCaseJ4
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
-        waitForDocCount(waitForQuery, 1, 80000);
+        waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
 
         logger.info("#################### Passed First Test ##############################");
 
