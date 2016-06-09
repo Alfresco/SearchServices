@@ -92,6 +92,7 @@ public class ConfigUtil {
         }
 
         //if all else fails then return the default
+        log.info("Using default value for variable "+propertyName+": " + defaultValue );
         return defaultValue;
     }
 
