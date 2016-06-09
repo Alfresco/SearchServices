@@ -176,12 +176,11 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeScope>compile</includeScope>
                             <outputDirectory>${project.build.outputDirectory}/libs</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
-                            <excludeTransitive>true</excludeTransitive>
+                            <excludeScope>provided</excludeScope>
                         </configuration>
                     </execution>
                 </executions>
@@ -207,9 +206,6 @@
                         </goals>
                         <configuration>
                             <classifier>libs</classifier>
-                            <includes>
-                                <include>libs/*.jar</include>
-                            </includes>
                         </configuration>
                     </execution>
                 </executions>
