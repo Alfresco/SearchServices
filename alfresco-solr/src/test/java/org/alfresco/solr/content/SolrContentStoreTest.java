@@ -18,22 +18,20 @@
  */
 package org.alfresco.solr.content;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Tests {@link SolrContentStoreTest}
@@ -44,14 +42,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SolrContentStoreTest
 {
-    private String rootStr;
-    
-    @Before
-    public void setUp() throws IOException
-    {
-        System.setProperty("solr.solr.home","target");
-    }
-    
     @After
     public void tearDown() throws IOException
     {
