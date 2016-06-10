@@ -206,6 +206,8 @@
                         <configuration>
                             <classifier>libs</classifier>
                             <excludes>
+                                <exclude>solr/**/*</exclude>
+                                <exclude>org/**/*</exclude>
                                 <exclude>**/jetty-*.jar</exclude>
                                 <exclude>**/junit*.jar</exclude>
                                 <exclude>**/mock*.jar</exclude>
