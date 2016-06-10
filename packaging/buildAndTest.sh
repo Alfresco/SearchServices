@@ -25,9 +25,9 @@ fi
 
 # running tests
 docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/data ] || (echo "Data dir does not exist" && exit 1)
-docker run --rm "$dockerImage" [ -e /opt/alfresco-solr/solr/server/solr/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
+docker run --rm "$dockerImage" [ -e /opt/alfresco-solr/solrhome/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
 docker run --rm "$dockerImage" /opt/alfresco-solr/solr/bin/solr start
 
 echo "Publishing $dockerImage..."
 docker push "$dockerImage"
-echo "SUCCESS"
+echo "Docker SUCCESS"
