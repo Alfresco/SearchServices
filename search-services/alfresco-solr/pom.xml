@@ -176,7 +176,6 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeScope>compile</includeScope>
                             <outputDirectory>${project.build.outputDirectory}/libs</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
@@ -206,9 +205,14 @@
                         </goals>
                         <configuration>
                             <classifier>libs</classifier>
-                            <includes>
-                                <include>libs/*.jar</include>
-                            </includes>
+                            <excludes>
+                                <exclude>solr/**/*</exclude>
+                                <exclude>org/**/*</exclude>
+                                <exclude>**/jetty-*.jar</exclude>
+                                <exclude>**/junit*.jar</exclude>
+                                <exclude>**/mock*.jar</exclude>
+                                <exclude>**/opencmis*.jar</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>

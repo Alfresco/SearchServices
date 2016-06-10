@@ -1,0 +1,29 @@
+version: '2'
+services:
+  repo:
+    image: dockerreg.alfresco.com/platform-only
+    environment:
+        JAVA_OPTS : "-Ddb.url=jdbc:postgresql://database/alfresco -Dsolr.secureComms=none"
+    depends_on:
+      - database
+    ports:
+          - "7203:7203"
+          - "8082:8080"
+  solr6:
+    image: dockerreg.alfresco.com/alfresco-solr:master-latest
+    command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a", "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
+    environment:
+      SOLR_PROXY_HOST: solr6
+      SOLR_PROXY_BASEURL: solr
+      SOLR_ALFRESCO_HOST: repo
+#      SOLR_ALFRESCO_PORT: 8080
+ #           "alfresco.baseUrl",
+    ports:
+          - "8083:8983"
+          - "1044:1044"
+  database:
+    image: postgres:9.4
+    environment:
+      POSTGRES_USER: alfresco
+      POSTGRES_PASSWORD: alfresco
+      POSTGRES_DB: alfresco
