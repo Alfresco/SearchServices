@@ -180,7 +180,7 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
-                            <excludeTransitive>true</excludeTransitive>
+                            <excludeScope>provided</excludeScope>
                         </configuration>
                     </execution>
                 </executions>
