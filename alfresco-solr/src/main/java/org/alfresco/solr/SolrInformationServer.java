@@ -302,7 +302,7 @@ public class SolrInformationServer implements InformationServer
         this.solrContentStore = solrContentStore;
 
         Properties p = core.getResourceLoader().getCoreProperties();
-        alfrescoVersion = p.getProperty("alfresco.version", "5.0.0");
+        alfrescoVersion = p.getProperty("alfresco.version", "Unknown");
         transformContent = Boolean.parseBoolean(p.getProperty("alfresco.index.transformContent", "true"));
         recordUnindexedNodes = Boolean.parseBoolean(p.getProperty("alfresco.recordUnindexedNodes", "true"));
         lag = Integer.parseInt(p.getProperty("alfresco.lag", "1000"));
