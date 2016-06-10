@@ -180,7 +180,6 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
-                            <excludeScope>provided</excludeScope>
                         </configuration>
                     </execution>
                 </executions>
@@ -206,6 +205,12 @@
                         </goals>
                         <configuration>
                             <classifier>libs</classifier>
+                            <excludes>
+                                <exclude>**/jetty-*.jar</exclude>
+                                <exclude>**/junit*.jar</exclude>
+                                <exclude>**/mock*.jar</exclude>
+                                <exclude>**/opencmis*.jar</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>
