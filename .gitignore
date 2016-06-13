@@ -7,6 +7,7 @@ target
 .metadata
 alf_data_dev
 alfresco.log*
+solr.log
 # OS generated files #
 ######################
 .DS_Store
