@@ -186,7 +186,7 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
         ignoreException("ignore_exception");
 
         System.setProperty("solr.directoryFactory","solr.RAMDirectoryFactory");
-        System.setProperty("solr.solr.home", getFile(TEST_FILES_LOCATION).toString());
+        System.setProperty("solr.solr.home", testSolrHome.toAbsolutePath().toString());
 
         System.setProperty("solr.tests.maxBufferedDocs", "1000");
         System.setProperty("solr.tests.maxIndexingThreads", "10");

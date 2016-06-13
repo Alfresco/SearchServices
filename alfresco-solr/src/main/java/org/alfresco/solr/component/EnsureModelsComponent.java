@@ -60,7 +60,7 @@ public class EnsureModelsComponent extends SearchComponent
     public void prepare(ResponseBuilder rb) throws IOException
     {
     	SolrQueryRequest req = rb.req;
-    	Properties props = new CoreDescriptorDecorator(req.getCore().getCoreDescriptor()).getCoreProperties();
+    	Properties props = new CoreDescriptorDecorator(req.getCore().getCoreDescriptor()).getProperties();
 
     	boolean isTrackingEnabled = Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false"));
     	
@@ -90,7 +90,7 @@ public class EnsureModelsComponent extends SearchComponent
         SolrResourceLoader loader = core.getLatestSchema().getResourceLoader();
         SolrKeyResourceLoader keyResourceLoader = new SolrKeyResourceLoader(loader);
         SOLRAPIClientFactory clientFactory = new SOLRAPIClientFactory();
-        Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getCoreProperties();
+        Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
         SOLRAPIClient repositoryClient = clientFactory.getSOLRAPIClient(props, keyResourceLoader,
                 AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                 AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
