@@ -8276,7 +8276,8 @@ public class AlfrescoCoreAdminTester
 
     private void testQuery(AlfrescoSolrDataModel dataModel, NamedList<Object> report,
                 SolrIndexSearcher solrIndexSearcher, String queryString, Integer count, Locale locale,
-                String[] textAttributes, String[] allAttributes, String... name) throws IOException, org.apache.lucene.queryparser.classic.ParseException
+                String[] textAttributes, String[] allAttributes, String... name)
+            throws IOException, org.apache.lucene.queryparser.classic.ParseException
     {
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.setQuery(queryString);
