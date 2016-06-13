@@ -176,6 +176,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
+        System.out.println("######## Handle Custom Action ###########");
         SolrParams params = req.getParams();
         String cname = params.get(CoreAdminParams.CORE);
         String a = params.get(CoreAdminParams.ACTION);
@@ -183,6 +184,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             if (a.equalsIgnoreCase("TEST"))
             {
+                System.out.println("######## Run Tests ###########");
                 new AlfrescoCoreAdminTester(this).runTests(req, rsp);
             }
             else if (a.equalsIgnoreCase("AUTHTEST"))
