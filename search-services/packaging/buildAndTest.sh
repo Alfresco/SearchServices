@@ -6,7 +6,9 @@ set -eo pipefail
 # set current working directory to the directory of the script
 cd "$(dirname "$0")"
 
-dockerImage="dockerreg.alfresco.com/alfresco-solr:${bamboo_planRepository_1_branch}-latest"
+nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
+dockerImage="dockerreg.alfresco.com/alfresco-solr:${nicebranch}-latest"
+
 
 rm -rf target/alfresco-solr
 rm -rf target/solr-*
