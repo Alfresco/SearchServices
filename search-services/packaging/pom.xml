@@ -110,10 +110,28 @@
                           <overWriteSnapshots>true</overWriteSnapshots>
                       </configuration>
                   </execution>
-
-
               </executions>
           </plugin>
+            <plugin>
+                <!-- Set the default solr home directory to solrhome -->
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <target>
+                                <replace token= "SOLR_SERVER_DIR/solr" value="SOLR_TIP/../solrhome" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr"/>
+                                </replace>
+                                <chmod file="target/solr-${solr.version}/bin/solr" perm="755"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>

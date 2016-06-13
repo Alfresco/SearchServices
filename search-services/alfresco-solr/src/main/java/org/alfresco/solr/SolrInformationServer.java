@@ -128,6 +128,7 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClient.GetTextContentResponse;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.content.SolrContentUrlBuilder;
 import org.alfresco.solr.tracker.IndexHealthReport;
@@ -202,17 +203,20 @@ public class SolrInformationServer implements InformationServer
     public static final String DOC_TYPE_TX = "Tx";
     public static final String DOC_TYPE_ACL_TX = "AclTx";
     public static final String DOC_TYPE_STATE = "State";
- 
+
+    public static final String SOLR_PROXY_HOST = "proxy.host";
+    public static final String SOLR_PROXY_PORT = "proxy.port";
+    public static final String SOLR_PROXY_BASEURL = "proxy.baseurl";
+
     private static final Pattern CAPTURE_SITE = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/site/1\\.0\\}sites/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0}([^/]*)/.*" ); 
     private static final Pattern CAPTURE_TAG = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}taggable/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}([^/]*)/\\{\\}member");
-    private static final Pattern CAPTURE_SHARED_FILES = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}shared/.*" ); 
-
+    private static final Pattern CAPTURE_SHARED_FILES = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}shared/.*" );
     
     /* 4096 is 2 to the power of (6*2), and we do this because the precision step for the long is 6, 
      * and the transactions are long
      */
-    public static final int BATCH_FACET_TXS = 4096; 
-    
+    public static final int BATCH_FACET_TXS = 4096;
+
     private AlfrescoCoreAdminHandler adminHandler;
     private SolrCore core;
     private SolrRequestHandler nativeRequestHandler;
@@ -298,7 +302,7 @@ public class SolrInformationServer implements InformationServer
         this.solrContentStore = solrContentStore;
 
         Properties p = core.getResourceLoader().getCoreProperties();
-        alfrescoVersion = p.getProperty("alfresco.version", "5.0.0");
+        alfrescoVersion = p.getProperty("alfresco.version", "Unknown");
         transformContent = Boolean.parseBoolean(p.getProperty("alfresco.index.transformContent", "true"));
         recordUnindexedNodes = Boolean.parseBoolean(p.getProperty("alfresco.recordUnindexedNodes", "true"));
         lag = Integer.parseInt(p.getProperty("alfresco.lag", "1000"));
@@ -309,21 +313,17 @@ public class SolrInformationServer implements InformationServer
         contentStreamLimit = Integer.parseInt(p.getProperty("alfresco.contentStreamLimit", "10000000"));
         
         // build base URL - host and port have to come from configuration.
-        
         Properties props = AlfrescoSolrDataModel.getCommonConfig();
-        
-        port = Integer.parseInt(props.getProperty("solr.port", getHttpPort("8080")));
-        String defaultHost;
-        try
-        {
-            defaultHost = InetAddress.getLocalHost().getHostName();
+
+        hostName = ConfigUtil.locateProperty(SOLR_PROXY_HOST, props.getProperty(SOLR_PROXY_HOST));
+        String portNumber = ConfigUtil.locateProperty(SOLR_PROXY_PORT, props.getProperty(SOLR_PROXY_PORT));
+        try {
+            port = Integer.parseInt(portNumber);
+        } catch (NumberFormatException e) {
+            log.error("Failed to find a valid solr.port number, the default value is in shared.properties");
+            throw e;
         }
-        catch (UnknownHostException e)
-        {
-            defaultHost = "localhost";
-        }
-        hostName = props.getProperty("solr.host", defaultHost);
-        baseUrl =  props.getProperty("solr.baseUrl", "/solr4");
+        baseUrl = ConfigUtil.locateProperty(SOLR_PROXY_BASEURL, props.getProperty(SOLR_PROXY_BASEURL));
         baseUrl = (baseUrl.startsWith("/") ? "" : "/") + baseUrl + "/" + core.getName() + "/";
     }
 
@@ -3856,39 +3856,6 @@ public class SolrInformationServer implements InformationServer
     public String getHostName()
     {
        return hostName;
-    }
-
-    private String  getHttpPort(String  defaultPort)
-    {
-        try
-        {
-            MBeanServer mBeanServer = MBeanServerFactory.findMBeanServer(null).get(0);
-            QueryExp query = Query.and(Query.eq(Query.attr("scheme"), Query.value("http")), Query.eq(Query.attr("protocol"), Query.value("HTTP/1.1")));
-            Set<ObjectName> objectNames = mBeanServer.queryNames(null, query);
-
-            if (objectNames != null && objectNames.size() > 0) {
-                for (ObjectName objectName : objectNames) {
-                    String name = objectName.toString();
-                    if (name.indexOf("port=") > -1) {
-                        String[] parts = name.split("port=");
-                        String port = parts[1];
-                        try {
-                            Integer.parseInt(port);
-                            return port;
-                        } catch (NumberFormatException e) {
-                            log.error("Error parsing http port:" + port);
-                            return defaultPort;
-                        }
-                    }
-                }
-            }
-        }
-        catch(Throwable t)
-        {
-            log.error("Error getting https port:", t);
-        }
-
-        return defaultPort;
     }
 
     public void setCleanContentTxnFloor(long cleanContentTxnFloor)

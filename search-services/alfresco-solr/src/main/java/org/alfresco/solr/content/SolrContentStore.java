@@ -36,6 +36,7 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
@@ -62,7 +63,7 @@ public class SolrContentStore implements ContentStore
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
  
-    static SolrContentStore solrContentStore;
+    private static SolrContentStore solrContentStore;
 
     static 
     {
@@ -82,52 +83,17 @@ public class SolrContentStore implements ContentStore
     private static SolrContentStore getSolrContentStore(String solrHome)
             throws JobExecutionException 
     {
-        // TODO: Could specify the rootStr from a properties file.
-        return new SolrContentStore(locateContentHome(solrHome));
+
+        String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
+        return new SolrContentStore(ConfigUtil.locateProperty("solr.content.dir", normalSolrHome+"ContentStore"));
     }
 
-    public static String locateContentHome(String solrHome) {
-        String contentDir = null;
-        // Try JNDI
-        try {
-            Context c = new InitialContext();
-            contentDir = (String) c.lookup("java:comp/env/solr/content/dir");
-            log.info("Using JNDI solr.content.dir: " + contentDir);
-        } catch (NoInitialContextException e) {
-            log.info("JNDI not configured for solr (NoInitialContextEx)");
-        } catch (NamingException e) {
-            log.info("No solr/content/dir in JNDI");
-        } catch (RuntimeException ex) {
-            log.warn("Odd RuntimeException while testing for JNDI: "
-                    + ex.getMessage());
-        }
-
-        // Now try system property
-        if (contentDir == null) {
-            String prop = "solr.solr.content.dir";
-            contentDir = System.getProperty(prop);
-            if (contentDir != null) {
-                log.info("using system property " + prop + ": " + contentDir);
-            }
-        }
-
-        // if all else fails, try
-        if (contentDir == null) {
-            return solrHome + "ContentStore";
-
-        } else {
-            return contentDir;
-        }
-    }
-
-    
     public static SolrContentStore getSolrContentStore()
     {
         return solrContentStore;
     }
     
-    
-    
+
     // write a BytesRef as a byte array
     private static JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver()
     {
@@ -219,7 +185,7 @@ public class SolrContentStore implements ContentStore
     private final String root;
     
     
-    public SolrContentStore(String rootStr)
+    private SolrContentStore(String rootStr)
     {
         File rootFile = new File(rootStr);
         try

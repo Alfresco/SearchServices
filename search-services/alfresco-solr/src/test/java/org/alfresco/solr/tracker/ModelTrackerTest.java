@@ -69,16 +69,19 @@ public class ModelTrackerTest
     @Mock
     private TrackerStats trackerStats;
 
+    private static File alfrescoModelDir;
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
+        alfrescoModelDir = new File("target/testalfrescoModels");
+        alfrescoModelDir.mkdir();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception
     {
         try {
-            File alfrescoModelDir = new File("alfrescoModels");
             File[] listFiles = alfrescoModelDir.listFiles();
             for (File file : listFiles) 
             {
@@ -103,8 +106,8 @@ public class ModelTrackerTest
         when(props.getProperty("acl.shard.count", "1")).thenReturn("1");
         when(props.getProperty("acl.shard.instance", "0")).thenReturn("0");
         when(this.srv.getTrackerStats()).thenReturn(trackerStats);
+        System.setProperty("solr.model.dir", alfrescoModelDir.getAbsolutePath());
 
-        // TODO: create test folder for model sync?
         this.modelTracker = new ModelTracker(null, props, repositoryClient, coreName, srv);
     }
 
@@ -137,7 +140,6 @@ public class ModelTrackerTest
     {
         verify(this.srv).afterInitModels();
 
-        File alfrescoModelDir = new File("alfrescoModels");
         assertTrue(alfrescoModelDir.isDirectory());
 
         File[] modelRepresentations = alfrescoModelDir.listFiles(new FileFilter()
