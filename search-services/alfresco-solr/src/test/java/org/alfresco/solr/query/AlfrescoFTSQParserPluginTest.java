@@ -20,10 +20,15 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrTestCaseJ4;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.lucene.util.LuceneTestCase;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.Before;
@@ -35,7 +40,7 @@ import java.util.Locale;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
+public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 implements QueryConstants {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -94,11 +99,11 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
 */
     @Test
     public void dataChecks() throws Exception {
-        //Check the root node
+        /********  Check the root node **********/
         assertAQuery("PATH:\"/\"", 1);
         assertAQuery("PATH:\"/.\"", 1);
         
-        //Check paths
+        /******* Check paths ********************/
         assertAQuery("PATH:\"/cm:one\"", 1);
         assertAQuery("PATH:\"/cm:two\"", 1);
         assertAQuery("PATH:\"/cm:three\"", 1);
@@ -163,14 +168,14 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
         assertAQuery("PATH:\"/three\"", 1);
         assertAQuery("PATH:\"/four\"", 1);
         
-        // Check qNames
+        /******** Check qNames ***************/
         assertAQuery("QNAME:\"nine\"", 1);
         assertAQuery("PRIMARYASSOCTYPEQNAME:\"cm:contains\"", 11);
         assertAQuery("PRIMARYASSOCTYPEQNAME:\"sys:children\"", 4);
         assertAQuery("ASSOCTYPEQNAME:\"cm:contains\"", 11);
         assertAQuery("ASSOCTYPEQNAME:\"sys:children\"", 5);
         
-        //check type
+        /******** check type ****************/
         assertAQuery("TYPE:\"" + testType.toString() + "\"", 1);
         assertAQuery("TYPE:\"" + testType.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 1);
         assertAQuery("EXACTTYPE:\"" + testType.toString() + "\"", 1);
@@ -201,7 +206,13 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
         assertAQuery("EXACTASPECT:\"" + testAspect.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 1);
 
 
-        // Check text
+        /*********** Check data type **********/
+        assertAQuery("d\\:double:\"5.6\"", 1);
+        assertAQuery("d\\:content:\"fox\"", 1);
+        assertAQuery("d\\:content:\"fox\"", 1, Locale.US, null, null);
+
+
+        /*********** Check text **************/
         assertAQuery("TEXT:fox AND TYPE:\"" + ContentModel.PROP_CONTENT.toString() + "\"", 1);
         assertAQuery("TEXT:fox @cm\\:name:fox", 1);
         assertAQuery("d\\:content:fox d\\:text:fox", 1);
@@ -259,7 +270,7 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
         assertAQuery("TEXT:\"\u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF\"", 1);
         assertAQuery("TEXT:\"aeidnouy\"", 1);
 
-        // FTS
+        /**************** Check text *********************/
 
         assertAQuery("TEXT:\"fox\"", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
@@ -276,7 +287,7 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
                         + ".size:\"298\"", 1);
 
         //TODO Fix these tests
-        /*
+
         assertAQuery("TEXT:\"fox\"", 0, null, new String[] { "@"
                 + ContentModel.PROP_NAME.toString() }, null);
         assertAQuery("TEXT:\"fox\"", 1, null, new String[] {
@@ -295,7 +306,7 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
                 + orderText.toString() }, null);
         assertAQuery("TEXT:*bage", 15, null,
                 new String[] { "@" + orderText.toString() }, null);
-        */
+
 //            assertAQuery("TEXT:dabbage~0.3", 15, null, new String[] { "@"
 //                        + orderText.toString() }, null);
 
@@ -343,9 +354,193 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
         assertAQuery("TEXT:\"alfresc*tutorial\"", 0);
         assertAQuery("TEXT:\"alf* tut*\"", 1);
         assertAQuery("TEXT:\"*co *al\"", 1);
-
         
-        //Check ranges
+        /********* check mltext ************/
+
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfresco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfresc?\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfres??\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfre???\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfr????\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alf?????\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"al??????\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"a???????\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"????????\"", 1);
+
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"a??re???\"", 1);
+
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"?lfresco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"??fresco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"???resco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"????esco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"?????sco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"??????co\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"???????o\"", 1);
+
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"???resco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"???res?o\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"????e?co\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"????e?c?\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"???re???\"", 1);
+
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfresc*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfres*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfre*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alfr*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"alf*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"al*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"a*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"a*****\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*lfresco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*fresco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*resco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*esco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*sco\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*co\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*o\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"****lf**sc***\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*??*lf**sc***\"", 0);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Alfresc*tutorial\"", 0);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Alf* tut*\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"*co *al\"", 1);
+
+        QName mlQName = QName.createQName(TEST_NAMESPACE, "ml");
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":and", 0);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":\"and\"", 0);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana", 1);
+
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana", 1, Locale.UK,
+                null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana", 1,
+                Locale.ENGLISH, null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banane", 1,
+                Locale.FRENCH, null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":香蕉", 1,
+                Locale.CHINESE, null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banaan", 1,
+                new Locale("nl"), null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banane", 1,
+                Locale.GERMAN, null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":μπανάνα", 1,
+                new Locale("el"), null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana", 1,
+                Locale.ITALIAN, null, null);
+
+        //TODO fix test
+        /*
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":�?ナナ", 1, new Locale(
+                        "ja"), null, null);
+                        */
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":바나나", 1, new Locale(
+                        "ko"), null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana", 1,
+                new Locale("pt"), null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":банан", 1, new Locale(
+                        "ru"), null, null);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":plátano", 1,
+                new Locale("es"), null, null);
+
+        /*********** Check ranges  **************/
 
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[a TO b]", 1);
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[a TO \uFFFF]", 14);
@@ -354,7 +549,7 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[d TO \uFFFF]", 12);
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[d TO *]", 12);
         
-        //Check non-field
+        /*********** Check non-field  ************/
 
         assertAQuery("TEXT:fox", 1);
         assertAQuery("TEXT:fo*", 1);
@@ -388,8 +583,8 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
                 "@"
                         + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
                         .toPrefixString(dataModel.getNamespaceDAO())) + ":*ox", 1);
-        
-        // Check null and unset
+
+        /************** Check null and unset  *************/
 
         assertAQuery("ISUNSET:\""
                 + QName.createQName(TEST_NAMESPACE, "null").toString() + "\"", 0);
@@ -411,6 +606,309 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 {
                 "aspectProperty").toString() + "\"", 0);
         assertAQuery("ISNOTNULL:\"" + QName.createQName(TEST_NAMESPACE, "aspectProperty").toString() + "\"", 1);
         assertAQuery("EXISTS:\"" + QName.createQName(TEST_NAMESPACE, "aspectProperty").toString() + "\"", 1);
+
+
+        /***** Check internal fields ******/
+
+        final Long aclId = new Long(1);
+
+        for (int i = 1; i < 16; i++)
+        {
+            Long dbId = new Long(i);
+            String id = SearchLanguageConversion.escapeLuceneQuery(AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbId));
+            assertQ(areq(params("q", FIELD_SOLR4_ID + ":" + id, "qt", "/afts"), null),
+                    "*[count(//doc)=1]");
+        }
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", SearchLanguageConversion.escapeLuceneQuery(FIELD_DOC_TYPE) + ":" + SolrInformationServer.DOC_TYPE_NODE), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", SearchLanguageConversion.escapeLuceneQuery(FIELD_DOC_TYPE) + ":" + SolrInformationServer.DOC_TYPE_ACL), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", SearchLanguageConversion.escapeLuceneQuery(FIELD_DOC_TYPE) + ":" + SolrInformationServer.DOC_TYPE_ACL_TX), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", SearchLanguageConversion.escapeLuceneQuery(FIELD_DOC_TYPE) + ":" + SolrInformationServer.DOC_TYPE_TX), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PARENT + ":\"" + testNodeRef + "\""), null),
+                "*[count(//doc)=4]");
+
+        // AbstractLuceneQueryParser.FIELD_LINKASPECT is not used for SOLR
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ANCESTOR + ":\"" + testNodeRef + "\""), null),
+                "*[count(//doc)=10]");
+
+        // AbstractLuceneQueryParser.FIELD_ISCONTAINER is not used for SOLR
+        // AbstractLuceneQueryParser.FIELD_ISCATEGORY is not used for SOLR
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:one\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:two\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:three\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:four\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:five\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:six\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:seven\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:eight-0\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:eight-1\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:eight-2\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:nine\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:ten\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:eleven\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:twelve\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:thirteen\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:fourteen\""), null),
+                "*[count(//doc)=2]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:fifteen\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:common\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_QNAME + ":\"cm:link\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:one\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:two\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:three\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:four\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:five\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:six\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:seven\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:eight-0\""), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:eight-1\""), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:eight-2\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:nine\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:ten\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:eleven\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:twelve\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:thirteen\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:fourteen\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:fifteen\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:common\""), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCQNAME + ":\"cm:link\""), null),
+                "*[count(//doc)=0]");
+
+        // AbstractLuceneQueryParser.FIELD_ISROOT is not used in SOLR
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYASSOCTYPEQNAME + ":\""
+                        + ContentModel.ASSOC_CHILDREN.toPrefixString(dataModel.getNamespaceDAO()) + "\""), null),
+                "*[count(//doc)=4]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ISNODE + ":T"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ASSOCTYPEQNAME + ":\""
+                        + ContentModel.ASSOC_CHILDREN.toPrefixString(dataModel.getNamespaceDAO()) + "\""), null),
+                "*[count(//doc)=5]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_PRIMARYPARENT + ":\"" + testNodeRef + "\""), null),
+                "*[count(//doc)=2]");
+
+        // TYPE and ASPECT is covered in other tests
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_FTSSTATUS + ":\"New\""), null),
+                "*[count(//doc)=2]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":1"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":2"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":3"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":4"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":5"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":6"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":7"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":8"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":9"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":10"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":11"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":12"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":13"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":14"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":15"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":16"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":17"), null),
+                "*[count(//doc)=0]");
+
+        // testQueryByHandler(report, core, "/afts", AbstractLuceneQueryParser.FIELD_DBID+":*", 16, null, null, (String)
+        // null);
+        // testQueryByHandler(report, core, "/afts", AbstractLuceneQueryParser.FIELD_DBID+":[3 TO 4]", 2, null, null,
+        // null);
+
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_TXID + ":1"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_INTXID + ":1"), null),
+                "*[count(//doc)=17]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ACLTXID + ":1"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_INACLTXID + ":1"), null),
+                "*[count(//doc)=2]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_INACLTXID + ":2"), null),
+                "*[count(//doc)=0]");
+
+        //TODO fix test
+        /*
+        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_TXCOMMITTIME + ":*"), null),
+                "*[count(//doc)=1]");
+
+        testQueryByHandler(report, core, "/native", FIELD_TXCOMMITTIME + ":*", 1, null, null, null, null,
+                null, (String) null);
+
+        testQueryByHandler(report, core, "/native", FIELD_ACLTXCOMMITTIME + ":*", 1, null, null, null,
+                null, null, (String) null);
+        */
+        
+        /*
+
+        // AbstractLuceneQueryParser.FIELD_EXCEPTION_MESSAGE
+        // addNonDictionaryField(AbstractLuceneQueryParser.FIELD_EXCEPTION_STACK
+
+        testQueryByHandler(report, core, "/afts", FIELD_ACLID + ":1", 17, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_READER + ":\"GROUP_EVERYONE\"", 16, null, null,
+                    null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":andy", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":bob", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":cid", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":dave", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":eoin", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":fred", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":gail", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":hal", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":ian", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":jake", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":kara", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":loon", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":mike", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":noodle", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":ood", 1, null, null, null, null, null,
+                    (String) null);
+
+        testQueryByHandler(report, core, "/afts", FIELD_PARENT_ASSOC_CRC + ":0", 16, null, null, null,
+                    null, null, (String) null);
+
+
+         */
+
+
     }
 
 

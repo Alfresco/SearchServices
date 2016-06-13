@@ -88,6 +88,7 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
 {
     private static long id = 0;
     private static int orderTextCount = 0;
+    protected static String testNodeRef;
     private static Date orderDate = new Date();
     protected static final String TEST_NAMESPACE = "http://www.alfresco.org/test/solrtest";
 
@@ -573,6 +574,9 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
         // 1
 
         NodeRef n01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+
+        testNodeRef = n01NodeRef.toString();
+
         QName n01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "one");
         ChildAssociationRef n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName,
                 n01NodeRef, true, 0);
@@ -1208,12 +1212,11 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
                                 Integer count)
             throws IOException,
                    org.apache.lucene.queryparser.classic.ParseException {
-        assertAQuery(dataModel, queryString, count, null, null, null);
+        assertAQuery(queryString, count, null, null, null);
     }
 
 
-    protected void assertAQuery(AlfrescoSolrDataModel dataModel,
-                                String queryString,
+    protected void assertAQuery(String queryString,
                                 Integer count,
                                 Locale locale,
                                 String[] textAttributes,
