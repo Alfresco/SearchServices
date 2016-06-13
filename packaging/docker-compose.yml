@@ -13,11 +13,12 @@ services:
     image: dockerreg.alfresco.com/alfresco-solr:master-latest
     command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a", "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
     environment:
+      #Alfresco needs to know how to call solr
       SOLR_PROXY_HOST: solr6
-      SOLR_PROXY_BASEURL: solr
+      SOLR_PROXY_PORT: 8983
+      #Solr needs to know how to call Alfresco
       SOLR_ALFRESCO_HOST: repo
-#      SOLR_ALFRESCO_PORT: 8080
- #           "alfresco.baseUrl",
+      SOLR_ALFRESCO_PORT: 8080
     ports:
           - "8083:8983"
           - "1044:1044"
