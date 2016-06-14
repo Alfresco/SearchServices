@@ -7,7 +7,7 @@
         <version>6</version>
     </parent>
     <artifactId>alfresco-solr-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>6.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Solr parent</name>
 
