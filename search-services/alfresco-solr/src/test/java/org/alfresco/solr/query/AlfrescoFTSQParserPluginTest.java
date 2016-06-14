@@ -850,10 +850,17 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 impleme
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_INACLTXID + ":2"), null),
                 "*[count(//doc)=0]");
 
-        //TODO fix test
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ACLID + ":1"), null),
+                "*[count(//doc)=17]");
+
+
+        //TODO fix tests
         /*
         assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_TXCOMMITTIME + ":*"), null),
                 "*[count(//doc)=1]");
+
+         assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_READER + ":\"GROUP_EVERYONE\""), null),
+                "*[count(//doc)=16]");
 
         testQueryByHandler(report, core, "/native", FIELD_TXCOMMITTIME + ":*", 1, null, null, null, null,
                 null, (String) null);
@@ -867,8 +874,7 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 impleme
         // AbstractLuceneQueryParser.FIELD_EXCEPTION_MESSAGE
         // addNonDictionaryField(AbstractLuceneQueryParser.FIELD_EXCEPTION_STACK
 
-        testQueryByHandler(report, core, "/afts", FIELD_ACLID + ":1", 17, null, null, null, null, null,
-                    (String) null);
+
         testQueryByHandler(report, core, "/afts", FIELD_READER + ":\"GROUP_EVERYONE\"", 16, null, null,
                     null, null, null, (String) null);
         testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":andy", 1, null, null, null, null,
@@ -905,8 +911,473 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 impleme
         testQueryByHandler(report, core, "/afts", FIELD_PARENT_ASSOC_CRC + ":0", 16, null, null, null,
                     null, null, (String) null);
 
-
          */
+
+        /********************TEST FTS **************************/
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "lazy and dog"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-lazy and -dog"), null),
+                "*[count(//doc)=15]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|lazy and |dog"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|eager and |dog"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|lazy and |wolf"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|eager and |wolf"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-lazy or -dog"), null),
+                "*[count(//doc)=15]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-eager or -dog"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-lazy or -wolf"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "-eager or -wolf"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy dog"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy and not dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy not dog"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy and !dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy !dog"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "lazy and -dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy -dog"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm_content:\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "d:content:\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "=cm_content:\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "~cm_content:\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "cm:content:big OR cm:content:lazy"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "cm:content:big AND cm:content:lazy"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "{http://www.alfresco.org/model/content/1.0}content:\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "=lazy"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "@cm:content:big OR @cm:content:lazy"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "@cm:content:big AND @cm:content:lazy"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "@{http://www.alfresco.org/model/content/1.0}content:\"lazy\""), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "~@cm:content:big OR ~@cm:content:lazy"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown * quick"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown * dog"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(0) dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(1) dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(2) dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(3) dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(4) dog"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(5) dog"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(6) dog"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(\"lazy\")"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(lazy and dog)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(-lazy and -dog)"), null),
+                "*[count(//doc)=15]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(-lazy and dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(lazy and -dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(|lazy and |dog)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(|eager and |dog)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(|lazy and |wolf)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(|eager and |wolf)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(-lazy or -dog)"), null),
+                "*[count(//doc)=15]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(-eager or -dog)"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(-lazy or -wolf)"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(-eager or -wolf)"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(lazy dog)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy and not dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q","TEXT:(lazy not dog)"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy and !dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy !dog)"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy and -dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy -dog)"), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm_content:(\"lazy\")"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "cm:content:(big OR lazy)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:content:(big AND lazy)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(=lazy)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "@cm:content:(big) OR @cm:content:(lazy)"), null),
+                "*[count(//doc)=1]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "@cm:content:(big) AND @cm:content:(lazy)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "@{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "@cm:content:(~big OR ~lazy)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown * quick)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown * dog)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(0) dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(1) dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(2) dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(3) dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(4) dog)"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(5) dog)"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(6) dog)"), null),
+                "*[count(//doc)=1]");
+
+
+        /*
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, "DBID desc", new Integer[] { 16, 15, 14, 13, 12, 11,
+                    10, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "cm:content.mimetype:\"text/plain\"", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm_content.mimetype:\"text/plain\"", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", "@cm:content.mimetype:\"text/plain\"", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", "@cm_content.mimetype:\"text/plain\"", 1, null, null, null, null,
+                    null, (String) null);
+        testQueryByHandler(report, core, "/afts", "content.mimetype:\"text/plain\"", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts",
+                    "@{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1, null, null, null,
+                    null, null, (String) null);
+        testQueryByHandler(report, core, "/afts",
+                    "{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1, null, null, null,
+                    null, null, (String) null);
+
+        QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
+        testQueryByHandler(report, core, "/afts", qname + ":3.40", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":3..4", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":3..3.39", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":3..3.40", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":3.41..3.9", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":3.40..3.9", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 4]", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 3.39]", 0, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 3.4]", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":[3.41 TO 4]", 0, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":[3.4 TO 4]", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 3.4>", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":<3.4 TO 4]", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":<3.4 TO 3.4>", 0, null, null, null, null, null,
+                    (String) null);
+
+        testQueryByHandler(report, core, "/afts", qname + ":(3.40)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":(3..4)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":(3..3.39)", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":(3..3.40)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":(3.41..3.9)", 0, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":(3.40..3.9)", 1, null, null, null, null, null,
+                    (String) null);
+
+        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 4])", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 3.39])", 0, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 3.4])", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":([3.41 TO 4])", 0, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":([3.4 TO 4])", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 3.4>)", 0, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":(<3.4 TO 4])", 0, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", qname + ":(<3.4 TO 3.4>)", 0, null, null, null, null, null,
+                    (String) null);
+
+        testQueryByHandler(report, core, "/afts", "test:float_x002D_ista:3.40", 1, null, null, null, null, null,
+                    (String) null);
+
+        testQueryByHandler(report, core, "/afts", "lazy", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "laz*", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "l*y", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "l??y", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "?az?", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "*zy", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "\"lazy\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"laz*\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"l*y\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"l??y\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"?az?\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"*zy\"", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "cm:content:lazy", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:laz*", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:l*y", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:l??y", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:?az?", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:*zy", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "cm:content:\"lazy\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:\"laz*\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:\"l*y\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:\"l??y\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:\"?az?\"", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:\"*zy\"", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "cm:content:(lazy)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(laz*)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(l*y)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(l??y)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(?az?)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(*zy)", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "cm:content:(\"lazy\")", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(\"laz*\")", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(\"l*y\")", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(\"l??y\")", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(\"?az?\")", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:(\"*zy\")", 1, null, null, null, null, null,
+                    (String) null);
+
+        testQueryByHandler(report, core, "/afts", "lazy^2 dog^4.2", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "lazy~0.7", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:laxy~0.7", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "laxy~0.7", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "=laxy~0.7", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "~laxy~0.7", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "\"quick fox\"~0", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"quick fox\"~1", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"quick fox\"~2", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"quick fox\"~3", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "\"fox quick\"~0", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"fox quick\"~1", 0, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"fox quick\"~2", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "\"fox quick\"~3", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "lazy", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "-lazy", 15, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "lazy -lazy", 16, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "lazy^20 -lazy", 16, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "lazy^20 -lazy^20", 16, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "cm:content:lazy", 1, null, null, null, null, null, (String) null);
+
+        // testQueryByHandler(report, core, "/afts", "ANDY:lazy", 1, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "content:lazy", 1, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts",
+                    "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0, null, null, null,
+                    null, null, (String) null);
+        testQueryByHandler(
+                    report,
+                    core,
+                    "/afts",
+                    "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
+                    15, null, null, null, null, null, (String) null);
+        testQueryByHandler(
+                    report,
+                    core,
+                    "/afts",
+                    "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
+                    0, null, null, null, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "(brown *(6) dog)", 1, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "TEXT:(brown *(6) dog)", 1, null, null, null, null, null,
+                    (String) null);
+        testQueryByHandler(report, core, "/afts", "\"//.\"", 0, null, null, null, null, null, (String) null);
+        // testQueryByHandler(report, core, "/afts", "PATH", "\"//.\"", 16, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "cm:content:brown", 1, null, null, null, null, null, (String) null);
+        // testQueryByHandler(report, core, "/afts", "ANDY:brown", 1, null, (String) null);
+        // testQueryByHandler(report, core, "/afts", "andy:brown", 1, null, (String) null);
+        // testQueryByHandler(report, core, "/afts", "ANDY", "brown", 1, null, (String) null);
+        // testQueryByHandler(report, core, "/afts", "andy", "brown", 1, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "modified:*", 2, null, null, null, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "modified:[MIN TO NOW]", 2, null, null, null, null, null,
+                    (String) null);
+
+        testQueryByHandler(report, core, "/afts", "TYPE:" + testType.toString(), 1, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "TYPE:" + testType.toString(), 0, null, null, null, null, null, (ContentStream)null, "mimetype():document");
+        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "mimetype():document");
+        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 0, null, null, null, null, null, (ContentStream)null, "contentSize():[0 TO 100]");
+        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "contentSize():[100 TO 1000]");
+
+        testQueryByHandler(report, core, "/afts", "modified:[NOW/DAY-1DAY TO NOW/DAY+1DAY]", 2, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "modified:[NOW/DAY-1DAY TO *]", 2, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "modified:[* TO NOW/DAY+1DAY]", 2, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "modified:[* TO *]", 2, null, null, null, null, null);
+
+
+        // Synonym
+        // 1 in text -  1 in query
+        testQueryByHandler(report, core, "/afts", "quick", 1, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "fast", 1, null, null, null, null, null);
+        // 3 words in test - 1..3 in query
+        testQueryByHandler(report, core, "/afts", "brown AND fox AND jumped", 1, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "leaping AND reynard", 1, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "springer", 1, null, null, null, null, null);
+        // 1 word in text 1..2 in query
+        testQueryByHandler(report, core, "/afts", "lazy", 1, null, null, null, null, null);
+        testQueryByHandler(report, core, "/afts", "bone AND idle", 1, null, null, null, null, null);
+
+
+        // Cross language support and tokenisation part and full.
+        testQueryByHandler(report, core, "/afts", "title:English", 1, null, null, Locale.ENGLISH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:English123", 1, null, null, Locale.ENGLISH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:French", 1, null, null, Locale.ENGLISH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:French123", 1, null, null, Locale.ENGLISH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:123", 1, null, null, Locale.ENGLISH, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "title:English", 1, null, null, Locale.FRENCH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:English123", 1, null, null, Locale.FRENCH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:French", 1, null, null, Locale.FRENCH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:French123", 1, null, null, Locale.FRENCH, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:123", 1, null, null, Locale.FRENCH, null, null, (String) null);
+
+        testQueryByHandler(report, core, "/afts", "title:English", 1, null, null, Locale.GERMAN, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:English123", 1, null, null, Locale.GERMAN, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:French", 1, null, null, Locale.GERMAN, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:French123", 1, null, null, Locale.GERMAN, null, null, (String) null);
+        testQueryByHandler(report, core, "/afts", "title:123", 1, null, null, Locale.GERMAN, null, null, (String) null);
+         */
+
+        /**************** Test CMIS ***************/
 
 
     }
