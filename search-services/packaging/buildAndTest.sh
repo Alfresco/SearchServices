@@ -26,8 +26,10 @@ if ! docker inspect "$dockerImage" &> /dev/null; then
 fi
 
 # running tests
-docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/data ] || (echo "Data dir does not exist" && exit 1)
-docker run --rm "$dockerImage" [ -e /opt/alfresco-solr/solrhome/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
+docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/solr ] || (echo "solr dir does not exist" && exit 1)
+docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/data/content ] || (echo "content dir does not exist" && exit 1)
+docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/data/alfrescoModels ] || (echo "alfrescoModels dir does not exist" && exit 1)
+docker run --rm "$dockerImage" [ -e /opt/alfresco-solr/data/solrhome/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
 docker run --rm "$dockerImage" /opt/alfresco-solr/solr/bin/solr start
 
 echo "Publishing $dockerImage..."

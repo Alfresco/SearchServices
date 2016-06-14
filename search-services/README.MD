@@ -6,8 +6,6 @@ Git:
 
 	git clone https://gitlab.alfresco.com/search_discovery/solr.git
 
-	cd solr
-
 ### Use Maven
 1. Build
 
@@ -19,9 +17,8 @@ mvn clean install
 To build the docker image, first run the maven build then
 ```
 cd packaging
-./build.sh
+./buildAndTest.sh
 ```
-
 
 ### License
 Copyright (C) 2016 Alfresco Software Limited
