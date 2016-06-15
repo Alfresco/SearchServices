@@ -3,7 +3,8 @@ services:
   repo:
     image: dockerreg.alfresco.com/platform-only:latest
     environment:
-        JAVA_OPTS : "-Ddb.url=jdbc:postgresql://database/alfresco -Dsolr.secureComms=none -Dsolr.useDynamicShardRegistration=true"
+        JAVA_OPTS : "-Ddb.url=jdbc:postgresql://database/alfresco -Dsolr.secureComms=none \
+         -Dsolr.useDynamicShardRegistration=true -Dsolr.host=solr6 -Dsolr.port=8983 -Dsolr.baseUrl=/solr"
     depends_on:
       - database
     ports:
