@@ -35,13 +35,5 @@
                 <exclude>context.xml</exclude>
             </excludes>
         </fileSet>
-        <!-- Just create an empty data directory -->
-        <fileSet>
-          <directory>src/assembly</directory>
-          <outputDirectory>data</outputDirectory>
-          <excludes>
-            <exclude>*</exclude>
-          </excludes>
-        </fileSet>
     </fileSets>
 </assembly>

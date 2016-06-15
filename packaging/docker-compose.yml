@@ -1,9 +1,9 @@
 version: '2'
 services:
   repo:
-    image: dockerreg.alfresco.com/platform-only
+    image: dockerreg.alfresco.com/platform-only:latest
     environment:
-        JAVA_OPTS : "-Ddb.url=jdbc:postgresql://database/alfresco -Dsolr.secureComms=none"
+        JAVA_OPTS : "-Ddb.url=jdbc:postgresql://database/alfresco -Dsolr.secureComms=none -Dsolr.useDynamicShardRegistration=true"
     depends_on:
       - database
     ports:
@@ -13,11 +13,12 @@ services:
     image: dockerreg.alfresco.com/alfresco-solr:master-latest
     command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a", "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
     environment:
-      SOLR_PROXY_HOST: solr6
-      SOLR_PROXY_BASEURL: solr
+      #Solr needs to know how to call Alfresco
       SOLR_ALFRESCO_HOST: repo
-#      SOLR_ALFRESCO_PORT: 8080
- #           "alfresco.baseUrl",
+      SOLR_ALFRESCO_PORT: 8080
+      #Alfresco (admin console) needs to know how to call solr
+      SOLR_PROXY_HOST: localhost
+      SOLR_PROXY_PORT: 8083
     ports:
           - "8083:8983"
           - "1044:1044"
@@ -27,3 +28,6 @@ services:
       POSTGRES_USER: alfresco
       POSTGRES_PASSWORD: alfresco
       POSTGRES_DB: alfresco
+
+
+#In the Index Server Shard Management Admin console the index server is: localhost:8083/solr
