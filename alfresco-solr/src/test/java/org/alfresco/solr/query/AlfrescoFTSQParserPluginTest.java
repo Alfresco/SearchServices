@@ -20,8 +20,6 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrTestCaseJ4;
@@ -30,7 +28,6 @@ import org.alfresco.util.SearchLanguageConversion;
 import org.apache.lucene.util.LuceneTestCase;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1150,171 +1147,131 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 impleme
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(brown *(6) dog)"), null),
                 "*[count(//doc)=1]");
 
+        //Mimetype
+        assertAQueryHasNumberOfDocs("cm:content.mimetype:\"text/plain\"", 1);
+        assertAQueryHasNumberOfDocs("cm_content.mimetype:\"text/plain\"", 1);
+        assertAQueryHasNumberOfDocs("@cm_content.mimetype:\"text/plain\"", 1);
+        assertAQueryHasNumberOfDocs("content.mimetype:\"text/plain\"", 1);
+        assertAQueryHasNumberOfDocs("@{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1);
+        assertAQueryHasNumberOfDocs("{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1);
+
+        //Numbers
+        QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
+
+        assertAQueryHasNumberOfDocs(qname + ":3.40", 1);
+        assertAQueryHasNumberOfDocs(qname + ":3..4", 1);
+        assertAQueryHasNumberOfDocs(qname + ":3..3.39", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":3..3.40", 1);
+        assertAQueryHasNumberOfDocs(qname + ":3.41..3.9", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":3.40..3.9", 1);
+
+        assertAQueryHasNumberOfDocs(qname + ":[3 TO 4]", 1);
+        assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.39]", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.4]", 1);
+        assertAQueryHasNumberOfDocs(qname + ":[3.41 TO 4]", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":[3.4 TO 4]", 1);
+        assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.4>", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 4]", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 3.4>", 0);;
+
+        assertAQueryHasNumberOfDocs(qname + ":(3.40)", 1);
+        assertAQueryHasNumberOfDocs(qname + ":(3..4)", 1);
+        assertAQueryHasNumberOfDocs(qname + ":(3..3.39)", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":(3..3.40)", 1);
+        assertAQueryHasNumberOfDocs(qname + ":(3.41..3.9)", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":(3.40..3.9)", 1);
+
+        assertAQueryHasNumberOfDocs(qname + ":([3 TO 4])", 1);
+        assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.39])", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.4])", 1);
+        assertAQueryHasNumberOfDocs(qname + ":([3.41 TO 4])", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":([3.4 TO 4])", 1);
+        assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.4>)", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 4])", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 3.4>)", 0);;
+
+        assertAQueryHasNumberOfDocs("test:float_x002D_ista:3.40", 1);
+
+        //Test Lazy
+        assertAQueryHasNumberOfDocs("lazy", 1);
+        assertAQueryHasNumberOfDocs("laz*", 1);
+        assertAQueryHasNumberOfDocs("l*y", 1);
+        assertAQueryHasNumberOfDocs("l??y", 1);
+        assertAQueryHasNumberOfDocs("?az?", 1);
+        assertAQueryHasNumberOfDocs("*zy", 1);
+
+        assertAQueryHasNumberOfDocs("\"lazy\"", 1);
+        assertAQueryHasNumberOfDocs("\"laz*\"", 1);
+        assertAQueryHasNumberOfDocs("\"l*y\"", 1);
+        assertAQueryHasNumberOfDocs("\"l??y\"", 1);
+        assertAQueryHasNumberOfDocs("\"?az?\"", 1);
+        assertAQueryHasNumberOfDocs("\"*zy\"", 1);
+
+        assertAQueryHasNumberOfDocs("cm:content:lazy", 1);
+        assertAQueryHasNumberOfDocs("cm:content:laz*", 1);
+        assertAQueryHasNumberOfDocs("cm:content:l*y", 1);
+        assertAQueryHasNumberOfDocs("cm:content:l??y", 1);
+        assertAQueryHasNumberOfDocs("cm:content:?az?", 1);
+        assertAQueryHasNumberOfDocs("cm:content:*zy", 1);
+
+        assertAQueryHasNumberOfDocs("cm:content:\"lazy\"", 1);
+        assertAQueryHasNumberOfDocs("cm:content:\"laz*\"", 1);
+        assertAQueryHasNumberOfDocs("cm:content:\"l*y\"", 1);
+        assertAQueryHasNumberOfDocs("cm:content:\"l??y\"", 1);
+        assertAQueryHasNumberOfDocs("cm:content:\"?az?\"", 1);
+        assertAQueryHasNumberOfDocs("cm:content:\"*zy\"", 1);
+
+        assertAQueryHasNumberOfDocs("cm:content:(lazy)", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(laz*)", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(l*y)", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(l??y)", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(?az?)", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(*zy)", 1);
+
+        assertAQueryHasNumberOfDocs("cm:content:(\"lazy\")", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(\"laz*\")", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(\"l*y\")", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(\"l??y\")", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(\"?az?\")", 1);
+        assertAQueryHasNumberOfDocs("cm:content:(\"*zy\")", 1);
+
+        assertAQueryHasNumberOfDocs("lazy^2 dog^4.2", 1);
+        assertAQueryHasNumberOfDocs("lazy~0.7", 1);
+        assertAQueryHasNumberOfDocs("cm:content:laxy~0.7", 1);
+        assertAQueryHasNumberOfDocs("laxy~0.7", 1);
+        assertAQueryHasNumberOfDocs("=laxy~0.7", 1);
+        assertAQueryHasNumberOfDocs("~laxy~0.7", 1);
+
+        assertAQueryHasNumberOfDocs("\"quick fox\"~0", 0);
+        assertAQueryHasNumberOfDocs("\"quick fox\"~1", 1);
+        assertAQueryHasNumberOfDocs("\"quick fox\"~2", 1);
+        assertAQueryHasNumberOfDocs("\"quick fox\"~3", 1);
+
+        assertAQueryHasNumberOfDocs("\"fox quick\"~0", 0);
+        assertAQueryHasNumberOfDocs("\"fox quick\"~1", 0);
+        assertAQueryHasNumberOfDocs("\"fox quick\"~2", 1);
+        assertAQueryHasNumberOfDocs("\"fox quick\"~3", 1);
+
+        assertAQueryHasNumberOfDocs("lazy", 1);
+        assertAQueryHasNumberOfDocs("-lazy", 15);
+        assertAQueryHasNumberOfDocs("lazy -lazy", 16);
+        assertAQueryHasNumberOfDocs("lazy^20 -lazy", 16);
+        assertAQueryHasNumberOfDocs("lazy^20 -lazy^20", 16);
+
+        assertAQueryHasNumberOfDocs("cm:content:lazy",1);
+//        assertAQueryHasNumberOfDocs("ANDY:lazy", 1);
+        assertAQueryHasNumberOfDocs("content:lazy", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
+        assertAQueryHasNumberOfDocs("+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0);
+        assertAQueryHasNumberOfDocs("+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 15);
+        assertAQueryHasNumberOfDocs("+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 0);
 
         /*
          testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, "DBID desc", new Integer[] { 16, 15, 14, 13, 12, 11,
                     10, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, null, null, null, (String) null);
 
-        testQueryByHandler(report, core, "/afts", "cm:content.mimetype:\"text/plain\"", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm_content.mimetype:\"text/plain\"", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", "@cm:content.mimetype:\"text/plain\"", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", "@cm_content.mimetype:\"text/plain\"", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", "content.mimetype:\"text/plain\"", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts",
-                    "@{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1, null, null, null,
-                    null, null, (String) null);
-        testQueryByHandler(report, core, "/afts",
-                    "{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1, null, null, null,
-                    null, null, (String) null);
-
-        QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
-        testQueryByHandler(report, core, "/afts", qname + ":3.40", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":3..4", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":3..3.39", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":3..3.40", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":3.41..3.9", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":3.40..3.9", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 4]", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 3.39]", 0, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 3.4]", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":[3.41 TO 4]", 0, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":[3.4 TO 4]", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":[3 TO 3.4>", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":<3.4 TO 4]", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":<3.4 TO 3.4>", 0, null, null, null, null, null,
-                    (String) null);
-
-        testQueryByHandler(report, core, "/afts", qname + ":(3.40)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":(3..4)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":(3..3.39)", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":(3..3.40)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":(3.41..3.9)", 0, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":(3.40..3.9)", 1, null, null, null, null, null,
-                    (String) null);
-
-        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 4])", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 3.39])", 0, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 3.4])", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":([3.41 TO 4])", 0, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":([3.4 TO 4])", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":([3 TO 3.4>)", 0, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":(<3.4 TO 4])", 0, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", qname + ":(<3.4 TO 3.4>)", 0, null, null, null, null, null,
-                    (String) null);
-
-        testQueryByHandler(report, core, "/afts", "test:float_x002D_ista:3.40", 1, null, null, null, null, null,
-                    (String) null);
-
-        testQueryByHandler(report, core, "/afts", "lazy", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "laz*", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "l*y", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "l??y", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "?az?", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "*zy", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "\"lazy\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"laz*\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"l*y\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"l??y\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"?az?\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"*zy\"", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "cm:content:lazy", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:laz*", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:l*y", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:l??y", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:?az?", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:*zy", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "cm:content:\"lazy\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:\"laz*\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:\"l*y\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:\"l??y\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:\"?az?\"", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:\"*zy\"", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "cm:content:(lazy)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(laz*)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(l*y)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(l??y)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(?az?)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(*zy)", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "cm:content:(\"lazy\")", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(\"laz*\")", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(\"l*y\")", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(\"l??y\")", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(\"?az?\")", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:(\"*zy\")", 1, null, null, null, null, null,
-                    (String) null);
-
-        testQueryByHandler(report, core, "/afts", "lazy^2 dog^4.2", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "lazy~0.7", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:laxy~0.7", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "laxy~0.7", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "=laxy~0.7", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "~laxy~0.7", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "\"quick fox\"~0", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"quick fox\"~1", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"quick fox\"~2", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"quick fox\"~3", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "\"fox quick\"~0", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"fox quick\"~1", 0, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"fox quick\"~2", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "\"fox quick\"~3", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "lazy", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "-lazy", 15, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "lazy -lazy", 16, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "lazy^20 -lazy", 16, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "lazy^20 -lazy^20", 16, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "cm:content:lazy", 1, null, null, null, null, null, (String) null);
 
         // testQueryByHandler(report, core, "/afts", "ANDY:lazy", 1, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "content:lazy", 1, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts",
-                    "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0, null, null, null,
-                    null, null, (String) null);
-        testQueryByHandler(
-                    report,
-                    core,
-                    "/afts",
-                    "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
-                    15, null, null, null, null, null, (String) null);
-        testQueryByHandler(
-                    report,
-                    core,
-                    "/afts",
-                    "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
-                    0, null, null, null, null, null, (String) null);
 
         testQueryByHandler(report, core, "/afts", "(brown *(6) dog)", 1, null, null, null, null, null, (String) null);
         testQueryByHandler(report, core, "/afts", "TEXT:(brown *(6) dog)", 1, null, null, null, null, null,
@@ -1380,6 +1337,11 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 impleme
         /**************** Test CMIS ***************/
 
 
+    }
+
+    private void assertAQueryHasNumberOfDocs(String query, int num)
+    {
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", query), null), "*[count(//doc)="+num+"]");
     }
 
 
