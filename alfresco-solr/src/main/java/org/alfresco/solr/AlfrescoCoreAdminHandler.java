@@ -178,167 +178,125 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
-        System.out.println("######## Handle Custom Action ###########");
+        log.info("######## Handle Custom Action ###########");
         SolrParams params = req.getParams();
         String cname = params.get(CoreAdminParams.CORE);
-        String a = params.get(CoreAdminParams.ACTION);
+        String action = params.get(CoreAdminParams.ACTION);
+        action = action==null?"":action.toUpperCase();
         try
         {
-            if (a.equalsIgnoreCase("TEST"))
-            {
-                System.out.println("######## Run Tests ###########");
-                new AlfrescoCoreAdminTester(this).runTests(req, rsp);
-            }
-            else if (a.equalsIgnoreCase("AUTHTEST"))
-            {
-                new AlfrescoCoreAdminTester(this).runAuthTest(req, rsp);
-            }
-            else if (a.equalsIgnoreCase("CMISTEST"))
-            {
-                new AlfrescoCoreAdminTester(this).runCmisTests(req, rsp);
-            }
-            else if (a.equalsIgnoreCase("newCore"))
-            {
-                newCore(req, rsp);
-            }
-            else if (a.equalsIgnoreCase("updateCore"))
-            {
-                updateCore(req, rsp);
-            }
-            else if (a.equalsIgnoreCase("removeCore"))
-            {
-                removeCore(req, rsp);
-            }
-            else if (a.equalsIgnoreCase("CHECK"))
-            {
-                actionCHECK(cname);
-            }
-            else if (a.equalsIgnoreCase("NODEREPORT"))
-            {
-                actionNODEREPORTS(rsp, params, cname);
-            }
-            else if (a.equalsIgnoreCase("ACLREPORT"))
-            {
-                actionACLREPORT(rsp, params, cname);
-            }
-            else if (a.equalsIgnoreCase("TXREPORT"))
-            {
-                actionTXREPORT(rsp, params, cname);
-            }
-            else if (a.equalsIgnoreCase("ACLTXREPORT"))
-            {
-                actionACLTXREPORT(rsp, params, cname);
-            }
-            else if (a.equalsIgnoreCase("REPORT"))
-            {
-                actionREPORT(rsp, params, cname);
-            }
-            else if (a.equalsIgnoreCase("PURGE"))
-            {
-                if (cname != null)
-                {
-                    actionPURGE(params, cname);
-                }
-                else
-                {
-                    for (String coreName : getTrackerRegistry().getCoreNames())
-                    {
-                        actionPURGE(params, coreName);
+            switch (action) {
+                case "TEST":
+                    log.info("######## Run Tests ###########");
+                    new AlfrescoCoreAdminTester(this).runTests(req, rsp);
+                    break;
+                case "AUTHTEST":
+                    new AlfrescoCoreAdminTester(this).runAuthTest(req, rsp);
+                    break;
+                case "CMISTEST":
+                    new AlfrescoCoreAdminTester(this).runCmisTests(req, rsp);
+                    break;
+                case "NEWCORE":
+                    newCore(req, rsp);
+                    break;
+                case "UPDATECORE":
+                    updateCore(req, rsp);
+                    break;
+                case "REMOVECORE":
+                    removeCore(req, rsp);
+                    break;
+                case "CHECK":
+                    actionCHECK(cname);
+                    break;
+                case "NODEREPORT":
+                    actionNODEREPORTS(rsp, params, cname);
+                    break;
+                case "ACLREPORT":
+                    actionACLREPORT(rsp, params, cname);
+                    break;
+                case "TXREPORT":
+                    actionTXREPORT(rsp, params, cname);
+                    break;
+                case "ACLTXREPORT":
+                    actionACLTXREPORT(rsp, params, cname);
+                    break;
+                case "REPORT":
+                    actionREPORT(rsp, params, cname);
+                    break;
+                case "PURGE":
+                    if (cname != null) {
+                        actionPURGE(params, cname);
+                    } else {
+                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                            actionPURGE(params, coreName);
+                        }
                     }
-                }
-            }
-            else if (a.equalsIgnoreCase("REINDEX"))
-            {
-                if (cname != null)
-                {
-                    actionREINDEX(params, cname);
-                }
-                else
-                {
-                    for (String coreName : getTrackerRegistry().getCoreNames())
-                    {
-                        actionREINDEX(params, coreName);
+                    break;
+                case "REINDEX":
+                    if (cname != null) {
+                        actionREINDEX(params, cname);
+                    } else {
+                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                            actionREINDEX(params, coreName);
+                        }
                     }
-                }
-            }
-            else if (a.equalsIgnoreCase("RETRY"))
-            {
-                if (cname != null)
-                {
-                    actionRETRY(rsp, cname);
-                }
-                else
-                {
-                    for (String coreName : getTrackerRegistry().getCoreNames())
-                    {
-                        actionRETRY(rsp, coreName);
+                    break;
+                case "RETRY":
+                    if (cname != null) {
+                        actionRETRY(rsp, cname);
+                    } else {
+                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                            actionRETRY(rsp, coreName);
+                        }
                     }
-                }
-            }
-            else if (a.equalsIgnoreCase("INDEX"))
-            {
-                if (cname != null)
-                {
-                    actionINDEX(params, cname);
-                }
-                else
-                {
-                    for (String coreName : getTrackerRegistry().getCoreNames())
-                    {
-                        actionINDEX(params, coreName);
+                    break;
+                case "INDEX":
+                    if (cname != null) {
+                        actionINDEX(params, cname);
+                    } else {
+                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                            actionINDEX(params, coreName);
+                        }
                     }
-                }
-            }
-            else if (a.equalsIgnoreCase("FIX"))
-            {
-                if (cname != null)
-                {
-                    actionFIX(cname);
-                }
-                else
-                {
-                    for (String coreName : getTrackerRegistry().getCoreNames())
-                    {
-                        actionFIX(coreName);
+                    break;
+                case "FIX":
+                    if (cname != null) {
+                        actionFIX(cname);
+                    } else {
+                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                            actionFIX(coreName);
+                        }
                     }
-                }
-            }
-            else if (a.equalsIgnoreCase("SUMMARY"))
-            {
-                if (cname != null)
-                {
-                    NamedList<Object> report = new SimpleOrderedMap<Object>();
-                    actionSUMMARY(params, report, cname);
-                    rsp.add("Summary", report);
-                }
-                else
-                {
-                    NamedList<Object> report = new SimpleOrderedMap<Object>();
-                    for (String coreName : getTrackerRegistry().getCoreNames())
-                    {
-                        actionSUMMARY(params, report, coreName);
+                    break;
+                case "SUMMARY":
+                    if (cname != null) {
+                        NamedList<Object> report = new SimpleOrderedMap<Object>();
+                        actionSUMMARY(params, report, cname);
+                        rsp.add("Summary", report);
+                    } else {
+                        NamedList<Object> report = new SimpleOrderedMap<Object>();
+                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                            actionSUMMARY(params, report, coreName);
+                        }
+                        rsp.add("Summary", report);
                     }
-                    rsp.add("Summary", report);
-                }
-            }
-            else if (a.equalsIgnoreCase("LOG4J"))
-            {
-                String resource = "log4j-solr.properties";
-                if (params.get("resource") != null)
-                {
-                    resource = params.get("resource");
-                }
-                initResourceBasedLogging(resource);
-            }
-            else
-            {
-                handleCustomAction(req, rsp);
+                    break;
+                case "LOG4J":
+                    String resource = "log4j-solr.properties";
+                    if (params.get("resource") != null) {
+                        resource = params.get("resource");
+                    }
+                    initResourceBasedLogging(resource);
+                    break;
+                default:
+                    super.handleCustomAction(req, rsp);
+                    break;
             }
         }
         catch (Exception ex)
         {
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
-                        "Error executing implementation of admin request " + a, ex);
+                        "Error executing implementation of admin request " + action, ex);
         }
     }
     
@@ -371,9 +329,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             File solrHome = new File(coreContainer.getSolrHome());
             File templates = new File(solrHome, "templates");
             File template = new File(templates, templateName);
-            
-           
-            
+
             
             if(numShards > 1 )
             {
