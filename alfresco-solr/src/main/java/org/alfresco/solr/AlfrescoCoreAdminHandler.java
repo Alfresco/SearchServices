@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
+import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.IndexHealthReport;
@@ -72,8 +73,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private static final String ARG_ACLID = "aclid";
     private static final String ARG_NODEID = "nodeid";
     private static final String ARG_QUERY = "query";
-    
-    
+    public static final String DATA_DIR_ROOT = "data.dir.root";
+
+
     private SolrTrackerScheduler scheduler = null;
     private TrackerRegistry trackerRegistry = new TrackerRegistry();
     private ConcurrentHashMap<String, InformationServer> informationServers = new ConcurrentHashMap<String, InformationServer>();
@@ -495,10 +497,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         // fix configuration properties
         File config = new File(newCore, "conf/solrcore.properties");
         Properties properties = new Properties();
-        properties.load(new FileInputStream(config));
-        properties.setProperty("data.dir.root", newCore.getCanonicalPath());
+        //Set defaults
+        properties.setProperty(DATA_DIR_ROOT, newCore.getCanonicalPath());
         properties.setProperty("data.dir.store", coreName);
         properties.setProperty("alfresco.stores", store);
+
+        //Potentially override the defaults
+        properties.load(new FileInputStream(config));
+
+        //Don't overide these
         properties.setProperty("alfresco.template", templateName);
         if(aclShardCount > 0)
         {
@@ -506,6 +513,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             properties.setProperty("acl.shard.instance", ""+aclShardInstance);
         }
 
+        //Allow "data.dir.root" to be set via config
+        properties.setProperty(DATA_DIR_ROOT, ConfigUtil.locateProperty(DATA_DIR_ROOT, properties.getProperty(DATA_DIR_ROOT)));
+
+        //Still allow the properties to be overidden via url params
         for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
         {
             String paramName = it.next();
