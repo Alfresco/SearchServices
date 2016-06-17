@@ -32,10 +32,11 @@ import org.apache.solr.search.SolrIndexSearcher;
  */
 public class SolrCachingPathQuery extends Query
 {
-    SolrPathQuery pathQuery;
+    final SolrPathQuery pathQuery;
 
     public SolrCachingPathQuery(SolrPathQuery pathQuery)
     {
+        if (pathQuery == null) throw new IllegalStateException("pathQuery cannot be null");
         this.pathQuery = pathQuery;
     }
     
@@ -62,34 +63,18 @@ public class SolrCachingPathQuery extends Query
         return stringBuilder.toString();
     }
 
-    
-    
     @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((pathQuery == null) ? 0 : pathQuery.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SolrCachingPathQuery)) return false;
+
+        SolrCachingPathQuery that = (SolrCachingPathQuery) o;
+        return pathQuery.equals(that.pathQuery);
+
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        SolrCachingPathQuery other = (SolrCachingPathQuery) obj;
-        if (pathQuery == null)
-        {
-            if (other.pathQuery != null)
-                return false;
-        }
-        else if (!pathQuery.equals(other.pathQuery))
-            return false;
-        return true;
+    public int hashCode() {
+        return pathQuery.hashCode();
     }
 }

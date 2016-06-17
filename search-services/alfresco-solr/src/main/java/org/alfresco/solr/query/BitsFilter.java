@@ -36,10 +36,11 @@ import org.apache.lucene.util.FixedBitSet;
 
 public class BitsFilter extends Filter {
 
-    private List<FixedBitSet> bitSets;
+    private final List<FixedBitSet> bitSets;
 
     public BitsFilter(List<FixedBitSet> bitSets)
     {
+        if (bitSets == null) throw new IllegalStateException("bitSets cannot be null");
         this.bitSets = bitSets;
     }
 
@@ -77,4 +78,21 @@ public class BitsFilter extends Filter {
 	public DocIdSet getDocIdSet(LeafReaderContext context, Bits bits) {
 		return BitsFilteredDocIdSet.wrap(new BitDocIdSet(bitSets.get(context.ord)), bits);
 	}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BitsFilter)) return false;
+
+        BitsFilter that = (BitsFilter) o;
+
+        if (!bitSets.equals(that.bitSets)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return bitSets.hashCode();
+    }
 }
