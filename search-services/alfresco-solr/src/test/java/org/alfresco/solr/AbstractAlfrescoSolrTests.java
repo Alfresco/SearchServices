@@ -98,6 +98,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      * </p>
      */
     protected static TestHarness.LocalRequestFactory lrf;
+    protected static String testBaseFolderNodeRef;
     protected AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
     
     public static void initAlfrescoCore(String config, String schema) throws Exception
@@ -576,11 +577,23 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     /**
      * Generates a SolrQueryRequest
      */
-    public static SolrQueryRequest req(SolrParams params, String... moreParams) {
-      ModifiableSolrParams mp = new ModifiableSolrParams(params);
-      for (int i=0; i<moreParams.length; i+=2) {
-        mp.add(moreParams[i], moreParams[i+1]);
-      }
-      return new LocalSolrQueryRequest(h.getCore(), mp);
+    public static SolrQueryRequest req(SolrParams params, String... moreParams)
+    {
+        ModifiableSolrParams mp = new ModifiableSolrParams(params);
+        for (int i=0; i<moreParams.length; i+=2)
+        {
+            mp.add(moreParams[i], moreParams[i+1]);
+        }
+        return new LocalSolrQueryRequest(h.getCore(), mp);
+    }
+    
+    public static ModifiableSolrParams params(String... params)
+    {
+        ModifiableSolrParams msp = new ModifiableSolrParams();
+        for (int i=0; i<params.length; i+=2) 
+        {
+            msp.add(params[i], params[i+1]);
+        }
+        return msp;
     }
 }

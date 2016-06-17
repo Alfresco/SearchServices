@@ -17,48 +17,19 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.solr.query;
+package org.alfresco.solr.query.cmis;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.util.SearchLanguageConversion;
-import org.apache.lucene.util.LuceneTestCase;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.common.params.ModifiableSolrParams;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.Locale;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class AlfrescoCMISQParserPluginTest extends AlfrescoSolrTestCaseJ4 implements QueryConstants {
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-        Thread.sleep(30000);
-        loadCMISTestSet();
-    }
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        // if you override setUp or tearDown, you better callf
-        // the super classes version
-        super.setUp();
-        //clearIndex();
-        //assertU(commit());
-    }
-
+public class TestAlfrescoCMISQParserPlugin extends AbstractAlfrescoSolrTests implements QueryConstants 
+{
     @Test
     public void dataChecks() throws Exception {
 
