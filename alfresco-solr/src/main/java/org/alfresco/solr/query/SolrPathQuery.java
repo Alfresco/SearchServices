@@ -286,14 +286,11 @@ public class SolrPathQuery extends Query
     }
 
     @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((pathField == null) ? 0 : pathField.hashCode());
-        result = prime * result + ((pathStructuredFieldPositions == null) ? 0 : pathStructuredFieldPositions.hashCode());
-        result = prime * result + (repeats ? 1231 : 1237);
-        result = prime * result + unitSize;
+    public int hashCode() {
+        int result = pathField != null ? pathField.hashCode() : 0;
+        result = 31 * result + unitSize;
+        result = 31 * result + (pathStructuredFieldPositions != null ? pathStructuredFieldPositions.hashCode() : 0);
+        result = 31 * result + (repeats ? 1 : 0);
         return result;
     }
 
@@ -302,8 +299,6 @@ public class SolrPathQuery extends Query
     {
         if (this == obj)
             return true;
-        if (!super.equals(obj))
-            return false;
         if (getClass() != obj.getClass())
             return false;
         SolrPathQuery other = (SolrPathQuery) obj;

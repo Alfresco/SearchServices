@@ -39,28 +39,34 @@ import org.apache.solr.search.PostFilter;
 public class PostFilterQuery extends Query implements PostFilter
 {
     private int cost;
-    private Query query;
+    private final Query query;
 
     public PostFilterQuery(int cost, Query query)
     {
         this.cost = cost;
+        if (query == null) throw new IllegalStateException("query cannot be null");
         this.query = query;
     }
 
-    public int hashcode()
-    {
-        return query.hashCode();
+    @Override
+    public int hashCode() {
+        //DON'T INCLUDE COST??
+        int result = cost;
+        result = 31 * result + query.hashCode();
+        return result;
     }
 
-    public boolean equals(Object o)
-    {
-        if(o instanceof PostFilterQuery)
-        {
-            PostFilterQuery p = (PostFilterQuery)o;
-            return query.equals(p.query);
-        }
+    //THIS WAS WRONG public int hashcode()
 
-        return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PostFilterQuery)) return false;
+
+        PostFilterQuery that = (PostFilterQuery) o;
+
+        //DON'T INCLUDE COST?? if (cost != that.cost) return false;
+        return query.equals(that.query);
     }
 
     public int getCost()
@@ -68,6 +74,7 @@ public class PostFilterQuery extends Query implements PostFilter
         return cost;
     }
 
+    @Override
     public void setCost(int cost)
     {
        this.cost = cost;
@@ -78,6 +85,7 @@ public class PostFilterQuery extends Query implements PostFilter
         return false;
     }
 
+    @Override
     public void setCache(boolean cache)
     {
 
@@ -88,6 +96,7 @@ public class PostFilterQuery extends Query implements PostFilter
         return false;
     }
 
+    @Override
     public void setCacheSep(boolean cacheSep)
     {
 
