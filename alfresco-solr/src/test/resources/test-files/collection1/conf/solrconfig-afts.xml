@@ -267,6 +267,23 @@
     </requestHandler>
 
 
+    <requestHandler name="/cmis" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
+        <lst name="defaults">
+            <str name="defType">cmis</str>
+        </lst>
+        <arr name="components">
+            <!--<str>ensureModels</str>-->
+            <str>query</str>
+            <str>facet</str>
+            <str>mlt</str>
+            <str>highlight</str>
+            <str>stats</str>
+            <str>debug</str>
+        </arr>
+        <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
+    </requestHandler>
+
+
     <searchComponent name="termsComp" class="org.apache.solr.handler.component.TermsComponent"/>
 
     <requestHandler name="/terms" class="org.apache.solr.handler.component.SearchHandler">
@@ -369,6 +386,7 @@
 
     <queryParser name="alfrescoReRank" class="org.alfresco.solr.query.AlfrescoReRankQParserPlugin"/>
     <queryParser name="afts" class="org.alfresco.solr.query.AlfrescoFTSQParserPlugin"/>
+    <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
     <searchComponent name="ensureModels" class="org.alfresco.solr.component.EnsureModelsComponent" />
 
 
