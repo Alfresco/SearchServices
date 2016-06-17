@@ -37,7 +37,6 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.uninverting.UninvertingReader.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.QueryBuilder;
@@ -48,6 +47,7 @@ import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.QParser;
+import org.apache.solr.uninverting.UninvertingReader;
 
 /**
  * Basic behaviour filtched from TextField
@@ -257,11 +257,11 @@ public class AlfrescoFieldType extends FieldType
     }
     
     @Override
-    public Type getUninversionType(SchemaField sf) {
+    public UninvertingReader.Type getUninversionType(SchemaField sf) {
       if (sf.multiValued()) {
-        return Type.SORTED_SET_BINARY;
+        return UninvertingReader.Type.SORTED_SET_BINARY;
       } else {
-        return Type.SORTED;
+        return UninvertingReader.Type.SORTED;
       }
     }
 }
