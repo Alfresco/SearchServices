@@ -88,7 +88,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 	 * 
 	 * @param query
 	 *            The current Query
-	 * @param fieldName
+	 * @param requestFieldname
 	 *            The name of the field
 	 * @param request
 	 *            The current SolrQueryRequest
@@ -115,7 +115,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 	 *            The current query
 	 * @param tokenStream
 	 *            document text CachingTokenStream
-	 * @param fieldName
+	 * @param requestFieldname
 	 *            The name of the field
 	 * @param request
 	 *            The SolrQueryRequest
@@ -156,7 +156,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 	 * 
 	 * @param query
 	 *            The current query
-	 * @param fieldName
+	 * @param requestFieldname
 	 *            The name of the field
 	 * @param request
 	 *            The SolrQueryRequest
@@ -264,9 +264,15 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 								SolrHighlighter.DEFAULT_PHRASE_LIMIT));
 						fvhFieldQuery = fvh.getFieldQuery(query, reader);
 					}
+					fieldHighlights = null;
+					/**
+					FvhContainer fvhContainer = new fvhContainer();
+					fvhContainer.fvh = fvh;
+					fvhContainer.fvhFieldQuery
+
 					fieldHighlights = doHighlightingByFastVectorHighlighter(
-							doc, docId, schemaField, fvh, fvhFieldQuery,
-							reader, req);
+							doc, docId, schemaField, fvhContainer,
+							reader, req); **/
 				} else { // standard/default highlighter
 					fieldHighlights = doHighlightingByHighlighter(doc, docId,
 							schemaField, query, reader, req);
