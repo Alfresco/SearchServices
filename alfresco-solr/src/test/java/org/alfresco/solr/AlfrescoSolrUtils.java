@@ -42,6 +42,8 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_QNAME
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_READER;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TENANT;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOMMITTIME;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
 
@@ -560,5 +562,42 @@ public class AlfrescoSolrUtils
           aclCmd.solrDoc = aclSol;
           core.getUpdateHandler().addDoc(aclCmd);
       }
-      
+      public static void addStoreRoot(SolrCore core,
+                                      AlfrescoSolrDataModel dataModel,
+                                      NodeRef rootNodeRef,
+                                      int txid,
+                                      int dbid,
+                                      int acltxid,
+                                      int aclid) throws IOException
+      {
+          SolrServletRequest solrQueryRequest = null;
+          try
+          {
+              solrQueryRequest = new SolrServletRequest(core, null);
+              AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
+              addDocCmd.overwrite = true;
+              addDocCmd.solrDoc = createDocument(dataModel, new Long(txid), new Long(dbid), rootNodeRef,
+                      ContentModel.TYPE_STOREROOT, new QName[]{ContentModel.ASPECT_ROOT}, null, null, new Long(aclid),
+                      new String[]{"/"}, "system", null, null);
+              core.getUpdateHandler().addDoc(addDocCmd);
+              addAcl(solrQueryRequest, core, dataModel, acltxid, aclid, 0, 0);
+              AddUpdateCommand txCmd = new AddUpdateCommand(solrQueryRequest);
+              txCmd.overwrite = true;
+              SolrInputDocument input = new SolrInputDocument();
+              String id = AlfrescoSolrDataModel.getTransactionDocumentId(new Long(txid));
+              input.addField(FIELD_SOLR4_ID, id);
+              input.addField(FIELD_VERSION, "0");
+              input.addField(FIELD_TXID, txid);
+              input.addField(FIELD_INTXID, txid);
+              input.addField(FIELD_TXCOMMITTIME, (new Date()).getTime());
+              input.addField(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_TX);
+              txCmd.solrDoc = input;
+              core.getUpdateHandler().addDoc(txCmd);
+              core.getUpdateHandler().commit(new CommitUpdateCommand(solrQueryRequest, false));
+          }
+              finally
+          {
+                  solrQueryRequest.close();
+          }
+      }
 }
