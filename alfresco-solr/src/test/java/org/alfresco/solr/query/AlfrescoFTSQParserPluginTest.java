@@ -1266,77 +1266,71 @@ public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 impleme
         assertAQueryHasNumberOfDocs("+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 15);
         assertAQueryHasNumberOfDocs("+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 0);
 
+        assertAQueryHasNumberOfDocs("(brown *(6) dog)", 1);
+        assertAQueryHasNumberOfDocs("TEXT:(brown *(6) dog)", 1);
+        assertAQueryHasNumberOfDocs("\"//.\"", 0);
+        assertAQueryHasNumberOfDocs("cm:content:brown", 1);
+
+        //assertAQueryHasNumberOfDocs("ANDY:brown", 1);
+        //assertAQueryHasNumberOfDocs("andy:brown", 1);
+        // testQueryByHandler(report, core, "/afts", "ANDY", "brown", 1, null, (String) null);
+        // testQueryByHandler(report, core, "/afts", "andy", "brown", 1, null, (String) null);
+
+        assertAQueryHasNumberOfDocs("modified:*", 2);
+        assertAQueryHasNumberOfDocs("modified:[MIN TO NOW]", 2);
+
+        assertAQueryHasNumberOfDocs("TYPE:" + testType.toString(), 1);
+//     testQueryByHandler(report, core, "/afts", "TYPE:" + testType.toString(), 0, null, null, null, null, null, (ContentStream)null, "mimetype():document");
+        assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1);
+//        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "mimetype():document");
+//        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 0, null, null, null, null, null, (ContentStream)null, "contentSize():[0 TO 100]");
+//        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "contentSize():[100 TO 1000]");
+
+        assertAQueryHasNumberOfDocs("modified:[NOW/DAY-1DAY TO NOW/DAY+1DAY]", 2);
+        assertAQueryHasNumberOfDocs("modified:[NOW/DAY-1DAY TO *]", 2);
+        assertAQueryHasNumberOfDocs("modified:[* TO NOW/DAY+1DAY]", 2);
+        assertAQueryHasNumberOfDocs("modified:[* TO *]", 2);
+
+        // Synonym
+        // 1 in text -  1 in query
+        assertAQueryHasNumberOfDocs("quick", 1);
+        assertAQueryHasNumberOfDocs("quick", 1);
+        // 3 words in test - 1..3 in query
+        assertAQueryHasNumberOfDocs("brown AND fox AND jumped", 1);
+//Not working
+//        assertAQueryHasNumberOfDocs("leaping AND reynard", 1);
+//        assertAQueryHasNumberOfDocs("springer", 1);
+        // 1 word in text 1..2 in query
+        assertAQueryHasNumberOfDocs("lazy", 1);
+//        assertAQueryHasNumberOfDocs("bone AND idle", 1);
+
+        // Cross language support and tokenisation part and full.
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English123", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English123", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English123", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
+
         /*
          testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, "DBID desc", new Integer[] { 16, 15, 14, 13, 12, 11,
                     10, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, null, null, null, (String) null);
 
-
-        // testQueryByHandler(report, core, "/afts", "ANDY:lazy", 1, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "(brown *(6) dog)", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "TEXT:(brown *(6) dog)", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", "\"//.\"", 0, null, null, null, null, null, (String) null);
         // testQueryByHandler(report, core, "/afts", "PATH", "\"//.\"", 16, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "cm:content:brown", 1, null, null, null, null, null, (String) null);
-        // testQueryByHandler(report, core, "/afts", "ANDY:brown", 1, null, (String) null);
-        // testQueryByHandler(report, core, "/afts", "andy:brown", 1, null, (String) null);
-        // testQueryByHandler(report, core, "/afts", "ANDY", "brown", 1, null, (String) null);
-        // testQueryByHandler(report, core, "/afts", "andy", "brown", 1, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "modified:*", 2, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "modified:[MIN TO NOW]", 2, null, null, null, null, null,
-                    (String) null);
-
-        testQueryByHandler(report, core, "/afts", "TYPE:" + testType.toString(), 1, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "TYPE:" + testType.toString(), 0, null, null, null, null, null, (ContentStream)null, "mimetype():document");
-        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "mimetype():document");
-        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 0, null, null, null, null, null, (ContentStream)null, "contentSize():[0 TO 100]");
-        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "contentSize():[100 TO 1000]");
-
-        testQueryByHandler(report, core, "/afts", "modified:[NOW/DAY-1DAY TO NOW/DAY+1DAY]", 2, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "modified:[NOW/DAY-1DAY TO *]", 2, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "modified:[* TO NOW/DAY+1DAY]", 2, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "modified:[* TO *]", 2, null, null, null, null, null);
-
-
-        // Synonym
-        // 1 in text -  1 in query
-        testQueryByHandler(report, core, "/afts", "quick", 1, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "fast", 1, null, null, null, null, null);
-        // 3 words in test - 1..3 in query
-        testQueryByHandler(report, core, "/afts", "brown AND fox AND jumped", 1, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "leaping AND reynard", 1, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "springer", 1, null, null, null, null, null);
-        // 1 word in text 1..2 in query
-        testQueryByHandler(report, core, "/afts", "lazy", 1, null, null, null, null, null);
-        testQueryByHandler(report, core, "/afts", "bone AND idle", 1, null, null, null, null, null);
-
-
-        // Cross language support and tokenisation part and full.
-        testQueryByHandler(report, core, "/afts", "title:English", 1, null, null, Locale.ENGLISH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:English123", 1, null, null, Locale.ENGLISH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:French", 1, null, null, Locale.ENGLISH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:French123", 1, null, null, Locale.ENGLISH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:123", 1, null, null, Locale.ENGLISH, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "title:English", 1, null, null, Locale.FRENCH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:English123", 1, null, null, Locale.FRENCH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:French", 1, null, null, Locale.FRENCH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:French123", 1, null, null, Locale.FRENCH, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:123", 1, null, null, Locale.FRENCH, null, null, (String) null);
-
-        testQueryByHandler(report, core, "/afts", "title:English", 1, null, null, Locale.GERMAN, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:English123", 1, null, null, Locale.GERMAN, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:French", 1, null, null, Locale.GERMAN, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:French123", 1, null, null, Locale.GERMAN, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", "title:123", 1, null, null, Locale.GERMAN, null, null, (String) null);
          */
 
-        /**************** Test CMIS ***************/
-
-
+        //Auth code goes here
     }
 
     private void assertAQueryHasNumberOfDocs(String query, int num)
