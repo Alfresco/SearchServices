@@ -98,6 +98,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      * </p>
      */
     protected static TestHarness.LocalRequestFactory lrf;
+    protected static String testNodeRef;
     protected static String testBaseFolderNodeRef;
     protected AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
     
