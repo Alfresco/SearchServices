@@ -16,14 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr;
+package org.alfresco.solr.query.afts;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
+import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
+import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -42,52 +39,23 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
+import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AlfrecsoSolrConstants;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.MLTextPropertyValue;
 import org.alfresco.solr.client.MultiPropertyValue;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
-import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.SolrCore;
-import org.apache.solr.update.AddUpdateCommand;
-import org.apache.solr.update.CommitUpdateCommand;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
 /**
  * Load test data as part of legacy test.
  * @author Michael Suzuki
  *
  */
-public class LoadTestData extends AbstractAlfrescoSolrTests
+public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements AlfrecsoSolrConstants
 {
-    private static int orderTextCount = 0;
-    private static Date orderDate = new Date();
-    private static String[] orderNames = new String[] { "one", "two", "three", "four", "five", "six", "seven", "eight",
-            "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen" };
-
-    // Spanish- Eng, French-English, Swedish German, English
-    private static String[] orderLocalisedNames = new String[] { "chalina", "curioso", "llama", "luz", "peach", "péché",
-            "pêche", "sin", "\u00e4pple", "banan", "p\u00e4ron", "orange", "rock", "rôle", "rose", "filler" };
-
-    private static String[] orderLocaliseMLText_de = new String[] { "Arg", "Ärgerlich", "Arm", "Assistent", "Aßlar",
-            "Assoziation", "Udet", "Übelacker", "Uell", "Ülle", "Ueve", "Üxküll", "Uffenbach", "apple", "and",
-            "aardvark" };
-
-    private static String[] orderLocaliseMLText_fr = new String[] { "cote", "côte", "coté", "côté", "rock", "lemur",
-            "lemonade", "lemon", "kale", "guava", "cheese", "beans", "bananana", "apple", "and", "aardvark" };
-
-    private static String[] orderLocaliseMLText_en = new String[] { "zebra", "tiger", "rose", "rôle", "rock", "lemur",
-            "lemonade", "lemon", "kale", "guava", "cheese", "beans", "bananana", "apple", "and", "aardvark" };
-
-    private static String[] orderLocaliseMLText_es = new String[] { "radio", "ráfaga", "rana", "rápido", "rastrillo", "arroz",
-            "campo", "chihuahua", "ciudad", "limonada", "llaves", "luna", "bananana", "apple", "and", "aardvark" };
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-    }
     @Test
     public void loadTestSet() throws IOException {
         // Root
@@ -101,6 +69,8 @@ public class LoadTestData extends AbstractAlfrescoSolrTests
         // 1
 
         NodeRef n01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+
+        testNodeRef = n01NodeRef.toString();
 
         QName n01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "one");
         ChildAssociationRef n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName,
@@ -427,46 +397,6 @@ public class LoadTestData extends AbstractAlfrescoSolrTests
                                 + n13QName + "/" + n15QName,
                         "/" + n02QName.toString() + "/" + n13QNameLink + "/" + n14QName }, n15NodeRef, true);
     }
-    private static void addStoreRoot(SolrCore core,
-            AlfrescoSolrDataModel dataModel,
-            NodeRef rootNodeRef,
-            int txid,
-            int dbid,
-            int acltxid,
-            int aclid) throws IOException
-    {
-        SolrServletRequest solrQueryRequest = null;
-        try 
-        {
-            solrQueryRequest = new SolrServletRequest(core, null);
-            AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
-            addDocCmd.overwrite = true;
-            addDocCmd.solrDoc = createDocument(dataModel, new Long(txid), new Long(dbid), rootNodeRef,
-            ContentModel.TYPE_STOREROOT, new QName[]{ContentModel.ASPECT_ROOT}, null, null, new Long(aclid),
-            new String[]{"/"}, "system", null, null);
-            core.getUpdateHandler().addDoc(addDocCmd);
-            addAcl(solrQueryRequest, core, dataModel, acltxid, aclid, 0, 0);
-            
-            AddUpdateCommand txCmd = new AddUpdateCommand(solrQueryRequest);
-            txCmd.overwrite = true;
-            SolrInputDocument input = new SolrInputDocument();
-            String id = AlfrescoSolrDataModel.getTransactionDocumentId(new Long(txid));
-            input.addField(FIELD_SOLR4_ID, id);
-            input.addField(FIELD_VERSION, "0");
-            input.addField(FIELD_TXID, txid);
-            input.addField(FIELD_INTXID, txid);
-            input.addField(FIELD_TXCOMMITTIME, (new Date()).getTime());
-            input.addField(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_TX);
-            txCmd.solrDoc = input;
-            core.getUpdateHandler().addDoc(txCmd);
-            
-            core.getUpdateHandler().commit(new CommitUpdateCommand(solrQueryRequest, false));
-        }
-        finally
-        {
-            solrQueryRequest.close();
-        }
-    }
     private static  Map<QName, PropertyValue> getOrderProperties()
     {
         double orderDoubleCount = -0.11d + orderTextCount * ((orderTextCount % 2 == 0) ? 0.1d : -0.1d);
@@ -533,4 +463,25 @@ public class LoadTestData extends AbstractAlfrescoSolrTests
         orderTextCount++;
         return testProperties;
     }
+    private static int orderTextCount = 0;
+    private static Date orderDate = new Date();
+    private static String[] orderNames = new String[] { "one", "two", "three", "four", "five", "six", "seven", "eight",
+            "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen" };
+
+    // Spanish- Eng, French-English, Swedish German, English
+    private static String[] orderLocalisedNames = new String[] { "chalina", "curioso", "llama", "luz", "peach", "péché",
+            "pêche", "sin", "\u00e4pple", "banan", "p\u00e4ron", "orange", "rock", "rôle", "rose", "filler" };
+
+    private static String[] orderLocaliseMLText_de = new String[] { "Arg", "Ärgerlich", "Arm", "Assistent", "Aßlar",
+            "Assoziation", "Udet", "Übelacker", "Uell", "Ülle", "Ueve", "Üxküll", "Uffenbach", "apple", "and",
+            "aardvark" };
+
+    private static String[] orderLocaliseMLText_fr = new String[] { "cote", "côte", "coté", "côté", "rock", "lemur",
+            "lemonade", "lemon", "kale", "guava", "cheese", "beans", "bananana", "apple", "and", "aardvark" };
+
+    private static String[] orderLocaliseMLText_en = new String[] { "zebra", "tiger", "rose", "rôle", "rock", "lemur",
+            "lemonade", "lemon", "kale", "guava", "cheese", "beans", "bananana", "apple", "and", "aardvark" };
+
+    private static String[] orderLocaliseMLText_es = new String[] { "radio", "ráfaga", "rana", "rápido", "rastrillo", "arroz",
+            "campo", "chihuahua", "ciudad", "limonada", "llaves", "luna", "bananana", "apple", "and", "aardvark" };
 }
