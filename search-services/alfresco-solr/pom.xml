@@ -127,6 +127,10 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <includes>
+                         <include>**/*Suite.java</include>
+                         <include>**/*Test.java</include>
+                    </includes>
                     <excludes>
                         <exclude>**/CMISDataCreatorTest.java</exclude> <!-- Run in system-build-test -->
                     </excludes>
