@@ -1313,6 +1313,162 @@ public class TestsAlfrescoFTSQParserPlugin extends AbstractAlfrescoSolrTests imp
          */
 
         //Auth code goes here
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|DENIED:andy", 0);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|DENYSET:\":andy:bob:cid\"", 0);
+
+        /**
+         * Only code that deals with the plural "authorities" seems to be working at the moment
+         *
+         *       testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:andy");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:bob");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:cid");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:dave");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:eoin");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:fred");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:andy");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:gail");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:hal");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:ian");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:andy");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:jake");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:kara");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:loon");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:mike");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:noodle");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+         "{!afts}|OWNER:ood");
+         *
+         *
+         // All nodes point to ACL with ID #1. The ACL explicitly lists "pig" as a READER,
+         // however, pig does not own any nodes.
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
+         "{!afts}|AUTHORITY:pig");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
+         "{!afts}|READER:pig");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
+         "{!afts}|OWNER:pig");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
+         "{!afts}|DENIED:pig");
+         // When using the fq parameter for AUTHORITY related filter queries, anyDenyDenies is
+         // NOT supported, captured by this test case: something is DENIED, however GROUP_EVERYONE allows it.
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
+         "{!afts}|AUTHORITY:something |AUTHORITY:GROUP_EVERYONE");
+         // "something" has no explicity READER or OWNER entries.
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
+         "{!afts}|READER:something");
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
+         "{!afts}|OWNER:something");
+         // "something" is DENIED to all nodes (they all use ACL #1)
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
+         "{!afts}|DENIED:something");
+         *
+         */
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"something\" ], \"tenants\": [ \"\" ] }", 0);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"andy\" ], \"tenants\": [ \"\" ] }", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"andy\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
+
+        // Even though andy, bob, cid and GROUP_EVERYONE would return docs, "something" still denied.
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"andy\", \"bob\", \"cid\", \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"andy\", \"bob\", \"cid\" ], \"tenants\": [ \"\" ] }", 3);
+
+        // Check that generation of filter using AUTHORITY and DENIED works (no DENYSET/AUTHSET separator available)
+        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"bob\" ], \"tenants\": [ \"\" ] }", 2);
+        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
+        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"bob\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
+
+        // Test any allow allows.
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"andy\", \"bob\", \"cid\", \"something\" ], \"tenants\": [ \"\" ] }", 3);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"something\" ], \"tenants\": [ \"\" ] }", 0);
+
+        // Check that anyDenyDenies:true actually works (code above relies on default of true)
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":true, \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
+
+        // Check with AUTHORITY/DENIED rather than AUTHSET/DENYSET
+        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"bob\", \"cid\", \"something\" ], \"tenants\": [ \"\" ] }", 3);
+/*
+    testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:andy");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:bob");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:cid");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:dave");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:eoin");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:fred");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:gail");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:hal");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:ian");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:jake");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:kara");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:loon");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:mike");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:noodle");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:ood");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:GROUP_EVERYONE");
+        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 3, null, null, null, null, null,
+                    "{!afts}|AUTHORITY:andy |AUTHORITY:bob |AUTHORITY:cid");
+ */
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
+        /**
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":bob\"",  1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":cid\"",  1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":dave\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":eoin\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":fred\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":gail\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":hal\"",  1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":ian\"",  1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":jake\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":kara\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":loon\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":mike\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":noodle\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":ood\"", 1);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":GROUP_EVERYONE\"", 16);
+
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy\" |AUTHSET:\":bob\" |AUTHSET:\":cid\"", 3);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy:bob:cid\"", 3);
+         **/
+
+    }
+
+    private void assertAQueryHasNumOfDocsWithJson(String query, String json, int num)
+    {
+        assertQ(areq(params("rows", "20", "qt", "/afts", "fq", "{!afts}AUTHORITY_FILTER_FROM_JSON", "q", query), json), "*[count(//doc)="+num+"]");
     }
 
     private void assertAQueryHasNumberOfDocs(String query, int num)
