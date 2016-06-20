@@ -40,8 +40,6 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 public class CMISQParserPluginSuite extends AbstractAlfrescoSolrTests
 {
-    
-
     @BeforeClass
     public static void beforeClass() throws Exception 
     {

@@ -30,6 +30,8 @@ import org.junit.Test;
 @SolrTestCaseJ4.SuppressSSL
 public class TestAlfrescoCMISQParserPlugin extends AbstractAlfrescoSolrTests implements QueryConstants 
 {
+    private static String testfolder00NodeRef = folder00NodeRef.toString();
+    
     @Test
     public void dataChecks() throws Exception {
 
