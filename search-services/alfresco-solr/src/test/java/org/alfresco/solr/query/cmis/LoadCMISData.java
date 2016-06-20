@@ -63,7 +63,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         HashMap<QName, PropertyValue> baseFolderProperties = new HashMap<QName, PropertyValue>();
         baseFolderProperties.put(ContentModel.PROP_NAME, new StringPropertyValue("Base Folder"));
         // This variable is never used. What was it meant to be used for?
-        HashMap<QName, String> baseFolderContent = new HashMap<QName, String>();
         NodeRef baseFolderNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         testBaseFolderNodeRef = baseFolderNodeRef.toString();
         QName baseFolderQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "baseFolder");
@@ -77,8 +76,8 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder00Properties = new HashMap<QName, PropertyValue>();
         folder00Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 0"));
-        HashMap<QName, String> folder00Content = new HashMap<QName, String>();
-        NodeRef folder00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        folder00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        testfolder00NodeRef = folder00NodeRef.toString();
         QName folder00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 0");
         ChildAssociationRef folder00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, baseFolderNodeRef,
                 folder00QName, folder00NodeRef, true, 0);
@@ -89,7 +88,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder01Properties = new HashMap<QName, PropertyValue>();
         folder01Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 1"));
-        HashMap<QName, String> folder01Content = new HashMap<QName, String>();
         NodeRef folder01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 1");
         ChildAssociationRef folder01CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, baseFolderNodeRef,
@@ -101,7 +99,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder02Properties = new HashMap<QName, PropertyValue>();
         folder02Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 2"));
-        HashMap<QName, String> folder02Content = new HashMap<QName, String>();
         NodeRef folder02NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder02QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 2");
         ChildAssociationRef folder02CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, baseFolderNodeRef,
@@ -113,7 +110,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder03Properties = new HashMap<QName, PropertyValue>();
         folder03Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 3"));
-        HashMap<QName, String> folder03Content = new HashMap<QName, String>();
         NodeRef folder03NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder03QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 3");
         ChildAssociationRef folder03CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, baseFolderNodeRef,
@@ -125,7 +121,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder04Properties = new HashMap<QName, PropertyValue>();
         folder04Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 4"));
-        HashMap<QName, String> folder04Content = new HashMap<QName, String>();
         NodeRef folder04NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder04QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 4");
         ChildAssociationRef folder04CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
@@ -138,7 +133,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder05Properties = new HashMap<QName, PropertyValue>();
         folder05Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 5"));
-        HashMap<QName, String> folder05Content = new HashMap<QName, String>();
         NodeRef folder05NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder05QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 5");
         ChildAssociationRef folder05CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
@@ -151,7 +145,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder06Properties = new HashMap<QName, PropertyValue>();
         folder06Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 6"));
-        HashMap<QName, String> folder06Content = new HashMap<QName, String>();
         NodeRef folder06NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder06QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 6");
         ChildAssociationRef folder06CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder05NodeRef,
@@ -164,7 +157,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder07Properties = new HashMap<QName, PropertyValue>();
         folder07Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 7"));
-        HashMap<QName, String> folder07Content = new HashMap<QName, String>();
         NodeRef folder07NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder07QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 7");
         ChildAssociationRef folder07CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder06NodeRef,
@@ -188,7 +180,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder08Properties = new HashMap<QName, PropertyValue>();
         folder08Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 8"));
-        HashMap<QName, String> folder08Content = new HashMap<QName, String>();
         NodeRef folder08NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder08QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 8");
         ChildAssociationRef folder08CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder07NodeRef,
@@ -213,7 +204,6 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder09Properties = new HashMap<QName, PropertyValue>();
         folder09Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 9'"));
-        HashMap<QName, String> folder09Content = new HashMap<QName, String>();
         NodeRef folder09NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName folder09QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 9'");
         ChildAssociationRef folder09CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder08NodeRef,

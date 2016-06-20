@@ -30,6 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.alfresco.solr.client.Node;
@@ -100,6 +101,8 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     protected static TestHarness.LocalRequestFactory lrf;
     protected static String testNodeRef;
     protected static String testBaseFolderNodeRef;
+    protected static NodeRef folder00NodeRef;
+    protected static String testfolder00NodeRef;
     protected AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
     
     public static void initAlfrescoCore(String config, String schema) throws Exception
