@@ -90,6 +90,7 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
     private static int orderTextCount = 0;
     protected static String testNodeRef;
     protected static String testBaseFolderNodeRef;
+    protected static String testfolder00NodeRef;
     private static Date orderDate = new Date();
     protected static final String TEST_NAMESPACE = "http://www.alfresco.org/test/solrtest";
 
@@ -591,6 +592,7 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
         folder00Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 0"));
         HashMap<QName, String> folder00Content = new HashMap<QName, String>();
         NodeRef folder00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        testfolder00NodeRef = folder00NodeRef.toString();
         QName folder00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 0");
         ChildAssociationRef folder00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, baseFolderNodeRef,
                 folder00QName, folder00NodeRef, true, 0);
