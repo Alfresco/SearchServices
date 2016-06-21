@@ -66,8 +66,10 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
     private static Log logger = LogFactory.getLog(AlfrescoSolrTrackerTest.class);
     private static long MAX_WAIT_TIME = 80000;
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws Exception 
+    {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        Thread.sleep(30000);
     }
 
     @Before
