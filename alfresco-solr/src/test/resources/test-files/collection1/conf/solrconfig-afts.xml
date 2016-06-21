@@ -256,6 +256,8 @@
         </lst>
         <arr name="components">
             <!--<str>ensureModels</str>-->
+            <str>setLocale</str>
+            <str>clearLocale</str>
             <str>query</str>
             <str>facet</str>
             <str>mlt</str>
@@ -388,7 +390,8 @@
     <queryParser name="afts" class="org.alfresco.solr.query.AlfrescoFTSQParserPlugin"/>
     <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
     <searchComponent name="ensureModels" class="org.alfresco.solr.component.EnsureModelsComponent" />
-
+    <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
+    <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
 
 
 

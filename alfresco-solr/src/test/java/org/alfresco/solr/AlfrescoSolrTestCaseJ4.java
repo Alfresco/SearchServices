@@ -106,25 +106,25 @@ public class AlfrescoSolrTestCaseJ4 extends SolrTestCaseJ4 implements SolrTestFi
     private static Date orderDate = new Date();
     protected static final String TEST_NAMESPACE = "http://www.alfresco.org/test/solrtest";
 
-    private static QName createdDate = QName.createQName(TEST_NAMESPACE, "createdDate");
+    protected static QName createdDate = QName.createQName(TEST_NAMESPACE, "createdDate");
 
-    private static QName createdTime = QName.createQName(TEST_NAMESPACE, "createdTime");
+    protected static QName createdTime = QName.createQName(TEST_NAMESPACE, "createdTime");
 
-    private static QName orderDouble = QName.createQName(TEST_NAMESPACE, "orderDouble");
+    protected static QName orderDouble = QName.createQName(TEST_NAMESPACE, "orderDouble");
 
-    private static QName orderFloat = QName.createQName(TEST_NAMESPACE, "orderFloat");
+    protected static QName orderFloat = QName.createQName(TEST_NAMESPACE, "orderFloat");
 
-    private static QName orderLong = QName.createQName(TEST_NAMESPACE, "orderLong");
+    protected static QName orderLong = QName.createQName(TEST_NAMESPACE, "orderLong");
 
-    private static QName orderInt = QName.createQName(TEST_NAMESPACE, "orderInt");
+    protected static QName orderInt = QName.createQName(TEST_NAMESPACE, "orderInt");
 
     protected static QName orderText = QName.createQName(TEST_NAMESPACE, "orderText");
 
-    private static QName orderLocalisedText = QName.createQName(TEST_NAMESPACE, "orderLocalisedText");
+    protected static QName orderLocalisedText = QName.createQName(TEST_NAMESPACE, "orderLocalisedText");
 
-    private static QName orderMLText = QName.createQName(TEST_NAMESPACE, "orderMLText");
+    protected static QName orderMLText = QName.createQName(TEST_NAMESPACE, "orderMLText");
 
-    private static QName orderLocalisedMLText = QName.createQName(TEST_NAMESPACE, "orderLocalisedMLText");
+    protected static QName orderLocalisedMLText = QName.createQName(TEST_NAMESPACE, "orderLocalisedMLText");
 
     protected static QName testSuperType = QName.createQName(TEST_NAMESPACE, "testSuperType");
 
