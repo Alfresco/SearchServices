@@ -17,44 +17,25 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.solr.query;
+package org.alfresco.solr.query.afts;
+
+import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.lucene.util.LuceneTestCase;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.apache.solr.SolrTestCaseJ4;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.Locale;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class AlfrescoFTSQParserPluginTest extends AlfrescoSolrTestCaseJ4 implements QueryConstants {
+public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements QueryConstants {
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-        Thread.sleep(30000);
-        loadTestSet();
-    }
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        // if you override setUp or tearDown, you better callf
-        // the super classes version
-        super.setUp();
-        //clearIndex();
-        //assertU(commit());
-    }
 
     /*
     @Test
