@@ -74,19 +74,19 @@ public class AlfrescoCMISQParserPluginTest extends AlfrescoSolrTestCaseJ4 implem
         /************** Test CMIS Parent ID ***********************/
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q", "SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId =  '"
-                        + testBaseFolderNodeRef + "'"), null),
+                        + testCMISBaseFolderNodeRef + "'"), null),
                 "*[count(//doc)=4]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q", "SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <> '"
-                        + testBaseFolderNodeRef + "'"), null),
+                        + testCMISBaseFolderNodeRef + "'"), null),
                 "*[count(//doc)=7]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q", "SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IN     ('"
-                        + testBaseFolderNodeRef + "')"), null),
+                        + testCMISBaseFolderNodeRef + "')"), null),
                 "*[count(//doc)=4]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q", "SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT IN ('"
-                        + testBaseFolderNodeRef + "')"), null),
+                        + testCMISBaseFolderNodeRef + "')"), null),
                 "*[count(//doc)=7]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q", "SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IS NOT NULL"), null),
@@ -491,90 +491,118 @@ public class AlfrescoCMISQParserPluginTest extends AlfrescoSolrTestCaseJ4 implem
 
         /************** checkCmisObjecId ***********************/
 
-        /*
-         testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId =  '"
-                    + folderId + "'", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '"
-                    + folderId + "'", 10, null, null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId =  '"
+                                + testCMISFolder00NodeRef + "'"), null),
+                "*[count(//doc)=1]");
 
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IN     ('"
-                    + folderId + "')", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId  NOT IN('"
-                    + folderId + "')", 10, null, null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '"
+                                + testCMISFolder00NodeRef + "'"), null),
+                "*[count(//doc)=10]");
 
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE IN_FOLDER('" + folderId
-                    + "')", 2, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE IN_TREE  ('" + folderId
-                    + "')", 6, null, null, null, null, null, (String) null);
 
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS NOT NULL", 11, null, null, null,
-                    null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS     NULL", 0, null, null, null, null,
-                    null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IN     ('"
+                                + testCMISFolder00NodeRef + "')"), null),
+                "*[count(//doc)=1]");
 
-        // ignore folder versions
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId  NOT IN('"
+                                + testCMISFolder00NodeRef + "')"), null),
+                "*[count(//doc)=10]");
 
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId =  '"
-                    + folderId + ";1.0'", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '"
-                    + folderId + ";1.0'", 10, null, null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE IN_FOLDER('" + testCMISFolder00NodeRef + "')"), null),
+                "*[count(//doc)=2]");
 
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IN     ('"
-                    + folderId + ";1.0')", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId  NOT IN('"
-                    + folderId + ";1.0')", 10, null, null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                "SELECT cmis:objectId FROM cmis:folder WHERE IN_TREE  ('" + testCMISFolder00NodeRef+ "')"), null),
+                "*[count(//doc)=6]");
 
-        // testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE IN_FOLDER('" +
-        // folderId + ";1.0')", 2, null, null, null, null, null, (String) null);
-        // testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:folder WHERE IN_TREE  ('" +
-        // folderId + ";1.0')", 6, null, null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS NOT NULL"), null),
+                "*[count(//doc)=11]");
 
-        // Docs
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS     NULL"), null),
+                "*[count(//doc)=0]");
 
-        String id = docId;
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId =  '"
+                                + testCMISFolder00NodeRef + ";1.0'"), null),
+                "*[count(//doc)=1]");
 
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '"
-                    + id + "'", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '"
-                    + id + "'", 10, null, null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '"
+                                + testCMISFolder00NodeRef + ";1.0'"), null),
+                "*[count(//doc)=10]");
 
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + id + "')", 1, null, null,
-                    null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId  NOT IN('" + id + "')", 10, null,
-                    null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IN     ('"
+                                + testCMISFolder00NodeRef + ";1.0')"), null),
+                "*[count(//doc)=1]");
 
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", 11, null, null, null,
-                    null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, null, null, null,
-                    null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId  NOT IN('"
+                                + testCMISFolder00NodeRef + ";1.0')"), null),
+                "*[count(//doc)=10]");
 
-        id = docId + ";1.0";
+        String id = testCMISContent00NodeRef.toString();
 
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '"
-                    + id + "'", 1, null, null, null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis", "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '"
-                    + id + "'", 10, null, null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '"
+                                + id + "'"), null),
+                "*[count(//doc)=1]");
 
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + id + "')", 1, null, null,
-                    null, null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId  NOT IN('" + id + "')", 10, null,
-                    null, null, null, null, (String) null);
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '"
+                                + id + "'"), null),
+                "*[count(//doc)=10]");
 
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", 11, null, null, null,
-                    null, null, (String) null);
-        testQueryByHandler(report, core, "/cmis",
-                    "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, null, null, null,
-                    null, null, (String) null);
-         */
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + id + "')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId  NOT IN('" + id + "')"), null),
+                "*[count(//doc)=10]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL"), null),
+                "*[count(//doc)=11]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL"), null),
+                "*[count(//doc)=0]");
+
+        id = testCMISContent00NodeRef + ";1.0";
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '"
+                                + id + "'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '"
+                                + id + "'"), null),
+                "*[count(//doc)=10]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + id + "')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId  NOT IN('" + id + "')"), null),
+                "*[count(//doc)=10]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL"), null),
+                "*[count(//doc)=11]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL"), null),
+                "*[count(//doc)=0]");
 
         /************** checkCmisTextPredicates ***********************/
 
@@ -719,16 +747,16 @@ public class AlfrescoCMISQParserPluginTest extends AlfrescoSolrTestCaseJ4 implem
         /********** checkInTree ***************************/
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
-                        "SELECT * FROM cmis:folder WHERE IN_TREE('" + testfolder00NodeRef + "')"), null),
+                        "SELECT * FROM cmis:folder WHERE IN_TREE('" + testCMISFolder00NodeRef + "')"), null),
                 "*[count(//doc)=6]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
-                        "SELECT * FROM cmis:folder F WHERE IN_TREE(F, '" + testfolder00NodeRef + "')"), null),
+                        "SELECT * FROM cmis:folder F WHERE IN_TREE(F, '" + testCMISFolder00NodeRef + "')"), null),
                 "*[count(//doc)=6]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
                         "SELECT D.*, O.* FROM cmis:document AS D JOIN cm:ownable AS O ON D.cmis:objectId = O.cmis:objectId WHERE IN_TREE(D, '"
-                                + testBaseFolderNodeRef + "')"), null),
+                                + testCMISBaseFolderNodeRef + "')"), null),
                 "*[count(//doc)=1]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
@@ -925,6 +953,40 @@ public class AlfrescoCMISQParserPluginTest extends AlfrescoSolrTestCaseJ4 implem
                         "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN cmis:document AS D ON D.cmis:objectId = o.cmis:objectId ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, 'jumped') and D.cmis:contentStreamLength <> 2"), null),
                 "*[count(//doc)=1]");
 
+        /********* check FTS *************/
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT SCORE()as ONE, SCORE()as TWO, D.* FROM cmis:document D WHERE CONTAINS('\\'zebra\\'')"), null),
+                "*[count(//doc)=10]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                "SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'')"), null),
+                "*[count(//doc)=10]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmis:document WHERE CONTAINS('\\'quick\\'')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmis:document WHERE CONTAINS('\\'quick\\'')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmis:document D WHERE CONTAINS(D, 'cmis:name:\\'Tutorial\\'')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmis:name as BOO FROM cmis:document D WHERE CONTAINS('BOO:\\'Tutorial\\'')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmis:document D WHERE CONTAINS('TEXT:\\'zebra\\'')"), null),
+                "*[count(//doc)=10]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmis:document D WHERE CONTAINS('d:content:\\'zebra\\'')"), null),
+                "*[count(//doc)=10]");
+
         /******* checkFTSConnectives ********/
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
@@ -948,9 +1010,382 @@ public class AlfrescoCMISQParserPluginTest extends AlfrescoSolrTestCaseJ4 implem
                 "*[count(//doc)=10]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
-                "SELECT * FROM cmis:document where contains('\\'two\\'  \\'zebra\\'')"), null),
+                        "SELECT * FROM cmis:document where contains('\\'two\\'  \\'zebra\\'')"), null),
                 "*[count(//doc)=1]");
 
+
+        /******** Load record ************/
+
+        addTypeTestData(testCMISFolder00NodeRef,
+                testCMISRootNodeRef,
+                testCMISBaseFolderNodeRef,
+                testCMISBaseFolderQName,
+                testCMISFolder00QName,
+                testCMISDate00);
+
+
+        /******* check_D_text *******/
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmis:document"), null),
+                "*[count(//doc)=12]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth = 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth <> 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth LIKE 'U_ to%sed'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth NOT LIKE 't__eni%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth < 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth < 'Un tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth < 'V'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth < 'U'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth <= 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth <= 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth <= 'V'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth <= 'U'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth > 'tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth > 'Un tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth > 'V'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth > 'U'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth >= 'tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth >= 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth >= 'V'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextBoth >= 'U'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised = 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised <> 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised LIKE 'U_ to%sed'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised NOT LIKE 't__eni%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised < 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised < 'Un tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised < 'V'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised < 'U'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised <= 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised <= 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised <= 'V'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised <= 'U'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised > 'tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised > 'Un tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised > 'V'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised > 'U'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised >= 'tokenised'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised >= 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised >= 'V'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextUntokenised >= 'U'"), null),
+                "*[count(//doc)=1]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextTokenised = 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextTokenised <> 'tokenized'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextTokenised LIKE 'to%sed'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextTokenised NOT LIKE 'Ut__eniz%'"), null),
+                "*[count(//doc)=1]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextTokenised IN ('tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleTextTokenised NOT IN ('tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextBoth as alias FROM cmistest:extendedContent as T WHERE alias = 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextBoth as alias FROM cmistest:extendedContent as T WHERE alias <> 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextBoth as alias FROM cmistest:extendedContent as T WHERE alias LIKE 'U_ to%sed'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextBoth as alias FROM cmistest:extendedContent as T WHERE alias NOT LIKE 't__eni%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextBoth as alias FROM cmistest:extendedContent as T WHERE alias IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextBoth as alias FROM cmistest:extendedContent as T WHERE alias NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                "SELECT T.cmistest:singleTextUntokenised as alias FROM cmistest:extendedContent as T WHERE alias = 'Un tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextUntokenised as alias FROM cmistest:extendedContent as T WHERE alias <> 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextUntokenised as alias FROM cmistest:extendedContent as T WHERE alias LIKE 'U_ to%sed'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextUntokenised as alias FROM cmistest:extendedContent as T WHERE alias NOT LIKE 't__eni%'"), null),
+                "*[count(//doc)=1]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextUntokenised as alias FROM cmistest:extendedContent as T WHERE alias IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:singleTextUntokenised as alias FROM cmistest:extendedContent as T WHERE alias NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleTextTokenised as alias FROM cmistest:extendedContent WHERE alias = 'tokenised'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleTextTokenised as alias FROM cmistest:extendedContent WHERE alias <> 'tokenized'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleTextTokenised as alias FROM cmistest:extendedContent WHERE alias LIKE 'to%sed'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleTextTokenised as alias FROM cmistest:extendedContent WHERE alias NOT LIKE 'Ut__eniz%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleTextTokenised as alias FROM cmistest:extendedContent WHERE alias IN ('tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleTextTokenised as alias FROM cmistest:extendedContent WHERE alias NOT IN ('tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'Un tokenised' =  ANY cmistest:multipleTextBoth "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleTextBoth IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleTextBoth NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'Un tokenised' =  ANY cmistest:multipleTextUntokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleTextUntokenised IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleTextUntokenised NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'tokenised' =  ANY cmistest:multipleTextTokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleTextTokenised IN ('tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleTextTokenised NOT IN ('tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleTextBoth as alias FROM cmistest:extendedContent WHERE 'Un tokenised' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleTextBoth as alias FROM cmistest:extendedContent WHERE ANY alias IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleTextBoth as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleTextUntokenised alias FROM cmistest:extendedContent WHERE 'Un tokenised' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleTextUntokenised alias FROM cmistest:extendedContent WHERE ANY alias IN ('Un tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleTextUntokenised alias FROM cmistest:extendedContent WHERE ANY alias NOT IN ('Un tokenized')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                "SELECT T.cmistest:multipleTextTokenised alias FROM cmistest:extendedContent T WHERE 'tokenised' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:multipleTextTokenised alias FROM cmistest:extendedContent T WHERE ANY alias IN ('tokenised', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT T.cmistest:multipleTextTokenised alias FROM cmistest:extendedContent T WHERE ANY alias NOT IN ('tokenized')"), null),
+                "*[count(//doc)=1]");
 
 
     }
