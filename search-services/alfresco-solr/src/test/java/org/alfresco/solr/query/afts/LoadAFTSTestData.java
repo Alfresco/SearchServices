@@ -22,7 +22,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
 import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -48,7 +47,7 @@ import org.alfresco.solr.client.MultiPropertyValue;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.apache.solr.core.SolrCore;
-import org.junit.Test;
+import org.junit.BeforeClass;
 /**
  * Load test data as part of legacy test.
  * @author Michael Suzuki
@@ -56,8 +55,12 @@ import org.junit.Test;
  */
 public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements AlfrecsoSolrConstants
 {
-    @Test
-    public void loadTestSet() throws IOException {
+    @BeforeClass
+    public static void loadTestSet() throws Exception 
+    {
+        
+        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        Thread.sleep(30000);
         // Root
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
