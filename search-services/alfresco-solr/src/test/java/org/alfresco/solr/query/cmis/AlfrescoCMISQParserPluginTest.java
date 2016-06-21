@@ -20,7 +20,6 @@
 package org.alfresco.solr.query.cmis;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Test;
@@ -28,10 +27,8 @@ import org.junit.Test;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class TestAlfrescoCMISQParserPlugin extends AbstractAlfrescoSolrTests implements QueryConstants 
+public class AlfrescoCMISQParserPluginTest extends LoadCMISData implements QueryConstants 
 {
-    private static String testfolder00NodeRef = folder00NodeRef.toString();
-    
     @Test
     public void dataChecks() throws Exception {
 
@@ -1359,9 +1356,5 @@ public class TestAlfrescoCMISQParserPlugin extends AbstractAlfrescoSolrTests imp
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
                         "SELECT T.cmistest:multipleTextTokenised alias FROM cmistest:extendedContent T WHERE ANY alias NOT IN ('tokenized')"), null),
                 "*[count(//doc)=1]");
-
-
     }
-
-
 }

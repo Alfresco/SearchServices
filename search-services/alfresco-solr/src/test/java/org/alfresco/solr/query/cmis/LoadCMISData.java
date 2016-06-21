@@ -19,8 +19,14 @@
 
 package org.alfresco.solr.query.cmis;
 
+import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
+import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
+
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -35,12 +41,11 @@ import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.MLTextPropertyValue;
+import org.alfresco.solr.client.MultiPropertyValue;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.apache.solr.core.SolrCore;
-import org.junit.Test;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import org.junit.BeforeClass;
 /**
  * CMIS test data load, prepare test suite with data
  * @author Michael Suzuki
@@ -48,14 +53,153 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
  */
 public class LoadCMISData extends AbstractAlfrescoSolrTests
 {
+    protected static NodeRef testCMISContent00NodeRef;
+    protected static NodeRef testCMISRootNodeRef;
+    protected static NodeRef testCMISBaseFolderNodeRef;
+    protected static NodeRef testCMISFolder00NodeRef;
+    protected static QName testCMISBaseFolderQName;
+    protected static QName testCMISFolder00QName;
+    protected static Date testCMISDate00;
+    private static String[] mlOrderable_en = new String[] { "AAAA BBBB", "EEEE FFFF", "II", "KK", "MM", "OO", "QQ",
+            "SS", "UU", "AA", "CC" };
     
-    @Test
-    public void loadCMISTestSet() throws IOException 
+    private static String[] mlOrderable_fr = new String[] { "CCCC DDDD", "GGGG HHHH", "JJ", "LL", "NN", "PP", "RR",
+            "TT", "VV", "BB", "DD" };
+    
+    protected static void addTypeTestData(NodeRef folder00NodeRef,
+            NodeRef rootNodeRef,
+            NodeRef baseFolderNodeRef,
+            Object baseFolderQName,
+            Object folder00QName,
+            Date date1)throws IOException
     {
+        HashMap<QName, PropertyValue> content00Properties = new HashMap<QName, PropertyValue>();
+        MLTextPropertyValue desc00 = new MLTextPropertyValue();
+        desc00.addValue(Locale.ENGLISH, "Test One");
+        desc00.addValue(Locale.US, "Test 1");
+        content00Properties.put(ContentModel.PROP_DESCRIPTION, desc00);
+        content00Properties.put(ContentModel.PROP_TITLE, desc00);
+        content00Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Test One"));
+        content00Properties.put(ContentModel.PROP_CREATED,
+        new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
+        
+        StringPropertyValue single = new StringPropertyValue("Un tokenised");
+        content00Properties.put(singleTextUntokenised, single);
+        content00Properties.put(singleTextTokenised, single);
+        content00Properties.put(singleTextBoth, single);
+        MultiPropertyValue multi = new MultiPropertyValue();
+        multi.addValue(single);
+        multi.addValue(new StringPropertyValue("two parts"));
+        content00Properties.put(multipleTextUntokenised, multi);
+        content00Properties.put(multipleTextTokenised, multi);
+        content00Properties.put(multipleTextBoth, multi);
+        content00Properties.put(singleMLTextUntokenised, makeMLText());
+        content00Properties.put(singleMLTextTokenised, makeMLText());
+        content00Properties.put(singleMLTextBoth, makeMLText());
+        content00Properties.put(multipleMLTextUntokenised, makeMLTextMVP());
+        content00Properties.put(multipleMLTextTokenised, makeMLTextMVP());
+        content00Properties.put(multipleMLTextBoth, makeMLTextMVP());
+        StringPropertyValue one = new StringPropertyValue("1");
+        StringPropertyValue two = new StringPropertyValue("2");
+        MultiPropertyValue multiDec = new MultiPropertyValue();
+        multiDec.addValue(one);
+        multiDec.addValue(new StringPropertyValue("1.1"));
+        content00Properties.put(singleFloat, one);
+        content00Properties.put(multipleFloat, multiDec);
+        content00Properties.put(singleDouble, one);
+        content00Properties.put(multipleDouble, multiDec);
+        MultiPropertyValue multiInt = new MultiPropertyValue();
+        multiInt.addValue(one);
+        multiInt.addValue(two);
+        content00Properties.put(singleInteger, one);
+        content00Properties.put(multipleInteger, multiInt);
+        content00Properties.put(singleLong, one);
+        content00Properties.put(multipleLong, multiInt);
+        
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(date1);
+        cal.add(Calendar.DAY_OF_MONTH, -1);
+        cal.add(Calendar.DAY_OF_MONTH, 2);
+        Date date2 = cal.getTime();
+        StringPropertyValue d1 = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1));
+        StringPropertyValue d2 = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2));
+        MultiPropertyValue multiDate = new MultiPropertyValue();
+        multiDate.addValue(d1);
+        multiDate.addValue(d2);
+        content00Properties.put(singleDate, d1);
+        content00Properties.put(multipleDate, multiDate);
+        content00Properties.put(singleDatetime, d1);
+        content00Properties.put(multipleDatetime, multiDate);
+        
+        StringPropertyValue bTrue = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, true));
+        StringPropertyValue bFalse = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, false));
+        MultiPropertyValue multiBool = new MultiPropertyValue();
+        multiBool.addValue(bTrue);
+        multiBool.addValue(bFalse);
+        
+        content00Properties.put(singleBoolean, bTrue);
+        content00Properties.put(multipleBoolean, multiBool);
+        
+        NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test One");
+        ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
+        content00QName, content00NodeRef, true, 0);
+        addNode(h.getCore(),
+        dataModel,
+        1,
+        100,
+        1,
+        extendedContent,
+        new QName[] { ContentModel.ASPECT_OWNABLE, ContentModel.ASPECT_TITLED },
+        content00Properties,
+        null,
+        "andy",
+        new ChildAssociationRef[] { content00CAR },
+        new NodeRef[] { baseFolderNodeRef, rootNodeRef, folder00NodeRef },
+        new String[] { "/" + baseFolderQName.toString() + "/" + folder00QName.toString() + "/" + content00QName.toString() },
+        content00NodeRef,
+        true);
+    }
+   
+  
+    protected static MLTextPropertyValue makeMLText()
+    {
+        return makeMLText(0);
+    }
+    protected static MLTextPropertyValue makeMLText(int position)
+    {
+        MLTextPropertyValue ml = new MLTextPropertyValue();
+        ml.addValue(Locale.ENGLISH, mlOrderable_en[position]);
+        ml.addValue(Locale.FRENCH, mlOrderable_fr[position]);
+        return ml;
+    }
+
+    protected static MultiPropertyValue makeMLTextMVP()
+    {
+        return makeMLTextMVP(0);
+    }
+
+    protected static MultiPropertyValue makeMLTextMVP(int position)
+    {
+        MLTextPropertyValue m1 = new MLTextPropertyValue();
+        m1.addValue(Locale.ENGLISH, mlOrderable_en[position]);
+        MLTextPropertyValue m2 = new MLTextPropertyValue();
+        m2.addValue(Locale.FRENCH, mlOrderable_fr[position]);
+        MultiPropertyValue answer = new MultiPropertyValue();
+        answer.addValue(m1);
+        answer.addValue(m2);
+        return answer;
+    }
+    @BeforeClass
+    public static void loadCMISTestSet() throws Exception 
+    {
+        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        Thread.sleep(30000);
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         dataModel.setCMDefaultUri();
         NodeRef rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        testCMISRootNodeRef = rootNodeRef;
         addStoreRoot(core, dataModel, rootNodeRef, 1, 1, 1, 1);
 
         // Base
@@ -64,8 +208,9 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         baseFolderProperties.put(ContentModel.PROP_NAME, new StringPropertyValue("Base Folder"));
         // This variable is never used. What was it meant to be used for?
         NodeRef baseFolderNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        testBaseFolderNodeRef = baseFolderNodeRef.toString();
+        testCMISBaseFolderNodeRef = baseFolderNodeRef;
         QName baseFolderQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "baseFolder");
+        testCMISBaseFolderQName = baseFolderQName;
         ChildAssociationRef n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef,
                 baseFolderQName, baseFolderNodeRef, true, 0);
         addNode(core, dataModel, 1, 2, 1, ContentModel.TYPE_FOLDER, null, baseFolderProperties, null, "andy",
@@ -76,9 +221,10 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
 
         HashMap<QName, PropertyValue> folder00Properties = new HashMap<QName, PropertyValue>();
         folder00Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Folder 0"));
-        folder00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        testfolder00NodeRef = folder00NodeRef.toString();
+        NodeRef folder00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        testCMISFolder00NodeRef = folder00NodeRef;
         QName folder00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 0");
+        testCMISFolder00QName = folder00QName;
         ChildAssociationRef folder00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, baseFolderNodeRef,
                 folder00QName, folder00NodeRef, true, 0);
         addNode(core, dataModel, 1, 3, 1, ContentModel.TYPE_FOLDER, null, folder00Properties, null, "andy",
@@ -242,6 +388,8 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         content00Properties.put(ContentModel.PROP_VERSION_LABEL, new StringPropertyValue("1.0"));
         content00Properties.put(ContentModel.PROP_OWNER, new StringPropertyValue("andy"));
         Date date00 = new Date();
+        testCMISDate00 = date00;
+
         content00Properties.put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date00)));
         content00Properties.put(ContentModel.PROP_MODIFIED,
@@ -253,6 +401,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
                                 + " as at be but by for if in into is it no not of on or such that the their then there these they this to was will with: "
                                 + " and random charcters \u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF score");
         NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        testCMISContent00NodeRef = content00NodeRef;
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Alfresco Tutorial");
         ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
                 content00QName, content00NodeRef, true, 0);

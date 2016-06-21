@@ -67,17 +67,15 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         addStoreRoot(core, dataModel, rootNodeRef, 1, 1, 1, 1);
 
         // 1
-
         NodeRef n01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-
-        testNodeRef = n01NodeRef.toString();
-
         QName n01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "one");
         ChildAssociationRef n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName,
                 n01NodeRef, true, 0);
         addNode(core, dataModel, 1, 2, 1, testSuperType, null, getOrderProperties(), null, "andy",
                 new ChildAssociationRef[] { n01CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
                         + n01QName.toString() }, n01NodeRef, true);
+        
+        testNodeRef = n01NodeRef;
 
         // 2
 

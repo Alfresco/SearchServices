@@ -286,7 +286,12 @@ public class AlfrescoSolrUtils
         }
         return new AclReaders(acl.getId(), readers, denied, aclChangeSet.getId(), tenant);
     }
-
+    /**
+     * 
+     * @param aclChangeSet
+     * @param aclList
+     * @param aclReadersList
+     */
     public static void indexAclChangeSet(AclChangeSet aclChangeSet, List<Acl> aclList, List<AclReaders> aclReadersList)
     {
         //First map the nodes to a transaction.
@@ -308,6 +313,7 @@ public class AlfrescoSolrUtils
      * @param strings
      * @return {@link List} made from the input
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static List list(Object... strings)
     {
         List list = new ArrayList();
@@ -330,17 +336,41 @@ public class AlfrescoSolrUtils
         }
         return msp;
       }
-    
+    /**
+     * 
+     * @param params
+     * @return
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Map map(Object... params)
     {
         LinkedHashMap ret = new LinkedHashMap();
         for (int i=0; i<params.length; i+=2)
         {
-            Object o = ret.put(params[i], params[i+1]);
+            ret.put(params[i], params[i+1]);
         }
         return ret;
     }
-      
+    /**
+     * 
+     * @param core
+     * @param dataModel
+     * @param txid
+     * @param dbid
+     * @param aclid
+     * @param type
+     * @param aspects
+     * @param properties
+     * @param content
+     * @param owner
+     * @param parentAssocs
+     * @param ancestors
+     * @param paths
+     * @param nodeRef
+     * @param commit
+     * @return
+     * @throws IOException
+     */
     public static NodeRef addNode(SolrCore core, 
                                   AlfrescoSolrDataModel dataModel,
                                   int txid,
@@ -523,6 +553,17 @@ public class AlfrescoSolrUtils
               }
           }
       }
+      /**
+       * Add an acl.
+       * @param solrQueryRequest
+       * @param core
+       * @param dataModel
+       * @param acltxid
+       * @param aclId
+       * @param maxReader
+       * @param totalReader
+       * @throws IOException
+       */
       public static void addAcl(SolrServletRequest solrQueryRequest,
                                 SolrCore core,
                                 AlfrescoSolrDataModel dataModel, 
@@ -561,8 +602,19 @@ public class AlfrescoSolrUtils
           aclSol.addField(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL);
           aclCmd.solrDoc = aclSol;
           core.getUpdateHandler().addDoc(aclCmd);
-      }
-      public static void addStoreRoot(SolrCore core,
+    }
+    /**
+     * Add a store to root.  
+     * @param core
+     * @param dataModel
+     * @param rootNodeRef
+     * @param txid
+     * @param dbid
+     * @param acltxid
+     * @param aclid
+     * @throws IOException
+     */
+    public static void addStoreRoot(SolrCore core,
                                       AlfrescoSolrDataModel dataModel,
                                       NodeRef rootNodeRef,
                                       int txid,
@@ -597,7 +649,7 @@ public class AlfrescoSolrUtils
           }
               finally
           {
-                  solrQueryRequest.close();
+              solrQueryRequest.close();
           }
-      }
+    }
 }
