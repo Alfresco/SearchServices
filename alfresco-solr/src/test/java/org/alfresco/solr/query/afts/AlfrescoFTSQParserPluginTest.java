@@ -24,7 +24,6 @@ import java.util.Locale;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.util.SearchLanguageConversion;
@@ -35,7 +34,7 @@ import org.junit.Test;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class TestsAlfrescoFTSQParserPlugin extends AbstractAlfrescoSolrTests implements QueryConstants {
+public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements QueryConstants {
 
 
     /*

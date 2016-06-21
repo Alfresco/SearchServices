@@ -60,6 +60,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
     protected static QName testCMISBaseFolderQName;
     protected static QName testCMISFolder00QName;
     protected static Date testCMISDate00;
+    
     private static String[] mlOrderable_en = new String[] { "AAAA BBBB", "EEEE FFFF", "II", "KK", "MM", "OO", "QQ",
             "SS", "UU", "AA", "CC" };
     
