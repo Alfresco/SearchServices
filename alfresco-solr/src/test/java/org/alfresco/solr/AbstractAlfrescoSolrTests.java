@@ -39,6 +39,7 @@ import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
@@ -66,11 +67,10 @@ import org.apache.solr.util.TestHarness;
 import org.apache.solr.util.TestHarness.TestCoresLocator;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
-import org.apache.lucene.queryparser.classic.ParseException;
 
 /**
  * Base class that provides the solr test harness.
- * This is used to manage the embedded solr which is used in testing.
+ * This is used to manage the embedded solr used for unit and integration testing.
  * The abstract also provides helper method that interacts with the 
  * embedded solr.
  * 
@@ -99,12 +99,17 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      * </p>
      */
     protected static TestHarness.LocalRequestFactory lrf;
-    protected static String testNodeRef;
-    protected static String testBaseFolderNodeRef;
-    protected static NodeRef folder00NodeRef;
-    protected static String testfolder00NodeRef;
-    protected AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-    
+    protected static AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+    protected static NodeRef testRootNodeRef;
+    protected static NodeRef testNodeRef;
+    protected static NodeRef testBaseFolderNodeRef;
+    protected static NodeRef testFolder00NodeRef;
+    /**
+     * Creates a Solr Alfresco test harness.
+     * @param config
+     * @param schema
+     * @throws Exception
+     */
     public static void initAlfrescoCore(String config, String schema) throws Exception
     {
         log.info("##################################### init Alfresco core ##############");
@@ -600,4 +605,5 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         }
         return msp;
     }
+    
 }
