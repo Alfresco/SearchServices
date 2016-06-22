@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.solr.query;
+package org.alfresco.solr.query.cmis;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
