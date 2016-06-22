@@ -65,6 +65,7 @@ import org.apache.solr.util.BaseTestHarness;
 import org.apache.solr.util.RefCounted;
 import org.apache.solr.util.TestHarness;
 import org.apache.solr.util.TestHarness.TestCoresLocator;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 
@@ -156,6 +157,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
                     .setUseSchemaCache(false)
                     .setCoreAdminHandlerClass("org.alfresco.solr.AlfrescoCoreAdminHandler")
                     .build();
+            coreContainer.shutdown();
             try
             {
                 h = new TestHarness(nodeConfig, locator);
@@ -168,9 +170,12 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             lrf = h.getRequestFactory
                     ("standard",0,20, CommonParams.VERSION,"2.2");
         }
-//        
-        
-//        coreContainer.shutdown();
+    }
+    @AfterClass
+    public static void tearDown()
+    {
+        solrConfig = null;
+        h.close();
     }
     /**
      * Generates a &lt;delete&gt;... XML string for an query
