@@ -39,6 +39,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.MLTextPropertyValue;
 import org.alfresco.solr.client.MultiPropertyValue;
@@ -763,5 +764,23 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
                         + folder07QName.toString() + "/" + folder08QName.toString() + "/"
                         + folder09QName.toString() + "/" + content10QName.toString() }, content10NodeRef,
                 true);
+    }
+    /**
+     * Builds a query request to solr server.
+     * @param query
+     * @return
+     */
+    protected SolrServletRequest qurySolr(String query)
+    {
+        return areq(params("rows", "20", "qt", "/cmis", "q",query),null);
+    }
+    /**
+     * Builds an Xpath query to verify document count.
+     * @param count
+     * @return xpath query.
+     */
+    protected String expectedDocCount(int count)
+    {
+        return String.format("*[count(//doc)=%d]", count);
     }
 }
