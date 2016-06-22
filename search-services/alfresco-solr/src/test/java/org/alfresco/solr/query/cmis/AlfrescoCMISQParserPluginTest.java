@@ -1356,5 +1356,471 @@ public class AlfrescoCMISQParserPluginTest extends LoadCMISData implements Query
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
                         "SELECT T.cmistest:multipleTextTokenised alias FROM cmistest:extendedContent T WHERE ANY alias NOT IN ('tokenized')"), null),
                 "*[count(//doc)=1]");
+
+
+        /******** check_D_mltext     **********/
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth = 'AAAA BBBB'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth = 'AAAA'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth = '%AAAA'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth = '%AAA'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth = 'BBBB'"), null),
+                "*[count(//doc)=0]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth = 'CCCC DDDD'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth <> 'EEEE FFFF'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth LIKE 'AAA_ B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth LIKE 'CCC_ D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth NOT LIKE 'B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth NOT LIKE 'D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextBoth NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised = 'AAAA BBBB'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised = 'CCCC DDDD'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised <> 'EEEE FFFF'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised LIKE 'AAA_ B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised LIKE 'CCC_ D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised NOT LIKE 'B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised NOT LIKE 'D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextUntokenised NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised = 'AAAA'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised = 'BBBB'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised = 'CCCC'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised = 'DDDD'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised <> 'EEEE'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised LIKE 'A%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised LIKE '_B__'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised LIKE '%C'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised LIKE 'D%D'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised NOT LIKE 'CCCC_'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised IN ('AAAA', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised IN ('BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised IN ('CCCC', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised IN ('DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleMLTextTokenised NOT IN ('EEEE')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias = 'AAAA BBBB'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias = 'AAAA'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias = 'BBBB'"), null),
+                "*[count(//doc)=0]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias = 'CCCC DDDD'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias <> 'EEEE FFFF'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias LIKE 'AAA_ B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias LIKE 'CCC_ D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias NOT LIKE 'B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias NOT LIKE 'D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextBoth as alias FROM cmistest:extendedContent WHERE alias NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias = 'AAAA BBBB'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias = 'CCCC DDDD'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias <> 'EEEE FFFF'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias LIKE 'AAA_ B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias LIKE 'CCC_ D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias NOT LIKE 'B%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias NOT LIKE 'D%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextUntokenised as alias FROM cmistest:extendedContent WHERE alias NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias = 'AAAA'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias = 'BBBB'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias = 'CCCC'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias = 'DDDD'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias <> 'EEEE'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias LIKE 'A%'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias LIKE '_B__'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias LIKE '%C'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias LIKE 'D%D'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias NOT LIKE 'CCCC_'"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias IN ('AAAA', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias IN ('BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias IN ('CCCC', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias IN ('DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:singleMLTextTokenised as alias FROM cmistest:extendedContent WHERE alias NOT IN ('EEEE')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'AAAA BBBB' =  ANY cmistest:multipleMLTextBoth "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'CCCC DDDD' =  ANY cmistest:multipleMLTextBoth "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextBoth IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextBoth IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextBoth NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'AAAA BBBB' =  ANY cmistest:multipleMLTextUntokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'CCCC DDDD' =  ANY cmistest:multipleMLTextUntokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextUntokenised IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextUntokenised IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextUntokenised NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'AAAA' =  ANY cmistest:multipleMLTextTokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'BBBB' =  ANY cmistest:multipleMLTextTokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'CCCC' =  ANY cmistest:multipleMLTextTokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE 'DDDD' =  ANY cmistest:multipleMLTextTokenised "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextTokenised IN ('AAAA', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextTokenised IN ('BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextTokenised IN ('CCCC', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextTokenised IN ('DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleMLTextTokenised NOT IN ('EEEE')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextBoth alias FROM cmistest:extendedContent WHERE 'AAAA BBBB' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextBoth alias FROM cmistest:extendedContent WHERE 'CCCC DDDD' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextBoth alias FROM cmistest:extendedContent WHERE ANY alias IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextBoth alias FROM cmistest:extendedContent WHERE ANY alias IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextBoth alias FROM cmistest:extendedContent WHERE ANY alias NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextUntokenised alias FROM cmistest:extendedContent WHERE 'AAAA BBBB' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextUntokenised alias FROM cmistest:extendedContent WHERE 'CCCC DDDD' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextUntokenised alias FROM cmistest:extendedContent WHERE ANY alias IN ('AAAA BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextUntokenised alias FROM cmistest:extendedContent WHERE ANY alias IN ('CCCC DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextUntokenised alias FROM cmistest:extendedContent WHERE ANY alias NOT IN ('EEEE FFFF')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE 'AAAA' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE 'BBBB' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE 'CCCC' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE 'DDDD' =  ANY alias "), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE ANY alias IN ('AAAA', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE ANY alias IN ('BBBB', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE ANY alias IN ('CCCC', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE ANY alias IN ('DDDD', 'Monkey')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
+                        "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE ANY alias NOT IN ('EEEE')"), null),
+                "*[count(//doc)=1]");
+
     }
 }
