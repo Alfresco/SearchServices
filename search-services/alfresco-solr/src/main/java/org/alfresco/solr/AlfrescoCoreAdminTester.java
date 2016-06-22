@@ -1744,6 +1744,7 @@ public class AlfrescoCoreAdminTester
             check_D_text(rsp, core, dataModel);
             check_locale(rsp, core, dataModel);
             check_D_mltext(rsp, core, dataModel);
+            //MICHAEL FLAG
             check_D_float(rsp, core, dataModel);
             check_D_double(rsp, core, dataModel);
             check_D_int(rsp, core, dataModel);

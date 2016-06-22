@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.solr.query.afts;
+package org.alfresco.solr.query;
 
 
 import org.alfresco.model.ContentModel;
