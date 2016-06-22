@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.solr.query.cmis;
+package org.alfresco.solr.query;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.apache.lucene.util.LuceneTestCase;
@@ -1821,6 +1821,7 @@ public class AlfrescoCMISQParserPluginTest extends LoadCMISData implements Query
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q",
                         "SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE ANY alias NOT IN ('EEEE')"), null),
                 "*[count(//doc)=1]");
-
+        
+        /******** check_D_mltext     **********/
     }
 }
