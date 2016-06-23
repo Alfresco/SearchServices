@@ -765,8 +765,62 @@ public class MoreCmisTest extends LoadCMISData
         assertQ(qurySolr("SELECT cmistest:multipleDouble alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)"),expectedDocCount(1));
     }
     @Test 
-    public void check_D_int()
+    public void checkDint()
     {
-        
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent"),expectedDocCount(1));
+    
+        // d:int single
+    
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger = 1"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger = 2"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger <> 1"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger <> 2"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger < 1"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger < 2"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger <= 1"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger <= 2"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger > 1"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger > 0"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger >= 1"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger >= 0"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger IN (1, 2)"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleInteger NOT IN (2)"),expectedDocCount(1));
+    
+        // d:int single by alias
+    
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias = 1"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias = 2"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias <> 1"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias <> 2"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias < 1"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias < 2"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias <= 1"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias <= 2"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias > 1"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias > 0"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias >= 1"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias >= 0"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias IN (1, 2)"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:singleInteger alias FROM cmistest:extendedContent WHERE alias NOT IN (2)"),expectedDocCount(1));
+    
+        // d:int multiple
+    
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE '1' =  ANY cmistest:multipleInteger "),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE '2' =  ANY cmistest:multipleInteger "),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleInteger IN (1, 2)"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleInteger IN (2, 3)"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleInteger NOT IN (1, 2)"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleInteger NOT IN (2, 3)"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleInteger NOT IN (3, 4)"),expectedDocCount(1));
+    
+        // d:int multiple by alias
+    
+        assertQ(qurySolr("SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE '1' =  ANY alias "),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE '2' =  ANY alias "),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE ANY alias IN (1, 2)"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE ANY alias IN (2, 3)"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (1, 2)"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (2, 3)"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (3, 4)"),expectedDocCount(1));
     }
 }
