@@ -53,14 +53,14 @@ public abstract class AbstractAuthorityQueryWeight extends Weight
     {
     	super(query);
         this.searcher = searcher;
-        this.similarity = (TFIDFSimilarity) searcher.getSimilarity(true);
+        //this.similarity = (TFIDFSimilarity) searcher.getSimilarity(true);
         CollectionStatistics collectionStats = searcher.collectionStatistics(authTermName);
         final IndexReaderContext context = searcher.getTopReaderContext();
         final Term term = new Term(authTermName, authTermText);
         final TermContext termContext = TermContext.build(context, term);
         TermStatistics termStats = searcher.termStatistics(term, termContext);
-        idfExp = similarity.idfExplain(collectionStats, termStats);
-        idf = idfExp.getValue();
+        //idfExp = similarity.idfExplain(collectionStats, termStats);
+        //idf = idfExp.getValue();
         this.needsScores = needsScores;
     }
     
@@ -79,14 +79,15 @@ public abstract class AbstractAuthorityQueryWeight extends Weight
     @Override
     public void normalize(float queryNorm, float topLevelBoost)
     {
-        this.queryNorm = queryNorm;
-        queryWeight *= queryNorm;                   // normalize query weight
-        value = queryWeight * idf;                  // idf for document
+        //this.queryNorm = queryNorm;
+        //queryWeight *= queryNorm;                   // normalize query weight
+        //value = queryWeight * idf;                  // idf for document
     }
     
     protected float sumOfSquaredWeights() throws IOException
     {
-        queryWeight = idf;       // compute query weight
-        return queryWeight * queryWeight;           // square it
+        //queryWeight = idf;       // compute query weight
+        //return queryWeight * queryWeight;           // square it
+        return 0;
     }
 }

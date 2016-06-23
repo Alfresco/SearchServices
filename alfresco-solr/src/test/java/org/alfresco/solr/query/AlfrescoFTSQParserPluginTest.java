@@ -1315,74 +1315,50 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         // testQueryByHandler(report, core, "/afts", "PATH", "\"//.\"", 16, null, (String) null);
          */
 
-        //Auth code goes here
+        /***** checkAuthorityFilter **********/
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|DENIED:andy", 0);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|DENYSET:\":andy:bob:cid\"", 0);
 
-        /**
-         * Only code that deals with the plural "authorities" seems to be working at the moment
-         *
-         *       testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:andy");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:bob");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:cid");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:dave");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:eoin");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:fred");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:andy");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:gail");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:hal");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:ian");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:andy");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:jake");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:kara");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:loon");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:mike");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:noodle");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-         "{!afts}|OWNER:ood");
-         *
-         *
-         // All nodes point to ACL with ID #1. The ACL explicitly lists "pig" as a READER,
-         // however, pig does not own any nodes.
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
-         "{!afts}|AUTHORITY:pig");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
-         "{!afts}|READER:pig");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
-         "{!afts}|OWNER:pig");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
-         "{!afts}|DENIED:pig");
-         // When using the fq parameter for AUTHORITY related filter queries, anyDenyDenies is
-         // NOT supported, captured by this test case: something is DENIED, however GROUP_EVERYONE allows it.
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
-         "{!afts}|AUTHORITY:something |AUTHORITY:GROUP_EVERYONE");
-         // "something" has no explicity READER or OWNER entries.
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
-         "{!afts}|READER:something");
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 0, null, null, null, null, null,
-         "{!afts}|OWNER:something");
-         // "something" is DENIED to all nodes (they all use ACL #1)
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
-         "{!afts}|DENIED:something");
-         *
-         */
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:andy", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:bob", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:cid", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:dave", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:eoin", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:fred", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:gail", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:hal", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:ian", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:jake", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:kara", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:loon", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:mike", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:noodle", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:ood", 1);
+
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:pig", 16);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|READER:pig", 16);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:pig", 0);
+
+        // All nodes point to ACL with ID #1. The ACL explicitly lists "pig" as a READER,
+        // however, pig does not own any nodes.
+
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|DENIED:pig", 0);
+
+        // When using the fq parameter for AUTHORITY related filter queries, anyDenyDenies is
+        // NOT supported, captured by this test case: something is DENIED, however GROUP_EVERYONE allows it.
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:something |AUTHORITY:GROUP_EVERYONE", 16);
+
+        // "something" has no explicity READER or OWNER entries.
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|READER:something", 0);
+
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|OWNER:something", 0);
+
+        // "something" is DENIED to all nodes (they all use ACL #1)
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|DENIED:something", 16);
+
+
+
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"something\" ], \"tenants\": [ \"\" ] }", 0);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
@@ -1408,64 +1384,47 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         // Check with AUTHORITY/DENIED rather than AUTHSET/DENYSET
         //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"bob\", \"cid\", \"something\" ], \"tenants\": [ \"\" ] }", 3);
-/*
-    testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:andy");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:bob");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:cid");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:dave");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:eoin");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:fred");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:gail");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:hal");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:ian");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:jake");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:kara");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:loon");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:mike");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:noodle");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 1, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:ood");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:GROUP_EVERYONE");
-        testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 3, null, null, null, null, null,
-                    "{!afts}|AUTHORITY:andy |AUTHORITY:bob |AUTHORITY:cid");
- */
-        assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
-        /**
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":bob\"",  1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":cid\"",  1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":dave\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":eoin\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":fred\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":gail\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":hal\"",  1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":ian\"",  1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":jake\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":kara\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":loon\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":mike\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":noodle\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":ood\"", 1);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":GROUP_EVERYONE\"", 16);
 
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy\" |AUTHSET:\":bob\" |AUTHSET:\":cid\"", 3);
-        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy:bob:cid\"", 3);
-         **/
+
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:andy", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:bob", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:cid", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:dave", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:eoin", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:fred", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:gail", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:hal", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:ian", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:eoin", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:jake", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:kara", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:loon", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:mike", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:noodle", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:ood", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:GROUP_EVERYONE", 16);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:andy |AUTHORITY:bob |AUTHORITY:cid", 3);
+
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
+
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":bob\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":cid\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":dave\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":eoin\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":fred\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":gail\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":hal\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":ian\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":jake\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":kara\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":loon\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":mike\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":noodle\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":ood\"", 1);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":GROUP_EVERYONE\"", 16);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy\" |AUTHSET:\":bob\" |AUTHSET:\":cid\"", 3);
+        assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy:bob:cid\"", 3);
 
         //Test Sorting
     //    assertAQueryIsSorted("PATH:\"//.\"", "ID asc", null, 16, new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
@@ -1526,6 +1485,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
     private void assertAQueryHasNumberOfDocs(String query, int num)
     {
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", query), null), "*[count(//doc)="+num+"]");
+    }
+
+    private void assertAQueryHasNumberOfDocs(String query, String filter, int num)
+    {
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", query, "fq", filter), null), "*[count(//doc)="+num+"]");
     }
 
     private void assertAQueryIsSorted(String query, String sort, Locale aLocale, int num, Integer[] sortOrder)
