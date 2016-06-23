@@ -1178,6 +1178,37 @@ public class MoreCmisTest extends LoadCMISData
     @Test
     public void checkContainsSyntax()
     {
-        
+
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent"),expectedDocCount(1));
+
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('two')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('-quick')"),expectedDocCount(11));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick brown fox')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick two')"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick -two')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('-quick two')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('-quick -two')"),expectedDocCount(10));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('fox brown quick')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick OR two')"),expectedDocCount(2));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick OR -two')"),expectedDocCount(11));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('-quick OR -two')"),expectedDocCount(12));
+        //TODO FIXME        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\'')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('\\'fox brown quick\\'')"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\' two')"),expectedDocCount(0));
+        //TODO FIXME        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\' -two')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' two')"),expectedDocCount(1));
+      //TODO FIXME  assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' -two')"),expectedDocCount(10));
+
+        // escaping
+        assertQ(qurySolr("SELECT * FROM cmis:folder WHERE CONTAINS('cmis:name:\\'Folder 9\\\\\\'\\'')"),expectedDocCount(1));
+
+        // precedence
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown two')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown AND two')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick OR (brown AND two)')"),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('(quick OR brown) AND two')"),expectedDocCount(0));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown OR two')"),expectedDocCount(2));
+        assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown two')"),expectedDocCount(1));
     }
 }
