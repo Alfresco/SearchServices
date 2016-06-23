@@ -5403,7 +5403,6 @@ public class AlfrescoCoreAdminTester
                                 + d0 + "')", 1, null, null, null, null, null, (String) null);
 
     }
-//Michae;
     private void check_D_datetime(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel, Date date1)
                 throws IOException
     {
@@ -5627,7 +5626,7 @@ public class AlfrescoCoreAdminTester
                     "SELECT cmistest:multipleBoolean as alias FROM cmistest:extendedContent WHERE '2' =  ANY alias ",
                     1, null, null, null, null, null, (String) null);
     }
-
+//Michael
     private void check_contains_syntax(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel)
                 throws IOException
     {
