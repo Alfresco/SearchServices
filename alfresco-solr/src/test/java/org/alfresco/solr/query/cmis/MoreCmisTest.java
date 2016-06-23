@@ -652,4 +652,61 @@ public class MoreCmisTest extends LoadCMISData
         assertQ(qurySolr("SELECT cmistest:multipleMLTextTokenised alias FROM cmistest:extendedContent WHERE ANY alias NOT IN ('EEEE')"),
                 expectedDocCount(1));
     }
+    @Test
+    public void checkDfloat()
+    {
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent"), expectedDocCount(1));
+
+    // d:float single
+
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat = 1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat = 1.1"), expectedDocCount(0));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat <> 1"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat <> 1.1"), expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat < 1"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat < 1.1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat <= 1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat <= 1.1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat > 1"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat > 0.9"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat >= 1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat >= 0.9"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat IN (1, 2)"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleFloat NOT IN (1.1)"),expectedDocCount(1));
+
+    // d:float single by alias
+
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias = 1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias = 1.1"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias <> 1"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias <> 1.1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias < 1"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias < 1.1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias <= 1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias <= 1.1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias > 1"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias > 0.9"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias >= 1"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias >= 0.9"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias IN (1, 2)"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleFloat as alias FROM cmistest:extendedContent WHERE alias NOT IN (1.1)"),expectedDocCount(1));
+
+    // d:float multiple
+
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE '1' =  ANY cmistest:multipleFloat "),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE '1.1' =  ANY cmistest:multipleFloat "),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleFloat IN (1, 2)"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleFloat IN (1.1, 2.2)"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleFloat NOT IN (1.1, 2.2)"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleFloat NOT IN (1.3, 2.3)"),expectedDocCount(1));
+
+    // d:float multiple by alias
+
+    assertQ(qurySolr("SELECT cmistest:multipleFloat as alias FROM cmistest:extendedContent WHERE '1' =  ANY alias "),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:multipleFloat as alias FROM cmistest:extendedContent WHERE '1.1' =  ANY alias "),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:multipleFloat as alias FROM cmistest:extendedContent WHERE ANY alias IN (1, 2)"),expectedDocCount(1)); 
+    assertQ(qurySolr("SELECT cmistest:multipleFloat as alias FROM cmistest:extendedContent WHERE ANY alias IN (1.1, 2.2)"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:multipleFloat as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (1.1, 2.2)"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT cmistest:multipleFloat as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)"),expectedDocCount(1));
+    }
 }
