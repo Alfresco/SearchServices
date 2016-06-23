@@ -1744,7 +1744,6 @@ public class AlfrescoCoreAdminTester
             check_D_text(rsp, core, dataModel);
             check_locale(rsp, core, dataModel);
             check_D_mltext(rsp, core, dataModel);
-            //MICHAEL FLAG
             check_D_float(rsp, core, dataModel);
             check_D_double(rsp, core, dataModel);
             check_D_int(rsp, core, dataModel);
@@ -5247,7 +5246,6 @@ public class AlfrescoCoreAdminTester
                     "SELECT cmistest:multipleLong alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (3, 4)",
                     1, null, null, null, null, null, (String) null);
     }
-//TODO MICHAEL
     private void check_D_date(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel, Date date1)
                 throws IOException
     {

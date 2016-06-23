@@ -1009,6 +1009,146 @@ public class MoreCmisTest extends LoadCMISData
         assertQ(qurySolr(
                     "SELECT cmistest:multipleDate alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (TIMESTAMP '"
                                 + d0 + "')"),expectedDocCount(1));
+    }
+    public void check_D_datetime()
+    {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(testCMISDate00);
+        cal.add(Calendar.DAY_OF_MONTH, -1);
+        Date date0 = cal.getTime();
+        cal.add(Calendar.DAY_OF_MONTH, 2);
+        Date date2 = cal.getTime();
+
+
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent"),expectedDocCount(1));
+
+        String d0 = ISO8601DateFormat.format(date0);
+        String d1 = ISO8601DateFormat.format(testCMISDate00);
+        String d2 = ISO8601DateFormat.format(date2);
+
+        // d:datetime single
+
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime = TIMESTAMP '" + d1 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime = TIMESTAMP '" + d2 + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime <> TIMESTAMP '" + d1 + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime <> TIMESTAMP '" + d2 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime < TIMESTAMP '" + d1 + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime < TIMESTAMP '" + d2 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime <= TIMESTAMP '" + d1 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime <= TIMESTAMP '" + d2 + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime > TIMESTAMP '" + d1 + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime > TIMESTAMP '" + d0 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime >= TIMESTAMP '" + d1 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime >= TIMESTAMP '" + d0 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime IN (TIMESTAMP '" + d0
+                                + "' ,TIMESTAMP '" + d1 + "')"),expectedDocCount(1)); 
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE cmistest:singleDatetime NOT IN (TIMESTAMP '" + d2
+                                + "')"),expectedDocCount(1));
+
+        // d:datetime single by alias
+
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias = TIMESTAMP '" + d1
+                                + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias = TIMESTAMP '" + d2
+                                + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias <> TIMESTAMP '"
+                                + d1 + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias <> TIMESTAMP '"
+                                + d2 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias < TIMESTAMP '" + d1
+                                + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias < TIMESTAMP '" + d2
+                                + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias <= TIMESTAMP '"
+                                + d1 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias <= TIMESTAMP '"
+                                + d2 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias > TIMESTAMP '" + d1
+                                + "'"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias > TIMESTAMP '" + d0
+                                + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias >= TIMESTAMP '"
+                                + d1 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias >= TIMESTAMP '"
+                                + d0 + "'"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias IN (TIMESTAMP '"
+                                + d0 + "' ,TIMESTAMP '" + d1 + "')"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:singleDatetime alias FROM cmistest:extendedContent WHERE alias NOT IN (TIMESTAMP '"
+                                + d2 + "')"),expectedDocCount(1));
+
+        // d:date multiple
+
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE TIMESTAMP '" + d1
+                    + "' =  ANY cmistest:multipleDatetime "),expectedDocCount(1));
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE TIMESTAMP '" + d2
+                    + "' =  ANY cmistest:multipleDatetime "),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleDatetime IN (TIMESTAMP '" + d1
+                                + "', TIMESTAMP '" + d2 + "')"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleDatetime IN (TIMESTAMP '" + d2
+                                + "', TIMESTAMP '" + d0 + "')"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleDatetime NOT IN (TIMESTAMP '"
+                                + d0 + "', TIMESTAMP '" + d1 + "')"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleDatetime NOT IN (TIMESTAMP '"
+                                + d1 + "', TIMESTAMP '" + d2 + "')"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT * FROM cmistest:extendedContent WHERE ANY cmistest:multipleDatetime NOT IN (TIMESTAMP '"
+                                + d0 + "')"),expectedDocCount(1));
+
+        // d:date multiple by alias
+
+        assertQ(qurySolr(
+                    "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE TIMESTAMP '" + d1
+                                + "' =  ANY alias "),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE TIMESTAMP '" + d2
+                                + "' =  ANY alias "),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE ANY alias IN (TIMESTAMP '"
+                                + d1 + "', TIMESTAMP '" + d2 + "')"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE ANY alias IN (TIMESTAMP '"
+                                + d2 + "', TIMESTAMP '" + d0 + "')"),expectedDocCount(1));
+        assertQ(qurySolr(
+                    "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (TIMESTAMP '"
+                                + d0 + "', TIMESTAMP '" + d1 + "')"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (TIMESTAMP '"
+                                + d1 + "', TIMESTAMP '" + d2 + "')"),expectedDocCount(0));
+        assertQ(qurySolr(
+                    "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (TIMESTAMP '"
+                                + d0 + "')"),expectedDocCount(1));
 
     }
 }
