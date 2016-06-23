@@ -4796,7 +4796,6 @@ public class AlfrescoCoreAdminTester
                     "SELECT cmistest:multipleFloat as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)",
                     1, null, null, null, null, null, (String) null);
     }
-//MICHAEL WAS HERE START NEXT LINE
     private void check_D_double(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel)
                 throws IOException
     {
@@ -4945,7 +4944,7 @@ public class AlfrescoCoreAdminTester
                     "SELECT cmistest:multipleDouble alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)",
                     1, null, null, null, null, null, (String) null);
     }
-
+//MICHAEL FLAG NEXT
     private void check_D_int(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel) throws IOException
     {
 
