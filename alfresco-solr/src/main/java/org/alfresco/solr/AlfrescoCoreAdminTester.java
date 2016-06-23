@@ -5703,7 +5703,7 @@ public class AlfrescoCoreAdminTester
         testQueryByHandler(report, core, "/cmis", "SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown two')",
                     1, null, null, null, null, null, (String) null);
     }
-
+//Michael Here next
     private void check_order(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel) throws IOException
     {
 
