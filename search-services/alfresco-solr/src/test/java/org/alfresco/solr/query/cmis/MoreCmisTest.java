@@ -1149,6 +1149,35 @@ public class MoreCmisTest extends LoadCMISData
         assertQ(qurySolr(
                     "SELECT cmistest:multipleDatetime alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (TIMESTAMP '"
                                 + d0 + "')"),expectedDocCount(1));
-
+    }
+    @Test
+    public void checkDboolean()
+    {
+        assertQ(qurySolr("SELECT * FROM cmistest:extendedContent"),expectedDocCount(1));
+    // d:boolean single
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleBoolean = TRUE"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleBoolean = true"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleBoolean = FALSE"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleBoolean = false"),expectedDocCount(0));
+    // not strictly compliant...
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE cmistest:singleBoolean = TRue"),expectedDocCount(1));
+    // d:boolean single by alias
+    assertQ(qurySolr("SELECT cmistest:singleBoolean alias FROM cmistest:extendedContent WHERE alias = TRUE"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleBoolean alias FROM cmistest:extendedContent WHERE alias = true"),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:singleBoolean alias FROM cmistest:extendedContent WHERE alias = FALSE"),expectedDocCount(0));
+    assertQ(qurySolr("SELECT cmistest:singleBoolean alias FROM cmistest:extendedContent WHERE alias = false"),expectedDocCount(0));
+    // not strictly compliant...
+    assertQ(qurySolr("SELECT cmistest:singleBoolean alias FROM cmistest:extendedContent WHERE alias = TRue"),expectedDocCount(1));
+    // d:boolean multiple
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE '1' =  ANY cmistest:multipleBoolean "),expectedDocCount(1));
+    assertQ(qurySolr("SELECT * FROM cmistest:extendedContent WHERE '2' =  ANY cmistest:multipleBoolean "),expectedDocCount(1)); 
+    // d:boolean multiple by alias
+    assertQ(qurySolr("SELECT cmistest:multipleBoolean as alias FROM cmistest:extendedContent WHERE '1' =  ANY alias "),expectedDocCount(1));
+    assertQ(qurySolr("SELECT cmistest:multipleBoolean as alias FROM cmistest:extendedContent WHERE '2' =  ANY alias "),expectedDocCount(1));
+    }
+    @Test
+    public void checkContainsSyntax()
+    {
+        
     }
 }
