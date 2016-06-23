@@ -4944,7 +4944,6 @@ public class AlfrescoCoreAdminTester
                     "SELECT cmistest:multipleDouble alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)",
                     1, null, null, null, null, null, (String) null);
     }
-//MICHAEL FLAG NEXT
     private void check_D_int(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel) throws IOException
     {
 
@@ -5101,7 +5100,6 @@ public class AlfrescoCoreAdminTester
                     "SELECT cmistest:multipleInteger as alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (3, 4)",
                     1, null, null, null, null, null, (String) null);
     }
-
     private void check_D_long(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel) throws IOException
     {
 
@@ -5249,7 +5247,7 @@ public class AlfrescoCoreAdminTester
                     "SELECT cmistest:multipleLong alias FROM cmistest:extendedContent WHERE ANY alias NOT IN (3, 4)",
                     1, null, null, null, null, null, (String) null);
     }
-
+//TODO MICHAEL
     private void check_D_date(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel, Date date1)
                 throws IOException
     {
