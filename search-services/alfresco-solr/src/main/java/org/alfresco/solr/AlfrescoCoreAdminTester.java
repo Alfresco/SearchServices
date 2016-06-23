@@ -5405,7 +5405,7 @@ public class AlfrescoCoreAdminTester
                                 + d0 + "')", 1, null, null, null, null, null, (String) null);
 
     }
-
+//Michae;
     private void check_D_datetime(SolrQueryResponse rsp, SolrCore core, AlfrescoSolrDataModel dataModel, Date date1)
                 throws IOException
     {
