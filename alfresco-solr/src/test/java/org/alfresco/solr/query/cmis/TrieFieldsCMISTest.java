@@ -57,14 +57,7 @@ public class TrieFieldsCMISTest extends LoadCMISData
                 testCMISBaseFolderQName,
                 testCMISFolder00QName,
                 testCMISDate00);
-        
-        addTypeSortTestData(testCMISFolder00NodeRef, 
-                testCMISRootNodeRef, 
-                testCMISBaseFolderNodeRef, 
-                testCMISBaseFolderQName,
-                testCMISFolder00QName,
-                testCMISDate00);
-        
+
         addTrieTypeTestData(testCMISFolder00NodeRef, 
                 testCMISRootNodeRef, 
                 testCMISBaseFolderNodeRef, 
