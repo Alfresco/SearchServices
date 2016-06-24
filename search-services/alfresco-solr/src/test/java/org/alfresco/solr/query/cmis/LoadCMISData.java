@@ -783,4 +783,160 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
     {
         return String.format("*[count(//doc)=%d]", count);
     }
+    
+    protected void addSortableNode(NodeRef folder00NodeRef,
+            NodeRef rootNodeRef, NodeRef baseFolderNodeRef, Object baseFolderQName, Object folder00QName,
+            Date date1, int position) throws IOException
+    {
+        HashMap<QName, PropertyValue> content00Properties = new HashMap<QName, PropertyValue>();
+        MLTextPropertyValue desc00 = new MLTextPropertyValue();
+        desc00.addValue(Locale.ENGLISH, "Test " + position);
+        content00Properties.put(ContentModel.PROP_DESCRIPTION, desc00);
+        content00Properties.put(ContentModel.PROP_TITLE, desc00);
+        content00Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Test " + position));
+        content00Properties.put(ContentModel.PROP_CREATED,
+                    new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
+    
+        StringPropertyValue single = new StringPropertyValue(orderable[position]);
+        content00Properties.put(singleTextUntokenised, single);
+        content00Properties.put(singleTextTokenised, single);
+        content00Properties.put(singleTextBoth, single);
+        MultiPropertyValue multi = new MultiPropertyValue();
+        multi.addValue(single);
+        multi.addValue(new StringPropertyValue(orderable[position + 1]));
+        content00Properties.put(multipleTextUntokenised, multi);
+        content00Properties.put(multipleTextTokenised, multi);
+        content00Properties.put(multipleTextBoth, multi);
+        content00Properties.put(singleMLTextUntokenised, makeMLText(position));
+        content00Properties.put(singleMLTextTokenised, makeMLText(position));
+        content00Properties.put(singleMLTextBoth, makeMLText(position));
+        content00Properties.put(multipleMLTextUntokenised, makeMLTextMVP(position));
+        content00Properties.put(multipleMLTextTokenised, makeMLTextMVP(position));
+        content00Properties.put(multipleMLTextBoth, makeMLTextMVP());
+        StringPropertyValue one = new StringPropertyValue("" + (1.1 * position));
+        StringPropertyValue two = new StringPropertyValue("" + (2.2 * position));
+        MultiPropertyValue multiDec = new MultiPropertyValue();
+        multiDec.addValue(one);
+        multiDec.addValue(two);
+        content00Properties.put(singleFloat, one);
+        content00Properties.put(multipleFloat, multiDec);
+        content00Properties.put(singleDouble, one);
+        content00Properties.put(multipleDouble, multiDec);
+        one = new StringPropertyValue("" + (1 * position));
+        two = new StringPropertyValue("" + (2 * position));
+        MultiPropertyValue multiInt = new MultiPropertyValue();
+        multiInt.addValue(one);
+        multiInt.addValue(two);
+        content00Properties.put(singleInteger, one);
+        content00Properties.put(multipleInteger, multiInt);
+        content00Properties.put(singleLong, one);
+        content00Properties.put(multipleLong, multiInt);
+    
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(date1);
+        cal.add(Calendar.DAY_OF_MONTH, position);
+    
+        Date newdate1 = cal.getTime();
+        cal.add(Calendar.DAY_OF_MONTH, -1);
+        cal.add(Calendar.DAY_OF_MONTH, 2);
+        Date date2 = cal.getTime();
+        StringPropertyValue d1 = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, newdate1));
+        StringPropertyValue d2 = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2));
+        MultiPropertyValue multiDate = new MultiPropertyValue();
+        multiDate.addValue(d1);
+        multiDate.addValue(d2);
+        content00Properties.put(singleDate, d1);
+        content00Properties.put(multipleDate, multiDate);
+        content00Properties.put(singleDatetime, d1);
+        content00Properties.put(multipleDatetime, multiDate);
+    
+        StringPropertyValue b = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class,
+                    position % 2 == 0 ? true : false));
+        StringPropertyValue bTrue = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, true));
+        StringPropertyValue bFalse = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, false));
+        MultiPropertyValue multiBool = new MultiPropertyValue();
+        multiBool.addValue(bTrue);
+        multiBool.addValue(bFalse);
+    
+        content00Properties.put(singleBoolean, b);
+        content00Properties.put(multipleBoolean, multiBool);
+    
+        NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test " + position);
+        ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
+                    content00QName, content00NodeRef, true, 0);
+        addNode(h.getCore(),
+                dataModel, 1, 1000 + position, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+                    ContentModel.ASPECT_TITLED }, content00Properties, null, "andy",
+                    new ChildAssociationRef[] { content00CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
+                                folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
+                                + folder00QName.toString() + "/" + content00QName.toString() }, content00NodeRef, true);
+    }
+    
+    private static String[] orderable = new String[] { "zero loons", "one banana", "two apples", "three fruit",
+            "four lemurs", "five rats", "six badgers", "seven cards", "eight cabbages", "nine zebras", "ten lemons" };
+    /**
+     * 
+     * @param folder00NodeRef
+     * @param rootNodeRef
+     * @param baseFolderNodeRef
+     * @param baseFolderQName
+     * @param folder00QName
+     * @param date1
+     * @throws IOException
+     */
+    protected void addTypeSortTestData(NodeRef folder00NodeRef, NodeRef rootNodeRef, NodeRef baseFolderNodeRef, Object baseFolderQName, Object folder00QName, Date date1)
+            throws IOException
+    {
+        addSortableNull(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                folder00QName, date1, "start", 0);
+        for (int i = 0; i < 10; i++)
+        {
+            addSortableNode(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                        folder00QName, date1, i);
+            if (i == 5)
+            {
+                addSortableNull(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                            folder00QName, date1, "mid", 1);
+            }
+        }
+
+        addSortableNull(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                    folder00QName, date1, "end", 2);
+    }
+    /**
+     * 
+     * @param folder00NodeRef
+     * @param rootNodeRef
+     * @param baseFolderNodeRef
+     * @param baseFolderQName
+     * @param folder00QName
+     * @param date1
+     * @param id
+     * @param offset
+     * @throws IOException
+     */
+    private void addSortableNull(NodeRef folder00NodeRef,
+            NodeRef rootNodeRef, NodeRef baseFolderNodeRef, Object baseFolderQName, Object folder00QName,
+            Date date1, String id, int offset) throws IOException
+    {
+        HashMap<QName, PropertyValue> content00Properties = new HashMap<QName, PropertyValue>();
+        MLTextPropertyValue desc00 = new MLTextPropertyValue();
+        desc00.addValue(Locale.ENGLISH, "Test null");
+        content00Properties.put(ContentModel.PROP_DESCRIPTION, desc00);
+        content00Properties.put(ContentModel.PROP_TITLE, desc00);
+        content00Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Test null"));
+        content00Properties.put(ContentModel.PROP_CREATED,
+                    new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
+    
+        NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test null");
+        ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
+                    content00QName, content00NodeRef, true, 0);
+        addNode(h.getCore(), dataModel, 1, 200 + offset, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+                    ContentModel.ASPECT_TITLED }, content00Properties, null, "andy",
+                    new ChildAssociationRef[] { content00CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
+                                folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
+                                + folder00QName.toString() + "/" + content00QName.toString() }, content00NodeRef, true);
+    }
 }
