@@ -81,11 +81,49 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 */
     @Test
     public void dataChecks() throws Exception {
-        /********  Check the root node **********/
+
+        checkRootNodes();
+        checkpaths();
+        checkQNames();
+        checkType();
+        checkDataType();
+        checkText();
+        checkMLText();
+        checkRanges();
+        checkNonField();
+        checkNullAndUnset();
+        checkInternalFields();
+        checkAuthorityFilter();
+        testAFTS();
+        testSort();
+        
+        /*
+        TODO
+        checkPropertyTypes(before, core, dataModel, testDate, n01NodeRef.toString());
+        checkPaging(before, core, dataModel);
+        testAFTSandSort(before, core, dataModel);
+        testCMIS(before, core, dataModel);
+        testChildNameEscaping(after, core, dataModel, rootNodeRef);
+         */
+
+
+        /*
+         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, "DBID desc", new Integer[] { 16, 15, 14, 13, 12, 11,
+                    10, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, null, null, null, (String) null);
+
+        // testQueryByHandler(report, core, "/afts", "PATH", "\"//.\"", 16, null, (String) null);
+         */
+
+
+    }
+
+    private void checkRootNodes() throws Exception {
         assertAQuery("PATH:\"/\"", 1);
         assertAQuery("PATH:\"/.\"", 1);
-        
-        /******* Check paths ********************/
+    }
+
+    private void checkpaths() throws Exception {
+
         assertAQuery("PATH:\"/cm:one\"", 1);
         assertAQuery("PATH:\"/cm:two\"", 1);
         assertAQuery("PATH:\"/cm:three\"", 1);
@@ -110,10 +148,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("PATH:\"/cm:one/cm:five/cm:eleven\"", 1);
         assertAQuery("PATH:\"/cm:one/cm:five/cm:twelve\"", 1);
         assertAQuery("PATH:\"/cm:one/cm:five/cm:twelve/cm:thirteen\"", 1);
-        assertAQuery( 
-              "PATH:\"/cm:one/cm:five/cm:twelve/cm:thirteen/cm:fourteen\"", 1);
-        assertAQuery("PATH:\"/cm:one/cm:five/cm:twelve/cm:thirteen/cm:common\"",
-                1);
+        assertAQuery("PATH:\"/cm:one/cm:five/cm:twelve/cm:thirteen/cm:fourteen\"", 1);
+        assertAQuery("PATH:\"/cm:one/cm:five/cm:twelve/cm:thirteen/cm:common\"", 1);
         assertAQuery("PATH:\"/cm:one/cm:five/cm:twelve/cm:common\"", 1);
         assertAQuery("PATH:\"/cm:*\"", 5);
         assertAQuery("PATH:\"/cm:*/cm:*\"", 6);
@@ -144,20 +180,21 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("PATH:\"/one//thirteen/fourteen/.\"", 1);
         assertAQuery("PATH:\"/one//thirteen/fourteen//.\"", 1);
         assertAQuery("PATH:\"/one//thirteen/fourteen//.//.\"", 1);
-
         assertAQuery("PATH:\"/one\"", 1);
         assertAQuery("PATH:\"/two\"", 1);
         assertAQuery("PATH:\"/three\"", 1);
         assertAQuery("PATH:\"/four\"", 1);
-        
-        /******** Check qNames ***************/
-        assertAQuery("QNAME:\"nine\"", 1);
-        assertAQuery("PRIMARYASSOCTYPEQNAME:\"cm:contains\"", 11);
-        assertAQuery("PRIMARYASSOCTYPEQNAME:\"sys:children\"", 4);
-        assertAQuery("ASSOCTYPEQNAME:\"cm:contains\"", 11);
-        assertAQuery("ASSOCTYPEQNAME:\"sys:children\"", 5);
-        
-        /******** check type ****************/
+    }
+
+    private void checkQNames()  throws Exception {
+        assertAQuery("QNAME:\"nine\"",1);
+        assertAQuery("PRIMARYASSOCTYPEQNAME:\"cm:contains\"",11);
+        assertAQuery("PRIMARYASSOCTYPEQNAME:\"sys:children\"",4);
+        assertAQuery("ASSOCTYPEQNAME:\"cm:contains\"",11);
+        assertAQuery("ASSOCTYPEQNAME:\"sys:children\"",5);
+    }
+
+    private void checkType() throws Exception {
         assertAQuery("TYPE:\"" + testType.toString() + "\"", 1);
         assertAQuery("TYPE:\"" + testType.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 1);
         assertAQuery("EXACTTYPE:\"" + testType.toString() + "\"", 1);
@@ -176,24 +213,23 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("TYPE:\"content\"", 1);
         assertAQuery("TYPE:\"content0\"", 0);
         assertAQuery("ASPECT:\"flubber\"", 0);
-        assertAQuery("TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString() + "\"",
-                1);
-        assertAQuery("TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString()
-                + "\" TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", 2);
+        assertAQuery("TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString() + "\"", 1);
+        assertAQuery("TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString() + "\" TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", 2);
         assertAQuery("EXACTTYPE:\"" + testSuperType.toString() + "\"", 12);
         assertAQuery("EXACTTYPE:\"" + testSuperType.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 12);
         assertAQuery("ASPECT:\"" + testAspect.toString() + "\"", 1);
         assertAQuery("ASPECT:\"" + testAspect.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 1);
         assertAQuery("EXACTASPECT:\"" + testAspect.toString() + "\"", 1);
         assertAQuery("EXACTASPECT:\"" + testAspect.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 1);
+    }
 
-
-        /*********** Check data type **********/
+    private void checkDataType() throws Exception {
         assertAQuery("d\\:double:\"5.6\"", 1);
         assertAQuery("d\\:content:\"fox\"", 1);
         assertAQuery("d\\:content:\"fox\"", 1, Locale.US, null, null);
+    }
 
-
+    private void checkText() throws Exception {
         /*********** Check text **************/
         assertAQuery("TEXT:fox AND TYPE:\"" + ContentModel.PROP_CONTENT.toString() + "\"", 1);
         assertAQuery("TEXT:fox @cm\\:name:fox", 1);
@@ -209,29 +245,29 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         //assertAQuery("TEXT:\"over a lazy\"", 1);
 
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":*a*", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":*a*", 1);
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":*A*", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":*A*", 1);
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":\"*a*\"", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":\"*a*\"", 1);
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":\"*A*\"", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":\"*A*\"", 1);
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":*s*", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":*s*", 1);
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":*S*", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":*S*", 1);
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":\"*s*\"", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":\"*s*\"", 1);
         assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                        "text-indexed-stored-tokenised-atomic").toString()) + ":\"*S*\"", 1);
+                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                "text-indexed-stored-tokenised-atomic").toString()) + ":\"*S*\"", 1);
         assertAQuery("TEXT:*A*", 1);
         assertAQuery("TEXT:\"*a*\"", 1);
         assertAQuery("TEXT:\"*A*\"", 1);
@@ -256,38 +292,38 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         assertAQuery("TEXT:\"fox\"", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
-                        + ":\"fox\"", 1);
+                + ":\"fox\"", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
-                        + ".mimetype:\"text/plain\"", 1);
+                + ".mimetype:\"text/plain\"", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
-                        + ".locale:\"en_GB\"", 1);
+                + ".locale:\"en_GB\"", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
-                        + ".locale:en_*", 1);
+                + ".locale:en_*", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
-                        + ".locale:e*_GB", 1);
+                + ".locale:e*_GB", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
-                        + ".size:\"298\"", 1);
+                + ".size:\"298\"", 1);
 
         //TODO Fix these tests
 
-        assertAQuery("TEXT:\"fox\"", 0, null, new String[] { "@"
-                + ContentModel.PROP_NAME.toString() }, null);
-        assertAQuery("TEXT:\"fox\"", 1, null, new String[] {
-                "@" + ContentModel.PROP_NAME.toString(), "@" + ContentModel.PROP_CONTENT.toString() }, null);
-        assertAQuery("TEXT:\"cabbage\"", 15, null, new String[] { "@"
-                + orderText.toString() }, null);
+        assertAQuery("TEXT:\"fox\"", 0, null, new String[]{"@"
+                + ContentModel.PROP_NAME.toString()}, null);
+        assertAQuery("TEXT:\"fox\"", 1, null, new String[]{
+                "@" + ContentModel.PROP_NAME.toString(), "@" + ContentModel.PROP_CONTENT.toString()}, null);
+        assertAQuery("TEXT:\"cabbage\"", 15, null, new String[]{"@"
+                + orderText.toString()}, null);
         assertAQuery("TEXT:\"cab*\"", 15, null,
-                new String[] { "@" + orderText.toString() }, null);
+                new String[]{"@" + orderText.toString()}, null);
         assertAQuery("TEXT:\"*bage\"", 15, null,
-                new String[] { "@" + orderText.toString() }, null);
+                new String[]{"@" + orderText.toString()}, null);
         assertAQuery("TEXT:\"*ba*\"", 15, null,
-                new String[] { "@" + orderText.toString() }, null);
+                new String[]{"@" + orderText.toString()}, null);
         assertAQuery("TEXT:cabbage", 15, null,
-                new String[] { "@" + orderText.toString() }, null);
-        assertAQuery("TEXT:*cab*", 15, Locale.ENGLISH, new String[] { "@"
-                + orderText.toString() }, null);
+                new String[]{"@" + orderText.toString()}, null);
+        assertAQuery("TEXT:*cab*", 15, Locale.ENGLISH, new String[]{"@"
+                + orderText.toString()}, null);
         assertAQuery("TEXT:*bage", 15, null,
-                new String[] { "@" + orderText.toString() }, null);
+                new String[]{"@" + orderText.toString()}, null);
 
 //            assertAQuery("TEXT:dabbage~0.3", 15, null, new String[] { "@"
 //                        + orderText.toString() }, null);
@@ -336,7 +372,10 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("TEXT:\"alfresc*tutorial\"", 0);
         assertAQuery("TEXT:\"alf* tut*\"", 1);
         assertAQuery("TEXT:\"*co *al\"", 1);
-        
+    }
+
+
+    private void checkMLText() throws Exception {
         /********* check mltext ************/
 
         assertAQuery(
@@ -504,11 +543,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 Locale.ITALIAN, null, null);
 
         //TODO fix test
-        /*
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":�?ナナ", 1, new Locale(
-                        "ja"), null, null);
-                        */
+            /*
+            assertAQuery(
+                    "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":�?ナナ", 1, new Locale(
+                            "ja"), null, null);
+                            */
         assertAQuery(
                 "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":바나나", 1, new Locale(
                         "ko"), null, null);
@@ -521,17 +560,18 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery(
                 "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":plátano", 1,
                 new Locale("es"), null, null);
+    }
 
-        /*********** Check ranges  **************/
-
+    private void checkRanges() throws Exception {
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[a TO b]", 1);
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[a TO \uFFFF]", 14);
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[* TO b]", 2);
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[\u0000 TO b]", 2);
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[d TO \uFFFF]", 12);
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(orderText.toString()) + ":[d TO *]", 12);
-        
-        /*********** Check non-field  ************/
+    }
+
+    private void checkNonField() throws Exception {
 
         assertAQuery("TEXT:fox", 1);
         assertAQuery("TEXT:fo*", 1);
@@ -566,7 +606,9 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                         + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
                         .toPrefixString(dataModel.getNamespaceDAO())) + ":*ox", 1);
 
-        /************** Check null and unset  *************/
+    }
+
+    private void checkNullAndUnset() throws Exception {
 
         assertAQuery("ISUNSET:\""
                 + QName.createQName(TEST_NAMESPACE, "null").toString() + "\"", 0);
@@ -589,13 +631,13 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("ISNOTNULL:\"" + QName.createQName(TEST_NAMESPACE, "aspectProperty").toString() + "\"", 1);
         assertAQuery("EXISTS:\"" + QName.createQName(TEST_NAMESPACE, "aspectProperty").toString() + "\"", 1);
 
+    }
 
-        /***** Check internal fields ******/
+    private void checkInternalFields() throws Exception{
 
         final Long aclId = new Long(1);
 
-        for (int i = 1; i < 16; i++)
-        {
+        for (int i = 1; i < 16; i++) {
             Long dbId = new Long(i);
             String id = SearchLanguageConversion.escapeLuceneQuery(AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbId));
             assertQ(areq(params("q", FIELD_SOLR4_ID + ":" + id, "qt", "/afts"), null),
@@ -850,7 +892,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         testQueryByHandler(report, core, "/native", FIELD_ACLTXCOMMITTIME + ":*", 1, null, null, null,
                 null, null, (String) null);
         */
-        
+
         /*
 
         // AbstractLuceneQueryParser.FIELD_EXCEPTION_MESSAGE
@@ -892,87 +934,87 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         testQueryByHandler(report, core, "/afts", FIELD_PARENT_ASSOC_CRC + ":0", 16, null, null, null,
                     null, null, (String) null);
+        */
+    }
 
-         */
+    private void testAFTS() throws Exception {
 
-        /********************TEST FTS **************************/
-
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "\"lazy\""), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "\"lazy\""), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "lazy and dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy and dog"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-lazy and -dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "-lazy and -dog"), null),
                 "*[count(//doc)=15]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|lazy and |dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "|lazy and |dog"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|eager and |dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "|eager and |dog"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|lazy and |wolf"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "|lazy and |wolf"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "|eager and |wolf"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "|eager and |wolf"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-lazy or -dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "-lazy or -dog"), null),
                 "*[count(//doc)=15]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-eager or -dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "-eager or -dog"), null),
                 "*[count(//doc)=16]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "-lazy or -wolf"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "-lazy or -wolf"), null),
                 "*[count(//doc)=16]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "-eager or -wolf"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "-eager or -wolf"), null),
                 "*[count(//doc)=16]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy dog"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy and not dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy and not dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy not dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy not dog"), null),
                 "*[count(//doc)=16]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy and !dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy and !dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy !dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy !dog"), null),
                 "*[count(//doc)=16]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "lazy and -dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy and -dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "lazy -dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "lazy -dog"), null),
                 "*[count(//doc)=16]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:\"lazy\""), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:\"lazy\""), null),
                 "*[count(//doc)=1]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm_content:\"lazy\""), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "d:content:\"lazy\""), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "d:content:\"lazy\""), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",   "=cm_content:\"lazy\""), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "=cm_content:\"lazy\""), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "~cm_content:\"lazy\""), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "~cm_content:\"lazy\""), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "cm:content:big OR cm:content:lazy"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:content:big OR cm:content:lazy"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "cm:content:big AND cm:content:lazy"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:content:big AND cm:content:lazy"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",    "{http://www.alfresco.org/model/content/1.0}content:\"lazy\""), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "{http://www.alfresco.org/model/content/1.0}content:\"lazy\""), null),
                 "*[count(//doc)=1]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "=lazy"), null),
@@ -993,43 +1035,43 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown * quick"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown * dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown * dog"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(0) dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown *(0) dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(1) dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown *(1) dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(2) dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown *(2) dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(3) dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown *(3) dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(4) dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown *(4) dog"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(5) dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown *(5) dog"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "brown *(6) dog"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "brown *(6) dog"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(\"lazy\")"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(\"lazy\")"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(lazy and dog)"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy and dog)"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(-lazy and -dog)"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(-lazy and -dog)"), null),
                 "*[count(//doc)=15]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(-lazy and dog)"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(-lazy and dog)"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(lazy and -dog)"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy and -dog)"), null),
                 "*[count(//doc)=0]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(|lazy and |dog)"), null),
@@ -1056,13 +1098,13 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(-eager or -wolf)"), null),
                 "*[count(//doc)=16]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "TEXT:(lazy dog)"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy dog)"), null),
                 "*[count(//doc)=1]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy and not dog)"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q","TEXT:(lazy not dog)"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy not dog)"), null),
                 "*[count(//doc)=16]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "TEXT:(lazy and !dog)"), null),
@@ -1080,7 +1122,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm_content:(\"lazy\")"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  "cm:content:(big OR lazy)"), null),
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:content:(big OR lazy)"), null),
                 "*[count(//doc)=1]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:content:(big AND lazy)"), null),
@@ -1145,35 +1187,49 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         assertAQueryHasNumberOfDocs(qname + ":3.40", 1);
         assertAQueryHasNumberOfDocs(qname + ":3..4", 1);
-        assertAQueryHasNumberOfDocs(qname + ":3..3.39", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":3..3.39", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":3..3.40", 1);
-        assertAQueryHasNumberOfDocs(qname + ":3.41..3.9", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":3.41..3.9", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":3.40..3.9", 1);
 
         assertAQueryHasNumberOfDocs(qname + ":[3 TO 4]", 1);
-        assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.39]", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.39]", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.4]", 1);
-        assertAQueryHasNumberOfDocs(qname + ":[3.41 TO 4]", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":[3.41 TO 4]", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":[3.4 TO 4]", 1);
-        assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.4>", 0);;
-        assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 4]", 0);;
-        assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 3.4>", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.4>", 0);
+        ;
+        assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 4]", 0);
+        ;
+        assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 3.4>", 0);
+        ;
 
         assertAQueryHasNumberOfDocs(qname + ":(3.40)", 1);
         assertAQueryHasNumberOfDocs(qname + ":(3..4)", 1);
-        assertAQueryHasNumberOfDocs(qname + ":(3..3.39)", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":(3..3.39)", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":(3..3.40)", 1);
-        assertAQueryHasNumberOfDocs(qname + ":(3.41..3.9)", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":(3.41..3.9)", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":(3.40..3.9)", 1);
 
         assertAQueryHasNumberOfDocs(qname + ":([3 TO 4])", 1);
-        assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.39])", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.39])", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.4])", 1);
-        assertAQueryHasNumberOfDocs(qname + ":([3.41 TO 4])", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":([3.41 TO 4])", 0);
+        ;
         assertAQueryHasNumberOfDocs(qname + ":([3.4 TO 4])", 1);
-        assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.4>)", 0);;
-        assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 4])", 0);;
-        assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 3.4>)", 0);;
+        assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.4>)", 0);
+        ;
+        assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 4])", 0);
+        ;
+        assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 3.4>)", 0);
+        ;
 
         assertAQueryHasNumberOfDocs("test:float_x002D_ista:3.40", 1);
 
@@ -1243,7 +1299,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs("lazy^20 -lazy", 16);
         assertAQueryHasNumberOfDocs("lazy^20 -lazy^20", 16);
 
-        assertAQueryHasNumberOfDocs("cm:content:lazy",1);
+        assertAQueryHasNumberOfDocs("cm:content:lazy", 1);
 //        assertAQueryHasNumberOfDocs("ANDY:lazy", 1);
         assertAQueryHasNumberOfDocs("content:lazy", 1);
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
@@ -1296,25 +1352,21 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English123", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.FRENCH.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.FRENCH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English123", "locale", Locale.FRENCH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French", "locale", Locale.FRENCH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.FRENCH.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.FRENCH.toString()), null), "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English123", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.GERMAN.toString()), null),  "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.GERMAN.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English123", "locale", Locale.GERMAN.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French", "locale", Locale.GERMAN.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:French123", "locale", Locale.GERMAN.toString()), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:123", "locale", Locale.GERMAN.toString()), null), "*[count(//doc)=1]");
+    }
 
-        /*
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, "DBID desc", new Integer[] { 16, 15, 14, 13, 12, 11,
-                    10, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, null, null, null, (String) null);
 
-        // testQueryByHandler(report, core, "/afts", "PATH", "\"//.\"", 16, null, (String) null);
-         */
-
+    private void checkAuthorityFilter() throws Exception {
         /***** checkAuthorityFilter **********/
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|DENIED:andy", 0);
@@ -1356,7 +1408,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         // "something" is DENIED to all nodes (they all use ACL #1)
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|DENIED:something", 16);
-
 
 
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
@@ -1425,27 +1476,29 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":GROUP_EVERYONE\"", 16);
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy\" |AUTHSET:\":bob\" |AUTHSET:\":cid\"", 3);
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHSET:\":andy:bob:cid\"", 3);
+    }
 
+    private void testSort() throws Exception {
         //Test Sorting
-    //    assertAQueryIsSorted("PATH:\"//.\"", "ID asc", null, 16, new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
-    //    assertAQueryIsSorted("PATH:\"//.\"", "ID desc",null, 16, new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
+        //    assertAQueryIsSorted("PATH:\"//.\"", "ID asc", null, 16, new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+        //    assertAQueryIsSorted("PATH:\"//.\"", "ID desc",null, 16, new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
 
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " asc", null, 16, new Integer[] {1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " desc",null, 16, new Integer[] {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdTime + " asc", null, 16, new Integer[] {1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdTime + " desc",null, 16, new Integer[] {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " asc", null, 16, new Integer[]{1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " desc", null, 16, new Integer[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdTime + " asc", null, 16, new Integer[]{1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + createdTime + " desc", null, 16, new Integer[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1});
 
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderDouble + " asc", null, 16, new Integer[] {15, 13, 11, 9, 7, 5, 3, 2, 1, 4, 6, 8, 10, 12, 14, 16});
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderDouble + " desc",null, 16, new Integer[] {16, 14, 12, 10, 8, 6, 4, 1, 2, 3, 5, 7, 9, 11, 13, 15 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderFloat  + " asc", null, 16, new Integer[] {15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 1, 8, 10, 12, 14, 16 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderFloat  + " desc",null, 16, new Integer[] {16, 14, 12, 10, 8, 1, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLong   + " asc", null, 16, new Integer[] {15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 1, 10, 12, 14, 16 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLong   + " desc",null, 16, new Integer[] {16, 14, 12, 10, 1, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15});
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderInt    + " asc", null, 16, new Integer[] {15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 1, 8, 10, 12, 14, 16 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderInt    + " desc",null, 16, new Integer[] {16, 14, 12, 10, 8, 1, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderDouble + " asc", null, 16, new Integer[]{15, 13, 11, 9, 7, 5, 3, 2, 1, 4, 6, 8, 10, 12, 14, 16});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderDouble + " desc", null, 16, new Integer[]{16, 14, 12, 10, 8, 6, 4, 1, 2, 3, 5, 7, 9, 11, 13, 15});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderFloat + " asc", null, 16, new Integer[]{15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 1, 8, 10, 12, 14, 16});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderFloat + " desc", null, 16, new Integer[]{16, 14, 12, 10, 8, 1, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLong + " asc", null, 16, new Integer[]{15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 1, 10, 12, 14, 16});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLong + " desc", null, 16, new Integer[]{16, 14, 12, 10, 1, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderInt + " asc", null, 16, new Integer[]{15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 1, 8, 10, 12, 14, 16});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderInt + " desc", null, 16, new Integer[]{16, 14, 12, 10, 8, 1, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15});
 
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderText    + " asc", null, 16, new Integer[] {1, 15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 10, 12, 14, 16 });
-        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderText    + " desc",null, 16, new Integer[] {16, 14, 12, 10, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderText + " asc", null, 16, new Integer[]{1, 15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 10, 12, 14, 16});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderText + " desc", null, 16, new Integer[]{16, 14, 12, 10, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15, 1});
 
 //        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  Locale.ENGLISH, 16, new Integer[] {1, 10, 11, 2, 3, 4, 5, 13, 12, 6, 7, 8, 14, 15, 16, 9 });
 //        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", Locale.ENGLISH, 16, new Integer[] {9, 16, 15, 14, 8, 7, 6, 12, 13, 5, 4, 3, 2, 11, 10, 1 });
@@ -1474,7 +1527,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 //        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".size desc",null, 16, new Integer[] { 15 });
 //        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype asc", null, 16, new Integer[] { 15 });
 //        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype desc",null, 16, new Integer[] { 15 });
-
     }
 
     private void assertAQueryHasNumOfDocsWithJson(String query, String json, int num)
