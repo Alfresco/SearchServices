@@ -18,14 +18,22 @@
  */
 package org.alfresco.solr.query.cmis;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.alfresco.util.ISO8601DateFormat;
+import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.SimpleOrderedMap;
 import org.junit.Before;
 import org.junit.Test;
-
+/**
+ * Ported tests relating to cmis from AlfrescoCoreAdminTester (Legacy embedded
+ * tests).
+ * @author Michael Suzuki
+ *
+ */
 public class MoreCmisTest extends LoadCMISData
 {
     @Before
@@ -1178,9 +1186,7 @@ public class MoreCmisTest extends LoadCMISData
     @Test
     public void checkContainsSyntax()
     {
-
         assertQ(qurySolr("SELECT * FROM cmistest:extendedContent"),expectedDocCount(1));
-
         assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('quick')"),expectedDocCount(1));
         assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('two')"),expectedDocCount(1));
         assertQ(qurySolr("SELECT * FROM cmis:document WHERE CONTAINS('-quick')"),expectedDocCount(11));
