@@ -18,8 +18,24 @@
  */
 package org.alfresco.solr.query.cmis;
 
-import java.io.IOException;
+import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.client.MLTextPropertyValue;
+import org.alfresco.solr.client.PropertyValue;
+import org.alfresco.solr.client.StringPropertyValue;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.junit.Before;
@@ -51,8 +67,48 @@ public class SortCMISTest extends LoadCMISData
                 testCMISDate00);
     }
     
+    protected void addTypeSortTestData(NodeRef folder00NodeRef, NodeRef rootNodeRef, NodeRef baseFolderNodeRef, Object baseFolderQName, Object folder00QName, Date date1)
+            throws IOException
+    {
+        addSortableNull(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                folder00QName, date1, "start", 0);
+        for (int i = 0; i < 10; i++)
+        {
+            addSortableNode(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                        folder00QName, date1, i);
+            if (i == 5)
+            {
+                addSortableNull(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                            folder00QName, date1, "mid", 1);
+            }
+        }
+
+        addSortableNull(folder00NodeRef, rootNodeRef, baseFolderNodeRef, baseFolderQName,
+                    folder00QName, date1, "end", 2);
+    }
+    private void addSortableNull(NodeRef folder00NodeRef,
+            NodeRef rootNodeRef, NodeRef baseFolderNodeRef, Object baseFolderQName, Object folder00QName,
+            Date date1, String id, int offset) throws IOException
+    {
+        HashMap<QName, PropertyValue> content00Properties = new HashMap<QName, PropertyValue>();
+        MLTextPropertyValue desc00 = new MLTextPropertyValue();
+        desc00.addValue(Locale.ENGLISH, "Test null");
+        content00Properties.put(ContentModel.PROP_DESCRIPTION, desc00);
+        content00Properties.put(ContentModel.PROP_TITLE, desc00);
+        content00Properties.put(ContentModel.PROP_NAME, new StringPropertyValue("Test null"));
+        content00Properties.put(ContentModel.PROP_CREATED,
+                    new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
     
-    
+        NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test null");
+        ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
+                    content00QName, content00NodeRef, true, 0);
+        addNode(h.getCore(), dataModel, 1, 200 + offset, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+                    ContentModel.ASPECT_TITLED }, content00Properties, null, "andy",
+                    new ChildAssociationRef[] { content00CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
+                                folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
+                                + folder00QName.toString() + "/" + content00QName.toString() }, content00NodeRef, true);
+    }
     @Test
     public void checkOrder() throws IOException
     {
@@ -134,4 +190,6 @@ public class SortCMISTest extends LoadCMISData
                 + propertyQueryName 
                 + " DESC, cmis:objectId DESC"),expectedDocCount(14));
     }
+   
+    
 }
