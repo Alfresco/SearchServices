@@ -96,13 +96,13 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkAuthorityFilter();
         testAFTS();
         testSort();
+        testCMIS();
         
         /*
         TODO
         checkPropertyTypes(before, core, dataModel, testDate, n01NodeRef.toString());
         checkPaging(before, core, dataModel);
         testAFTSandSort(before, core, dataModel);
-        testCMIS(before, core, dataModel);
         testChildNameEscaping(after, core, dataModel, rootNodeRef);
          */
 
@@ -1567,6 +1567,19 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
             assertQ(areq(params(params), null), xpaths);
         }
 
+
+    }
+
+    private void testCMIS() throws Exception {
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q","select * from cmis:document"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q","select * from cmis:document D WHERE CONTAINS(D,'lazy')"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q","SELECT * FROM cmis:document D JOIN cm:ownable O ON D.cmis:objectId = O.cmis:objectId"), null),
+                "*[count(//doc)=0]");
 
     }
 
