@@ -19,6 +19,7 @@
 package org.alfresco.solr;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,6 +38,9 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
+import org.apache.chemistry.opencmis.commons.impl.json.JSONArray;
+import org.apache.chemistry.opencmis.commons.impl.json.JSONObject;
+import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -323,7 +327,39 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             throw new RuntimeException("Exception during query", e2);
         }
     }
-    //=========================== Below methods can be made into utils?
+    /**
+     * Builds and asserts that query returns a collection in the correct order by
+     * checking the dbid value of each document is in the correct order.
+     * 
+     * @author Michael Suzuki
+     * @param query query used to search
+     * @param dbids collection of dbids to compare
+     * @throws Exception if error
+     */
+    public static void assertQueryCollection(String query, Integer[] dbids) throws Exception
+    {
+        SolrQueryRequest solrReq = req(params("rows", "20", "qt", "/cmis", "q",query,"wt","json"));
+        try
+        {
+            String response = h.query(solrReq);
+            JSONObject json = (JSONObject)JSONValue.parse(response);
+            JSONObject res = (JSONObject) json.get("response");
+            JSONArray docs = (JSONArray) res.get("docs");
+            Assert.assertTrue(dbids.length == docs.size());
+            int count = 0;
+            for(Object doc : docs)
+            {
+                JSONObject item = (JSONObject) doc;
+                BigInteger val = (BigInteger) item.get("DBID");
+                Assert.assertEquals(dbids[count].intValue(), val.intValue());
+                count++;
+            }
+        }
+        finally
+        {
+            solrReq.close();
+        }
+    }
     /**
      * Creates a solr request.
      * @param params
@@ -347,6 +383,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         }
         return req;
     }
+    
     public void waitForDocCount(Query query, long expectedNumFound, long waitMillis)
             throws Exception
     {
