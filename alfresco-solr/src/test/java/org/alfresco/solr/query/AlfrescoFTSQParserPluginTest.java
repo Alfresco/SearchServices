@@ -893,47 +893,63 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 null, null, (String) null);
         */
 
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_READER + ":\"GROUP_EVERYONE\""), null),
+                "*[count(//doc)=16]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":andy"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":bob"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":cid"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":dave"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":eoin"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":fred"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":gail"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":hal"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":ian"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":jake"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":kara"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":loon"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":mike"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":noodle"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_OWNER + ":ood"), null),
+                "*[count(//doc)=1]");
+
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_PARENT_ASSOC_CRC + ":0"), null),
+                "*[count(//doc)=16]");
+
         /*
 
         // AbstractLuceneQueryParser.FIELD_EXCEPTION_MESSAGE
         // addNonDictionaryField(AbstractLuceneQueryParser.FIELD_EXCEPTION_STACK
 
-
-        testQueryByHandler(report, core, "/afts", FIELD_READER + ":\"GROUP_EVERYONE\"", 16, null, null,
-                    null, null, null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":andy", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":bob", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":cid", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":dave", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":eoin", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":fred", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":gail", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":hal", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":ian", 1, null, null, null, null, null,
-                    (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":jake", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":kara", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":loon", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":mike", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":noodle", 1, null, null, null, null,
-                    null, (String) null);
-        testQueryByHandler(report, core, "/afts", FIELD_OWNER + ":ood", 1, null, null, null, null, null,
-                    (String) null);
-
-        testQueryByHandler(report, core, "/afts", FIELD_PARENT_ASSOC_CRC + ":0", 16, null, null, null,
-                    null, null, (String) null);
         */
     }
 
