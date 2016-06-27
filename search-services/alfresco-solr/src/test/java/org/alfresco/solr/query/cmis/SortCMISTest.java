@@ -110,7 +110,7 @@ public class SortCMISTest extends LoadCMISData
                                 + folder00QName.toString() + "/" + content00QName.toString() }, content00NodeRef, true);
     }
     @Test
-    public void checkOrder() throws IOException
+    public void checkOrder() throws Exception
     {
 
         NamedList<Object> report = new SimpleOrderedMap<Object>();
@@ -165,30 +165,24 @@ public class SortCMISTest extends LoadCMISData
         checkOrderableProperty( report, "cmistest:singleDatetime", asc, desc);
         // testOrderablePropertyFail("cmistest:multipleDatetime");
 
-        asc = new Integer[] { 1001, 1003, 1005, 1007, 1009, 100, 1000, 1002, 1004, 1006, 1008, 200, 201, 202,  };
+        asc = new Integer[] { 1001, 1003, 1005, 1007, 1009, 100, 1000, 1002, 1004, 1006, 1008, 200, 201, 202};
         desc = new Integer[] { 1008, 1006, 1004, 1002, 1000, 100, 1009, 1007, 1005, 1003, 1001, 202, 201, 200 }; 
 
         checkOrderableProperty( report, "cmistest:singleBoolean", asc, desc);
         // testOrderablePropertyFail("cmistest:multipleBoolean");
 
     }
-    private void checkOrderableProperty(NamedList<Object> report, String propertyQueryName, Integer[] asc, Integer[] desc) throws IOException
+    private void checkOrderableProperty(NamedList<Object> report, String propertyQueryName, Integer[] asc, Integer[] desc) throws Exception
     {
-//        testQueryByHandler(report, core, "/cmis", "SELECT " + propertyQueryName
-//                + " FROM cmistest:extendedContent ORDER BY " + propertyQueryName + " ASC, cmis:objectId ASC", 14, null, asc, null,
-//                    null, null, (String) null);
-        assertQ(qurySolr("SELECT " + propertyQueryName 
-                         + " FROM cmistest:extendedContent ORDER BY " 
-                         + propertyQueryName 
-                         + " ASC, cmis:objectId ASC"),expectedDocCount(14));
-        
-//        testQueryByHandler(report, core, "/cmis", "SELECT " + propertyQueryName
-//                + " FROM cmistest:extendedContent ORDER BY " + propertyQueryName + " DESC, cmis:objectId DESC", 14, null, desc, null,
-//                null, null, (String) null);
-        assertQ(qurySolr("SELECT " + propertyQueryName
-                + " FROM cmistest:extendedContent ORDER BY "
-                + propertyQueryName 
-                + " DESC, cmis:objectId DESC"),expectedDocCount(14));
+        String queryASC = String.format(
+                "SELECT %1$s FROM cmistest:extendedContent ORDER BY %1$s ASC, cmis:objectId ASC",
+                propertyQueryName);
+        assertQueryCollection(queryASC, asc);
+
+        String queryDesc = String.format(
+                "SELECT %1$s FROM cmistest:extendedContent ORDER BY %1$s DESC, cmis:objectId DESC",
+                propertyQueryName);
+        assertQueryCollection(queryDesc, desc);
     }
    
     

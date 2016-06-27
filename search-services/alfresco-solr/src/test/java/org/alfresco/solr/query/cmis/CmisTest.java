@@ -18,14 +18,11 @@
  */
 package org.alfresco.solr.query.cmis;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.junit.Before;
 import org.junit.Test;
 /**
@@ -34,7 +31,7 @@ import org.junit.Test;
  * @author Michael Suzuki
  *
  */
-public class MoreCmisTest extends LoadCMISData
+public class CmisTest extends LoadCMISData
 {
     @Before
     public void setup() throws Exception
