@@ -50,31 +50,30 @@ public class AuthQueryTest extends AuthDataLoad
             assertFTSQuery("TEXT:\"Test\"", count);
             assertFTSQuery("TEXT:\"doc\"", count);
             assertFTSQuery("TEXT:\"number\"", count);
-//            assertFTSQuery("TEXT:\"1\"", count);
             //Assert that root, base folder,folder-0 and 100 documents are returned.
             assertFTSQuery("AUTHORITY:\"GROUP_EVERYONE\"", 103);
+            //Test data load adds lots of AUTHORITY readers by looping count -1
             assertFTSQuery("AUTHORITY:\"READER-1000\"", 100);
-            //Grouping boundary test that checks that we return 100 
-//            buildAndRunAuthQuery(count, 8);
-//            buildAndRunAuthQuery(count, 9);
-//            buildAndRunAuthQuery(count, 10);
-//            buildAndRunAuthQuery(count, 98);
-//            buildAndRunAuthQuery(count, 99);
-//            buildAndRunAuthQuery(count, 100);
-//            buildAndRunAuthQuery(count, 998);
-//            buildAndRunAuthQuery(count, 999);
-//            buildAndRunAuthQuery(count, 1000);
-//            buildAndRunAuthQuery(count, 9998);
-//            buildAndRunAuthQuery(count, 9999);
-//            buildAndRunAuthQuery(count, 10000);
-//            buildAndRunAuthQuery(count, 10000);
-//            buildAndRunAuthQuery(count, 10000);
-//            buildAndRunAuthQuery(count, 20000);
-//            buildAndRunAuthQuery(count, 20000);
-//            buildAndRunAuthQuery(count, 20000);
-            // buildAndRunAuthQuery(dataModel, count, report, solrIndexSearcher, 100000);
-            // buildAndRunAuthQuery(dataModel, count, report, solrIndexSearcher, 1000000);
-            // buildAndRunAuthQuery(dataModel, count, report, solrIndexSearcher, 10000000);
+            assertFTSQuery("AUTHORITY:\"READER-902\"", 2);
+            assertFTSQuery("AUTHORITY:\"READER-901\"", 1);
+            //Grouping boundary test that checks ... Andy can explain.
+            buildAndRunAuthQuery(count, 8);
+            buildAndRunAuthQuery(count, 9);
+            buildAndRunAuthQuery(count, 10);
+            buildAndRunAuthQuery(count, 98);
+            buildAndRunAuthQuery(count, 99);
+            buildAndRunAuthQuery(count, 100);
+            buildAndRunAuthQuery(count, 998);
+            buildAndRunAuthQuery(count, 999);
+            buildAndRunAuthQuery(count, 1000);
+            buildAndRunAuthQuery(count, 9998);
+            buildAndRunAuthQuery(count, 9999);
+            buildAndRunAuthQuery(count, 10000);
+            buildAndRunAuthQuery(count, 10000);
+            buildAndRunAuthQuery(count, 10000);
+            buildAndRunAuthQuery(count, 20000);
+            buildAndRunAuthQuery(count, 20000);
+            buildAndRunAuthQuery(count, 20000);
         }
         finally
         {
