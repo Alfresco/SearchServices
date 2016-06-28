@@ -70,11 +70,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         testAFTSandSort();
         testSort();
         testCMIS();
+        checkPaging();
         
         /*
         TODO
         checkPaging(before, core, dataModel);
-        testAFTSandSort(before, core, dataModel);
         testChildNameEscaping(after, core, dataModel, rootNodeRef);
          */
 
@@ -1543,8 +1543,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
             }
         }
 
-        System.out.println("#### Xpaths:"+xpaths);
-
         String[] params = new String[] {"rows", "20", "qt", "/afts", "q", query, "sort", sort};
 
 
@@ -1560,16 +1558,36 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         {
             assertQ(areq(params(params), null), xpaths.toArray(new String[0]));
         }
+    }
 
+    private void assertPage(String query, String sort, int num, int rows, int start, Integer[] sortOrder)
+    {
+        List<String> xpaths = new ArrayList();
+        xpaths.add("*[count(//doc)=" + num + "]");
+        for (int i = 1; i <= sortOrder.length; i++)
+        {
+            if(sortOrder[i - 1] != null) {
+                xpaths.add("//result/doc[" + i + "]/long[@name='DBID'][.='" + sortOrder[i - 1] + "']");
+            }
+        }
+
+        String[] params = new String[] {"start", Integer.toString(start),
+                                        "rows", Integer.toString(rows),
+                                        "qt", "/afts",
+                                        "q", query,
+                                        "sort", sort};
+
+        assertQ(areq(params(params), null), xpaths.toArray(new String[0]));
 
     }
 
+
     private void testCMIS() throws Exception {
 
-        assertQ(areq(params("rows", "20", "qt", "/cmis", "q","select * from cmis:document"), null),
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q", "select * from cmis:document"), null),
                 "*[count(//doc)=1]");
 
-        assertQ(areq(params("rows", "20", "qt", "/cmis", "q","select * from cmis:document D WHERE CONTAINS(D,'lazy')"), null),
+        assertQ(areq(params("rows", "20", "qt", "/cmis", "q", "select * from cmis:document D WHERE CONTAINS(D,'lazy')"), null),
                 "*[count(//doc)=1]");
 
         assertQ(areq(params("rows", "20", "qt", "/cmis", "q","SELECT * FROM cmis:document D JOIN cm:ownable O ON D.cmis:objectId = O.cmis:objectId"), null),
@@ -2022,5 +2040,45 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 null,
                 16,
                 new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
+    }
+
+    private void checkPaging() throws Exception {
+
+        //This test is questionable
+        assertPage("PATH:\"//.\"",
+                "DBID asc",
+                16,
+                1000000,
+                0,
+                new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+
+
+        assertPage("PATH:\"//.\"",
+                   "DBID asc",
+                   16,
+                   20,
+                   0,
+                   new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+
+        assertPage("PATH:\"//.\"",
+                "DBID asc",
+                6,
+                6,
+                0,
+                new Integer[] { 1, 2, 3, 4, 5, 6 });
+
+        assertPage("PATH:\"//.\"",
+                "DBID asc",
+                6,
+                6,
+                6,
+                new Integer[] { 7, 8, 9, 10, 11, 12 });
+
+        assertPage("PATH:\"//.\"",
+                "DBID asc",
+                4,
+                6,
+                12,
+                new Integer[] { 13, 14, 15, 16 });
     }
 }
