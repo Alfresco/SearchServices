@@ -84,6 +84,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.XML;
 import org.apache.solr.core.SolrCore;
+import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.CommitUpdateCommand;
 /**
@@ -564,14 +565,14 @@ public class AlfrescoSolrUtils
        * @param totalReader
        * @throws IOException
        */
-      public static void addAcl(SolrServletRequest solrQueryRequest,
-                                SolrCore core,
+      public static void addAcl(SolrCore core,
                                 AlfrescoSolrDataModel dataModel, 
                                 int acltxid, 
                                 int aclId,
                                 int maxReader,
                                 int totalReader) throws IOException
       {
+          SolrQueryRequest solrQueryRequest = new SolrServletRequest(core, null);
           AddUpdateCommand aclTxCmd = new AddUpdateCommand(solrQueryRequest);
           aclTxCmd.overwrite = true;
           SolrInputDocument aclTxSol = new SolrInputDocument();
@@ -651,5 +652,40 @@ public class AlfrescoSolrUtils
           {
               solrQueryRequest.close();
           }
+    }
+    public static void addAcl(SolrQueryRequest solrQueryRequest, SolrCore core, AlfrescoSolrDataModel dataModel, int acltxid, int aclId, int maxReader,
+            int totalReader) throws IOException
+    {
+        AddUpdateCommand aclTxCmd = new AddUpdateCommand(solrQueryRequest);
+        aclTxCmd.overwrite = true;
+        SolrInputDocument aclTxSol = new SolrInputDocument();
+        String aclTxId = AlfrescoSolrDataModel.getAclChangeSetDocumentId(new Long(acltxid));
+        aclTxSol.addField(FIELD_SOLR4_ID, aclTxId);
+        aclTxSol.addField(FIELD_VERSION, "0");
+        aclTxSol.addField(FIELD_ACLTXID, acltxid);
+        aclTxSol.addField(FIELD_INACLTXID, acltxid);
+        aclTxSol.addField(FIELD_ACLTXCOMMITTIME, (new Date()).getTime());
+        aclTxSol.addField(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL_TX);
+        aclTxCmd.solrDoc = aclTxSol;
+        core.getUpdateHandler().addDoc(aclTxCmd);
+    
+        AddUpdateCommand aclCmd = new AddUpdateCommand(solrQueryRequest);
+        aclCmd.overwrite = true;
+        SolrInputDocument aclSol = new SolrInputDocument();
+        String aclDocId = AlfrescoSolrDataModel.getAclDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, new Long(aclId));
+        aclSol.addField(FIELD_SOLR4_ID, aclDocId);
+        aclSol.addField(FIELD_VERSION, "0");
+        aclSol.addField(FIELD_ACLID, aclId);
+        aclSol.addField(FIELD_INACLTXID, "" + acltxid);
+        aclSol.addField(FIELD_READER, "GROUP_EVERYONE");
+        aclSol.addField(FIELD_READER, "pig");
+        for (int i = 0; i <= maxReader; i++)
+        {
+            aclSol.addField(FIELD_READER, "READER-" + (totalReader - i));
+        }
+        aclSol.addField(FIELD_DENIED, "something");
+        aclSol.addField(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL);
+        aclCmd.solrDoc = aclSol;
+        core.getUpdateHandler().addDoc(aclCmd);
     }
 }
