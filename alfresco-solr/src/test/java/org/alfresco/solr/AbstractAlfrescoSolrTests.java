@@ -597,7 +597,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         }
         
         Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
-        System.out.println("####### Query ######:"+query);
+        log.debug("####### Query ######:"+query);
         TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
 
         if (count != null)
@@ -614,7 +614,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             solrQueryRequest.close();
         }
     }
-    private String fixQueryString(String queryString, String... name)
+    protected String fixQueryString(String queryString, String... name)
     {
         if (name.length > 0)
         {
@@ -647,5 +647,5 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         }
         return msp;
     }
-    
+   
 }
