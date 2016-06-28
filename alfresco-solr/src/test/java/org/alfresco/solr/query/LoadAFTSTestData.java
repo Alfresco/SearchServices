@@ -119,6 +119,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         Calendar c = new GregorianCalendar();
         c.setTime(new Date(((new Date().getTime() - 10000))));
         Date testDate = c.getTime();
+        ftsTestDate = testDate;
         properties04.put(QName.createQName(TEST_NAMESPACE, "date-ista"), new StringPropertyValue(
                 DefaultTypeConverter.INSTANCE.convert(String.class, testDate)));
         properties04.put(QName.createQName(TEST_NAMESPACE, "datetime-ista"), new StringPropertyValue(

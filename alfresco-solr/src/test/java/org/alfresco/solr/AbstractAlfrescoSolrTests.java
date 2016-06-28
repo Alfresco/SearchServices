@@ -109,6 +109,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     protected static NodeRef testNodeRef;
     protected static NodeRef testBaseFolderNodeRef;
     protected static NodeRef testFolder00NodeRef;
+    protected static Date ftsTestDate;
     /**
      * Creates a Solr Alfresco test harness.
      * @param config

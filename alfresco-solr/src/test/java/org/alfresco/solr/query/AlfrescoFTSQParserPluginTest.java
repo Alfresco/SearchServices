@@ -22,10 +22,16 @@ package org.alfresco.solr.query;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.util.SearchLanguageConversion;
+import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Test;
@@ -34,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Date;
+import java.util.Calendar;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
@@ -94,6 +102,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkNullAndUnset();
         checkInternalFields();
         checkAuthorityFilter();
+        checkPropertyTypes();
         testAFTS();
         testSort();
         testCMIS();
@@ -1599,5 +1608,290 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
     }
 
+    private void checkPropertyTypes() throws Exception{
+        QName qname = QName.createQName(TEST_NAMESPACE, "int-ista");
 
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"1\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":1", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"01\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":01", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"001\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"0001\"", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[A TO 2]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[0 TO 2]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[0 TO A]", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{A TO 1}", 0);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{0 TO 1}", 0);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{0 TO A}", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{A TO 2}", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{1 TO 2}", 0);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{1 TO A}", 0);
+
+        qname = QName.createQName(TEST_NAMESPACE, "long-ista");
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"2\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"02\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"002\"", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"0002\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[A TO 2]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[0 TO 2]", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[0 TO A]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{A TO 2}", 0);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{0 TO 2}", 0);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{0 TO A}", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{A TO 3}", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{2 TO 3}", 0);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{2 TO A}", 0);
+
+        qname = QName.createQName(TEST_NAMESPACE, "float-ista");
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"3.4\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[A TO 4]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[3 TO 4]", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[3 TO A]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[A TO 3.4]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[3.3 TO 3.4]", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[3.3 TO A]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{A TO 3.4}", 0);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{3.3 TO 3.4}", 0);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{3.3 TO A}", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"3.40\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"03.4\"", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"03.40\"", 1);
+
+        qname = QName.createQName(TEST_NAMESPACE, "double-ista");
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"5.6\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"05.6\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"5.60\"", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"05.60\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[A TO 5.7]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[5.5 TO 5.7]", 1);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":[5.5 TO A]", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{A TO 5.6}", 0);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{5.5 TO 5.6}", 0);
+
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":{5.6 TO A}", 0);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery("My-funny&MissingProperty:woof"), 0);
+
+        Date date = new Date();
+
+
+        for (SimpleDateFormatAndResolution df : CachingDateFormat.getLenientFormatters()) {
+            if (df.getResolution() < Calendar.DAY_OF_MONTH) {
+                continue;
+            }
+
+            String sDate = df.getSimpleDateFormat().format(ftsTestDate);
+
+            if (sDate.length() >= 9) {
+                assertAQuery("\\@"
+                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                        TEST_NAMESPACE, "date-ista").toString()) + ":\"" + sDate + "\"", 1);
+            }
+
+            assertAQuery("\\@"
+                    + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                    "datetime-ista").toString()) + ":\"" + sDate + "\"", 1);
+
+            sDate = df.getSimpleDateFormat().format(date);
+
+            assertAQuery("\\@cm\\:CrEaTeD:[MIN TO " + sDate + "]", 1);
+            assertAQuery("\\@cm\\:created:[MIN TO NOW]", 1);
+
+            assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CREATED.toString())
+                    + ":[MIN TO " + sDate + "]", 1);
+
+            if (sDate.length() >= 9) {
+                sDate = df.getSimpleDateFormat().format(ftsTestDate);
+
+                assertAQuery("\\@"
+                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                        TEST_NAMESPACE, "date-ista").toString()) + ":[" + sDate
+                        + " TO " + sDate + "]", 1);
+
+                assertAQuery("\\@"
+                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                        TEST_NAMESPACE, "date-ista").toString()) + ":[MIN  TO " + sDate
+                        + "]", 1);
+
+                assertAQuery("\\@"
+                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                        TEST_NAMESPACE, "date-ista").toString()) + ":[" + sDate
+                        + " TO MAX]", 1);
+
+
+            }
+
+            sDate = CachingDateFormat.getDateFormat().format(ftsTestDate);
+
+            assertAQuery(
+                    "\\@"
+                            + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                            "datetime-ista").toString()) + ":[MIN TO " + sDate + "]", 1);
+
+
+            sDate = df.getSimpleDateFormat().format(ftsTestDate);
+            for (long i : new long[]{333, 20000, 20 * 60 * 1000, 8 * 60 * 60 * 1000, 10 * 24 * 60 * 60 * 1000,
+                    4 * 30 * 24 * 60 * 60 * 1000, 10 * 12 * 30 * 24 * 60 * 60 * 1000}) {
+
+                String startDate = df.getSimpleDateFormat().format(new Date(ftsTestDate.getTime() - i));
+                String endDate = df.getSimpleDateFormat().format(new Date(ftsTestDate.getTime() + i));
+
+
+                assertAQuery(
+                        "\\@"
+                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                                TEST_NAMESPACE, "datetime-ista").toString()) + ":[" + startDate
+                                + " TO " + endDate + "]", 1);
+                assertAQuery(
+                        "\\@"
+                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                                TEST_NAMESPACE, "datetime-ista").toString()) + ":[" + sDate
+                                + " TO " + endDate + "]", 1);
+                assertAQuery(
+                        "\\@"
+                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                                TEST_NAMESPACE, "datetime-ista").toString()) + ":[" + startDate
+                                + " TO " + sDate + "]", 1);
+                assertAQuery(
+                        "\\@"
+                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                                TEST_NAMESPACE, "datetime-ista").toString()) + ":{" + sDate
+                                + " TO " + endDate + "}", 0);
+                assertAQuery(
+                        "\\@"
+                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                                TEST_NAMESPACE, "datetime-ista").toString()) + ":{" + startDate
+                                + " TO " + sDate + "}", 0);
+
+            }
+        }
+
+        qname = QName.createQName(TEST_NAMESPACE, "boolean-ista");
+                                 assertAQuery(
+                                    "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"true\"", 1);
+
+/*
+        qname = QName.createQName(TEST_NAMESPACE, "qname-ista");
+        assertAQuery(
+                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"{wibble}wobble\"", 1);
+
+        qname = QName.createQName(TEST_NAMESPACE, "category-ista");
+        assertAQuery(
+                "\\@"
+                        + SearchLanguageConversion.escapeLuceneQuery(qname.toString())
+                        + ":\""
+                        + DefaultTypeConverter.INSTANCE.convert(String.class, new NodeRef(new StoreRef(
+                        "proto", "id"), "CategoryId")) + "\"", 1);
+
+
+
+
+        qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
+        assertAQuery(
+                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef
+                        + "\"", 1);
+
+        qname = QName.createQName(TEST_NAMESPACE, "path-ista");
+        assertAQuery(
+                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
+                        + NamespaceService.CONTENT_MODEL_1_0_URI + "}three\"", 1);
+
+        qname = QName.createQName(TEST_NAMESPACE, "any-many-ista");
+        assertAQuery(
+                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"100\"", 1);
+        assertAQuery(
+                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"anyValueAsString\"",
+                1);
+        */
+
+        assertAQuery("TEXT:\"Tutorial Alfresco\"~0", 0);
+        assertAQuery("TEXT:\"Tutorial Alfresco\"~1", 0);
+        assertAQuery("TEXT:\"Tutorial Alfresco\"~2", 1);
+        assertAQuery( "TEXT:\"Tutorial Alfresco\"~3", 1);
+
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Alfresco Tutorial\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Tutorial Alfresco\"", 0);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Tutorial Alfresco\"~0", 0);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Tutorial Alfresco\"~1", 0);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Tutorial Alfresco\"~2", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+                        + ":\"Tutorial Alfresco\"~3", 1);
+
+        /*
+        qname = QName.createQName(TEST_NAMESPACE, "mltext-many-ista");
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":лемур", 1, (new Locale(
+                        "ru")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":lemur", 1, (new Locale(
+                        "en")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":chou", 1, (new Locale(
+                        "fr")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabbage", 1,
+                (new Locale("en")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabba*", 1, (new Locale(
+                        "en")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":ca*ge", 1, (new Locale(
+                        "en")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*bage", 1, (new Locale(
+                        "en")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabage~", 1,
+                (new Locale("en")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*b?ag?", 1, (new Locale(
+                        "en")), null, null);
+        assertAQuery(dataModel, report, solrIndexSearcher,
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cho*", 1, (new Locale(
+                        "fr")), null, null);
+                        */
+        
+        qname = QName.createQName(TEST_NAMESPACE, "locale-ista");
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"en_GB_\"", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":en_GB_", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":en_*", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*_GB_*", 1);
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*_gb_*", 1);
+
+        qname = QName.createQName(TEST_NAMESPACE, "period-ista");
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"period|12\"", 1);
+
+    }
 }
