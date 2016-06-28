@@ -49,44 +49,7 @@ import java.util.Calendar;
 public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements QueryConstants {
 
 
-    /*
-    @Test
-    public void testAftsQueries() throws Exception {
 
-        //assertU(delQ("*:*"));
-        //assertU(commit());
-
-        String[] doc = {"id", "1",  "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY"};
-        assertU(adoc(doc));
-        assertU(commit());
-        String[] doc1 = {"id", "2", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY"};
-        assertU(adoc(doc1));
-
-        String[] doc2 = {"id", "3", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY"};
-        assertU(adoc(doc2));
-        assertU(commit());
-        String[] doc3 = {"id", "4", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY"};
-        assertU(adoc(doc3));
-
-        String[] doc4 = {"id", "5", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY"};
-        assertU(adoc(doc4));
-        assertU(commit());
-
-        String[] doc5 = {"id", "6", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY"};
-        assertU(adoc(doc5));
-        assertU(commit());
-
-
-        ModifiableSolrParams params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        SolrServletRequest req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}");
-        assertQ(req, "*[count(//doc)=6]");
-
-    }
-*/
     @Test
     public void dataChecks() throws Exception {
 
@@ -104,12 +67,12 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkAuthorityFilter();
         checkPropertyTypes();
         testAFTS();
+        testAFTSandSort();
         testSort();
         testCMIS();
         
         /*
         TODO
-        checkPropertyTypes(before, core, dataModel, testDate, n01NodeRef.toString());
         checkPaging(before, core, dataModel);
         testAFTSandSort(before, core, dataModel);
         testChildNameEscaping(after, core, dataModel, rootNodeRef);
@@ -1571,13 +1534,19 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
     private void assertAQueryIsSorted(String query, String sort, Locale aLocale, int num, Integer[] sortOrder)
     {
-        String[] xpaths = new String[sortOrder.length+1];
-        xpaths[0] = "*[count(//doc)="+num+"]";
+        List<String> xpaths = new ArrayList();
+        xpaths.add("*[count(//doc)=" + num + "]");
         for (int i = 1; i <= sortOrder.length; i++)
         {
-            xpaths[i] = "//result/doc["+i+"]/long[@name='DBID'][.='"+sortOrder[i-1]+"']";
+            if(sortOrder[i - 1] != null) {
+                xpaths.add("//result/doc[" + i + "]/long[@name='DBID'][.='" + sortOrder[i - 1] + "']");
+            }
         }
+
+        System.out.println("#### Xpaths:"+xpaths);
+
         String[] params = new String[] {"rows", "20", "qt", "/afts", "q", query, "sort", sort};
+
 
         if (aLocale != null)
         {
@@ -1585,11 +1554,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
             localparams.addAll(Arrays.asList(params));
             localparams.add("locale");
             localparams.add(aLocale.toString());
-            assertQ(areq(params(localparams.toArray(new String[0])), null), xpaths);
+            assertQ(areq(params(localparams.toArray(new String[0])), null), xpaths.toArray(new String[0]));
         }
         else
         {
-            assertQ(areq(params(params), null), xpaths);
+            assertQ(areq(params(params), null), xpaths.toArray(new String[0]));
         }
 
 
@@ -1893,5 +1862,165 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery(
                 "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"period|12\"", 1);
 
+    }
+
+    private void testAFTSandSort() {
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                             "@" + ContentModel.PROP_CONTENT.toString() + ".size asc",
+                              null,
+                              16,
+                              new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "@" + ContentModel.PROP_CONTENT.toString() + ".size desc",
+                null,
+                16,
+                new Integer[] { 15});
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                ContentModel.PROP_CONTENT.toString() + ".size asc",
+                null,
+                16,
+                new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                ContentModel.PROP_CONTENT.toString() + ".size desc",
+                null,
+                16,
+                new Integer[] { 15});
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "@cm:content.size asc",
+                null,
+                16,
+                new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "@cm:content.size desc",
+                null,
+                16,
+                new Integer[] { 15 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "cm:content.size asc",
+                null,
+                16,
+                new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "cm:content.size desc",
+                null,
+                16,
+                new Integer[] {15});
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "@content.size asc",
+                null,
+                16,
+                new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "@content.size desc",
+                null,
+                16,
+                new Integer[] {15});
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "content.size asc",
+                null,
+                16,
+                new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "content.size desc",
+                null,
+                16,
+                new Integer[] {15});
+
+        assertAQueryIsSorted("-eager or -dog",
+                "@" + ContentModel.PROP_NAME.toString()+ " asc",
+                null,
+                16,
+                new Integer[] { 1, 9, 12, 16, 6, 5, 15, 10, 2, 8, 7, 11, 14, 4, 13, 3 });
+
+
+        assertAQueryIsSorted("-eager or -dog",
+                "@" + ContentModel.PROP_NAME.toString() + " desc",
+                null,
+                16,
+                new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                ContentModel.PROP_NAME.toString() + " asc",
+                null,
+                16,
+                new Integer[] { 1, 9, 12, 16, 6, 5, 15, 10, 2, 8, 7, 11, 14, 4, 13, 3 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                ContentModel.PROP_NAME.toString() + " desc",
+                null,
+                16,
+                new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "@cm:name asc",
+                null,
+                16,
+                new Integer[] { 1, 9, 12, 16, 6, 5, 15, 10, 2, 8, 7, 11, 14, 4, 13, 3 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "@cm:name desc",
+                null,
+                16,
+                new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "cm:name asc",
+                null,
+                16,
+                new Integer[] { 1, 9, 12, 16, 6, 5, 15, 10, 2, 8, 7, 11, 14, 4, 13, 3 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "cm:name desc",
+                null,
+                16,
+                new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "@name asc",
+                null,
+                16,
+                new Integer[] { 1, 9, 12, 16, 6, 5, 15, 10, 2, 8, 7, 11, 14, 4, 13, 3 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "@name desc",
+                null,
+                16,
+                new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "name asc",
+                null,
+                16,
+                new Integer[] { 1, 9, 12, 16, 6, 5, 15, 10, 2, 8, 7, 11, 14, 4, 13, 3 });
+
+        assertAQueryIsSorted("-eager or -dog",
+                "name desc",
+                null,
+                16,
+                new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "DBID asc",
+                null,
+                16,
+                new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+
+        assertAQueryIsSorted("PATH:\"//.\"",
+                "DBID desc",
+                null,
+                16,
+                new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
     }
 }
