@@ -46,6 +46,7 @@ import org.alfresco.solr.client.MLTextPropertyValue;
 import org.alfresco.solr.client.MultiPropertyValue;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.util.ISO9075;
 import org.apache.solr.core.SolrCore;
 import org.junit.BeforeClass;
 /**
@@ -55,6 +56,9 @@ import org.junit.BeforeClass;
  */
 public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements AlfrecsoSolrConstants
 {
+
+    protected static final String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
+    protected static final String NUMERIC_LOCAL_NAME = "12Woof12";
     private static ChildAssociationRef n01CAR;
     private static ChildAssociationRef n02CAR;
     private static ChildAssociationRef n03CAR;
@@ -636,6 +640,30 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
                     true);
         }
 
+    }
+
+    public static void loadEscapingTestData() throws Exception {
+        SolrCore core = h.getCore();
+
+        NodeRef childNameEscapingNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        QName childNameEscapingQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, COMPLEX_LOCAL_NAME);
+        QName pathChildNameEscapingQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                ISO9075.encode(COMPLEX_LOCAL_NAME));
+        ChildAssociationRef complexCAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef,
+                childNameEscapingQName, childNameEscapingNodeRef, true, 0);
+        addNode(core, dataModel, 1, 17, 1, testSuperType, null, null, null, "system",
+                new ChildAssociationRef[] { complexCAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + pathChildNameEscapingQName.toString() }, childNameEscapingNodeRef, true);
+
+        NodeRef numericNameEscapingNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        QName numericNameEscapingQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, NUMERIC_LOCAL_NAME);
+        QName pathNumericNameEscapingQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                ISO9075.encode(NUMERIC_LOCAL_NAME));
+        ChildAssociationRef numericCAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef,
+                numericNameEscapingQName, numericNameEscapingNodeRef, true, 0);
+        addNode(core, dataModel, 1, 18, 1, testSuperType, null, null, null, "system",
+                new ChildAssociationRef[] { numericCAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + pathNumericNameEscapingQName.toString() }, numericNameEscapingNodeRef, true);
     }
 
 
