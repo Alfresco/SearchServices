@@ -55,6 +55,78 @@ import org.junit.BeforeClass;
  */
 public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements AlfrecsoSolrConstants
 {
+    private static ChildAssociationRef n01CAR;
+    private static ChildAssociationRef n02CAR;
+    private static ChildAssociationRef n03CAR;
+    private static ChildAssociationRef n04CAR;
+    private static ChildAssociationRef n05CAR;
+    private static ChildAssociationRef n06CAR;
+    private static ChildAssociationRef n07CAR;
+    private static ChildAssociationRef n08CAR_0;
+    private static ChildAssociationRef n08CAR_1;
+    private static ChildAssociationRef n08CAR_2;
+    private static ChildAssociationRef n09CAR;
+    private static ChildAssociationRef n10CAR;
+    private static ChildAssociationRef n11CAR;
+    private static ChildAssociationRef n12CAR;
+    private static ChildAssociationRef n13CAR;
+    private static ChildAssociationRef n13CARLink;
+    private static ChildAssociationRef n14CAR;
+    private static ChildAssociationRef n14CAR_1;
+    private static ChildAssociationRef n14CAR_2;
+    private static ChildAssociationRef n14CAR_5;
+    private static ChildAssociationRef n14CAR_6;
+    private static ChildAssociationRef n14CAR_12;
+    private static ChildAssociationRef n14CAR_13;
+    private static ChildAssociationRef n15CAR;
+
+    private static NodeRef n01NodeRef;
+    private static NodeRef n02NodeRef;
+    private static NodeRef n03NodeRef;
+    private static NodeRef n04NodeRef;
+    private static NodeRef n05NodeRef;
+    private static NodeRef n06NodeRef;
+    private static NodeRef n07NodeRef;
+    private static NodeRef n08NodeRef;
+    private static NodeRef n09NodeRef;
+    private static NodeRef n10NodeRef;
+    private static NodeRef n11NodeRef;
+    private static NodeRef n12NodeRef;
+    private static NodeRef n13NodeRef;
+    private static NodeRef n14NodeRef;
+    private static NodeRef n15NodeRef;
+
+    private static NodeRef rootNodeRef;
+    private static QName n01QName;
+    private static QName n02QName;
+    private static QName n03QName;
+    private static QName n04QName;
+    private static QName n05QName;
+    private static QName n06QName;
+    private static QName n07QName;
+    private static QName n08QName_0;
+    private static QName n08QName_1;
+    private static QName n08QName_2;
+    private static QName n09QName;
+    private static QName n10QName;
+    private static QName n11QName;
+    private static QName n12QName;
+    private static QName n13QName;
+    private static QName n13QNameLink;
+    private static QName n14QName;
+    private static QName n14QNameCommon;
+    private static QName n15QName;
+
+
+
+    private static HashMap<QName, PropertyValue> properties04;
+    private static HashMap<QName, String> content04;
+    private static HashMap<QName, PropertyValue> properties14;
+    private static HashMap<QName, String> content14;
+    private static HashMap<QName, PropertyValue> properties15;
+    private static HashMap<QName, String> content15;
+
+
     @BeforeClass
     public static void loadTestSet() throws Exception 
     {
@@ -66,13 +138,13 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         dataModel.setCMDefaultUri();
 
-        NodeRef rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         addStoreRoot(core, dataModel, rootNodeRef, 1, 1, 1, 1);
 
         // 1
-        NodeRef n01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "one");
-        ChildAssociationRef n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName,
+        n01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "one");
+        n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName,
                 n01NodeRef, true, 0);
         addNode(core, dataModel, 1, 2, 1, testSuperType, null, getOrderProperties(), null, "andy",
                 new ChildAssociationRef[] { n01CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
@@ -82,9 +154,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 2
 
-        NodeRef n02NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n02QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "two");
-        ChildAssociationRef n02CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n02QName,
+        n02NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n02QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "two");
+        n02CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n02QName,
                 n02NodeRef, true, 0);
         addNode(core, dataModel, 1, 3, 1, testSuperType, null, getOrderProperties(), null, "bob",
                 new ChildAssociationRef[] { n02CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
@@ -92,9 +164,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 3
 
-        NodeRef n03NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n03QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "three");
-        ChildAssociationRef n03CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n03QName,
+        n03NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n03QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "three");
+        n03CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n03QName,
                 n03NodeRef, true, 0);
         addNode(core, dataModel, 1, 4, 1, testSuperType, null, getOrderProperties(), null, "cid",
                 new ChildAssociationRef[] { n03CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
@@ -102,8 +174,8 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 4
 
-        HashMap<QName, PropertyValue> properties04 = new HashMap<QName, PropertyValue>();
-        HashMap<QName, String> content04 = new HashMap<QName, String>();
+        properties04 = new HashMap<QName, PropertyValue>();
+        content04 = new HashMap<QName, String>();
         properties04.putAll(getOrderProperties());
         properties04.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"),
                 new StringPropertyValue("TEXT THAT IS INDEXED STORED AND TOKENISED ATOMICALLY KEYONE"));
@@ -186,9 +258,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         list_4.addValue(null);
         properties04.put(QName.createQName(TEST_NAMESPACE, "nullist"), list_4);
 
-        NodeRef n04NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n04QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "four");
-        ChildAssociationRef n04CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n04QName,
+        n04NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n04QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "four");
+        n04CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n04QName,
                 n04NodeRef, true, 0);
 
         properties04.put(QName.createQName(TEST_NAMESPACE, "aspectProperty"), new StringPropertyValue(""));
@@ -198,9 +270,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 5
 
-        NodeRef n05NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n05QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "five");
-        ChildAssociationRef n05CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef, n05QName,
+        n05NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n05QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "five");
+        n05CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef, n05QName,
                 n05NodeRef, true, 0);
         addNode(core, dataModel, 1, 6, 1, testSuperType, null, getOrderProperties(), null, "eoin",
                 new ChildAssociationRef[] { n05CAR }, new NodeRef[] { rootNodeRef, n01NodeRef },
@@ -208,9 +280,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 6
 
-        NodeRef n06NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n06QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "six");
-        ChildAssociationRef n06CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef, n06QName,
+        n06NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n06QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "six");
+        n06CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef, n06QName,
                 n06NodeRef, true, 0);
         addNode(core, dataModel, 1, 7, 1, testSuperType, null, getOrderProperties(), null, "fred",
                 new ChildAssociationRef[] { n06CAR }, new NodeRef[] { rootNodeRef, n01NodeRef },
@@ -218,9 +290,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 7
 
-        NodeRef n07NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n07QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "seven");
-        ChildAssociationRef n07CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef, n07QName,
+        n07NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n07QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "seven");
+        n07CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef, n07QName,
                 n07NodeRef, true, 0);
         addNode(core, dataModel, 1, 8, 1, testSuperType, null, getOrderProperties(), null, "gail",
                 new ChildAssociationRef[] { n07CAR }, new NodeRef[] { rootNodeRef, n02NodeRef },
@@ -228,15 +300,15 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 8
 
-        NodeRef n08NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n08QName_0 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eight-0");
-        QName n08QName_1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eight-1");
-        QName n08QName_2 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eight-2");
-        ChildAssociationRef n08CAR_0 = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef,
+        n08NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n08QName_0 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eight-0");
+        n08QName_1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eight-1");
+        n08QName_2 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eight-2");
+        n08CAR_0 = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef,
                 n08QName_0, n08NodeRef, false, 2);
-        ChildAssociationRef n08CAR_1 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef, n08QName_1,
+        n08CAR_1 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef, n08QName_1,
                 n08NodeRef, false, 1);
-        ChildAssociationRef n08CAR_2 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef, n08QName_2,
+        n08CAR_2 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef, n08QName_2,
                 n08NodeRef, true, 0);
 
         addNode(core, dataModel, 1, 9, 1, testSuperType, null, getOrderProperties(), null, "hal",
@@ -247,9 +319,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 9
 
-        NodeRef n09NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n09QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "nine");
-        ChildAssociationRef n09CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n09QName,
+        n09NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n09QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "nine");
+        n09CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n09QName,
                 n09NodeRef, true, 0);
         addNode(core, dataModel, 1, 10, 1, testSuperType, null, getOrderProperties(), null, "ian",
                 new ChildAssociationRef[] { n09CAR }, new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
@@ -258,9 +330,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 10
 
-        NodeRef n10NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n10QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ten");
-        ChildAssociationRef n10CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n10QName,
+        n10NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n10QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ten");
+        n10CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n10QName,
                 n10NodeRef, true, 0);
         addNode(core, dataModel, 1, 11, 1, testSuperType, null, getOrderProperties(), null, "jake",
                 new ChildAssociationRef[] { n10CAR }, new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
@@ -269,9 +341,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 11
 
-        NodeRef n11NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n11QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eleven");
-        ChildAssociationRef n11CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n11QName,
+        n11NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n11QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "eleven");
+        n11CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n11QName,
                 n11NodeRef, true, 0);
         addNode(core, dataModel, 1, 12, 1, testSuperType, null, getOrderProperties(), null, "kara",
                 new ChildAssociationRef[] { n11CAR }, new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
@@ -280,9 +352,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 12
 
-        NodeRef n12NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n12QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twelve");
-        ChildAssociationRef n12CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n12QName,
+        n12NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n12QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twelve");
+        n12CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef, n12QName,
                 n12NodeRef, true, 0);
         addNode(core, dataModel, 1, 13, 1, testSuperType, null, getOrderProperties(), null, "loon",
                 new ChildAssociationRef[] { n12CAR }, new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
@@ -291,12 +363,12 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 13
 
-        NodeRef n13NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n13QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thirteen");
-        QName n13QNameLink = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "link");
-        ChildAssociationRef n13CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n12NodeRef, n13QName,
+        n13NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n13QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thirteen");
+        n13QNameLink = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "link");
+        n13CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n12NodeRef, n13QName,
                 n13NodeRef, true, 0);
-        ChildAssociationRef n13CARLink = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef, n13QName,
+        n13CARLink = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef, n13QName,
                 n13NodeRef, false, 0);
         addNode(core, dataModel, 1, 14, 1, testSuperType, null, getOrderProperties(), null, "mike",
                 new ChildAssociationRef[] { n13CAR, n13CARLink }, new NodeRef[] { rootNodeRef, n01NodeRef,
@@ -308,9 +380,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 14
 
-        HashMap<QName, PropertyValue> properties14 = new HashMap<QName, PropertyValue>();
+        properties14 = new HashMap<QName, PropertyValue>();
         properties14.putAll(getOrderProperties());
-        HashMap<QName, String> content14 = new HashMap<QName, String>();
+        content14 = new HashMap<QName, String>();
         MLTextPropertyValue desc1 = new MLTextPropertyValue();
         desc1.addValue(Locale.ENGLISH, "Alfresco tutorial");
         desc1.addValue(Locale.US, "Alfresco tutorial");
@@ -345,22 +417,22 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         title.addValue(Locale.ENGLISH, "English123");
         title.addValue(Locale.FRENCH, "French123");
         properties14.put(ContentModel.PROP_TITLE, title);
-        NodeRef n14NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n14QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fourteen");
-        QName n14QNameCommon = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "common");
-        ChildAssociationRef n14CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n13NodeRef, n14QName,
+        n14NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n14QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fourteen");
+        n14QNameCommon = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "common");
+        n14CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n13NodeRef, n14QName,
                 n14NodeRef, true, 0);
-        ChildAssociationRef n14CAR_1 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef,
+        n14CAR_1 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n01NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        ChildAssociationRef n14CAR_2 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef,
+        n14CAR_2 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n02NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        ChildAssociationRef n14CAR_5 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef,
+        n14CAR_5 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n05NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        ChildAssociationRef n14CAR_6 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n06NodeRef,
+        n14CAR_6 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n06NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        ChildAssociationRef n14CAR_12 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n12NodeRef,
+        n14CAR_12 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n12NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        ChildAssociationRef n14CAR_13 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n13NodeRef,
+        n14CAR_13 = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n13NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
         addNode(core, dataModel, 1, 15, 1, ContentModel.TYPE_CONTENT, new QName[] {ContentModel.ASPECT_TITLED }, properties14, content14, "noodle",
                 new ChildAssociationRef[] { n14CAR, n14CAR_1, n14CAR_2, n14CAR_5, n14CAR_6, n14CAR_12,
@@ -379,17 +451,17 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 15
 
-        HashMap<QName, PropertyValue> properties15 = new HashMap<QName, PropertyValue>();
+        properties15 = new HashMap<QName, PropertyValue>();
         properties15.putAll(getOrderProperties());
         properties15.put(
                 ContentModel.PROP_MODIFIED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE
                         .convert(String.class, explicitCreatedDate)));
-        HashMap<QName, String> content15 = new HashMap<QName, String>();
+        content15 = new HashMap<QName, String>();
         content15.put(ContentModel.PROP_CONTENT, "          ");
-        NodeRef n15NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n15QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fifteen");
-        ChildAssociationRef n15CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n13NodeRef, n15QName,
+        n15NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n15QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fifteen");
+        n15CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, n13NodeRef, n15QName,
                 n15NodeRef, true, 0);
         addNode(core, dataModel, 1, 16, 1, ContentModel.TYPE_THUMBNAIL, null, properties15, content15, "ood",
                 new ChildAssociationRef[] { n15CAR }, new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef,
@@ -399,6 +471,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
                                 + n13QName + "/" + n15QName,
                         "/" + n02QName.toString() + "/" + n13QNameLink + "/" + n14QName }, n15NodeRef, true);
     }
+
     private static  Map<QName, PropertyValue> getOrderProperties()
     {
         double orderDoubleCount = -0.11d + orderTextCount * ((orderTextCount % 2 == 0) ? 0.1d : -0.1d);
@@ -465,6 +538,108 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         orderTextCount++;
         return testProperties;
     }
+
+    public static void loadSecondDataSet() throws Exception {
+
+        SolrCore core = h.getCore();
+        for (int i = 0; i < 100; i++)
+        {
+            orderDate = new Date();
+            orderTextCount = 0;
+            addNode(core, dataModel, 1, 2, 1, testSuperType, null, getOrderProperties(), null, "andy",
+                    new ChildAssociationRef[] { n01CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                            + n01QName.toString() }, n01NodeRef, true);
+        }
+
+
+        for (int i = 0; i < 10; i++)
+        {
+            orderDate = new Date();
+            orderTextCount = 0;
+
+            addNode(core, dataModel, 1, 2, 1, testSuperType, null, getOrderProperties(), null, "andy",
+                    new ChildAssociationRef[] { n01CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                            + n01QName.toString() }, n01NodeRef, true);
+            addNode(core, dataModel, 1, 3, 1, testSuperType, null, getOrderProperties(), null, "bob",
+                    new ChildAssociationRef[] { n02CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                            + n02QName.toString() }, n02NodeRef, true);
+            addNode(core, dataModel, 1, 4, 1, testSuperType, null, getOrderProperties(), null, "cid",
+                    new ChildAssociationRef[] { n03CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                            + n03QName.toString() }, n03NodeRef, true);
+            properties04.putAll(getOrderProperties());
+            addNode(core, dataModel, 1, 5, 1, testType, new QName[] { testAspect }, properties04, content04,
+                    "dave", new ChildAssociationRef[] { n04CAR }, new NodeRef[] { rootNodeRef },
+                    new String[] { "/" + n04QName.toString() }, n04NodeRef, true);
+            addNode(core, dataModel, 1, 6, 1, testSuperType, null, getOrderProperties(), null, "eoin",
+                    new ChildAssociationRef[] { n05CAR }, new NodeRef[] { rootNodeRef, n01NodeRef },
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() }, n05NodeRef, true);
+            addNode(core, dataModel, 1, 7, 1, testSuperType, null, getOrderProperties(), null, "fred",
+                    new ChildAssociationRef[] { n06CAR }, new NodeRef[] { rootNodeRef, n01NodeRef },
+                    new String[] { "/" + n01QName.toString() + "/" + n06QName.toString() }, n06NodeRef, true);
+            addNode(core, dataModel, 1, 8, 1, testSuperType, null, getOrderProperties(), null, "gail",
+                    new ChildAssociationRef[] { n07CAR }, new NodeRef[] { rootNodeRef, n02NodeRef },
+                    new String[] { "/" + n02QName.toString() + "/" + n07QName.toString() }, n07NodeRef, true);
+            addNode(core, dataModel, 1, 9, 1, testSuperType, null, getOrderProperties(), null, "hal",
+                    new ChildAssociationRef[] { n08CAR_0, n08CAR_1, n08CAR_2 }, new NodeRef[] { rootNodeRef,
+                            rootNodeRef, n01NodeRef, rootNodeRef, n02NodeRef }, new String[] {
+                            "/" + n08QName_0, "/" + n01QName.toString() + "/" + n08QName_1.toString(),
+                            "/" + n02QName.toString() + "/" + n08QName_2.toString() }, n08NodeRef, true);
+            addNode(core, dataModel, 1, 10, 1, testSuperType, null, getOrderProperties(), null, "ian",
+                    new ChildAssociationRef[] { n09CAR },
+                    new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n09QName },
+                    n09NodeRef, true);
+            addNode(core, dataModel, 1, 11, 1, testSuperType, null, getOrderProperties(), null, "jake",
+                    new ChildAssociationRef[] { n10CAR },
+                    new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n10QName },
+                    n10NodeRef, true);
+            addNode(core, dataModel, 1, 12, 1, testSuperType, null, getOrderProperties(), null, "kara",
+                    new ChildAssociationRef[] { n11CAR },
+                    new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n11QName },
+                    n11NodeRef, true);
+            addNode(core, dataModel, 1, 13, 1, testSuperType, null, getOrderProperties(), null, "loon",
+                    new ChildAssociationRef[] { n12CAR },
+                    new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef },
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName },
+                    n12NodeRef, true);
+            addNode(core, dataModel, 1, 14, 1, testSuperType, null, getOrderProperties(), null, "mike",
+                    new ChildAssociationRef[] { n13CAR, n13CARLink }, new NodeRef[] { rootNodeRef, n01NodeRef,
+                            n05NodeRef, n12NodeRef, rootNodeRef, n02NodeRef }, new String[] {
+                            "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName + "/"
+                                    + n13QName, "/" + n02QName.toString() + "/" + n13QNameLink },
+                    n13NodeRef, true);
+            properties14.putAll(getOrderProperties());
+            addNode(core, dataModel, 1, 15, 1, ContentModel.TYPE_CONTENT, null, properties14, content14, "noodle",
+                    new ChildAssociationRef[] { n14CAR, n14CAR_1, n14CAR_2, n14CAR_5, n14CAR_6, n14CAR_12,
+                            n14CAR_13 }, new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef, n12NodeRef,
+                            n13NodeRef },
+                    new String[] {
+                            "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName + "/"
+                                    + n13QName + "/" + n14QName,
+                            "/" + n02QName.toString() + "/" + n13QNameLink + "/" + n14QName,
+                            "/" + n01QName + "/" + n14QNameCommon,
+                            "/" + n02QName + "/" + n14QNameCommon,
+                            "/" + n01QName + "/" + n05QName + "/" + n14QNameCommon,
+                            "/" + n01QName + "/" + n06QName + "/" + n14QNameCommon,
+                            "/" + n01QName + "/" + n05QName + "/" + n12QName + "/" + n14QNameCommon,
+                            "/" + n01QName + "/" + n05QName + "/" + n12QName + "/" + n13QName + "/"
+                                    + n14QNameCommon }, n14NodeRef, true);
+            properties14.putAll(getOrderProperties());
+            addNode(core, dataModel, 1, 16, 1, ContentModel.TYPE_THUMBNAIL, null, properties15, content15, "ood",
+                    new ChildAssociationRef[] { n15CAR }, new NodeRef[] { rootNodeRef, n01NodeRef, n05NodeRef,
+                            n12NodeRef, n13NodeRef }, new String[] {
+                            "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName + "/"
+                                    + n13QName + "/" + n15QName,
+                            "/" + n02QName.toString() + "/" + n13QNameLink + "/" + n14QName }, n15NodeRef,
+                    true);
+        }
+
+    }
+
+
+
     private static int orderTextCount = 0;
     private static Date orderDate = new Date();
     private static String[] orderNames = new String[] { "one", "two", "three", "four", "five", "six", "seven", "eight",
