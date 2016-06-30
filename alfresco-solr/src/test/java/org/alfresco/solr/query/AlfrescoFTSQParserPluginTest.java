@@ -71,10 +71,30 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         testSort();
         testCMIS();
         checkPaging();
+
+        loadSecondDataSet();
+
+        checkRootNodes();
+        checkpaths();
+        checkQNames();
+        checkType();
+        checkDataType();
+        checkText();
+        checkMLText();
+        checkRanges();
+        checkNonField();
+        checkNullAndUnset();
+        checkInternalFields();
+        checkAuthorityFilter();
+        checkPropertyTypes();
+        testAFTS();
+        testAFTSandSort();
+        testSort();
+        testCMIS();
+        checkPaging();
         
         /*
         TODO
-        checkPaging(before, core, dataModel);
         testChildNameEscaping(after, core, dataModel, rootNodeRef);
          */
 
