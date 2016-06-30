@@ -22,10 +22,6 @@ package org.alfresco.solr.query;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
@@ -42,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Date;
 import java.util.Calendar;
+import org.alfresco.util.ISO9075;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
@@ -92,7 +89,10 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         testSort();
         testCMIS();
         checkPaging();
-        
+
+        loadEscapingTestData();
+        testChildNameEscaping();
+
         /*
         TODO
         testChildNameEscaping(after, core, dataModel, rootNodeRef);
@@ -2100,5 +2100,10 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 6,
                 12,
                 new Integer[] { 13, 14, 15, 16 });
+    }
+
+    private void testChildNameEscaping() throws Exception {
+        assertAQuery("PATH:\"/cm:" + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", 1);
+        assertAQuery("PATH:\"/cm:" + ISO9075.encode(NUMERIC_LOCAL_NAME) + "\"", 1);
     }
 }
