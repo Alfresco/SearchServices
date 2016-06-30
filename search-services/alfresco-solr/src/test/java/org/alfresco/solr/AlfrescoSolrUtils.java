@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
@@ -224,20 +225,14 @@ public class AlfrescoSolrUtils
         AclChangeSet aclChangeSet = new AclChangeSet(generateId(), System.currentTimeMillis(), aclCount);
         return aclChangeSet;
     }
-    private static long id;
+    private static AtomicLong id = new AtomicLong(System.currentTimeMillis());
     /**
      * Creates a unique id.
      * @return Long unique id
      */
     private static synchronized Long generateId()
     {
-        long newid = System.currentTimeMillis();
-        if(newid != id)
-        {
-            id = newid;
-            return id;
-        }
-        return generateId();
+        return id.incrementAndGet();
     }
     /**
      * Generates an &lt;add&gt;&lt;doc&gt;... XML String with options
@@ -307,7 +302,6 @@ public class AlfrescoSolrUtils
         //Next add the transaction to the queue
 
         SOLRAPIQueueClient.aclChangeSetQueue.add(aclChangeSet);
-        System.out.println("SOLRAPIQueueClient.aclChangeSetQueue.size():" + SOLRAPIQueueClient.aclChangeSetQueue.size());
     }
     /**
      * Generate a collection from input.
