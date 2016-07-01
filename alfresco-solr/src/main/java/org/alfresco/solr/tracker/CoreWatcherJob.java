@@ -19,15 +19,9 @@
 
 package org.alfresco.solr.tracker;
 
-import java.util.Properties;
-import java.util.concurrent.Semaphore;
-import java.util.List;
 import java.util.ArrayList;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.naming.NoInitialContextException;
+import java.util.List;
+import java.util.Properties;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
