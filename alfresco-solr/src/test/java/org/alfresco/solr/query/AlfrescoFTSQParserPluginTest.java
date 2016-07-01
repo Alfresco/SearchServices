@@ -22,6 +22,7 @@ package org.alfresco.solr.query;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
@@ -55,17 +56,17 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkQNames();
         checkType();
         checkDataType();
-        checkText();
-        checkMLText();
+        checkText();   // INVESTIGATE 1
+        checkMLText(); // INVESTIGATE 1
         checkRanges();
         checkNonField();
         checkNullAndUnset();
-        checkInternalFields();
+        checkInternalFields(); // INVESTIGATE 2
         checkAuthorityFilter();
-        checkPropertyTypes();
-        testAFTS();
+        checkPropertyTypes(); // INVESIGATE 6
+        testAFTS();  // INVESTIGATE 7
         testAFTSandSort();
-        testSort();
+        testSort(); //INVESTIGATE 21
         testCMIS();
         checkPaging();
 
@@ -92,21 +93,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         loadEscapingTestData();
         testChildNameEscaping();
-
-        /*
-        TODO
-        testChildNameEscaping(after, core, dataModel, rootNodeRef);
-         */
-
-
-        /*
-         testQueryByHandler(report, core, "/afts", "PATH:\"//.\"", 16, "DBID desc", new Integer[] { 16, 15, 14, 13, 12, 11,
-                    10, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, null, null, null, (String) null);
-
-        // testQueryByHandler(report, core, "/afts", "PATH", "\"//.\"", 16, null, (String) null);
-         */
-
-
     }
 
     private void checkRootNodes() throws Exception {
@@ -232,7 +218,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("TEXT:\"and\"", 1);
 
         //TODO fix this assert
-        //assertAQuery("TEXT:\"over the lazy\"", 1);
+        //assertAQuery("TEXT:\"over the lazy\"", 1);  //INVESTIGATE
         // Depends on stop words being removed .... which depends on the configuration
         //assertAQuery("TEXT:\"over a lazy\"", 1);
 
@@ -535,6 +521,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 Locale.ITALIAN, null, null);
 
         //TODO fix test
+        //INVESTIGATE
             /*
             assertAQuery(
                     "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":�?ナナ", 1, new Locale(
@@ -866,17 +853,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_INACLTXID + ":2"), null),
                 "*[count(//doc)=0]");
 
-        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ACLID + ":1"), null),
-                "*[count(//doc)=17]");
 
 
         //TODO fix tests
+        //INVESTIGATE
         /*
-        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_TXCOMMITTIME + ":*"), null),
-                "*[count(//doc)=1]");
-
-         assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_READER + ":\"GROUP_EVERYONE\""), null),
-                "*[count(//doc)=16]");
 
         testQueryByHandler(report, core, "/native", FIELD_TXCOMMITTIME + ":*", 1, null, null, null, null,
                 null, (String) null);
@@ -885,6 +866,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 null, null, (String) null);
         */
 
+        assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ACLID + ":1"), null),
+                "*[count(//doc)=17]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q",  FIELD_READER + ":\"GROUP_EVERYONE\""), null),
                 "*[count(//doc)=16]");
@@ -1329,8 +1312,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs("modified:[MIN TO NOW]", 2);
 
         assertAQueryHasNumberOfDocs("TYPE:" + testType.toString(), 1);
+        //INVESTIGATE
 //     testQueryByHandler(report, core, "/afts", "TYPE:" + testType.toString(), 0, null, null, null, null, null, (ContentStream)null, "mimetype():document");
         assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1);
+
+        //INVESTIGATE
 //        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "mimetype():document");
 //        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 0, null, null, null, null, null, (ContentStream)null, "contentSize():[0 TO 100]");
 //        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "contentSize():[100 TO 1000]");
@@ -1347,10 +1333,12 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         // 3 words in test - 1..3 in query
         assertAQueryHasNumberOfDocs("brown AND fox AND jumped", 1);
 //Not working
+        //INVESTIGATE Synonyms
 //        assertAQueryHasNumberOfDocs("leaping AND reynard", 1);
 //        assertAQueryHasNumberOfDocs("springer", 1);
         // 1 word in text 1..2 in query
         assertAQueryHasNumberOfDocs("lazy", 1);
+        //INVESTIGATE
 //        assertAQueryHasNumberOfDocs("bone AND idle", 1);
 
         // Cross language support and tokenisation part and full.
@@ -1429,9 +1417,9 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"andy\", \"bob\", \"cid\" ], \"tenants\": [ \"\" ] }", 3);
 
         // Check that generation of filter using AUTHORITY and DENIED works (no DENYSET/AUTHSET separator available)
-        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"bob\" ], \"tenants\": [ \"\" ] }", 2);
-        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
-        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"bob\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"bob\" ], \"tenants\": [ \"\" ] }", 2);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"strange:,-!+=;~/\", \"bob\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
 
         // Test any allow allows.
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 16);
@@ -1442,7 +1430,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":true, \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
 
         // Check with AUTHORITY/DENIED rather than AUTHSET/DENYSET
-        //assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"bob\", \"cid\", \"something\" ], \"tenants\": [ \"\" ] }", 3);
+        assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"anyDenyDenies\":false, \"authorities\": [ \"strange:,-!+=;~/\", \"andy\", \"bob\", \"cid\", \"something\" ], \"tenants\": [ \"\" ] }", 3);
 
 
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|AUTHORITY:andy", 1);
@@ -1488,8 +1476,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
     private void testSort() throws Exception {
         //Test Sorting
-        //    assertAQueryIsSorted("PATH:\"//.\"", "ID asc", null, 16, new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
-        //    assertAQueryIsSorted("PATH:\"//.\"", "ID desc",null, 16, new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
+            assertAQueryIsSorted("PATH:\"//.\"", "ID asc", null, 16, new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+            assertAQueryIsSorted("PATH:\"//.\"", "ID desc",null, 16, new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
 
         assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " asc", null, 16, new Integer[]{1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2});
         assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " desc", null, 16, new Integer[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1});
@@ -1532,9 +1520,9 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 //        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", new Locale("es"), 16, new Integer[] { 6, 5, 4, 3, 2, 13, 12, 11, 10, 9, 8, 14, 7, 15, 16, 1 });
 
 //        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".size asc", null, 16, new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".size desc",null, 16, new Integer[] { 15 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype asc", null, 16, new Integer[] { 15 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype desc",null, 16, new Integer[] { 15 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".size desc",null, 16, new Integer[] { 15 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype asc", null, 16, new Integer[] { 15 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype desc",null, 16, new Integer[] { 15 });
     }
 
     private void assertAQueryHasNumOfDocsWithJson(String query, String json, int num)
@@ -1812,11 +1800,23 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery(
                 "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef
                         + "\"", 1);
+        qname = QName.createQName(TEST_NAMESPACE, "path-ista");
+        assertAQuery(
+                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
+                        + NamespaceService.CONTENT_MODEL_1_0_URI + "}three\"", 1);
+
+
+        qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
+        assertAQuery(
+                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef
+                        + "\"", 1);
+
 
         qname = QName.createQName(TEST_NAMESPACE, "path-ista");
         assertAQuery(
                 "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
                         + NamespaceService.CONTENT_MODEL_1_0_URI + "}three\"", 1);
+        */
 
         qname = QName.createQName(TEST_NAMESPACE, "any-many-ista");
         assertAQuery(
@@ -1824,7 +1824,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery(
                 "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"anyValueAsString\"",
                 1);
-        */
 
         assertAQuery("TEXT:\"Tutorial Alfresco\"~0", 0);
         assertAQuery("TEXT:\"Tutorial Alfresco\"~1", 0);
@@ -1850,39 +1849,38 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
                         + ":\"Tutorial Alfresco\"~3", 1);
 
-        /*
+
         qname = QName.createQName(TEST_NAMESPACE, "mltext-many-ista");
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":лемур", 1, (new Locale(
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":лемур", 1, (new Locale(
                         "ru")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":lemur", 1, (new Locale(
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":lemur", 1, (new Locale(
                         "en")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":chou", 1, (new Locale(
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":chou", 1, (new Locale(
                         "fr")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabbage", 1,
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabbage", 1,
                 (new Locale("en")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabba*", 1, (new Locale(
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabba*", 1, (new Locale(
                         "en")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":ca*ge", 1, (new Locale(
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":ca*ge", 1, (new Locale(
                         "en")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*bage", 1, (new Locale(
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*bage", 1, (new Locale(
                         "en")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabage~", 1,
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cabage~", 1,
                 (new Locale("en")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*b?ag?", 1, (new Locale(
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*b?ag?", 1, (new Locale(
                         "en")), null, null);
-        assertAQuery(dataModel, report, solrIndexSearcher,
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cho*", 1, (new Locale(
+
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":cho*", 1, (new Locale(
                         "fr")), null, null);
-                        */
+
         
         qname = QName.createQName(TEST_NAMESPACE, "locale-ista");
         assertAQuery(
