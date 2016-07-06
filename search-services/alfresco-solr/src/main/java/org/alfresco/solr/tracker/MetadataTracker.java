@@ -57,6 +57,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private int transactionDocsBatchSize = DEFAULT_TRANSACTION_DOCS_BATCH_SIZE;
     private int nodeBatchSize = DEFAULT_NODE_BATCH_SIZE;
     private int maxTransactionDocumentIdCacheSize = 700000;
+    private String shardKey;
     private ConcurrentLinkedQueue<Long> transactionsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> transactionsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> transactionsToPurge = new ConcurrentLinkedQueue<Long>();
@@ -72,6 +73,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     {
         super(p, client, coreName, informationServer);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
+        shardKey = p.getProperty("alfresco.shardkey", ACL_SHARD_KEY);
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
     }
@@ -804,7 +806,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             ArrayList<Node> filteredList = new ArrayList<Node>(nodes.size());
             for(Node node : nodes)
             {
-                if(isInAclShard(node.getAclId()))
+
+                if((ACL_SHARD_KEY.equals(shardKey) && isInAclShard(node.getAclId())) ||
+                   (DBID_SHARD_KEY.equals(shardKey) && isInDBIDShard(node.getId())))
                 {
                     filteredList.add(node);
                 }
