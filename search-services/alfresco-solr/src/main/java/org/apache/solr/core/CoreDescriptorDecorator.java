@@ -43,10 +43,18 @@ public class CoreDescriptorDecorator {
 
 	public CoreDescriptorDecorator(CoreDescriptor descriptor)
 	{
-		properties.putAll(descriptor.coreProperties);
-		substitutableProperties.forEach(prop ->
-				properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
-		);
+	    try
+	    {
+	        properties.putAll(descriptor.coreProperties);
+	        substitutableProperties.forEach(prop ->
+	        properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
+	                );
+	        
+	    }
+	    catch(Exception e)
+	    {
+	        System.out.println("================opps");
+	    }
 	}
 	
 	public Properties getProperties()
