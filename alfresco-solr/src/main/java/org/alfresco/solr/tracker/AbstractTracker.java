@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr.tracker;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
@@ -28,8 +27,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.IndexTrackingShutdownException;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.TrackerState;
-import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.SOLRAPIClient;
+import org.apache.solr.common.util.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +42,8 @@ public abstract class AbstractTracker implements Tracker
 {
     public static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     public static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
+    public static final String ACL_SHARD_KEY = "ACLID";
+    public static final String DBID_SHARD_KEY = "DBID";
     protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
@@ -119,7 +120,21 @@ public abstract class AbstractTracker implements Tracker
     {
         if(shardCount > 1)
         {
-            return (aclId % shardCount) == shardInstance;
+            String s = Long.toString(aclId);
+            return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    protected boolean isInDBIDShard(long DBID)
+    {
+        if(shardCount > 1)
+        {
+            String s = Long.toString(DBID);
+            return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
         }
         else
         {
