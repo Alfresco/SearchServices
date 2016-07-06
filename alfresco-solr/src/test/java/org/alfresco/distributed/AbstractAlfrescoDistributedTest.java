@@ -25,9 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.Filter;
 
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.util.Constants;
 import org.apache.lucene.util.TestUtil;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
@@ -35,6 +33,7 @@ import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.JettyConfig;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
+import org.apache.solr.client.solrj.embedded.SSLConfig;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -81,14 +80,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     private AtomicInteger nodeCnt = new AtomicInteger(0);
     protected boolean useExplicitNodeNames;
       
-    @BeforeClass
-    public static void initialize() throws Exception 
-    {
-        assumeFalse("SOLR-4147: ibm 64bit has jvm bugs!", Constants.JRE_IS_64BIT && Constants.JAVA_VENDOR.startsWith("IBM"));
-        r = new Random(random().nextLong());
-        AbstractAlfrescoSolrTests.initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-    }
-      
       /**
        * Set's the value of the "hostContext" system property to a random path 
        * like string (which may or may not contain sub-paths).  This is used 
@@ -104,6 +95,10 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
       @BeforeClass
       public static void initHostContext() 
       {
+          System.setProperty("solr.tests.maxIndexingThreads", "10");
+          System.setProperty("solr.tests.ramBufferSizeMB", "1024");
+          //Setup test directory
+          testDir = new File(System.getProperty("user.dir") + "/target/solrs");
           // Can't use randomRealisticUnicodeString because unescaped unicode is 
           // not allowed in URL paths
           // Can't use URLEncoder.encode(randomRealisticUnicodeString) because
@@ -207,7 +202,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
       protected String[] deadServers;
       protected String shards;
       protected String[] shardsArr;
-      protected File testDir;
+      protected static File testDir;
       protected SolrClient controlClient;
 
       // to stress with higher thread counts and requests, make sure the junit
@@ -294,7 +289,9 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SolrTestCaseJ4.resetExceptionIgnores();  // ignore anything with ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
-        testDir = createTempDir().toFile();
+        
+        File solrHome = new File(getSolrHome());
+        System.out.println(solrHome.getAbsolutePath());
       }
 
       private boolean distribTearDownCalled = false;
@@ -308,7 +305,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         File jettyHomeFile = jettyHome.toFile();
         seedSolrHome(jettyHomeFile);
         seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
-        JettySolrRunner jetty = createJetty(jettyHomeFile, null, null, getSolrConfigFile(), getSchemaFile());
+        JettySolrRunner jetty = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
         return jetty;
       }
 
@@ -329,10 +326,11 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
           File jettyHomeFile = jettyHome.toFile();
           seedSolrHome(jettyHomeFile);
           seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
-          JettySolrRunner j = createJetty(jettyHomeFile, null, null, getSolrConfigFile(), getSchemaFile());
+          JettySolrRunner j = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
+          System.out.println(j.getBaseUrl());
           jettys.add(j);
           clients.add(createNewSolrClient(j.getLocalPort()));
-          String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
+          String shardStr = buildUrl(j.getLocalPort()) + "solr/" + DEFAULT_TEST_CORENAME;
           shardsArr[i] = shardStr;
           sb.append(shardStr);
         }
@@ -367,7 +365,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         return sb.toString();
       }
-
       protected void destroyServers() throws Exception {
         if (controlJetty != null) controlJetty.stop();
         if (controlClient != null)  controlClient.close();
@@ -378,15 +375,15 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
       }
       
       public JettySolrRunner createJetty(File solrHome, String dataDir) throws Exception {
-        return createJetty(solrHome, dataDir, null, null, null);
+        return createJetty(solrHome, dataDir, null, false, null);
       }
 
       public JettySolrRunner createJetty(File solrHome, String dataDir, String shardId) throws Exception {
-        return createJetty(solrHome, dataDir, shardId, null, null);
+        return createJetty(solrHome, dataDir, shardId, false, null);
       }
       
-      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, String solrConfigOverride, String schemaOverride) throws Exception {
-        return createJetty(solrHome, dataDir, shardList, solrConfigOverride, schemaOverride, useExplicitNodeNames);
+      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride) throws Exception {
+        return createJetty(solrHome, dataDir, shardList, sslEnabled, schemaOverride, useExplicitNodeNames);
       }
       /**
        * Create a solr jetty server.
@@ -399,11 +396,9 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
        * @return
        * @throws Exception
        */
-      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, String solrConfigOverride, String schemaOverride, boolean explicitCoreNodeName) throws Exception {
+      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride, boolean explicitCoreNodeName) throws Exception {
 
         Properties props = new Properties();
-        if (solrConfigOverride != null)
-          props.setProperty("solrconfig", solrConfigOverride);
         if (schemaOverride != null)
           props.setProperty("schema", schemaOverride);
         if (shardList != null)
@@ -414,16 +409,15 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         if (explicitCoreNodeName) {
           props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
         }
-//        props.setProperty("configSet", "michael");
         props.setProperty("coreRootDirectory", solrHome.toPath().resolve("cores").toAbsolutePath().toString());
-
-        JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, JettyConfig.builder()
-            .stopAtShutdown(true)
-            .setContext(context)
-            .withFilters(getExtraRequestFilters())
-            .withServlets(getExtraServlets())
-            .withSSLConfig(sslConfig)
-            .build());
+        SSLConfig sslConfig = new SSLConfig(sslEnabled, false, null, null, null, null);
+        JettyConfig config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig).build();
+        JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
+//            .stopAtShutdown(true)
+//            .withFilters(getExtraRequestFilters())
+//            .withServlets(getExtraServlets())
+//            .withSSLConfig(sslConfig)
+//            .build());
 
         jetty.start();
         
@@ -443,7 +437,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
       protected SolrClient createNewSolrClient(int port) {
         try {
           // setup the client...
-          HttpSolrClient client = new HttpSolrClient(buildUrl(port) + "/" + DEFAULT_TEST_CORENAME);
+          HttpSolrClient client = new HttpSolrClient(buildUrl(port) + "solr/" + DEFAULT_TEST_CORENAME);
           client.setConnectionTimeout(clientConnectionTimeout);
           client.setSoTimeout(clientSoTimeout);
           client.setDefaultMaxConnectionsPerHost(100);
@@ -539,9 +533,11 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
           doc.addField((String) (fields[i]), fields[i + 1]);
         }
         controlClient.add(doc);
-
-        SolrClient client = clients.get(serverNumber);
-        client.add(doc);
+        if(!clients.isEmpty())
+        {
+            SolrClient client = clients.get(serverNumber);
+            client.add(doc);
+        }
       }
 
       protected void del(String q) throws Exception {
