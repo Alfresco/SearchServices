@@ -314,8 +314,9 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         System.setProperty("configSetBaseDir", getSolrHome());
 
         controlJetty = createControlJetty();
-        System.out.println(controlJetty.getBaseUrl());
-        controlClient = createNewSolrClient(controlJetty.getLocalPort());
+        String url = buildUrl(controlJetty.getLocalPort()) + "solr/" + DEFAULT_TEST_CORENAME;
+        System.out.println(url);
+        controlClient = createNewSolrClient(url);
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
@@ -327,10 +328,11 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
           seedSolrHome(jettyHomeFile);
           seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
           JettySolrRunner j = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
-          System.out.println(j.getBaseUrl());
           jettys.add(j);
-          clients.add(createNewSolrClient(j.getLocalPort()));
           String shardStr = buildUrl(j.getLocalPort()) + "solr/" + DEFAULT_TEST_CORENAME;
+          System.out.println(shardStr);
+          SolrClient clientShard = createNewSolrClient(shardStr);
+          clients.add(clientShard);
           shardsArr[i] = shardStr;
           sb.append(shardStr);
         }
@@ -434,19 +436,22 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return null;
       }
 
-      protected SolrClient createNewSolrClient(int port) {
-        try {
-          // setup the client...
-          HttpSolrClient client = new HttpSolrClient(buildUrl(port) + "solr/" + DEFAULT_TEST_CORENAME);
-          client.setConnectionTimeout(clientConnectionTimeout);
-          client.setSoTimeout(clientSoTimeout);
-          client.setDefaultMaxConnectionsPerHost(100);
-          client.setMaxTotalConnections(100);
-          return client;
-        }
-        catch (Exception ex) {
-          throw new RuntimeException(ex);
-        }
+      protected SolrClient createNewSolrClient(String url)
+      {
+          try 
+          {
+              // setup the client...
+              HttpSolrClient client = new HttpSolrClient(url);
+              client.setConnectionTimeout(clientConnectionTimeout);
+              client.setSoTimeout(clientSoTimeout);
+              client.setDefaultMaxConnectionsPerHost(100);
+              client.setMaxTotalConnections(100);
+              return client;
+          }
+          catch (Exception ex) 
+          {
+              throw new RuntimeException(ex);
+          }
       }
       
       protected String buildUrl(int port) {
