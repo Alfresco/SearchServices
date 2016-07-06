@@ -29,3 +29,7 @@ Television, Televisions, TV, TVs
 # Synonym mappings can be used for spelling correction too
 pixima => pixma
 
+# Test synonyms
+quick,fast,rapid,speedy
+brown fox jumped,leaping reynard,volting zorro
+lazy,bone idle
