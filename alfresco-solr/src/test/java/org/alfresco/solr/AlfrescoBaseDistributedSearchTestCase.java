@@ -47,18 +47,10 @@ public abstract class AlfrescoBaseDistributedSearchTestCase extends BaseDistribu
         System.setProperty("alfresco.test", "true");
     }
 
-    public String getSolrHome()
-    {
-        return AlfrescoSolrTestCaseJ4.HOME().getAbsolutePath();
-    }
-
     public static class AlfrescoQueryRequest extends QueryRequest
     {
-        /**
-		 * 
-		 */
-		private static final long serialVersionUID = 103873138415233192L;
-		private String json;
+        private static final long serialVersionUID = 103873138415233192L;
+        private String json;
 
         public AlfrescoQueryRequest(String json, SolrParams params)
         {

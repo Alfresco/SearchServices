@@ -99,33 +99,35 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
           System.setProperty("solr.tests.ramBufferSizeMB", "1024");
           //Setup test directory
           testDir = new File(System.getProperty("user.dir") + "/target/solrs");
-          // Can't use randomRealisticUnicodeString because unescaped unicode is 
-          // not allowed in URL paths
-          // Can't use URLEncoder.encode(randomRealisticUnicodeString) because
-          // Jetty freaks out and returns 404's when the context uses escapes
-          StringBuilder hostContext = new StringBuilder("/");
-          if (random().nextBoolean())
-          {
-              // half the time we use the root context, the other half...
-              // Remember: randomSimpleString might be the empty string
-              hostContext.append(TestUtil.randomSimpleString(random(), 2));
-              if (random().nextBoolean()) {
-                hostContext.append("_");
-              }
-              hostContext.append(TestUtil.randomSimpleString(random(), 3));
-              if ( ! "/".equals(hostContext.toString())) {
-                // if our random string is empty, this might add a trailing slash, 
-                // but our code should be ok with that
-                hostContext.append("/").append(TestUtil.randomSimpleString(random(), 2));
-              } else {
-                // we got 'lucky' and still just have the root context,
-                // NOOP: don't try to add a subdir to nothing (ie "//" is bad)
-              }
-          }
-          // paranoia, we *really* don't want to ever get "//" in a path...
-          final String hc = hostContext.toString().replaceAll("\\/+","/");
-          log.info("Setting hostContext system property: " + hc);
-          System.setProperty("hostContext", hc);
+          r = new Random(random().nextLong());
+          fixShardCount(2);
+//          // Can't use randomRealisticUnicodeString because unescaped unicode is 
+//          // not allowed in URL paths
+//          // Can't use URLEncoder.encode(randomRealisticUnicodeString) because
+//          // Jetty freaks out and returns 404's when the context uses escapes
+//          StringBuilder hostContext = new StringBuilder("/");
+//          if (random().nextBoolean())
+//          {
+//              // half the time we use the root context, the other half...
+//              // Remember: randomSimpleString might be the empty string
+//              hostContext.append(TestUtil.randomSimpleString(random(), 2));
+//              if (random().nextBoolean()) {
+//                hostContext.append("_");
+//              }
+//              hostContext.append(TestUtil.randomSimpleString(random(), 3));
+//              if ( ! "/".equals(hostContext.toString())) {
+//                // if our random string is empty, this might add a trailing slash, 
+//                // but our code should be ok with that
+//                hostContext.append("/").append(TestUtil.randomSimpleString(random(), 2));
+//              } else {
+//                // we got 'lucky' and still just have the root context,
+//                // NOOP: don't try to add a subdir to nothing (ie "//" is bad)
+//              }
+//          }
+//          // paranoia, we *really* don't want to ever get "//" in a path...
+//          final String hc = hostContext.toString().replaceAll("\\/+","/");
+//          log.info("Setting hostContext system property: " + hc);
+//          System.setProperty("hostContext", hc);
       }
       
       /**
@@ -182,14 +184,14 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
       private final static int DEFAULT_MAX_SHARD_COUNT = 3;
 
-      private int shardCount = -1;      // the actual number of solr cores that will be created in the cluster
+      private static int shardCount = -1;      // the actual number of solr cores that will be created in the cluster
       public int getShardCount() {
         return shardCount;
       }
 
-      private boolean isShardCountFixed = false;
+      private static boolean isShardCountFixed = false;
 
-      public void fixShardCount(int count) {
+      public static void fixShardCount(int count) {
         isShardCountFixed = true;
         shardCount = count;
       }
@@ -314,7 +316,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         System.setProperty("configSetBaseDir", getSolrHome());
 
         controlJetty = createControlJetty();
-        String url = buildUrl(controlJetty.getLocalPort()) + "solr/" + DEFAULT_TEST_CORENAME;
+        String url = buildUrl(controlJetty.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
         System.out.println(url);
         controlClient = createNewSolrClient(url);
 
@@ -329,14 +331,13 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
           seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
           JettySolrRunner j = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
           jettys.add(j);
-          String shardStr = buildUrl(j.getLocalPort()) + "solr/" + DEFAULT_TEST_CORENAME;
+          String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
           System.out.println(shardStr);
           SolrClient clientShard = createNewSolrClient(shardStr);
           clients.add(clientShard);
           shardsArr[i] = shardStr;
           sb.append(shardStr);
         }
-
         shards = sb.toString();
       }
 
