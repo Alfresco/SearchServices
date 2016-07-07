@@ -28,7 +28,6 @@ import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 /**
  * @author Joel
  */
-@ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDistributedTest
