@@ -101,10 +101,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         fixShardCount(2);
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
-        System.setProperty("alfresco.host", "127.0.0.1");
-        System.setProperty("alfresco.port", "8080");
-        System.setProperty("alfresco.baseurl", "alfresco");
-        System.setProperty("alfresco.port.ssl", "8080");
         // Setup test directory
         testDir = new File(System.getProperty("user.dir") + "/target/solrs");
         r = new Random(random().nextLong());
