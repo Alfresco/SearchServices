@@ -96,15 +96,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         initResourceBasedLogging("log4j-solr.properties");
     }
 
-    public void shutdown() {
+    public void shutdown() 
+    {
         super.shutdown();
-        try {
+        try 
+        {
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
             boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
-            if(testcase) {
-                if (!scheduler.isShutdown()) {
+            if(testcase) 
+            {
+                if (!scheduler.isShutdown()) 
+                {
                     scheduler.pauseAll();
                     scheduler.shutdown();
                 }
@@ -118,8 +122,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     tracker.shutdown();
                 }
             }
-        } catch(Exception e) {
-            log.info("", e);
+        } 
+        catch(Exception e) 
+        {
+            log.error("Problem shutting down", e);
         }
     }
     private void initResourceBasedLogging(String resource)
