@@ -368,25 +368,29 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         return sb.toString();
       }
-      protected void destroyServers() throws Exception {
-        if (controlJetty != null) controlJetty.stop();
-        if (controlClient != null)  controlClient.close();
-        for (JettySolrRunner jetty : jettys) jetty.stop();
-        for (SolrClient client : clients) client.close();
-        clients.clear();
-        jettys.clear();
+      protected void destroyServers() throws Exception
+      {
+          if (controlJetty != null) controlJetty.stop();
+          if (controlClient != null)  controlClient.close();
+          for (JettySolrRunner jetty : jettys) jetty.stop();
+          for (SolrClient client : clients) client.close();
+          clients.clear();
+          jettys.clear();
       }
       
-      public JettySolrRunner createJetty(File solrHome, String dataDir) throws Exception {
-        return createJetty(solrHome, dataDir, null, false, null);
+      public JettySolrRunner createJetty(File solrHome, String dataDir) throws Exception
+      {
+          return createJetty(solrHome, dataDir, null, false, null);
       }
 
-      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardId) throws Exception {
-        return createJetty(solrHome, dataDir, shardId, false, null);
+      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardId) throws Exception 
+      {
+          return createJetty(solrHome, dataDir, shardId, false, null);
       }
       
-      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride) throws Exception {
-        return createJetty(solrHome, dataDir, shardList, sslEnabled, schemaOverride, useExplicitNodeNames);
+      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride) throws Exception
+      {
+          return createJetty(solrHome, dataDir, shardList, sslEnabled, schemaOverride, useExplicitNodeNames);
       }
       /**
        * Create a solr jetty server.
@@ -399,42 +403,43 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
        * @return
        * @throws Exception
        */
-      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride, boolean explicitCoreNodeName) throws Exception {
-
-        Properties props = new Properties();
-        if (schemaOverride != null)
-          props.setProperty("schema", schemaOverride);
-        if (shardList != null)
-          props.setProperty("shards", shardList);
-        if (dataDir != null) {
-          props.setProperty("solr.data.dir", dataDir);
-        }
-        if (explicitCoreNodeName) {
-          props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
-        }
-        props.setProperty("coreRootDirectory", solrHome.toPath().resolve("cores").toAbsolutePath().toString());
-        SSLConfig sslConfig = new SSLConfig(sslEnabled, false, null, null, null, null);
-        JettyConfig config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig).build();
-        JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
+      public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride, boolean explicitCoreNodeName) throws Exception 
+      {
+          Properties props = new Properties();
+          if (schemaOverride != null) props.setProperty("schema", schemaOverride);
+          if (shardList != null) props.setProperty("shards", shardList);
+          if (dataDir != null) 
+          {
+              props.setProperty("solr.data.dir", dataDir);
+          }
+          if (explicitCoreNodeName) 
+          {
+              props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
+          }
+          props.setProperty("coreRootDirectory", solrHome.toPath().resolve("cores").toAbsolutePath().toString());
+          SSLConfig sslConfig = new SSLConfig(sslEnabled, false, null, null, null, null);
+          JettyConfig config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig).build();
+          JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
 //            .stopAtShutdown(true)
 //            .withFilters(getExtraRequestFilters())
 //            .withServlets(getExtraServlets())
 //            .withSSLConfig(sslConfig)
 //            .build());
 
-        jetty.start();
-        
-        return jetty;
+          jetty.start();
+          return jetty;
       }
       
       /** Override this method to insert extra servlets into the JettySolrRunners that are created using createJetty() */
-      public SortedMap<ServletHolder,String> getExtraServlets() {
-        return null;
+      public SortedMap<ServletHolder,String> getExtraServlets() 
+      {
+          return null;
       }
 
       /** Override this method to insert extra filters into the JettySolrRunners that are created using createJetty() */
-      public SortedMap<Class<? extends Filter>,String> getExtraRequestFilters() {
-        return null;
+      public SortedMap<Class<? extends Filter>,String> getExtraRequestFilters() 
+      {
+          return null;
       }
 
       protected SolrClient createNewSolrClient(String url)
@@ -455,64 +460,73 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
           }
       }
       
-      protected String buildUrl(int port) {
-        return buildUrl(port, context);
+      protected String buildUrl(int port)
+      {
+          return buildUrl(port, context);
       }
 
-      protected void addFields(SolrInputDocument doc, Object... fields) {
-        for (int i = 0; i < fields.length; i += 2) {
-          doc.addField((String) (fields[i]), fields[i + 1]);
-        }
+      protected void addFields(SolrInputDocument doc, Object... fields) 
+      {
+          for (int i = 0; i < fields.length; i += 2) 
+          {
+              doc.addField((String) (fields[i]), fields[i + 1]);
+          }
       }// add random fields to the documet before indexing
 
-      protected void indexr(Object... fields) throws Exception {
-        SolrInputDocument doc = new SolrInputDocument();
-        addFields(doc, fields);
-        addFields(doc, "rnd_b", true);
-        addRandFields(doc);
-        indexDoc(doc);
+      protected void indexr(Object... fields) throws Exception 
+      {
+          SolrInputDocument doc = new SolrInputDocument();
+          addFields(doc, fields);
+          addFields(doc, "rnd_b", true);
+          addRandFields(doc);
+          indexDoc(doc);
       }
       
-      protected SolrInputDocument addRandFields(SolrInputDocument sdoc) {
-        addFields(sdoc, getRandFields(getFieldNames(), getRandValues()));
-        return sdoc;
+      protected SolrInputDocument addRandFields(SolrInputDocument sdoc) 
+      {
+          addFields(sdoc, getRandFields(getFieldNames(), getRandValues()));
+          return sdoc;
       }
 
-      protected void index(Object... fields) throws Exception {
-        SolrInputDocument doc = new SolrInputDocument();
-        addFields(doc, fields);
-        indexDoc(doc);
+      protected void index(Object... fields) throws Exception 
+      {
+          SolrInputDocument doc = new SolrInputDocument();
+          addFields(doc, fields);
+          indexDoc(doc);
       }
 
       /**
        * Indexes the document in both the control client, and a randomly selected client
        */
-      protected void indexDoc(SolrInputDocument doc) throws IOException, SolrServerException {
-        controlClient.add(doc);
-
-        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clients.size();
-        SolrClient client = clients.get(which);
-        client.add(doc);
+      protected void indexDoc(SolrInputDocument doc) throws IOException, SolrServerException 
+      {
+          controlClient.add(doc);
+          int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clients.size();
+          SolrClient client = clients.get(which);
+          client.add(doc);
       }
       
       /**
        * Indexes the document in both the control client and the specified client asserting
        * that the respones are equivilent
        */
-      protected UpdateResponse indexDoc(SolrClient client, SolrParams params, SolrInputDocument... sdocs) throws IOException, SolrServerException {
-        UpdateResponse controlRsp = add(controlClient, params, sdocs);
-        UpdateResponse specificRsp = add(client, params, sdocs);
-        compareSolrResponses(specificRsp, controlRsp);
-        return specificRsp;
+      protected UpdateResponse indexDoc(SolrClient client, SolrParams params, SolrInputDocument... sdocs) throws IOException, SolrServerException 
+      {
+          UpdateResponse controlRsp = add(controlClient, params, sdocs);
+          UpdateResponse specificRsp = add(client, params, sdocs);
+          compareSolrResponses(specificRsp, controlRsp);
+          return specificRsp;
       }
 
-      protected UpdateResponse add(SolrClient client, SolrParams params, SolrInputDocument... sdocs) throws IOException, SolrServerException {
-        UpdateRequest ureq = new UpdateRequest();
-        ureq.setParams(new ModifiableSolrParams(params));
-        for (SolrInputDocument sdoc : sdocs) {
-          ureq.add(sdoc);
-        }
-        return ureq.process(client);
+      protected UpdateResponse add(SolrClient client, SolrParams params, SolrInputDocument... sdocs) throws IOException, SolrServerException 
+      {
+          UpdateRequest ureq = new UpdateRequest();
+          ureq.setParams(new ModifiableSolrParams(params));
+          for (SolrInputDocument sdoc : sdocs) 
+          {
+              ureq.add(sdoc);
+          }
+          return ureq.process(client);
       }
 
       protected UpdateResponse del(SolrClient client, SolrParams params, Object... ids) throws IOException, SolrServerException {
