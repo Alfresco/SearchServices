@@ -20,6 +20,8 @@ package org.apache.solr.core;
 
 import com.google.common.collect.ImmutableList;
 import org.alfresco.solr.config.ConfigUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Properties;
 
@@ -31,7 +33,9 @@ import java.util.Properties;
  * @author Ahmed Owian
  * @author Gethin James
  */
-public class CoreDescriptorDecorator {
+public class CoreDescriptorDecorator 
+{
+    private static Log log = LogFactory.getLog(CoreDescriptorDecorator.class); 
     private final Properties properties = new Properties();
 
     public static ImmutableList<String> substitutableProperties = 
@@ -43,9 +47,16 @@ public class CoreDescriptorDecorator {
     public CoreDescriptorDecorator(CoreDescriptor descriptor)
     {
         properties.putAll(descriptor.coreProperties);
-        substitutableProperties.forEach(prop ->
+        try
+        {
+            substitutableProperties.forEach(prop ->
             properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
-        );
+                    );
+        }
+        catch(Exception e)
+        {
+            log.warn("Unable to locate alfresco host|port|baseUrl|ssl properties");
+        }
     }
 
     public Properties getProperties()
