@@ -20,6 +20,12 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solrclient</artifactId>
             <version>${alfresco-solr.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>servlet-api</artifactId>
+                    <groupId>javax.servlet</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- provided dependencies -->

@@ -96,15 +96,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         initResourceBasedLogging("log4j-solr.properties");
     }
 
-    public void shutdown() {
+    public void shutdown() 
+    {
         super.shutdown();
-        try {
+        try 
+        {
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
             boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
-            if(testcase) {
-                if (!scheduler.isShutdown()) {
+            if(testcase) 
+            {
+                if (!scheduler.isShutdown()) 
+                {
                     scheduler.pauseAll();
                     scheduler.shutdown();
                 }
@@ -113,13 +117,18 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             for(String core : getCoreContainer().getAllCoreNames())
             {
                 Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(core);
-                for(Tracker tracker : trackers)
+                if(trackers != null)
                 {
-                    tracker.shutdown();
+                    for(Tracker tracker : trackers)
+                    {
+                        tracker.shutdown();
+                    }
                 }
             }
-        } catch(Exception e) {
-            log.info("", e);
+        } 
+        catch(Exception e) 
+        {
+            log.error("Problem shutting down", e);
         }
     }
     private void initResourceBasedLogging(String resource)
@@ -186,16 +195,16 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         try
         {
             switch (action) {
-                case "TEST":
-                    log.info("######## Run Tests ###########");
-                    new AlfrescoCoreAdminTester(this).runTests(req, rsp);
-                    break;
-                case "AUTHTEST":
-                    new AlfrescoCoreAdminTester(this).runAuthTest(req, rsp);
-                    break;
-                case "CMISTEST":
-                    new AlfrescoCoreAdminTester(this).runCmisTests(req, rsp);
-                    break;
+            case "TEST":
+                log.info("######## Run Tests ###########");
+                new AlfrescoCoreAdminTester(this).runTests(req, rsp);
+                break;
+            case "AUTHTEST":
+                new AlfrescoCoreAdminTester(this).runAuthTest(req, rsp);
+                break;
+            case "CMISTEST":
+                new AlfrescoCoreAdminTester(this).runCmisTests(req, rsp);
+                break;
                 case "NEWCORE":
                     newCore(req, rsp);
                     break;
