@@ -18,26 +18,21 @@
  */
 package org.alfresco.solr.query;
 
-import org.alfresco.solr.AlfrescoBaseDistributedSearchTestCase;
+import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.junit.Test;
+
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 
 /**
  * @author Joel
  */
-
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAlfrescoFTSQParserPluginTest extends AlfrescoBaseDistributedSearchTestCase
+public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDistributedTest
 {
-    public DistributedAlfrescoFTSQParserPluginTest()
-    {
-        super();
-        fixShardCount(2);
-        schemaString = "schema-afts.xml";
-        configString = "solrconfig-afts.xml";
-    }
-
+    @Test
     public void doTest() throws Exception
     {
         Thread.sleep(20000); // Allow model trackers to start.

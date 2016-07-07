@@ -317,14 +317,18 @@ public class SolrInformationServer implements InformationServer
 
         hostName = ConfigUtil.locateProperty(SOLR_PROXY_HOST, props.getProperty(SOLR_PROXY_HOST));
         String portNumber = ConfigUtil.locateProperty(SOLR_PROXY_PORT, props.getProperty(SOLR_PROXY_PORT));
-        try {
-            port = Integer.parseInt(portNumber);
-        } catch (NumberFormatException e) {
-            log.error("Failed to find a valid solr.port number, the default value is in shared.properties");
-            throw e;
+        if(portNumber != null)
+        {
+            try 
+            {
+                port = Integer.parseInt(portNumber);
+            } catch (NumberFormatException e) {
+                log.error("Failed to find a valid solr.port number, the default value is in shared.properties");
+                throw e;
+            }
+            baseUrl = ConfigUtil.locateProperty(SOLR_PROXY_BASEURL, props.getProperty(SOLR_PROXY_BASEURL));
+            baseUrl = (baseUrl.startsWith("/") ? "" : "/") + baseUrl + "/" + core.getName() + "/";
         }
-        baseUrl = ConfigUtil.locateProperty(SOLR_PROXY_BASEURL, props.getProperty(SOLR_PROXY_BASEURL));
-        baseUrl = (baseUrl.startsWith("/") ? "" : "/") + baseUrl + "/" + core.getName() + "/";
     }
 
     synchronized public void initSkippingDescendantDocs()
