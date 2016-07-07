@@ -32,33 +32,24 @@ import java.util.Properties;
  * @author Gethin James
  */
 public class CoreDescriptorDecorator {
-	private final Properties properties = new Properties();
+    private final Properties properties = new Properties();
 
-	public static ImmutableList<String> substitutableProperties = ImmutableList.of(
-			"alfresco.host",
-			"alfresco.port",
-			"alfresco.baseUrl",
-			"alfresco.port.ssl"
-	);
+    public static ImmutableList<String> substitutableProperties = 
+            ImmutableList.of("alfresco.host", 
+                             "alfresco.port",
+                             "alfresco.baseUrl",
+                             "alfresco.port.ssl");
 
-	public CoreDescriptorDecorator(CoreDescriptor descriptor)
-	{
-	    try
-	    {
-	        properties.putAll(descriptor.coreProperties);
-	        substitutableProperties.forEach(prop ->
-	        properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
-	                );
-	        
-	    }
-	    catch(Exception e)
-	    {
-	        System.out.println("================opps");
-	    }
-	}
-	
-	public Properties getProperties()
-	{
-		return this.properties;
-	}
+    public CoreDescriptorDecorator(CoreDescriptor descriptor)
+    {
+        properties.putAll(descriptor.coreProperties);
+        substitutableProperties.forEach(prop ->
+            properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
+        );
+    }
+
+    public Properties getProperties()
+    {
+        return this.properties;
+    }
 }

@@ -117,9 +117,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             for(String core : getCoreContainer().getAllCoreNames())
             {
                 Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(core);
-                for(Tracker tracker : trackers)
+                if(trackers != null)
                 {
-                    tracker.shutdown();
+                    for(Tracker tracker : trackers)
+                    {
+                        tracker.shutdown();
+                    }
                 }
             }
         } 
@@ -192,16 +195,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         try
         {
             switch (action) {
-                case "TEST":
-                    log.info("######## Run Tests ###########");
-                    new AlfrescoCoreAdminTester(this).runTests(req, rsp);
-                    break;
-                case "AUTHTEST":
-                    new AlfrescoCoreAdminTester(this).runAuthTest(req, rsp);
-                    break;
-                case "CMISTEST":
-                    new AlfrescoCoreAdminTester(this).runCmisTests(req, rsp);
-                    break;
                 case "NEWCORE":
                     newCore(req, rsp);
                     break;
