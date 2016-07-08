@@ -853,18 +853,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_INACLTXID + ":2"), null),
                 "*[count(//doc)=0]");
 
-
-
-        //TODO fix tests
-        //INVESTIGATE
-        /*
-
-        testQueryByHandler(report, core, "/native", FIELD_TXCOMMITTIME + ":*", 1, null, null, null, null,
-                null, (String) null);
-
-        testQueryByHandler(report, core, "/native", FIELD_ACLTXCOMMITTIME + ":*", 1, null, null, null,
-                null, null, (String) null);
-        */
+        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_TXCOMMITTIME + ":*"), null), "*[count(//doc)=1]");
+        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_ACLTXCOMMITTIME + ":*"), null), "*[count(//doc)=1]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_ACLID + ":1"), null),
                 "*[count(//doc)=17]");

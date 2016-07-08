@@ -268,6 +268,31 @@
         <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
     </requestHandler>
 
+    <requestHandler name="/native" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
+        <!-- default values for query parameters can be specified, these
+             will be overridden by parameters in the request
+          -->
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+            <int name="rows">10</int>
+            <str name="df">suggest</str>
+        </lst>
+
+
+        <arr name="components">
+            <str>setLocale</str>
+            <str>ensureModels</str>
+            <str>query</str>
+            <str>facet</str>
+            <str>mlt</str>
+            <str>highlight</str>
+            <str>stats</str>
+            <str>debug</str>
+            <str>clearLocale</str>
+        </arr>
+
+        <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
+    </requestHandler>
 
     <requestHandler name="/cmis" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
         <lst name="defaults">
