@@ -117,34 +117,26 @@
                 <!-- in this example, we will only use synonyms at query time
                 <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
                 -->
-                <!-- Case insensitive stop word removal.
-                -->
-                <filter class="solr.StopFilterFactory"
-                        ignoreCase="true"
-                        words="lang/stopwords_en.txt"
-                        />
-                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.ICUFoldingFilterFactory"/>
                 <filter class="solr.EnglishPossessiveFilterFactory"/>
                 <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
                 <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
                     <filter class="solr.EnglishMinimalStemFilterFactory"/>
                 -->
                 <filter class="solr.PorterStemFilterFactory"/>
+                <filter class="solr.CommonGramsFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.StandardTokenizerFactory"/>
                 <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
-                <filter class="solr.StopFilterFactory"
-                        ignoreCase="true"
-                        words="lang/stopwords_en.txt"
-                        />
-                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.ICUFoldingFilterFactory"/>
                 <filter class="solr.EnglishPossessiveFilterFactory"/>
                 <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
                 <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
                     <filter class="solr.EnglishMinimalStemFilterFactory"/>
                 -->
                 <filter class="solr.PorterStemFilterFactory"/>
+                <filter class="solr.CommonGramsQueryFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>
             </analyzer>
         </fieldType>
 

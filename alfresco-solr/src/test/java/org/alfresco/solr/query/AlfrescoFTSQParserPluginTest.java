@@ -214,13 +214,15 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("d\\:content:fox d\\:text:fox", 1);
         assertAQuery("TEXT:fo AND TYPE:\"" + ContentModel.PROP_CONTENT.toString() + "\"", 0);
 
+        // Depends on the configuration
         assertAQuery("TEXT:\"the\"", 1);
         assertAQuery("TEXT:\"and\"", 1);
-
-        //TODO fix this assert
-        //assertAQuery("TEXT:\"over the lazy\"", 1);  //INVESTIGATE
-        // Depends on stop words being removed .... which depends on the configuration
-        //assertAQuery("TEXT:\"over a lazy\"", 1);
+        assertAQuery("TEXT:\"the lazy dog\"", 1);
+        assertAQuery("TEXT:\"over lazy\"", 0);
+        assertAQuery("TEXT:\"over the lazy dog\"", 1);
+        assertAQuery("TEXT:\"over the lazy\"", 1);
+        //With no shared.properties this falls back to 5.0 cross locale support
+        assertAQuery("TEXT:\"over a lazy\"", 1);
 
         assertAQuery("\\@"
                 + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
@@ -1302,14 +1304,12 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs("modified:[MIN TO NOW]", 2);
 
         assertAQueryHasNumberOfDocs("TYPE:" + testType.toString(), 1);
-        //INVESTIGATE
-//     testQueryByHandler(report, core, "/afts", "TYPE:" + testType.toString(), 0, null, null, null, null, null, (ContentStream)null, "mimetype():document");
-        assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1);
+        assertAQueryHasNumberOfDocs("TYPE:" + testType.toString(), "mimetype():document", 0);
 
-        //INVESTIGATE
-//        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "mimetype():document");
-//        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 0, null, null, null, null, null, (ContentStream)null, "contentSize():[0 TO 100]");
-//        testQueryByHandler(report, core, "/afts", "TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1, null, null, null, null, null, (ContentStream)null, "contentSize():[100 TO 1000]");
+        assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1);
+        assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), "mimetype():document", 1);
+        assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), "contentSize():[0 TO 100]", 0);
+        assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), "contentSize():[100 TO 1000]", 1);
 
         assertAQueryHasNumberOfDocs("modified:[NOW/DAY-1DAY TO NOW/DAY+1DAY]", 2);
         assertAQueryHasNumberOfDocs("modified:[NOW/DAY-1DAY TO *]", 2);
