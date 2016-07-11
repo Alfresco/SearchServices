@@ -56,7 +56,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkQNames();
         checkType();
         checkDataType();
-        checkText();   // INVESTIGATE 1
+        checkText();
         checkMLText(); // INVESTIGATE 1
         checkRanges();
         checkNonField();
@@ -66,7 +66,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkPropertyTypes(); // INVESIGATE 6
         testAFTS();  // INVESTIGATE 7
         testAFTSandSort();
-        testSort(); //INVESTIGATE 21
+        testSort();
         testCMIS();
         checkPaging();
 
@@ -839,7 +839,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         // testQueryByHandler(report, core, "/afts", AbstractLuceneQueryParser.FIELD_DBID+":[3 TO 4]", 2, null, null,
         // null);
 
-
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_TXID + ":1"), null),
                 "*[count(//doc)=1]");
 
@@ -1490,30 +1489,30 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryIsSorted("PATH:\"//.\"", "@" + orderText + " asc", null, 16, new Integer[]{1, 15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 10, 12, 14, 16});
         assertAQueryIsSorted("PATH:\"//.\"", "@" + orderText + " desc", null, 16, new Integer[]{16, 14, 12, 10, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15, 1});
 
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  Locale.ENGLISH, 16, new Integer[] {1, 10, 11, 2, 3, 4, 5, 13, 12, 6, 7, 8, 14, 15, 16, 9 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", Locale.ENGLISH, 16, new Integer[] {9, 16, 15, 14, 8, 7, 6, 12, 13, 5, 4, 3, 2, 11, 10, 1 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  Locale.FRENCH,  16, new Integer[]  {1, 10, 11, 2, 3, 4, 5, 13, 12, 6, 8, 7, 14, 15, 16, 9 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", Locale.FRENCH,  16, new Integer[]  {9, 16, 15, 14, 7, 8, 6, 12, 13, 5, 4, 3, 2, 11, 10, 1 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  Locale.GERMAN, 16, new Integer[]  {1, 10, 11, 2, 3, 4, 5, 13, 12, 6, 7, 8, 14, 15, 16, 9 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", Locale.GERMAN, 16, new Integer[]  {9, 16, 15, 14, 8, 7, 6, 12, 13, 5, 4, 3, 2, 11, 10, 1 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  new Locale("sv"), 16, new Integer[] {1, 11, 2, 3, 4, 5, 13, 6, 7, 8, 12, 14, 15, 16, 9, 10 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", new Locale("sv"), 16, new Integer[] {10, 9, 16, 15, 14, 12, 8, 7, 6, 13, 5, 4, 3, 2, 11, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  Locale.ENGLISH, 16, new Integer[] {1, 10, 11, 2, 3, 4, 5, 13, 12, 6, 7, 8, 14, 15, 16, 9 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", Locale.ENGLISH, 16, new Integer[] {9, 16, 15, 14, 8, 7, 6, 12, 13, 5, 4, 3, 2, 11, 10, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  Locale.FRENCH,  16, new Integer[]  {1, 10, 11, 2, 3, 4, 5, 13, 12, 6, 8, 7, 14, 15, 16, 9 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", Locale.FRENCH,  16, new Integer[]  {9, 16, 15, 14, 7, 8, 6, 12, 13, 5, 4, 3, 2, 11, 10, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  Locale.GERMAN, 16, new Integer[]  {1, 10, 11, 2, 3, 4, 5, 13, 12, 6, 7, 8, 14, 15, 16, 9 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", Locale.GERMAN, 16, new Integer[]  {9, 16, 15, 14, 8, 7, 6, 12, 13, 5, 4, 3, 2, 11, 10, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " asc",  new Locale("sv"), 16, new Integer[] {1, 11, 2, 3, 4, 5, 13, 6, 7, 8, 12, 14, 15, 16, 9, 10 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedText + " desc", new Locale("sv"), 16, new Integer[] {10, 9, 16, 15, 14, 12, 8, 7, 6, 13, 5, 4, 3, 2, 11, 1 });
 
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " asc",  Locale.ENGLISH, 16, new Integer[] { 1, 15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 10, 12, 14, 16 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " desc", Locale.ENGLISH, 16, new Integer[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " asc",  Locale.FRENCH, 16,  new Integer[] { 1, 14, 16, 12, 10, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " desc", Locale.FRENCH, 16,  new Integer[] { 15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 10, 12, 16, 14, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " asc",  Locale.ENGLISH, 16, new Integer[] { 1, 15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 10, 12, 14, 16 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " desc", Locale.ENGLISH, 16, new Integer[] { 16, 14, 12, 10, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15, 1});
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " asc",  Locale.FRENCH, 16,  new Integer[] { 1, 14, 16, 12, 10, 8, 6, 4, 2, 3, 5, 7, 9, 11, 13, 15 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderMLText + " desc", Locale.FRENCH, 16,  new Integer[] { 15, 13, 11, 9, 7, 5, 3, 2, 4, 6, 8, 10, 12, 16, 14, 1 });
 
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  Locale.ENGLISH, 16, new Integer[] { 1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", Locale.ENGLISH, 16, new Integer[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  Locale.FRENCH, 16, new Integer[] { 1, 16, 15, 14, 13, 12, 2, 3, 4, 5, 11, 10, 9, 8, 7, 6 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", Locale.FRENCH, 16, new Integer[] { 6, 7, 8, 9, 10, 11, 5, 4, 3, 2, 12, 13, 14, 15, 16, 1 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  Locale.GERMAN, 16, new Integer[] { 1, 16, 15, 2, 3, 4, 5, 6, 7, 9, 8, 10, 12, 14, 11, 13 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", Locale.GERMAN, 16, new Integer[] { 13, 11, 14, 12, 10, 8, 9, 7, 6, 5, 4, 3, 2, 15, 16, 1 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  new Locale("es"), 16, new Integer[] { 1, 16, 15, 7, 14, 8, 9, 10, 11, 12, 13, 2, 3, 4, 5, 6 });
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", new Locale("es"), 16, new Integer[] { 6, 5, 4, 3, 2, 13, 12, 11, 10, 9, 8, 14, 7, 15, 16, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  Locale.ENGLISH, 16, new Integer[] { 1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", Locale.ENGLISH, 16, new Integer[] { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  Locale.FRENCH, 16, new Integer[] { 1, 16, 15, 14, 13, 12, 2, 3, 4, 5, 11, 10, 9, 8, 7, 6 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", Locale.FRENCH, 16, new Integer[] { 6, 7, 8, 9, 10, 11, 5, 4, 3, 2, 12, 13, 14, 15, 16, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  Locale.GERMAN, 16, new Integer[] { 1, 16, 15, 2, 3, 4, 5, 6, 7, 9, 8, 10, 12, 14, 11, 13 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", Locale.GERMAN, 16, new Integer[] { 13, 11, 14, 12, 10, 8, 9, 7, 6, 5, 4, 3, 2, 15, 16, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " asc",  new Locale("es"), 16, new Integer[] { 1, 16, 15, 7, 14, 8, 9, 10, 11, 12, 13, 2, 3, 4, 5, 6 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + orderLocalisedMLText + " desc", new Locale("es"), 16, new Integer[] { 6, 5, 4, 3, 2, 13, 12, 11, 10, 9, 8, 14, 7, 15, 16, 1 });
 
-//        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".size asc", null, 16, new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
+        assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".size asc", null, 16, new Integer[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 15 });
         assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".size desc",null, 16, new Integer[] { 15 });
         assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype asc", null, 16, new Integer[] { 15 });
         assertAQueryIsSorted("PATH:\"//.\"", "@" + ContentModel.PROP_CONTENT + ".mimetype desc",null, 16, new Integer[] { 15 });
