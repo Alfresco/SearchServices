@@ -521,14 +521,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery(
                 "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana", 1,
                 Locale.ITALIAN, null, null);
-
-        //TODO fix test
-        //INVESTIGATE
-            /*
-            assertAQuery(
-                    "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":�?ナナ", 1, new Locale(
-                            "ja"), null, null);
-                            */
+        assertAQuery(
+                "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString())    + ":バナナ", 1, Locale.JAPANESE, null, null);
         assertAQuery(
                 "@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":바나나", 1, new Locale(
                         "ko"), null, null);
