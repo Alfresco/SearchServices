@@ -1286,16 +1286,15 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs("speedy", 1);
 
         // 3 words in test - 1..3 in query
-        assertAQueryHasNumberOfDocs("brown AND fox AND jumped", 1);
+        assertAQueryHasNumberOfDocs("\"brown fox jumped\"", 1);
 
         // Synonyms
-        assertAQueryHasNumberOfDocs("leaping AND reynard", 1);
-        assertAQueryHasNumberOfDocs("volting AND zorro", 1);
-//TODO:       assertAQueryHasNumberOfDocs("springer", 1);
+        assertAQueryHasNumberOfDocs("\"leaping reynard\"", 1);
+        //TODO: assertAQueryHasNumberOfDocs("\"springer\"", 1);
 
         // 1 word in text 1..2 in query
         assertAQueryHasNumberOfDocs("lazy", 1);
-        assertAQueryHasNumberOfDocs("bone AND idle", 1);
+        assertAQueryHasNumberOfDocs("\"bone idle\"", 1);
 
         // Cross language support and tokenisation part and full.
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "title:English", "locale", Locale.ENGLISH.toString()), null), "*[count(//doc)=1]");
