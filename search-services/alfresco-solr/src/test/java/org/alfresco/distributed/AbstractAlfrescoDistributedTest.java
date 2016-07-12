@@ -252,7 +252,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         Path jettyHome = testDir.toPath().resolve("control");
         File jettyHomeFile = jettyHome.toFile();
         seedSolrHome(jettyHomeFile);
-        seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
+        seedCoreRootDirWithDefaultTestCore(jettyHome);
         JettySolrRunner jetty = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
         return jetty;
     }
@@ -277,7 +277,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             Path jettyHome = testDir.toPath().resolve(shardname);
             File jettyHomeFile = jettyHome.toFile();
             seedSolrHome(jettyHomeFile);
-            seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
+            seedCoreRootDirWithDefaultTestCore(jettyHome);
             JettySolrRunner j = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
             jettys.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
@@ -1239,7 +1239,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      */
     protected void seedSolrHome(File jettyHome) throws IOException
     {
-        FileUtils.copyDirectory(new File(getSolrHome()), jettyHome);
         String solrxml = getSolrXml();
         if (solrxml != null)
         {
@@ -1258,14 +1257,21 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      */
     private void seedCoreRootDirWithDefaultTestCore(Path coreRootDirectory) throws IOException
     {
-        // Kludgy and brittle with assumptions about writeCoreProperties, but i
-        // don't want to
-        // try to change the semantics of that method to ignore existing files
+        //Prepare alfresco solr core.
         Path coreDir = coreRootDirectory.resolve(DEFAULT_TEST_CORENAME);
         if (Files.notExists(coreDir.resolve(CORE_PROPERTIES_FILENAME)))
         {
-            writeCoreProperties(coreDir, DEFAULT_TEST_CORENAME);
+            Properties coreProperties = new Properties();
+            coreProperties.setProperty("name", "collection1");
+            writeCoreProperties(coreDir, coreProperties, this.getTestName());
         } // else nothing to do, DEFAULT_TEST_CORENAME already exists
+        //Add alfreso solr configurations
+        FileUtils.copyDirectory(new File(getSolrHome() + "/collection1/conf"), coreRootDirectory.resolve("collection1/conf").toFile());
+        // Add alfresco data model def
+        FileUtils.copyDirectory(new File(getSolrHome() + "/alfrescoModels"), coreRootDirectory.resolve("collection1/alfrescoModels").toFile());
+        //add solr alfresco properties
+        FileUtils.copyFile(new File(getSolrHome() + "/log4j-solr.properties"),
+                coreRootDirectory.resolve("log4j-solr.properties").toFile());
     }
 
     protected void setupJettySolrHome(File jettyHome) throws IOException
