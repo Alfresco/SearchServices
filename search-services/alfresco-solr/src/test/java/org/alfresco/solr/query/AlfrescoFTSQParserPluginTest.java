@@ -20,26 +20,25 @@
 package org.alfresco.solr.query;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
+import org.alfresco.util.ISO9075;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Date;
-import java.util.Calendar;
-import org.alfresco.util.ISO9075;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
