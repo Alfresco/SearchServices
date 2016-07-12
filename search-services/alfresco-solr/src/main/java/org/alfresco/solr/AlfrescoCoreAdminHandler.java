@@ -162,7 +162,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             if (!f.isAbsolute())
             {
                 // try $CWD/$configDir/$resource
-                f = new File(coreContainer.getSolrHome() + resource);
+                String path = coreContainer.getSolrHome();
+                path = path.endsWith("/") ? path : path + "/";
+                f = new File(path + resource);
             }
             if (f.isFile() && f.canRead())
             {
