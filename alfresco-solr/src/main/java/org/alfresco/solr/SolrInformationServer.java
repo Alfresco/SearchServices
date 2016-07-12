@@ -24,6 +24,8 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTX
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADETX;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADE_FLAG;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DENIED;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
@@ -51,7 +53,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_QNAME
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_READER;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SITE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TAG_SUGGEST;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_ACLTXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_INACLTXID;
@@ -59,13 +60,12 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_INT
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_TXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TAG;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TAG_SUGGEST;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TENANT;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADETX;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -74,21 +74,28 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import javax.management.*;
-import javax.management.Query;
-
-import com.carrotsearch.hppc.IntArrayList;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -137,8 +144,24 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.*;
-import org.apache.lucene.search.*;
+import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.ReaderUtil;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.LeafCollector;
+import org.apache.lucene.search.LegacyNumericRangeQuery;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.solr.common.SolrDocument;
@@ -159,7 +182,11 @@ import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.SchemaField;
-import org.apache.solr.search.*;
+import org.apache.solr.search.DelegatingCollector;
+import org.apache.solr.search.DocIterator;
+import org.apache.solr.search.DocList;
+import org.apache.solr.search.QueryWrapperFilter;
+import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.CommitUpdateCommand;
 import org.apache.solr.update.DeleteUpdateCommand;
@@ -173,7 +200,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.*;
+import com.carrotsearch.hppc.IntArrayList;
 
 /**
  * This is the Solr4 implementation of the information server (index).
