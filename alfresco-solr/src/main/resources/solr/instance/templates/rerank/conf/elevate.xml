@@ -31,8 +31,8 @@
  </query>
  
  <query text="ipod">
-   <doc id="MA147LL/A" />  <!-- put the actual ipod at the top -->
-   <doc id="IW-02" exclude="true" /> <!-- exclude this cable -->
+<!--    <doc id="MA147LL/A" />  put the actual ipod at the top
+   <doc id="IW-02" exclude="true" /> exclude this cable -->
  </query>
  
 </elevate>
