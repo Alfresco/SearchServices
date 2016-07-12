@@ -1,7 +1,12 @@
 package org.alfresco.distributed;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,9 +27,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.servlet.Filter;
 
+import org.alfresco.solr.AlfrescoSolrUtils;
+import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
@@ -52,6 +60,8 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.carrotsearch.ant.tasks.junit4.dependencies.org.simpleframework.xml.util.Entry;
 
 /**
  * Clone of a helper base class for distributed search test cases
@@ -247,22 +257,57 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         destroyServers();
     }
 
-    protected JettySolrRunner createControlJetty() throws Exception
+    /**
+     * Provides a jetty alfresco solr. 
+     * @param name
+     * @return
+     * @throws Exception
+     */
+    private JettySolrRunner createJetty(String name, String ... params) throws Exception
     {
-        Path jettyHome = testDir.toPath().resolve("control");
+        Path jettyHome = testDir.toPath().resolve(name);
         File jettyHomeFile = jettyHome.toFile();
         seedSolrHome(jettyHomeFile);
         seedCoreRootDirWithDefaultTestCore(jettyHome);
+        updateShardingProperties(jettyHome, params);
         JettySolrRunner jetty = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
         return jetty;
     }
 
+    private void updateShardingProperties(Path jettyHome, String ... params) throws IOException
+    {
+        if(params != null && params.length > 0)
+        {
+            InputStream in = null;
+            OutputStream out = null;
+            try
+            {
+                Properties newprops = new Properties();
+                newprops.putAll(AlfrescoSolrUtils.map(params));
+                Properties properties = new Properties();
+                String solrcoreProperties = jettyHome.resolve("collection1/conf/solrcore.properties").toString();
+                in = new FileInputStream(solrcoreProperties);
+                properties.load(in);
+                in.close();
+                newprops.entrySet().forEach(x-> properties.replace(x.getKey(),x.getValue()));
+                out = new FileOutputStream(solrcoreProperties);
+                properties.store(out, null);
+            }
+            finally
+            {
+                out.close();
+                in.close();
+            }
+            
+        }
+        
+    }
+
     protected void createServers(int numShards) throws Exception
     {
-
         System.setProperty("configSetBaseDir", getSolrHome());
 
-        controlJetty = createControlJetty();
+        controlJetty = createJetty("Control");
         String url = buildUrl(controlJetty.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
         log.info(url);
         controlClient = createNewSolrClient(url);
@@ -274,11 +319,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             if (sb.length() > 0)
                 sb.append(',');
             final String shardname = "shard" + i;
-            Path jettyHome = testDir.toPath().resolve(shardname);
-            File jettyHomeFile = jettyHome.toFile();
-            seedSolrHome(jettyHomeFile);
-            seedCoreRootDirWithDefaultTestCore(jettyHome);
-            JettySolrRunner j = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
+            JettySolrRunner j = createJetty(shardname,"shard.instance", shardname, "shard.method","test");
             jettys.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
             log.info(shardStr);
@@ -1270,8 +1311,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         // Add alfresco data model def
         FileUtils.copyDirectory(new File(getSolrHome() + "/alfrescoModels"), coreRootDirectory.resolve("collection1/alfrescoModels").toFile());
         //add solr alfresco properties
-        FileUtils.copyFile(new File(getSolrHome() + "/log4j-solr.properties"),
-                coreRootDirectory.resolve("log4j-solr.properties").toFile());
+        FileUtils.copyFile(new File(getSolrHome() + "/log4j-solr.properties"), coreRootDirectory.resolve("log4j-solr.properties").toFile());
     }
 
     protected void setupJettySolrHome(File jettyHome) throws IOException
