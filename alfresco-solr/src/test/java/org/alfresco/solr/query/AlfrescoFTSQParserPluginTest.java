@@ -22,6 +22,9 @@ package org.alfresco.solr.query;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -57,14 +60,14 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkType();
         checkDataType();
         checkText();
-        checkMLText(); // INVESTIGATE 1
+        checkMLText();
         checkRanges();
         checkNonField();
         checkNullAndUnset();
-        checkInternalFields(); // INVESTIGATE 2
+        checkInternalFields();
         checkAuthorityFilter();
-        checkPropertyTypes(); // INVESIGATE 6
-        testAFTS();  // INVESTIGATE 7
+        checkPropertyTypes();
+        testAFTS();
         testAFTSandSort();
         testSort();
         testCMIS();
@@ -284,8 +287,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString())
                 + ".size:\"298\"", 1);
 
-        //TODO Fix these tests
-
         assertAQuery("TEXT:\"fox\"", 0, null, new String[]{"@"
                 + ContentModel.PROP_NAME.toString()}, null);
         assertAQuery("TEXT:\"fox\"", 1, null, new String[]{
@@ -305,7 +306,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("TEXT:*bage", 15, null,
                 new String[]{"@" + orderText.toString()}, null);
 
-//            assertAQuery("TEXT:dabbage~0.3", 15, null, new String[] { "@"
+//NA            assertAQuery("TEXT:dabbage~0.3", 15, null, new String[] { "@"
 //                        + orderText.toString() }, null);
 
         assertAQuery("TEXT:\"alfresco\"", 1);
@@ -552,33 +553,17 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("TEXT:fo*", 1);
         assertAQuery("TEXT:f*x", 1);
         assertAQuery("TEXT:*ox", 1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":fox",
-                1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":fo*",
-                1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":f*x",
-                1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":*ox",
-                1);
-        assertAQuery(
-                "@"
-                        + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":fox", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":fo*", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":f*x", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":*ox", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
                         .toPrefixString(dataModel.getNamespaceDAO())) + ":fox", 1);
-        assertAQuery(
-                "@"
-                        + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
                         .toPrefixString(dataModel.getNamespaceDAO())) + ":fo*", 1);
-        assertAQuery(
-                "@"
-                        + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
                         .toPrefixString(dataModel.getNamespaceDAO())) + ":f*x", 1);
-        assertAQuery(
-                "@"
-                        + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
                         .toPrefixString(dataModel.getNamespaceDAO())) + ":*ox", 1);
 
     }
@@ -828,10 +813,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_DBID + ":17"), null),
                 "*[count(//doc)=0]");
 
-        // testQueryByHandler(report, core, "/afts", AbstractLuceneQueryParser.FIELD_DBID+":*", 16, null, null, (String)
-        // null);
-        // testQueryByHandler(report, core, "/afts", AbstractLuceneQueryParser.FIELD_DBID+":[3 TO 4]", 2, null, null,
-        // null);
+        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_DBID + ":*"), null), "*[count(//doc)=16]");
+        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_DBID + ":[3 TO 4]"), null), "*[count(//doc)=2]");
 
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", FIELD_TXID + ":1"), null),
                 "*[count(//doc)=1]");
@@ -1164,48 +1147,34 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs(qname + ":3.40", 1);
         assertAQueryHasNumberOfDocs(qname + ":3..4", 1);
         assertAQueryHasNumberOfDocs(qname + ":3..3.39", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":3..3.40", 1);
         assertAQueryHasNumberOfDocs(qname + ":3.41..3.9", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":3.40..3.9", 1);
 
         assertAQueryHasNumberOfDocs(qname + ":[3 TO 4]", 1);
         assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.39]", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.4]", 1);
         assertAQueryHasNumberOfDocs(qname + ":[3.41 TO 4]", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":[3.4 TO 4]", 1);
         assertAQueryHasNumberOfDocs(qname + ":[3 TO 3.4>", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 4]", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":<3.4 TO 3.4>", 0);
-        ;
 
         assertAQueryHasNumberOfDocs(qname + ":(3.40)", 1);
         assertAQueryHasNumberOfDocs(qname + ":(3..4)", 1);
         assertAQueryHasNumberOfDocs(qname + ":(3..3.39)", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":(3..3.40)", 1);
         assertAQueryHasNumberOfDocs(qname + ":(3.41..3.9)", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":(3.40..3.9)", 1);
 
         assertAQueryHasNumberOfDocs(qname + ":([3 TO 4])", 1);
         assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.39])", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.4])", 1);
         assertAQueryHasNumberOfDocs(qname + ":([3.41 TO 4])", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":([3.4 TO 4])", 1);
         assertAQueryHasNumberOfDocs(qname + ":([3 TO 3.4>)", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 4])", 0);
-        ;
         assertAQueryHasNumberOfDocs(qname + ":(<3.4 TO 3.4>)", 0);
-        ;
 
         assertAQueryHasNumberOfDocs("test:float_x002D_ista:3.40", 1);
 
@@ -1276,7 +1245,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs("lazy^20 -lazy^20", 16);
 
         assertAQueryHasNumberOfDocs("cm:content:lazy", 1);
-//        assertAQueryHasNumberOfDocs("ANDY:lazy", 1);
+//NA        assertAQueryHasNumberOfDocs("ANDY:lazy", 1);
         assertAQueryHasNumberOfDocs("content:lazy", 1);
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
         assertAQueryHasNumberOfDocs("+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0);
@@ -1288,10 +1257,10 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQueryHasNumberOfDocs("\"//.\"", 0);
         assertAQueryHasNumberOfDocs("cm:content:brown", 1);
 
-        //assertAQueryHasNumberOfDocs("ANDY:brown", 1);
-        //assertAQueryHasNumberOfDocs("andy:brown", 1);
-        // testQueryByHandler(report, core, "/afts", "ANDY", "brown", 1, null, (String) null);
-        // testQueryByHandler(report, core, "/afts", "andy", "brown", 1, null, (String) null);
+        //NA assertAQueryHasNumberOfDocs("ANDY:brown", 1);
+        //NA assertAQueryHasNumberOfDocs("andy:brown", 1);
+        //NA  testQueryByHandler(report, core, "/afts", "ANDY", "brown", 1, null, (String) null);
+        //NA testQueryByHandler(report, core, "/afts", "andy", "brown", 1, null, (String) null);
 
         assertAQueryHasNumberOfDocs("modified:*", 2);
         assertAQueryHasNumberOfDocs("modified:[MIN TO NOW]", 2);
@@ -1322,7 +1291,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         // Synonyms
         assertAQueryHasNumberOfDocs("leaping AND reynard", 1);
         assertAQueryHasNumberOfDocs("volting AND zorro", 1);
-//        assertAQueryHasNumberOfDocs("springer", 1);
+//TODO:       assertAQueryHasNumberOfDocs("springer", 1);
 
         // 1 word in text 1..2 in query
         assertAQueryHasNumberOfDocs("lazy", 1);
@@ -1391,7 +1360,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         // "something" is DENIED to all nodes (they all use ACL #1)
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", "{!afts}|DENIED:something", 16);
-
 
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"something\", \"GROUP_EVERYONE\" ], \"tenants\": [ \"\" ] }", 0);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{ \"authorities\": [ \"something\" ], \"tenants\": [ \"\" ] }", 0);
@@ -1463,8 +1431,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
     private void testSort() throws Exception {
         //Test Sorting
-            assertAQueryIsSorted("PATH:\"//.\"", "ID asc", null, 16, new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
-            assertAQueryIsSorted("PATH:\"//.\"", "ID desc",null, 16, new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
+        assertAQueryIsSorted("PATH:\"//.\"", "ID asc", null, 16, new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+        assertAQueryIsSorted("PATH:\"//.\"", "ID desc",null, 16, new Integer[] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
 
         assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " asc", null, 16, new Integer[]{1, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2});
         assertAQueryIsSorted("PATH:\"//.\"", "@" + createdDate + " desc", null, 16, new Integer[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1});
@@ -1685,8 +1653,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                         TEST_NAMESPACE, "date-ista").toString()) + ":\"" + sDate + "\"", 1);
             }
 
-            assertAQuery("\\@"
-                    + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+            assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
                     "datetime-ista").toString()) + ":\"" + sDate + "\"", 1);
 
             sDate = df.getSimpleDateFormat().format(date);
@@ -1700,18 +1667,15 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
             if (sDate.length() >= 9) {
                 sDate = df.getSimpleDateFormat().format(ftsTestDate);
 
-                assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                         TEST_NAMESPACE, "date-ista").toString()) + ":[" + sDate
                         + " TO " + sDate + "]", 1);
 
-                assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                         TEST_NAMESPACE, "date-ista").toString()) + ":[MIN  TO " + sDate
                         + "]", 1);
 
-                assertAQuery("\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                         TEST_NAMESPACE, "date-ista").toString()) + ":[" + sDate
                         + " TO MAX]", 1);
 
@@ -1720,10 +1684,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
             sDate = CachingDateFormat.getDateFormat().format(ftsTestDate);
 
-            assertAQuery(
-                    "\\@"
-                            + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
-                            "datetime-ista").toString()) + ":[MIN TO " + sDate + "]", 1);
+            assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
+                    "datetime-ista").toString()) + ":[MIN TO " + sDate + "]", 1);
 
 
             sDate = df.getSimpleDateFormat().format(ftsTestDate);
@@ -1734,106 +1696,65 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 String endDate = df.getSimpleDateFormat().format(new Date(ftsTestDate.getTime() + i));
 
 
-                assertAQuery(
-                        "\\@"
-                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                                 TEST_NAMESPACE, "datetime-ista").toString()) + ":[" + startDate
                                 + " TO " + endDate + "]", 1);
-                assertAQuery(
-                        "\\@"
-                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                                 TEST_NAMESPACE, "datetime-ista").toString()) + ":[" + sDate
                                 + " TO " + endDate + "]", 1);
-                assertAQuery(
-                        "\\@"
-                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                                 TEST_NAMESPACE, "datetime-ista").toString()) + ":[" + startDate
                                 + " TO " + sDate + "]", 1);
-                assertAQuery(
-                        "\\@"
-                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                                 TEST_NAMESPACE, "datetime-ista").toString()) + ":{" + sDate
                                 + " TO " + endDate + "}", 0);
-                assertAQuery(
-                        "\\@"
-                                + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
+                assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(
                                 TEST_NAMESPACE, "datetime-ista").toString()) + ":{" + startDate
                                 + " TO " + sDate + "}", 0);
-
             }
         }
 
         qname = QName.createQName(TEST_NAMESPACE, "boolean-ista");
-                                 assertAQuery(
-                                    "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"true\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"true\"", 1);
 
-/*
+        /**
+         * //TODO:
+        qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef + "\"", 1);
+
         qname = QName.createQName(TEST_NAMESPACE, "qname-ista");
-        assertAQuery(
-                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"{wibble}wobble\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"{wibble}wobble\"", 1);
 
         qname = QName.createQName(TEST_NAMESPACE, "category-ista");
-        assertAQuery(
-                "\\@"
-                        + SearchLanguageConversion.escapeLuceneQuery(qname.toString())
-                        + ":\""
-                        + DefaultTypeConverter.INSTANCE.convert(String.class, new NodeRef(new StoreRef(
-                        "proto", "id"), "CategoryId")) + "\"", 1);
-
-
-
-
-        qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
-        assertAQuery(
-                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef
-                        + "\"", 1);
-        qname = QName.createQName(TEST_NAMESPACE, "path-ista");
-        assertAQuery(
-                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
-                        + NamespaceService.CONTENT_MODEL_1_0_URI + "}three\"", 1);
-
-
-        qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
-        assertAQuery(
-                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef
-                        + "\"", 1);
-
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\""
+                        + DefaultTypeConverter.INSTANCE.convert(String.class,
+                        new NodeRef(new StoreRef("proto", "id"), "CategoryId")) + "\"", 1);
 
         qname = QName.createQName(TEST_NAMESPACE, "path-ista");
-        assertAQuery(
-                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
                         + NamespaceService.CONTENT_MODEL_1_0_URI + "}three\"", 1);
-        */
+        **/
 
         qname = QName.createQName(TEST_NAMESPACE, "any-many-ista");
-        assertAQuery(
-                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"100\"", 1);
-        assertAQuery(
-                "\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"anyValueAsString\"",
-                1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"100\"", 1);
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"anyValueAsString\"", 1);
 
         assertAQuery("TEXT:\"Tutorial Alfresco\"~0", 0);
         assertAQuery("TEXT:\"Tutorial Alfresco\"~1", 0);
         assertAQuery("TEXT:\"Tutorial Alfresco\"~2", 1);
         assertAQuery( "TEXT:\"Tutorial Alfresco\"~3", 1);
 
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
                         + ":\"Alfresco Tutorial\"", 1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
                         + ":\"Tutorial Alfresco\"", 0);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
                         + ":\"Tutorial Alfresco\"~0", 0);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
                         + ":\"Tutorial Alfresco\"~1", 0);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
                         + ":\"Tutorial Alfresco\"~2", 1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString())
                         + ":\"Tutorial Alfresco\"~3", 1);
 
 
@@ -1870,20 +1791,14 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         
         qname = QName.createQName(TEST_NAMESPACE, "locale-ista");
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"en_GB_\"", 1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":en_GB_", 1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":en_*", 1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*_GB_*", 1);
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*_gb_*", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"en_GB_\"", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":en_GB_", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":en_*", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*_GB_*", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":*_gb_*", 1);
 
         qname = QName.createQName(TEST_NAMESPACE, "period-ista");
-        assertAQuery(
-                "@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"period|12\"", 1);
+        assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"period|12\"", 1);
 
     }
 
