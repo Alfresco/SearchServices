@@ -31,5 +31,5 @@ pixima => pixma
 
 # Test synonyms
 quick,fast,rapid,speedy
-brown fox jumped,leaping reynard,volting zorro
+brown fox jumped,leaping reynard,springer
 lazy,bone idle
