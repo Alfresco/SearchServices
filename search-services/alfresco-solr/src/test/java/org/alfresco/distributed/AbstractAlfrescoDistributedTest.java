@@ -34,6 +34,8 @@ import javax.servlet.Filter;
 import org.alfresco.solr.AlfrescoSolrUtils;
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrResponse;
@@ -51,6 +53,9 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.search.SolrIndexSearcher;
+import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -257,6 +262,54 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         destroyServers();
     }
 
+    public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
+        ArrayList<SolrCore> cores = new ArrayList();
+        try {
+            cores.add(controlJetty.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
+            for (JettySolrRunner jettySolrRunner : jettys) {
+                cores.add(jettySolrRunner.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
+            }
+
+            long begin = System.currentTimeMillis();
+            for (SolrCore core : cores) {
+                waitForDocCount(core, query, count, waitMillis, begin);
+            }
+        }finally{
+            for(SolrCore core : cores) {
+                core.close(); // will decrement the refcount
+            }
+        }
+    }
+
+    private void waitForDocCount(SolrCore core,
+                                 Query query,
+                                 long expectedNumFound,
+                                 long waitMillis,
+                                 long startMillis)
+            throws Exception
+    {
+        long timeout = startMillis + waitMillis;
+        int totalHits = 0;
+        while(new Date().getTime() < timeout)
+        {
+            RefCounted<SolrIndexSearcher> refCounted = null;
+            try {
+                refCounted = core.getSearcher();
+                SolrIndexSearcher searcher = refCounted.get();
+                TopDocs topDocs = searcher.search(query, 10);
+                totalHits = topDocs.totalHits;
+                if (topDocs.totalHits == expectedNumFound) {
+                    return;
+                } else {
+                    Thread.sleep(2000);
+                }
+            } finally {
+                refCounted.decref();
+            }
+        }
+        throw new Exception("Wait error expected "+expectedNumFound+" found "+totalHits+" : "+query.toString());
+    }
+
     /**
      * Provides a jetty alfresco solr. 
      * @param name
@@ -319,7 +372,9 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             if (sb.length() > 0)
                 sb.append(',');
             final String shardname = "shard" + i;
-            JettySolrRunner j = createJetty(shardname,"shard.instance", shardname, "shard.method","test");
+            JettySolrRunner j = createJetty(shardname,"shard.instance", Integer.toString(i),
+                                                      "shard.method","DBID",
+                                                      "shard.count",  Integer.toString(numShards));
             jettys.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
             log.info(shardStr);
@@ -403,7 +458,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param solrHome
      * @param dataDir
      * @param shardList
-     * @param solrConfigOverride
      * @param schemaOverride
      * @param explicitCoreNodeName
      * @return
