@@ -265,14 +265,12 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 						fvhFieldQuery = fvh.getFieldQuery(query, reader);
 					}
 					fieldHighlights = null;
-					/**
-					FvhContainer fvhContainer = new fvhContainer();
-					fvhContainer.fvh = fvh;
-					fvhContainer.fvhFieldQuery
+
+					FvhContainer fvhContainer = new FvhContainer(fvh, fvhFieldQuery);
 
 					fieldHighlights = doHighlightingByFastVectorHighlighter(
 							doc, docId, schemaField, fvhContainer,
-							reader, req); **/
+							reader, req);
 				} else { // standard/default highlighter
 					fieldHighlights = doHighlightingByHighlighter(doc, docId,
 							schemaField, query, reader, req);
