@@ -857,7 +857,7 @@ public class AclTracker extends AbstractTracker
             ArrayList<Acl> filteredList = new ArrayList(acls.size());
             for(Acl acl : acls)
             {
-                if(SHARD_METHOD_DBID.equals(shardMethod) || isInAclShard(acl.getId()))
+                if(shardCount <=1 || SHARD_METHOD_DBID.equals(shardMethod) || isInAclShard(acl.getId()))
                 {
                     filteredList.add(acl);
                 }

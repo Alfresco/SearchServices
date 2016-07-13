@@ -121,28 +121,14 @@ public abstract class AbstractTracker implements Tracker
      */
     protected boolean isInAclShard(long aclId)
     {
-        if(shardCount > 1)
-        {
-            String s = Long.toString(aclId);
-            return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
-        }
-        else
-        {
-            return true;
-        }
+        String s = Long.toString(aclId);
+        return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
     }
 
     protected boolean isInDBIDShard(long DBID)
     {
-        if(shardCount > 1)
-        {
-            String s = Long.toString(DBID);
-            return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
-        }
-        else
-        {
-            return true;
-        }
+        String s = Long.toString(DBID);
+        return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
     }
 
 
