@@ -47,7 +47,7 @@ import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.QParser;
-import org.apache.solr.uninverting.UninvertingReader;
+import org.apache.solr.uninverting.UninvertingReader.Type;
 
 /**
  * Basic behaviour filtched from TextField
@@ -257,11 +257,11 @@ public class AlfrescoFieldType extends FieldType
     }
     
     @Override
-    public UninvertingReader.Type getUninversionType(SchemaField sf) {
+    public Type getUninversionType(SchemaField sf) {
       if (sf.multiValued()) {
-        return UninvertingReader.Type.SORTED_SET_BINARY;
+        return Type.SORTED_SET_BINARY;
       } else {
-        return UninvertingReader.Type.SORTED;
+        return Type.SORTED;
       }
     }
 }
