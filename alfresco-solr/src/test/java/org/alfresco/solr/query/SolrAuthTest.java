@@ -24,6 +24,8 @@ import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.search.SolrIndexSearcher;
+import org.apache.solr.util.RefCounted;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,15 +44,25 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
     public void setUp() throws Exception {
         // if you override setUp or tearDown, you better call
         // the super classes version
-//        clearIndex();
+        //clearIndex();
         assertU(commit());
     }
 
     @Test
     public void testAuth() throws Exception {
 
+        RefCounted<SolrIndexSearcher> refCounted =  h.getCore().getSearcher();
+        SolrIndexSearcher searcher = refCounted.get();
+        System.out.println("########## testAuth numDocs1:"+searcher.getTopReaderContext().reader().numDocs());
+        refCounted.decref();
+
         assertU(delQ("*:*"));
         assertU(commit());
+
+        refCounted =  h.getCore().getSearcher();
+        searcher = refCounted.get();
+        System.out.println("########## testAuth numDocs2:" + searcher.getTopReaderContext().reader().numDocs());
+        refCounted.decref();
 
         String[] acldoc = {"id", "100",  "READER",  "GROUP_R1", "READER", "GROUP_R2", "ACLID", "5000"};
         assertU(adoc(acldoc));
@@ -72,6 +84,10 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         assertU(adoc(acldoc4));
         assertU(commit());
 
+        refCounted =  h.getCore().getSearcher();
+        searcher = refCounted.get();
+        System.out.println("########## testAuth numDocs3:" + searcher.getTopReaderContext().reader().numDocs());
+
         //Index Main Documents
         String[] doc = {"id", "1",  "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "5000", "OWNER", "jim"};
         assertU(adoc(doc));
@@ -92,7 +108,16 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         assertU(adoc(doc5));
         assertU(commit());
 
+        refCounted =  h.getCore().getSearcher();
+        searcher = refCounted.get();
+        System.out.println("########## testAuth numDocs4:" + searcher.getTopReaderContext().reader().numDocs());
+
         Thread.sleep(30000);
+
+        refCounted =  h.getCore().getSearcher();
+        searcher = refCounted.get();
+        System.out.println("########## testAuth numDocs5:" + searcher.getTopReaderContext().reader().numDocs());
+
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
