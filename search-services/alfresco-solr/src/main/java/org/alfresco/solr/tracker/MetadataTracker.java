@@ -807,8 +807,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             for(Node node : nodes)
             {
 
-                if((SHARD_METHOD_ACLID.equals(shardMethod) && isInAclShard(node.getAclId())) ||
-                   (SHARD_METHOD_DBID.equals(shardMethod) && isInDBIDShard(node.getId())))
+                if(shardCount<=1 ||
+                        (SHARD_METHOD_ACLID.equals(shardMethod) && isInAclShard(node.getAclId())) ||
+                        (SHARD_METHOD_DBID.equals(shardMethod) && isInDBIDShard(node.getId())))
                 {
                     filteredList.add(node);
                 }
