@@ -19,11 +19,24 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.LegacyNumericRangeQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Test;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+
+import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * @author Joel
@@ -35,28 +48,25 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
     @Test
     public void doTest() throws Exception
     {
-        Thread.sleep(20000); // Allow model trackers to start.
-        del("*:*");
-        index_specific(0, "id", "1", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY");
-        index_specific(0, "id", "2", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY");
-        index_specific(1, "id", "3", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY");
-        index_specific(1, "id", "4", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY");
-        commit();
 
-        handle.put("explain", SKIPVAL);
-        handle.put("timestamp", SKIPVAL);
-        handle.put("score", SKIPVAL);
-        handle.put("wt", SKIP);
-        handle.put("distrib", SKIP);
-        handle.put("shards.qt", SKIP);
-        handle.put("shards", SKIP);
-        handle.put("q", SKIP);
-        handle.put("maxScore", SKIPVAL);
-        handle.put("_version_", SKIP);
+        AclChangeSet aclChangeSet = getAclChangeSet(1);
 
-        query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
-                params("q", "t1:YYYY", "qt", "/afts", "shards.qt","/afts","start", "0", "rows", "6", "sort", "id asc"));
+        Acl acl = getAcl(aclChangeSet);
+        Acl acl2 = getAcl(aclChangeSet);
 
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
+        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
+
+        indexAclChangeSet(aclChangeSet,
+                          list(acl, acl2),
+                          list(aclReaders, aclReaders2));
+
+
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
+        BooleanQuery waitForQuery = builder.build();
+        waitForDocCountAllCores(waitForQuery, 1, 80000);
     }
 }
 

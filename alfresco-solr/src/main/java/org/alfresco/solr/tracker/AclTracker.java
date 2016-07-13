@@ -64,8 +64,7 @@ public class AclTracker extends AbstractTracker
     private int aclBatchSize = DEFAULT_ACL_BATCH_SIZE;
 
     private int  maxAclChangeSetDocumentIdCacheSize = 700000;
-    private String shardKey;
-    
+
     private ConcurrentLinkedQueue<Long> aclChangeSetsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToPurge = new ConcurrentLinkedQueue<Long>();
@@ -87,7 +86,7 @@ public class AclTracker extends AbstractTracker
         super(p, client, coreName, informationServer);
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
-        shardKey = p.getProperty("alfresco.shardkey", ACL_SHARD_KEY);
+        shardMethod = p.getProperty("shard.method", "crap");
         threadHandler = new ThreadHandler(p, coreName, "AclTracker");
     }
 
@@ -855,10 +854,10 @@ public class AclTracker extends AbstractTracker
         
         private List<Acl> filterAcls(List<Acl> acls)
         {
-            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());
+            ArrayList<Acl> filteredList = new ArrayList(acls.size());
             for(Acl acl : acls)
             {
-                if(DBID_SHARD_KEY.equals(shardKey) || isInAclShard(acl.getId()))
+                if(SHARD_METHOD_DBID.equals(shardMethod) || isInAclShard(acl.getId()))
                 {
                     filteredList.add(acl);
                 }

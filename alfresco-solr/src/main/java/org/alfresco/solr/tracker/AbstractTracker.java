@@ -42,8 +42,8 @@ public abstract class AbstractTracker implements Tracker
 {
     public static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     public static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
-    public static final String ACL_SHARD_KEY = "ACLID";
-    public static final String DBID_SHARD_KEY = "DBID";
+    public static final String SHARD_METHOD_ACLID = "ACLID";
+    public static final String SHARD_METHOD_DBID = "DBID";
     protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
@@ -68,6 +68,7 @@ public abstract class AbstractTracker implements Tracker
     protected volatile TrackerState state;
     protected int shardCount;
     protected int shardInstance;
+    protected String shardMethod;
     protected boolean transformContent;
     protected String shardTemplate;
     protected boolean rollback;
@@ -101,8 +102,10 @@ public abstract class AbstractTracker implements Tracker
         isSlave =  Boolean.parseBoolean(p.getProperty("enable.slave", "false"));
         isMaster =  Boolean.parseBoolean(p.getProperty("enable.master", "true"));
         
-        shardCount =  Integer.parseInt(p.getProperty("acl.shard.count", "1"));
-        shardInstance =  Integer.parseInt(p.getProperty("acl.shard.instance", "0"));
+        shardCount =  Integer.parseInt(p.getProperty("shard.count", "1"));
+        shardInstance =  Integer.parseInt(p.getProperty("shard.instance", "0"));
+        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+
         shardTemplate =  p.getProperty("alfresco.template", "");
         
         transformContent = Boolean.parseBoolean(p.getProperty("alfresco.index.transformContent", "true"));
