@@ -10,9 +10,18 @@
     <version>6.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Solr parent</name>
-
+    <repositories>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>Apache Snapshot Repository</name>
+            <url>http://repository.apache.org/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
     <properties>
-        <solr.version>6.1.0</solr.version>
+        <solr.version>6.2.0-SNAPSHOT</solr.version>
         <alfresco-solr.version>5.1-K_2-SNAPSHOT</alfresco-solr.version>        
     </properties>
 
