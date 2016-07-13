@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import javax.servlet.Filter;
 
 import org.alfresco.solr.AlfrescoSolrUtils;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.search.Query;
@@ -258,6 +259,12 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     public void distribTearDown() throws Exception
     {
+        SOLRAPIQueueClient.nodeMetaDataMap.clear();
+        SOLRAPIQueueClient.transactionQueue.clear();
+        SOLRAPIQueueClient.aclChangeSetQueue.clear();
+        SOLRAPIQueueClient.aclReadersMap.clear();
+        SOLRAPIQueueClient.aclMap.clear();
+        SOLRAPIQueueClient.nodeMap.clear();
         distribTearDownCalled = true;
         destroyServers();
     }
