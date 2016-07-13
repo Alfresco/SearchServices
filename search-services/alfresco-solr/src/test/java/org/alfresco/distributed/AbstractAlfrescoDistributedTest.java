@@ -1339,6 +1339,9 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             FileUtils.copyFile(new File(getSolrHome(), solrxml), new File(jettyHome, "solr.xml"));
         }
+        //Add solr home conf folder with alfresco based configuration.
+        FileUtils.copyDirectory(new File(getSolrHome() + "/conf"), new File(jettyHome, "/conf"));
+        
     }
 
     /**
@@ -1360,7 +1363,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             coreProperties.setProperty("name", "collection1");
             writeCoreProperties(coreDir, coreProperties, this.getTestName());
         } // else nothing to do, DEFAULT_TEST_CORENAME already exists
-        //Add alfreso solr configurations
+        //Add alfresco solr configurations
         FileUtils.copyDirectory(new File(getSolrHome() + "/collection1/conf"), coreRootDirectory.resolve("collection1/conf").toFile());
         // Add alfresco data model def
         FileUtils.copyDirectory(new File(getSolrHome() + "/alfrescoModels"), coreRootDirectory.resolve("collection1/alfrescoModels").toFile());
