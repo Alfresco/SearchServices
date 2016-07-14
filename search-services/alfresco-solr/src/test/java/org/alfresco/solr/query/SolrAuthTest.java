@@ -92,7 +92,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         assertU(adoc(doc5));
         assertU(commit());
 
-        Thread.sleep(30000);
+        Thread.sleep(1000);
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
