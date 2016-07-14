@@ -14,18 +14,7 @@ import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -42,12 +31,14 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.JettyConfig;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.embedded.SSLConfig;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -56,6 +47,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.ContentStream;
+import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.search.SolrIndexSearcher;
@@ -749,6 +742,56 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         return query(true, q);
     }
+
+    protected QueryResponse query(String json, ModifiableSolrParams params) throws Exception
+    {
+        params.set("distrib", "false");
+        QueryRequest request = getAlfrescoRequest(json, params);
+        QueryResponse controlRsp = request.process(controlClient);
+        validateControlData(controlRsp);
+        params.remove("distrib");
+        setDistributedParams(params);
+        QueryResponse rsp = queryServer(json, params);
+        compareResponses(rsp, controlRsp);
+        return rsp;
+    }
+
+    protected QueryResponse queryServer(String json, SolrParams params) throws SolrServerException, IOException
+    {
+        // query a random server
+        int which = r.nextInt(clients.size());
+        SolrClient client = clients.get(which);
+        QueryRequest request = getAlfrescoRequest(json, params);
+        return request.process(client);
+    }
+
+    protected QueryRequest getAlfrescoRequest(String json, SolrParams params) {
+        QueryRequest request = new AlfrescoQueryRequest(json, params);
+        request.setMethod(SolrRequest.METHOD.POST);
+        return request;
+    }
+
+    public static class AlfrescoQueryRequest extends QueryRequest
+    {
+        private static final long serialVersionUID = 103873138415233192L;
+        private String json;
+
+        public AlfrescoQueryRequest(String json, SolrParams params)
+        {
+            super(params);
+            this.json =json;
+        }
+
+        public Collection<ContentStream> getContentStreams()
+        {
+            List<ContentStream> streams = new ArrayList<ContentStream>();
+            streams.add(new ContentStreamBase.StringStream(json));
+            return streams;
+        }
+    }
+
+
+
 
     /**
      * Sets distributed params. Returns the QueryResponse from
