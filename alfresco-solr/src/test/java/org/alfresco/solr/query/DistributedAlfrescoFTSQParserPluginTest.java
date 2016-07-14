@@ -90,10 +90,6 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
         indexTransaction(txn,
                          list(errorNode, folderNode, fileNode),
                          list(errorMetaData, folderMetaData, fileMetaData));
-
-
-        //Thread.sleep(80000);
-        //assert(false);
         /*
         * Query the index for the content
         */
@@ -102,6 +98,21 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 80000);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, 80000);
 
+        handle.put("explain", SKIPVAL);
+        handle.put("timestamp", SKIPVAL);
+        handle.put("score", SKIPVAL);
+        handle.put("wt", SKIP);
+        handle.put("distrib", SKIP);
+        handle.put("shards.qt", SKIP);
+        handle.put("shards", SKIP);
+        handle.put("q", SKIP);
+        handle.put("maxScore", SKIPVAL);
+        handle.put("_version_", SKIP);
+        handle.put("_original_parameters_", SKIP);
+
+        //This will run the query on the control client and the cluster and compare the result.
+        query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+                params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
 
 
     }
