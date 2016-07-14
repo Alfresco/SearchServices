@@ -331,7 +331,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     return;
                 }
             }
-            throw new Exception("Wait error expected "+count+" found "+totalCount+" : "+query.toString());
+            throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
         } finally {
           for(SolrCore core : cores) {
               core.close();
@@ -365,7 +365,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 refCounted.decref();
             }
         }
-        throw new Exception("Wait error expected "+expectedNumFound+" found "+totalHits+" : "+query.toString());
+        throw new Exception("Core:Wait error expected "+expectedNumFound+" found "+totalHits+" : "+query.toString());
     }
 
     /**
@@ -425,6 +425,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
+
         for (int i = 0; i < numShards; i++)
         {
             if (sb.length() > 0)
@@ -442,6 +443,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             sb.append(shardStr);
         }
         shards = sb.toString();
+
     }
 
     protected void setDistributedParams(ModifiableSolrParams params)
@@ -482,14 +484,28 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected void destroyServers() throws Exception
     {
-        if (controlJetty != null)
+        List<String> solrHomes = new ArrayList();
+        if (controlJetty != null) {
+            solrHomes.add(controlJetty.getSolrHome());
             controlJetty.stop();
-        if (controlClient != null)
+        }
+        if (controlClient != null) {
             controlClient.close();
-        for (JettySolrRunner jetty : jettys)
+        }
+
+        for (JettySolrRunner jetty : jettys) {
+            solrHomes.add(jetty.getSolrHome());
             jetty.stop();
-        for (SolrClient client : clients)
+        }
+
+        for (SolrClient client : clients) {
             client.close();
+        }
+
+        for(String home : solrHomes) {
+            FileUtils.deleteDirectory(new File(home, "ContentStore"));
+        }
+
         clients.clear();
         jettys.clear();
     }

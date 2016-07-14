@@ -105,7 +105,7 @@ public class CoreWatcherJob implements Job
                         AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                         AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
             SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient,
-                    SolrContentStore.getSolrContentStore());
+                    SolrContentStore.getSolrContentStore(SolrResourceLoader.locateSolrHome().toString()));
             adminHandler.getInformationServers().put(coreName, srv);
 
             log.info("Starting to track " + coreName);

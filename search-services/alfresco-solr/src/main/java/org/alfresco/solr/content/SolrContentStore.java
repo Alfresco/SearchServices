@@ -80,7 +80,7 @@ public class SolrContentStore implements ContentStore
         }
     }
     
-    private static SolrContentStore getSolrContentStore(String solrHome)
+    public static SolrContentStore getSolrContentStore(String solrHome)
             throws JobExecutionException 
     {
 
