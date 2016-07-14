@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr;
+package org.alfresco.solr.registration;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.solr.*;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.content.SolrContentStore;
@@ -49,7 +50,7 @@ public class AlfrescoCoreRegistration {
      * Registers with the admin handler the information server and the trackers.
      */
     public static void registerForCore(AlfrescoCoreAdminHandler adminHandler, CoreContainer coreContainer, SolrCore core,
-                                 String coreName)
+                                       String coreName)
     {
         TrackerRegistry trackerRegistry = adminHandler.getTrackerRegistry();
         if (trackerRegistry.hasTrackersForCore(coreName))
