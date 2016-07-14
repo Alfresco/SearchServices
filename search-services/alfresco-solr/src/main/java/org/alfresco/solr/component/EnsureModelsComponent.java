@@ -28,8 +28,6 @@ import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.SolrKeyResourceLoader;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
-import org.alfresco.solr.content.SolrContentStore;
-import org.alfresco.solr.tracker.CoreWatcherJob;
 import org.alfresco.solr.tracker.ModelTracker;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.TrackerRegistry;
