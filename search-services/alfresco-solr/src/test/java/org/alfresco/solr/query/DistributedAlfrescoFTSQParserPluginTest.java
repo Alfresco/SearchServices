@@ -95,7 +95,7 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
         */
         //This acl should have one record in each core with DBID sharding
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 80000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 100000);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, 80000);
 
         handle.put("explain", SKIPVAL);
