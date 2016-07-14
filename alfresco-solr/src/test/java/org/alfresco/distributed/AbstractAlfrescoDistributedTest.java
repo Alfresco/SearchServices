@@ -32,7 +32,10 @@ import java.util.stream.Collectors;
 import javax.servlet.Filter;
 
 import org.alfresco.solr.AlfrescoSolrUtils;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
+import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.search.Query;
@@ -107,9 +110,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * Test configs may use the <code>${hostContext}</code> variable to access
      * this system property.
      * </p>
-     * 
-     * @see #BaseDistributedSearchTestCase()
-     * @see #clearHostContext
+     *
      */
     @BeforeClass
     public static void setup()
@@ -279,7 +280,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
             long begin = System.currentTimeMillis();
             for (SolrCore core : cores) {
-                waitForDocCount(core, query, count, waitMillis, begin);
+                waitForDocCountCore(core, query, count, waitMillis, begin);
             }
         }finally{
             for(SolrCore core : cores) {
@@ -288,7 +289,57 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
-    private void waitForDocCount(SolrCore core,
+    public void waitForDocCount(Query query, int count, long waitMillis) throws Exception {
+
+        long begin = System.currentTimeMillis();
+
+        SolrCore controlCore = null;
+        try {
+            controlCore = controlJetty.getCoreContainer().getCore(DEFAULT_TEST_CORENAME);
+            waitForDocCountCore(controlCore, query, count, waitMillis, begin);
+        } finally {
+            controlCore.close();
+        }
+
+        waitForClusterCount(query, count, waitMillis, begin);
+
+    }
+
+    private void waitForClusterCount(Query query, int count, long waitMillis, long start) throws Exception {
+        List<SolrCore> cores = new ArrayList();
+        long timeOut = start+waitMillis;
+        try {
+            for (JettySolrRunner jettySolrRunner : jettys) {
+                cores.add(jettySolrRunner.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
+            }
+
+            int totalCount = 0;
+            while (System.currentTimeMillis() < timeOut) {
+                totalCount = 0;
+                for (SolrCore core : cores) {
+                    RefCounted<SolrIndexSearcher> refCounted = null;
+                    try {
+                        refCounted = core.getSearcher();
+                        SolrIndexSearcher searcher = refCounted.get();
+                        TopDocs topDocs = searcher.search(query, 10);
+                        totalCount += topDocs.totalHits;
+                    } finally {
+                        refCounted.decref();
+                    }
+                }
+                if (totalCount == count) {
+                    return;
+                }
+            }
+            throw new Exception("Wait error expected "+count+" found "+totalCount+" : "+query.toString());
+        } finally {
+          for(SolrCore core : cores) {
+              core.close();
+          }
+        }
+    }
+
+    private void waitForDocCountCore(SolrCore core,
                                  Query query,
                                  long expectedNumFound,
                                  long waitMillis,
@@ -1373,7 +1424,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         //Add alfresco solr configurations
         FileUtils.copyDirectory(new File(getSolrHome() + "/collection1/conf"), coreRootDirectory.resolve("collection1/conf").toFile());
         // Add alfresco data model def
-        FileUtils.copyDirectory(new File(getSolrHome() + "/alfrescoModels"), coreRootDirectory.resolve("collection1/alfrescoModels").toFile());
+        FileUtils.copyDirectory(new File(getSolrHome() + "/alfrescoModels"), coreRootDirectory.resolve("alfrescoModels").toFile());
         //add solr alfresco properties
         FileUtils.copyFile(new File(getSolrHome() + "/log4j-solr.properties"), coreRootDirectory.resolve("log4j-solr.properties").toFile());
     }
@@ -1391,6 +1442,21 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         coreProperties.setProperty("coreNodeName", "${coreNodeName:}");
 
         writeCoreProperties(jettyHome.toPath().resolve("cores").resolve("collection1"), coreProperties, "collection1");
+    }
+
+    public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
+    {
+        //First map the nodes to a transaction.
+        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+
+        //Next map a node to the NodeMetaData
+        for(NodeMetaData nodeMetaData : nodeMetaDatas)
+        {
+            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+        }
+
+        //Next add the transaction to the queue
+        SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
 }
