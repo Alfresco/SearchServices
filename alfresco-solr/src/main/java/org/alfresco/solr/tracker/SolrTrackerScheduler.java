@@ -61,25 +61,10 @@ public class SolrTrackerScheduler
             scheduler = factory.getScheduler();
             scheduler.start();
 
-            // Start job to manage the tracker jobs
-            JobDetail job = new JobDetail("CoreWatcher", SOLR_JOB_GROUP, CoreWatcherJob.class);
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put(CoreWatcherJob.JOBDATA_ADMIN_HANDLER_KEY, adminHandler);
-            job.setJobDataMap(jobDataMap);
-            Trigger trigger;
-            try
-            {
-                trigger = new CronTrigger("CoreWatcherTrigger", SOLR_JOB_GROUP, "0/20 * * * * ? *");
-                scheduler.scheduleJob(job, trigger);
-            }
-            catch (ParseException e)
-            {
-                logError("CoreWatcher", e);
-            }
         }
         catch (SchedulerException e)
         {
-            logError("CoreWatcher", e);
+            logError("SolrTrackerScheduler", e);
         }
     }
 
