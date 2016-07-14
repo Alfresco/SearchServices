@@ -128,7 +128,8 @@ public abstract class AbstractTracker implements Tracker
     protected boolean isInDBIDShard(long DBID)
     {
         String s = Long.toString(DBID);
-        return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
+        //System.out.println("###### Shard:"+shardInstance+":"+DBID+":"+(Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount));
+        return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % shardCount) == shardInstance;
     }
 
 
