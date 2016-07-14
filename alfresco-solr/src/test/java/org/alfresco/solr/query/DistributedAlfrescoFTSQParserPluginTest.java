@@ -35,7 +35,7 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
     @Test
     public void doTest() throws Exception
     {
-        Thread.sleep(20000); // Allow model trackers to start.
+        Thread.sleep(2000); // Allow model trackers to start.
         del("*:*");
         index_specific(0, "id", "1", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY");
         index_specific(0, "id", "2", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY");
