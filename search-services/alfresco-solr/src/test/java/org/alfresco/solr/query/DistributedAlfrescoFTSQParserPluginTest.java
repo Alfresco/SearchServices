@@ -20,9 +20,7 @@ package org.alfresco.solr.query;
 
 import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.solr.client.Acl;
-import org.alfresco.solr.client.AclChangeSet;
-import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -48,7 +46,6 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
     @Test
     public void doTest() throws Exception
     {
-
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
         Acl acl = getAcl(aclChangeSet);
@@ -58,8 +55,8 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
         AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
 
         indexAclChangeSet(aclChangeSet,
-                          list(acl, acl2),
-                          list(aclReaders, aclReaders2));
+                list(acl, acl2),
+                list(aclReaders, aclReaders2));
 
 
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
@@ -67,6 +64,43 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
+
+
+        /*
+        * Create and index a Transaction
+        */
+
+        //First create a transaction.
+        Transaction txn = getTransaction(0, 2);
+
+        //Next create two nodes to update for the transaction
+        Node folderNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        Node fileNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        Node errorNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+
+
+        //Next create the NodeMetaData for each node. TODO: Add more metadata
+        NodeMetaData folderMetaData = getNodeMetaData(folderNode, txn, acl, "mike", null, false);
+        NodeMetaData fileMetaData   = getNodeMetaData(fileNode, txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
+        //The errorNodeMetaData will cause an exception.
+        NodeMetaData errorMetaData   = getNodeMetaData(errorNode, txn, acl, "lisa", ancestors(folderMetaData.getNodeRef()), true);
+
+        //Index the transaction, nodes, and nodeMetaDatas.
+        //Note that the content is automatically created by the test framework.
+        indexTransaction(txn,
+                         list(errorNode, folderNode, fileNode),
+                         list(errorMetaData, folderMetaData, fileMetaData));
+
+        /*
+        * Query the index for the content
+        */
+        //This acl should have one record in each core with DBID sharding
+        waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
+        //waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 80000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, 80000);
+
+
+
     }
 }
 
