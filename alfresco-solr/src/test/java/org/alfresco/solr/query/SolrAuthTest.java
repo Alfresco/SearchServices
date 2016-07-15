@@ -36,7 +36,8 @@ import org.junit.Test;
 public class SolrAuthTest extends AbstractAlfrescoSolrTests {
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws Exception 
+    {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
     }
 
@@ -84,6 +85,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
 
         refCounted =  h.getCore().getSearcher();
         searcher = refCounted.get();
+        refCounted.decref();
 
         //Index Main Documents
         String[] doc = {"id", "1",  "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "5000", "OWNER", "jim"};
@@ -107,12 +109,12 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
 
         refCounted =  h.getCore().getSearcher();
         searcher = refCounted.get();
-
+        refCounted.decref();
         Thread.sleep(1000);
 
         refCounted =  h.getCore().getSearcher();
         searcher = refCounted.get();
-
+        refCounted.decref();
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
