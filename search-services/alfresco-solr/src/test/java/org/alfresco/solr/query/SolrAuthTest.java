@@ -108,7 +108,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         refCounted =  h.getCore().getSearcher();
         searcher = refCounted.get();
 
-        Thread.sleep(30000);
+        Thread.sleep(1000);
 
         refCounted =  h.getCore().getSearcher();
         searcher = refCounted.get();

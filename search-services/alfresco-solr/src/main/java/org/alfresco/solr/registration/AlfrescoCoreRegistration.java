@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,81 +16,49 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
-package org.alfresco.solr.tracker;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+package org.alfresco.solr.registration;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.AlfrescoSolrCloseHook;
-import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.SolrKeyResourceLoader;
+import org.alfresco.solr.*;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.content.SolrContentStore;
+import org.alfresco.solr.tracker.*;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.CoreDescriptorDecorator;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 /**
- * This job when scheduled periodically goes through the Solr cores and sets up trackers, etc. for each core.
+ * Deals with core registration.
+ *
+ * @author Gethin James
  */
-public class CoreWatcherJob implements Job
-{
-    public static final String JOBDATA_ADMIN_HANDLER_KEY = "ADMIN_HANDLER";
-    protected static final Logger log = LoggerFactory.getLogger(CoreWatcherJob.class);
+public class AlfrescoCoreRegistration {
 
-    @Override
-    public void execute(JobExecutionContext jec) throws JobExecutionException
-    {
-
-        AlfrescoCoreAdminHandler adminHandler = (AlfrescoCoreAdminHandler) jec.getJobDetail().getJobDataMap()
-                    .get(JOBDATA_ADMIN_HANDLER_KEY);
-        CoreContainer coreContainer = adminHandler.getCoreContainer();
-        for (SolrCore core : coreContainer.getCores())
-        {
-            logIfDebugEnabled("About to enter synchronized block for core " + core.getName());
-            // Prevents other threads from creating trackers for this core before its trackers are done registering
-            synchronized (core)
-            {
-                logIfDebugEnabled("Entered synchronized block for core " + core.getName());
-
-                String coreName = core.getName();
-                TrackerRegistry trackerRegistry = adminHandler.getTrackerRegistry();
-                if (!trackerRegistry.hasTrackersForCore(coreName))
-                {
-                    registerForCore(adminHandler, coreContainer, core, coreName, trackerRegistry);
-                }
-
-                logIfDebugEnabled("Exiting synchronized block for core " + core.getName());
-            }
-        }
-    }
-
-    private void logIfDebugEnabled(String debugString)
-    {
-        if (log.isDebugEnabled())
-        {
-            log.debug(debugString);
-        }
-    }
+    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Registers with the admin handler the information server and the trackers.
      */
-    private void registerForCore(AlfrescoCoreAdminHandler adminHandler, CoreContainer coreContainer, SolrCore core,
-                String coreName, TrackerRegistry trackerRegistry) throws JobExecutionException
+    public static void registerForCore(AlfrescoCoreAdminHandler adminHandler, CoreContainer coreContainer, SolrCore core,
+                                       String coreName)
     {
+        TrackerRegistry trackerRegistry = adminHandler.getTrackerRegistry();
+        if (trackerRegistry.hasTrackersForCore(coreName))
+        {
+            log.info("Tracker " + coreName+ " is already registered, not re-registering.");
+            return;
+        }
+
         Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
         boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))
@@ -102,8 +70,8 @@ public class CoreWatcherJob implements Job
             SolrKeyResourceLoader keyResourceLoader = new SolrKeyResourceLoader(loader);
             SOLRAPIClientFactory clientFactory = new SOLRAPIClientFactory();
             SOLRAPIClient repositoryClient = clientFactory.getSOLRAPIClient(props, keyResourceLoader,
-                        AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
-                        AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
+                    AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                    AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
             SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient,
                     SolrContentStore.getSolrContentStore(SolrResourceLoader.locateSolrHome().toString()));
             adminHandler.getInformationServers().put(coreName, srv);
@@ -117,7 +85,7 @@ public class CoreWatcherJob implements Job
                 mTracker = trackerRegistry.getModelTracker();
                 if (mTracker == null)
                 {
-                    logIfDebugEnabled("Creating ModelTracker when registering trackers for core " + coreName);
+                    log.debug("Creating ModelTracker when registering trackers for core " + coreName);
                     mTracker = new ModelTracker(coreContainer.getSolrHome(), props, repositoryClient,
                             coreName, srv);
 
