@@ -69,21 +69,12 @@ public class SolrContentStore implements ContentStore
     {
         if (solrContentStore == null) 
         {
-            try 
-            {
-                solrContentStore = getSolrContentStore(SolrResourceLoader
-                        .locateSolrHome().toString());
-            } 
-            catch (JobExecutionException e) 
-            {
-            }
+            solrContentStore = getSolrContentStore(SolrResourceLoader.locateSolrHome().toString());
         }
     }
     
     public static SolrContentStore getSolrContentStore(String solrHome)
-            throws JobExecutionException 
     {
-
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         return new SolrContentStore(ConfigUtil.locateProperty("solr.content.dir", normalSolrHome+"ContentStore"));
     }

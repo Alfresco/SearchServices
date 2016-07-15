@@ -182,6 +182,7 @@
         </listener>
         -->
 
+        <listener event="firstSearcher" class="org.alfresco.solr.registration.FirstSearcherListener" />
     </query>
 
     <queryResponseWriter name="xml" default="true"

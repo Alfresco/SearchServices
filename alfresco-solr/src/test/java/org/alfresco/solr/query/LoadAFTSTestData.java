@@ -136,7 +136,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     {
         
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-        Thread.sleep(30000);
+        Thread.sleep(1000);
         // Root
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
