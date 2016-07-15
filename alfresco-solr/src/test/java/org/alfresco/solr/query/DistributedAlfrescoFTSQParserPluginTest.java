@@ -32,6 +32,9 @@ import org.junit.Test;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
@@ -114,7 +117,29 @@ public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDis
         query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
                 params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
 
+        int numNodes = 100;
 
+        //First create a transaction (only updates)
+        Transaction txns = getTransaction(0, numNodes);
+        List<Node> nodes = new ArrayList<>(numNodes+1);
+        List<NodeMetaData> nodesMeta = new ArrayList<>(numNodes+1);
+
+        for (int i= 0; i<numNodes;i++)
+        {
+            //Next create nodes to update for the transaction
+            Node fNode = getNode(txns, acl, Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(fNode);
+            nodesMeta.add(getNodeMetaData(fNode, txns, acl, "mike", ancestors(folderMetaData.getNodeRef()), false));
+        }
+        //Index the transaction, nodes, and nodeMetaDatas.
+        indexTransaction(txns, nodes, nodesMeta);
+
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes+2, 100000);
+
+        //This will run the query on the control client and the cluster and compare the result.
+        query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+                params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", String.valueOf(numNodes+6), "sort", "id asc"));
     }
+
 }
 
