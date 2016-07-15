@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.query;
+package org.alfresco.solr.tracker;
 
 import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
@@ -44,7 +44,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAlfrescoFTSQParserPluginTest extends AbstractAlfrescoDistributedTest
+public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @Test
     public void doTest() throws Exception
