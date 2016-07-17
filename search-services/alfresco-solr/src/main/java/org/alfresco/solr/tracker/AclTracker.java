@@ -25,13 +25,12 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
+import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AclReport;
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.TrackerState;
@@ -71,6 +70,7 @@ public class AclTracker extends AbstractTracker
     private ConcurrentLinkedQueue<Long> aclsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToPurge = new ConcurrentLinkedQueue<Long>();
+    private DocRouter docRouter;
     
     /**
      * Default constructor, for testing.
@@ -86,7 +86,8 @@ public class AclTracker extends AbstractTracker
         super(p, client, coreName, informationServer);
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
-        shardMethod = p.getProperty("shard.method", "crap");
+        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+        docRouter = DocRouterFactory.getRouter(ShardMethodEnum.getShardMethod(shardMethod));
         threadHandler = new ThreadHandler(p, coreName, "AclTracker");
     }
 
@@ -857,7 +858,7 @@ public class AclTracker extends AbstractTracker
             ArrayList<Acl> filteredList = new ArrayList(acls.size());
             for(Acl acl : acls)
             {
-                if(shardCount <=1 || SHARD_METHOD_DBID.equals(shardMethod) || isInAclShard(acl.getId()))
+                if(docRouter.routeAcl(shardCount, shardInstance, acl))
                 {
                     filteredList.add(acl);
                 }

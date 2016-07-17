@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.Filter;
 
+import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AlfrescoSolrUtils;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
@@ -425,7 +426,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 sb.append(',');
             final String shardname = "shard" + i;
             JettySolrRunner j = createJetty(shardname,"shard.instance", Integer.toString(i),
-                                                      "shard.method","DBID",
+                                                      "shard.method", ShardMethodEnum.MOD_DBID.toString(),
                                                       "shard.count",  Integer.toString(numShards));
             jettys.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
