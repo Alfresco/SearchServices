@@ -116,23 +116,6 @@ public abstract class AbstractTracker implements Tracker
         log.info("Solr built for Alfresco version: " + alfrescoVersion);
     }
     
-    /**
-     * @return
-     */
-    protected boolean isInAclShard(long aclId)
-    {
-        String s = Long.toString(aclId);
-        return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
-    }
-
-    protected boolean isInDBIDShard(long DBID)
-    {
-        String s = Long.toString(DBID);
-        //System.out.println("###### Shard:"+shardInstance+":"+DBID+":"+(Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount));
-        return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % shardCount) == shardInstance;
-    }
-
-
     
     /**
      * Subclasses must implement behaviour that completes the following steps, in order:

@@ -64,6 +64,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
+    private DocRouter docRouter;
 
 
 
@@ -74,6 +75,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         //System.out.println("####### MetadatTracker() ########");
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+        docRouter = DocRouterFactory.getRouter(ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
     }
@@ -807,9 +809,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             for(Node node : nodes)
             {
 
-                if(shardCount<=1 ||
-                        (SHARD_METHOD_ACLID.equals(shardMethod) && isInAclShard(node.getAclId())) ||
-                        (SHARD_METHOD_DBID.equals(shardMethod) && isInDBIDShard(node.getId())))
+                if(docRouter.routeNode(shardCount, shardInstance, node))
                 {
                     filteredList.add(node);
                 }
