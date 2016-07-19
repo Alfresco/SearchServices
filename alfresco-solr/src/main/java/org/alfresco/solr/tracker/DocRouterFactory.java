@@ -30,6 +30,8 @@ public class DocRouterFactory
         switch(method) {
             case DB_ID:
                 return new DBIDRouter();
+            case ACL_ID:
+                return new ACLIDMurmurRouter();
             case MOD_ACL_ID:
                 return new ACLIDModRouter();
             default:

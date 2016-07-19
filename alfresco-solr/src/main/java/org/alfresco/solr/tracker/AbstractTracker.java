@@ -21,14 +21,12 @@ package org.alfresco.solr.tracker;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.IndexTrackingShutdownException;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.apache.solr.common.util.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +40,8 @@ public abstract class AbstractTracker implements Tracker
 {
     public static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     public static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
-    public static final String SHARD_METHOD_ACLID = "ACLID";
-    public static final String SHARD_METHOD_DBID = "DBID";
+    public static final String SHARD_METHOD_ACLID = "ACL_ID";
+    public static final String SHARD_METHOD_DBID = "DB_ID";
     protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
@@ -59,7 +57,6 @@ public abstract class AbstractTracker implements Tracker
     protected boolean runPostModelLoadInit = true;
     private int maxLiveSearchers;
     private volatile boolean shutdown = false;
-    private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
 
     private Semaphore runLock = new Semaphore(1, true);
