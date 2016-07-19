@@ -133,13 +133,36 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
         }
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes+2, 100000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes + 2, 100000);
 
 
         query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
                 params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc"));
 
         assertNodesPerShardGreaterThan((int)(numNodes*.45));
+
+        
+        int numAcls = 1000;
+        AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
+
+        List<Acl> bulkAcls = new ArrayList();
+        List<AclReaders> bulkAclReaders = new ArrayList();
+
+        for(int i=0; i<numAcls; i++) {
+            Acl bulkAcl = getAcl(bulkAclChangeSet);
+            bulkAcls.add(bulkAcl);
+            bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
+                                             bulkAcl,
+                                             list("joel"),
+                                             list("phil"),
+                                             null));
+        }
+
+        indexAclChangeSet(bulkAclChangeSet,
+                          bulkAcls,
+                          bulkAclReaders);
+
+        waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "joel")), numAcls+1, 80000);
 
     }
 }
