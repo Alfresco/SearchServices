@@ -1,8 +1,9 @@
 package org.alfresco.distributed;
 
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,9 +15,20 @@ import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import javax.servlet.Filter;
 
@@ -27,7 +39,6 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
@@ -66,8 +77,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.carrotsearch.ant.tasks.junit4.dependencies.org.simpleframework.xml.util.Entry;
 
 /**
  * Clone of a helper base class for distributed search test cases
@@ -459,7 +468,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 sb.append(',');
             final String shardname = "shard" + i;
             JettySolrRunner j = createJetty(shardname,"shard.instance", Integer.toString(i),
-                                                      "shard.method", ShardMethodEnum.MOD_DBID.toString(),
+                                                      "shard.method", ShardMethodEnum.DB_ID.toString(),
                                                       "shard.count",  Integer.toString(numShards));
             jettys.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
