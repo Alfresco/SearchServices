@@ -28,7 +28,7 @@ public class DocRouterFactory
 {
     public static DocRouter getRouter(ShardMethodEnum method) {
         switch(method) {
-            case MOD_DBID:
+            case DB_ID:
                 return new DBIDRouter();
             case MOD_ACL_ID:
                 return new ACLIDModRouter();
