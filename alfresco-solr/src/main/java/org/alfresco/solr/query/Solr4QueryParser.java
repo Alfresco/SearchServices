@@ -146,7 +146,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     IndexSchema schema;
 
     @SuppressWarnings("unused")
-    private static Log s_logger = LogFactory.getLog(Solr4QueryParser.class);
+    private static Log logger = LogFactory.getLog(Solr4QueryParser.class);
 
     protected NamespacePrefixResolver namespacePrefixResolver;
 
@@ -161,8 +161,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     private int internalSlop = 0;
 
     int topTermSpanRewriteLimit = 1000;
-
-    private Object ts;
 
     /**
      * @param topTermSpanRewriteLimit
@@ -210,7 +208,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             Query query;
             query = getFieldQuery(field, queryText);
             return query;
-        } finally
+        } 
+        finally
         {
             internalSlop = 0;
         }
@@ -235,7 +234,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             internalSlop = slop;
             Query query = getFieldQuery(field, queryText, analysisMode, luceneFunction);
             return query;
-        } finally
+        } 
+        finally
         {
             internalSlop = 0;
         }
