@@ -22,13 +22,16 @@ import javax.servlet.Filter;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AlfrescoSolrUtils;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
-import org.alfresco.solr.config.ConfigUtil;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
@@ -330,6 +333,36 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
           for(SolrCore core : cores) {
               core.close();
           }
+        }
+    }
+
+    public void assertNodesPerShardGreaterThan(int count) throws Exception {
+        List<SolrCore> cores = new ArrayList();
+        Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
+        try {
+            for (JettySolrRunner jettySolrRunner : jettys) {
+                cores.add(jettySolrRunner.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
+            }
+
+            for (SolrCore core : cores) {
+                RefCounted<SolrIndexSearcher> refCounted = null;
+                try {
+                    refCounted = core.getSearcher();
+                    SolrIndexSearcher searcher = refCounted.get();
+                    TopDocs topDocs = searcher.search(query, 10);
+                    if(topDocs.totalHits < count) {
+                        throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
+                    }
+                } finally {
+                    refCounted.decref();
+                }
+            }
+
+
+        } finally {
+            for(SolrCore core : cores) {
+                core.close();
+            }
         }
     }
 

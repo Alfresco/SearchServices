@@ -174,19 +174,4 @@ public class CommitTracker extends AbstractTracker
         }
     }
 
-    @Override
-    public void close()
-    {
-        super.close();
-        synchronized (this)
-        {
-            try
-            {
-                wait(1000);
-            }
-            catch (InterruptedException e)
-            {
-            }
-        }
-    }
 }

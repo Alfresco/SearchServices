@@ -70,8 +70,8 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
     public void setUp() throws Exception {
         // if you override setUp or tearDown, you better callf
         // the super classes version
-        clearIndex();
-        assertU(commit());
+        //clearIndex();
+        //assertU(commit());
     }
 
     @After

@@ -36,6 +36,9 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * @author Joel
  */
@@ -114,6 +117,29 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
         query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
                 params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
 
+        //Load 1000 nodes
+
+        int numNodes = 1000;
+        List<Node> nodes = new ArrayList();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+
+        Transaction bigTxn = getTransaction(0, numNodes);
+
+        for(int i=0; i<numNodes; i++) {
+            Node node = getNode(bigTxn, acl, Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl, "mike", null, false);
+            nodeMetaDatas.add(nodeMetaData);
+        }
+
+        indexTransaction(bigTxn, nodes, nodeMetaDatas);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes+2, 100000);
+
+
+        query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+                params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc"));
+
+        assertNodesPerShardGreaterThan((int)(numNodes*.45));
 
     }
 }

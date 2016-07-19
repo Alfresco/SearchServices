@@ -36,7 +36,6 @@ public interface Tracker
     
     void setShutdown(boolean shutdown);
     void shutdown();
-    void close();
 
     boolean getRollback();
     void setRollback(boolean rollback);

@@ -867,28 +867,6 @@ public class AclTracker extends AbstractTracker
         }
     }
 
-    @Override
-    public void close()
-    {
-        try
-        {
-            super.close();
-        }
-        finally
-        {
-           this.threadHandler.shutDownThreadPool();
-        }
-        synchronized (this)
-        {
-            try
-            {
-                wait(1000);
-            }
-            catch (InterruptedException e)
-            {
-            }
-        }
-    }
 
     public void invalidateState()
     {
