@@ -168,7 +168,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                             .withAddedStoreRef(storeRef)
                             .withTemplate(shardTemplate)
                             .withHasContent(transformContent)
-                            .withShardMethod(ShardMethodEnum.MOD_ACL_ID)
+                            .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
                             .endFloc()
                         .endShard()
                      .endShardInstance()

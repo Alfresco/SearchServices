@@ -271,7 +271,7 @@ public class AclTrackerTest
         threadHandler = spy(threadHandler);
         FieldUtils.writeField(tracker, "threadHandler", threadHandler, true);
         
-        tracker.close();
+        tracker.shutdown();
         
         // AclTracker specific
         verify(threadHandler).shutDownThreadPool();

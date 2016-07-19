@@ -104,27 +104,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
-            boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
-            if(testcase) 
-            {
-                if (!scheduler.isShutdown()) 
-                {
-                    scheduler.pauseAll();
-                    scheduler.shutdown();
-                }
-            }
 
-            for(String core : getCoreContainer().getAllCoreNames())
-            {
-                Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(core);
-                if(trackers != null)
-                {
-                    for(Tracker tracker : trackers)
-                    {
-                        tracker.shutdown();
-                    }
-                }
-            }
         } 
         catch(Exception e) 
         {

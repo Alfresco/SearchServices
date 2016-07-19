@@ -115,7 +115,7 @@ public abstract class AbstractTracker implements Tracker
         alfrescoVersion = p.getProperty("alfresco.version", "5.0.0");
         log.info("Solr built for Alfresco version: " + alfrescoVersion);
     }
-    
+
     
     /**
      * Subclasses must implement behaviour that completes the following steps, in order:
@@ -285,11 +285,8 @@ public abstract class AbstractTracker implements Tracker
             threadHandler.shutDownThreadPool();
         }
 
-    }
-    
-    public void close()
-    {
         client.close();
+
     }
 
     public Semaphore getWriteLock() {

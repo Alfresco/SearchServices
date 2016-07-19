@@ -69,12 +69,6 @@ public class AlfrescoSolrCloseHook extends CloseHook
             modelTracker.setShutdown(true);
         }
 
-        boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
-        if(testcase) {
-            //other trackers not present in test case.
-            return;
-        }
-
         Collection<Tracker> coreTrackers = trackerRegistry.getTrackersForCore(coreName);
         for(Tracker tracker : coreTrackers)
         {
@@ -87,13 +81,13 @@ public class AlfrescoSolrCloseHook extends CloseHook
             scheduler.deleteTrackerJobs(coreName, coreTrackers);
             for (Tracker tracker : coreTrackers)
             {
-                tracker.close();
+                tracker.shutdown();
             }
             
             if (thisIsTheLastCoreRegistered)
             {
                 scheduler.deleteTrackerJob(coreName, modelTracker);
-                modelTracker.close();
+                modelTracker.shutdown();
                 
                 if (!scheduler.isShutdown())
                 {
