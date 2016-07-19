@@ -813,13 +813,15 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         if (queryText.equals("_EVERYTHING_"))
         {
             return createTermQuery(FIELD_ISNODE, "T");
-        } else if (queryText.equals("_ALL_SITES_"))
+        } 
+        else if (queryText.equals("_ALL_SITES_"))
         {
             BooleanQuery.Builder invertedRepositoryQuery = new BooleanQuery.Builder();
             invertedRepositoryQuery.add(createTermQuery(FIELD_ISNODE, "T"), Occur.MUST);
             invertedRepositoryQuery.add(createTermQuery(FIELD_SITE, "_REPOSITORY_"), Occur.MUST_NOT);
             return invertedRepositoryQuery.build();
-        } else
+        } 
+        else
         {
             return createTermQuery(FIELD_SITE, queryText);
         }
@@ -868,7 +870,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             return getFieldQueryImplWithIOExceptionWrapped(FIELD_TENANT, queryText, AnalysisMode.DEFAULT,
                     LuceneFunction.FIELD);
 
-        } else
+        } 
+        else
         {
             return getFieldQueryImplWithIOExceptionWrapped(FIELD_TENANT, "_DEFAULT_", AnalysisMode.DEFAULT,
                     LuceneFunction.FIELD);
@@ -898,7 +901,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         try
         {
             return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
-        } catch (IOException e)
+        } 
+        catch (IOException e)
         {
             throw new ParseException("IO: " + e.getMessage());
         }
@@ -1126,7 +1130,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             TermQuery termQuery = new TermQuery(new Term(FIELD_ASPECT, targetQName.toString()));
 
             return termQuery;
-        } else
+        } 
+        else
         {
             Collection<QName> subclasses = dictionaryService.getSubAspects(target.getName(), true);
 
@@ -1161,7 +1166,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             QName targetQName = target.getName();
             TermQuery termQuery = new TermQuery(new Term(FIELD_TYPE, targetQName.toString()));
             return termQuery;
-        } else
+        } 
+        else
         {
             Collection<QName> subclasses = dictionaryService.getSubTypes(target.getName(), true);
             BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
@@ -1282,7 +1288,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         if (schemaField == null)
         {
             return new TermQuery(new Term("_dummy_", "_miss_"));
-        } else
+        } 
+        else
         {
             isNumeric = (schemaField.getType().getNumericType() != null);
         }
@@ -1394,7 +1401,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 else
                     severalTokensAtSamePosition = true;
             }
-        } finally
+        } 
+        finally
         {
             try
             {
@@ -1464,7 +1472,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                             list.add(newToken);
                         }
                     }
-                } else if (index > 0)
+                } 
+                else if (index > 0)
                 {
                     // Add * and ? back into any tokens from which it has been
                     // removed
@@ -1486,7 +1495,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                     test.setEmpty();
                                     test.append(language + token + current);
                                 }
-                            } else
+                            } 
+                            else
                             {
                                 if (index >= test.startOffset() + test.length())
                                 {
@@ -1519,11 +1529,13 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                 if (found)
                                 {
                                     break;
-                                } else
+                                } 
+                                else
                                 {
                                     pre.insert(0, c);
                                 }
-                            } else
+                            } 
+                            else
                             {
                                 break;
                             }
@@ -1587,11 +1599,13 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                             if (found)
                             {
                                 break;
-                            } else
+                            } 
+                            else
                             {
                                 post.append(c);
                             }
-                        } else
+                        } 
+                        else
                         {
                             break;
                         }
@@ -1723,14 +1737,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                             positionalSynonymSequencesSet.add(tokenSequence);
                             newEntry.add(replace);
                             tokenFoundSequence = true;
-                        } else if (newEntry.getLast().type().equals(CommonGramsFilter.GRAM_TYPE))
+                        } 
+                        else if (newEntry.getLast().type().equals(CommonGramsFilter.GRAM_TYPE))
                         {
                             if (newEntry.toString().endsWith(replace.toString()))
                             {
                                 // already in the gram
                                 positionalSynonymSequencesSet.add(tokenSequence);
                                 tokenFoundSequence = true;
-                            } else
+                            }
+                            else
                             {
                                 // need to replace the synonym in the current
                                 // gram
@@ -1745,7 +1761,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                 newEntry.add(newToken);
                             }
                         }
-                    } else if ((newEntry.getLast().startOffset() < replace.startOffset())
+                    } 
+                    else if ((newEntry.getLast().startOffset() < replace.startOffset())
                             && (newEntry.getLast().endOffset() < replace.endOffset()))
                     {
                         if (newEntry.getLast().type().equals(SynonymFilter.TYPE_SYNONYM)
