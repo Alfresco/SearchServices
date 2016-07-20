@@ -30,14 +30,14 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 
 /**
- * Listens for the first search to be created.
+ * Listens for the first search to be created and registers the trackers
  *
  * @author Gethin James
  */
-public class FirstSearcherListener extends AbstractSolrEventListener {
+public class TrackerListener extends AbstractSolrEventListener {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public FirstSearcherListener(SolrCore core) {
+    public TrackerListener(SolrCore core) {
         super(core);
     }
 
