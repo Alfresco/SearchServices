@@ -46,22 +46,18 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         // if you override setUp or tearDown, you better call
         // the super classes version
         //clearIndex();
-        assertU(commit());
+        //assertU(commit());
     }
 
     @Test
     public void testAuth() throws Exception {
 
-        RefCounted<SolrIndexSearcher> refCounted =  h.getCore().getSearcher();
-        SolrIndexSearcher searcher = refCounted.get();
-        refCounted.decref();
+
 
         assertU(delQ("*:*"));
         assertU(commit());
 
-        refCounted =  h.getCore().getSearcher();
-        searcher = refCounted.get();
-        refCounted.decref();
+
 
         String[] acldoc = {"id", "100",  "READER",  "GROUP_R1", "READER", "GROUP_R2", "ACLID", "5000"};
         assertU(adoc(acldoc));
@@ -83,9 +79,6 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         assertU(adoc(acldoc4));
         assertU(commit());
 
-        refCounted =  h.getCore().getSearcher();
-        searcher = refCounted.get();
-        refCounted.decref();
 
         //Index Main Documents
         String[] doc = {"id", "1",  "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "5000", "OWNER", "jim"};
@@ -107,14 +100,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         assertU(adoc(doc5));
         assertU(commit());
 
-        refCounted =  h.getCore().getSearcher();
-        searcher = refCounted.get();
-        refCounted.decref();
-        Thread.sleep(1000);
-
-        refCounted =  h.getCore().getSearcher();
-        searcher = refCounted.get();
-        refCounted.decref();
+       
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
