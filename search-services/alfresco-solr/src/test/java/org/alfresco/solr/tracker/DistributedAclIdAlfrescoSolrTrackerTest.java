@@ -30,6 +30,7 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.junit.Test;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
@@ -39,8 +40,10 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * @author Joel
@@ -52,7 +55,6 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
     @Test
     public void doTest() throws Exception
     {
-
         handle.put("explain", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
         handle.put("score", SKIPVAL);
@@ -76,15 +78,15 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
             Acl bulkAcl = getAcl(bulkAclChangeSet);
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
-                    bulkAcl,
-                    list("joel"+bulkAcl.getId()),
-                    list("phil"+bulkAcl.getId()),
-                    null));
+                                             bulkAcl,
+                                             list("joel"+bulkAcl.getId()),
+                                             list("phil"+bulkAcl.getId()),
+                                             null));
         }
 
         indexAclChangeSet(bulkAclChangeSet,
-                bulkAcls,
-                bulkAclReaders);
+                          bulkAcls,
+                          bulkAclReaders);
 
         int numNodes = 1000;
         List<Node> nodes = new ArrayList();
@@ -108,14 +110,21 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
             Acl acl = bulkAcls.get(i);
             long aclId = acl.getId();
 
-            query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\", \"authorities\": [\"joel"+aclId+"\"], \"tenants\": [ \"\" ]}]}",
-                    params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc","fq","{!afts}AUTHORITY_FILTER_FROM_JSON"));
+            QueryResponse response = query("{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel" + aclId + "\"], \"tenants\": [ \"\" ]}",
+                                            params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc","fq","{!afts}AUTHORITY_FILTER_FROM_JSON"));
 
+            assertTrue(response.getResults().getNumFound() > 0);
         }
     }
 
     protected ShardMethodEnum getShardMethod() {
-        return ShardMethodEnum.ACL_ID;
+        Random random = random();
+        List<ShardMethodEnum> methods = new ArrayList();
+        methods.add(ShardMethodEnum.ACL_ID);
+        methods.add(ShardMethodEnum.MOD_ACL_ID);
+        Collections.shuffle(methods, random);
+        return methods.get(0);
+
     }
 }
 
