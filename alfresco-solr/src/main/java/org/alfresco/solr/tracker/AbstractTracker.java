@@ -275,7 +275,7 @@ public abstract class AbstractTracker implements Tracker
 
     public void shutdown()
     {
-        System.out.println("####################### Shutdown called ##############");
+        log.warn("Core "+ coreName+" shutdown called on tracker. "+this.toString());
         setShutdown(true);
         if(this.threadHandler != null)
         {

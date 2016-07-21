@@ -55,6 +55,7 @@ public class SolrCoreCloseHook extends CloseHook
     @Override
     public void preClose(SolrCore core)
     {
+        log.info("Shutting down " + core.getName());
         AlfrescoCoreRegistration.shutdownTrackers(core.getName(), trackers, scheduler);
     }
 }
