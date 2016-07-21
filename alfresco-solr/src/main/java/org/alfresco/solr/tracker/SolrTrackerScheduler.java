@@ -135,12 +135,16 @@ public class SolrTrackerScheduler
         JobDetail detail = null;
         try {
             detail = this.scheduler.getJobDetail(jobName, SOLR_JOB_GROUP);
-            Tracker jobTracker = (Tracker) detail.getJobDataMap().get(TrackerJob.JOBDATA_TRACKER_KEY);
-            //If this is the exact tracker instance that was scheduled, then delete it.
-            if (tracker == jobTracker)
+            if (detail != null)
             {
-                this.scheduler.deleteJob(jobName, SOLR_JOB_GROUP);
+                Tracker jobTracker = (Tracker) detail.getJobDataMap().get(TrackerJob.JOBDATA_TRACKER_KEY);
+                //If this is the exact tracker instance that was scheduled, then delete it.
+                if (tracker == jobTracker)
+                {
+                    this.scheduler.deleteJob(jobName, SOLR_JOB_GROUP);
+                }
             }
+
         } catch (SchedulerException e) {
             log.error("Unable to delete a tracker job "+jobName, e);
         }
