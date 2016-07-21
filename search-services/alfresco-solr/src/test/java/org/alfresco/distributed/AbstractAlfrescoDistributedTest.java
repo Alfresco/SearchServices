@@ -468,7 +468,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 sb.append(',');
             final String shardname = "shard" + i;
             JettySolrRunner j = createJetty(shardname,"shard.instance", Integer.toString(i),
-                                                      "shard.method", ShardMethodEnum.DB_ID.toString(),
+                                                      "shard.method", getShardMethod().toString(),
                                                       "shard.count",  Integer.toString(numShards));
             jettys.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
@@ -481,6 +481,11 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         shards = sb.toString();
 
     }
+
+    protected ShardMethodEnum getShardMethod() {
+        return ShardMethodEnum.DB_ID;
+    }
+
 
     protected void setDistributedParams(ModifiableSolrParams params)
     {
