@@ -59,7 +59,9 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoAnalyzerWrapper;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.AlfrescoSolrDataModel.ContentFieldType;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
@@ -80,7 +82,6 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
 import org.apache.lucene.document.Document;
@@ -109,7 +110,10 @@ import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.apache.solr.analysis.TokenizerChain;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.core.CoreContainer;
+import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.update.DocumentBuilder;
@@ -131,17 +135,36 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
      * @param f
      * @param a
      */
-    public Solr4QueryParser(IndexSchema schema, Version matchVersion, String f, Analyzer a,
+    public Solr4QueryParser(SolrQueryRequest req, Version matchVersion, String f, Analyzer a,
             FTSQueryParser.RerankPhase rerankPhase)
     {
         super(f, a);
-        this.schema = schema;
         setAllowLeadingWildcard(true);
         setAnalyzeRangeTerms(true);
         this.rerankPhase = rerankPhase;
+        this.schema = req.getSchema();
+        this.solrContentStore = getContentSotre(req);
+        
     }
 
     private RerankPhase rerankPhase;
+    private SolrContentStore solrContentStore;
+    /**
+     * Extracts the contentStore from SolrQueryRequest.
+     * @param req
+     * @return
+     */
+    private SolrContentStore getContentSotre(SolrQueryRequest req)
+    {
+        if(req.getSearcher() != null)
+        {
+            CoreContainer coreContainer = req.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
+            SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
+            return srv.getSolrContentStore();
+        }
+        return null;
+    }
 
     IndexSchema schema;
 
@@ -668,8 +691,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         {
             return createIsNodeQuery("T");
         }
-
-        SolrInputDocument solrDoc = SolrContentStore.retrieveDocFromSolrContentStore(
+        
+        SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(
                 AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), Long.parseLong(parts[0]));
         if (solrDoc != null)
         {

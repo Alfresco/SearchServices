@@ -45,7 +45,7 @@ public class SolrContentStoreTest
     @After
     public void tearDown() throws IOException
     {
-        File rootDir = new File(SolrContentStore.getSolrContentStore().getRootLocation());
+        File rootDir = new File(new SolrContentStore(null).getRootLocation());
         FileUtils.deleteDirectory(rootDir);
     }
     
@@ -61,23 +61,17 @@ public class SolrContentStoreTest
     @Test
     public void rootLocation()
     {
-        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        SolrContentStore store = new SolrContentStore(null);
         File rootDir = new File(store.getRootLocation());
         Assert.assertTrue(rootDir.exists());
         Assert.assertTrue(rootDir.isDirectory());
     }
     
-    @Test
-    public void reconstruct()
-    {
-        SolrContentStore store = SolrContentStore.getSolrContentStore();
-        store = SolrContentStore.getSolrContentStore();
-    }
     
     @Test
     public void getWriter()
     {
-        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        SolrContentStore store = new SolrContentStore(null);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
@@ -90,7 +84,7 @@ public class SolrContentStoreTest
     @Test
     public void contentByString()
     {
-        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        SolrContentStore store = new SolrContentStore(null);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
@@ -122,7 +116,7 @@ public class SolrContentStoreTest
     @Test
     public void contentByStream() throws Exception
     {
-        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        SolrContentStore store = new SolrContentStore(null);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
@@ -144,7 +138,7 @@ public class SolrContentStoreTest
     @Test
     public void delete() throws Exception
     {
-        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        SolrContentStore store = new SolrContentStore(null);
 
         ContentContext ctx = createContentContext("abc");
         String url = ctx.getContentUrl();
@@ -172,7 +166,7 @@ public class SolrContentStoreTest
     @Test
     public void exampleUsage()
     {
-        SolrContentStore store = SolrContentStore.getSolrContentStore();
+        SolrContentStore store = new SolrContentStore(null);
 
         String tenant = "alfresco.com";
         long dbId = 12345;

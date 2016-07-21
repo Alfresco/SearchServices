@@ -27,12 +27,13 @@ import java.util.LinkedList;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
 import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanOrQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.Version;
+import org.apache.solr.request.SolrQueryRequest;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class Solr4QueryParserTest
 {
@@ -44,7 +45,8 @@ public class Solr4QueryParserTest
     @Before
     public void setUp() throws Exception
     {
-        parser = new Solr4QueryParser(null, Version.LUCENE_5_5_0, "TEXT", null, FTSQueryParser.RerankPhase.SINGLE_PASS);
+        SolrQueryRequest req = Mockito.mock(SolrQueryRequest.class);
+        parser = new Solr4QueryParser(req, Version.LUCENE_5_5_0, "TEXT", null, FTSQueryParser.RerankPhase.SINGLE_PASS);
     }
 
     private PackedTokenAttributeImpl getTokenAttribute(String text, int startOffset, int endOffset)

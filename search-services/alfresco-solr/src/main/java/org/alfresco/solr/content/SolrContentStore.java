@@ -23,13 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.naming.NoInitialContextException;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -42,87 +39,71 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.core.SolrResourceLoader;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A content store specific to SOLR's requirements:
- * The URL is generated from a set of properties such as:
+ * A content store specific to SOLR's requirements: The URL is generated from a
+ * set of properties such as:
  * <ul>
- *   <li>ACL ID</li>
- *   <li>DB ID</li>
- *   <li>Other metadata</li>
+ * <li>ACL ID</li>
+ * <li>DB ID</li>
+ * <li>Other metadata</li>
  * </ul>
- * The URL, if not known, can be reliably regenerated using the {@link SolrContentUrlBuilder}.
+ * The URL, if not known, can be reliably regenerated using the
+ * {@link SolrContentUrlBuilder}.
  * 
  * @author Derek Hulley
  * @since 5.0
  */
 public class SolrContentStore implements ContentStore
 {
+    private static final String CONTENT_STORE = "ContentStore";
+
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
- 
-    private static SolrContentStore solrContentStore;
 
-    static 
+    public SolrContentStore(String solrHome)
     {
-        if (solrContentStore == null) 
+        String path = null;
+        if (solrHome == null || solrHome.isEmpty())
         {
-            solrContentStore = getSolrContentStore(SolrResourceLoader.locateSolrHome().toString());
+            String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
+            path = ConfigUtil.locateProperty("solr.content.dir", normalSolrHome + CONTENT_STORE);
+        } 
+        else
+        {
+            path = solrHome + "/" + CONTENT_STORE;
         }
+        File rootFile = new File(path);
+        try
+        {
+            FileUtils.forceMkdir(rootFile);
+        } 
+        catch (Exception e)
+        {
+            throw new RuntimeException("Failed to create directory for content store: " + rootFile, e);
+        }
+        this.root = rootFile.getAbsolutePath();
     }
-    
-    public static SolrContentStore getSolrContentStore(String solrHome)
-    {
-        String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
-        return new SolrContentStore(ConfigUtil.locateProperty("solr.content.dir", normalSolrHome+"ContentStore"));
-    }
-
-    public static SolrContentStore getSolrContentStore()
-    {
-        return solrContentStore;
-    }
-    
 
     // write a BytesRef as a byte array
-    private static JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver()
+    private JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver(){@Override public Object resolve(Object o,JavaBinCodec codec)throws IOException{if(o instanceof BytesRef){BytesRef br=(BytesRef)o;codec.writeByteArray(br.bytes,br.offset,br.length);return null;}return o;}};
+
+    public SolrInputDocument retrieveDocFromSolrContentStore(String tenant, long dbId) throws IOException
     {
-        @Override
-        public Object resolve(Object o, JavaBinCodec codec) throws IOException
-        {
-            if (o instanceof BytesRef)
-            {
-                BytesRef br = (BytesRef) o;
-                codec.writeByteArray(br.bytes, br.offset, br.length);
-                return null;
-            }
-            return o;
-        }
-    };
- 
-    
-    public static SolrInputDocument retrieveDocFromSolrContentStore(String tenant, long dbId) throws IOException
-    {
-        String contentUrl = SolrContentUrlBuilder
-                    .start()
-                    .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
-                    .get();
-        ContentReader reader = solrContentStore.getReader(contentUrl);
+        String contentUrl = SolrContentUrlBuilder.start().add(SolrContentUrlBuilder.KEY_TENANT, tenant)
+                .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId)).get();
+        ContentReader reader = this.getReader(contentUrl);
         SolrInputDocument cachedDoc = null;
         if (reader.exists())
         {
             // try-with-resources statement closes all these InputStreams
-            try (
-                    InputStream contentInputStream = reader.getContentInputStream();
+            try (InputStream contentInputStream = reader.getContentInputStream();
                     // Uncompresses the document
-                    GZIPInputStream gzip = new GZIPInputStream(contentInputStream);
-                )
+                    GZIPInputStream gzip = new GZIPInputStream(contentInputStream);)
             {
                 cachedDoc = (SolrInputDocument) new JavaBinCodec(resolver).unmarshal(gzip);
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 // Don't fail for this
                 log.warn("Failed to get doc from store using URL: " + contentUrl, e);
@@ -131,64 +112,8 @@ public class SolrContentStore implements ContentStore
         }
         return cachedDoc;
     }
-    
-    public static void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc) throws IOException
-    {
-        ContentContext contentContext = SolrContentUrlBuilder
-                    .start()
-                    .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
-                    .getContentContext();
-        solrContentStore.delete(contentContext.getContentUrl());
-        ContentWriter writer = solrContentStore.getWriter(contentContext);
-        if (log.isDebugEnabled())
-        {
-            log.debug("Writing doc to " + contentContext.getContentUrl());
-        }
-        try (
-                    OutputStream contentOutputStream = writer.getContentOutputStream();
-                    // Compresses the document
-                    GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream);
-            )
-        {
-            JavaBinCodec codec = new JavaBinCodec(resolver);
-            codec.marshal(doc, gzip);
-        }
-        catch (Exception e)
-        {
-            // A failure to write to the store is acceptable as long as it's logged
-            log.warn("Failed to write to store using URL: " + contentContext.getContentUrl(), e);
-        }
-    }
-
-    public static boolean removeDocFromContentStore(String tenant, long dbId)
-    {
-        String contentUrl = SolrContentUrlBuilder
-                    .start()
-                    .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
-                    .getContentContext()
-                    .getContentUrl();
-        return solrContentStore.delete(contentUrl);
-    }
-    
 
     private final String root;
-    
-    
-    private SolrContentStore(String rootStr)
-    {
-        File rootFile = new File(rootStr);
-        try
-        {
-            FileUtils.forceMkdir(rootFile);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Failed to create directory for content store: " + rootFile, e);
-        }
-        this.root = rootFile.getAbsolutePath();
-    }
 
     @Override
     public boolean isContentUrlSupported(String contentUrl)
@@ -197,7 +122,7 @@ public class SolrContentStore implements ContentStore
     }
 
     /**
-     * @return                  <tt>true</tt> always
+     * @return <tt>true</tt> always
      */
     @Override
     public boolean isWriteSupported()
@@ -206,7 +131,7 @@ public class SolrContentStore implements ContentStore
     }
 
     /**
-     * @return                  -1 always
+     * @return -1 always
      */
     @Override
     public long getSpaceFree()
@@ -215,7 +140,7 @@ public class SolrContentStore implements ContentStore
     }
 
     /**
-     * @return                  -1 always
+     * @return -1 always
      */
     @Override
     public long getSpaceTotal()
@@ -237,7 +162,7 @@ public class SolrContentStore implements ContentStore
         String path = contentUrl.replace(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX, root + "/");
         return new File(path);
     }
-    
+
     @Override
     public boolean exists(String contentUrl)
     {

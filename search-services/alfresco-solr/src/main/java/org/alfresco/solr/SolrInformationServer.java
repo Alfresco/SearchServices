@@ -308,7 +308,6 @@ public class SolrInformationServer implements InformationServer
             return o;
         }
     };
- 
     
     @Override
     public AlfrescoCoreAdminHandler getAdminHandler()
@@ -4048,4 +4047,10 @@ public class SolrInformationServer implements InformationServer
     {
         locks.remove(id);
     }
+
+    public SolrContentStore getSolrContentStore()
+    {
+        return solrContentStore;
+    }
+    
 }

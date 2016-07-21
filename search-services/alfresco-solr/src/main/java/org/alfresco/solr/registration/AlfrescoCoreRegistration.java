@@ -28,7 +28,6 @@ import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.CoreDescriptorDecorator;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,8 +71,9 @@ public class AlfrescoCoreRegistration {
             SOLRAPIClient repositoryClient = clientFactory.getSOLRAPIClient(props, keyResourceLoader,
                     AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                     AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
-            SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient,
-                    SolrContentStore.getSolrContentStore(SolrResourceLoader.locateSolrHome().toString()));
+            //Start content store
+            SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
+            SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
             adminHandler.getInformationServers().put(coreName, srv);
 
             log.info("Starting to track " + coreName);
