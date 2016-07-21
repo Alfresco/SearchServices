@@ -461,14 +461,17 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
+        String shardMethod = getShardMethod().toString();
+        log.info("################# shardMethod:"+shardMethod);
 
         for (int i = 0; i < numShards; i++)
         {
             if (sb.length() > 0)
                 sb.append(',');
             final String shardname = "shard" + i;
+
             JettySolrRunner j = createJetty(shardname,"shard.instance", Integer.toString(i),
-                                                      "shard.method", getShardMethod().toString(),
+                                                      "shard.method", shardMethod,
                                                       "shard.count",  Integer.toString(numShards));
             jettys.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;

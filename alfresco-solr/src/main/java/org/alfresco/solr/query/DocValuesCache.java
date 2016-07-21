@@ -119,7 +119,9 @@ public class DocValuesCache
         {
             values = new long[ivalues.length];
             //TODO: Validate to you can copy an int[] into a long[].
-            System.arraycopy(ivalues, 0, values, 0, ivalues.length);
+            for(int i=0; i< ivalues.length; i++) {
+                values[i] = ivalues[i];
+            }
         }
 
         public void set(int index, long value)
