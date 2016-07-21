@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
 import org.alfresco.solr.content.SolrContentStore;
@@ -51,6 +53,7 @@ import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.highlight.DefaultSolrHighlighter;
 import org.apache.solr.highlight.SolrHighlighter;
@@ -373,7 +376,11 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 			String id = getFieldValueString(doc, FIELD_SOLR4_ID);
 			TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel
 					.decodeNodeDocumentId(id);
-			SolrInputDocument sid = SolrContentStore.retrieveDocFromSolrContentStore(
+			CoreContainer coreContainer = req.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
+            SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
+            SolrContentStore solrContentStore = srv.getSolrContentStore();
+			SolrInputDocument sid = solrContentStore.retrieveDocFromSolrContentStore(
 					tenantAndDbId.tenant, tenantAndDbId.dbId);
 			if (sid == null) {
 				sid = new SolrInputDocument();

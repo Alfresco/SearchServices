@@ -528,25 +528,30 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected void destroyServers() throws Exception
     {
-        List<String> solrHomes = new ArrayList();
-        if (controlJetty != null) {
+        List<String> solrHomes = new ArrayList<String>();
+        if (controlJetty != null) 
+        {
             solrHomes.add(controlJetty.getSolrHome());
             controlJetty.stop();
         }
-        if (controlClient != null) {
+        if (controlClient != null)
+        {
             controlClient.close();
         }
 
-        for (JettySolrRunner jetty : jettys) {
+        for (JettySolrRunner jetty : jettys) 
+        {
             solrHomes.add(jetty.getSolrHome());
             jetty.stop();
         }
 
-        for (SolrClient client : clients) {
+        for (SolrClient client : clients)
+        {
             client.close();
         }
 
-        for(String home : solrHomes) {
+        for(String home : solrHomes)
+        {
             FileUtils.deleteDirectory(new File(home, "ContentStore"));
         }
 
