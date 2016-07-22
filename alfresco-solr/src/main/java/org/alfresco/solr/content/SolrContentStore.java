@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -33,6 +31,8 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.util.BytesRef;
@@ -212,4 +212,50 @@ public class SolrContentStore implements ContentStore
         File file = getFileFromUrl(contentUrl);
         return file.delete();
     }
+    
+    public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc) throws IOException
+    {
+        ContentContext contentContext = SolrContentUrlBuilder
+                    .start()
+                    .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
+                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
+                .getContentContext();
+        this.delete(contentContext.getContentUrl());
+        ContentWriter writer = this.getWriter(contentContext);
+        if (log.isDebugEnabled())
+        {
+            log.debug("Writing doc to " + contentContext.getContentUrl());
+        }
+        try (
+                    OutputStream contentOutputStream = writer.getContentOutputStream();
+                    // Compresses the document
+                    GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream);
+            )
+        {
+            JavaBinCodec codec = new JavaBinCodec(resolver);
+            codec.marshal(doc, gzip);
+        }
+        catch (Exception e)
+        {
+            // A failure to write to the store is acceptable as long as it's logged
+            log.warn("Failed to write to store using URL: " + contentContext.getContentUrl(), e);
+        }
+    }
+    public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc) throws IOException
+    {
+        String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
+        storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), doc);
+    }
+    public void removeDocFromContentStore(NodeMetaData nodeMetaData)
+    {
+        String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
+        String contentUrl = SolrContentUrlBuilder
+                    .start()
+                    .add(SolrContentUrlBuilder.KEY_TENANT, fixedTenantDomain)
+                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(nodeMetaData.getId()))
+                    .getContentContext()
+                .getContentUrl();
+        this.delete(contentUrl);
+    }
+
 }
