@@ -46,7 +46,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class SolrContentStoreTest
 {
     private static final String DEFAULT_TENANT = "_DEFAULT_";
-    private String solrHome = FileUtils.getTempDirectoryPath() + "target";
+    private String solrHome = new File("./target/contentstoretest/").getAbsolutePath();
     private long dbid = 111;
     private String tenant = "me";
     @After
