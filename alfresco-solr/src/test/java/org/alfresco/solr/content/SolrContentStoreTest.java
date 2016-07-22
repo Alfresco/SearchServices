@@ -18,20 +18,23 @@
  */
 package org.alfresco.solr.content;
 
-import org.alfresco.repo.content.ContentContext;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+
+import org.alfresco.repo.content.ContentContext;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.solr.client.NodeMetaData;
+import org.apache.commons.io.FileUtils;
+import org.apache.solr.common.SolrInputDocument;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests {@link SolrContentStoreTest}
@@ -42,11 +45,20 @@ import java.io.IOException;
 @RunWith(MockitoJUnitRunner.class)
 public class SolrContentStoreTest
 {
+    private static final String DEFAULT_TENANT = "_DEFAULT_";
+    private String solrHome = FileUtils.getTempDirectoryPath() + "target";
+    private long dbid = 111;
+    private String tenant = "me";
     @After
     public void tearDown() throws IOException
     {
-        File rootDir = new File(new SolrContentStore(null).getRootLocation());
+        File rootDir = new File(new SolrContentStore(solrHome).getRootLocation());
         FileUtils.deleteDirectory(rootDir);
+    }
+    @Test(expected = RuntimeException.class)
+    public void nullInput()
+    {
+        new SolrContentStore(null);
     }
     
     /**
@@ -61,7 +73,7 @@ public class SolrContentStoreTest
     @Test
     public void rootLocation()
     {
-        SolrContentStore store = new SolrContentStore(null);
+        SolrContentStore store = new SolrContentStore(solrHome);
         File rootDir = new File(store.getRootLocation());
         Assert.assertTrue(rootDir.exists());
         Assert.assertTrue(rootDir.isDirectory());
@@ -71,7 +83,7 @@ public class SolrContentStoreTest
     @Test
     public void getWriter()
     {
-        SolrContentStore store = new SolrContentStore(null);
+        SolrContentStore store = new SolrContentStore(solrHome);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
@@ -84,7 +96,7 @@ public class SolrContentStoreTest
     @Test
     public void contentByString()
     {
-        SolrContentStore store = new SolrContentStore(null);
+        SolrContentStore store = new SolrContentStore(solrHome);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
@@ -116,7 +128,7 @@ public class SolrContentStoreTest
     @Test
     public void contentByStream() throws Exception
     {
-        SolrContentStore store = new SolrContentStore(null);
+        SolrContentStore store = new SolrContentStore(solrHome);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
@@ -138,7 +150,7 @@ public class SolrContentStoreTest
     @Test
     public void delete() throws Exception
     {
-        SolrContentStore store = new SolrContentStore(null);
+        SolrContentStore store = new SolrContentStore(solrHome);
 
         ContentContext ctx = createContentContext("abc");
         String url = ctx.getContentUrl();
@@ -166,7 +178,7 @@ public class SolrContentStoreTest
     @Test
     public void exampleUsage()
     {
-        SolrContentStore store = new SolrContentStore(null);
+        SolrContentStore store = new SolrContentStore(solrHome);
 
         String tenant = "alfresco.com";
         long dbId = 12345;
@@ -192,5 +204,41 @@ public class SolrContentStoreTest
         String documentText = reader.getContentString();
         
         Assert.assertEquals("a document in plain text", documentText);
+    }
+    @Test
+    public void storeDocOnSolrContentStore() throws IOException
+    {
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
+        SolrInputDocument doc = Mockito.mock(SolrInputDocument.class);
+        SolrInputDocument document = solrContentStore.retrieveDocFromSolrContentStore(tenant, dbid);
+        Assert.assertNull(document);
+        solrContentStore.storeDocOnSolrContentStore(tenant, dbid, doc);
+        document = solrContentStore.retrieveDocFromSolrContentStore(tenant, dbid);
+        Assert.assertNotNull(document);
+    }
+    @Test
+    public void storeDocOnSolrContentStoreNodeMetaData() throws IOException
+    {
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
+        SolrInputDocument doc = Mockito.mock(SolrInputDocument.class);
+        NodeMetaData nodeMetaData = Mockito.mock(NodeMetaData.class);
+        SolrInputDocument document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+        Assert.assertNull(document);
+        solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
+        document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+        Assert.assertNotNull(document);
+    }
+    @Test
+    public void removeDocFromContentStore() throws IOException
+    {
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
+        SolrInputDocument doc = Mockito.mock(SolrInputDocument.class);
+        NodeMetaData nodeMetaData = Mockito.mock(NodeMetaData.class);
+        solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
+        SolrInputDocument document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+        Assert.assertNotNull(document);
+        solrContentStore.removeDocFromContentStore(nodeMetaData);
+        document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+        Assert.assertNull(document);
     }
 }

@@ -33,12 +33,10 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.NodeMetaData;
-import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.JavaBinCodec;
-import org.apache.solr.core.SolrResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,16 +62,11 @@ public class SolrContentStore implements ContentStore
 
     public SolrContentStore(String solrHome)
     {
-        String path = null;
         if (solrHome == null || solrHome.isEmpty())
         {
-            String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
-            path = ConfigUtil.locateProperty("solr.content.dir", normalSolrHome + CONTENT_STORE);
+            throw new RuntimeException("Path to SOLR_HOME is required");
         } 
-        else
-        {
-            path = solrHome + "/" + CONTENT_STORE;
-        }
+        String path = solrHome + "/" + CONTENT_STORE;
         File rootFile = new File(path);
         try
         {
