@@ -58,7 +58,6 @@ public abstract class AbstractTracker implements Tracker
     private int maxLiveSearchers;
     private volatile boolean shutdown = false;
 
-
     private Semaphore runLock = new Semaphore(1, true);
     private Semaphore writeLock = new Semaphore(1, true);
 
@@ -134,7 +133,7 @@ public abstract class AbstractTracker implements Tracker
     public void track()
     {
         if(runLock.availablePermits() == 0) {
-            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already running");
+            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
             return;
         }
 
@@ -275,7 +274,7 @@ public abstract class AbstractTracker implements Tracker
 
     public void shutdown()
     {
-        log.warn("Core "+ coreName+" shutdown called on tracker. "+this.toString());
+        log.warn("Core "+ coreName+" shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
         setShutdown(true);
         if(this.threadHandler != null)
         {
