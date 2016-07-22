@@ -165,4 +165,9 @@ public class SolrTrackerScheduler
     {
         this.scheduler.pauseAll();
     }
+
+    public int getJobsCount() throws SchedulerException
+    {
+        return this.scheduler.getJobNames(SOLR_JOB_GROUP).length;
+    }
 }
