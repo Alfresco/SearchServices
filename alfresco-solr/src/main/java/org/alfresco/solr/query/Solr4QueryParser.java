@@ -143,7 +143,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         setAnalyzeRangeTerms(true);
         this.rerankPhase = rerankPhase;
         this.schema = req.getSchema();
-        this.solrContentStore = getContentSotre(req);
+        this.solrContentStore = getContentStore(req);
         
     }
 
@@ -154,7 +154,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
      * @param req
      * @return
      */
-    private SolrContentStore getContentSotre(SolrQueryRequest req)
+    private SolrContentStore getContentStore(SolrQueryRequest req)
     {
         if(req.getSearcher() != null)
         {
