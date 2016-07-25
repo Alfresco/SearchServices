@@ -114,7 +114,40 @@ public class SolrTrackerScheduler
         {
             deleteTrackerJob(coreName, tracker);
         }
-        
+    }
+
+    /**
+     * Delete a Tracker Job ONLY if its exactly the same tracker instance that was passed in.
+     *
+     * In theory more than one instance of a core can exist with the same core name but the
+     * scheduler stores jobs using the core name as a unique key (even though it may not be unique).
+     *
+     * This method gets the tracker instance associated with the Job and compares to see if its
+     * identical to the instance that is passed in.  If they are identical then the job is deleted.
+     * Otherwise, another core (of the same name) scheduled this job, so its left alone.
+     *
+     * @param coreName
+     * @param tracker Specific instance of a tracker
+     */
+    public void deleteJobForTrackerInstance(String coreName, Tracker tracker)
+    {
+        String jobName = this.getJobName(tracker, coreName);
+        JobDetail detail = null;
+        try {
+            detail = this.scheduler.getJobDetail(jobName, SOLR_JOB_GROUP);
+            if (detail != null)
+            {
+                Tracker jobTracker = (Tracker) detail.getJobDataMap().get(TrackerJob.JOBDATA_TRACKER_KEY);
+                //If this is the exact tracker instance that was scheduled, then delete it.
+                if (tracker == jobTracker)
+                {
+                    this.scheduler.deleteJob(jobName, SOLR_JOB_GROUP);
+                }
+            }
+
+        } catch (SchedulerException e) {
+            log.error("Unable to delete a tracker job "+jobName, e);
+        }
     }
 
     public void deleteTrackerJob(String coreName, Tracker tracker) throws SchedulerException
@@ -131,5 +164,10 @@ public class SolrTrackerScheduler
     public void pauseAll() throws SchedulerException
     {
         this.scheduler.pauseAll();
+    }
+
+    public int getJobsCount() throws SchedulerException
+    {
+        return this.scheduler.getJobNames(SOLR_JOB_GROUP).length;
     }
 }
