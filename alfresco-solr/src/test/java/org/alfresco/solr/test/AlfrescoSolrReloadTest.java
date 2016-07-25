@@ -22,11 +22,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.quartz.SchedulerException;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.junit.Assert.assertEquals;
@@ -99,11 +101,15 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
         int numOfTrackers = trackers.size();
         int jobs = getJobsCount();
 
+        addNodes(1, 10);
+        assertAQuery("TYPE:\"" + testSuperType + "\"", 10);
+
         logger.info("######### reload called ###########");
         h.reload();
         logger.info("######### reload finished ###########");
 
-        TimeUnit.SECONDS.sleep(3);
+        //Give it a little time to shutdown properly and recover.
+        TimeUnit.SECONDS.sleep(1);
         logger.info("#################### After sleep ##############################");
 
         Collection<Tracker> reloadedTrackers = getTrackers();
@@ -115,16 +121,25 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
             assertFalse("The reloaded trackers should be different.", reloadedTrackers.contains(tracker));
         });
 
-        NodeRef newNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n2Name = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "two");
-        ChildAssociationRef n02CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n2Name, newNodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 2, 3, 2, testSuperType, null, null, null, "andy",
-                new ChildAssociationRef[]{n02CAR}, new NodeRef[]{rootNodeRef}, new String[]{"/"
-                        + n2Name.toString()}, newNodeRef, true);
+        addNodes(10, 21);
+        assertAQuery("TYPE:\"" + testSuperType + "\"", 21);
+    }
 
-        assertAQuery("TYPE:\"" + testSuperType + "\"", 2);
-
-        logger.info("#################### All done ##############################");
+    private void addNodes(int startInclusive, int endExclusive) {
+        IntStream.range(startInclusive, endExclusive).forEach(i ->
+            {
+                NodeRef newNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+                QName n2Name = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "loop"+i);
+                ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n2Name, newNodeRef, true, 0);
+                try {
+                    addNode(h.getCore(), dataModel, 1+i, 2+i, 1+i, testSuperType, null, null, null, "andy",
+                            new ChildAssociationRef[]{childAssoc}, new NodeRef[]{rootNodeRef}, new String[]{"/"+ n2Name.toString()},
+                            newNodeRef, true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        );
     }
 
     private int getJobsCount() throws SchedulerException {
