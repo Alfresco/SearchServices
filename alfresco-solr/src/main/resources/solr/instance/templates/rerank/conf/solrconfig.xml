@@ -660,7 +660,7 @@
           -->
       </arr>
     </listener>
-    <listener event="firstSearcher" class="org.alfresco.solr.registration.TrackerListener" />
+    <listener event="firstSearcher" class="org.alfresco.solr.lifecycle.TrackerListener" />
 
     <!-- Use Cold Searcher
 

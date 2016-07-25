@@ -17,12 +17,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.solr.registration;
+package org.alfresco.solr.lifecycle;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.apache.solr.core.*;
 import org.apache.solr.handler.admin.CoreAdminHandler;
-import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +45,6 @@ public class TrackerListener extends AbstractSolrEventListener {
         CoreContainer coreContainer = getCore().getCoreDescriptor().getCoreContainer();
         CoreAdminHandler coreAdminHandler = coreContainer.getMultiCoreHandler();
 
-        AlfrescoCoreRegistration.registerForCore((AlfrescoCoreAdminHandler) coreAdminHandler, coreContainer, getCore(), getCore().getName());
+        SolrCoreLoadRegistration.registerForCore((AlfrescoCoreAdminHandler) coreAdminHandler, coreContainer, getCore(), getCore().getName());
     }
 }
