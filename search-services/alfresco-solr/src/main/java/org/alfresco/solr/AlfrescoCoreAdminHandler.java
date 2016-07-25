@@ -96,6 +96,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         initResourceBasedLogging("log4j-solr.properties");
     }
 
+    /**
+     * This method is called when a CoreContainer instance is shutdown.
+     */
     public void shutdown() 
     {
         super.shutdown();
@@ -105,6 +108,23 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
 
+            //Remove any core trackers still hanging around
+            trackerRegistry.getCoreNames().forEach(coreName ->
+            {
+                trackerRegistry.removeTrackersForCore(coreName);
+            });
+
+            //Remove any information servers
+            informationServers.clear();
+
+            //Shutdown the scheduler and model tracker.
+            if (!scheduler.isShutdown())
+            {
+                scheduler.pauseAll();
+                trackerRegistry.getModelTracker().shutdown();
+                trackerRegistry.setModelTracker(null);
+                scheduler.shutdown();
+            }
         } 
         catch(Exception e) 
         {
