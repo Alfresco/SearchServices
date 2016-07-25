@@ -181,7 +181,7 @@
           </arr>
         </listener>
         -->
-        <listener event="firstSearcher" class="org.alfresco.solr.registration.TrackerListener" />
+        <listener event="firstSearcher" class="org.alfresco.solr.lifecycle.TrackerListener" />
     </query>
 
     <queryResponseWriter name="xml" default="true"

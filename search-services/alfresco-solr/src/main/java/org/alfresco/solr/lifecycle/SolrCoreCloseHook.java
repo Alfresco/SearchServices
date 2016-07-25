@@ -16,9 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.registration;
+package org.alfresco.solr.lifecycle;
 
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.tracker.*;
 import org.apache.solr.core.CloseHook;
 import org.apache.solr.core.SolrCore;
@@ -56,6 +55,6 @@ public class SolrCoreCloseHook extends CloseHook
     public void preClose(SolrCore core)
     {
         log.info("Shutting down " + core.getName());
-        AlfrescoCoreRegistration.shutdownTrackers(core.getName(), trackers, scheduler);
+        SolrCoreLoadRegistration.shutdownTrackers(core.getName(), trackers, scheduler);
     }
 }

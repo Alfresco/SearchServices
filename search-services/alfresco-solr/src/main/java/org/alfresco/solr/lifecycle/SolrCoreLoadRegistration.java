@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.registration;
+package org.alfresco.solr.lifecycle;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.solr.*;
@@ -38,11 +38,11 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Deals with core registration.
+ * Deals with core registration with the core is loaded.
  *
  * @author Gethin James
  */
-public class AlfrescoCoreRegistration {
+public class SolrCoreLoadRegistration {
 
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -54,7 +54,7 @@ public class AlfrescoCoreRegistration {
     {
         TrackerRegistry trackerRegistry = adminHandler.getTrackerRegistry();
         Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
-        boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
+
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))
         {
 
