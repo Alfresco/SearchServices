@@ -157,8 +157,12 @@ public class SolrCoreLoadRegistration {
      * The trackers are only deleted from the scheduler if they are the exact same instance of the Tracker class
      * passed into this method.
      * For example, you could have 2 cores of the same name and have the trackers registered with the scheduler BUT
-     * the scheduler only keys by core name.  The Collection<Tracker>s passed into this method are only removed
+     * the scheduler only keys by core name. The Collection<Tracker>s passed into this method are only removed
      * from the scheduler if the instances are == (equal). See scheduler.deleteJobForTrackerInstance()
+     *
+     * Trackers are not removed from the registry because the registry only keys by core name; its possible to
+     * have multiple cores of the same name running.  Left over trackers in the registry are cleaned up by the CoreContainer
+     * shutdown, that happens in the the AlfrescoCoreAdminHandler.shutdown().
      *
      * @param coreName The name of the core
      * @param coreTrackers A collection of trackers
