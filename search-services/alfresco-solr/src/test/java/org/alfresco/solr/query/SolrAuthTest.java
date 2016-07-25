@@ -20,12 +20,9 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.search.SolrIndexSearcher;
-import org.apache.solr.util.RefCounted;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
