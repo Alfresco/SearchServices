@@ -54,14 +54,17 @@ import org.slf4j.LoggerFactory;
  * {@link SolrContentUrlBuilder}.
  * 
  * @author Derek Hulley
+ * @author Michael Suzuki
  * @since 5.0
  */
 public class SolrContentStore implements ContentStore
 {
-    private static final String CONTENT_STORE = "ContentStore";
-
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
-
+    private static final String CONTENT_STORE = "ContentStore";
+    /**
+     * Constructor.
+     * @param solrHome
+     */
     public SolrContentStore(String solrHome)
     {
         if (solrHome == null || solrHome.isEmpty())
@@ -84,8 +87,27 @@ public class SolrContentStore implements ContentStore
     }
 
     // write a BytesRef as a byte array
-    private JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver(){@Override public Object resolve(Object o,JavaBinCodec codec)throws IOException{if(o instanceof BytesRef){BytesRef br=(BytesRef)o;codec.writeByteArray(br.bytes,br.offset,br.length);return null;}return o;}};
+    private JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver()
+    {
+        @Override public Object resolve(Object o,JavaBinCodec codec)throws IOException
+        {
+            if(o instanceof BytesRef)
+            {
+                BytesRef br=(BytesRef)o;
+                codec.writeByteArray(br.bytes,br.offset,br.length);
+                return null;
+            }
+            return o;
+        }
+    };
 
+    /**
+     * Retrieve document from SolrContentStore.
+     * @param tenant identifier
+     * @param dbId identifier
+     * @return {@link SolrInputDocument} searched document
+     * @throws IOException if error
+     */
     public SolrInputDocument retrieveDocFromSolrContentStore(String tenant, long dbId) throws IOException
     {
         String contentUrl = SolrContentUrlBuilder.start().add(SolrContentUrlBuilder.KEY_TENANT, tenant)
@@ -209,7 +231,13 @@ public class SolrContentStore implements ContentStore
         File file = getFileFromUrl(contentUrl);
         return file.delete();
     }
-    
+    /**
+     * Stores a {@link SolrInputDocument} into Alfresco solr content store.
+     * @param tenant
+     * @param dbId
+     * @param doc
+     * @throws IOException
+     */
     public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc) throws IOException
     {
         ContentContext contentContext = SolrContentUrlBuilder
@@ -238,11 +266,21 @@ public class SolrContentStore implements ContentStore
             log.warn("Failed to write to store using URL: " + contentContext.getContentUrl(), e);
         }
     }
+    /**
+     * Store {@link SolrInputDocument} in to Alfresco solr content store.
+     * @param nodeMetaData identifier
+     * @param doc to store
+     * @throws IOException if error
+     */
     public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc) throws IOException
     {
         String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
         storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), doc);
     }
+    /**
+     * Removes {@link SolrInputDocument} from Alfresco solr content store.
+     * @param nodeMetaData
+     */
     public void removeDocFromContentStore(NodeMetaData nodeMetaData)
     {
         String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
