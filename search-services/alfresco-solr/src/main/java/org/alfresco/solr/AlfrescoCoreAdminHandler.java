@@ -75,10 +75,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private static final String ARG_QUERY = "query";
     public static final String DATA_DIR_ROOT = "data.dir.root";
 
-
     private SolrTrackerScheduler scheduler = null;
-    private TrackerRegistry trackerRegistry = new TrackerRegistry();
-    private ConcurrentHashMap<String, InformationServer> informationServers = new ConcurrentHashMap<String, InformationServer>();
+    private TrackerRegistry trackerRegistry = null;
+    private ConcurrentHashMap<String, InformationServer> informationServers = null;
     
     public AlfrescoCoreAdminHandler()
     {
@@ -91,26 +90,60 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public AlfrescoCoreAdminHandler(CoreContainer coreContainer)
     {
         super(coreContainer);
-        this.scheduler = new SolrTrackerScheduler(this);
         initResourceBasedLogging("log4j.properties");
         initResourceBasedLogging("log4j-solr.properties");
+        startup(coreContainer);
     }
 
+    /**
+     * Startup services that exist outside of the core.
+     */
+    public void startup(CoreContainer coreContainer)
+    {
+        log.info("Starting Alfresco core container services");
+
+        trackerRegistry = new TrackerRegistry();
+        informationServers = new ConcurrentHashMap<String, InformationServer>();
+        this.scheduler = new SolrTrackerScheduler(this);
+    }
+
+    /**
+     * Shutsdown services that exist outside of the core.
+     */
     public void shutdown() 
     {
         super.shutdown();
         try 
         {
+            log.info("Shutting down Alfresco core container services");
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
 
+            //Remove any core trackers still hanging around
+            trackerRegistry.getCoreNames().forEach(coreName ->
+            {
+                trackerRegistry.removeTrackersForCore(coreName);
+            });
+
+            //Remove any information servers
+            informationServers.clear();
+
+            //Shutdown the scheduler and model tracker.
+            if (!scheduler.isShutdown())
+            {
+                scheduler.pauseAll();
+                trackerRegistry.getModelTracker().shutdown();
+                trackerRegistry.setModelTracker(null);
+                scheduler.shutdown();
+            }
         } 
         catch(Exception e) 
         {
             log.error("Problem shutting down", e);
         }
     }
+
     private void initResourceBasedLogging(String resource)
     {
         try

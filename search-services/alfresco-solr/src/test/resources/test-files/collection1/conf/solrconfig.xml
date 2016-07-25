@@ -181,7 +181,7 @@
           </arr>
         </listener>
         -->
-        <listener event="firstSearcher" class="org.alfresco.solr.registration.TrackerListener" />
+        <listener event="firstSearcher" class="org.alfresco.solr.lifecycle.SolrCoreLoadListener" />
     </query>
 
     <queryResponseWriter name="xml" default="true"
@@ -270,7 +270,6 @@
         </lst>
         <arr name="components">
             <str>setLocale</str>
-            <str>ensureModels</str>
             <str>rewriteFacetParameters</str>
             <str>query</str>
             <str>facet</str>
@@ -299,7 +298,6 @@
 
         <arr name="components">
             <str>setLocale</str>
-            <str>ensureModels</str>
             <str>query</str>
             <str>facet</str>
             <str>mlt</str>
@@ -317,7 +315,6 @@
             <str name="defType">cmis</str>
         </lst>
         <arr name="components">
-            <!--<str>ensureModels</str>-->
             <str>query</str>
             <str>facet</str>
             <str>mlt</str>
@@ -441,7 +438,6 @@
         <int name="scale">1</int>
         <int name="buckets">10</int>
     </queryParser>
-    <searchComponent name="ensureModels" class="org.alfresco.solr.component.EnsureModelsComponent" />
     <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
     <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
 

@@ -17,12 +17,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.solr.registration;
+package org.alfresco.solr.lifecycle;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.apache.solr.core.*;
 import org.apache.solr.handler.admin.CoreAdminHandler;
-import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,22 +29,21 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 
 /**
- * Listens for the first search to be created and registers the trackers
+ * Listens for the first searcher to be created for a core and registers the trackers
  *
  * @author Gethin James
  */
-public class TrackerListener extends AbstractSolrEventListener {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class SolrCoreLoadListener extends AbstractSolrEventListener {
 
-    public TrackerListener(SolrCore core) {
+    public SolrCoreLoadListener(SolrCore core) {
         super(core);
     }
 
     @Override
     public void newSearcher(SolrIndexSearcher newSearcher, SolrIndexSearcher currentSearcher) {
         CoreContainer coreContainer = getCore().getCoreDescriptor().getCoreContainer();
-        CoreAdminHandler coreAdminHandler = coreContainer.getMultiCoreHandler();
+        AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
 
-        AlfrescoCoreRegistration.registerForCore((AlfrescoCoreAdminHandler) coreAdminHandler, coreContainer, getCore(), getCore().getName());
+        SolrCoreLoadRegistration.registerForCore(coreAdminHandler, coreContainer, getCore(), getCore().getName());
     }
 }
