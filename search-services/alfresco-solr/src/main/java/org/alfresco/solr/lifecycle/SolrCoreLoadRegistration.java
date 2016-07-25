@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Deals with core registration with the core is loaded.
+ * Deals with core registration when the core is loaded.
  *
  * @author Gethin James
  */
@@ -151,9 +151,21 @@ public class SolrCoreLoadRegistration {
         return trackers;
     }
 
+    /**
+     * Shuts down the trackers for a core.
+     *
+     * The trackers are only deleted from the scheduler if they are the exact same instance of the Tracker class
+     * passed into this method.
+     * For example, you could have 2 cores of the same name and have the trackers registered with the scheduler BUT
+     * the scheduler only keys by core name.  The Collection<Tracker>s passed into this method are only removed
+     * from the scheduler if the instances are == (equal). See scheduler.deleteJobForTrackerInstance()
+     *
+     * @param coreName The name of the core
+     * @param coreTrackers A collection of trackers
+     * @param scheduler The scheduler
+     */
     public static void shutdownTrackers(String coreName, Collection<Tracker> coreTrackers, SolrTrackerScheduler scheduler)
     {
-
         try
         {
             log.info("Shutting down " + coreName + " with " + coreTrackers.size() + " trackers.");
