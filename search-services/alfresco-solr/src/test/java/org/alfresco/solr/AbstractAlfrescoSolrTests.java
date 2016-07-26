@@ -571,7 +571,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             String[] textAttributes,
             String[] allAttributes,
             String... name)throws IOException,ParseException
-{
+    {
         SolrServletRequest solrQueryRequest = null;
         RefCounted<SolrIndexSearcher>refCounted = null;
         try
@@ -589,30 +589,30 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             if (textAttributes != null)
             {
                 for (String textAttribute : textAttributes)
-            {
-                    searchParameters.addTextAttribute(textAttribute);
+                {
+                        searchParameters.addTextAttribute(textAttribute);
+                }
             }
-        }
-        if (allAttributes != null)
-        {
-            for (String allAttribute : allAttributes)
+            if (allAttributes != null)
             {
-                searchParameters.addAllAttribute(allAttribute);
+                for (String allAttribute : allAttributes)
+                {
+                    searchParameters.addAllAttribute(allAttribute);
+                }
             }
-        }
         
-        Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
-        log.debug("####### Query ######:"+query);
-        TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
+            Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
+            log.debug("####### Query ######:"+query);
+            TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
 
-        if (count != null)
-        {
-            if (docs.totalHits != count)
+            if (count != null)
             {
-                throw new IOException("FAILED: " + fixQueryString(queryString, name)+" ; "+docs.totalHits);
+                if (docs.totalHits != count)
+                {
+                    throw new IOException("FAILED: " + fixQueryString(queryString, name)+" ; "+docs.totalHits);
+                }
             }
         }
-    }
         finally
         {
             refCounted.decref();

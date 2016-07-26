@@ -1844,7 +1844,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      public Solr4QueryParser getLuceneQueryParser(SearchParameters searchParameters, SolrQueryRequest req, FTSQueryParser.RerankPhase rerankPhase)
      {
          Analyzer analyzer =  req.getSchema().getQueryAnalyzer();
-         Solr4QueryParser parser = new Solr4QueryParser(req, Version.LUCENE_5_5_0, searchParameters.getDefaultFieldName(), analyzer, rerankPhase);
+         Solr4QueryParser parser = new Solr4QueryParser(req, Version.LUCENE_6_0_1, searchParameters.getDefaultFieldName(), analyzer, rerankPhase);
          parser.setNamespacePrefixResolver(namespaceDAO);
          parser.setDictionaryService(getDictionaryService(CMISStrictDictionaryService.DEFAULT));
          parser.setTenantService(tenantService);

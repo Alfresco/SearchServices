@@ -1719,13 +1719,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         qname = QName.createQName(TEST_NAMESPACE, "boolean-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"true\"", 1);
 
-        /**
-         * //TODO:
-        qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
-        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef + "\"", 1);
-
         qname = QName.createQName(TEST_NAMESPACE, "qname-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"{wibble}wobble\"", 1);
+        
+        qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef + "\"", 1);
 
         qname = QName.createQName(TEST_NAMESPACE, "category-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\""
@@ -1735,7 +1733,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         qname = QName.createQName(TEST_NAMESPACE, "path-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
                         + NamespaceService.CONTENT_MODEL_1_0_URI + "}three\"", 1);
-        **/
 
         qname = QName.createQName(TEST_NAMESPACE, "any-many-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"100\"", 1);
