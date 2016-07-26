@@ -61,11 +61,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoAnalyzerWrapper;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.AlfrescoSolrDataModel.ContentFieldType;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.Pair;
@@ -110,7 +110,6 @@ import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.apache.solr.analysis.TokenizerChain;
-import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.request.SolrQueryRequest;
@@ -2040,27 +2039,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 fixed.add(token);
             }
         }
-
-        // reorder by start position and increment
-
-        Collections.sort(fixed, new Comparator<PackedTokenAttributeImpl>()
-        {
-
-            public int compare(PackedTokenAttributeImpl o1, PackedTokenAttributeImpl o2)
-            {
-                int dif = o1.startOffset() - o2.startOffset();
-                if (dif != 0)
-                {
-                    return dif;
-                } else
-                {
-                    return o1.getPositionIncrement() - o2.getPositionIncrement();
-                }
-            }
-        });
-
         // make sure we remove any tokens we have duplicated
-
         @SuppressWarnings("rawtypes")
         OrderedHashSet unique = new OrderedHashSet();
         unique.addAll(fixed);
