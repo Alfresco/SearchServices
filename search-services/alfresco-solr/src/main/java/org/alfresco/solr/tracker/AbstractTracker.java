@@ -133,14 +133,14 @@ public abstract class AbstractTracker implements Tracker
     public void track()
     {
         if(runLock.availablePermits() == 0) {
-            log.info("... " + this.getClass().getSimpleName() + " " + hashCode() + " for core [" + coreName + "] is already in use "+ this.getClass());
+            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
             return;
         }
 
         try
         {
             runLock.acquire();
-            log.info("... Running " + this.getClass().getSimpleName() + " " + hashCode() + " for core [" + coreName + "].");
+            log.info("... Running " + this.getClass().getSimpleName() + " for core [" + coreName + "].");
 
             if(state == null)
             {
@@ -191,11 +191,8 @@ public abstract class AbstractTracker implements Tracker
         finally
         {
             infoSrv.unregisterTrackerThread();
-            if (state != null)
-            {
-                state.setRunning(false);
-                state.setCheck(false);
-            }
+            state.setRunning(false);
+            state.setCheck(false);
             runLock.release();
         }
     }
