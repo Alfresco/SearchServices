@@ -65,7 +65,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkNonField();
         checkNullAndUnset();
         checkInternalFields();
-        checkAuthorityFilter();
+        checkAuthorityFilter(false); //PostFilter false
+        checkAuthorityFilter(true); //PostFilter false
         checkPropertyTypes();
         testAFTS();
         testAFTSandSort();
@@ -86,7 +87,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkNonField();
         checkNullAndUnset();
         checkInternalFields();
-        checkAuthorityFilter();
+        checkAuthorityFilter(true);
+        checkAuthorityFilter(false);
         checkPropertyTypes();
         testAFTS();
         testAFTSandSort();
@@ -558,13 +560,13 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":f*x", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":*ox", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
-                        .toPrefixString(dataModel.getNamespaceDAO())) + ":fox", 1);
+                .toPrefixString(dataModel.getNamespaceDAO())) + ":fox", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
-                        .toPrefixString(dataModel.getNamespaceDAO())) + ":fo*", 1);
+                .toPrefixString(dataModel.getNamespaceDAO())) + ":fo*", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
-                        .toPrefixString(dataModel.getNamespaceDAO())) + ":f*x", 1);
+                .toPrefixString(dataModel.getNamespaceDAO())) + ":f*x", 1);
         assertAQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT
-                        .toPrefixString(dataModel.getNamespaceDAO())) + ":*ox", 1);
+                .toPrefixString(dataModel.getNamespaceDAO())) + ":*ox", 1);
 
     }
 
@@ -1317,7 +1319,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
     }
 
 
-    private void checkAuthorityFilter() throws Exception {
+    private void checkAuthorityFilter(boolean postFilter) throws Exception {
+        
         /***** checkAuthorityFilter **********/
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|DENIED:andy", 0);
