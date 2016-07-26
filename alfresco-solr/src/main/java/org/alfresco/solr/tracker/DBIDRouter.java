@@ -30,7 +30,7 @@ import org.alfresco.solr.client.Acl;
 public class DBIDRouter implements DocRouter
 {
     public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
-        //When routing by acl, all acls go to all shards.
+        //When routing by DBID, all acls go to all shards.
         return true;
     }
 
