@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,12 +37,18 @@ public class DefaultTrackerPoolFactoryTest
 {
     private DefaultTrackerPoolFactory poolFactory;
     private Properties properties;
-
+    ThreadPoolExecutor tpe;
     @Before
     public void setup()
     {
         poolFactory = null; // Ensure we don't accidentally reuse between runs.
         properties = new Properties();        
+    }
+    @After
+    public void teardown()
+    {
+        tpe.shutdownNow();
+        tpe = null;
     }
     
     @Test
@@ -49,7 +56,7 @@ public class DefaultTrackerPoolFactoryTest
     {
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "TrackerName");
         
-        ThreadPoolExecutor tpe = poolFactory.create();
+        tpe = poolFactory.create();
         
         assertEquals(3, tpe.getCorePoolSize());
         assertEquals(3, tpe.getMaximumPoolSize());
@@ -65,7 +72,7 @@ public class DefaultTrackerPoolFactoryTest
         
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "TrackerName");
         
-        ThreadPoolExecutor tpe = poolFactory.create();
+        tpe = poolFactory.create();
         
         assertEquals(30, tpe.getCorePoolSize());
         assertEquals(40, tpe.getMaximumPoolSize());
