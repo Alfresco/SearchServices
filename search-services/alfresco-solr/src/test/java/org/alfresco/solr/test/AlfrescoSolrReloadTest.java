@@ -1,6 +1,7 @@
 package org.alfresco.solr.test;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -10,10 +11,17 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.*;
+import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.Tracker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.LegacyNumericRangeQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.core.SolrCore;
@@ -23,13 +31,13 @@ import org.junit.Test;
 import org.quartz.SchedulerException;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -90,9 +98,9 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
     }
 
     @Test
-    public void testReload() throws Exception {
+    public void testReloadUsingNodes() throws Exception {
 
-        logger.info("######### Starting tracker reload test ###########");
+        logger.info("######### Starting tracker reload test NODES ###########");
 
         assertAQuery("PATH:\"/\"", 1);
         assertAQuery("TYPE:\"" + testSuperType + "\"", 1);
@@ -104,13 +112,45 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
         addNodes(1, 10);
         assertAQuery("TYPE:\"" + testSuperType + "\"", 10);
 
+        reloadAndAssertCorrect(trackers, numOfTrackers, jobs);
+
+        addNodes(10, 21);
+        assertAQuery("TYPE:\"" + testSuperType + "\"", 21);
+    }
+
+    @Test
+    public void testReloadUsingAcls() throws Exception {
+
+        logger.info("######### Starting tracker reload test ACLS ###########");
+
+        Collection<Tracker> trackers = getTrackers();
+        int numOfTrackers = trackers.size();
+        int jobs = getJobsCount();
+
+        indexAndVerify(250, 251);
+
+        reloadAndAssertCorrect(trackers, numOfTrackers, jobs);
+
+        //This is a bit of a hack to skip integrity checking. This is because our test client doesn't correctly
+        //similate the Alfresco repo.  This "hack" doesn't invalidate the test.
+        Optional<Tracker> aTracker = getTrackers().stream().filter(tracker ->  tracker.getClass().equals(AclTracker.class)).findFirst();
+        aTracker.ifPresent(foundTracker ->
+        {
+            AclTracker aclTracker = (AclTracker) foundTracker;
+            aclTracker.getTrackerState().setCheckedLastAclTransactionTime(true);
+            aclTracker.getTrackerState().setCheckedFirstAclTransactionTime(true);
+            logger.info("Changed CheckedLastAclTransactionTime for " + aclTracker.getClass().getSimpleName() + " " + aclTracker.hashCode());
+            aclTracker.track();
+        });
+
+    }
+
+    private void reloadAndAssertCorrect(Collection<Tracker> trackers, int numOfTrackers, int jobs) throws Exception {
         logger.info("######### reload called ###########");
         h.reload();
-        logger.info("######### reload finished ###########");
-
         //Give it a little time to shutdown properly and recover.
         TimeUnit.SECONDS.sleep(1);
-        logger.info("#################### After sleep ##############################");
+        logger.info("######### reload finished ###########");
 
         Collection<Tracker> reloadedTrackers = getTrackers();
         assertEquals("After a reload the number of trackers should be the same", numOfTrackers, getTrackers().size());
@@ -120,10 +160,8 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
         {
             assertFalse("The reloaded trackers should be different.", reloadedTrackers.contains(tracker));
         });
-
-        addNodes(10, 21);
-        assertAQuery("TYPE:\"" + testSuperType + "\"", 21);
     }
+
 
     private void addNodes(int startInclusive, int endExclusive) {
         IntStream.range(startInclusive, endExclusive).forEach(i ->
@@ -140,6 +178,28 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
                 }
             }
         );
+    }
+
+    private void indexAndVerify(int numAcls, int expected) throws Exception {
+
+        AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
+
+        List<Acl> bulkAcls = new ArrayList();
+        List<AclReaders> bulkAclReaders = new ArrayList();
+
+        for(int i=0; i<numAcls; i++) {
+            Acl bulkAcl = getAcl(bulkAclChangeSet);
+            bulkAcls.add(bulkAcl);
+            bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
+                    bulkAcl,
+                    list("joel"+bulkAcl.getId()),
+                    list("phil"+bulkAcl.getId()),
+                    null));
+        }
+
+        indexAclChangeSet(bulkAclChangeSet, bulkAcls, bulkAclReaders);
+
+        waitForDocCount(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), expected, 10000);
     }
 
     private int getJobsCount() throws SchedulerException {
