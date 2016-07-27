@@ -26,6 +26,7 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
@@ -48,8 +49,8 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
         //assertU(commit());
     }
 
-    @Test
-    public void testAuth() throws Exception 
+    @Before
+    public void loadAuth() throws Exception 
     {
         assertU(delQ("*:*"));
         assertU(commit());
@@ -94,8 +95,20 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
         String[] doc5 = {"id", "6", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "10000", "OWNER", "sara"};
         assertU(adoc(doc5));
         assertU(commit());
-
-        System.setProperty("alfresco.postfilter", "true");
+    }
+    @Test
+    public void testAuthInFilter()
+    {
+        testAuth("false");
+    }
+    @Test
+    public void testAuthPostFilter()
+    {
+        testAuth("true");
+    }
+    
+    public void testAuth(String postFilter){
+        System.setProperty("alfresco.postfilter", postFilter);
 
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
@@ -110,25 +123,8 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
                 "//result/doc[2]/str[@name='id'][.='2']",
                 "//result/doc[3]/str[@name='id'][.='3']");
 
-        //Turning off the postfilter
-        System.setProperty("alfresco.postfilter", "false");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"GROUP_R2\",\"GROUP_R4\" ], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=3]",
-                "//result/doc[1]/str[@name='id'][.='1']",
-                "//result/doc[2]/str[@name='id'][.='2']",
-                "//result/doc[3]/str[@name='id'][.='3']");
 
         //Test with owner
-        System.setProperty("alfresco.postfilter", "true");
-
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
@@ -142,28 +138,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
                 "//result/doc[2]/str[@name='id'][.='2']",
                 "//result/doc[3]/str[@name='id'][.='3']",
                 "//result/doc[4]/str[@name='id'][.='5']");
-
-        //Test with owner
-        System.setProperty("alfresco.postfilter", "false");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"GROUP_R2\",\"GROUP_R4\", \"steve\" ], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=4]",
-                "//result/doc[1]/str[@name='id'][.='1']",
-                "//result/doc[2]/str[@name='id'][.='2']",
-                "//result/doc[3]/str[@name='id'][.='3']",
-                "//result/doc[4]/str[@name='id'][.='5']");
-
-
-
         // Test Deny
-        System.setProperty("alfresco.postfilter", "true");
 
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
@@ -176,24 +151,8 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
         assertQ(req, "*[count(//doc)=2]",
                 "//result/doc[1]/str[@name='id'][.='1']",
                 "//result/doc[2]/str[@name='id'][.='3']");
-
-
-        System.setProperty("alfresco.postfilter", "false");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"GROUP_R2\",\"GROUP_R4\", \"GROUP_D1\"], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=2]",
-                "//result/doc[1]/str[@name='id'][.='1']",
-                "//result/doc[2]/str[@name='id'][.='3']");
-
+        
         //Test global read authority
-        System.setProperty("alfresco.postfilter", "true");
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
@@ -204,20 +163,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"ROLE_ADMINISTRATOR\"], \"tenants\": [ \"\" ]}");
         assertQ(req, "*[count(//doc)=6]");
 
-        System.setProperty("alfresco.postfilter", "false");
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"ROLE_ADMINISTRATOR\"], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=6]");
-
-
         //Test zero hits
-        System.setProperty("alfresco.postfilter", "true");
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
@@ -226,17 +172,6 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
         params.add("sort", "id asc");
         params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"blah\"], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=0]");
-
-        System.setProperty("alfresco.postfilter", "false");
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"blah\"], \"tenants\": [ \"\" ]}");
         assertQ(req, "*[count(//doc)=0]");
     }
 }
