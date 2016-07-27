@@ -98,6 +98,9 @@ public class SolrCoreLoadRegistration {
                     log.info("Ensuring first model sync.");
                     mTracker.ensureFirstModelSync();
                     log.info("Done ensuring first model sync.");
+                    
+                    //Scheduling the ModelTracker.
+                    scheduler.schedule(mTracker, coreName, props);
                 }
             }
 
