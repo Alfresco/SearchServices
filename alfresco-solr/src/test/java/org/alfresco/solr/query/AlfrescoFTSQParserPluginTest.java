@@ -1320,7 +1320,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
 
     private void checkAuthorityFilter(boolean postFilter) throws Exception {
-        
+
+        System.setProperty("alfresco.postfilter", new Boolean(postFilter).toString());
         /***** checkAuthorityFilter **********/
         assertAQueryHasNumberOfDocs("PATH:\"//.\"", 16);
         assertAQueryHasNumOfDocsWithJson("PATH:\"//.\"", "{!afts}|DENIED:andy", 0);
