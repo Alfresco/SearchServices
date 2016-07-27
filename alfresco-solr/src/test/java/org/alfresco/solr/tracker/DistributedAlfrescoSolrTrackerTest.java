@@ -28,6 +28,7 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
@@ -46,6 +47,10 @@ import java.util.ArrayList;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
+
+    @Rule
+    public JettyServerRule jetty = new JettyServerRule(2);
+
     @Test
     public void doTest() throws Exception
     {
