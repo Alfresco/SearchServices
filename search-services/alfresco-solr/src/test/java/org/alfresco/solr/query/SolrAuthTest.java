@@ -30,7 +30,8 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 
-public class SolrAuthTest extends AbstractAlfrescoSolrTests {
+public class SolrAuthTest extends AbstractAlfrescoSolrTests 
+{
 
     @BeforeClass
     public static void beforeClass() throws Exception 
@@ -39,7 +40,8 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws Exception
+    {
         // if you override setUp or tearDown, you better call
         // the super classes version
         //clearIndex();
@@ -47,14 +49,10 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
     }
 
     @Test
-    public void testAuth() throws Exception {
-
-
-
+    public void testAuth() throws Exception 
+    {
         assertU(delQ("*:*"));
         assertU(commit());
-
-
 
         String[] acldoc = {"id", "100",  "READER",  "GROUP_R1", "READER", "GROUP_R2", "ACLID", "5000"};
         assertU(adoc(acldoc));

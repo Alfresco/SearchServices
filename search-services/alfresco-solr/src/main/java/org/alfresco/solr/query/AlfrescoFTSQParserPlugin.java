@@ -73,10 +73,10 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
         {
             super(qstr, localParams, params, req, args);
             Object arg = args.get("rerankPhase");
-        	if(arg != null)
-        	{
+            if(arg != null)
+            {
                 rerankPhase = RerankPhase.valueOf(arg.toString());
-        	}
+            }
 
             postfilter = Boolean.parseBoolean(req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter", System.getProperty("alfresco.postfilter", "true")));
         }
