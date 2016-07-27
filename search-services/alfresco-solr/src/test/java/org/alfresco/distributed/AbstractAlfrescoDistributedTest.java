@@ -72,6 +72,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -121,7 +122,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     @BeforeClass
     public static void setup()
     {
-        fixShardCount(2);
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
@@ -131,27 +131,10 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         
     }
 
-    private final static int DEFAULT_MAX_SHARD_COUNT = 3;
-    private static int shardCount = -1; // the actual number of solr cores that
-                                        // will be created in the cluster
-    public int getShardCount()
-    {
-        return shardCount;
-    }
-
-    private static boolean isShardCountFixed = false;
-
-    public static void fixShardCount(int count)
-    {
-        isShardCountFixed = true;
-        shardCount = count;
-    }
-
     protected JettySolrRunner controlJetty;
     protected List<SolrClient> clients = new ArrayList<>();
     protected List<JettySolrRunner> jettys = new ArrayList<>();
 
-    protected String context;
     protected String[] deadServers;
     protected String shards;
     protected String[] shardsArr;
@@ -247,22 +230,14 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         return System.getProperty("user.dir") + "/src/test/resources/test-files";
     }
-
-    private boolean distribSetUpCalled = false;
-
     public void distribSetUp() throws Exception
     {
-        distribSetUpCalled = true;
         SolrTestCaseJ4.resetExceptionIgnores(); // ignore anything with
                                                 // ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
 
-        File solrHome = new File(getSolrHome());
-        System.out.println(solrHome.getAbsolutePath());
     }
-
-    private boolean distribTearDownCalled = false;
 
     public void distribTearDown() throws Exception
     {
@@ -272,8 +247,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.aclReadersMap.clear();
         SOLRAPIQueueClient.aclMap.clear();
         SOLRAPIQueueClient.nodeMap.clear();
-        distribTearDownCalled = true;
-        destroyServers();
     }
 
     public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
@@ -1317,132 +1290,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         compareSolrResponses(a, b);
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public @interface ShardsRepeat
-    {
-        public abstract int min() default 1;
-
-        public abstract int max() default DEFAULT_MAX_SHARD_COUNT;
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public @interface ShardsFixed
-    {
-        public abstract int num();
-    }
-
-    public class ShardsRepeatRule implements TestRule
-    {
-
-        private abstract class ShardsStatement extends Statement
-        {
-            abstract protected void callStatement() throws Throwable;
-
-            @Override
-            public void evaluate() throws Throwable
-            {
-                distribSetUp();
-                if (!distribSetUpCalled)
-                {
-                    Assert.fail("One of the overrides of distribSetUp does not propagate the call.");
-                }
-                try
-                {
-                    callStatement();
-                } finally
-                {
-                    distribTearDown();
-                    if (!distribTearDownCalled)
-                    {
-                        Assert.fail("One of the overrides of distribTearDown does not propagate the call.");
-                    }
-                }
-            }
-        }
-
-        private class ShardsFixedStatement extends ShardsStatement
-        {
-
-            private final int numShards;
-            private final Statement statement;
-
-            private ShardsFixedStatement(int numShards, Statement statement)
-            {
-                this.numShards = numShards;
-                this.statement = statement;
-            }
-
-            @Override
-            public void callStatement() throws Throwable
-            {
-                fixShardCount(numShards);
-                createServers(numShards);
-                RandVal.uniqueValues = new HashSet(); // reset random values
-                statement.evaluate();
-                try
-                {
-                    destroyServers();
-                } catch (Throwable t)
-                {
-                    log.error("Error while shutting down servers", t);
-                }
-            }
-        }
-
-        private class ShardsRepeatStatement extends ShardsStatement
-        {
-
-            private final int min;
-            private final int max;
-            private final Statement statement;
-
-            private ShardsRepeatStatement(int min, int max, Statement statement)
-            {
-                this.min = min;
-                this.max = max;
-                this.statement = statement;
-            }
-
-            @Override
-            public void callStatement() throws Throwable
-            {
-                for (shardCount = min; shardCount <= max; shardCount++)
-                {
-                    createServers(shardCount);
-                    RandVal.uniqueValues = new HashSet(); // reset random values
-                    statement.evaluate();
-                    destroyServers();
-                }
-            }
-        }
-
-        @Override
-        public Statement apply(Statement statement, Description description)
-        {
-            ShardsFixed fixed = description.getAnnotation(ShardsFixed.class);
-            ShardsRepeat repeat = description.getAnnotation(ShardsRepeat.class);
-            if (fixed != null && repeat != null)
-            {
-                throw new RuntimeException("ShardsFixed and ShardsRepeat annotations can't coexist");
-            } else if (fixed != null)
-            {
-                return new ShardsFixedStatement(fixed.num(), statement);
-            } else if (repeat != null)
-            {
-                return new ShardsRepeatStatement(repeat.min(), repeat.max(), statement);
-            } else
-            {
-                return (isShardCountFixed ? new ShardsFixedStatement(shardCount, statement)
-                        : new ShardsRepeatStatement(1, DEFAULT_MAX_SHARD_COUNT, statement));
-            }
-        }
-    }
-
-    @Rule
-    public ShardsRepeatRule repeatRule = new ShardsRepeatRule();
-
     public static Object[] getRandFields(String[] fields, RandVal[] randVals)
     {
         Object[] o = new Object[fields.length * 2];
@@ -1574,4 +1421,41 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
+    /**
+     * A JUnit Rule to setup Jetty
+     */
+    public class JettyServerRule extends ExternalResource {
+
+        int numCores;
+        int numShards;
+
+        public JettyServerRule(int numCores, int numShards) {
+            this.numCores = numCores;
+            this.numShards = numShards;
+        }
+
+        public JettyServerRule(int numShards) {
+            this.numCores = 1;
+            this.numShards = numShards;
+        }
+
+        @Override
+        protected void before() throws Throwable {
+
+            distribSetUp();
+            RandVal.uniqueValues = new HashSet(); // reset random values
+            createServers(numShards);
+        }
+
+        @Override
+        protected void after() {
+
+            try {
+                destroyServers();
+                distribTearDown();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
