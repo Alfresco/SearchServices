@@ -109,7 +109,6 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
     
     public void testAuth(String postFilter){
         System.setProperty("alfresco.postfilter", postFilter);
-
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
