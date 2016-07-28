@@ -20,17 +20,14 @@ package org.alfresco.solr.tracker;
 
 import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
@@ -52,8 +49,11 @@ import java.util.Random;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
+    @Rule
+    public JettyServerRule jetty = new JettyServerRule(2);
+
     @Test
-    public void doTest() throws Exception
+    public void testAclId() throws Exception
     {
         handle.put("explain", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
