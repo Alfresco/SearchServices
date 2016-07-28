@@ -436,7 +436,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 incrementJetty = false;
                 break;
             case PER_CORE:
+                //We have created them per core but where do we put the shards?
+                if (numShards != 0 && coreNames.length != 1)
+                {
+                    throw new UnsupportedOperationException("What shall we do with multiple cores and multiple shards?");
+                }
                 incrementJetty = false;
+                numOfJettys = 0; //For now, lets put them on the first core.
                 break;
             case PER_SHARD:
                 incrementJetty = true;
