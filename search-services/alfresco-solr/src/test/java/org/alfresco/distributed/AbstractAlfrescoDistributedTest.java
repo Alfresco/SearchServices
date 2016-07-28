@@ -218,7 +218,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * Subclasses can override this to change a test's solr home (default is in
      * test-files)
      */
-    public String getSolrHome()
+    public String getTestFilesHome()
     {
         return System.getProperty("user.dir") + "/src/test/resources/test-files";
     }
@@ -375,18 +375,18 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @return
      * @throws Exception
      */
-    private JettySolrRunner createJetty(String name, String ... params) throws Exception
+    private JettySolrRunner createJetty(String coreName, String ... params) throws Exception
     {
-        Path jettyHome = testDir.toPath().resolve(name);
+        Path jettyHome = testDir.toPath().resolve(coreName);
         File jettyHomeFile = jettyHome.toFile();
         seedSolrHome(jettyHomeFile);
-        seedCoreRootDirWithDefaultTestCore(jettyHome);
-        updateShardingProperties(jettyHome, params);
+        seedCoreRootDirWithDefaultTestCore(coreName, jettyHome);
+        updateShardingProperties(jettyHome, coreName, params);
         JettySolrRunner jetty = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
         return jetty;
     }
 
-    private void updateShardingProperties(Path jettyHome, String ... params) throws IOException
+    private void updateShardingProperties(Path jettyHome, String coreName, String ... params) throws IOException
     {
         if(params != null && params.length > 0)
         {
@@ -397,7 +397,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 Properties newprops = new Properties();
                 newprops.putAll(AlfrescoSolrUtils.map(params));
                 Properties properties = new Properties();
-                String solrcoreProperties = jettyHome.resolve("collection1/conf/solrcore.properties").toString();
+                String solrcoreProperties = jettyHome.resolve(coreName+"/conf/solrcore.properties").toString();
                 in = new FileInputStream(solrcoreProperties);
                 properties.load(in);
                 in.close();
@@ -417,7 +417,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected void createServers(String[] coreNames, int numShards) throws Exception
     {
-        System.setProperty("configSetBaseDir", getSolrHome());
+        System.setProperty("configSetBaseDir", getTestFilesHome());
 
         for (int i = 0; i < coreNames.length; i++) {
             JettySolrRunner jsr =  createJetty(coreNames[i]);
@@ -1338,7 +1338,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     /**
      * Given a directory that will be used as the SOLR_HOME for a jetty
-     * instance, seeds that directory with the contents of {@link #getSolrHome}
+     * instance, seeds that directory with the contents of {@link #getTestFilesHome}
      * and ensures that the proper {@link #getSolrXml} file is in place.
      */
     protected void seedSolrHome(File jettyHome) throws IOException
@@ -1346,10 +1346,10 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         String solrxml = getSolrXml();
         if (solrxml != null)
         {
-            FileUtils.copyFile(new File(getSolrHome(), solrxml), new File(jettyHome, "solr.xml"));
+            FileUtils.copyFile(new File(getTestFilesHome(), solrxml), new File(jettyHome, "solr.xml"));
         }
         //Add solr home conf folder with alfresco based configuration.
-        FileUtils.copyDirectory(new File(getSolrHome() + "/conf"), new File(jettyHome, "/conf"));
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), new File(jettyHome, "/conf"));
         
     }
 
@@ -1362,37 +1362,37 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @see #writeCoreProperties(Path,String)
      * @see #CORE_PROPERTIES_FILENAME
      */
-    private void seedCoreRootDirWithDefaultTestCore(Path coreRootDirectory) throws IOException
+    private void seedCoreRootDirWithDefaultTestCore(String coreName, Path coreRootDirectory) throws IOException
     {
         //Prepare alfresco solr core.
-        Path coreDir = coreRootDirectory.resolve(DEFAULT_TEST_CORENAME);
+        Path coreDir = coreRootDirectory.resolve(coreName);
         if (Files.notExists(coreDir.resolve(CORE_PROPERTIES_FILENAME)))
         {
             Properties coreProperties = new Properties();
-            coreProperties.setProperty("name", "collection1");
+            coreProperties.setProperty("name", coreName);
             writeCoreProperties(coreDir, coreProperties, this.getTestName());
         } // else nothing to do, DEFAULT_TEST_CORENAME already exists
         //Add alfresco solr configurations
-        FileUtils.copyDirectory(new File(getSolrHome() + "/collection1/conf"), coreRootDirectory.resolve("collection1/conf").toFile());
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/"+coreName+"/conf"), coreRootDirectory.resolve(coreName+"/conf").toFile());
         // Add alfresco data model def
-        FileUtils.copyDirectory(new File(getSolrHome() + "/alfrescoModels"), coreRootDirectory.resolve("alfrescoModels").toFile());
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), coreRootDirectory.resolve("alfrescoModels").toFile());
         //add solr alfresco properties
-        FileUtils.copyFile(new File(getSolrHome() + "/log4j-solr.properties"), coreRootDirectory.resolve("log4j-solr.properties").toFile());
+        FileUtils.copyFile(new File(getTestFilesHome() + "/log4j-solr.properties"), coreRootDirectory.resolve("log4j-solr.properties").toFile());
     }
 
-    protected void setupJettySolrHome(File jettyHome) throws IOException
+    protected void setupJettySolrHome(String coreName, File jettyHome) throws IOException
     {
         seedSolrHome(jettyHome);
 
         Properties coreProperties = new Properties();
-        coreProperties.setProperty("name", "collection1");
+        coreProperties.setProperty("name", coreName);
         coreProperties.setProperty("shard", "${shard:}");
-        coreProperties.setProperty("collection", "${collection:collection1}");
+        coreProperties.setProperty("collection", "${collection:"+coreName+"}");
         coreProperties.setProperty("config", "${solrconfig:solrconfig.xml}");
         coreProperties.setProperty("schema", "${schema:schema.xml}");
         coreProperties.setProperty("coreNodeName", "${coreNodeName:}");
 
-        writeCoreProperties(jettyHome.toPath().resolve("cores").resolve("collection1"), coreProperties, "collection1");
+        writeCoreProperties(jettyHome.toPath().resolve("cores").resolve(coreName), coreProperties, coreName);
     }
 
     public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
