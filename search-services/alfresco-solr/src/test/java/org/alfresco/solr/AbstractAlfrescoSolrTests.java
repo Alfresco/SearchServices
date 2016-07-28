@@ -171,6 +171,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             {
                 h = new TestHarness(nodeConfig, locator);
                 h.coreName = SolrTestCaseJ4.DEFAULT_TEST_CORENAME;
+                
             }
             catch(Exception e)
             {

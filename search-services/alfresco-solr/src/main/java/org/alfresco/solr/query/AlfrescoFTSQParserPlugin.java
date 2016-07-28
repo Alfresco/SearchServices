@@ -22,6 +22,8 @@ import org.alfresco.repo.search.impl.parsers.FTSQueryParser.RerankPhase;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.solr.common.params.SolrParams;
@@ -61,15 +63,16 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
     @Override
     public void init(NamedList args)
     {
-    	this.args = args;
+        this.args = args;
     }
 
     public static class AlfrescoFTSQParser extends AbstractQParser
     {
-    	private RerankPhase rerankPhase = RerankPhase.SINGLE_PASS_WITH_AUTO_PHRASE;
+        private Log logger = LogFactory.getLog(AlfrescoFTSQParser.class);
+        private RerankPhase rerankPhase = RerankPhase.SINGLE_PASS_WITH_AUTO_PHRASE;
         private boolean postfilter;
 
-		public AlfrescoFTSQParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, NamedList<Object> args)
+        public AlfrescoFTSQParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, NamedList<Object> args)
         {
             super(qstr, localParams, params, req, args);
             Object arg = args.get("rerankPhase");
@@ -78,7 +81,9 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
                 rerankPhase = RerankPhase.valueOf(arg.toString());
             }
 
-            postfilter = Boolean.parseBoolean(req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter", System.getProperty("alfresco.postfilter", "true")));
+            //if core.properties is not set and system property is not set then we should set alfresco.postfilter = false;
+            postfilter = Boolean.parseBoolean(req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter", System.getProperty("alfresco.postfilter", "false")));
+            logger.debug("Post filter value: " + postfilter);
         }
 
         /*
