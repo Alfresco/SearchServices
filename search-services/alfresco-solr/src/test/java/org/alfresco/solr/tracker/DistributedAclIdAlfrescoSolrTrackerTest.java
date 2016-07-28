@@ -53,7 +53,7 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
     public JettyServerRule jetty = new JettyServerRule(2);
 
     @Test
-    public void doTest() throws Exception
+    public void testAclId() throws Exception
     {
         handle.put("explain", SKIPVAL);
         handle.put("timestamp", SKIPVAL);

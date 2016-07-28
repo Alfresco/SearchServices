@@ -52,7 +52,7 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
     public JettyServerRule jetty = new JettyServerRule(2);
 
     @Test
-    public void doTest() throws Exception
+    public void testTracker() throws Exception
     {
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
