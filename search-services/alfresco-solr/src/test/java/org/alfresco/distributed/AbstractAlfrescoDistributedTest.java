@@ -61,7 +61,6 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
@@ -403,11 +402,20 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         
     }
 
-    protected void createServers(String[] coreNames, int numShards) throws Exception
+    protected void createServers(JettyInstances jettyStategy, String[] coreNames, int numShards) throws Exception
     {
+        boolean incrementJetty = true;
+
+        switch (jettyStategy)
+        {
+            case SINGLE:
+                incrementJetty = false;
+                break;
+        }
+
         int numOfJettys = 0;
         for (int i = 0; i < coreNames.length; i++) {
-            JettySolrRunner jsr =  createJetty(coreNames[i], numOfJettys++, coreNames[i]);
+            JettySolrRunner jsr =  createJetty(coreNames[i], incrementJetty?numOfJettys++:numOfJettys, coreNames[i]);
             jettyContainers.put(coreNames[i], jsr);
             if (i == 0)
             {
@@ -422,13 +430,25 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         String shardMethod = getShardMethod().toString();
         log.info("################# shardMethod:"+shardMethod);
 
+        switch (jettyStategy)
+        {
+            case SINGLE:
+                incrementJetty = false;
+                break;
+            case PER_CORE:
+                incrementJetty = false;
+                break;
+            case PER_SHARD:
+                incrementJetty = true;
+        }
+
         for (int i = 0; i < numShards; i++)
         {
             if (sb.length() > 0)
                 sb.append(',');
             final String shardname = "shard" + i;
 
-            JettySolrRunner j = createJetty(coreNames[0], numOfJettys++, shardname,"shard.instance", Integer.toString(i),
+            JettySolrRunner j = createJetty(coreNames[0], incrementJetty?numOfJettys++:numOfJettys, shardname,"shard.instance", Integer.toString(i),
                                                       "shard.method", shardMethod,
                                                       "shard.count",  Integer.toString(numShards));
             jettys.add(j);
@@ -1397,21 +1417,30 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
+    public enum JettyInstances {
+        PER_SHARD,
+        PER_CORE,
+        SINGLE;
+    }
+
     /**
      * A JUnit Rule to setup Jetty
      */
     public class JettyServerRule extends ExternalResource {
 
-        String[] coreNames;
-        int numShards;
+        final String[] coreNames;
+        final int numShards;
+        final JettyInstances jettyStategy;
 
-        public JettyServerRule(int numShards, String ...coreNames) {
+        public JettyServerRule(int numShards, JettyInstances jettyStategy, String ...coreNames) {
             this.coreNames = coreNames;
             this.numShards = numShards;
+            this.jettyStategy = jettyStategy;
         }
 
         public JettyServerRule(int numShards) {
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
+            this.jettyStategy = JettyInstances.PER_SHARD;
             this.numShards = numShards;
         }
 
@@ -1420,7 +1449,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
             distribSetUp();
             RandVal.uniqueValues = new HashSet(); // reset random values
-            createServers(coreNames, numShards);
+            createServers(jettyStategy, coreNames, numShards);
         }
 
         @Override
