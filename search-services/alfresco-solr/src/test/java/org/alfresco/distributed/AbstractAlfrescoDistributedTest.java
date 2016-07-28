@@ -8,10 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,11 +67,7 @@ import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +123,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         
     }
 
-    protected JettySolrRunner controlJetty;
+    protected Map<String, JettySolrRunner> jettyContainers = new HashMap<>();
     protected List<SolrClient> clients = new ArrayList<>();
     protected List<JettySolrRunner> jettys = new ArrayList<>();
 
@@ -252,7 +244,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
         ArrayList<SolrCore> cores = new ArrayList();
         try {
-            cores.add(controlJetty.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
+            cores.add(jettyContainers.get(DEFAULT_TEST_CORENAME).getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
             for (JettySolrRunner jettySolrRunner : jettys) {
                 cores.add(jettySolrRunner.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
             }
@@ -274,7 +266,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         SolrCore controlCore = null;
         try {
-            controlCore = controlJetty.getCoreContainer().getCore(DEFAULT_TEST_CORENAME);
+            controlCore = jettyContainers.get(DEFAULT_TEST_CORENAME).getCoreContainer().getCore(DEFAULT_TEST_CORENAME);
             waitForDocCountCore(controlCore, query, count, waitMillis, begin);
         } finally {
             controlCore.close();
@@ -423,14 +415,20 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         
     }
 
-    protected void createServers(int numShards) throws Exception
+    protected void createServers(String[] coreNames, int numShards) throws Exception
     {
         System.setProperty("configSetBaseDir", getSolrHome());
 
-        controlJetty = createJetty("Control");
-        String url = buildUrl(controlJetty.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
-        log.info(url);
-        controlClient = createNewSolrClient(url);
+        for (int i = 0; i < coreNames.length; i++) {
+            JettySolrRunner jsr =  createJetty(coreNames[i]);
+            jettyContainers.put(coreNames[i], jsr);
+            if (i == 0)
+            {
+                String url = buildUrl(jsr.getLocalPort()) + "/" + coreNames[i];
+                log.info(url);
+                controlClient = createNewSolrClient(url);
+            }
+        }
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
@@ -502,10 +500,10 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected void destroyServers() throws Exception
     {
         List<String> solrHomes = new ArrayList<String>();
-        if (controlJetty != null) 
+        for (JettySolrRunner jetty : jettyContainers.values())
         {
-            solrHomes.add(controlJetty.getSolrHome());
-            controlJetty.stop();
+            solrHomes.add(jetty.getSolrHome());
+            jetty.stop();
         }
         if (controlClient != null)
         {
@@ -530,16 +528,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         clients.clear();
         jettys.clear();
-    }
-
-    public JettySolrRunner createJetty(File solrHome, String dataDir) throws Exception
-    {
-        return createJetty(solrHome, dataDir, null, false, null);
-    }
-
-    public JettySolrRunner createJetty(File solrHome, String dataDir, String shardId) throws Exception
-    {
-        return createJetty(solrHome, dataDir, shardId, false, null);
+        jettyContainers.clear();
     }
 
     public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled,
@@ -1426,16 +1415,16 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      */
     public class JettyServerRule extends ExternalResource {
 
-        int numCores;
+        String[] coreNames;
         int numShards;
 
-        public JettyServerRule(int numCores, int numShards) {
-            this.numCores = numCores;
+        public JettyServerRule(int numShards, String ...coreNames) {
+            this.coreNames = coreNames;
             this.numShards = numShards;
         }
 
         public JettyServerRule(int numShards) {
-            this.numCores = 1;
+            coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.numShards = numShards;
         }
 
@@ -1444,7 +1433,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
             distribSetUp();
             RandVal.uniqueValues = new HashSet(); // reset random values
-            createServers(numShards);
+            createServers(coreNames, numShards);
         }
 
         @Override
