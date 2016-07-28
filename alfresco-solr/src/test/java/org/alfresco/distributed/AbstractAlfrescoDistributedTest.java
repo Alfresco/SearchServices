@@ -92,7 +92,7 @@ import org.slf4j.LoggerFactory;
  * @since solr 1.5
  * @author Michael Suzuki 
  */
-public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
+public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 {
     // TODO: this shouldn't be static. get the random when you need it to avoid
     // sharing.
