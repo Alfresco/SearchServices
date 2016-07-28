@@ -49,42 +49,11 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
     private static long MAX_WAIT_TIME = 80000;
 
     static AlfrescoCoreAdminHandler admin;
-    private static NodeRef rootNodeRef;
-    private static NodeRef n01NodeRef;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-        admin = (AlfrescoCoreAdminHandler) h.getCoreContainer().getMultiCoreHandler();
-
-        // Root
-        SolrCore core = h.getCore();
-        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-        dataModel.setCMDefaultUri();
-
-        rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        addStoreRoot(core, dataModel, rootNodeRef, 1, 1, 1, 1);
-
-        // 1
-        n01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        QName n01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "one");
-        ChildAssociationRef n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName,
-                n01NodeRef, true, 0);
-
-        Map<QName, PropertyValue> testProperties = new HashMap<QName, PropertyValue>();
-        Date orderDate = new Date();
-        testProperties.put(createdDate,
-                new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, orderDate)));
-        testProperties.put(createdTime,
-                new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, orderDate)));
-        testProperties.put(ContentModel.PROP_CONTENT, new StringPropertyValue("lettice and cabbage"));
-        testProperties.put(ContentModel.PROP_NAME, new StringPropertyValue("reload"));
-
-        addNode(core, dataModel, 1, 2, 1, testSuperType, null, testProperties, null, "andy",
-                new ChildAssociationRef[]{n01CAR}, new NodeRef[]{rootNodeRef}, new String[]{"/"
-                        + n01QName.toString()}, n01NodeRef, true);
-
-        testNodeRef = n01NodeRef;
+        admin = (AlfrescoCoreAdminHandler)h.getCore().getCoreDescriptor().getCoreContainer().getMultiCoreHandler();
     }
 
     @After
@@ -98,51 +67,55 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
     }
 
     @Test
-    public void testReloadUsingNodes() throws Exception {
+    public void testReload() throws Exception {
 
+        long localId = 0L;
         logger.info("######### Starting tracker reload test NODES ###########");
 
-        assertAQuery("PATH:\"/\"", 1);
-        assertAQuery("TYPE:\"" + testSuperType + "\"", 1);
+        AclChangeSet aclChangeSet = getAclChangeSet(1, ++localId);
+
+        Acl acl = getAcl(aclChangeSet);
+
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
+
+        indexAclChangeSet(aclChangeSet,
+                list(acl),
+                list(aclReaders));
+
+        int numNodes = 1000;
+        List<Node> nodes = new ArrayList();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+
+        Transaction bigTxn = getTransaction(0, numNodes, ++localId);
+
+        for(int i=0; i<numNodes; i++) {
+            Node node = getNode(bigTxn, acl, Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl, "mike", null, false);
+            nodeMetaDatas.add(nodeMetaData);
+        }
+
+        indexTransaction(bigTxn, nodes, nodeMetaDatas);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1000, 100000);
 
         Collection<Tracker> trackers = getTrackers();
         int numOfTrackers = trackers.size();
         int jobs = getJobsCount();
 
-        addNodes(1, 10);
-        assertAQuery("TYPE:\"" + testSuperType + "\"", 10);
-
         reloadAndAssertCorrect(trackers, numOfTrackers, jobs);
 
-        addNodes(10, 21);
-        assertAQuery("TYPE:\"" + testSuperType + "\"", 21);
-    }
+        Transaction bigTxn2 = getTransaction(0, numNodes, ++localId);
 
-    @Test
-    public void testReloadUsingAcls() throws Exception {
+        for(int i=0; i<numNodes; i++) {
+            Node node = getNode(bigTxn2, acl, Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn2, acl, "mike", null, false);
+            nodeMetaDatas.add(nodeMetaData);
+        }
 
-        logger.info("######### Starting tracker reload test ACLS ###########");
+        indexTransaction(bigTxn2, nodes, nodeMetaDatas);
 
-        Collection<Tracker> trackers = getTrackers();
-        int numOfTrackers = trackers.size();
-        int jobs = getJobsCount();
-
-        indexAndVerify(250, 251);
-
-        reloadAndAssertCorrect(trackers, numOfTrackers, jobs);
-
-        //This is a bit of a hack to skip integrity checking. This is because our test client doesn't correctly
-        //similate the Alfresco repo.  This "hack" doesn't invalidate the test.
-        Optional<Tracker> aTracker = getTrackers().stream().filter(tracker ->  tracker.getClass().equals(AclTracker.class)).findFirst();
-        aTracker.ifPresent(foundTracker ->
-        {
-            AclTracker aclTracker = (AclTracker) foundTracker;
-            aclTracker.getTrackerState().setCheckedLastAclTransactionTime(true);
-            aclTracker.getTrackerState().setCheckedFirstAclTransactionTime(true);
-            logger.info("Changed CheckedLastAclTransactionTime for " + aclTracker.getClass().getSimpleName() + " " + aclTracker.hashCode());
-            aclTracker.track();
-        });
-
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2000, 100000);
     }
 
     private void reloadAndAssertCorrect(Collection<Tracker> trackers, int numOfTrackers, int jobs) throws Exception {
@@ -162,46 +135,6 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
         });
     }
 
-
-    private void addNodes(int startInclusive, int endExclusive) {
-        IntStream.range(startInclusive, endExclusive).forEach(i ->
-            {
-                NodeRef newNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-                QName n2Name = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "loop"+i);
-                ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n2Name, newNodeRef, true, 0);
-                try {
-                    addNode(h.getCore(), dataModel, 1+i, 2+i, 1+i, testSuperType, null, null, null, "andy",
-                            new ChildAssociationRef[]{childAssoc}, new NodeRef[]{rootNodeRef}, new String[]{"/"+ n2Name.toString()},
-                            newNodeRef, true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        );
-    }
-
-    private void indexAndVerify(int numAcls, int expected) throws Exception {
-
-        AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
-
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
-
-        for(int i=0; i<numAcls; i++) {
-            Acl bulkAcl = getAcl(bulkAclChangeSet);
-            bulkAcls.add(bulkAcl);
-            bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
-                    bulkAcl,
-                    list("joel"+bulkAcl.getId()),
-                    list("phil"+bulkAcl.getId()),
-                    null));
-        }
-
-        indexAclChangeSet(bulkAclChangeSet, bulkAcls, bulkAclReaders);
-
-        waitForDocCount(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), expected, 10000);
-    }
-
     private int getJobsCount() throws SchedulerException {
         int count = admin.getScheduler().getJobsCount();
         logger.info("######### Number of jobs is "+count+" ###########");
@@ -213,5 +146,4 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
         logger.info("######### Number of trackers is "+trackers.size()+" ###########");
         return trackers;
     }
-
 }
