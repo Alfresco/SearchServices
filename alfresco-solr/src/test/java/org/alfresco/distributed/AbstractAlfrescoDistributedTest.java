@@ -61,6 +61,7 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
@@ -118,7 +119,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
         // Setup test directory
-        testDir = new File(System.getProperty("user.dir") + "/target/solrs");
+        testDir = new File(System.getProperty("user.dir") + "/target/jettys");
         r = new Random(random().nextLong());
         
     }
@@ -242,21 +243,12 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
-        ArrayList<SolrCore> cores = new ArrayList();
-        try {
-            cores.add(jettyContainers.get(DEFAULT_TEST_CORENAME).getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
-            for (JettySolrRunner jettySolrRunner : jettys) {
-                cores.add(jettySolrRunner.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
-            }
+        List<SolrCore> cores = getJettyCores(jettyContainers.values());
+        cores.addAll(getJettyCores(jettys));
 
-            long begin = System.currentTimeMillis();
-            for (SolrCore core : cores) {
-                waitForDocCountCore(core, query, count, waitMillis, begin);
-            }
-        }finally{
-            for(SolrCore core : cores) {
-                core.close(); // will decrement the refcount
-            }
+        long begin = System.currentTimeMillis();
+        for (SolrCore core : cores) {
+            waitForDocCountCore(core, query, count, waitMillis, begin);
         }
     }
 
@@ -264,59 +256,56 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         long begin = System.currentTimeMillis();
 
-        SolrCore controlCore = null;
-        try {
-            controlCore = jettyContainers.get(DEFAULT_TEST_CORENAME).getCoreContainer().getCore(DEFAULT_TEST_CORENAME);
-            waitForDocCountCore(controlCore, query, count, waitMillis, begin);
-        } finally {
-            controlCore.close();
-        }
-
+        List<SolrCore> cores = getJettyCores(jettyContainers.values());
+        //TODO: Support multiple cores per jetty
+        SolrCore controlCore = cores.get(0); //Get the first one
+        waitForDocCountCore(controlCore, query, count, waitMillis, begin);
         waitForClusterCount(query, count, waitMillis, begin);
 
     }
 
     private void waitForClusterCount(Query query, int count, long waitMillis, long start) throws Exception {
-        List<SolrCore> cores = new ArrayList();
+        List<SolrCore> cores = getJettyCores(jettys);
         long timeOut = start+waitMillis;
-        try {
-            for (JettySolrRunner jettySolrRunner : jettys) {
-                cores.add(jettySolrRunner.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
-            }
-
-            int totalCount = 0;
-            while (System.currentTimeMillis() < timeOut) {
-                totalCount = 0;
-                for (SolrCore core : cores) {
-                    RefCounted<SolrIndexSearcher> refCounted = null;
-                    try {
-                        refCounted = core.getSearcher();
-                        SolrIndexSearcher searcher = refCounted.get();
-                        TopDocs topDocs = searcher.search(query, 10);
-                        totalCount += topDocs.totalHits;
-                    } finally {
-                        refCounted.decref();
-                    }
-                }
-                if (totalCount == count) {
-                    return;
+        int totalCount = 0;
+        while (System.currentTimeMillis() < timeOut) {
+            totalCount = 0;
+            for (SolrCore core : cores) {
+                RefCounted<SolrIndexSearcher> refCounted = null;
+                try {
+                    refCounted = core.getSearcher();
+                    SolrIndexSearcher searcher = refCounted.get();
+                    TopDocs topDocs = searcher.search(query, 10);
+                    totalCount += topDocs.totalHits;
+                } finally {
+                    refCounted.decref();
                 }
             }
-            throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
-        } finally {
-          for(SolrCore core : cores) {
-              core.close();
-          }
+            if (totalCount == count) {
+                return;
+            }
         }
+        throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
+
+    }
+
+    /**
+     * Gets the cores for the jetty instances
+     * @return
+     */
+    protected List<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
+    {
+        List<SolrCore> cores = new ArrayList();
+        for (JettySolrRunner jettySolrRunner : runners) {
+            jettySolrRunner.getCoreContainer().getCores().forEach(aCore -> cores.add(aCore));
+        }
+        return cores;
     }
 
     public void assertNodesPerShardGreaterThan(int count) throws Exception {
-        List<SolrCore> cores = new ArrayList();
+        List<SolrCore> cores = getJettyCores(jettys);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
         try {
-            for (JettySolrRunner jettySolrRunner : jettys) {
-                cores.add(jettySolrRunner.getCoreContainer().getCore(DEFAULT_TEST_CORENAME));
-            }
 
             for (SolrCore core : cores) {
                 RefCounted<SolrIndexSearcher> refCounted = null;
@@ -334,9 +323,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
 
         } finally {
-            for(SolrCore core : cores) {
-                core.close();
-            }
+
         }
     }
 
@@ -375,18 +362,19 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @return
      * @throws Exception
      */
-    private JettySolrRunner createJetty(String coreName, String ... params) throws Exception
+    private JettySolrRunner createJetty(String sourceConfigName, int jettyInstanceId, String coreName, String ... params) throws Exception
     {
-        Path jettyHome = testDir.toPath().resolve(coreName);
-        File jettyHomeFile = jettyHome.toFile();
-        seedSolrHome(jettyHomeFile);
-        seedCoreRootDirWithDefaultTestCore(coreName, jettyHome);
-        updateShardingProperties(jettyHome, coreName, params);
-        JettySolrRunner jetty = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
+        Path jettyTestsHome = testDir.toPath().resolve("jetty"+jettyInstanceId);
+        Path coreSourceConfig = new File(getTestFilesHome() + "/"+sourceConfigName).toPath();
+        Path coreHome = jettyTestsHome.resolve(coreName);
+        seedSolrHome(jettyTestsHome);
+        seedCoreDir(coreName, coreSourceConfig, coreHome);
+        updateShardingProperties(coreHome, params);
+        JettySolrRunner jetty = createJetty(jettyTestsHome.toFile(), null, null, false, getSchemaFile());
         return jetty;
     }
 
-    private void updateShardingProperties(Path jettyHome, String coreName, String ... params) throws IOException
+    private void updateShardingProperties(Path coreHome, String ... params) throws IOException
     {
         if(params != null && params.length > 0)
         {
@@ -397,7 +385,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 Properties newprops = new Properties();
                 newprops.putAll(AlfrescoSolrUtils.map(params));
                 Properties properties = new Properties();
-                String solrcoreProperties = jettyHome.resolve(coreName+"/conf/solrcore.properties").toString();
+                String solrcoreProperties = coreHome.resolve("conf/solrcore.properties").toString();
                 in = new FileInputStream(solrcoreProperties);
                 properties.load(in);
                 in.close();
@@ -417,10 +405,9 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected void createServers(String[] coreNames, int numShards) throws Exception
     {
-        System.setProperty("configSetBaseDir", getTestFilesHome());
-
+        int numOfJettys = 0;
         for (int i = 0; i < coreNames.length; i++) {
-            JettySolrRunner jsr =  createJetty(coreNames[i]);
+            JettySolrRunner jsr =  createJetty(coreNames[i], numOfJettys++, coreNames[i]);
             jettyContainers.put(coreNames[i], jsr);
             if (i == 0)
             {
@@ -441,11 +428,11 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 sb.append(',');
             final String shardname = "shard" + i;
 
-            JettySolrRunner j = createJetty(shardname,"shard.instance", Integer.toString(i),
+            JettySolrRunner j = createJetty(coreNames[0], numOfJettys++, shardname,"shard.instance", Integer.toString(i),
                                                       "shard.method", shardMethod,
                                                       "shard.count",  Integer.toString(numShards));
             jettys.add(j);
-            String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
+            String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
             log.info(shardStr);
             SolrClient clientShard = createNewSolrClient(shardStr);
             clients.add(clientShard);
@@ -564,7 +551,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
         }
-        props.setProperty("coreRootDirectory", solrHome.toPath().resolve("cores").toAbsolutePath().toString());
         SSLConfig sslConfig = new SSLConfig(sslEnabled, false, null, null, null, null);
         JettyConfig config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig)
                 .build();
@@ -1341,15 +1327,19 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * instance, seeds that directory with the contents of {@link #getTestFilesHome}
      * and ensures that the proper {@link #getSolrXml} file is in place.
      */
-    protected void seedSolrHome(File jettyHome) throws IOException
+    protected void seedSolrHome(Path jettyHome) throws IOException
     {
         String solrxml = getSolrXml();
         if (solrxml != null)
         {
-            FileUtils.copyFile(new File(getTestFilesHome(), solrxml), new File(jettyHome, "solr.xml"));
+            FileUtils.copyFile(new File(getTestFilesHome(), solrxml), jettyHome.resolve(getSolrXml()).toFile());
         }
         //Add solr home conf folder with alfresco based configuration.
-        FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), new File(jettyHome, "/conf"));
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), jettyHome.resolve("conf").toFile());
+        // Add alfresco data model def
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), jettyHome.resolve("alfrescoModels").toFile());
+        //add solr alfresco properties
+        FileUtils.copyFile(new File(getTestFilesHome() + "/log4j-solr.properties"), jettyHome.resolve("log4j-solr.properties").toFile());
         
     }
 
@@ -1362,25 +1352,22 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @see #writeCoreProperties(Path,String)
      * @see #CORE_PROPERTIES_FILENAME
      */
-    private void seedCoreRootDirWithDefaultTestCore(String coreName, Path coreRootDirectory) throws IOException
+    private void seedCoreDir(String coreName, Path coreSourceConfig, Path coreDirectory) throws IOException
     {
         //Prepare alfresco solr core.
-        Path coreDir = coreRootDirectory.resolve(coreName);
-        if (Files.notExists(coreDir.resolve(CORE_PROPERTIES_FILENAME)))
+        Path confDir = coreDirectory.resolve("conf");
+        confDir.toFile().mkdirs();
+        if (Files.notExists(coreDirectory.resolve(CORE_PROPERTIES_FILENAME)))
         {
             Properties coreProperties = new Properties();
             coreProperties.setProperty("name", coreName);
-            writeCoreProperties(coreDir, coreProperties, this.getTestName());
+            writeCoreProperties(coreDirectory, coreProperties, this.getTestName());
         } // else nothing to do, DEFAULT_TEST_CORENAME already exists
         //Add alfresco solr configurations
-        FileUtils.copyDirectory(new File(getTestFilesHome() + "/"+coreName+"/conf"), coreRootDirectory.resolve(coreName+"/conf").toFile());
-        // Add alfresco data model def
-        FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), coreRootDirectory.resolve("alfrescoModels").toFile());
-        //add solr alfresco properties
-        FileUtils.copyFile(new File(getTestFilesHome() + "/log4j-solr.properties"), coreRootDirectory.resolve("log4j-solr.properties").toFile());
+        FileUtils.copyDirectory(coreSourceConfig.resolve("conf").toFile(), confDir.toFile());
     }
 
-    protected void setupJettySolrHome(String coreName, File jettyHome) throws IOException
+    protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException
     {
         seedSolrHome(jettyHome);
 
@@ -1392,7 +1379,7 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         coreProperties.setProperty("schema", "${schema:schema.xml}");
         coreProperties.setProperty("coreNodeName", "${coreNodeName:}");
 
-        writeCoreProperties(jettyHome.toPath().resolve("cores").resolve(coreName), coreProperties, coreName);
+        writeCoreProperties(jettyHome.resolve("cores").resolve(coreName), coreProperties, coreName);
     }
 
     public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
