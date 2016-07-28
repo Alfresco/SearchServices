@@ -260,7 +260,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SolrCore controlCore = cores.get(0); //Get the first one
         waitForDocCountCore(controlCore, query, count, waitMillis, begin);
         waitForClusterCount(query, count, waitMillis, begin);
-
     }
 
     private void waitForClusterCount(Query query, int count, long waitMillis, long start) throws Exception {
@@ -285,7 +284,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
         }
         throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
-
     }
 
     /**
@@ -1436,17 +1434,17 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         final String[] coreNames;
         final int numShards;
-        final JettyInstances jettyStategy;
+        final JettyInstances jettyStrategy;
 
         public JettyServerRule(int numShards, JettyInstances jettyStategy, String ...coreNames) {
             this.coreNames = coreNames;
             this.numShards = numShards;
-            this.jettyStategy = jettyStategy;
+            this.jettyStrategy = jettyStategy;
         }
 
         public JettyServerRule(int numShards) {
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
-            this.jettyStategy = JettyInstances.PER_SHARD;
+            this.jettyStrategy = JettyInstances.PER_SHARD;
             this.numShards = numShards;
         }
 
@@ -1455,7 +1453,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
             distribSetUp();
             RandVal.uniqueValues = new HashSet(); // reset random values
-            createServers(jettyStategy, coreNames, numShards);
+            createServers(jettyStrategy, coreNames, numShards);
         }
 
         @Override

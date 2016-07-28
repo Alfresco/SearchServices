@@ -368,7 +368,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         if (field.equals(FIELD_PATH))
         {
             throw new UnsupportedOperationException("Span is not supported for " + FIELD_PATH);
-        } else if (field.equals(FIELD_PATHWITHREPEATS))
+        } 
+        else if (field.equals(FIELD_PATHWITHREPEATS))
         {
             throw new UnsupportedOperationException("Span is not supported for " + FIELD_PATHWITHREPEATS);
         } else if (field.equals(FIELD_TEXT))
