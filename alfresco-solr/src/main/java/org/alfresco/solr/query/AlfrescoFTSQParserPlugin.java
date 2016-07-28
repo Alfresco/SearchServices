@@ -81,8 +81,8 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
                 rerankPhase = RerankPhase.valueOf(arg.toString());
             }
 
-            //if core.properties is not set and system property is not set then we should set alfresco.postfilter = false;
-            postfilter = Boolean.parseBoolean(req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter", System.getProperty("alfresco.postfilter", "false")));
+            //if core.properties is not set and system property is not set then we should set alfresco.postfilter = true;
+            postfilter = Boolean.parseBoolean(req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter", System.getProperty("alfresco.postfilter", "true")));
             logger.debug("Post filter value: " + postfilter);
         }
 
