@@ -776,7 +776,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         params.set("distrib", "false");
         QueryRequest request = getAlfrescoRequest(json, params);
         QueryResponse controlRsp = request.process(controlClient);
-        validateControlData(controlRsp);
+        validateResponse(controlRsp);
         params.remove("distrib");
         setDistributedParams(params);
         QueryResponse rsp = queryServer(json, params);
@@ -1301,16 +1301,19 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
-     * Implementations can pre-test the control data for basic correctness
-     * before using it as a check for the shard data. This is useful, for
-     * instance, if a test bug is introduced causing a spelling index not to get
-     * built: both control &amp; shard data would have no results but because
-     * they match the test would pass. This method gives us a chance to ensure
-     * something exists in the control data.
+     * Validates that solr instance is running and that query was processed.
+     * @param response
      */
-    public void validateControlData(QueryResponse control) throws Exception
+    public void validateResponse(QueryResponse response)
     {
-        /* no-op */
+        switch (response.getStatus())
+        {
+        case 500:
+            throw new RuntimeException("Solr instance internal server error 500");
+
+        default:
+            break;
+        }
     }
 
     public static abstract class RandVal
