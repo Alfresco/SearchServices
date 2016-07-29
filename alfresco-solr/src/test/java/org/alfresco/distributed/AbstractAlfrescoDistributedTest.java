@@ -856,7 +856,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         // TODO: look into why passing true causes fails
         params.set("distrib", "false");
         final QueryResponse controlRsp = controlClient.query(params);
-        validateControlData(controlRsp);
+        validateResponse(controlRsp);
 
         params.remove("distrib");
         if (setDistribParams)
