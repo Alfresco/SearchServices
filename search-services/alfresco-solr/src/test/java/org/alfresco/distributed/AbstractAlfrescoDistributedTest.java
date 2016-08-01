@@ -241,6 +241,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.nodeMap.clear();
     }
 
+    /**
+     * Waits until all cores (including shards) reach a count.
+     * @param query
+     * @param count
+     * @param waitMillis
+     * @throws Exception
+     */
     public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
         List<SolrCore> cores = getJettyCores(jettyContainers.values());
         cores.addAll(getJettyCores(jettyShards));
@@ -262,6 +269,14 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         waitForShardsCount(query, count, waitMillis, begin);
     }
 
+    /**
+     * Waits until all the shards reach the desired count, or errors.
+     * @param query
+     * @param count
+     * @param waitMillis
+     * @param start
+     * @throws Exception
+     */
     public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception {
         List<SolrCore> cores = getJettyCores(jettyShards);
         long timeOut = start+waitMillis;
