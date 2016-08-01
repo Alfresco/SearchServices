@@ -125,7 +125,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected Map<String, JettySolrRunner> jettyContainers = new HashMap<>();
     protected List<SolrClient> clients = new ArrayList<>();
-    protected List<JettySolrRunner> jettys = new ArrayList<>();
+    protected List<JettySolrRunner> jettyShards = new ArrayList<>();
 
     protected String[] deadServers;
     protected String shards;
@@ -243,7 +243,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
         List<SolrCore> cores = getJettyCores(jettyContainers.values());
-        cores.addAll(getJettyCores(jettys));
+        cores.addAll(getJettyCores(jettyShards));
 
         long begin = System.currentTimeMillis();
         for (SolrCore core : cores) {
@@ -259,11 +259,11 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         //TODO: Support multiple cores per jetty
         SolrCore controlCore = cores.get(0); //Get the first one
         waitForDocCountCore(controlCore, query, count, waitMillis, begin);
-        waitForClusterCount(query, count, waitMillis, begin);
+        waitForShardsCount(query, count, waitMillis, begin);
     }
 
-    private void waitForClusterCount(Query query, int count, long waitMillis, long start) throws Exception {
-        List<SolrCore> cores = getJettyCores(jettys);
+    public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyShards);
         long timeOut = start+waitMillis;
         int totalCount = 0;
         while (System.currentTimeMillis() < timeOut) {
@@ -300,7 +300,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     public void assertNodesPerShardGreaterThan(int count) throws Exception {
-        List<SolrCore> cores = getJettyCores(jettys);
+        List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
         try {
 
@@ -455,7 +455,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             JettySolrRunner j = createJetty(coreNames[0], incrementJetty?numOfJettys++:numOfJettys, shardname,"shard.instance", Integer.toString(i),
                                                       "shard.method", shardMethod,
                                                       "shard.count",  Integer.toString(numShards));
-            jettys.add(j);
+            jettyShards.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
             log.info(shardStr);
             SolrClient clientShard = createNewSolrClient(shardStr);
@@ -521,7 +521,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             controlClient.close();
         }
 
-        for (JettySolrRunner jetty : jettys) 
+        for (JettySolrRunner jetty : jettyShards)
         {
             solrHomes.add(jetty.getSolrHome());
             jetty.stop();
@@ -538,7 +538,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
 
         clients.clear();
-        jettys.clear();
+        jettyShards.clear();
         jettyContainers.clear();
     }
 
