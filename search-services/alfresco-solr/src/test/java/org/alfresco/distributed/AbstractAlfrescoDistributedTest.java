@@ -1466,6 +1466,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 destroyServers();
                 distribTearDown();
             } catch (Exception e) {
+                FileUtils.deleteDirectory(testDir);
                 e.printStackTrace();
             }
         }
