@@ -1468,7 +1468,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                log.error("Failed to shutdown test properly ", e);
             }
         }
     }
