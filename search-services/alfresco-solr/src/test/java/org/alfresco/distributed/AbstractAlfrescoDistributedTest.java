@@ -124,15 +124,15 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     protected Map<String, JettySolrRunner> jettyContainers = new HashMap<>();
-    protected List<SolrClient> clients = new ArrayList<>();
-    protected List<SolrClient> clientShards = new ArrayList<>();
+    protected Map<String, SolrClient> jettyClients = new HashMap<>();
+
     protected List<JettySolrRunner> jettyShards = new ArrayList<>();
+    protected List<SolrClient> clientShards = new ArrayList<>();
 
     protected String[] deadServers;
     protected String shards;
     protected String[] shardsArr;
     protected static File testDir;
-    protected SolrClient controlClient;
 
     // to stress with higher thread counts and requests, make sure the junit
     // xml formatter is not being used (all output will be buffered before
@@ -259,6 +259,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
+    /**
+     * Waits for the doc count on the first core available, then checks all the Shards match.
+     * @param query
+     * @param count
+     * @param waitMillis
+     * @throws Exception
+     */
     public void waitForDocCount(Query query, int count, long waitMillis) throws Exception {
 
         long begin = System.currentTimeMillis();
@@ -313,6 +320,15 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             jettySolrRunner.getCoreContainer().getCores().forEach(aCore -> cores.add(aCore));
         }
         return cores;
+    }
+
+    /**
+     * Gets the Default test client.
+     * @return
+     */
+    protected SolrClient getDefaultTestClient()
+    {
+        return jettyClients.get(DEFAULT_TEST_CORENAME);
     }
 
     public void assertNodesPerShardGreaterThan(int count) throws Exception {
@@ -424,12 +440,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         for (int i = 0; i < coreNames.length; i++) {
             JettySolrRunner jsr =  createJetty(coreNames[i], incrementJetty?numOfJettys++:numOfJettys, coreNames[i]);
             jettyContainers.put(coreNames[i], jsr);
-            if (i == 0)
-            {
-                String url = buildUrl(jsr.getLocalPort()) + "/" + coreNames[i];
-                log.info(url);
-                controlClient = createNewSolrClient(url);
-            }
+            String url = buildUrl(jsr.getLocalPort()) + "/" + coreNames[i];
+            log.info(url);
+            jettyClients.put(coreNames[i], createNewSolrClient(url));
+
         }
 
         shardsArr = new String[numShards];
@@ -525,9 +539,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             solrHomes.add(jetty.getSolrHome());
             jetty.stop();
         }
-        if (controlClient != null)
+        for (SolrClient jClients : jettyClients.values())
         {
-            controlClient.close();
+            jClients.close();
         }
 
         for (JettySolrRunner jetty : jettyShards)
@@ -549,6 +563,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         clientShards.clear();
         jettyShards.clear();
         jettyContainers.clear();
+        jettyClients.clear();
     }
 
     public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled,
@@ -646,13 +661,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }// add random fields to the documet before indexing
 
-    protected void indexr(Object... fields) throws Exception
+    protected void indexr(SolrClient client, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
         addFields(doc, fields);
         addFields(doc, "rnd_b", true);
         addRandFields(doc);
-        indexDoc(doc);
+        indexDoc(client, doc);
     }
 
     protected SolrInputDocument addRandFields(SolrInputDocument sdoc)
@@ -661,34 +676,32 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return sdoc;
     }
 
-    protected void index(Object... fields) throws Exception
+    protected void index(SolrClient client, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
         addFields(doc, fields);
-        indexDoc(doc);
+        indexDoc(client, doc);
     }
 
     /**
-     * Indexes the document in both the control client, and a randomly selected
-     * client
+     * Indexes the document in both the client, and a randomly selected shard
      */
-    protected void indexDoc(SolrInputDocument doc) throws IOException, SolrServerException
+    protected void indexDoc(SolrClient client, SolrInputDocument doc) throws IOException, SolrServerException
     {
-        controlClient.add(doc);
-        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clientShards.size();
-        SolrClient client = clientShards.get(which);
         client.add(doc);
+        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clientShards.size();
+        SolrClient clientShard = clientShards.get(which);
+        clientShard.add(doc);
     }
 
     /**
-     * Indexes the document in both the control client and the specified client
-     * asserting that the respones are equivilent
+     * Indexes the document in 2 clients asserting that the respones are equivilent
      */
-    protected UpdateResponse indexDoc(SolrClient client, SolrParams params, SolrInputDocument... sdocs)
+    protected UpdateResponse indexDoc(SolrClient client1, SolrClient client2, SolrParams params, SolrInputDocument... sdocs)
             throws IOException, SolrServerException
     {
-        UpdateResponse controlRsp = add(controlClient, params, sdocs);
-        UpdateResponse specificRsp = add(client, params, sdocs);
+        UpdateResponse controlRsp = add(client1, params, sdocs);
+        UpdateResponse specificRsp = add(client2, params, sdocs);
         compareSolrResponses(specificRsp, controlRsp);
         return specificRsp;
     }
@@ -729,37 +742,43 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return ureq.process(client);
     }
 
-    protected void index_specific(int serverNumber, Object... fields) throws Exception
+    /**
+     * Deletes from the specified client, and optionally all shards
+     * @param q
+     * @param client
+     * @param andShards
+     * @throws Exception
+     */
+    protected void del(String q, SolrClient client, boolean andShards) throws Exception
     {
-        SolrInputDocument doc = new SolrInputDocument();
-        for (int i = 0; i < fields.length; i += 2)
+        client.deleteByQuery(q);
+        if (andShards)
         {
-            doc.addField((String) (fields[i]), fields[i + 1]);
+            for (SolrClient cshards : clientShards)
+            {
+                cshards.deleteByQuery(q);
+            }
         }
-        controlClient.add(doc);
-        if (!clientShards.isEmpty())
-        {
-            SolrClient client = clientShards.get(serverNumber);
-            client.add(doc);
-        }
-    }
 
-    protected void del(String q) throws Exception
-    {
-        controlClient.deleteByQuery(q);
-        for (SolrClient client : clientShards)
-        {
-            client.deleteByQuery(q);
-        }
     }// serial commit...
 
-    protected void commit() throws Exception
+    /**
+     * * Commits to the specified client, and optionally all shards
+     * @param client
+     * @param andShards
+     * @throws Exception
+     */
+    protected void commit(SolrClient client, boolean andShards) throws Exception
     {
-        controlClient.commit();
-        for (SolrClient client : clientShards)
+        client.commit();
+        if (andShards)
         {
-            client.commit();
+            for (SolrClient cshards : clientShards)
+            {
+                cshards.commit();
+            }
         }
+
     }
 
     protected QueryResponse queryServer(ModifiableSolrParams params) throws SolrServerException, IOException
@@ -771,20 +790,11 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return rsp;
     }
 
-    /**
-     * Sets distributed params. Returns the QueryResponse from
-     * {@link #queryServer},
-     */
-    protected QueryResponse query(Object... q) throws Exception
-    {
-        return query(true, q);
-    }
-
-    protected QueryResponse query(String json, ModifiableSolrParams params) throws Exception
+    protected QueryResponse query(SolrClient solrClient, String json, ModifiableSolrParams params) throws Exception
     {
         params.set("distrib", "false");
         QueryRequest request = getAlfrescoRequest(json, params);
-        QueryResponse controlRsp = request.process(controlClient);
+        QueryResponse controlRsp = request.process(solrClient);
         validateResponse(controlRsp);
         params.remove("distrib");
         setDistributedParams(params);
@@ -827,44 +837,17 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
-
-
-
-    /**
-     * Sets distributed params. Returns the QueryResponse from
-     * {@link #queryServer},
-     */
-    protected QueryResponse query(SolrParams params) throws Exception
-    {
-        return query(true, params);
-    }
-
     /**
      * Returns the QueryResponse from {@link #queryServer}
      */
-    protected QueryResponse query(boolean setDistribParams, Object[] q) throws Exception
-    {
-
-        final ModifiableSolrParams params = new ModifiableSolrParams();
-
-        for (int i = 0; i < q.length; i += 2)
-        {
-            params.add(q[i].toString(), q[i + 1].toString());
-        }
-        return query(setDistribParams, params);
-    }
-
-    /**
-     * Returns the QueryResponse from {@link #queryServer}
-     */
-    protected QueryResponse query(boolean setDistribParams, SolrParams p) throws Exception
+    protected QueryResponse query(SolrClient solrClient, boolean setDistribParams, SolrParams p) throws Exception
     {
 
         final ModifiableSolrParams params = new ModifiableSolrParams(p);
 
         // TODO: look into why passing true causes fails
         params.set("distrib", "false");
-        final QueryResponse controlRsp = controlClient.query(params);
+        final QueryResponse controlRsp = solrClient.query(params);
         validateResponse(controlRsp);
 
         params.remove("distrib");
