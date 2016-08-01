@@ -81,8 +81,12 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
                 rerankPhase = RerankPhase.valueOf(arg.toString());
             }
 
-            //if core.properties is not set and system property is not set then we should set alfresco.postfilter = true;
-            postfilter = Boolean.parseBoolean(req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter", System.getProperty("alfresco.postfilter", "true")));
+            //First check the System property.
+            //Then check solrcore.properties, defaulting to the postFilter.
+
+            postfilter = Boolean.parseBoolean(System.getProperty("alfresco.postfilter",
+                                                                 req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter",
+                                                                                                                   "true")));
             logger.debug("Post filter value: " + postfilter);
         }
 
@@ -105,8 +109,24 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
 
                 if(authset && postfilter)
                 {
+                    //Return the PostFilter
                     return new PostFilterQuery(200, query);
                 }
+
+                /*
+                * This assertion is designed to ensure that if the System property alfresco.postfilter
+                * is set to true then the PostFilter was actually used.
+                *
+                * If authset is false the assertion will short circuit before it tests the
+                * alfresco.postfilter property because the PostFilter is only applied for authset queries.
+                *
+                * If authset is true, the assertion checks to make sure the alfresco.postfilter property is either
+                * false or unset. If the alfresco.postfilter property is true it should not have gotten to this point
+                * of the code.
+                */
+
+                assert (authset == false ||
+                        Boolean.parseBoolean(System.getProperty("alfresco.postfilter","false")) == false);
 
                 return query;
             }
