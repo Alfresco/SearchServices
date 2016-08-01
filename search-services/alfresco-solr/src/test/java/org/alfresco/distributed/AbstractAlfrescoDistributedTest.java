@@ -302,8 +302,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     public void assertNodesPerShardGreaterThan(int count) throws Exception {
         List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
-        try {
-
             for (SolrCore core : cores) {
                 RefCounted<SolrIndexSearcher> refCounted = null;
                 try {
@@ -317,11 +315,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     refCounted.decref();
                 }
             }
-
-
-        } finally {
-
-        }
     }
 
     private void waitForDocCountCore(SolrCore core,
@@ -1424,7 +1417,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
-    public enum JettyInstances {
+    public enum JettyInstances
+    {
         PER_SHARD,
         PER_CORE,
         SINGLE;
@@ -1433,40 +1427,47 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     /**
      * A JUnit Rule to setup Jetty
      */
-    public class JettyServerRule extends ExternalResource {
+    public class JettyServerRule extends ExternalResource
+    {
 
         final String[] coreNames;
         final int numShards;
         final JettyInstances jettyStrategy;
 
-        public JettyServerRule(int numShards, JettyInstances jettyStategy, String ...coreNames) {
+        public JettyServerRule(int numShards, JettyInstances jettyStategy, String ...coreNames)
+        {
             this.coreNames = coreNames;
             this.numShards = numShards;
             this.jettyStrategy = jettyStategy;
         }
 
-        public JettyServerRule(int numShards) {
+        public JettyServerRule(int numShards)
+        {
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.jettyStrategy = JettyInstances.PER_SHARD;
             this.numShards = numShards;
         }
 
         @Override
-        protected void before() throws Throwable {
-
+        protected void before() throws Throwable
+        {
             distribSetUp();
             RandVal.uniqueValues = new HashSet(); // reset random values
             createServers(jettyStrategy, coreNames, numShards);
         }
 
         @Override
-        protected void after() {
+        protected void after()
+        {
 
-            try {
+            try
+            {
                 destroyServers();
                 distribTearDown();
-            } catch (Exception e) {
                 FileUtils.deleteDirectory(testDir);
+            }
+            catch (Exception e)
+            {
                 e.printStackTrace();
             }
         }
