@@ -125,6 +125,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected Map<String, JettySolrRunner> jettyContainers = new HashMap<>();
     protected List<SolrClient> clients = new ArrayList<>();
+    protected List<SolrClient> clientShards = new ArrayList<>();
     protected List<JettySolrRunner> jettyShards = new ArrayList<>();
 
     protected String[] deadServers;
@@ -467,7 +468,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
             log.info(shardStr);
             SolrClient clientShard = createNewSolrClient(shardStr);
-            clients.add(clientShard);
+            clientShards.add(clientShard);
             shardsArr[i] = shardStr;
             sb.append(shardStr);
         }
@@ -535,7 +536,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             jetty.stop();
         }
 
-        for (SolrClient client : clients)
+        for (SolrClient client : clientShards)
         {
             client.close();
         }
@@ -545,7 +546,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             FileUtils.deleteDirectory(new File(home, "ContentStore"));
         }
 
-        clients.clear();
+        clientShards.clear();
         jettyShards.clear();
         jettyContainers.clear();
     }
@@ -674,8 +675,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected void indexDoc(SolrInputDocument doc) throws IOException, SolrServerException
     {
         controlClient.add(doc);
-        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clients.size();
-        SolrClient client = clients.get(which);
+        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clientShards.size();
+        SolrClient client = clientShards.get(which);
         client.add(doc);
     }
 
@@ -736,9 +737,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             doc.addField((String) (fields[i]), fields[i + 1]);
         }
         controlClient.add(doc);
-        if (!clients.isEmpty())
+        if (!clientShards.isEmpty())
         {
-            SolrClient client = clients.get(serverNumber);
+            SolrClient client = clientShards.get(serverNumber);
             client.add(doc);
         }
     }
@@ -746,7 +747,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected void del(String q) throws Exception
     {
         controlClient.deleteByQuery(q);
-        for (SolrClient client : clients)
+        for (SolrClient client : clientShards)
         {
             client.deleteByQuery(q);
         }
@@ -755,7 +756,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected void commit() throws Exception
     {
         controlClient.commit();
-        for (SolrClient client : clients)
+        for (SolrClient client : clientShards)
         {
             client.commit();
         }
@@ -764,8 +765,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected QueryResponse queryServer(ModifiableSolrParams params) throws SolrServerException, IOException
     {
         // query a random server
-        int which = r.nextInt(clients.size());
-        SolrClient client = clients.get(which);
+        int which = r.nextInt(clientShards.size());
+        SolrClient client = clientShards.get(which);
         QueryResponse rsp = client.query(params);
         return rsp;
     }
@@ -795,8 +796,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected QueryResponse queryServer(String json, SolrParams params) throws SolrServerException, IOException
     {
         // query a random server
-        int which = r.nextInt(clients.size());
-        SolrClient client = clients.get(which);
+        int which = r.nextInt(clientShards.size());
+        SolrClient client = clientShards.get(which);
         QueryRequest request = getAlfrescoRequest(json, params);
         return request.process(client);
     }
@@ -887,8 +888,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     {
                         for (int j = 0; j < stress; j++)
                         {
-                            int which = r.nextInt(clients.size());
-                            SolrClient client = clients.get(which);
+                            int which = r.nextInt(clientShards.size());
+                            SolrClient client = clientShards.get(which);
                             try
                             {
                                 QueryResponse rsp = client.query(new ModifiableSolrParams(params));
