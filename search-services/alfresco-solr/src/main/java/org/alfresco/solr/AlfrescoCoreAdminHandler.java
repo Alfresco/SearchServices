@@ -459,7 +459,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, String store, File template, String coreName, File newCore, int aclShardCount, int aclShardInstance, String templateName) throws IOException,
+    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, String store, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
         copyDirectory(template, newCore, false);
@@ -477,10 +477,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         //Don't overide these
         properties.setProperty("alfresco.template", templateName);
-        if(aclShardCount > 0)
+        if(shardCount > 0)
         {
-            properties.setProperty("acl.shard.count", ""+aclShardCount);
-            properties.setProperty("acl.shard.instance", ""+aclShardInstance);
+            properties.setProperty("shard.count", "" + shardCount);
+            properties.setProperty("shard.instance", "" + shardInstance);
         }
 
         //Allow "data.dir.root" to be set via config
