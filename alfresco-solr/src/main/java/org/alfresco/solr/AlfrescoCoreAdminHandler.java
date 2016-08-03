@@ -475,7 +475,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         //Potentially override the defaults
         properties.load(new FileInputStream(config));
 
-        //Don't overide these
+        //Don't override these
         properties.setProperty("alfresco.template", templateName);
         if(shardCount > 0)
         {
