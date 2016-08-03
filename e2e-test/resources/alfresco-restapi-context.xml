@@ -11,8 +11,7 @@
 
 	<context:annotation-config />
 	<context:component-scan base-package="org.alfresco" />
-
+	<import resource="classpath:dataprep-context.xml" />
 	<import resource="classpath*:alfresco-tester-context.xml" />
-
 </beans>
 
