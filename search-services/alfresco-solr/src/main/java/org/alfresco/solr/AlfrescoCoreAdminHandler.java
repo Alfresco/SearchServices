@@ -133,7 +133,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             if (!scheduler.isShutdown())
             {
                 scheduler.pauseAll();
-                trackerRegistry.getModelTracker().shutdown();
+                if (trackerRegistry.getModelTracker() != null) trackerRegistry.getModelTracker().shutdown();
                 trackerRegistry.setModelTracker(null);
                 scheduler.shutdown();
             }
