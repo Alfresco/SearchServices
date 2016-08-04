@@ -12,14 +12,14 @@ public class SampleATest extends BaseRestTest
     @Autowired
     RestSites onSites;
 
-    @Test
+    @Test(groups = {"rest-api-v1", "sanity"})
     public void sampleATestMethod1()
     {
         UserModel admin = new UserModel("admin", "admin");
         Assert.assertFalse(onSites.withAuthUser(admin).getSites().getEntries().isEmpty(), "We have sites");
     }
 
-    @Test
+    @Test(groups = {"rest-api-v1", "sanity"})
     public void sampleATestMethod2()
     {
         UserModel admin = new UserModel("admin", "a");
