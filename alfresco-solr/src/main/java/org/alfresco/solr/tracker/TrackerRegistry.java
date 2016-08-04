@@ -19,6 +19,7 @@
 package org.alfresco.solr.tracker;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,7 +49,7 @@ public class TrackerRegistry
     public Collection<Tracker> getTrackersForCore(String coreName)
     {
         ConcurrentHashMap<Class<? extends Tracker>, Tracker> coreTrackers = this.trackers.get(coreName);
-        return (coreTrackers == null ? null : coreTrackers.values());
+        return ((coreTrackers == null) ? Collections.emptyList() : coreTrackers.values());
     }
     
     public boolean hasTrackersForCore(String coreName)

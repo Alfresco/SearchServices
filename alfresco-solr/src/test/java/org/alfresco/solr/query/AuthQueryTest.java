@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.alfresco.util.Pair;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;

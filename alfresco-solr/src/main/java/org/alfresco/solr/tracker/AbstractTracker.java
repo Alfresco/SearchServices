@@ -21,14 +21,12 @@ package org.alfresco.solr.tracker;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.IndexTrackingShutdownException;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.apache.solr.common.util.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +40,8 @@ public abstract class AbstractTracker implements Tracker
 {
     public static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     public static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
-    public static final String ACL_SHARD_KEY = "ACLID";
-    public static final String DBID_SHARD_KEY = "DBID";
+    public static final String SHARD_METHOD_ACLID = "ACL_ID";
+    public static final String SHARD_METHOD_DBID = "DB_ID";
     protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
@@ -59,8 +57,6 @@ public abstract class AbstractTracker implements Tracker
     protected boolean runPostModelLoadInit = true;
     private int maxLiveSearchers;
     private volatile boolean shutdown = false;
-    private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-
 
     private Semaphore runLock = new Semaphore(1, true);
     private Semaphore writeLock = new Semaphore(1, true);
@@ -68,6 +64,7 @@ public abstract class AbstractTracker implements Tracker
     protected volatile TrackerState state;
     protected int shardCount;
     protected int shardInstance;
+    protected String shardMethod;
     protected boolean transformContent;
     protected String shardTemplate;
     protected boolean rollback;
@@ -101,8 +98,10 @@ public abstract class AbstractTracker implements Tracker
         isSlave =  Boolean.parseBoolean(p.getProperty("enable.slave", "false"));
         isMaster =  Boolean.parseBoolean(p.getProperty("enable.master", "true"));
         
-        shardCount =  Integer.parseInt(p.getProperty("acl.shard.count", "1"));
-        shardInstance =  Integer.parseInt(p.getProperty("acl.shard.instance", "0"));
+        shardCount =  Integer.parseInt(p.getProperty("shard.count", "1"));
+        shardInstance =  Integer.parseInt(p.getProperty("shard.instance", "0"));
+        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+
         shardTemplate =  p.getProperty("alfresco.template", "");
         
         transformContent = Boolean.parseBoolean(p.getProperty("alfresco.index.transformContent", "true"));
@@ -112,36 +111,6 @@ public abstract class AbstractTracker implements Tracker
         alfrescoVersion = p.getProperty("alfresco.version", "5.0.0");
         log.info("Solr built for Alfresco version: " + alfrescoVersion);
     }
-    
-    /**
-     * @return
-     */
-    protected boolean isInAclShard(long aclId)
-    {
-        if(shardCount > 1)
-        {
-            String s = Long.toString(aclId);
-            return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    protected boolean isInDBIDShard(long DBID)
-    {
-        if(shardCount > 1)
-        {
-            String s = Long.toString(DBID);
-            return (Hash.murmurhash3_x86_32(s, 0, s.length(), 77) % shardCount) == shardInstance;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
 
     
     /**
@@ -164,7 +133,7 @@ public abstract class AbstractTracker implements Tracker
     public void track()
     {
         if(runLock.availablePermits() == 0) {
-            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already running");
+            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
             return;
         }
 
@@ -305,18 +274,15 @@ public abstract class AbstractTracker implements Tracker
 
     public void shutdown()
     {
-        System.out.println("####################### Shutdown called ##############");
+        log.warn("Core "+ coreName+" shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
         setShutdown(true);
         if(this.threadHandler != null)
         {
             threadHandler.shutDownThreadPool();
         }
 
-    }
-    
-    public void close()
-    {
         client.close();
+
     }
 
     public Semaphore getWriteLock() {

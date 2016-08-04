@@ -85,7 +85,7 @@ public class TrackerRegistryTest
         assertTrue(trackersForCore.contains(metadataTracker));
         
         trackersForCore = reg.getTrackersForCore(NOT_A_CORE_NAME);
-        assertNull(trackersForCore);
+        assertTrue(trackersForCore.isEmpty());
     }
 
     @Test
@@ -110,7 +110,7 @@ public class TrackerRegistryTest
         registerTrackers(CORE3_NAME);
         boolean thereWereTrackers = reg.removeTrackersForCore(CORE3_NAME);
         assertTrue(thereWereTrackers);
-        assertNull(reg.getTrackersForCore(CORE3_NAME));
+        assertTrue(reg.getTrackersForCore(CORE3_NAME).isEmpty());
         thereWereTrackers = reg.removeTrackersForCore(NOT_A_CORE_NAME);
         assertFalse(thereWereTrackers);
     }

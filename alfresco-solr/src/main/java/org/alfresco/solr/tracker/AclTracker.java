@@ -25,13 +25,12 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
+import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AclReport;
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.TrackerState;
@@ -64,14 +63,14 @@ public class AclTracker extends AbstractTracker
     private int aclBatchSize = DEFAULT_ACL_BATCH_SIZE;
 
     private int  maxAclChangeSetDocumentIdCacheSize = 700000;
-    private String shardKey;
-    
+
     private ConcurrentLinkedQueue<Long> aclChangeSetsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToPurge = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToPurge = new ConcurrentLinkedQueue<Long>();
+    private DocRouter docRouter;
     
     /**
      * Default constructor, for testing.
@@ -87,7 +86,8 @@ public class AclTracker extends AbstractTracker
         super(p, client, coreName, informationServer);
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
-        shardKey = p.getProperty("alfresco.shardkey", ACL_SHARD_KEY);
+        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+        docRouter = DocRouterFactory.getRouter(ShardMethodEnum.getShardMethod(shardMethod));
         threadHandler = new ThreadHandler(p, coreName, "AclTracker");
     }
 
@@ -855,10 +855,10 @@ public class AclTracker extends AbstractTracker
         
         private List<Acl> filterAcls(List<Acl> acls)
         {
-            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());
+            ArrayList<Acl> filteredList = new ArrayList(acls.size());
             for(Acl acl : acls)
             {
-                if(DBID_SHARD_KEY.equals(shardKey) || isInAclShard(acl.getId()))
+                if(docRouter.routeAcl(shardCount, shardInstance, acl))
                 {
                     filteredList.add(acl);
                 }
@@ -867,28 +867,6 @@ public class AclTracker extends AbstractTracker
         }
     }
 
-    @Override
-    public void close()
-    {
-        try
-        {
-            super.close();
-        }
-        finally
-        {
-           this.threadHandler.shutDownThreadPool();
-        }
-        synchronized (this)
-        {
-            try
-            {
-                wait(1000);
-            }
-            catch (InterruptedException e)
-            {
-            }
-        }
-    }
 
     public void invalidateState()
     {

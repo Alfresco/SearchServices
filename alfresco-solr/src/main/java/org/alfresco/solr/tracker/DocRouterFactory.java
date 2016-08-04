@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,29 +18,24 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.TrackerState;
+import org.alfresco.repo.index.shard.ShardMethodEnum;
 
-import java.util.concurrent.Semaphore;
+/*
+ * @author Joel
+ */
 
-public interface Tracker
+public class DocRouterFactory
 {
-    void track();
-
-    void maintenance() throws Exception;
-
-    boolean hasMaintenance();
-
-    Semaphore getWriteLock();
-
-    String getAlfrescoVersion();
-    
-    void setShutdown(boolean shutdown);
-    void shutdown();
-
-    boolean getRollback();
-    void setRollback(boolean rollback);
-
-    void invalidateState();
-
-    TrackerState getTrackerState();
+    public static DocRouter getRouter(ShardMethodEnum method) {
+        switch(method) {
+            case DB_ID:
+                return new DBIDRouter();
+            case ACL_ID:
+                return new ACLIDMurmurRouter();
+            case MOD_ACL_ID:
+                return new ACLIDModRouter();
+            default:
+                return new DBIDRouter();
+        }
+    }
 }

@@ -31,14 +31,6 @@ public class AdminHandlerTest extends AbstractAlfrescoSolrTests {
     }
 
     @Test
-    public void testhandledTestActions() throws Exception
-    {
-        requestAction("test");
-        requestAction("CMISTEST");
-        requestAction("authTEST");
-    }
-
-    @Test
     public void testhandledCores() throws Exception
     {
         requestAction("newCore");

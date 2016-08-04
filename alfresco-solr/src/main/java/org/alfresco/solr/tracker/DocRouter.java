@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,29 +18,16 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.TrackerState;
 
-import java.util.concurrent.Semaphore;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.Acl;
 
-public interface Tracker
+/*
+ * This tracks two things: transactions and metadata nodes
+ * @author Joel
+ */
+public interface DocRouter
 {
-    void track();
-
-    void maintenance() throws Exception;
-
-    boolean hasMaintenance();
-
-    Semaphore getWriteLock();
-
-    String getAlfrescoVersion();
-    
-    void setShutdown(boolean shutdown);
-    void shutdown();
-
-    boolean getRollback();
-    void setRollback(boolean rollback);
-
-    void invalidateState();
-
-    TrackerState getTrackerState();
+    public boolean routeAcl(int shardCount, int shardInstance, Acl acl);
+    public boolean routeNode(int shardCount, int shardInstance, Node node);
 }

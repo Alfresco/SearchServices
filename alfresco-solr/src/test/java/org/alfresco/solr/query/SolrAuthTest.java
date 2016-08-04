@@ -20,35 +20,38 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 
-public class SolrAuthTest extends AbstractAlfrescoSolrTests {
+public class SolrAuthTest extends AbstractAlfrescoSolrTests 
+{
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws Exception 
+    {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws Exception
+    {
         // if you override setUp or tearDown, you better call
         // the super classes version
-//        clearIndex();
-        assertU(commit());
+        //clearIndex();
+        //assertU(commit());
     }
 
-    @Test
-    public void testAuth() throws Exception {
-
+    @Before
+    public void loadAuth() throws Exception 
+    {
         assertU(delQ("*:*"));
         assertU(commit());
 
@@ -72,6 +75,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         assertU(adoc(acldoc4));
         assertU(commit());
 
+
         //Index Main Documents
         String[] doc = {"id", "1",  "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "5000", "OWNER", "jim"};
         assertU(adoc(doc));
@@ -91,8 +95,20 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         String[] doc5 = {"id", "6", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "10000", "OWNER", "sara"};
         assertU(adoc(doc5));
         assertU(commit());
-
-        Thread.sleep(30000);
+    }
+    @Test
+    public void testAuthInFilter()
+    {
+        testAuth("false");
+    }
+    @Test
+    public void testAuthPostFilter()
+    {
+        testAuth("true");
+    }
+    
+    public void testAuth(String postFilter){
+        System.setProperty("alfresco.postfilter", postFilter);
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
@@ -106,25 +122,8 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
                 "//result/doc[2]/str[@name='id'][.='2']",
                 "//result/doc[3]/str[@name='id'][.='3']");
 
-        //Turning off the postfilter
-        System.setProperty("alfresco.postfilter", "false");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"GROUP_R2\",\"GROUP_R4\" ], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=3]",
-                "//result/doc[1]/str[@name='id'][.='1']",
-                "//result/doc[2]/str[@name='id'][.='2']",
-                "//result/doc[3]/str[@name='id'][.='3']");
 
         //Test with owner
-        System.setProperty("alfresco.postfilter", "true");
-
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
@@ -138,28 +137,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
                 "//result/doc[2]/str[@name='id'][.='2']",
                 "//result/doc[3]/str[@name='id'][.='3']",
                 "//result/doc[4]/str[@name='id'][.='5']");
-
-        //Test with owner
-        System.setProperty("alfresco.postfilter", "false");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"GROUP_R2\",\"GROUP_R4\", \"steve\" ], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=4]",
-                "//result/doc[1]/str[@name='id'][.='1']",
-                "//result/doc[2]/str[@name='id'][.='2']",
-                "//result/doc[3]/str[@name='id'][.='3']",
-                "//result/doc[4]/str[@name='id'][.='5']");
-
-
-
         // Test Deny
-        System.setProperty("alfresco.postfilter", "true");
 
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
@@ -172,24 +150,8 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         assertQ(req, "*[count(//doc)=2]",
                 "//result/doc[1]/str[@name='id'][.='1']",
                 "//result/doc[2]/str[@name='id'][.='3']");
-
-
-        System.setProperty("alfresco.postfilter", "false");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"GROUP_R2\",\"GROUP_R4\", \"GROUP_D1\"], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=2]",
-                "//result/doc[1]/str[@name='id'][.='1']",
-                "//result/doc[2]/str[@name='id'][.='3']");
-
+        
         //Test global read authority
-        System.setProperty("alfresco.postfilter", "true");
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
@@ -200,20 +162,7 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"ROLE_ADMINISTRATOR\"], \"tenants\": [ \"\" ]}");
         assertQ(req, "*[count(//doc)=6]");
 
-        System.setProperty("alfresco.postfilter", "false");
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"ROLE_ADMINISTRATOR\"], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=6]");
-
-
         //Test zero hits
-        System.setProperty("alfresco.postfilter", "true");
         params = new ModifiableSolrParams();
         params.add("q", "t1:YYYY");
         params.add("qt", "/afts");
@@ -222,17 +171,6 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests {
         params.add("sort", "id asc");
         params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"blah\"], \"tenants\": [ \"\" ]}");
-        assertQ(req, "*[count(//doc)=0]");
-
-        System.setProperty("alfresco.postfilter", "false");
-        params = new ModifiableSolrParams();
-        params.add("q", "t1:YYYY");
-        params.add("qt", "/afts");
-        params.add("start", "0");
-        params.add("rows", "6");
-        params.add("sort", "id asc");
-        params.add("fq","{!afts}AUTHORITY_FILTER_FROM_JSON");
-        req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"blah\"], \"tenants\": [ \"\" ]}");
         assertQ(req, "*[count(//doc)=0]");
     }
 }

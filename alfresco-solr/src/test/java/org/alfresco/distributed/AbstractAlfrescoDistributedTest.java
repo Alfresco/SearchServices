@@ -1,16 +1,19 @@
 package org.alfresco.distributed;
 
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,15 +28,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.Filter;
 
+import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.solr.AlfrescoSolrUtils;
+import org.alfresco.solr.SolrInformationServer;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
+import org.alfresco.solr.client.Transaction;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.JettyConfig;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.embedded.SSLConfig;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -42,14 +58,16 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.ContentStream;
+import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.search.SolrIndexSearcher;
+import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +92,7 @@ import org.slf4j.LoggerFactory;
  * @since solr 1.5
  * @author Michael Suzuki 
  */
-public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
+public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 {
     // TODO: this shouldn't be static. get the random when you need it to avoid
     // sharing.
@@ -91,49 +109,30 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * Test configs may use the <code>${hostContext}</code> variable to access
      * this system property.
      * </p>
-     * 
-     * @see #BaseDistributedSearchTestCase()
-     * @see #clearHostContext
+     *
      */
     @BeforeClass
     public static void setup()
     {
-        fixShardCount(2);
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
         // Setup test directory
-        testDir = new File(System.getProperty("user.dir") + "/target/solrs");
+        testDir = new File(System.getProperty("user.dir") + "/target/jettys");
         r = new Random(random().nextLong());
         
     }
 
-    private final static int DEFAULT_MAX_SHARD_COUNT = 3;
-    private static int shardCount = -1; // the actual number of solr cores that
-                                        // will be created in the cluster
-    public int getShardCount()
-    {
-        return shardCount;
-    }
+    protected Map<String, JettySolrRunner> jettyContainers = new HashMap<>();
+    protected Map<String, SolrClient> jettyClients = new HashMap<>();
 
-    private static boolean isShardCountFixed = false;
+    protected List<JettySolrRunner> jettyShards = new ArrayList<>();
+    protected List<SolrClient> clientShards = new ArrayList<>();
 
-    public static void fixShardCount(int count)
-    {
-        isShardCountFixed = true;
-        shardCount = count;
-    }
-
-    protected JettySolrRunner controlJetty;
-    protected List<SolrClient> clients = new ArrayList<>();
-    protected List<JettySolrRunner> jettys = new ArrayList<>();
-
-    protected String context;
     protected String[] deadServers;
     protected String shards;
     protected String[] shardsArr;
     protected static File testDir;
-    protected SolrClient controlClient;
 
     // to stress with higher thread counts and requests, make sure the junit
     // xml formatter is not being used (all output will be buffered before
@@ -220,75 +219,281 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * Subclasses can override this to change a test's solr home (default is in
      * test-files)
      */
-    public String getSolrHome()
+    public String getTestFilesHome()
     {
         return System.getProperty("user.dir") + "/src/test/resources/test-files";
     }
-
-    private boolean distribSetUpCalled = false;
-
     public void distribSetUp() throws Exception
     {
-        distribSetUpCalled = true;
         SolrTestCaseJ4.resetExceptionIgnores(); // ignore anything with
                                                 // ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
 
-        File solrHome = new File(getSolrHome());
-        System.out.println(solrHome.getAbsolutePath());
     }
-
-    private boolean distribTearDownCalled = false;
 
     public void distribTearDown() throws Exception
     {
-        distribTearDownCalled = true;
-        destroyServers();
+        SOLRAPIQueueClient.nodeMetaDataMap.clear();
+        SOLRAPIQueueClient.transactionQueue.clear();
+        SOLRAPIQueueClient.aclChangeSetQueue.clear();
+        SOLRAPIQueueClient.aclReadersMap.clear();
+        SOLRAPIQueueClient.aclMap.clear();
+        SOLRAPIQueueClient.nodeMap.clear();
     }
 
-    protected JettySolrRunner createControlJetty() throws Exception
+    /**
+     * Waits until all cores (including shards) reach a count.
+     * @param query
+     * @param count
+     * @param waitMillis
+     * @throws Exception
+     */
+    public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyContainers.values());
+        cores.addAll(getJettyCores(jettyShards));
+
+        long begin = System.currentTimeMillis();
+        for (SolrCore core : cores) {
+            waitForDocCountCore(core, query, count, waitMillis, begin);
+        }
+    }
+
+    /**
+     * Waits for the doc count on the first core available, then checks all the Shards match.
+     * @param query
+     * @param count
+     * @param waitMillis
+     * @throws Exception
+     */
+    public void waitForDocCount(Query query, int count, long waitMillis) throws Exception {
+
+        long begin = System.currentTimeMillis();
+
+        List<SolrCore> cores = getJettyCores(jettyContainers.values());
+        //TODO: Support multiple cores per jetty
+        SolrCore controlCore = cores.get(0); //Get the first one
+        waitForDocCountCore(controlCore, query, count, waitMillis, begin);
+        waitForShardsCount(query, count, waitMillis, begin);
+    }
+
+    /**
+     * Waits until all the shards reach the desired count, or errors.
+     * @param query
+     * @param count
+     * @param waitMillis
+     * @param start
+     * @throws Exception
+     */
+    public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        long timeOut = start+waitMillis;
+        int totalCount = 0;
+        while (System.currentTimeMillis() < timeOut) {
+            totalCount = 0;
+            for (SolrCore core : cores) {
+                RefCounted<SolrIndexSearcher> refCounted = null;
+                try {
+                    refCounted = core.getSearcher();
+                    SolrIndexSearcher searcher = refCounted.get();
+                    TopDocs topDocs = searcher.search(query, 10);
+                    totalCount += topDocs.totalHits;
+                } finally {
+                    refCounted.decref();
+                }
+            }
+            if (totalCount == count) {
+                return;
+            }
+        }
+        throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
+    }
+
+    /**
+     * Gets the cores for the jetty instances
+     * @return
+     */
+    protected List<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
     {
-        Path jettyHome = testDir.toPath().resolve("control");
-        File jettyHomeFile = jettyHome.toFile();
-        seedSolrHome(jettyHomeFile);
-        seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
-        JettySolrRunner jetty = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
+        List<SolrCore> cores = new ArrayList();
+        for (JettySolrRunner jettySolrRunner : runners) {
+            jettySolrRunner.getCoreContainer().getCores().forEach(aCore -> cores.add(aCore));
+        }
+        return cores;
+    }
+
+    /**
+     * Gets the Default test client.
+     * @return
+     */
+    protected SolrClient getDefaultTestClient()
+    {
+        return jettyClients.get(DEFAULT_TEST_CORENAME);
+    }
+
+    public void assertNodesPerShardGreaterThan(int count) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
+            for (SolrCore core : cores) {
+                RefCounted<SolrIndexSearcher> refCounted = null;
+                try {
+                    refCounted = core.getSearcher();
+                    SolrIndexSearcher searcher = refCounted.get();
+                    TopDocs topDocs = searcher.search(query, 10);
+                    if(topDocs.totalHits < count) {
+                        throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
+                    }
+                } finally {
+                    refCounted.decref();
+                }
+            }
+    }
+
+    private void waitForDocCountCore(SolrCore core,
+                                 Query query,
+                                 long expectedNumFound,
+                                 long waitMillis,
+                                 long startMillis)
+            throws Exception
+    {
+        long timeout = startMillis + waitMillis;
+        int totalHits = 0;
+        while(new Date().getTime() < timeout)
+        {
+            RefCounted<SolrIndexSearcher> refCounted = null;
+            try {
+                refCounted = core.getSearcher();
+                SolrIndexSearcher searcher = refCounted.get();
+                TopDocs topDocs = searcher.search(query, 10);
+                totalHits = topDocs.totalHits;
+                if (topDocs.totalHits == expectedNumFound) {
+                    return;
+                } else {
+                    Thread.sleep(2000);
+                }
+            } finally {
+                refCounted.decref();
+            }
+        }
+        throw new Exception("Core:Wait error expected "+expectedNumFound+" found "+totalHits+" : "+query.toString());
+    }
+
+    /**
+     * Provides a jetty alfresco solr. 
+     * @param name
+     * @return
+     * @throws Exception
+     */
+    private JettySolrRunner createJetty(String sourceConfigName, int jettyInstanceId, String coreName, String ... params) throws Exception
+    {
+        Path jettyTestsHome = testDir.toPath().resolve("jetty"+jettyInstanceId);
+        Path coreSourceConfig = new File(getTestFilesHome() + "/"+sourceConfigName).toPath();
+        Path coreHome = jettyTestsHome.resolve(coreName);
+        seedSolrHome(jettyTestsHome);
+        seedCoreDir(coreName, coreSourceConfig, coreHome);
+        updateShardingProperties(coreHome, params);
+        JettySolrRunner jetty = createJetty(jettyTestsHome.toFile(), null, null, false, getSchemaFile());
         return jetty;
     }
 
-    protected void createServers(int numShards) throws Exception
+    private void updateShardingProperties(Path coreHome, String ... params) throws IOException
     {
+        if(params != null && params.length > 0)
+        {
+            InputStream in = null;
+            OutputStream out = null;
+            try
+            {
+                Properties newprops = new Properties();
+                newprops.putAll(AlfrescoSolrUtils.map(params));
+                Properties properties = new Properties();
+                String solrcoreProperties = coreHome.resolve("conf/solrcore.properties").toString();
+                in = new FileInputStream(solrcoreProperties);
+                properties.load(in);
+                in.close();
+                newprops.entrySet().forEach(x-> properties.replace(x.getKey(),x.getValue()));
+                out = new FileOutputStream(solrcoreProperties);
+                properties.store(out, null);
+            }
+            finally
+            {
+                out.close();
+                in.close();
+            }
+            
+        }
+        
+    }
 
-        System.setProperty("configSetBaseDir", getSolrHome());
+    protected void createServers(JettyInstances jettyStategy, String[] coreNames, int numShards) throws Exception
+    {
+        boolean incrementJetty = true;
 
-        controlJetty = createControlJetty();
-        String url = buildUrl(controlJetty.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
-        log.info(url);
-        controlClient = createNewSolrClient(url);
+        switch (jettyStategy)
+        {
+            case SINGLE:
+                incrementJetty = false;
+                break;
+        }
+
+        int numOfJettys = 0;
+        for (int i = 0; i < coreNames.length; i++) {
+            JettySolrRunner jsr =  createJetty(coreNames[i], incrementJetty?numOfJettys++:numOfJettys, coreNames[i]);
+            jettyContainers.put(coreNames[i], jsr);
+            String url = buildUrl(jsr.getLocalPort()) + "/" + coreNames[i];
+            log.info(url);
+            jettyClients.put(coreNames[i], createNewSolrClient(url));
+
+        }
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
+        String shardMethod = getShardMethod().toString();
+        log.info("################# shardMethod:"+shardMethod);
+
+        switch (jettyStategy)
+        {
+            case SINGLE:
+                incrementJetty = false;
+                break;
+            case PER_CORE:
+                //We have created them per core but where do we put the shards?
+                if (numShards != 0 && coreNames.length != 1)
+                {
+                    throw new UnsupportedOperationException("What shall we do with multiple cores and multiple shards?");
+                }
+                incrementJetty = false;
+                numOfJettys = 0; //For now, lets put them on the first core.
+                break;
+            case PER_SHARD:
+                incrementJetty = true;
+        }
+
         for (int i = 0; i < numShards; i++)
         {
             if (sb.length() > 0)
                 sb.append(',');
             final String shardname = "shard" + i;
-            Path jettyHome = testDir.toPath().resolve(shardname);
-            File jettyHomeFile = jettyHome.toFile();
-            seedSolrHome(jettyHomeFile);
-            seedCoreRootDirWithDefaultTestCore(jettyHome.resolve("cores"));
-            JettySolrRunner j = createJetty(jettyHomeFile, null, null, false, getSchemaFile());
-            jettys.add(j);
-            String shardStr = buildUrl(j.getLocalPort()) + "/" + DEFAULT_TEST_CORENAME;
+
+            JettySolrRunner j = createJetty(coreNames[0], incrementJetty?numOfJettys++:numOfJettys, shardname,"shard.instance", Integer.toString(i),
+                                                      "shard.method", shardMethod,
+                                                      "shard.count",  Integer.toString(numShards));
+            jettyShards.add(j);
+            String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
             log.info(shardStr);
             SolrClient clientShard = createNewSolrClient(shardStr);
-            clients.add(clientShard);
+            clientShards.add(clientShard);
             shardsArr[i] = shardStr;
             sb.append(shardStr);
         }
         shards = sb.toString();
+
     }
+
+    protected ShardMethodEnum getShardMethod() {
+        return ShardMethodEnum.DB_ID;
+    }
+
 
     protected void setDistributedParams(ModifiableSolrParams params)
     {
@@ -328,26 +533,37 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected void destroyServers() throws Exception
     {
-        if (controlJetty != null)
-            controlJetty.stop();
-        if (controlClient != null)
-            controlClient.close();
-        for (JettySolrRunner jetty : jettys)
+        List<String> solrHomes = new ArrayList<String>();
+        for (JettySolrRunner jetty : jettyContainers.values())
+        {
+            solrHomes.add(jetty.getSolrHome());
             jetty.stop();
-        for (SolrClient client : clients)
+        }
+        for (SolrClient jClients : jettyClients.values())
+        {
+            jClients.close();
+        }
+
+        for (JettySolrRunner jetty : jettyShards)
+        {
+            solrHomes.add(jetty.getSolrHome());
+            jetty.stop();
+        }
+
+        for (SolrClient client : clientShards)
+        {
             client.close();
-        clients.clear();
-        jettys.clear();
-    }
+        }
 
-    public JettySolrRunner createJetty(File solrHome, String dataDir) throws Exception
-    {
-        return createJetty(solrHome, dataDir, null, false, null);
-    }
+        for(String home : solrHomes)
+        {
+            FileUtils.deleteDirectory(new File(home, "ContentStore"));
+        }
 
-    public JettySolrRunner createJetty(File solrHome, String dataDir, String shardId) throws Exception
-    {
-        return createJetty(solrHome, dataDir, shardId, false, null);
+        clientShards.clear();
+        jettyShards.clear();
+        jettyContainers.clear();
+        jettyClients.clear();
     }
 
     public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled,
@@ -362,7 +578,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param solrHome
      * @param dataDir
      * @param shardList
-     * @param solrConfigOverride
      * @param schemaOverride
      * @param explicitCoreNodeName
      * @return
@@ -384,7 +599,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
         }
-        props.setProperty("coreRootDirectory", solrHome.toPath().resolve("cores").toAbsolutePath().toString());
         SSLConfig sslConfig = new SSLConfig(sslEnabled, false, null, null, null, null);
         JettyConfig config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig)
                 .build();
@@ -447,13 +661,13 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }// add random fields to the documet before indexing
 
-    protected void indexr(Object... fields) throws Exception
+    protected void indexr(SolrClient client, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
         addFields(doc, fields);
         addFields(doc, "rnd_b", true);
         addRandFields(doc);
-        indexDoc(doc);
+        indexDoc(client, doc);
     }
 
     protected SolrInputDocument addRandFields(SolrInputDocument sdoc)
@@ -462,34 +676,32 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return sdoc;
     }
 
-    protected void index(Object... fields) throws Exception
+    protected void index(SolrClient client, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
         addFields(doc, fields);
-        indexDoc(doc);
+        indexDoc(client, doc);
     }
 
     /**
-     * Indexes the document in both the control client, and a randomly selected
-     * client
+     * Indexes the document in both the client, and a randomly selected shard
      */
-    protected void indexDoc(SolrInputDocument doc) throws IOException, SolrServerException
+    protected void indexDoc(SolrClient client, SolrInputDocument doc) throws IOException, SolrServerException
     {
-        controlClient.add(doc);
-        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clients.size();
-        SolrClient client = clients.get(which);
         client.add(doc);
+        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clientShards.size();
+        SolrClient clientShard = clientShards.get(which);
+        clientShard.add(doc);
     }
 
     /**
-     * Indexes the document in both the control client and the specified client
-     * asserting that the respones are equivilent
+     * Indexes the document in 2 clients asserting that the respones are equivilent
      */
-    protected UpdateResponse indexDoc(SolrClient client, SolrParams params, SolrInputDocument... sdocs)
+    protected UpdateResponse indexDoc(SolrClient client1, SolrClient client2, SolrParams params, SolrInputDocument... sdocs)
             throws IOException, SolrServerException
     {
-        UpdateResponse controlRsp = add(controlClient, params, sdocs);
-        UpdateResponse specificRsp = add(client, params, sdocs);
+        UpdateResponse controlRsp = add(client1, params, sdocs);
+        UpdateResponse specificRsp = add(client2, params, sdocs);
         compareSolrResponses(specificRsp, controlRsp);
         return specificRsp;
     }
@@ -530,93 +742,113 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return ureq.process(client);
     }
 
-    protected void index_specific(int serverNumber, Object... fields) throws Exception
+    /**
+     * Deletes from the specified client, and optionally all shards
+     * @param q
+     * @param client
+     * @param andShards
+     * @throws Exception
+     */
+    protected void del(String q, SolrClient client, boolean andShards) throws Exception
     {
-        SolrInputDocument doc = new SolrInputDocument();
-        for (int i = 0; i < fields.length; i += 2)
+        client.deleteByQuery(q);
+        if (andShards)
         {
-            doc.addField((String) (fields[i]), fields[i + 1]);
+            for (SolrClient cshards : clientShards)
+            {
+                cshards.deleteByQuery(q);
+            }
         }
-        controlClient.add(doc);
-        if (!clients.isEmpty())
-        {
-            SolrClient client = clients.get(serverNumber);
-            client.add(doc);
-        }
-    }
 
-    protected void del(String q) throws Exception
-    {
-        controlClient.deleteByQuery(q);
-        for (SolrClient client : clients)
-        {
-            client.deleteByQuery(q);
-        }
     }// serial commit...
 
-    protected void commit() throws Exception
+    /**
+     * * Commits to the specified client, and optionally all shards
+     * @param client
+     * @param andShards
+     * @throws Exception
+     */
+    protected void commit(SolrClient client, boolean andShards) throws Exception
     {
-        controlClient.commit();
-        for (SolrClient client : clients)
+        client.commit();
+        if (andShards)
         {
-            client.commit();
+            for (SolrClient cshards : clientShards)
+            {
+                cshards.commit();
+            }
         }
+
     }
 
     protected QueryResponse queryServer(ModifiableSolrParams params) throws SolrServerException, IOException
     {
         // query a random server
-        int which = r.nextInt(clients.size());
-        SolrClient client = clients.get(which);
+        int which = r.nextInt(clientShards.size());
+        SolrClient client = clientShards.get(which);
         QueryResponse rsp = client.query(params);
         return rsp;
     }
 
-    /**
-     * Sets distributed params. Returns the QueryResponse from
-     * {@link #queryServer},
-     */
-    protected QueryResponse query(Object... q) throws Exception
+    protected QueryResponse query(SolrClient solrClient, String json, ModifiableSolrParams params) throws Exception
     {
-        return query(true, q);
+        params.set("distrib", "false");
+        QueryRequest request = getAlfrescoRequest(json, params);
+        QueryResponse controlRsp = request.process(solrClient);
+        validateResponse(controlRsp);
+        params.remove("distrib");
+        setDistributedParams(params);
+        QueryResponse rsp = queryServer(json, params);
+        compareResponses(rsp, controlRsp);
+        return rsp;
     }
 
-    /**
-     * Sets distributed params. Returns the QueryResponse from
-     * {@link #queryServer},
-     */
-    protected QueryResponse query(SolrParams params) throws Exception
+    protected QueryResponse queryServer(String json, SolrParams params) throws SolrServerException, IOException
     {
-        return query(true, params);
+        // query a random server
+        int which = r.nextInt(clientShards.size());
+        SolrClient client = clientShards.get(which);
+        QueryRequest request = getAlfrescoRequest(json, params);
+        return request.process(client);
     }
 
-    /**
-     * Returns the QueryResponse from {@link #queryServer}
-     */
-    protected QueryResponse query(boolean setDistribParams, Object[] q) throws Exception
+    protected QueryRequest getAlfrescoRequest(String json, SolrParams params) {
+        QueryRequest request = new AlfrescoQueryRequest(json, params);
+        request.setMethod(SolrRequest.METHOD.POST);
+        return request;
+    }
+
+    public static class AlfrescoQueryRequest extends QueryRequest
     {
+        private static final long serialVersionUID = 103873138415233192L;
+        private String json;
 
-        final ModifiableSolrParams params = new ModifiableSolrParams();
-
-        for (int i = 0; i < q.length; i += 2)
+        public AlfrescoQueryRequest(String json, SolrParams params)
         {
-            params.add(q[i].toString(), q[i + 1].toString());
+            super(params);
+            this.json =json;
         }
-        return query(setDistribParams, params);
+
+        public Collection<ContentStream> getContentStreams()
+        {
+            List<ContentStream> streams = new ArrayList<ContentStream>();
+            streams.add(new ContentStreamBase.StringStream(json));
+            return streams;
+        }
     }
 
     /**
      * Returns the QueryResponse from {@link #queryServer}
      */
-    protected QueryResponse query(boolean setDistribParams, SolrParams p) throws Exception
+    protected QueryResponse query(SolrClient solrClient, boolean setDistribParams, SolrParams p) throws Exception
     {
 
         final ModifiableSolrParams params = new ModifiableSolrParams(p);
 
         // TODO: look into why passing true causes fails
         params.set("distrib", "false");
-        final QueryResponse controlRsp = controlClient.query(params);
-        validateControlData(controlRsp);
+        final QueryResponse controlRsp = solrClient.query(params);
+        validateResponse(controlRsp);
 
         params.remove("distrib");
         if (setDistribParams)
@@ -639,8 +871,8 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     {
                         for (int j = 0; j < stress; j++)
                         {
-                            int which = r.nextInt(clients.size());
-                            SolrClient client = clients.get(which);
+                            int which = r.nextInt(clientShards.size());
+                            SolrClient client = clientShards.get(which);
                             try
                             {
                                 QueryResponse rsp = client.query(new ModifiableSolrParams(params));
@@ -1049,132 +1281,6 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         compareSolrResponses(a, b);
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public @interface ShardsRepeat
-    {
-        public abstract int min() default 1;
-
-        public abstract int max() default DEFAULT_MAX_SHARD_COUNT;
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public @interface ShardsFixed
-    {
-        public abstract int num();
-    }
-
-    public class ShardsRepeatRule implements TestRule
-    {
-
-        private abstract class ShardsStatement extends Statement
-        {
-            abstract protected void callStatement() throws Throwable;
-
-            @Override
-            public void evaluate() throws Throwable
-            {
-                distribSetUp();
-                if (!distribSetUpCalled)
-                {
-                    Assert.fail("One of the overrides of distribSetUp does not propagate the call.");
-                }
-                try
-                {
-                    callStatement();
-                } finally
-                {
-                    distribTearDown();
-                    if (!distribTearDownCalled)
-                    {
-                        Assert.fail("One of the overrides of distribTearDown does not propagate the call.");
-                    }
-                }
-            }
-        }
-
-        private class ShardsFixedStatement extends ShardsStatement
-        {
-
-            private final int numShards;
-            private final Statement statement;
-
-            private ShardsFixedStatement(int numShards, Statement statement)
-            {
-                this.numShards = numShards;
-                this.statement = statement;
-            }
-
-            @Override
-            public void callStatement() throws Throwable
-            {
-                fixShardCount(numShards);
-                createServers(numShards);
-                RandVal.uniqueValues = new HashSet(); // reset random values
-                statement.evaluate();
-                try
-                {
-                    destroyServers();
-                } catch (Throwable t)
-                {
-                    log.error("Error while shutting down servers", t);
-                }
-            }
-        }
-
-        private class ShardsRepeatStatement extends ShardsStatement
-        {
-
-            private final int min;
-            private final int max;
-            private final Statement statement;
-
-            private ShardsRepeatStatement(int min, int max, Statement statement)
-            {
-                this.min = min;
-                this.max = max;
-                this.statement = statement;
-            }
-
-            @Override
-            public void callStatement() throws Throwable
-            {
-                for (shardCount = min; shardCount <= max; shardCount++)
-                {
-                    createServers(shardCount);
-                    RandVal.uniqueValues = new HashSet(); // reset random values
-                    statement.evaluate();
-                    destroyServers();
-                }
-            }
-        }
-
-        @Override
-        public Statement apply(Statement statement, Description description)
-        {
-            ShardsFixed fixed = description.getAnnotation(ShardsFixed.class);
-            ShardsRepeat repeat = description.getAnnotation(ShardsRepeat.class);
-            if (fixed != null && repeat != null)
-            {
-                throw new RuntimeException("ShardsFixed and ShardsRepeat annotations can't coexist");
-            } else if (fixed != null)
-            {
-                return new ShardsFixedStatement(fixed.num(), statement);
-            } else if (repeat != null)
-            {
-                return new ShardsRepeatStatement(repeat.min(), repeat.max(), statement);
-            } else
-            {
-                return (isShardCountFixed ? new ShardsFixedStatement(shardCount, statement)
-                        : new ShardsRepeatStatement(1, DEFAULT_MAX_SHARD_COUNT, statement));
-            }
-        }
-    }
-
-    @Rule
-    public ShardsRepeatRule repeatRule = new ShardsRepeatRule();
-
     public static Object[] getRandFields(String[] fields, RandVal[] randVals)
     {
         Object[] o = new Object[fields.length * 2];
@@ -1187,16 +1293,19 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
-     * Implementations can pre-test the control data for basic correctness
-     * before using it as a check for the shard data. This is useful, for
-     * instance, if a test bug is introduced causing a spelling index not to get
-     * built: both control &amp; shard data would have no results but because
-     * they match the test would pass. This method gives us a chance to ensure
-     * something exists in the control data.
+     * Validates that solr instance is running and that query was processed.
+     * @param response
      */
-    public void validateControlData(QueryResponse control) throws Exception
+    public void validateResponse(QueryResponse response)
     {
-        /* no-op */
+        switch (response.getStatus())
+        {
+        case 500:
+            throw new RuntimeException("Solr instance internal server error 500");
+
+        default:
+            break;
+        }
     }
 
     public static abstract class RandVal
@@ -1234,17 +1343,23 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     /**
      * Given a directory that will be used as the SOLR_HOME for a jetty
-     * instance, seeds that directory with the contents of {@link #getSolrHome}
+     * instance, seeds that directory with the contents of {@link #getTestFilesHome}
      * and ensures that the proper {@link #getSolrXml} file is in place.
      */
-    protected void seedSolrHome(File jettyHome) throws IOException
+    protected void seedSolrHome(Path jettyHome) throws IOException
     {
-        FileUtils.copyDirectory(new File(getSolrHome()), jettyHome);
         String solrxml = getSolrXml();
         if (solrxml != null)
         {
-            FileUtils.copyFile(new File(getSolrHome(), solrxml), new File(jettyHome, "solr.xml"));
+            FileUtils.copyFile(new File(getTestFilesHome(), solrxml), jettyHome.resolve(getSolrXml()).toFile());
         }
+        //Add solr home conf folder with alfresco based configuration.
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), jettyHome.resolve("conf").toFile());
+        // Add alfresco data model def
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), jettyHome.resolve("alfrescoModels").toFile());
+        //add solr alfresco properties
+        FileUtils.copyFile(new File(getTestFilesHome() + "/log4j-solr.properties"), jettyHome.resolve("log4j-solr.properties").toFile());
+        
     }
 
     /**
@@ -1256,31 +1371,104 @@ public class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @see #writeCoreProperties(Path,String)
      * @see #CORE_PROPERTIES_FILENAME
      */
-    private void seedCoreRootDirWithDefaultTestCore(Path coreRootDirectory) throws IOException
+    private void seedCoreDir(String coreName, Path coreSourceConfig, Path coreDirectory) throws IOException
     {
-        // Kludgy and brittle with assumptions about writeCoreProperties, but i
-        // don't want to
-        // try to change the semantics of that method to ignore existing files
-        Path coreDir = coreRootDirectory.resolve(DEFAULT_TEST_CORENAME);
-        if (Files.notExists(coreDir.resolve(CORE_PROPERTIES_FILENAME)))
+        //Prepare alfresco solr core.
+        Path confDir = coreDirectory.resolve("conf");
+        confDir.toFile().mkdirs();
+        if (Files.notExists(coreDirectory.resolve(CORE_PROPERTIES_FILENAME)))
         {
-            writeCoreProperties(coreDir, DEFAULT_TEST_CORENAME);
+            Properties coreProperties = new Properties();
+            coreProperties.setProperty("name", coreName);
+            writeCoreProperties(coreDirectory, coreProperties, this.getTestName());
         } // else nothing to do, DEFAULT_TEST_CORENAME already exists
+        //Add alfresco solr configurations
+        FileUtils.copyDirectory(coreSourceConfig.resolve("conf").toFile(), confDir.toFile());
     }
 
-    protected void setupJettySolrHome(File jettyHome) throws IOException
+    protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException
     {
         seedSolrHome(jettyHome);
 
         Properties coreProperties = new Properties();
-        coreProperties.setProperty("name", "collection1");
+        coreProperties.setProperty("name", coreName);
         coreProperties.setProperty("shard", "${shard:}");
-        coreProperties.setProperty("collection", "${collection:collection1}");
+        coreProperties.setProperty("collection", "${collection:"+coreName+"}");
         coreProperties.setProperty("config", "${solrconfig:solrconfig.xml}");
         coreProperties.setProperty("schema", "${schema:schema.xml}");
         coreProperties.setProperty("coreNodeName", "${coreNodeName:}");
 
-        writeCoreProperties(jettyHome.toPath().resolve("cores").resolve("collection1"), coreProperties, "collection1");
+        writeCoreProperties(jettyHome.resolve("cores").resolve(coreName), coreProperties, coreName);
     }
 
+    public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
+    {
+        //First map the nodes to a transaction.
+        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+
+        //Next map a node to the NodeMetaData
+        for(NodeMetaData nodeMetaData : nodeMetaDatas)
+        {
+            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+        }
+
+        //Next add the transaction to the queue
+        SOLRAPIQueueClient.transactionQueue.add(transaction);
+    }
+
+    public enum JettyInstances
+    {
+        PER_SHARD,
+        PER_CORE,
+        SINGLE;
+    }
+
+    /**
+     * A JUnit Rule to setup Jetty
+     */
+    public class JettyServerRule extends ExternalResource
+    {
+
+        final String[] coreNames;
+        final int numShards;
+        final JettyInstances jettyStrategy;
+
+        public JettyServerRule(int numShards, JettyInstances jettyStategy, String ...coreNames)
+        {
+            this.coreNames = coreNames;
+            this.numShards = numShards;
+            this.jettyStrategy = jettyStategy;
+        }
+
+        public JettyServerRule(int numShards)
+        {
+            coreNames = new String[]{DEFAULT_TEST_CORENAME};
+            this.jettyStrategy = JettyInstances.PER_SHARD;
+            this.numShards = numShards;
+        }
+
+        @Override
+        protected void before() throws Throwable
+        {
+            distribSetUp();
+            RandVal.uniqueValues = new HashSet(); // reset random values
+            createServers(jettyStrategy, coreNames, numShards);
+        }
+
+        @Override
+        protected void after()
+        {
+
+            try
+            {
+                destroyServers();
+                distribTearDown();
+                FileUtils.deleteDirectory(testDir);
+            }
+            catch (Exception e)
+            {
+                log.error("Failed to shutdown test properly ", e);
+            }
+        }
+    }
 }

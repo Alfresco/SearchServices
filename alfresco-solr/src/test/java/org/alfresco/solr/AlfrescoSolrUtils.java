@@ -67,7 +67,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
+import org.alfresco.solr.AbstractAlfrescoSolrTests.SolrServletRequest;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
@@ -104,7 +104,7 @@ public class AlfrescoSolrUtils
      */
     public static Transaction getTransaction(int deletes, int updates)
     {
-        long txnCommitTime = generateId();
+        long txnCommitTime = System.currentTimeMillis();
         Transaction transaction = new Transaction();
         transaction.setCommitTimeMs(txnCommitTime);
         transaction.setId(generateId());
@@ -112,6 +112,19 @@ public class AlfrescoSolrUtils
         transaction.setUpdates(updates);
         return transaction;
     }
+
+    public static Transaction getTransaction(int deletes, int updates, long id)
+    {
+        long txnCommitTime = System.currentTimeMillis();
+        Transaction transaction = new Transaction();
+        transaction.setCommitTimeMs(txnCommitTime);
+        transaction.setId(id);
+        transaction.setDeletes(deletes);
+        transaction.setUpdates(updates);
+        return transaction;
+    }
+
+
     /**
      * Get a node.
      * @param txn
@@ -225,6 +238,13 @@ public class AlfrescoSolrUtils
         AclChangeSet aclChangeSet = new AclChangeSet(generateId(), System.currentTimeMillis(), aclCount);
         return aclChangeSet;
     }
+
+    public static AclChangeSet getAclChangeSet(int aclCount, long id)
+    {
+        AclChangeSet aclChangeSet = new AclChangeSet(id, System.currentTimeMillis(), aclCount);
+        return aclChangeSet;
+    }
+
     private static AtomicLong id = new AtomicLong(System.currentTimeMillis());
     /**
      * Creates a unique id.
@@ -241,7 +261,6 @@ public class AlfrescoSolrUtils
      * @param doc the Document to add
      * @param args 0th and Even numbered args are param names, Odds are param values.
      * @see #add
-     * @see #doc
      */
     public static String add(XmlDoc doc, String... args)
     {
@@ -550,7 +569,6 @@ public class AlfrescoSolrUtils
       }
       /**
        * Add an acl.
-       * @param solrQueryRequest
        * @param core
        * @param dataModel
        * @param acltxid
