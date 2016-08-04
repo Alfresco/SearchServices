@@ -61,7 +61,7 @@ public class Lucene4QueryBuilderContextSolrImpl implements LuceneQueryBuilderCon
     public Lucene4QueryBuilderContextSolrImpl(DictionaryService dictionaryService, NamespacePrefixResolver namespacePrefixResolver, TenantService tenantService,
             SearchParameters searchParameters, MLAnalysisMode defaultSearchMLAnalysisMode, SolrQueryRequest req, AlfrescoSolrDataModel model, FTSQueryParser.RerankPhase rerankPhase)
     {
-          lqp = new Solr4QueryParser(req.getSchema(), Version.LUCENE_5_5_0, searchParameters.getDefaultFieldName(), req.getSchema().getQueryAnalyzer(), rerankPhase);
+          lqp = new Solr4QueryParser(req, Version.LUCENE_5_5_0, searchParameters.getDefaultFieldName(), req.getSchema().getQueryAnalyzer(), rerankPhase);
 //        lqp.setDefaultOperator(AbstractLuceneQueryParser.OR_OPERATOR);
         lqp.setDictionaryService(dictionaryService);
         lqp.setNamespacePrefixResolver(namespacePrefixResolver);

@@ -75,10 +75,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private static final String ARG_QUERY = "query";
     public static final String DATA_DIR_ROOT = "data.dir.root";
 
-
     private SolrTrackerScheduler scheduler = null;
-    private TrackerRegistry trackerRegistry = new TrackerRegistry();
-    private ConcurrentHashMap<String, InformationServer> informationServers = new ConcurrentHashMap<String, InformationServer>();
+    private TrackerRegistry trackerRegistry = null;
+    private ConcurrentHashMap<String, InformationServer> informationServers = null;
     
     public AlfrescoCoreAdminHandler()
     {
@@ -91,39 +90,52 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public AlfrescoCoreAdminHandler(CoreContainer coreContainer)
     {
         super(coreContainer);
-        this.scheduler = new SolrTrackerScheduler(this);
         initResourceBasedLogging("log4j.properties");
         initResourceBasedLogging("log4j-solr.properties");
+        startup(coreContainer);
     }
 
+    /**
+     * Startup services that exist outside of the core.
+     */
+    public void startup(CoreContainer coreContainer)
+    {
+        log.info("Starting Alfresco core container services");
+
+        trackerRegistry = new TrackerRegistry();
+        informationServers = new ConcurrentHashMap<String, InformationServer>();
+        this.scheduler = new SolrTrackerScheduler(this);
+    }
+
+    /**
+     * Shutsdown services that exist outside of the core.
+     */
     public void shutdown() 
     {
         super.shutdown();
         try 
         {
+            log.info("Shutting down Alfresco core container services");
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
-            boolean testcase = Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
-            if(testcase) 
-            {
-                if (!scheduler.isShutdown()) 
-                {
-                    scheduler.pauseAll();
-                    scheduler.shutdown();
-                }
-            }
 
-            for(String core : getCoreContainer().getAllCoreNames())
+            //Remove any core trackers still hanging around
+            trackerRegistry.getCoreNames().forEach(coreName ->
             {
-                Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(core);
-                if(trackers != null)
-                {
-                    for(Tracker tracker : trackers)
-                    {
-                        tracker.shutdown();
-                    }
-                }
+                trackerRegistry.removeTrackersForCore(coreName);
+            });
+
+            //Remove any information servers
+            informationServers.clear();
+
+            //Shutdown the scheduler and model tracker.
+            if (!scheduler.isShutdown())
+            {
+                scheduler.pauseAll();
+                trackerRegistry.getModelTracker().shutdown();
+                trackerRegistry.setModelTracker(null);
+                scheduler.shutdown();
             }
         } 
         catch(Exception e) 
@@ -131,6 +143,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             log.error("Problem shutting down", e);
         }
     }
+
     private void initResourceBasedLogging(String resource)
     {
         try
@@ -162,7 +175,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             if (!f.isAbsolute())
             {
                 // try $CWD/$configDir/$resource
-                f = new File(coreContainer.getSolrHome() + resource);
+                String path = coreContainer.getSolrHome();
+                path = path.endsWith("/") ? path : path + "/";
+                f = new File(path + resource);
             }
             if (f.isFile() && f.canRead())
             {
@@ -195,16 +210,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         try
         {
             switch (action) {
-            case "TEST":
-                log.info("######## Run Tests ###########");
-                new AlfrescoCoreAdminTester(this).runTests(req, rsp);
-                break;
-            case "AUTHTEST":
-                new AlfrescoCoreAdminTester(this).runAuthTest(req, rsp);
-                break;
-            case "CMISTEST":
-                new AlfrescoCoreAdminTester(this).runCmisTests(req, rsp);
-                break;
                 case "NEWCORE":
                     newCore(req, rsp);
                     break;
@@ -454,7 +459,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, String store, File template, String coreName, File newCore, int aclShardCount, int aclShardInstance, String templateName) throws IOException,
+    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, String store, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
         copyDirectory(template, newCore, false);
@@ -470,12 +475,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         //Potentially override the defaults
         properties.load(new FileInputStream(config));
 
-        //Don't overide these
+        //Don't override these
         properties.setProperty("alfresco.template", templateName);
-        if(aclShardCount > 0)
+        if(shardCount > 0)
         {
-            properties.setProperty("acl.shard.count", ""+aclShardCount);
-            properties.setProperty("acl.shard.instance", ""+aclShardInstance);
+            properties.setProperty("shard.count", "" + shardCount);
+            properties.setProperty("shard.instance", "" + shardInstance);
         }
 
         //Allow "data.dir.root" to be set via config

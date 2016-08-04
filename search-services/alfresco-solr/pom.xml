@@ -87,13 +87,13 @@
         <dependency>
             <groupId>edu.emory.mathcs.nlp</groupId>
             <artifactId>nlp4j</artifactId>
-            <version>RELEASE</version>
+            <version>1.1.2</version>
         </dependency>
 
         <dependency>
             <groupId>edu.emory.mathcs.nlp</groupId>
             <artifactId>nlp4j-english</artifactId>
-            <version>RELEASE</version>
+            <version>1.1.2</version>
         </dependency>
 
         <!-- Test dependencies -->

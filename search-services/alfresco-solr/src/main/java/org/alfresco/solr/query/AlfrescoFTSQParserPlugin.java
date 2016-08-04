@@ -22,6 +22,8 @@ import org.alfresco.repo.search.impl.parsers.FTSQueryParser.RerankPhase;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.solr.common.params.SolrParams;
@@ -61,24 +63,31 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
     @Override
     public void init(NamedList args)
     {
-    	this.args = args;
+        this.args = args;
     }
 
     public static class AlfrescoFTSQParser extends AbstractQParser
     {
-    	private RerankPhase rerankPhase = RerankPhase.SINGLE_PASS_WITH_AUTO_PHRASE;
+        private Log logger = LogFactory.getLog(AlfrescoFTSQParser.class);
+        private RerankPhase rerankPhase = RerankPhase.SINGLE_PASS_WITH_AUTO_PHRASE;
         private boolean postfilter;
 
-		public AlfrescoFTSQParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, NamedList<Object> args)
+        public AlfrescoFTSQParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, NamedList<Object> args)
         {
             super(qstr, localParams, params, req, args);
             Object arg = args.get("rerankPhase");
-        	if(arg != null)
-        	{
+            if(arg != null)
+            {
                 rerankPhase = RerankPhase.valueOf(arg.toString());
-        	}
+            }
 
-            postfilter = Boolean.parseBoolean(req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter", System.getProperty("alfresco.postfilter", "true")));
+            //First check the System property.
+            //Then check solrcore.properties, defaulting to the postFilter.
+
+            postfilter = Boolean.parseBoolean(System.getProperty("alfresco.postfilter",
+                                                                 req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter",
+                                                                                                                   "true")));
+            logger.debug("Post filter value: " + postfilter);
         }
 
         /*
@@ -100,8 +109,24 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
 
                 if(authset && postfilter)
                 {
+                    //Return the PostFilter
                     return new PostFilterQuery(200, query);
                 }
+
+                /*
+                * This assertion is designed to ensure that if the System property alfresco.postfilter
+                * is set to true then the PostFilter was actually used.
+                *
+                * If authset is false the assertion will short circuit before it tests the
+                * alfresco.postfilter property because the PostFilter is only applied for authset queries.
+                *
+                * If authset is true, the assertion checks to make sure the alfresco.postfilter property is either
+                * false or unset. If the alfresco.postfilter property is true it should not have gotten to this point
+                * of the code.
+                */
+
+                assert (authset == false ||
+                        Boolean.parseBoolean(System.getProperty("alfresco.postfilter","false")) == false);
 
                 return query;
             }

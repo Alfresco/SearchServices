@@ -136,7 +136,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     {
         
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-        Thread.sleep(30000);
+        Thread.sleep(1000);
         // Root
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
@@ -229,7 +229,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         mlText.addValue(Locale.GERMAN, "banane");
         mlText.addValue(new Locale("el"), "μπανάνα");
         mlText.addValue(Locale.ITALIAN, "banana");
-        mlText.addValue(new Locale("ja"), "�?ナナ");
+        mlText.addValue(new Locale("ja"), "バナナ");
         mlText.addValue(new Locale("ko"), "바나나");
         mlText.addValue(new Locale("pt"), "banana");
         mlText.addValue(new Locale("ru"), "банан");

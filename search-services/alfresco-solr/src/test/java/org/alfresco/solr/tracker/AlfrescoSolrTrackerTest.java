@@ -37,12 +37,12 @@ import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.apache.commons.logging.Log;
@@ -55,6 +55,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -69,16 +70,26 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
     public static void beforeClass() throws Exception 
     {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
-        Thread.sleep(30000);
     }
 
     @Before
     public void setUp() throws Exception {
         // if you override setUp or tearDown, you better callf
         // the super classes version
-        clearIndex();
-        assertU(commit());
+        //clearIndex();
+        //assertU(commit());
     }
+
+    @After
+    public void clearQueue() throws Exception {
+        SOLRAPIQueueClient.nodeMetaDataMap.clear();
+        SOLRAPIQueueClient.transactionQueue.clear();
+        SOLRAPIQueueClient.aclChangeSetQueue.clear();
+        SOLRAPIQueueClient.aclReadersMap.clear();
+        SOLRAPIQueueClient.aclMap.clear();
+        SOLRAPIQueueClient.nodeMap.clear();
+    }
+
 
     @Test
     public void testTrackers() throws Exception

@@ -22,18 +22,19 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.solr.AlfrescoSolrTestCaseJ4.SolrServletRequest;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
@@ -51,16 +52,19 @@ import org.apache.solr.SolrTestCaseJ4.XmlDoc;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.params.MultiMapSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrConfig;
+import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.handler.admin.CoreAdminHandler;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.request.SolrQueryRequestBase;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.IndexSchemaFactory;
@@ -167,6 +171,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             {
                 h = new TestHarness(nodeConfig, locator);
                 h.coreName = SolrTestCaseJ4.DEFAULT_TEST_CORENAME;
+                
             }
             catch(Exception e)
             {
@@ -567,7 +572,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             String[] textAttributes,
             String[] allAttributes,
             String... name)throws IOException,ParseException
-{
+    {
         SolrServletRequest solrQueryRequest = null;
         RefCounted<SolrIndexSearcher>refCounted = null;
         try
@@ -585,30 +590,30 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             if (textAttributes != null)
             {
                 for (String textAttribute : textAttributes)
-            {
-                    searchParameters.addTextAttribute(textAttribute);
+                {
+                        searchParameters.addTextAttribute(textAttribute);
+                }
             }
-        }
-        if (allAttributes != null)
-        {
-            for (String allAttribute : allAttributes)
+            if (allAttributes != null)
             {
-                searchParameters.addAllAttribute(allAttribute);
+                for (String allAttribute : allAttributes)
+                {
+                    searchParameters.addAllAttribute(allAttribute);
+                }
             }
-        }
         
-        Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
-        log.debug("####### Query ######:"+query);
-        TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
+            Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
+            log.debug("####### Query ######:"+query);
+            TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
 
-        if (count != null)
-        {
-            if (docs.totalHits != count)
+            if (count != null)
             {
-                throw new IOException("FAILED: " + fixQueryString(queryString, name)+" ; "+docs.totalHits);
+                if (docs.totalHits != count)
+                {
+                    throw new IOException("FAILED: " + fixQueryString(queryString, name)+" ; "+docs.totalHits);
+                }
             }
         }
-    }
         finally
         {
             refCounted.decref();
@@ -648,5 +653,11 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         }
         return msp;
     }
-   
+    public static class SolrServletRequest extends SolrQueryRequestBase
+    {
+        public SolrServletRequest(SolrCore core, HttpServletRequest req)
+        {
+            super(core, new MultiMapSolrParams(Collections.<String, String[]> emptyMap()));
+        }
+    }
 }

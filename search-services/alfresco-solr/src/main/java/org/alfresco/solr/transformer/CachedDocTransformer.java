@@ -24,12 +24,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.content.SolrContentStore;
 import org.apache.lucene.index.IndexableField;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.schema.SchemaField;
@@ -72,7 +75,11 @@ public class CachedDocTransformer extends DocTransformer
         {
             String id = getFieldValueString(doc, FIELD_SOLR4_ID);
             TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-            cachedDoc = SolrContentStore.retrieveDocFromSolrContentStore(tenantAndDbId.tenant, tenantAndDbId.dbId);
+            CoreContainer coreContainer = context.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
+            SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(context.getSearcher().getCore().getName());
+            SolrContentStore solrContentStore = srv.getSolrContentStore();
+            cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(tenantAndDbId.tenant, tenantAndDbId.dbId);
         }
         catch(StringIndexOutOfBoundsException e)
         {

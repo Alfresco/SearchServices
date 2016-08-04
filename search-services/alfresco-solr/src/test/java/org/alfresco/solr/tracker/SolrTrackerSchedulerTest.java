@@ -23,11 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -57,6 +53,10 @@ public class SolrTrackerSchedulerTest
     private MetadataTracker metadataTracker;
     @Mock
     private AclTracker aclTracker;
+    @Mock
+    private CascadeTracker cascadeTracker;
+    @Mock
+    private CascadeTracker cascadeTrackerScheduled;
 
     private SolrTrackerScheduler trackerScheduler;
     private String CORE_NAME = "coreName";
@@ -108,6 +108,23 @@ public class SolrTrackerSchedulerTest
     {
         this.trackerScheduler.deleteTrackerJob(CORE_NAME, modelTracker);
         verify(spiedQuartzScheduler).deleteJob(anyString(), eq(SolrTrackerScheduler.SOLR_JOB_GROUP));
+    }
+
+    @Test
+    public void testDeleteTrackerInstanceJob() throws SchedulerException
+    {
+        Properties props = mock(Properties.class);
+        when(props.getProperty("alfresco.cron", "0/15 * * * * ? *")).thenReturn("0/15 * * * * ? *");
+        this.trackerScheduler.schedule(cascadeTrackerScheduled, CORE_NAME, props);
+
+        //Try deleting the same class but a different instance. It not possible.
+        this.trackerScheduler.deleteJobForTrackerInstance(CORE_NAME, cascadeTracker);
+        verify(spiedQuartzScheduler, never()).deleteJob(anyString(), eq(SolrTrackerScheduler.SOLR_JOB_GROUP));
+
+        //No try deleting the exact instance of the tracker class
+        this.trackerScheduler.deleteJobForTrackerInstance(CORE_NAME, cascadeTrackerScheduled);
+        verify(spiedQuartzScheduler, times(1)).deleteJob(anyString(), eq(SolrTrackerScheduler.SOLR_JOB_GROUP));
+
     }
 
     @Test

@@ -26,8 +26,10 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.content.SolrContentStore;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.document.Document;
@@ -39,6 +41,7 @@ import org.apache.solr.common.SolrException.ErrorCode;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.handler.clustering.ClusteringEngine;
@@ -291,7 +294,12 @@ public class AlfrescoSolrClusteringComponent extends SearchComponent implements
 			String id = getFieldValueString(doc, FIELD_SOLR4_ID);
 			TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel
 					.decodeNodeDocumentId(id);
-			SolrInputDocument sid = SolrContentStore.retrieveDocFromSolrContentStore(
+			
+			CoreContainer coreContainer = req.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+			AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
+			SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
+            SolrContentStore solrContentStore = srv.getSolrContentStore();
+			SolrInputDocument sid = solrContentStore.retrieveDocFromSolrContentStore(
 					tenantAndDbId.tenant, tenantAndDbId.dbId);
 			return sid;
 		} catch (StringIndexOutOfBoundsException e) {

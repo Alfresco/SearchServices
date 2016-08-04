@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,29 +18,29 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.TrackerState;
+/*
+ * @author Joel
+ */
 
-import java.util.concurrent.Semaphore;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.Node;
 
-public interface Tracker
+public class ACLIDModRouter implements DocRouter
 {
-    void track();
+    public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
+        if(shardCount <= 1) {
+            return true;
+        }
 
-    void maintenance() throws Exception;
+        return acl.getId() % shardCount == shardInstance;
+    }
 
-    boolean hasMaintenance();
+    public boolean routeNode(int shardCount, int shardInstance, Node node) {
+        if(shardCount <= 1) {
+            return true;
+        }
 
-    Semaphore getWriteLock();
-
-    String getAlfrescoVersion();
-    
-    void setShutdown(boolean shutdown);
-    void shutdown();
-
-    boolean getRollback();
-    void setRollback(boolean rollback);
-
-    void invalidateState();
-
-    TrackerState getTrackerState();
+        //Route the node based on the mod of the aclId
+        return node.getAclId() % shardCount == shardInstance;
+    }
 }
