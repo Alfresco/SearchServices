@@ -1,6 +1,6 @@
 package org.alfresco.rest;
 
-import org.alfresco.rest.v1.Sites;
+import org.alfresco.rest.v1.RestSites;
 import org.alfresco.tester.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 public class SampleBTest extends BaseRestTest
 {
     @Autowired
-    Sites onSites;
+    RestSites onSites;
 
     @Test
     public void sampleBTestMethod1()
