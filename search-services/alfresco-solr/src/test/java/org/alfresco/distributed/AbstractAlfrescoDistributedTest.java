@@ -220,7 +220,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      */
     public String getTestFilesHome()
     {
-        return System.getProperty("user.dir") + "/src/test/resources/test-files";
+        return System.getProperty("user.dir") + "/target/test-classes/test-files";
     }
     public void distribSetUp() throws Exception
     {
@@ -1355,6 +1355,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), jettyHome.resolve("conf").toFile());
         // Add alfresco data model def
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), jettyHome.resolve("alfrescoModels").toFile());
+        // Add templates
+        FileUtils.copyDirectory(new File(getTestFilesHome() + "/templates"), jettyHome.resolve("templates").toFile());
         //add solr alfresco properties
         FileUtils.copyFile(new File(getTestFilesHome() + "/log4j-solr.properties"), jettyHome.resolve("log4j-solr.properties").toFile());
         
