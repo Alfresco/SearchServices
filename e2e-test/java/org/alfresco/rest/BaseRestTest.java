@@ -10,7 +10,6 @@ import com.jayway.restassured.RestAssured;
 @ContextConfiguration("classpath:alfresco-restapi-context.xml")
 public class BaseRestTest extends AbstractTestNGSpringContextTests
 {
-
     @Autowired
     protected RestProperties restProperties;
 
