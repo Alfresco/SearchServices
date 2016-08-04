@@ -27,5 +27,14 @@ public class SampleBTest extends BaseRestTest
 
         Assert.assertEquals(onSites.usingRestWrapper().getLastStatus().getName().toLowerCase(), HttpStatus.UNAUTHORIZED.name().toLowerCase(), "Status Code Name");
     }
+    
+    
+    @Test
+    public void getSite()
+    {
+        UserModel admin = new UserModel("admin", "admin"); 
+        
+        Assert.assertEquals(onSites.withAuthUser(admin).getSite("0-C2291-1470305685222").getId(), "asd");
+    }
 
 }
