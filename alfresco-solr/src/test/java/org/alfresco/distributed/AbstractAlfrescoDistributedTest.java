@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.Filter;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.solr.AlfrescoSolrUtils;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
@@ -384,34 +383,32 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @return
      * @throws Exception
      */
-    private JettySolrRunner createJetty(String sourceConfigName, int jettyInstanceId, String coreName, String ... params) throws Exception
+    private JettySolrRunner createJetty(String sourceConfigName, int jettyInstanceId, String coreName, Properties additionalProperties) throws Exception
     {
         Path jettyTestsHome = testDir.toPath().resolve("jetty"+jettyInstanceId);
         Path coreSourceConfig = new File(getTestFilesHome() + "/"+sourceConfigName).toPath();
         Path coreHome = jettyTestsHome.resolve(coreName);
         seedSolrHome(jettyTestsHome);
         seedCoreDir(coreName, coreSourceConfig, coreHome);
-        updateShardingProperties(coreHome, params);
+        updateSolrCoreProperties(coreHome, additionalProperties);
         JettySolrRunner jetty = createJetty(jettyTestsHome.toFile(), null, null, false, getSchemaFile());
         return jetty;
     }
 
-    private void updateShardingProperties(Path coreHome, String ... params) throws IOException
+    private void updateSolrCoreProperties(Path coreHome, Properties additionalProperties) throws IOException
     {
-        if(params != null && params.length > 0)
+        if(additionalProperties != null)
         {
             InputStream in = null;
             OutputStream out = null;
             try
             {
-                Properties newprops = new Properties();
-                newprops.putAll(AlfrescoSolrUtils.map(params));
                 Properties properties = new Properties();
                 String solrcoreProperties = coreHome.resolve("conf/solrcore.properties").toString();
                 in = new FileInputStream(solrcoreProperties);
                 properties.load(in);
                 in.close();
-                newprops.entrySet().forEach(x-> properties.replace(x.getKey(),x.getValue()));
+                additionalProperties.entrySet().forEach(x-> properties.put(x.getKey(),x.getValue()));
                 out = new FileOutputStream(solrcoreProperties);
                 properties.store(out, null);
             }
@@ -425,7 +422,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         
     }
 
-    protected void createServers(JettyInstances jettyStategy, String[] coreNames, int numShards) throws Exception
+    protected void createServers(JettyInstances jettyStategy, String[] coreNames, int numShards, Properties additionalProperties) throws Exception
     {
         boolean incrementJetty = true;
 
@@ -438,7 +435,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         int numOfJettys = 0;
         for (int i = 0; i < coreNames.length; i++) {
-            JettySolrRunner jsr =  createJetty(coreNames[i], incrementJetty?numOfJettys++:numOfJettys, coreNames[i]);
+            JettySolrRunner jsr =  createJetty(coreNames[i], incrementJetty?numOfJettys++:numOfJettys, coreNames[i], additionalProperties);
             jettyContainers.put(coreNames[i], jsr);
             String url = buildUrl(jsr.getLocalPort()) + "/" + coreNames[i];
             log.info(url);
@@ -474,10 +471,11 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             if (sb.length() > 0)
                 sb.append(',');
             final String shardname = "shard" + i;
-
-            JettySolrRunner j = createJetty(coreNames[0], incrementJetty?numOfJettys++:numOfJettys, shardname,"shard.instance", Integer.toString(i),
-                                                      "shard.method", shardMethod,
-                                                      "shard.count",  Integer.toString(numShards));
+            if (additionalProperties == null) additionalProperties = new Properties();
+            additionalProperties.put("shard.instance", Integer.toString(i));
+            additionalProperties.put("shard.method", shardMethod);
+            additionalProperties.put("shard.count", Integer.toString(numShards));
+            JettySolrRunner j = createJetty(coreNames[0], incrementJetty?numOfJettys++:numOfJettys, shardname,additionalProperties);
             jettyShards.add(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
             log.info(shardStr);
@@ -1432,19 +1430,33 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         final String[] coreNames;
         final int numShards;
         final JettyInstances jettyStrategy;
+        final Properties solrcoreProperties;
 
-        public JettyServerRule(int numShards, JettyInstances jettyStategy, String ...coreNames)
+        /**
+         * Creates the jetty servers
+         * @param numShards Number of shards required
+         * @param solrcoreProperties Additional properties to add to the solrcore.properties
+         * @param jettyStategy How to create the JettyInstances
+         * @param coreNames names of the core config folders
+         */
+        public JettyServerRule(int numShards, Properties solrcoreProperties, JettyInstances jettyStategy, String ...coreNames)
         {
             this.coreNames = coreNames;
             this.numShards = numShards;
             this.jettyStrategy = jettyStategy;
+            this.solrcoreProperties = solrcoreProperties;
         }
 
+        /**
+         * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * @param numShards
+         */
         public JettyServerRule(int numShards)
         {
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.jettyStrategy = JettyInstances.PER_SHARD;
             this.numShards = numShards;
+            this.solrcoreProperties = new Properties();
         }
 
         @Override
@@ -1452,7 +1464,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             distribSetUp();
             RandVal.uniqueValues = new HashSet(); // reset random values
-            createServers(jettyStrategy, coreNames, numShards);
+            createServers(jettyStrategy, coreNames, numShards,solrcoreProperties);
         }
 
         @Override
