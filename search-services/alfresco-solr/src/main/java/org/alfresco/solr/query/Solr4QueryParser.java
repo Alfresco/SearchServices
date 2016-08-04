@@ -468,8 +468,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             return spanQueryBuilder(field, first, last, slop, inOrder);
         } else
         {
-            BytesRef firstBytes = analyzeMultitermTerm(field, first, getAnalyzer());
-            BytesRef lastBytes = analyzeMultitermTerm(field, last, getAnalyzer());
+            BytesRef firstBytes = getAnalyzer().normalize(field, first);
+            BytesRef lastBytes = getAnalyzer().normalize(field, last);
             SpanQuery firstTerm = new SpanTermQuery(new Term(field, firstBytes));
             SpanQuery lastTerm = new SpanTermQuery(new Term(field, lastBytes));
             return new SpanNearQuery(new SpanQuery[]
@@ -2833,7 +2833,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 String start = null;
                 try
                 {
-                    analyzeMultitermTerm(FIELD_CASCADETX, part1, null);
+                    getAnalyzer().normalize(FIELD_CASCADETX, part1);
                     start = part1;
                 } catch (Exception e)
                 {
@@ -2842,7 +2842,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 String end = null;
                 try
                 {
-                    analyzeMultitermTerm(FIELD_CASCADETX, part2, null);
+                    getAnalyzer().normalize(FIELD_CASCADETX, part2);
                     end = part2;
                 } catch (Exception e)
                 {
@@ -2973,7 +2973,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         String start = null;
                         try
                         {
-                            analyzeMultitermTerm(solrField, part1, null);
+                            getAnalyzer().normalize(solrField, part1);
                             start = part1;
                         } catch (Exception e)
                         {
@@ -2982,7 +2982,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         String end = null;
                         try
                         {
-                            analyzeMultitermTerm(solrField, part2, null);
+                            getAnalyzer().normalize(solrField, part2);
                             end = part2;
                         } catch (Exception e)
                         {
@@ -3041,7 +3041,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     String start = null;
                     try
                     {
-                        analyzeMultitermTerm(solrField, part1, null);
+                        getAnalyzer().normalize(solrField, part1);
                         start = part1;
                     } catch (Exception e)
                     {
@@ -3050,7 +3050,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     String end = null;
                     try
                     {
-                        analyzeMultitermTerm(solrField, part2, null);
+                        getAnalyzer().normalize(solrField, part2);
                         end = part2;
                     } catch (Exception e)
                     {
