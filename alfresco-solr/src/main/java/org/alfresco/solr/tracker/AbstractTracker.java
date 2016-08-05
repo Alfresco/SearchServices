@@ -289,6 +289,11 @@ public abstract class AbstractTracker implements Tracker
         return this.writeLock;
     }
 
+    public Semaphore getRunLock() {
+        return this.runLock;
+    }
+
+
     /**
      * @return Alfresco version Solr was built for
      */

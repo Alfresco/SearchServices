@@ -22,6 +22,8 @@ package org.alfresco.solr.tracker;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.slf4j.Logger;
@@ -38,6 +40,7 @@ public class CommitTracker extends AbstractTracker
     private long lastSearcherOpened;
     private long commitInterval;
     private long newSearcherInterval;
+    private AtomicInteger rollbackCount = new AtomicInteger(0);
 
     protected final static Logger log = LoggerFactory.getLogger(CommitTracker.class);
 
@@ -73,6 +76,10 @@ public class CommitTracker extends AbstractTracker
         }
 
         return false;
+    }
+
+    public int getRollbackCount() {
+        return rollbackCount.get();
     }
 
     public void maintenance() throws Exception
@@ -171,6 +178,7 @@ public class CommitTracker extends AbstractTracker
                 tracker.setRollback(false);
                 tracker.invalidateState();
             }
+            rollbackCount.incrementAndGet();
         }
     }
 
