@@ -29,25 +29,20 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Collection;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
+
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.TrackerState;
+
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
-import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +53,6 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -100,25 +94,14 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
     {
 
         AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = (AlfrescoCoreAdminHandler)h.getCore().getCoreDescriptor().getCoreContainer().getMultiCoreHandler();
-        TrackerRegistry trackerRegistry = alfrescoCoreAdminHandler.getTrackerRegistry();
-        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(h.coreName);
-        MetadataTracker metadataTracker = null;
-        CommitTracker commitTracker = null;
 
-        for(Tracker tracker : trackers) {
-            if(tracker instanceof MetadataTracker) {
-                metadataTracker = (MetadataTracker)tracker;
-            } else if(tracker instanceof CommitTracker) {
-                commitTracker = (CommitTracker)tracker;
-            }
-        }
 
         /*
         * Create and index an AclChangeSet.
         */
 
 
-        AclChangeSet aclChangeSet = getAclChangeSet(1);
+        AclChangeSet aclChangeSet = getAclChangeSet(1, 1);
 
         Acl acl = getAcl(aclChangeSet);
         Acl acl2 = getAcl(aclChangeSet);
@@ -140,12 +123,25 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         BooleanQuery waitForQuery = builder.build();
         waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
 
+        TrackerRegistry trackerRegistry = alfrescoCoreAdminHandler.getTrackerRegistry();
+        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(h.getCore().getName());
+        MetadataTracker metadataTracker = null;
+        CommitTracker commitTracker = null;
+
+        for(Tracker tracker : trackers) {
+            if(tracker instanceof MetadataTracker) {
+                metadataTracker = (MetadataTracker)tracker;
+            } else if(tracker instanceof CommitTracker) {
+                commitTracker = (CommitTracker)tracker;
+            }
+        }
+
         /*
         * Create and index a Transaction
         */
 
         //First create a transaction.
-        Transaction txn = getTransaction(0, 3);
+        Transaction txn = getTransaction(0, 3, 1);
 
         //Next create two nodes to update for the transaction
         Node folderNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
@@ -179,17 +175,28 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         //Stop the commit tracker
         commitTracker.getRunLock().acquire();
 
-        Transaction rollbackTxn = getTransaction(0, 1);
+        Transaction rollbackTxn = getTransaction(0, 1, 2);
 
         Node rollbackNode = getNode(rollbackTxn, acl, Node.SolrApiNodeStatus.UPDATED);
 
         NodeMetaData rollbackMetaData = getNodeMetaData(rollbackNode, rollbackTxn, acl, "mike", null, false);
 
         indexTransaction(rollbackTxn,
-                         list(rollbackNode),
-                         list(rollbackMetaData));
+                list(rollbackNode),
+                list(rollbackMetaData));
 
+        long cycles = metadataTracker.getTrackerState().getTrackerCycles();
+        //Wait three tracker cycle
+        while (metadataTracker.getTrackerState().getTrackerCycles() < cycles+3) {
+            Thread.sleep(1000);
+        }
+
+        //Take the rollback transaction out of the queue so it doesn't get re-indexed following the rollback.
+        //This will prove the rollback transaction was rolled back
+
+        SOLRAPIQueueClient.transactionQueue.remove(rollbackTxn);
         metadataTracker.setRollback(true);
+
         commitTracker.getRunLock().release();
 
         while(commitTracker.getRollbackCount() == 0) {
@@ -199,12 +206,12 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         //The rollback occurred
         //Let's add another node
 
-        Transaction afterRollbackTxn = getTransaction(0, 1);
+        Transaction afterRollbackTxn = getTransaction(0, 1, 3);
 
         Node afterRollbackNode = getNode(afterRollbackTxn, acl, Node.SolrApiNodeStatus.UPDATED);
 
         //Next create the NodeMetaData for each node. TODO: Add more metadata
-        NodeMetaData afterRollbackMetaData = getNodeMetaData(afterRollbackNode, txn, acl, "mike", null, false);
+        NodeMetaData afterRollbackMetaData = getNodeMetaData(afterRollbackNode, afterRollbackTxn, acl, "mike", null, false);
 
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
