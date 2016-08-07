@@ -1,5 +1,7 @@
-package org.alfresco.rest;
+package org.alfresco.rest.v1;
 
+import org.alfresco.rest.core.RestProperties;
+import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.tester.ServerHealth;
 import org.alfresco.tester.TasProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,7 @@ import org.testng.annotations.BeforeClass;
 import com.jayway.restassured.RestAssured;
 
 @ContextConfiguration("classpath:alfresco-restapi-context.xml")
-public class BaseRestTest extends AbstractTestNGSpringContextTests
+public abstract class RestTest extends AbstractTestNGSpringContextTests
 {
     @Autowired
     protected RestProperties restProperties;
@@ -21,8 +23,11 @@ public class BaseRestTest extends AbstractTestNGSpringContextTests
     @Autowired
     protected ServerHealth serverHealth;
 
-    @BeforeClass
-    public void setup() throws Exception
+    @Autowired
+    protected RestWrapper restClient;
+
+    @BeforeClass(alwaysRun = true)
+    public void setupRestTest() throws Exception
     {
         serverHealth.assertIfServerOnline();
 

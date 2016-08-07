@@ -6,8 +6,10 @@
 	</listeners>
 	<test name="Test">
 		<classes>
-			<class name="org.alfresco.rest.SampleATest"></class>
-			<class name="org.alfresco.rest.SampleBTest"></class>
+			<class name="org.alfresco.rest.v1.SampleATest"></class>
+			<class name="org.alfresco.rest.v1.SampleBTest"></class>
+			<class name="org.alfresco.rest.v1.SamplePeopleTest"></class>
+			<class name="org.alfresco.rest.v1.SampleSitesTest"></class>
 		</classes>
 
 	</test> <!-- Test -->
