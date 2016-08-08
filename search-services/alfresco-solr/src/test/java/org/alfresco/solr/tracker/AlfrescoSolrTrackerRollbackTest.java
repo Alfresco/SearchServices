@@ -19,7 +19,6 @@
 package org.alfresco.solr.tracker;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
-import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -28,7 +27,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
 
 import java.util.Collection;
 
@@ -173,6 +171,8 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, MAX_WAIT_TIME);
 
         //Stop the commit tracker
+        //This will allow the metadata tracker to index the next transaction and leave it uncommitted in the index.
+
         commitTracker.getRunLock().acquire();
 
         Transaction rollbackTxn = getTransaction(0, 1, 2);
@@ -182,11 +182,11 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         NodeMetaData rollbackMetaData = getNodeMetaData(rollbackNode, rollbackTxn, acl, "mike", null, false);
 
         indexTransaction(rollbackTxn,
-                list(rollbackNode),
-                list(rollbackMetaData));
+                         list(rollbackNode),
+                         list(rollbackMetaData));
 
         long cycles = metadataTracker.getTrackerState().getTrackerCycles();
-        //Wait three tracker cycle
+        //Wait three tracker cycles
         while (metadataTracker.getTrackerState().getTrackerCycles() < cycles+3) {
             Thread.sleep(1000);
         }
@@ -204,7 +204,16 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         }
 
         //The rollback occurred
-        //Let's add another node
+        //Let's add another node and acl
+
+        AclChangeSet afterRollbackAclChangeSet = getAclChangeSet(1, 10);
+
+        Acl afterRollbackAcl = getAcl(aclChangeSet);
+        AclReaders afterRollbackAclReaders = getAclReaders(afterRollbackAclChangeSet, afterRollbackAcl, list("joel"), list("phil"), null);
+        indexAclChangeSet(afterRollbackAclChangeSet,
+                          list(afterRollbackAcl),
+                          list(afterRollbackAclReaders));
+
 
         Transaction afterRollbackTxn = getTransaction(0, 1, 3);
 
@@ -225,5 +234,12 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, MAX_WAIT_TIME);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(afterRollbackNode.getId()))), 1, MAX_WAIT_TIME);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(rollbackNode.getId()))), 0, MAX_WAIT_TIME);
+
+        //Check for the ACL state stamp.
+        builder = new BooleanQuery.Builder();
+        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, afterRollbackAclChangeSet.getId(), afterRollbackAclChangeSet.getId()+1, true, false), BooleanClause.Occur.MUST));
+        waitForQuery = builder.build();
+        waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
     }
 }
