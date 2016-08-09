@@ -94,7 +94,7 @@ public class SolrDataModelTest
         assertEquals(2, dataModel.getAlfrescoModels().size());
         
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(OBJECT_ID).getFields().size());
-        assertEquals(5, dataModel.getIndexedFieldNamesForProperty(NAME).getFields().size());
+        assertEquals(4, dataModel.getIndexedFieldNamesForProperty(NAME).getFields().size());
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(CREATION_DATE).getFields().size());
         assertEquals(0, dataModel.getIndexedFieldNamesForProperty(IS_IMMUTABLE).getFields().size());
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(IS_PRIVATE_WOKING_COPY).getFields().size());
