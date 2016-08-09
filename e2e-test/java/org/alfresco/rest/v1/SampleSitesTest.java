@@ -1,5 +1,6 @@
 package org.alfresco.rest.v1;
 
+import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.tester.data.DataSite;
 import org.alfresco.tester.data.DataUser;
@@ -23,6 +24,9 @@ public class SampleSitesTest extends RestTest
     @Autowired
     DataSite dataSite;
 
+    @Autowired
+    ContentService content;
+
     private UserModel userModel;
     private SiteModel siteModel;
 
@@ -33,18 +37,6 @@ public class SampleSitesTest extends RestTest
         restClient.authenticateUser(userModel);
         siteModel = dataSite.createPublicRandomSite();
         siteAPI.useRestClient(restClient);
-    }
-
-    @Test
-    public void getSitesResponseNotNull() throws JsonToModelConversionException
-    {
-        Assert.assertNotNull(siteAPI.getSites().getEntries(), "Get sites response should not be null");
-    }
-
-    @Test
-    public void getSitesCheckStatusCode()
-    {
-        Assert.assertEquals(siteAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get sites response status code is not correct");
     }
 
     @Test
@@ -61,26 +53,23 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void collectionHasPagination() throws JsonToModelConversionException
+    public void getSitesResponseNotNull() throws JsonToModelConversionException
+    {
+        Assert.assertNotNull(siteAPI.getSites().getEntries(), "Get sites response should not be null");
+    }
+
+    @Test
+    public void getSitesCheckStatusCode() throws JsonToModelConversionException
+    {
+        siteAPI.getSites();
+        Assert.assertEquals(siteAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get sites response status code is not correct");
+    }
+
+    @Test
+    public void sitesCollectionHasPagination() throws JsonToModelConversionException
     {
         siteAPI.getSites().assertPagination();
-        Assert.assertEquals(siteAPI.getSites().getPagination().getCount(), 100);
-    }
-    
-    @Autowired RestCommentsApi commentsAPI;
-    @Test
-    public void getComments() throws JsonToModelConversionException
-    {
-        commentsAPI.useRestClient(restClient);
-        System.out.println(commentsAPI.getNodeComments("bc95c7bf-0593-422f-af7d-b92f9d8129de").getEntries().size());
-    }
-    
-    
-    @Test
-    public void addComments() throws JsonToModelConversionException
-    {
-        commentsAPI.useRestClient(restClient);
-        commentsAPI.addCommentToNode("bc95c7bf-0593-422f-af7d-b92f9d8129de");
+        Assert.assertEquals(siteAPI.getSites().getPagination().getCount(), 100, "Sites collection should have pagination");
     }
 
 }
