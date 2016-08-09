@@ -111,7 +111,7 @@ public class SolrDataModelTest
         
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.FACET).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.COMPLETION).getFields().size());
-        assertEquals(2, dataModel .getQueryableFields(NAME, null, FieldUse.FTS).getFields().size());
+        assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.FTS).getFields().size());
         assertEquals(2, dataModel .getQueryableFields(NAME, null, FieldUse.ID).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.MULTI_FACET).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.SORT).getFields().size());
