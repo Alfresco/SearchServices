@@ -36,7 +36,7 @@ public class SamplePeopleTest extends RestTest
         Assert.assertNotNull(peopleAPI.getPerson(userModel.getUsername()), "Get person response should not be null");
         Assert.assertEquals(peopleAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get person response status code is not correct");
     }
-    
+
     @Test
     public void getPersonResponseNotNull() throws JsonToModelConversionException
     {
@@ -49,7 +49,7 @@ public class SamplePeopleTest extends RestTest
         peopleAPI.getPerson(userModel.getUsername());
         Assert.assertEquals(peopleAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get person response status code is not correct");
     }
-    
+
     @Test
     public void getPersonResponseNotNull1() throws JsonToModelConversionException
     {
@@ -62,7 +62,5 @@ public class SamplePeopleTest extends RestTest
         peopleAPI.getPerson(userModel.getUsername());
         Assert.assertEquals(peopleAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get person response status code is not correct");
     }
-    
-
 
 }
