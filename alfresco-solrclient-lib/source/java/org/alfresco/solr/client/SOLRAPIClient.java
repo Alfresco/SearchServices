@@ -1236,8 +1236,7 @@ public class SOLRAPIClient
                 {
                     try
                     {
-                        Date date = ISO8601DateFormat.parse(source);
-                        return date;
+                        return ISO8601DateFormat.parse(source);
                     }
                     catch (Exception e)
                     {
