@@ -378,22 +378,44 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
-     * Provides a jetty alfresco solr. 
+     * Creates a JettySolrRunner (if one didn't exist already). DOES NOT START IT.
      * @param name
      * @return
      * @throws Exception
      */
-    private JettySolrRunner createJetty(String sourceConfigName, int jettyInstanceId, String coreName, Properties additionalProperties) throws Exception
+    private JettySolrRunner createJetty(String jettyKey) throws Exception
     {
-        Path jettyTestsHome = testDir.toPath().resolve("jetty"+jettyInstanceId);
+        if (jettyContainers.containsKey(jettyKey))
+        {
+            return jettyContainers.get(jettyKey);
+        }
+        else
+        {
+            Path jettySolrHome = testDir.toPath().resolve(jettyKey);
+            seedSolrHome(jettySolrHome);
+            JettySolrRunner jetty = createJetty(jettySolrHome.toFile(), null, null, false, getSchemaFile());
+            return jetty;
+        }
+    }
+
+    /**
+     * Adds the core config information to the jetty file system.
+     * Its best to call this before calling start() on Jetty
+     * @param jettyKey
+     * @param sourceConfigName
+     * @param coreName
+     * @param additionalProperties
+     * @throws Exception
+     */
+    private void addCoreToJetty(String jettyKey, String sourceConfigName, String coreName, Properties additionalProperties) throws Exception
+    {
+        Path jettySolrHome = testDir.toPath().resolve(jettyKey);
         Path coreSourceConfig = new File(getTestFilesHome() + "/"+sourceConfigName).toPath();
-        Path coreHome = jettyTestsHome.resolve(coreName);
-        seedSolrHome(jettyTestsHome);
+        Path coreHome = jettySolrHome.resolve(coreName);
         seedCoreDir(coreName, coreSourceConfig, coreHome);
         updateSolrCoreProperties(coreHome, additionalProperties);
-        JettySolrRunner jetty = createJetty(jettyTestsHome.toFile(), null, null, false, getSchemaFile());
-        return jetty;
     }
+
 
     private void updateSolrCoreProperties(Path coreHome, Properties additionalProperties) throws IOException
     {
@@ -422,25 +444,35 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         
     }
 
-    protected void createServers(JettyInstances jettyStategy, String[] coreNames, int numShards, Properties additionalProperties) throws Exception
-    {
-        boolean incrementJetty = true;
-
-        switch (jettyStategy)
+    /**
+     * Starts jetty if its not already running
+     * @param jsr
+     * @throws Exception
+     */
+    private void startJetty(JettySolrRunner jsr) throws Exception {
+        if (!jsr.isRunning())
         {
-            case SINGLE:
-                incrementJetty = false;
-                break;
+            jsr.start();
+        }
+    }
+
+    protected void createServers(String jettyKey, String[] coreNames, int numShards, Properties additionalProperties) throws Exception
+    {
+        JettySolrRunner jsr =  createJetty(jettyKey);
+        jettyContainers.put(jettyKey, jsr);
+
+        for (int i = 0; i < coreNames.length; i++) {
+            addCoreToJetty(jettyKey, coreNames[i], coreNames[i], additionalProperties);
         }
 
-        int numOfJettys = 0;
+        //Now start jetty
+        startJetty(jsr);
+
+        int jettyPort = jsr.getLocalPort();
         for (int i = 0; i < coreNames.length; i++) {
-            JettySolrRunner jsr =  createJetty(coreNames[i], incrementJetty?numOfJettys++:numOfJettys, coreNames[i], additionalProperties);
-            jettyContainers.put(coreNames[i], jsr);
-            String url = buildUrl(jsr.getLocalPort()) + "/" + coreNames[i];
+            String url = buildUrl(jettyPort) + "/" + coreNames[i];
             log.info(url);
             jettyClients.put(coreNames[i], createNewSolrClient(url));
-
         }
 
         shardsArr = new String[numShards];
@@ -448,35 +480,21 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         String shardMethod = getShardMethod().toString();
         log.info("################# shardMethod:"+shardMethod);
 
-        switch (jettyStategy)
-        {
-            case SINGLE:
-                incrementJetty = false;
-                break;
-            case PER_CORE:
-                //We have created them per core but where do we put the shards?
-                if (numShards != 0 && coreNames.length != 1)
-                {
-                    throw new UnsupportedOperationException("What shall we do with multiple cores and multiple shards?");
-                }
-                incrementJetty = false;
-                numOfJettys = 0; //For now, lets put them on the first core.
-                break;
-            case PER_SHARD:
-                incrementJetty = true;
-        }
-
         for (int i = 0; i < numShards; i++)
         {
-            if (sb.length() > 0)
-                sb.append(',');
+            if (sb.length() > 0) sb.append(',');
             final String shardname = "shard" + i;
             if (additionalProperties == null) additionalProperties = new Properties();
             additionalProperties.put("shard.instance", Integer.toString(i));
             additionalProperties.put("shard.method", shardMethod);
             additionalProperties.put("shard.count", Integer.toString(numShards));
-            JettySolrRunner j = createJetty(coreNames[0], incrementJetty?numOfJettys++:numOfJettys, shardname,additionalProperties);
+
+            String shardKey = jettyKey+"_shard_"+i;
+            JettySolrRunner j =  createJetty(shardKey);
+            //use the first corename specified as the Share template
+            addCoreToJetty(shardKey, coreNames[0], shardname, additionalProperties);
             jettyShards.add(j);
+            startJetty(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
             log.info(shardStr);
             SolrClient clientShard = createNewSolrClient(shardStr);
@@ -485,7 +503,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             sb.append(shardStr);
         }
         shards = sb.toString();
-
     }
 
     protected ShardMethodEnum getShardMethod() {
@@ -564,8 +581,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         jettyClients.clear();
     }
 
-    public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled,
-            String schemaOverride) throws Exception
+    public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride) throws Exception
     {
         return createJetty(solrHome, dataDir, shardList, sslEnabled, schemaOverride, useExplicitNodeNames);
     }
@@ -606,8 +622,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         // .withServlets(getExtraServlets())
         // .withSSLConfig(sslConfig)
         // .build());
-
-        jetty.start();
         return jetty;
     }
 
@@ -1416,36 +1430,29 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
-    public enum JettyInstances
-    {
-        PER_SHARD,
-        PER_CORE,
-        SINGLE;
-    }
-
     /**
      * A JUnit Rule to setup Jetty
      */
     public class JettyServerRule extends ExternalResource
     {
 
+        final String serverName;
         final String[] coreNames;
         final int numShards;
-        final JettyInstances jettyStrategy;
         final Properties solrcoreProperties;
 
         /**
          * Creates the jetty servers
+         * @param serverName The key to use for the Jetty server name
          * @param numShards Number of shards required
          * @param solrcoreProperties Additional properties to add to the solrcore.properties
-         * @param jettyStategy How to create the JettyInstances
          * @param coreNames names of the core config folders
          */
-        public JettyServerRule(int numShards, Properties solrcoreProperties, JettyInstances jettyStategy, String ...coreNames)
+        public JettyServerRule(String serverName, int numShards, Properties solrcoreProperties, String ...coreNames)
         {
+            this.serverName = serverName;
             this.coreNames = coreNames;
             this.numShards = numShards;
-            this.jettyStrategy = jettyStategy;
             this.solrcoreProperties = solrcoreProperties;
         }
 
@@ -1455,8 +1462,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
          */
         public JettyServerRule(int numShards)
         {
+            this.serverName = DEFAULT_TEST_CORENAME;
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
-            this.jettyStrategy = JettyInstances.PER_SHARD;
             this.numShards = numShards;
             this.solrcoreProperties = new Properties();
         }
@@ -1466,7 +1473,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             distribSetUp();
             RandVal.uniqueValues = new HashSet(); // reset random values
-            createServers(jettyStrategy, coreNames, numShards,solrcoreProperties);
+            createServers(serverName, coreNames, numShards,solrcoreProperties);
         }
 
         @Override
