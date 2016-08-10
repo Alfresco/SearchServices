@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +81,7 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
                         "template", "rerank"));
         SolrQueryResponse response = new SolrQueryResponse();
         coreAdminHandler.handleCustomAction(request, response);
+        TimeUnit.SECONDS.sleep(1);
         assertEquals(CORE_NAME, response.getValues().get("core"));
 
         //Get a reference to the new core
