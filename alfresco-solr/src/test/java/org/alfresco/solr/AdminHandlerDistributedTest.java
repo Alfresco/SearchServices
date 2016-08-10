@@ -22,6 +22,7 @@ import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.CoreAdminParams;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
@@ -95,7 +96,8 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         assertNotNull(response);
         response = callHandler(coreAdminHandler, testingCore, "Report");
         assertNotNull(response);
-        assertNotNull(response.getValues().get("report"));
+        NamedList<Object> report = (NamedList<Object>) response.getValues().get("report");
+        assertNotNull(report.get(CORE_NAME));
     }
 
     private SolrQueryResponse callHandler(AlfrescoCoreAdminHandler coreAdminHandler, SolrCore testingCore, String action) {
@@ -110,7 +112,6 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         return coreContainer.getCores().stream()
                 .filter(aCore ->coreName.equals(aCore.getName()))
                 .findFirst().get();
-        //coreContainer.cores.find { it.name == coreName }
     }
 
 }
