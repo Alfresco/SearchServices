@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- 
+   TODO 
+   - Geospatial ?
+   - Currency ?
+   - (default facetting configuration)
+-->
+<schema name="Alfresco V2.0" version="1.5">
+   <types>
+      <!-- ID and version to support SOLR cloud -->
+
+      <fieldType name="identifier" class="solr.StrField" sortMissingLast="true" positionIncrementGap="100" />
+      <fieldType name="version" class="solr.TrieLongField" precisionStep="64" positionIncrementGap="0" />
+
+
+      <fieldType name="int" class="solr.TrieIntField" precisionStep="4" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="float" class="solr.TrieFloatField" precisionStep="4" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="long" class="solr.TrieLongField" precisionStep="6" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="double" class="solr.TrieDoubleField" precisionStep="6" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="date" class="solr.TrieDateField" precisionStep="6" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+
+
+   </types>
+
+
+
+   <fields>
+      <!-- For SOLR cloud - should be the node version -->
+      <field name="_version_"             type="version"     indexed="false"                   stored="true"                        docValues="true"  required="true" />
+
+      <!-- For block join - currently not used -->
+      <field name="_root_"                type="identifier"  indexed="true"                    stored="false"/>
+
+      <!-- Unique identifier - based on DBID -->
+      <field name="id"                    type="identifier"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="false"/>
+
+      <field name="timestamp"             type="date"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+
+      <field name="user"                    type="identifier"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+      <field name="user_query"                    type="identifier"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+      <field name="query"                    type="identifier"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+      <field name="found"                    type="long"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+      <field name="time"                    type="double"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+
+
+   </fields>
+
+   <uniqueKey>id</uniqueKey>
+
+</schema>
