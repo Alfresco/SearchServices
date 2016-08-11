@@ -18,7 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.*;
@@ -29,8 +29,6 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;

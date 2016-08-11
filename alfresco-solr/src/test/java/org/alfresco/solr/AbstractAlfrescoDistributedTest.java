@@ -1,4 +1,4 @@
-package org.alfresco.distributed;
+package org.alfresco.solr;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 
@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.Filter;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
@@ -55,12 +56,17 @@ import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
+import org.apache.solr.request.LocalSolrQueryRequest;
+import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -119,7 +125,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         // Setup test directory
         testDir = new File(System.getProperty("user.dir") + "/target/jettys");
         r = new Random(random().nextLong());
-        
+
     }
 
     protected Map<String, JettySolrRunner> jettyContainers = new HashMap<>();
@@ -1430,6 +1436,19 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
+    protected SolrCore getCore(CoreContainer coreContainer, String coreName) {
+        return coreContainer.getCores().stream()
+                            .filter(aCore ->coreName.equals(aCore.getName()))
+                            .findFirst().get();
+    }
+
+    protected SolrQueryResponse callHandler(AlfrescoCoreAdminHandler coreAdminHandler, SolrCore testingCore, String action) {
+        SolrQueryRequest request = new LocalSolrQueryRequest(testingCore,
+                params(CoreAdminParams.ACTION, action, CoreAdminParams.CORE, testingCore.getName()));
+        SolrQueryResponse response = new SolrQueryResponse();
+        coreAdminHandler.handleCustomAction(request, response);
+        return response;
+    }
     /**
      * A JUnit Rule to setup Jetty
      */
