@@ -745,7 +745,6 @@
       <dynamicField name="suggest_*"               type="text_shingle"    indexed="false"  omitNorms="true"  stored="false"  multiValued="true" />
 
       <copyField source="suggest_*" dest="suggest" />
-      <copyField source="suggest_*" dest="min_hash" />
 
    </fields>
 
