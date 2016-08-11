@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Tests the custom Alfresco Handler.
@@ -101,19 +100,7 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         assertNotNull(report.get(CORE_NAME));
     }
 
-    private SolrQueryResponse callHandler(AlfrescoCoreAdminHandler coreAdminHandler, SolrCore testingCore, String action) {
-        SolrQueryRequest request = new LocalSolrQueryRequest(testingCore,
-                params(CoreAdminParams.ACTION, action, CoreAdminParams.CORE, CORE_NAME));
-        SolrQueryResponse response = new SolrQueryResponse();
-        coreAdminHandler.handleCustomAction(request, response);
-        return response;
-    }
 
-    private SolrCore getCore(CoreContainer coreContainer, String coreName) {
-        return coreContainer.getCores().stream()
-                .filter(aCore ->coreName.equals(aCore.getName()))
-                .findFirst().get();
-    }
 
 }
 
