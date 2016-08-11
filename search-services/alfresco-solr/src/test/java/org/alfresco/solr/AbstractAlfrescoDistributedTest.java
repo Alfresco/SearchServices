@@ -1436,12 +1436,25 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
+    /**
+     * Gets a SolrCore by name without incrementing the internal counter
+     * @param coreContainer
+     * @param coreName
+     * @return SolrCore
+     */
     protected SolrCore getCore(CoreContainer coreContainer, String coreName) {
         return coreContainer.getCores().stream()
                             .filter(aCore ->coreName.equals(aCore.getName()))
                             .findFirst().get();
     }
 
+    /**
+     * Calls the
+     * @param coreAdminHandler
+     * @param testingCore
+     * @param action
+     * @return
+     */
     protected SolrQueryResponse callHandler(AlfrescoCoreAdminHandler coreAdminHandler, SolrCore testingCore, String action) {
         SolrQueryRequest request = new LocalSolrQueryRequest(testingCore,
                 params(CoreAdminParams.ACTION, action, CoreAdminParams.CORE, testingCore.getName()));
