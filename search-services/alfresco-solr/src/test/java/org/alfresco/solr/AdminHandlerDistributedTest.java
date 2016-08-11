@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr;
 
-import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.CoreAdminParams;

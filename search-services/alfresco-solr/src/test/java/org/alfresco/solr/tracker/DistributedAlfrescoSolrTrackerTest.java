@@ -18,7 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
@@ -30,8 +30,6 @@ import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
