@@ -398,7 +398,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                             solrCoreName = "archive-"+shard;
                         }
                     }
-                    createAndRegisterNewCore(rsp, params, store, template, solrCoreName, newCore, numShards, shard, templateName);
+                    createAndRegisterNewCore(rsp, params, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
                 }
                        
                 return true;
@@ -411,7 +411,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     coreName = params.get("coreName");
                 }
                 File newCore = new File(solrHome, coreName);
-                createAndRegisterNewCore(rsp, params, store, template, coreName, newCore, 0, 0, templateName);
+                createAndRegisterNewCore(rsp, params, storeRef, template, coreName, newCore, 0, 0, templateName);
 
                 return true;
             }
@@ -452,14 +452,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     /**
      * @param rsp
      * @param params
-     * @param store
+     * @param storeRef
      * @param template
      * @param coreName
      * @param newCore
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, String store, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
+    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
         copyDirectory(template, newCore, false);
@@ -468,9 +468,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         File config = new File(newCore, "conf/solrcore.properties");
         Properties properties = new Properties();
         //Set defaults
-        properties.setProperty(DATA_DIR_ROOT, newCore.getCanonicalPath());
-        properties.setProperty("data.dir.store", coreName);
-        properties.setProperty("alfresco.stores", store);
+        properties.setProperty(DATA_DIR_ROOT, newCore.getCanonicalPath()+"/data");
+        properties.setProperty("data.dir.store", storeRef.getProtocol() + "/" + storeRef.getIdentifier());
+        properties.setProperty("alfresco.stores", storeRef.toString());
 
         //Potentially override the defaults
         properties.load(new FileInputStream(config));
