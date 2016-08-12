@@ -20,12 +20,9 @@ package org.alfresco.solr;
 
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
-import org.apache.solr.request.LocalSolrQueryRequest;
-import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,8 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Properties;
+
+import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
 /**
  * Tests the custom Alfresco Handler.
@@ -72,22 +70,11 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         //Now create the new core
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
         assertNotNull(coreAdminHandler);
-        SolrQueryRequest request = new LocalSolrQueryRequest(getCore(coreContainer, DEFAULT_TEST_CORENAME),
-                params(CoreAdminParams.ACTION, "newcore",
-                        "storeRef", "workspace://SpacesStore",
-                        "coreName", CORE_NAME,
-                        "template", "rerank"));
-        SolrQueryResponse response = new SolrQueryResponse();
-        coreAdminHandler.handleCustomAction(request, response);
-        TimeUnit.SECONDS.sleep(1);
-        assertEquals(CORE_NAME, response.getValues().get("core"));
 
-        //Get a reference to the new core
-        SolrCore testingCore = getCore(coreContainer, CORE_NAME);
-        assertNotNull(testingCore);
+        SolrCore testingCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, CORE_NAME, "rerank", 1, 1);
 
         //Call custom actions
-        response = callHandler(coreAdminHandler, testingCore, "check");
+        SolrQueryResponse response = callHandler(coreAdminHandler, testingCore, "check");
         assertNotNull(response);
         response = callHandler(coreAdminHandler, testingCore, "summary");
         assertNotNull(response);
