@@ -349,8 +349,8 @@
          have some sort of hard autoCommit to limit the log size.
       -->
      <autoCommit> 
-       <!--<maxTime>${solr.autoCommit.maxTime:15000}</maxTime>--> 
-       <maxTime>${solr.autoCommit.maxTime:-1}</maxTime> 
+       <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+       <!--<maxTime>${solr.autoCommit.maxTime:-1}</maxTime> -->
        <openSearcher>false</openSearcher> 
      </autoCommit>
 
@@ -633,34 +633,7 @@
      -->
    <queryResultMaxDocsCached>${solr.queryResultMaxDocsCached:2048}</queryResultMaxDocsCached>
 
-   <!-- Query Related Event Listeners
 
-        Various IndexSearcher related events can trigger Listeners to
-        take actions.
-
-        newSearcher - fired whenever a new searcher is being prepared
-        and there is a current searcher handling requests (aka
-        registered).  It can be used to prime certain caches to
-        prevent long request times for certain requests.
-
-        firstSearcher - fired whenever a new searcher is being
-        prepared but there is no current registered searcher to handle
-        requests or to gain autowarming data from.
-
-        
-     -->
-    <!-- QuerySenderListener takes an array of NamedList and executes a
-         local query request for each NamedList in sequence. 
-      -->
-    <listener event="newSearcher" class="solr.QuerySenderListener">
-      <arr name="queries">
-        <!--
-           <lst><str name="q">solr</str><str name="sort">price asc</str></lst>
-           <lst><str name="q">rocks</str><str name="sort">weight asc</str></lst>
-          -->
-      </arr>
-    </listener>
-    <listener event="firstSearcher" class="org.alfresco.solr.lifecycle.SolrCoreLoadListener" />
 
     <!-- Use Cold Searcher
 
@@ -834,7 +807,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -864,7 +836,6 @@
 
    <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1473,19 +1444,6 @@
   </requestHandler>
 
 
-  <!-- Query Elevation Component
-
-       http://wiki.apache.org/solr/QueryElevationComponent
-
-       a search component that enables you to configure the top
-       results for a given query regardless of the normal lucene
-       scoring.
-    -->
-  <searchComponent name="elevator" class="solr.QueryElevationComponent" >
-    <!-- pick a fieldType to analyze queries -->
-    <str name="queryFieldType">text___</str>
-    <str name="config-file">elevate.xml</str>
-  </searchComponent>
 
   <!-- A request handler for demonstrating the elevator component -->
   <requestHandler name="/elevate" class="solr.SearchHandler" startup="lazy">
@@ -1796,7 +1754,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1839,7 +1796,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1864,7 +1820,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1901,7 +1856,6 @@
   </queryParser>
 
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
-  <searchComponent name="ensureModels" class="org.alfresco.solr.component.EnsureModelsComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
