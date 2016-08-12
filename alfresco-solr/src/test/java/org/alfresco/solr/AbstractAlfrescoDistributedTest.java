@@ -1,6 +1,8 @@
 package org.alfresco.solr;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.Filter;
@@ -31,10 +34,7 @@ import javax.servlet.Filter;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.NodeMetaData;
-import org.alfresco.solr.client.SOLRAPIQueueClient;
-import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.client.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
@@ -1439,18 +1439,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
-     * Gets a SolrCore by name without incrementing the internal counter
-     * @param coreContainer
-     * @param coreName
-     * @return SolrCore
-     */
-    protected SolrCore getCore(CoreContainer coreContainer, String coreName) {
-        return coreContainer.getCores().stream()
-                            .filter(aCore ->coreName.equals(aCore.getName()))
-                            .findFirst().get();
-    }
-
-    /**
      * Calls the Admin handler with an action.
      * @param coreAdminHandler
      * @param testingCore
@@ -1464,6 +1452,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         coreAdminHandler.handleCustomAction(request, response);
         return response;
     }
+
     /**
      * A JUnit Rule to setup Jetty
      */
