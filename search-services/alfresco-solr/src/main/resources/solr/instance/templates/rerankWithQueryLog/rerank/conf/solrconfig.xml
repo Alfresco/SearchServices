@@ -649,17 +649,7 @@
 
         
      -->
-    <!-- QuerySenderListener takes an array of NamedList and executes a
-         local query request for each NamedList in sequence. 
-      -->
-    <listener event="newSearcher" class="solr.QuerySenderListener">
-      <arr name="queries">
-        <!--
-           <lst><str name="q">solr</str><str name="sort">price asc</str></lst>
-           <lst><str name="q">rocks</str><str name="sort">weight asc</str></lst>
-          -->
-      </arr>
-    </listener>
+
     <listener event="firstSearcher" class="org.alfresco.solr.lifecycle.SolrCoreLoadListener" />
 
     <!-- Use Cold Searcher
@@ -834,7 +824,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -864,7 +853,6 @@
 
    <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1796,7 +1784,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1808,6 +1795,7 @@
       <str>rewriteFacetCounts</str>
       <!-- <str>addTxId</str> -->
       <str>setProcessedDenies</str>
+      <str>log</str>
     </arr>
       <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
   </requestHandler>
@@ -1839,7 +1827,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1854,6 +1841,7 @@
       <str>setProcessedDenies</str>
 
       <str>clustering</str>
+      <str>log</str>
     </arr>
       <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
   </requestHandler>
@@ -1864,7 +1852,6 @@
     </lst>
     <arr name="components">
       <str>setLocale</str>
-      <str>ensureModels</str>
       <str>rewriteFacetParameters</str>
       <str>query</str>
       <str>facet</str>
@@ -1876,6 +1863,7 @@
       <str>rewriteFacetCounts</str>
       <!--<str>addTxId</str>-->
       <str>setProcessedDenies</str>
+      <str>log</str>
     </arr>
       <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
   </requestHandler>
@@ -1901,11 +1889,11 @@
   </queryParser>
 
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
-  <searchComponent name="ensureModels" class="org.alfresco.solr.component.EnsureModelsComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
   <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
 
+  <searchComponent name="log"     class="org.alfresco.solr.component.QueryLoggingComponent" />
 
 </config>
