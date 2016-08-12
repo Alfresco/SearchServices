@@ -132,7 +132,7 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
         query(getDefaultTestClient(), "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
                 params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc"));
 
-        assertNodesPerShardGreaterThan((int)(numNodes*.45));
+        assertNodesPerShardGreaterThan((int)(numNodes*.44));
 
         
         int numAcls = 1000;
