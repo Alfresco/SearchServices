@@ -234,11 +234,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                                                 // ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
-
+        System.setProperty("solr.directoryFactory", "org.apache.solr.core.MockDirectoryFactory");
     }
 
     public void distribTearDown() throws Exception
     {
+        System.clearProperty("solr.directoryFactory");
+
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();
         SOLRAPIQueueClient.aclChangeSetQueue.clear();
@@ -1449,7 +1451,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
-     * Calls the
+     * Calls the Admin handler with an action.
      * @param coreAdminHandler
      * @param testingCore
      * @param action
