@@ -7,7 +7,7 @@ set -eo pipefail
 cd "$(dirname "$0")"
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="dockerreg.alfresco.com/alfresco-solr:${nicebranch}-latest"
+dockerImage="docker-internal.alfresco.com/alfresco-solr:${nicebranch}-latest"
 
 
 rm -rf target/alfresco-solr
