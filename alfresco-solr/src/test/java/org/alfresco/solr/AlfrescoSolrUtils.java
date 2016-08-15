@@ -762,18 +762,23 @@ public class AlfrescoSolrUtils
      * @param templateName
      * @param shards
      * @param nodes
+     * @param extraParams Any number of additional parameters in name value pairs.
      * @return
      * @throws InterruptedException
      */
-    public static SolrCore createCoreUsingTemplate(CoreContainer coreContainer, AlfrescoCoreAdminHandler coreAdminHandler, String coreName, String templateName, int shards, int nodes) throws InterruptedException {
+    public static SolrCore createCoreUsingTemplate(CoreContainer coreContainer, AlfrescoCoreAdminHandler coreAdminHandler,
+                                                   String coreName, String templateName, int shards, int nodes,
+                                                   String... extraParams) throws InterruptedException {
         SolrCore testingCore = null;
+        ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "newcore",
+                "storeRef", "workspace://SpacesStore",
+                "coreName", coreName,
+                "numShards", String.valueOf(shards),
+                "nodeInstance", String.valueOf(nodes),
+                "template", templateName);
+        coreParams.add(params(extraParams));
         SolrQueryRequest request = new LocalSolrQueryRequest(getCore(coreContainer, SolrTestCaseJ4.DEFAULT_TEST_CORENAME),
-                params(CoreAdminParams.ACTION, "newcore",
-                        "storeRef", "workspace://SpacesStore",
-                        "coreName", coreName,
-                        "numShards", String.valueOf(shards),
-                        "nodeInstance", String.valueOf(nodes),
-                        "template", templateName));
+                coreParams);
         SolrQueryResponse response = new SolrQueryResponse();
         coreAdminHandler.handleCustomAction(request, response);
         TimeUnit.SECONDS.sleep(1);
