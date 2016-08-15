@@ -1474,7 +1474,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         public JettyServerRule(String serverName, int numShards, Properties solrcoreProperties, String ...coreNames)
         {
             this.serverName = serverName;
-            this.coreNames = coreNames;
+            this.coreNames = coreNames == null?new String[0]:coreNames;
             this.numShards = numShards;
             this.solrcoreProperties = solrcoreProperties;
         }
