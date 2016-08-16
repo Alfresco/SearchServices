@@ -29,7 +29,7 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     @BeforeClass(alwaysRun = true)
     public void setupRestTest() throws Exception
     {
-        serverHealth.assertIfServerOnline();
+        serverHealth.assertServerIsOnline();
 
         RestAssured.baseURI = restProperties.envProperty().getTestServerUrl();
         RestAssured.port = restProperties.envProperty().getPort();

@@ -85,4 +85,16 @@ public class SampleSitesTest extends RestTest
                 "Add member to site response status code is not correct");
     }
 
+    @Test
+    public void isSiteReturned() throws JsonToModelConversionException
+    {
+        siteAPI.getAllSites().hasSite(siteModel.getId());
+    }
+
+    @Test
+    public void checkSiteDetails() throws JsonToModelConversionException
+    {
+        siteAPI.getSite(siteModel.getId());
+    }
+
 }
