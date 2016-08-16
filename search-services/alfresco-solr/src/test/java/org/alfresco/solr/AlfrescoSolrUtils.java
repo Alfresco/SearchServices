@@ -19,6 +19,7 @@
 package org.alfresco.solr;
 
 import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
@@ -796,7 +797,23 @@ public class AlfrescoSolrUtils
             //Get a reference to the new core
             testingCore = getCore(coreContainer, coreName);
         }
+
         assertNotNull(testingCore);
         return testingCore;
     }
+
+    /**
+     * Asserts the summary report has been returned for the correct core and that the number of searchers is 1 or more.
+     * @param response
+     * @param coreName
+     */
+    public static void assertSummaryCorrect(SolrQueryResponse response, String coreName) {
+        NamedList<Object> summary = (NamedList<Object>) response.getValues().get("Summary");
+        assertNotNull(summary);
+        NamedList<Object> coreSummary = (NamedList<Object>) summary.get(coreName);
+        assertNotNull(coreSummary);
+        assertTrue("There must be a searcher for "+coreName, ((Integer)coreSummary.get("Number of Searchers")) > 0);
+    }
+
+
 }

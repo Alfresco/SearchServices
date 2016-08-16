@@ -20,6 +20,7 @@ package org.alfresco.solr;
 
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.response.SolrQueryResponse;
@@ -58,10 +59,8 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
         SolrCore lshCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "templaterelsh", "lsh", 2, 1);
 
         //Call custom actions
-        SolrQueryResponse response = callHandler(coreAdminHandler, lshCore, "check");
-        assertNotNull(response);
-        
-
+        SolrQueryResponse response = callHandler(coreAdminHandler, lshCore, "SUMMARY");
+        assertSummaryCorrect(response, lshCore.getName());
     }
 
     @Test
@@ -76,11 +75,10 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
         SolrCore coreqlog = createCoreUsingTemplate(coreContainer, coreAdminHandler, "woof_qlog", "rerankWithQueryLog/qlog", 1, 1);
 
         //Call custom actions
-        SolrQueryResponse response = callHandler(coreAdminHandler, coreqlog, "check");
-        assertNotNull(response);
-        response = callHandler(coreAdminHandler, corererank, "check");
-        assertNotNull(response);
-        assertNotEquals(corererank.getDataDir(), coreqlog.getDataDir());
+        SolrQueryResponse response = callHandler(coreAdminHandler, corererank, "SUMMARY");
+        assertSummaryCorrect(response, corererank.getName());
     }
+
+
 }
 
