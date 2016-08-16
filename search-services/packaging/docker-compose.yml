@@ -1,7 +1,7 @@
 version: '2'
 services:
   repo:
-    image: dockerreg.alfresco.com/platform-only:latest
+    image: docker-internal.alfresco.com/platform-only:latest
     environment:
         JAVA_OPTS : "-Ddb.url=jdbc:postgresql://database/alfresco -Dsolr.secureComms=none \
          -Dsolr.useDynamicShardRegistration=true -Dsolr.host=solr6 -Dsolr.port=8983 -Dsolr.baseUrl=/solr"
@@ -11,7 +11,7 @@ services:
           - "7203:7203"
           - "8082:8080"
   solr6:
-    image: dockerreg.alfresco.com/alfresco-solr:develop-latest
+    image: docker-internal.alfresco.com/alfresco-solr:develop-latest
     command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a", "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
     environment:
       #Solr needs to know how to call Alfresco

@@ -64,6 +64,7 @@ import org.apache.solr.common.params.ShardParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
+import org.apache.solr.core.CloseHook;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrEventListener;
 import org.apache.solr.handler.component.ResponseBuilder;
@@ -667,8 +668,22 @@ public class AsyncBuildSuggestComponent extends SearchComponent implements SolrC
         this.buildOnOptimize = buildOnOptimize;
         setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
         BlockingQueue<Runnable> threadPool = new LinkedBlockingQueue<Runnable>();
-        setThreadPoolExecutor(new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, threadPool, getThreadFactory(core)));
-        
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, threadPool, getThreadFactory(core));
+        setThreadPoolExecutor(executor);
+
+        //Shutdown the executor on core close
+        core.addCloseHook(new CloseHook() {
+          @Override
+          public void preClose(SolrCore core) {
+            executor.shutdown();
+          }
+
+          @Override
+          public void postClose(SolrCore core) {
+
+          }
+        });
+
         // Create and configure the initial empty suggester
         initialSuggester = new SolrSuggester();
         initialSuggester.init(suggesterParams, core);

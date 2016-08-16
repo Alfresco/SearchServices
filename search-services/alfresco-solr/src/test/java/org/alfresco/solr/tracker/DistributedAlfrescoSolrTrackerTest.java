@@ -18,7 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.distributed.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
@@ -30,8 +30,6 @@ import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -54,25 +52,15 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
     @Test
     public void testTracker() throws Exception
     {
-        AclChangeSet aclChangeSet = getAclChangeSet(1);
-
-        Acl acl = getAcl(aclChangeSet);
-        Acl acl2 = getAcl(aclChangeSet);
-
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
-        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
-
-        indexAclChangeSet(aclChangeSet,
-                list(acl, acl2),
-                list(aclReaders, aclReaders2));
-
+        TestActChanges testActChanges = new TestActChanges().createBasicTestData();
+        AclChangeSet aclChangeSet = testActChanges.getChangeSet();
+        Acl acl = testActChanges.getFirstAcl();
 
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
-
 
         /*
         * Create and index a Transaction
@@ -144,7 +132,7 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
         query(getDefaultTestClient(), "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
                 params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc"));
 
-        assertNodesPerShardGreaterThan((int)(numNodes*.45));
+        assertNodesPerShardGreaterThan((int)(numNodes*.44));
 
         
         int numAcls = 1000;
@@ -170,5 +158,6 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "joel")), numAcls+1, 80000);
 
     }
+
 }
 

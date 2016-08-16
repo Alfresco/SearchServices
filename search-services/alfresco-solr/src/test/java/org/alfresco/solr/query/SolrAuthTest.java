@@ -19,6 +19,7 @@
 
 package org.alfresco.solr.query;
 
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
@@ -55,44 +56,44 @@ public class SolrAuthTest extends AbstractAlfrescoSolrTests
         assertU(delQ("*:*"));
         assertU(commit());
 
-        String[] acldoc = {"id", "100",  "READER",  "GROUP_R1", "READER", "GROUP_R2", "ACLID", "5000"};
+        String[] acldoc = {"id", "100", QueryConstants.FIELD_VERSION,"0","READER",  "GROUP_R1", "READER", "GROUP_R2", "ACLID", "5000"};
         assertU(adoc(acldoc));
         assertU(commit());
 
-        String[] acldoc1 = {"id", "101",  "READER", "GROUP_R3", "READER", "GROUP_R4", "ACLID", "6000", "DENIED", "GROUP_D1"};
+        String[] acldoc1 = {"id", "101", QueryConstants.FIELD_VERSION,"0", "READER", "GROUP_R3", "READER", "GROUP_R4", "ACLID", "6000", "DENIED", "GROUP_D1"};
         assertU(adoc(acldoc1));
         assertU(commit());
 
-        String[] acldoc2 = {"id", "102",  "READER", "GROUP_R3", "READER", "GROUP_R2", "ACLID", "7000"};
+        String[] acldoc2 = {"id", "102", QueryConstants.FIELD_VERSION,"0", "READER", "GROUP_R3", "READER", "GROUP_R2", "ACLID", "7000"};
         assertU(adoc(acldoc2));
         assertU(commit());
 
-        String[] acldoc3 = {"id", "103",  "READER", "GROUP_R3", "READER", "GROUP_R5", "ACLID", "8000"};
+        String[] acldoc3 = {"id", "103", QueryConstants.FIELD_VERSION,"0", "READER", "GROUP_R3", "READER", "GROUP_R5", "ACLID", "8000"};
         assertU(adoc(acldoc3));
         assertU(commit());
 
-        String[] acldoc4 = {"id", "104",  "READER", "GROUP_R5", "READER", "GROUP_R1", "ACLID", "9000"};
+        String[] acldoc4 = {"id", "104", QueryConstants.FIELD_VERSION,"0", "READER", "GROUP_R5", "READER", "GROUP_R1", "ACLID", "9000"};
         assertU(adoc(acldoc4));
         assertU(commit());
 
 
         //Index Main Documents
-        String[] doc = {"id", "1",  "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "5000", "OWNER", "jim"};
+        String[] doc = {"id", "1",  QueryConstants.FIELD_VERSION,"0","content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "5000", "OWNER", "jim"};
         assertU(adoc(doc));
         assertU(commit());
-        String[] doc1 = {"id", "2", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "6000", "OWNER", "dave"};
+        String[] doc1 = {"id", "2", QueryConstants.FIELD_VERSION,"0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "6000", "OWNER", "dave"};
         assertU(adoc(doc1));
 
-        String[] doc2 = {"id", "3", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "7000", "OWNER", "mary"};
+        String[] doc2 = {"id", "3", QueryConstants.FIELD_VERSION,"0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "7000", "OWNER", "mary"};
         assertU(adoc(doc2));
         assertU(commit());
-        String[] doc3 = {"id", "4", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "8000", "OWNER", "bill"};
+        String[] doc3 = {"id", "4", QueryConstants.FIELD_VERSION,"0","content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "8000", "OWNER", "bill"};
         assertU(adoc(doc3));
 
-        String[] doc4 = {"id", "5", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "9000", "OWNER", "steve"};
+        String[] doc4 = {"id", "5", QueryConstants.FIELD_VERSION,"0","content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "9000", "OWNER", "steve"};
         assertU(adoc(doc4));
         assertU(commit());
-        String[] doc5 = {"id", "6", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "10000", "OWNER", "sara"};
+        String[] doc5 = {"id", "6", QueryConstants.FIELD_VERSION,"0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYY", "ACLID", "10000", "OWNER", "sara"};
         assertU(adoc(doc5));
         assertU(commit());
     }

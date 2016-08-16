@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -e 
 
 [ "$DEBUG" ] && set -x
 
@@ -7,7 +7,7 @@ set -eo pipefail
 cd "$(dirname "$0")"
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="dockerreg.alfresco.com/alfresco-solr:${nicebranch}-latest"
+dockerImage="docker-internal.alfresco.com/alfresco-solr:${nicebranch}-latest"
 
 
 rm -rf target/alfresco-solr
@@ -17,13 +17,6 @@ rm -rf target/dependency-maven-plugin-markers
 echo "Building $dockerImage..."
 
 docker build -t $dockerImage .
-
-echo "Testing $dockerImage..."
-
-if ! docker inspect "$dockerImage" &> /dev/null; then
-    echo $'\timage does not exist!'
-    false
-fi
 
 # running tests
 docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/solr ] || (echo "solr dir does not exist" && exit 1)
