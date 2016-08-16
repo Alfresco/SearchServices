@@ -60,6 +60,7 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
         //Call custom actions
         SolrQueryResponse response = callHandler(coreAdminHandler, lshCore, "check");
         assertNotNull(response);
+        
 
     }
 
@@ -79,8 +80,7 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
         assertNotNull(response);
         response = callHandler(coreAdminHandler, corererank, "check");
         assertNotNull(response);
+        assertNotEquals(corererank.getDataDir(), coreqlog.getDataDir());
     }
-
-
 }
 
