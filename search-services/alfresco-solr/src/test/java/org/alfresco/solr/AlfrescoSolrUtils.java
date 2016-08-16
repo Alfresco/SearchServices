@@ -748,7 +748,8 @@ public class AlfrescoSolrUtils
      * @param coreName
      * @return SolrCore
      */
-    public static SolrCore getCore(CoreContainer coreContainer, String coreName) {
+    public static SolrCore getCore(CoreContainer coreContainer, String coreName)
+    {
         return coreContainer.getCores().stream()
                             .filter(aCore ->coreName.equals(aCore.getName()))
                             .findFirst().get();
@@ -795,11 +796,7 @@ public class AlfrescoSolrUtils
             //Get a reference to the new core
             testingCore = getCore(coreContainer, coreName);
         }
-
         assertNotNull(testingCore);
         return testingCore;
     }
-
-
-
 }
