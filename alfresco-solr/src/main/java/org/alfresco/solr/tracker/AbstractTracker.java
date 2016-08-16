@@ -185,14 +185,19 @@ public abstract class AbstractTracker implements Tracker
                     log.error("Tracking failed", t);
                 }
             }
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e)
+        {
             log.error("Semaphore interrupted", e);
         }
         finally
         {
             infoSrv.unregisterTrackerThread();
-            state.setRunning(false);
-            state.setCheck(false);
+            if(state != null) {
+                //During a rollback state is set to null.
+                state.setRunning(false);
+                state.setCheck(false);
+            }
             runLock.release();
         }
     }
@@ -288,6 +293,11 @@ public abstract class AbstractTracker implements Tracker
     public Semaphore getWriteLock() {
         return this.writeLock;
     }
+
+    public Semaphore getRunLock() {
+        return this.runLock;
+    }
+
 
     /**
      * @return Alfresco version Solr was built for

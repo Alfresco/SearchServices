@@ -94,7 +94,7 @@ public class SolrDataModelTest
         assertEquals(2, dataModel.getAlfrescoModels().size());
         
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(OBJECT_ID).getFields().size());
-        assertEquals(5, dataModel.getIndexedFieldNamesForProperty(NAME).getFields().size());
+        assertEquals(4, dataModel.getIndexedFieldNamesForProperty(NAME).getFields().size());
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(CREATION_DATE).getFields().size());
         assertEquals(0, dataModel.getIndexedFieldNamesForProperty(IS_IMMUTABLE).getFields().size());
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(IS_PRIVATE_WOKING_COPY).getFields().size());
@@ -111,7 +111,7 @@ public class SolrDataModelTest
         
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.FACET).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.COMPLETION).getFields().size());
-        assertEquals(2, dataModel .getQueryableFields(NAME, null, FieldUse.FTS).getFields().size());
+        assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.FTS).getFields().size());
         assertEquals(2, dataModel .getQueryableFields(NAME, null, FieldUse.ID).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.MULTI_FACET).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(NAME, null, FieldUse.SORT).getFields().size());

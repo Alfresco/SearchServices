@@ -24,10 +24,7 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.*;
-import org.apache.solr.core.CoreContainer;
-import org.apache.solr.core.CoreDescriptorDecorator;
-import org.apache.solr.core.SolrCore;
-import org.apache.solr.core.SolrResourceLoader;
+import org.apache.solr.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +108,18 @@ public class SolrCoreLoadRegistration {
             scheduler.schedule(commitTracker, coreName, props);
             log.info("The Trackers are now scheduled to run");
 
-            core.addCloseHook(new SolrCoreCloseHook(scheduler, commitTracker, trackers));
+            core.addCloseHook(new CloseHook() {
+                @Override
+                public void preClose(SolrCore core) {
+                    log.info("Shutting down " + core.getName());
+                    SolrCoreLoadRegistration.shutdownTrackers(core.getName(), trackers, scheduler);
+                }
+
+                @Override
+                public void postClose(SolrCore core) {
+
+                }
+            });
         }
     }
 

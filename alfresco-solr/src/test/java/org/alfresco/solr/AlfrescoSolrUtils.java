@@ -18,6 +18,8 @@
  */
 package org.alfresco.solr;
 
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
@@ -46,6 +48,7 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOM
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -59,6 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.alfresco.model.ContentModel;
@@ -80,12 +84,18 @@ import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.SolrTestCaseJ4.XmlDoc;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.XML;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
+import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.CommitUpdateCommand;
 /**
@@ -700,4 +710,109 @@ public class AlfrescoSolrUtils
         aclCmd.solrDoc = aclSol;
         core.getUpdateHandler().addDoc(aclCmd);
     }
+
+    /**
+     * Basic wrapper class to create some simple Acl changesets
+     */
+    public static class TestActChanges {
+        private AclChangeSet aclChangeSet;
+        private Acl acl;
+
+        public AclChangeSet getChangeSet() {
+            return aclChangeSet;
+        }
+
+        public Acl getFirstAcl() {
+            return acl;
+        }
+
+        public TestActChanges createBasicTestData() {
+            aclChangeSet = getAclChangeSet(1);
+
+            acl = getAcl(aclChangeSet);
+            Acl acl2 = getAcl(aclChangeSet);
+
+            AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
+            AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
+
+            indexAclChangeSet(aclChangeSet,
+                    list(acl, acl2),
+                    list(aclReaders, aclReaders2));
+            return this;
+        }
+    }
+
+
+    /**
+     * Gets a SolrCore by name without incrementing the internal counter
+     * @param coreContainer
+     * @param coreName
+     * @return SolrCore
+     */
+    public static SolrCore getCore(CoreContainer coreContainer, String coreName)
+    {
+        return coreContainer.getCores().stream()
+                            .filter(aCore ->coreName.equals(aCore.getName()))
+                            .findFirst().get();
+    }
+
+    /**
+     * Creates a core using the specified template
+     * @param coreContainer
+     * @param coreAdminHandler
+     * @param coreName
+     * @param templateName
+     * @param shards
+     * @param nodes
+     * @param extraParams Any number of additional parameters in name value pairs.
+     * @return
+     * @throws InterruptedException
+     */
+    public static SolrCore createCoreUsingTemplate(CoreContainer coreContainer, AlfrescoCoreAdminHandler coreAdminHandler,
+                                                   String coreName, String templateName, int shards, int nodes,
+                                                   String... extraParams) throws InterruptedException {
+        SolrCore testingCore = null;
+        ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "newcore",
+                "storeRef", "workspace://SpacesStore",
+                "coreName", coreName,
+                "numShards", String.valueOf(shards),
+                "nodeInstance", String.valueOf(nodes),
+                "template", templateName);
+        coreParams.add(params(extraParams));
+        SolrQueryRequest request = new LocalSolrQueryRequest(null,coreParams);
+        SolrQueryResponse response = new SolrQueryResponse();
+        coreAdminHandler.handleCustomAction(request, response);
+        TimeUnit.SECONDS.sleep(1);
+        if(shards > 1 )
+        {
+            NamedList vals = response.getValues();
+            List<String> coreNames = vals.getAll("core");
+            assertEquals(shards,coreNames.size());
+            testingCore = getCore(coreContainer, coreNames.get(0));
+        }
+        else
+        {
+            assertEquals(coreName, response.getValues().get("core"));
+            //Get a reference to the new core
+            testingCore = getCore(coreContainer, coreName);
+        }
+
+        assertNotNull(testingCore);
+        return testingCore;
+    }
+
+    /**
+     * Asserts the summary report has been returned for the correct core and that the number of searchers is 1 or more.
+     * @param response
+     * @param coreName
+     */
+    public static void assertSummaryCorrect(SolrQueryResponse response, String coreName) {
+        NamedList<Object> summary = (NamedList<Object>) response.getValues().get("Summary");
+        assertNotNull(summary);
+        NamedList<Object> coreSummary = (NamedList<Object>) summary.get(coreName);
+        assertNotNull(coreSummary);
+        assertTrue("There must be a searcher for "+coreName, ((Integer)coreSummary.get("Number of Searchers")) > 0);
+    }
+
+
 }
