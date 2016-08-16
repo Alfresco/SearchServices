@@ -18,13 +18,6 @@ echo "Building $dockerImage..."
 
 docker build -t $dockerImage .
 
-echo "Testing $dockerImage..."
-
-if ! docker inspect "$dockerImage" &> /dev/null; then
-    echo $'\timage does not exist!'
-    false
-fi
-
 # running tests
 docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/solr ] || (echo "solr dir does not exist" && exit 1)
 docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/data/content ] || (echo "content dir does not exist" && exit 1)
