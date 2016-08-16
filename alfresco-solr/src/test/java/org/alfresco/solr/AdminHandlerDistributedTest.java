@@ -47,33 +47,21 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     final String JETTY_SERVER_ID = this.getClass().getSimpleName();
     static final String CORE_NAME = "newcoretesting";
-    static Properties extra = new Properties();
-    static
-    {
-        extra.put("we.are.testing","yes");
-        extra.put("solr.maxBooleanClauses","5");
-    }
 
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, extra, DEFAULT_TEST_CORENAME);
+    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
 
     @Test
     public void newCoreUsingAdminHandler() throws Exception
     {
         CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
 
-        //First check the properties
-        Properties props = getCore(coreContainer, DEFAULT_TEST_CORENAME).getCoreDescriptor().getSubstitutableProperties();
-        assertNotNull(props);
-        assertEquals("yes", props.get("we.are.testing"));
-        assertEquals("5", props.get("solr.maxBooleanClauses"));
-
-        //Now create the new core
+        //Create the new core
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
         assertNotNull(coreAdminHandler);
 
         SolrCore testingCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, CORE_NAME, "rerank", 1, 1);
-        props = testingCore.getCoreDescriptor().getSubstitutableProperties();
+        Properties props = testingCore.getCoreDescriptor().getSubstitutableProperties();
         //The default sharding method is DB_ID
         assertEquals(DB_ID.toString(), props.get("shard.method"));
 
