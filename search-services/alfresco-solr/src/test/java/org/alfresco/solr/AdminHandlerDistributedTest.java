@@ -95,8 +95,5 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         props = testingCore.getCoreDescriptor().getSubstitutableProperties();
         assertEquals(ACL_ID.toString(), props.get("shard.method"));
     }
-
-
-
 }
 
