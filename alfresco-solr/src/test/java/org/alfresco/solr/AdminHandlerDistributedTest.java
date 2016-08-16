@@ -81,10 +81,7 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         SolrQueryResponse response = callHandler(coreAdminHandler, testingCore, "check");
         assertNotNull(response);
         response = callHandler(coreAdminHandler, testingCore, "summary");
-        assertNotNull(response);
-        assertNotNull(response.getValues().get("Summary"));
-        response = callHandler(coreAdminHandler, testingCore, "log4j");
-        assertNotNull(response);
+        assertSummaryCorrect(response, testingCore.getName());
         response = callHandler(coreAdminHandler, testingCore, "Report");
         assertNotNull(response);
         NamedList<Object> report = (NamedList<Object>) response.getValues().get("report");
