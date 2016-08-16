@@ -46,7 +46,7 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
     final String JETTY_SERVER_ID = this.getClass().getSimpleName();
 
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, DEFAULT_TEST_CORENAME);
+    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
 
     @Test
     public void newCoreUsinglshTemplate() throws Exception

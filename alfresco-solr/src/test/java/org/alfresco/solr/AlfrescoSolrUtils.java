@@ -779,8 +779,7 @@ public class AlfrescoSolrUtils
                 "nodeInstance", String.valueOf(nodes),
                 "template", templateName);
         coreParams.add(params(extraParams));
-        SolrQueryRequest request = new LocalSolrQueryRequest(getCore(coreContainer, SolrTestCaseJ4.DEFAULT_TEST_CORENAME),
-                coreParams);
+        SolrQueryRequest request = new LocalSolrQueryRequest(null,coreParams);
         SolrQueryResponse response = new SolrQueryResponse();
         coreAdminHandler.handleCustomAction(request, response);
         TimeUnit.SECONDS.sleep(1);
