@@ -1,10 +1,10 @@
 package org.alfresco.rest.v1;
 
+import org.alfresco.rest.RestPeopleApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.v1.RestPeopleApi;
-import org.alfresco.tester.data.DataUser;
-import org.alfresco.tester.exception.DataPreparationException;
-import org.alfresco.tester.model.UserModel;
+import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.UserModel;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -4,13 +4,13 @@ import java.io.File;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.ContentService;
+import org.alfresco.rest.RestCommentsApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.Content;
 import org.alfresco.rest.model.RestCommentModel;
-import org.alfresco.rest.model.RestCommentsModel;
-import org.alfresco.tester.data.DataUser;
-import org.alfresco.tester.exception.DataPreparationException;
-import org.alfresco.tester.model.UserModel;
+import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

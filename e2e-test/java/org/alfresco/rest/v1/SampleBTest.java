@@ -1,8 +1,8 @@
 package org.alfresco.rest.v1;
 
+import org.alfresco.rest.RestSitesApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.v1.RestSitesApi;
-import org.alfresco.tester.model.UserModel;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;

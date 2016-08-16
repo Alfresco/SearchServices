@@ -1,13 +1,14 @@
 package org.alfresco.rest.v1;
 
 import org.alfresco.dataprep.ContentService;
+import org.alfresco.rest.RestSitesApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.SiteMember;
-import org.alfresco.tester.data.DataSite;
-import org.alfresco.tester.data.DataUser;
-import org.alfresco.tester.exception.DataPreparationException;
-import org.alfresco.tester.model.SiteModel;
-import org.alfresco.tester.model.UserModel;
+import org.alfresco.utility.data.DataSite;
+import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Role;

@@ -2,8 +2,8 @@ package org.alfresco.rest.v1;
 
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.tester.ServerHealth;
-import org.alfresco.tester.TasProperties;
+import org.alfresco.utility.ServerHealth;
+import org.alfresco.utility.TasProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
