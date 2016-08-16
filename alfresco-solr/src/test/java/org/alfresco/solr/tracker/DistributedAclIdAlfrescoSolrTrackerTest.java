@@ -116,14 +116,14 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
         }
     }
 
-    protected ShardMethodEnum getShardMethod() {
+    protected ShardMethodEnum getShardMethod() 
+    {
         Random random = random();
         List<ShardMethodEnum> methods = new ArrayList();
         methods.add(ShardMethodEnum.ACL_ID);
         methods.add(ShardMethodEnum.MOD_ACL_ID);
         Collections.shuffle(methods, random);
         return methods.get(0);
-
     }
 }
 

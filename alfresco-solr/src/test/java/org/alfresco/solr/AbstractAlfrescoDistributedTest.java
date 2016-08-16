@@ -256,7 +256,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param waitMillis
      * @throws Exception
      */
-    public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
+    public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception
+    {
         List<SolrCore> cores = getJettyCores(jettyContainers.values());
         cores.addAll(getJettyCores(jettyShards));
 
@@ -273,10 +274,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param waitMillis
      * @throws Exception
      */
-    public void waitForDocCount(Query query, int count, long waitMillis) throws Exception {
-
+    public void waitForDocCount(Query query, int count, long waitMillis) throws Exception 
+    {
         long begin = System.currentTimeMillis();
-
         List<SolrCore> cores = getJettyCores(jettyContainers.values());
         //TODO: Support multiple cores per jetty
         SolrCore controlCore = cores.get(0); //Get the first one
@@ -292,7 +292,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param start
      * @throws Exception
      */
-    public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception {
+    public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception
+    {
         List<SolrCore> cores = getJettyCores(jettyShards);
         long timeOut = start+waitMillis;
         int totalCount = 0;
@@ -323,7 +324,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected List<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
     {
         List<SolrCore> cores = new ArrayList();
-        for (JettySolrRunner jettySolrRunner : runners) {
+        for (JettySolrRunner jettySolrRunner : runners) 
+        {
             jettySolrRunner.getCoreContainer().getCores().forEach(aCore -> cores.add(aCore));
         }
         return cores;
@@ -338,19 +340,25 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return jettyClients.get(DEFAULT_TEST_CORENAME);
     }
 
-    public void assertNodesPerShardGreaterThan(int count) throws Exception {
+    public void assertNodesPerShardGreaterThan(int count) throws Exception
+    {
         List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
-            for (SolrCore core : cores) {
+            for (SolrCore core : cores)
+            {
                 RefCounted<SolrIndexSearcher> refCounted = null;
-                try {
+                try 
+                {
                     refCounted = core.getSearcher();
                     SolrIndexSearcher searcher = refCounted.get();
                     TopDocs topDocs = searcher.search(query, 10);
-                    if(topDocs.totalHits < count) {
+                    if(topDocs.totalHits < count) 
+                    {
                         throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
                     }
-                } finally {
+                } 
+                finally 
+                {
                     refCounted.decref();
                 }
             }
@@ -469,7 +477,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         JettySolrRunner jsr =  createJetty(jettyKey);
         jettyContainers.put(jettyKey, jsr);
 
-        for (int i = 0; i < coreNames.length; i++) {
+        for (int i = 0; i < coreNames.length; i++) 
+        {
             addCoreToJetty(jettyKey, coreNames[i], coreNames[i], additionalProperties);
         }
 
@@ -477,7 +486,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         startJetty(jsr);
 
         int jettyPort = jsr.getLocalPort();
-        for (int i = 0; i < coreNames.length; i++) {
+        for (int i = 0; i < coreNames.length; i++)
+        {
             String url = buildUrl(jettyPort) + "/" + coreNames[i];
             log.info(url);
             jettyClients.put(coreNames[i], createNewSolrClient(url));
