@@ -97,7 +97,7 @@ public class SolrDataModelTest
         assertEquals(4, dataModel.getIndexedFieldNamesForProperty(NAME).getFields().size());
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(CREATION_DATE).getFields().size());
         assertEquals(0, dataModel.getIndexedFieldNamesForProperty(IS_IMMUTABLE).getFields().size());
-        assertEquals(1, dataModel.getIndexedFieldNamesForProperty(IS_PRIVATE_WOKING_COPY).getFields().size());
+        assertEquals(0, dataModel.getIndexedFieldNamesForProperty(IS_PRIVATE_WOKING_COPY).getFields().size());
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(CONTENT_STREAM_LENGTH).getFields().size());
         
         assertEquals(1, dataModel .getQueryableFields(OBJECT_ID, null, FieldUse.FACET).getFields().size());
