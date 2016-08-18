@@ -197,6 +197,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+        dataModel.getNamespaceDAO().removePrefix("");
         dataModel.setCMDefaultUri();
         NodeRef rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         testCMISRootNodeRef = rootNodeRef;
@@ -862,13 +863,13 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test " + position);
         ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
-                    content00QName, content00NodeRef, true, 0);
+                content00QName, content00NodeRef, true, 0);
         addNode(h.getCore(),
-                dataModel, 1, 1000 + position, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
-                    ContentModel.ASPECT_TITLED }, content00Properties, null, "andy",
-                    new ChildAssociationRef[] { content00CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
-                                folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
-                                + folder00QName.toString() + "/" + content00QName.toString() }, content00NodeRef, true);
+                dataModel, 1, 1000 + position, 1, extendedContent, new QName[]{ContentModel.ASPECT_OWNABLE,
+                        ContentModel.ASPECT_TITLED}, content00Properties, null, "andy",
+                new ChildAssociationRef[]{content00CAR}, new NodeRef[]{baseFolderNodeRef, rootNodeRef,
+                        folder00NodeRef}, new String[]{"/" + baseFolderQName.toString() + "/"
+                        + folder00QName.toString() + "/" + content00QName.toString() }, content00NodeRef, true);
     }
     
     private static String[] orderable = new String[] { "zero loons", "one banana", "two apples", "three fruit",
