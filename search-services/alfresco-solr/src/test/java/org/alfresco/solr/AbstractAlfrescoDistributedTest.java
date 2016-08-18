@@ -1,8 +1,6 @@
 package org.alfresco.solr;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,15 +24,14 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.Filter;
 
-import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
+import org.alfresco.solr.client.Transaction;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
@@ -62,7 +59,6 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
@@ -495,8 +491,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
-        String shardMethod = getShardMethod().toString();
-        log.info("################# shardMethod:"+shardMethod);
 
         for (int i = 0; i < numShards; i++)
         {
@@ -504,7 +498,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             final String shardname = "shard" + i;
             if (additionalProperties == null) additionalProperties = new Properties();
             additionalProperties.put("shard.instance", Integer.toString(i));
-            additionalProperties.put("shard.method", shardMethod);
             additionalProperties.put("shard.count", Integer.toString(numShards));
 
             String shardKey = jettyKey+"_shard_"+i;
@@ -522,11 +515,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
         shards = sb.toString();
     }
-
-    protected ShardMethodEnum getShardMethod() {
-        return ShardMethodEnum.DB_ID;
-    }
-
 
     protected void setDistributedParams(ModifiableSolrParams params)
     {
@@ -1499,6 +1487,18 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.numShards = numShards;
             this.solrcoreProperties = new Properties();
+        }
+        /**
+         * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * @param numShards
+         * @param solr core properties
+         */
+        public JettyServerRule(int numShards, Properties solrcoreProperties)
+        {
+            this.serverName = DEFAULT_TEST_CORENAME;
+            coreNames = new String[]{DEFAULT_TEST_CORENAME};
+            this.numShards = numShards;
+            this.solrcoreProperties = solrcoreProperties;
         }
 
         @Override
