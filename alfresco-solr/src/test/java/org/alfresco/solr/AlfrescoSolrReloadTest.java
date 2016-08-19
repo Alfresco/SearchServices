@@ -1,4 +1,4 @@
-package org.alfresco.solr.test;
+package org.alfresco.solr;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
@@ -8,7 +8,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
