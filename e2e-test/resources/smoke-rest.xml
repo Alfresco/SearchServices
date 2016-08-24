@@ -2,14 +2,13 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="Suite" parallel="classes">
 	<listeners>
-		<listener class-name="org.alfresco.tester.report.ReportListenerAdapter"></listener>
+		<listener class-name="org.alfresco.utility.report.ReportListenerAdapter"></listener>
 	</listeners>
 	<test name="Test">
 		<classes>
-			<class name="org.alfresco.rest.v1.SampleATest"></class>
-			<class name="org.alfresco.rest.v1.SampleBTest"></class>
 			<class name="org.alfresco.rest.v1.SamplePeopleTest"></class>
 			<class name="org.alfresco.rest.v1.SampleSitesTest"></class>
+			<class name="org.alfresco.rest.v1.SampleCommentsTest"></class>
 		</classes>
 
 	</test> <!-- Test -->
