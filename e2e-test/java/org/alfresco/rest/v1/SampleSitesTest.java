@@ -88,7 +88,7 @@ public class SampleSitesTest extends RestTest
     @Test
     public void isSiteReturned() throws JsonToModelConversionException
     {
-        siteAPI.getAllSites().hasSite(siteModel.getId());
+        siteAPI.getAllSites().assertThatResponseHasSite(siteModel.getId());
     }
 
     @Test
