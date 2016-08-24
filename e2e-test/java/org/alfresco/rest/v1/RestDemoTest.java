@@ -17,6 +17,7 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Role;
 import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
@@ -43,7 +44,7 @@ public class RestDemoTest extends RestTest
     private SiteModel siteModel;
 
     @BeforeClass
-    public void initTest()
+    public void setUp()
     {
         userModel = dataUser.getAdminUser();
         siteModel = dataSite.createPublicRandomSite();
@@ -65,8 +66,9 @@ public class RestDemoTest extends RestTest
         sitesApi.useRestClient(restClient);
 
         sitesApi.getAllSites().assertThatResponseHasSite(siteModel.getId()).getSite(siteModel.getId())
-            .assertSiteHasVisibility(Visibility.PUBLIC).assertSiteHasTitle(siteModel.getTitle())
-            .assertSiteHasDescription(siteModel.getDescription());
+                .assertSiteHasVisibility(Visibility.PUBLIC)
+                .assertSiteHasTitle(siteModel.getTitle())
+                .assertSiteHasDescription(siteModel.getDescription());
     }
 
     /**
@@ -89,13 +91,15 @@ public class RestDemoTest extends RestTest
         // add new comment
         Content content = new Content("This is a new comment");
         RestCommentModel commentEntry = commentsAPI.addComment(document.getId(), content);
-        commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty().assertThatCommentWithIdExists(commentEntry.getId())
+        commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty()
+                .assertThatCommentWithIdExists(commentEntry.getId())
                 .assertThatCommentWithContentExists(content);
 
         // update comment
         content = new Content("This is the updated comment");
         commentEntry = commentsAPI.updateComment(document.getId(), commentEntry.getId(), content);
-        commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty().assertThatCommentWithIdExists(commentEntry.getId())
+        commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty()
+                .assertThatCommentWithIdExists(commentEntry.getId())
                 .assertThatCommentWithContentExists(content);
     }
 
@@ -115,10 +119,22 @@ public class RestDemoTest extends RestTest
 
         UserModel newUser = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
-        
+
+        // add user as Consumer to site
         sitesApi.addPerson(siteModel.getId(), siteMember);
-        sitesApi.getSiteMembers(siteModel.getId()).assertThatSiteHasMember(siteMember.getId()).getSiteMember(siteMember.getId())
-                .assertSiteMemberHasRole(Role.SiteConsumer);
+        sitesApi.getSiteMembers(siteModel.getId()).assertThatSiteHasMember(siteMember.getId())
+                .getSiteMember(siteMember.getId()).assertSiteMemberHasRole(Role.SiteConsumer);
+
+        // update site member to Manager
+        siteMember.setRole(Role.SiteManager.toString());
+        ;
+        sitesApi.updateSiteMember(siteModel.getId(), newUser.getUsername(), siteMember);
+        sitesApi.getSiteMembers(siteModel.getId()).assertThatSiteHasMember(siteMember.getId())
+                .getSiteMember(siteMember.getId()).assertSiteMemberHasRole(Role.SiteManager);
+
+        // delete site member
+        sitesApi.deleteSiteMember(siteModel.getId(), newUser.getUsername());
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
 
     }
 }
