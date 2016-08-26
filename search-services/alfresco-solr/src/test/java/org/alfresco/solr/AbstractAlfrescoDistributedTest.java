@@ -340,24 +340,59 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
-            for (SolrCore core : cores)
+        for (SolrCore core : cores)
+        {
+            RefCounted<SolrIndexSearcher> refCounted = null;
+            try
             {
-                RefCounted<SolrIndexSearcher> refCounted = null;
-                try 
+                refCounted = core.getSearcher();
+                SolrIndexSearcher searcher = refCounted.get();
+                TopDocs topDocs = searcher.search(query, 10);
+                if(topDocs.totalHits < count)
                 {
-                    refCounted = core.getSearcher();
-                    SolrIndexSearcher searcher = refCounted.get();
-                    TopDocs topDocs = searcher.search(query, 10);
-                    if(topDocs.totalHits < count) 
-                    {
-                        throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
-                    }
-                } 
-                finally 
-                {
-                    refCounted.decref();
+                    throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
                 }
             }
+            finally
+            {
+                refCounted.decref();
+            }
+        }
+    }
+
+    public void assertCountAndColocation(Query query, int count) throws Exception
+    {
+
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        int shardHit = 0;
+        int totalCount = 0;
+        for (SolrCore core : cores)
+        {
+            RefCounted<SolrIndexSearcher> refCounted = null;
+            try
+            {
+                refCounted = core.getSearcher();
+                SolrIndexSearcher searcher = refCounted.get();
+                TopDocs topDocs = searcher.search(query, 10);
+                totalCount += topDocs.totalHits;
+                if(topDocs.totalHits > 0)
+                {
+                    shardHit++;
+                }
+            }
+            finally
+            {
+                refCounted.decref();
+            }
+        }
+
+        if(totalCount != count) {
+            throw new Exception(totalCount+" docs found for query: "+query.toString()+" expecting "+count);
+        }
+
+        if(shardHit > 1) {
+            throw new Exception(shardHit+" shards found data for query: "+query.toString()+" expecting 1");
+        }
     }
 
     private void waitForDocCountCore(SolrCore core,
@@ -1491,7 +1526,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         /**
          * Creates the jetty servers with the specified number of shards and sensible defaults.
          * @param numShards
-         * @param solr core properties
          */
         public JettyServerRule(int numShards, Properties solrcoreProperties)
         {
