@@ -4,6 +4,9 @@ import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.ServerHealth;
 import org.alfresco.utility.TasProperties;
+import org.alfresco.utility.data.DataContent;
+import org.alfresco.utility.data.DataSite;
+import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -25,6 +28,15 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
 
     @Autowired
     protected RestWrapper restClient;
+    
+    @Autowired
+    DataUser dataUser;
+
+    @Autowired
+    DataSite dataSite;
+    
+    @Autowired
+    DataContent dataContent;
 
     @BeforeClass(alwaysRun = true)
     public void setupRestTest() throws Exception

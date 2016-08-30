@@ -1,14 +1,9 @@
 package org.alfresco.rest;
 
-import java.io.File;
-
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.SiteMember;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -26,15 +21,6 @@ public class RestDemoTest extends RestTest
     RestSitesApi sitesApi;
 
     @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
-    @Autowired
-    ContentService content;
-
-    @Autowired
     RestCommentsApi commentsAPI;
 
     private UserModel userModel;
@@ -46,6 +32,9 @@ public class RestDemoTest extends RestTest
         userModel = dataUser.getAdminUser();
         siteModel = dataSite.createPublicRandomSite();
         restClient.authenticateUser(userModel);
+        
+        sitesApi.useRestClient(restClient);
+        commentsAPI.useRestClient(restClient);        
     }
 
     /**
@@ -60,12 +49,11 @@ public class RestDemoTest extends RestTest
     @Test
     public void sitesTest() throws JsonToModelConversionException, Exception
     {
-        sitesApi.useRestClient(restClient);
-
-        sitesApi.getAllSites().assertThatResponseHasSite(siteModel.getId()).getSite(siteModel.getId())
-                .assertSiteHasVisibility(Visibility.PUBLIC)
-                .assertSiteHasTitle(siteModel.getTitle())
-                .assertSiteHasDescription(siteModel.getDescription());
+        sitesApi.getAllSites().assertThatResponseHasSite(siteModel)
+        			.getSite(siteModel)
+                		.assertSiteHasVisibility(Visibility.PUBLIC)
+                		.assertSiteHasTitle(siteModel.getTitle())
+                		.assertSiteHasDescription(siteModel.getDescription());
     }
 
     /**
@@ -79,17 +67,15 @@ public class RestDemoTest extends RestTest
     @Test
     public void commentsTest() throws JsonToModelConversionException
     {
-        commentsAPI.useRestClient(restClient);
-
-        File file = new File("textDocument-" + System.currentTimeMillis());
-        Document document = content.createDocumentInRepository(userModel.getUsername(), 
-                userModel.getPassword(), "Shared", DocumentType.TEXT_PLAIN, file, "This is a text file");
-
+        Document document = dataContent.usingPath("Shared")
+        							   .usingUser(userModel)
+        							   .createDocument(DocumentType.TEXT_PLAIN);
         // add new comment
         RestCommentModel commentEntry = commentsAPI.addComment(document.getId(), "This is a new comment");
-        commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty()
-                .assertThatCommentWithIdExists(commentEntry.getId())
-                .assertThatCommentWithContentExists("This is a new comment");
+        commentsAPI.getNodeComments(document.getId())
+        				.assertThatResponseIsNotEmpty()
+        				.assertThatCommentWithIdExists(commentEntry.getId())
+        				.assertThatCommentWithContentExists("This is a new comment");
 
         // update comment
         commentEntry = commentsAPI.updateComment(document.getId(), commentEntry.getId(), "This is the updated comment");
@@ -110,8 +96,6 @@ public class RestDemoTest extends RestTest
     @Test
     public void siteMembersTest() throws DataPreparationException, JsonToModelConversionException
     {
-        sitesApi.useRestClient(restClient);
-
         UserModel newUser = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
 
