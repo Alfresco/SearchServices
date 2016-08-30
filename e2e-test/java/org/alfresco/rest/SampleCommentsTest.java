@@ -1,4 +1,4 @@
-package org.alfresco.rest.v1;
+package org.alfresco.rest;
 
 import java.io.File;
 
@@ -6,7 +6,6 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestCommentsApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.Content;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -49,8 +48,7 @@ public class SampleCommentsTest extends RestTest
     @Test
     public void addComments() throws JsonToModelConversionException
     {
-        Content content = new Content("This is a new comment");
-        commentsAPI.addComment(document.getId(), content);
+        commentsAPI.addComment(document.getId(), "This is a new comment");
         Assert.assertEquals(commentsAPI.usingRestWrapper().getStatusCode(), HttpStatus.CREATED.toString(), "Add comments response status code is not correct");
 
     }
@@ -66,12 +64,10 @@ public class SampleCommentsTest extends RestTest
     public void updateComment() throws JsonToModelConversionException
     {
         // add initial comment
-        Content content = new Content("This is a new comment");
-        String commentId = commentsAPI.addComment(document.getId(), content).getId();
+        String commentId = commentsAPI.addComment(document.getId(), "This is a new comment").getId();
 
         // update comment
-        content = new Content("This is the updated comment");
-        RestCommentModel commentEntry = commentsAPI.updateComment(document.getId(), commentId, content);
+        RestCommentModel commentEntry = commentsAPI.updateComment(document.getId(), commentId, "This is the updated comment");
         Assert.assertEquals(commentEntry.getContent(), "This is the updated comment", "New comment was not updated");
     }
 

@@ -1,4 +1,4 @@
-package org.alfresco.rest.v1;
+package org.alfresco.rest;
 
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestSitesApi;
@@ -71,7 +71,7 @@ public class SampleSitesTest extends RestTest
     @Test
     public void sitesCollectionHasPagination() throws JsonToModelConversionException
     {
-        siteAPI.getSites().assertPagination();
+        siteAPI.getSites().assertResponseHasPagination();
         Assert.assertEquals(siteAPI.getSites().getPagination().getCount(), 100, "Sites collection should have pagination");
     }
 

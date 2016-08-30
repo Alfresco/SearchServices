@@ -1,4 +1,4 @@
-package org.alfresco.rest.v1;
+package org.alfresco.rest;
 
 import org.alfresco.rest.RestPeopleApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;

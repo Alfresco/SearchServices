@@ -1,4 +1,4 @@
-package org.alfresco.rest.v1;
+package org.alfresco.rest;
 
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;

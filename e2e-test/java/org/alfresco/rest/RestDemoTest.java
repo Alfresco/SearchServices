@@ -1,13 +1,10 @@
-package org.alfresco.rest.v1;
+package org.alfresco.rest;
 
 import java.io.File;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.ContentService;
-import org.alfresco.rest.RestCommentsApi;
-import org.alfresco.rest.RestSitesApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.Content;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.SiteMember;
 import org.alfresco.utility.data.DataSite;
@@ -44,7 +41,7 @@ public class RestDemoTest extends RestTest
     private SiteModel siteModel;
 
     @BeforeClass
-    public void setUp()
+    public void setUp() throws DataPreparationException
     {
         userModel = dataUser.getAdminUser();
         siteModel = dataSite.createPublicRandomSite();
@@ -89,18 +86,16 @@ public class RestDemoTest extends RestTest
                 userModel.getPassword(), "Shared", DocumentType.TEXT_PLAIN, file, "This is a text file");
 
         // add new comment
-        Content content = new Content("This is a new comment");
-        RestCommentModel commentEntry = commentsAPI.addComment(document.getId(), content);
+        RestCommentModel commentEntry = commentsAPI.addComment(document.getId(), "This is a new comment");
         commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty()
                 .assertThatCommentWithIdExists(commentEntry.getId())
-                .assertThatCommentWithContentExists(content);
+                .assertThatCommentWithContentExists("This is a new comment");
 
         // update comment
-        content = new Content("This is the updated comment");
-        commentEntry = commentsAPI.updateComment(document.getId(), commentEntry.getId(), content);
+        commentEntry = commentsAPI.updateComment(document.getId(), commentEntry.getId(), "This is the updated comment");
         commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty()
                 .assertThatCommentWithIdExists(commentEntry.getId())
-                .assertThatCommentWithContentExists(content);
+                .assertThatCommentWithContentExists("This is the updated comment");
     }
 
     /**
