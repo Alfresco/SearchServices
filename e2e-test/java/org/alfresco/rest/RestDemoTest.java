@@ -68,8 +68,8 @@ public class RestDemoTest extends RestTest
     public void commentsTest() throws JsonToModelConversionException
     {
         Document document = dataContent.usingPath("Shared")
-        							   .usingUser(userModel)
-        							   .createDocument(DocumentType.TEXT_PLAIN);
+        			       .usingUser(userModel)
+        			       .createDocument(DocumentType.TEXT_PLAIN);
         // add new comment
         RestCommentModel commentEntry = commentsAPI.addComment(document.getId(), "This is a new comment");
         commentsAPI.getNodeComments(document.getId())
@@ -78,10 +78,13 @@ public class RestDemoTest extends RestTest
         				.assertThatCommentWithContentExists("This is a new comment");
 
         // update comment
-        commentEntry = commentsAPI.updateComment(document.getId(), commentEntry.getId(), "This is the updated comment");
-        commentsAPI.getNodeComments(document.getId()).assertThatResponseIsNotEmpty()
-                .assertThatCommentWithIdExists(commentEntry.getId())
-                .assertThatCommentWithContentExists("This is the updated comment");
+        commentEntry = commentsAPI.updateComment(document.getId(), 
+                                                    commentEntry.getId(), 
+                                                    "This is the updated comment");
+        commentsAPI.getNodeComments(document.getId())
+                        .assertThatResponseIsNotEmpty()
+                        .assertThatCommentWithIdExists(commentEntry.getId())
+                        .assertThatCommentWithContentExists("This is the updated comment");
     }
 
     /**
@@ -101,19 +104,22 @@ public class RestDemoTest extends RestTest
 
         // add user as Consumer to site
         sitesApi.addPerson(siteModel.getId(), siteMember);
-        sitesApi.getSiteMembers(siteModel.getId()).assertThatSiteHasMember(siteMember.getId())
-                .getSiteMember(siteMember.getId()).assertSiteMemberHasRole(Role.SiteConsumer);
+        sitesApi.getSiteMembers(siteModel.getId())
+                                    .assertThatSiteHasMember(siteMember.getId())
+                                    .getSiteMember(siteMember.getId())
+                                    .assertSiteMemberHasRole(Role.SiteConsumer);
 
         // update site member to Manager
         siteMember.setRole(Role.SiteManager.toString());
         ;
         sitesApi.updateSiteMember(siteModel.getId(), newUser.getUsername(), siteMember);
-        sitesApi.getSiteMembers(siteModel.getId()).assertThatSiteHasMember(siteMember.getId())
-                .getSiteMember(siteMember.getId()).assertSiteMemberHasRole(Role.SiteManager);
+        sitesApi.getSiteMembers(siteModel.getId())
+                                    .assertThatSiteHasMember(siteMember.getId())
+                                    .getSiteMember(siteMember.getId())
+                                    .assertSiteMemberHasRole(Role.SiteManager);
 
         // delete site member
         sitesApi.deleteSiteMember(siteModel.getId(), newUser.getUsername());
         sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
-
     }
 }

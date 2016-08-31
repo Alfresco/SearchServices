@@ -1,10 +1,6 @@
 package org.alfresco.rest;
 
-import java.io.File;
-
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.ContentService;
-import org.alfresco.rest.RestCommentsApi;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.data.DataUser;
@@ -13,7 +9,6 @@ import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -23,15 +18,10 @@ public class SampleCommentsTest extends RestTest
     DataUser dataUser;
 
     @Autowired
-    ContentService content;
-
-    @Autowired
     RestCommentsApi commentsAPI;
 
     private UserModel userModel;
-    private File file;
     private Document document;
-    private String documentName = "textDocument-" + System.currentTimeMillis();
 
     @BeforeClass
     public void initTest() throws DataPreparationException
@@ -40,24 +30,25 @@ public class SampleCommentsTest extends RestTest
         restClient.authenticateUser(userModel);
         commentsAPI.useRestClient(restClient);
 
-        file = new File(documentName);
-        document = content.createDocumentInRepository(userModel.getUsername(), userModel.getPassword(), "Shared", DocumentType.TEXT_PLAIN, file,
-                "shared document content");
+        document = dataContent.usingPath("Shared")
+                              .usingUser(userModel)
+                              .createDocument(DocumentType.TEXT_PLAIN);
     }
 
     @Test
     public void addComments() throws JsonToModelConversionException
     {
         commentsAPI.addComment(document.getId(), "This is a new comment");
-        Assert.assertEquals(commentsAPI.usingRestWrapper().getStatusCode(), HttpStatus.CREATED.toString(), "Add comments response status code is not correct");
-
+        commentsAPI.usingRestWrapper()
+                   .assertStatusCodeIs(HttpStatus.CREATED.toString());
     }
 
     @Test
     public void getCommentsCheckStatusCode() throws JsonToModelConversionException
     {
         commentsAPI.getNodeComments(document.getId());
-        Assert.assertEquals(commentsAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get comments response status code is not correct");
+        commentsAPI.usingRestWrapper()
+                   .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
     @Test
@@ -68,7 +59,7 @@ public class SampleCommentsTest extends RestTest
 
         // update comment
         RestCommentModel commentEntry = commentsAPI.updateComment(document.getId(), commentId, "This is the updated comment");
-        Assert.assertEquals(commentEntry.getContent(), "This is the updated comment", "New comment was not updated");
+        commentEntry.assertCommentContentIs("This is the updated comment");
     }
 
 }

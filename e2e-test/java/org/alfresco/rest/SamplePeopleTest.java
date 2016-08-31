@@ -8,7 +8,6 @@ import org.alfresco.utility.model.UserModel;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -31,36 +30,20 @@ public class SamplePeopleTest extends RestTest
     }
 
     @Test
-    public void getPerson() throws JsonToModelConversionException
+    public void getPersonCheckResponseAndStatus() throws JsonToModelConversionException
     {
-        Assert.assertNotNull(peopleAPI.getPerson(userModel.getUsername()), "Get person response should not be null");
-        Assert.assertEquals(peopleAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get person response status code is not correct");
-    }
-
-    @Test
-    public void getPersonResponseNotNull() throws JsonToModelConversionException
-    {
-        Assert.assertNotNull(peopleAPI.getPerson(userModel.getUsername()), "Get person response should not be null");
-    }
-
-    @Test
-    public void getPersonCheckStatusCode() throws JsonToModelConversionException
-    {
-        peopleAPI.getPerson(userModel.getUsername());
-        Assert.assertEquals(peopleAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get person response status code is not correct");
-    }
-
-    @Test
-    public void getPersonResponseNotNull1() throws JsonToModelConversionException
-    {
-        Assert.assertNotNull(peopleAPI.getPerson(userModel.getUsername()), "Get person response should not be null");
+        peopleAPI.getPerson(userModel.getUsername())
+                    .assertResponseIsNotEmpty();        
+        
+        peopleAPI.usingRestWrapper()
+                    .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
     @Test
     public void getPersonCheckStatusCode1() throws JsonToModelConversionException
     {
-        peopleAPI.getPerson(userModel.getUsername());
-        Assert.assertEquals(peopleAPI.usingRestWrapper().getStatusCode(), HttpStatus.OK.toString(), "Get person response status code is not correct");
+        peopleAPI.getPerson(userModel.getUsername())
+                    .assertPersonHasName(userModel.getUsername());
     }
 
 }
