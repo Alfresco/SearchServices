@@ -34,6 +34,8 @@ public class DocRouterFactory
                 return new ACLIDMurmurRouter();
             case MOD_ACL_ID:
                 return new ACLIDModRouter();
+            case DATE_MONTH:
+                return new DateMonthRouter();
             default:
                 return new DBIDRouter();
         }
