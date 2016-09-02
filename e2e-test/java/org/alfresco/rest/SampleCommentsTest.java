@@ -4,8 +4,8 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.chemistry.opencmis.client.api.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -20,7 +20,7 @@ public class SampleCommentsTest extends RestTest
     RestCommentsApi commentsAPI;
 
     private UserModel userModel;
-    private Document document;
+    private FileModel document;
 
     @BeforeClass
     public void initTest() throws Exception
@@ -37,7 +37,7 @@ public class SampleCommentsTest extends RestTest
     @Test
     public void addComments() throws JsonToModelConversionException, Exception
     {
-        commentsAPI.addComment(document.getId(), "This is a new comment");
+        commentsAPI.addComment(document.getNodeRef(), "This is a new comment");
         commentsAPI.usingRestWrapper()
                    .assertStatusCodeIs(HttpStatus.CREATED.toString());
     }
@@ -45,7 +45,7 @@ public class SampleCommentsTest extends RestTest
     @Test
     public void getCommentsCheckStatusCode() throws JsonToModelConversionException
     {
-        commentsAPI.getNodeComments(document.getId());
+        commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper()
                    .assertStatusCodeIs(HttpStatus.OK.toString());
     }
@@ -54,10 +54,10 @@ public class SampleCommentsTest extends RestTest
     public void updateComment() throws JsonToModelConversionException, Exception
     {
         // add initial comment
-        String commentId = commentsAPI.addComment(document.getId(), "This is a new comment").getId();
+        String commentId = commentsAPI.addComment(document.getNodeRef(), "This is a new comment").getId();
 
         // update comment
-        RestCommentModel commentEntry = commentsAPI.updateComment(document.getId(), commentId, "This is the updated comment");
+        RestCommentModel commentEntry = commentsAPI.updateComment(document.getNodeRef(), commentId, "This is the updated comment");
         commentEntry.assertCommentContentIs("This is the updated comment");
     }
 
