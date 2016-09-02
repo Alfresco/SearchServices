@@ -35,7 +35,7 @@ public class SampleCommentsTest extends RestTest
     }
 
     @Test
-    public void addComments() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToAddComment() throws JsonToModelConversionException, Exception
     {
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment");
         commentsAPI.usingRestWrapper()
@@ -43,7 +43,7 @@ public class SampleCommentsTest extends RestTest
     }
 
     @Test
-    public void getCommentsCheckStatusCode() throws JsonToModelConversionException
+    public void adminIsAbleToRetrieveComments() throws JsonToModelConversionException
     {
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper()
@@ -51,13 +51,15 @@ public class SampleCommentsTest extends RestTest
     }
 
     @Test
-    public void updateComment() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         // add initial comment
         String commentId = commentsAPI.addComment(document.getNodeRef(), "This is a new comment").getId();
 
         // update comment
-        RestCommentModel commentEntry = commentsAPI.updateComment(document.getNodeRef(), commentId, "This is the updated comment");
+        RestCommentModel commentEntry = commentsAPI.updateComment(document.getNodeRef(), 
+                                                                  commentId, 
+                                                                  "This is the updated comment");
         commentEntry.assertCommentContentIs("This is the updated comment");
     }
 

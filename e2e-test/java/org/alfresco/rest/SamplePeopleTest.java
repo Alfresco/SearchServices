@@ -18,17 +18,19 @@ public class SamplePeopleTest extends RestTest
     DataUser dataUser;
 
     private UserModel userModel;
+    private UserModel adminUser;
 
     @BeforeClass
     public void setUp() throws DataPreparationException
     {
         userModel = dataUser.createUser(RandomStringUtils.randomAlphanumeric(20));
-        restClient.authenticateUser(userModel);
+        adminUser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminUser);
         peopleAPI.useRestClient(restClient);
     }
 
     @Test
-    public void getPersonCheckResponseAndStatus() throws Exception
+    public void adminIsAbleToRetrievePerson() throws Exception
     {
         peopleAPI.getPerson(userModel.getUsername())
                     .assertResponseIsNotEmpty();        
@@ -38,10 +40,10 @@ public class SamplePeopleTest extends RestTest
     }
 
     @Test
-    public void getPersonCheckStatusCode1() throws Exception
+    public void adminIsAbleToRetrieveItself() throws Exception
     {
-        peopleAPI.getPerson(userModel.getUsername())
-                    .assertPersonHasName(userModel.getUsername());
+        peopleAPI.getPerson(adminUser.getUsername())
+                    .assertPersonHasName(adminUser.getUsername());
     }
 
 }

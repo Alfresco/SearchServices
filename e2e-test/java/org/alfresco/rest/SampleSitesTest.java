@@ -37,13 +37,13 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void getSiteResponseNotNull() throws JsonToModelConversionException, Exception
+    public void adminCanGetSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId()).assertResponseIsNotEmpty();
     }
 
     @Test
-    public void getSiteCheckStatusCode() throws JsonToModelConversionException, Exception
+    public void adminCanAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId());
         siteAPI.usingRestWrapper()
@@ -51,14 +51,14 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void getSitesResponseNotEmpty() throws JsonToModelConversionException, Exception
+    public void adminCanAccessSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites()
                 .assertThatResponseIsNotEmpty();
     }
 
     @Test
-    public void getSitesCheckStatusCode() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites();
         siteAPI.usingRestWrapper()
@@ -66,13 +66,13 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void sitesCollectionHasPagination() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites().assertResponseHasPagination();
     }
 
     @Test
-    public void addMemberToSiteCheckStatusCode() throws JsonToModelConversionException, DataPreparationException, Exception
+    public void adminIsAbleToAddNewSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteCollaborator.toString(), 
@@ -84,14 +84,14 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void isSiteReturned() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
         siteAPI.getAllSites()
                 .assertThatResponseHasSite(siteModel.getId());
     }
 
     @Test
-    public void checkSiteDetails() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId())
                 .assertResponseIsNotEmpty()
