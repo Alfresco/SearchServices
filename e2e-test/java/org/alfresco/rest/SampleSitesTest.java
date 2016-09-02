@@ -32,18 +32,18 @@ public class SampleSitesTest extends RestTest
     {
         userModel = dataUser.getAdminUser();
         restClient.authenticateUser(userModel);
-        siteModel = dataSite.createPublicRandomSite();
+        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         siteAPI.useRestClient(restClient);
     }
 
     @Test
-    public void getSiteResponseNotNull() throws JsonToModelConversionException
+    public void getSiteResponseNotNull() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId()).assertResponseIsNotEmpty();
     }
 
     @Test
-    public void getSiteCheckStatusCode() throws JsonToModelConversionException
+    public void getSiteCheckStatusCode() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId());
         siteAPI.usingRestWrapper()
@@ -51,14 +51,14 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void getSitesResponseNotEmpty() throws JsonToModelConversionException
+    public void getSitesResponseNotEmpty() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites()
                 .assertThatResponseIsNotEmpty();
     }
 
     @Test
-    public void getSitesCheckStatusCode() throws JsonToModelConversionException
+    public void getSitesCheckStatusCode() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites();
         siteAPI.usingRestWrapper()
@@ -66,13 +66,13 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void sitesCollectionHasPagination() throws JsonToModelConversionException
+    public void sitesCollectionHasPagination() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites().assertResponseHasPagination();
     }
 
     @Test
-    public void addMemberToSiteCheckStatusCode() throws JsonToModelConversionException, DataPreparationException
+    public void addMemberToSiteCheckStatusCode() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteCollaborator.toString(), 
@@ -84,14 +84,14 @@ public class SampleSitesTest extends RestTest
     }
 
     @Test
-    public void isSiteReturned() throws JsonToModelConversionException
+    public void isSiteReturned() throws JsonToModelConversionException, Exception
     {
         siteAPI.getAllSites()
                 .assertThatResponseHasSite(siteModel.getId());
     }
 
     @Test
-    public void checkSiteDetails() throws JsonToModelConversionException
+    public void checkSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId())
                 .assertResponseIsNotEmpty()

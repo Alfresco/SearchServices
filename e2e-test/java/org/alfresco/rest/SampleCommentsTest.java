@@ -36,7 +36,7 @@ public class SampleCommentsTest extends RestTest
     }
 
     @Test
-    public void addComments() throws JsonToModelConversionException
+    public void addComments() throws JsonToModelConversionException, Exception
     {
         commentsAPI.addComment(document.getId(), "This is a new comment");
         commentsAPI.usingRestWrapper()
@@ -52,7 +52,7 @@ public class SampleCommentsTest extends RestTest
     }
 
     @Test
-    public void updateComment() throws JsonToModelConversionException
+    public void updateComment() throws JsonToModelConversionException, Exception
     {
         // add initial comment
         String commentId = commentsAPI.addComment(document.getId(), "This is a new comment").getId();

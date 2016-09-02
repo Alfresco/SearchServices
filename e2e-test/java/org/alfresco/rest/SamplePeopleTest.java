@@ -1,7 +1,5 @@
 package org.alfresco.rest;
 
-import org.alfresco.rest.RestPeopleApi;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.UserModel;
@@ -30,7 +28,7 @@ public class SamplePeopleTest extends RestTest
     }
 
     @Test
-    public void getPersonCheckResponseAndStatus() throws JsonToModelConversionException
+    public void getPersonCheckResponseAndStatus() throws Exception
     {
         peopleAPI.getPerson(userModel.getUsername())
                     .assertResponseIsNotEmpty();        
@@ -40,7 +38,7 @@ public class SamplePeopleTest extends RestTest
     }
 
     @Test
-    public void getPersonCheckStatusCode1() throws JsonToModelConversionException
+    public void getPersonCheckStatusCode1() throws Exception
     {
         peopleAPI.getPerson(userModel.getUsername())
                     .assertPersonHasName(userModel.getUsername());

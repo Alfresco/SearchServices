@@ -28,9 +28,9 @@ public class RestDemoTest extends RestTest
 
     @BeforeClass
     public void setUp() throws DataPreparationException
-    {
+    {       
         userModel = dataUser.getAdminUser();
-        siteModel = dataSite.createPublicRandomSite();
+        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         restClient.authenticateUser(userModel);
         
         sitesApi.useRestClient(restClient);
@@ -65,7 +65,7 @@ public class RestDemoTest extends RestTest
      * @throws JsonToModelConversionException
      */
     @Test
-    public void commentsTest() throws JsonToModelConversionException
+    public void commentsTest() throws JsonToModelConversionException, Exception
     {
         Document document = dataContent.usingPath("Shared")
         			       .usingUser(userModel)
@@ -97,7 +97,7 @@ public class RestDemoTest extends RestTest
      * @throws JsonToModelConversionException
      */
     @Test
-    public void siteMembersTest() throws DataPreparationException, JsonToModelConversionException
+    public void siteMembersTest() throws DataPreparationException, JsonToModelConversionException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
