@@ -4,7 +4,6 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +23,15 @@ public class SampleCommentsTest extends RestTest
     private Document document;
 
     @BeforeClass
-    public void initTest() throws DataPreparationException
+    public void initTest() throws Exception
     {
         userModel = dataUser.getAdminUser();
         restClient.authenticateUser(userModel);
         commentsAPI.useRestClient(restClient);
 
-        document = dataContent.usingPath("Shared")
+        document = dataContent.usingResource("Shared")
                               .usingUser(userModel)
-                              .createDocument(DocumentType.TEXT_PLAIN);
+                              .createContent(DocumentType.TEXT_PLAIN);
     }
 
     @Test

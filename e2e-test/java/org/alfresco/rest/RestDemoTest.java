@@ -5,9 +5,9 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.SiteMember;
 import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.chemistry.opencmis.client.api.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Role;
@@ -61,27 +61,26 @@ public class RestDemoTest extends RestTest
      * POST one comment to file using admin user <br/>
      * Perform GET comments, check the new one is listed <br/>
      * Update existing comment using PUT call, check that comment content is updated <br/>
-     * 
-     * @throws JsonToModelConversionException
+     * @throws Exception 
      */
-    @Test
-    public void commentsTest() throws JsonToModelConversionException, Exception
+    @Test  
+    public void commentsTest() throws Exception
     {
-        Document document = dataContent.usingPath("Shared")
+        FileModel fileModel = dataContent.usingResource("Shared")
         			       .usingUser(userModel)
-        			       .createDocument(DocumentType.TEXT_PLAIN);
+        			       .createContent(DocumentType.TEXT_PLAIN);
         // add new comment
-        RestCommentModel commentEntry = commentsAPI.addComment(document.getId(), "This is a new comment");
-        commentsAPI.getNodeComments(document.getId())
+        RestCommentModel commentEntry = commentsAPI.addComment(fileModel.getNodeRef(), "This is a new comment");
+        commentsAPI.getNodeComments(fileModel.getNodeRef())
         				.assertThatResponseIsNotEmpty()
         				.assertThatCommentWithIdExists(commentEntry.getId())
         				.assertThatCommentWithContentExists("This is a new comment");
 
         // update comment
-        commentEntry = commentsAPI.updateComment(document.getId(), 
+        commentEntry = commentsAPI.updateComment(fileModel.getNodeRef(), 
                                                     commentEntry.getId(), 
                                                     "This is the updated comment");
-        commentsAPI.getNodeComments(document.getId())
+        commentsAPI.getNodeComments(fileModel.getNodeRef())
                         .assertThatResponseIsNotEmpty()
                         .assertThatCommentWithIdExists(commentEntry.getId())
                         .assertThatCommentWithContentExists("This is the updated comment");
@@ -97,7 +96,7 @@ public class RestDemoTest extends RestTest
      * @throws JsonToModelConversionException
      */
     @Test
-    public void siteMembersTest() throws DataPreparationException, JsonToModelConversionException, Exception
+    public void siteMembersTest() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
