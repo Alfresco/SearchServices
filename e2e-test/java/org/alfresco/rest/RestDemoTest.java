@@ -65,7 +65,7 @@ public class RestDemoTest extends RestTest
      * @throws JsonToModelConversionException
      */
     @Test
-    public void commentsTest() throws JsonToModelConversionException
+    public void commentsTest() throws JsonToModelConversionException, Exception
     {
         Document document = dataContent.usingPath("Shared")
         			       .usingUser(userModel)
@@ -97,7 +97,7 @@ public class RestDemoTest extends RestTest
      * @throws JsonToModelConversionException
      */
     @Test
-    public void siteMembersTest() throws DataPreparationException, JsonToModelConversionException
+    public void siteMembersTest() throws DataPreparationException, JsonToModelConversionException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
