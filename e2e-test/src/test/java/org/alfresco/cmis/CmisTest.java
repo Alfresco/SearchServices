@@ -1,4 +1,5 @@
 package org.alfresco.cmis;
+
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.utility.ServerHealth;
 import org.alfresco.utility.data.DataContent;
@@ -20,10 +21,10 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
 
     @Autowired
     protected DataSite dataSite;
-    
+
     @Autowired
     protected DataContent dataContent;
-    
+
     @Autowired
     ServerHealth serverHealth;
 
