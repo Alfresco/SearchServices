@@ -715,7 +715,7 @@ public class SOLRAPIClient
             {
                 JSONObject pair = a.getJSONObject(k);
                 Locale locale = deserializer.deserializeValue(Locale.class, pair.getString("locale"));
-                String mlValue = pair.has("value") ? pair.getString("value") : null;
+                String mlValue = pair.has("value") && !pair.isNull("value") ? pair.getString("value") : null;
                 mlValues.put(locale, mlValue);
             }
 
@@ -725,15 +725,15 @@ public class SOLRAPIClient
         {
             JSONObject o = (JSONObject)value;
             
-            String localeStr = o.has("locale") ? o.getString("locale") : null;
-            Locale locale = (o.has("locale") ? deserializer.deserializeValue(Locale.class, localeStr) : null);
+            String localeStr = o.has("locale") && !o.isNull("locale") ? o.getString("locale") : null;
+            Locale locale = (o.has("locale") && !o.isNull("locale") ? deserializer.deserializeValue(Locale.class, localeStr) : null);
 
-            Long size = o.has("size") ? o.getLong("size") : null;
+            Long size = o.has("size") && !o.isNull("size") ? o.getLong("size") : null;
 
-            String encoding = o.has("encoding") ? o.getString("encoding") : null;
-            String mimetype = o.has("mimetype") ? o.getString("mimetype") : null;
+            String encoding = o.has("encoding") && !o.isNull("encoding") ? o.getString("encoding") : null;
+            String mimetype = o.has("mimetype") && !o.isNull("mimetype") ? o.getString("mimetype") : null;
 
-            Long id = o.has("contentId") ? o.getLong("contentId") : null;
+            Long id = o.has("contentId") && !o.isNull("contentId") ? o.getLong("contentId") : null;
             
             ret = new ContentPropertyValue(locale, size, encoding, mimetype, id);
         }
@@ -942,7 +942,7 @@ public class SOLRAPIClient
                 List<Pair<String, QName>> paths = new ArrayList<Pair<String, QName>>(jsonPaths.length());
                 for(int j = 0; j < jsonPaths.length(); j++)
                 {
-                    JSONObject path = new JSONObject(jsonPaths.getString(j));
+                    JSONObject path = jsonPaths.getJSONObject(j);
                     String pathValue = path.getString("path");
                     QName qname = path.has("qname") ? deserializer.deserializeValue(QName.class, path.getString("qname")) : null;
                     paths.add(new Pair<String, QName>(pathValue, qname));
