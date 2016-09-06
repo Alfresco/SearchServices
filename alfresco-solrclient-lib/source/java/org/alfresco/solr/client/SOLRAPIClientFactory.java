@@ -77,6 +77,13 @@ public class SOLRAPIClientFactory
     private int maxHostConnections = 40;
     private int socketTimeout = 120000;
 
+
+    public static void close() {
+        for(SOLRAPIClient client : clientsPerAlfresco.values()) {
+            client.close();
+        }
+    }
+
     /**
      * Gets the client resource from the pool.
      * 
