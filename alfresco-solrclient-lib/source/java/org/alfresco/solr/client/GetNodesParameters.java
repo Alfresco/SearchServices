@@ -50,6 +50,8 @@ public class GetNodesParameters
     private Set<QName> includeAspects;
     private Set<QName> excludeAspects;
     
+    private QName shardProperty;
+    
     public boolean getStoreFilter()
     {
         return (storeProtocol != null || storeIdentifier != null);
@@ -144,4 +146,16 @@ public class GetNodesParameters
     {
         this.excludeAspects = excludeAspects;
     }
+
+    public QName getShardProperty()
+    {
+        return this.shardProperty;
+    }
+
+    public void setShardProperty(QName shardProperty)
+    {
+        this.shardProperty = shardProperty;
+    }
+    
+    
 }
