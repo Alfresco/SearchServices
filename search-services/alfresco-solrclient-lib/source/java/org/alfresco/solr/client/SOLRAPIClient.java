@@ -603,6 +603,11 @@ public class SOLRAPIClient
         
         body.put("maxResults", maxResults);
 
+        if(parameters.getShardProperty() != null)
+        {
+            body.put("shardProperty", parameters.getShardProperty().toString());
+        }
+        
         PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
  
         Response response = null;
@@ -655,6 +660,11 @@ public class SOLRAPIClient
             if(jsonNodeInfo.has("aclId"))
             {
                 nodeInfo.setAclId(jsonNodeInfo.getLong("aclId"));
+            }
+            
+            if(jsonNodeInfo.has("shardPropertyValue"))
+            {
+                nodeInfo.setShardPropertyValue(jsonNodeInfo.getString("shardPropertyValue"));
             }
             
             if(jsonNodeInfo.has("tenant"))
