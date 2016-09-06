@@ -60,7 +60,7 @@ public class TrackerState
     private volatile boolean checkedLastTransactionTime = false;
 
     private volatile boolean check = false;
-
+    private volatile int trackerCycles;
     private long timeToStopIndexing;
 
     private long lastGoodChangeSetCommitTimeInIndex;
@@ -68,6 +68,7 @@ public class TrackerState
     private long lastGoodTxCommitTimeInIndex;
 
     private long timeBeforeWhichThereCanBeNoHoles;
+    private volatile long lastStartTime = 0;
 
     public long getLastChangeSetIdOnServer()
     {
@@ -228,7 +229,15 @@ public class TrackerState
     {
         this.lastGoodTxCommitTimeInIndex = lastGoodTxCommitTimeInIndex;
     }
+    
+    public int getTrackerCycles() {
+        return this.trackerCycles;
+    }
 
+    public void incrementTrackerCycles() {
+        this.trackerCycles++;
+    }
+    
     public long getTimeBeforeWhichThereCanBeNoHoles()
     {
         return timeBeforeWhichThereCanBeNoHoles;
@@ -297,5 +306,14 @@ public class TrackerState
     {
         this.checkedLastAclTransactionTime = checkedLastAclTransactionTime;
     }
+    
+    public long getLastStartTime()
+    {
+        return this.lastStartTime;
+    }
 
+    public void setLastStartTime(long lastStartTime)
+    {
+        this.lastStartTime = lastStartTime;
+    }
 }
