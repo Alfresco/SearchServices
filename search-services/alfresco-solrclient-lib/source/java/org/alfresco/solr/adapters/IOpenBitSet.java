@@ -34,14 +34,14 @@ package org.alfresco.solr.adapters;
 public interface IOpenBitSet
 {
 
-    void set(long txid);
+    public void set(long txid);
 
-    void or(IOpenBitSet duplicatedTxInIndex);
+    public void or(IOpenBitSet duplicatedTxInIndex);
 
-    long nextSetBit(long l);
+    public long nextSetBit(long l);
 
-    long cardinality();
+    public long cardinality();
 
-    boolean get(long i);
+    public boolean get(long i);
     
 }
