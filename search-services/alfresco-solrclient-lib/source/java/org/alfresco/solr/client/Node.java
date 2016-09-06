@@ -38,6 +38,7 @@ public class Node
     private SolrApiNodeStatus status;
     private String tenant;
     private long aclId;
+    private String shardPropertyValue;
     
     public long getId()
     {
@@ -99,13 +100,31 @@ public class Node
     {
         this.aclId = aclId;
     }
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    
+   
+    /**
+     * The property value to use for sharding - as requested
+     *
+     * @return null - if the node does not have the property, the standard "String" value of the property if it is present on the node.
+     * For dates and datetime properties this will be the ISO formatted datetime.
      */
+    public String getShardPropertyValue()
+    {
+        return this.shardPropertyValue;
+    }
+    
+    public void setShardPropertyValue(String shardPropertyValue)
+    {
+        this.shardPropertyValue = shardPropertyValue;
+    }
     @Override
     public String toString()
     {
-        return "Node [id=" + id + ", nodeRef=" + nodeRef + ", txnId=" + txnId + ", status=" + status + ", tenant=" + tenant + ", aclId=" + aclId + "]";
+        return "Node [id=" + this.id + ", nodeRef=" + this.nodeRef + ", txnId=" + this.txnId
+                    + ", status=" + this.status + ", tenant=" + this.tenant + ", aclId="
+                    + this.aclId + ", shardPropertyValue=" + this.shardPropertyValue + "]";
     }
+    
+    
    
 }
