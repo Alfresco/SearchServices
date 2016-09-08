@@ -18,33 +18,34 @@
  */
 package org.alfresco.solr.query;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
-
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.junit.Before;
 import org.junit.Test;
 
 
 /**
- * Validate schema definition of fields to return NodeRefs untokenised.
+ * Validate schema changes, ensures field return both tokenised and untokenised values
+ * for NodeRef, boolean,category and qname.
  * 
  * @author Michael Suzuki
  *
  */
 public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
 {
-    NodeRef rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-    NodeRef node = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+    String nodeRef = "workspace://SpacesStore/00000000-0000-1-4731-76966678";
     String nodeRefS = "noderef@s_@mytest" ;
+    String nodeRefSD = "noderef@sd_@mytest" ;
     String nodeRefM = "noderef@m_@test";
+    String nodeRefMD = "noderef@md@test";
     String boolenField = "boolean@m_@mytest";
-    String booleanValue = "a-true";
+    String booleanValue = "aaa-true";
+    String boolenDocField = "boolean@md_@mytest";
     String categoryField = "category@m_@test";
+    String categoryDocField = "category@md_@test";
     String categoryValue = "test category-1";
     String qnameField = "qname@m_@hits";
+    String qnameDocField = "qname@md_@hits";
     
     
     @Before
@@ -52,26 +53,24 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
     {
         initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
         assertU(adoc("id", "1", 
-                nodeRefS, rootNodeRef.toString(),
-                nodeRefM, node.toString(), 
+                nodeRefS, nodeRef,
+                nodeRefM, nodeRef, 
+                nodeRefMD, nodeRef, 
+                nodeRefSD, nodeRef, 
                 boolenField, booleanValue,
+                boolenDocField, booleanValue,
                 categoryField, categoryValue,
+                categoryDocField, categoryValue,
                 qnameField, ContentModel.PROP_HITS.toString(),
-                "_version_","1"));
-        assertU(adoc("id", "2", 
-                nodeRefS, rootNodeRef.toString(),
-                nodeRefM, node.toString(), 
-                boolenField, booleanValue,
-                categoryField, categoryValue,
-                qnameField, ContentModel.PROP_HITS.toString(),
+                qnameDocField, ContentModel.PROP_HITS.toString(),
                 "_version_","1"));
         assertU(commit());
     }
     
     @Test
     /**
-     * Test to ensure NodeRef is not returned as:
-     * <lst name="noderef@s_@mytest">
+     * Test to ensure NodeRef is index as:
+     * <lst name="noderef@d_@mytest">
      *  <int name="0000">5</int>
      *  <int name="00000000">5</int>
      *  <int name="1">5</int>
@@ -80,8 +79,8 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
      *  <int name="spacesstore">5</int>
      *  <int name="workspace">5</int>
      * </lst>
-     * It should return the as:
-     * <lst name="noderef@s_@mytest">
+     * and:
+     * <lst name="noderef@dm@mytest">
      *  <int name="workspace://SpacesStore/00000000-0000-1-4731-76966678">5</int>
      * </lst>
      * @throws Exception
@@ -89,26 +88,36 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
     public void testNodeRef() throws Exception
     {
         assertQ(req("q", "*:*","facet", "true","facet.field", nodeRefS),
-                "//*[@name = '" + rootNodeRef.toString() + "']");
+                "//*[@name = '4731']");
+        assertQ(req("q", "*:*","facet", "true","facet.field", nodeRefSD),
+                "//*[@name = '" + nodeRef + "']");
         assertQ(req("q", "*:*", "facet", "true","facet.field", nodeRefM),
-                "//*[@name = '" + node.toString() + "']");
+                "//*[@name = '76966678']");
+        assertQ(req("q", "*:*","facet", "true","facet.field", nodeRefMD),
+                "//*[@name = '" + nodeRef + "']");
     }
     @Test
     public void testBoolean() throws Exception
     {
-        assertQ(req("q", "*:*","facet", "true","facet.field", boolenField),
+        assertQ(req("q", "*:*","facet", "true","facet.field", boolenDocField),
                 "//*[@name = '" + booleanValue + "']");
+        assertQ(req("q", "*:*","facet", "true","facet.field", boolenField),
+                "//*[@name = 'aaa']");
     }
     @Test
     public void testCategory() throws Exception
     {
-        assertQ(req("q", "*:*","facet", "true","facet.field", categoryField),
+        assertQ(req("q", "*:*","facet", "true","facet.field", categoryDocField),
                 "//*[@name = '" + categoryValue + "']");
+        assertQ(req("q", "*:*","facet", "true","facet.field", categoryField),
+                "//*[@name = 'test']");
     }
     @Test
     public void testQName() throws Exception
     {
-        assertQ(req("q", "*:*","facet", "true","facet.field", qnameField),
+        assertQ(req("q", "*:*","facet", "true","facet.field", qnameDocField),
                 "//*[@name = '" + ContentModel.PROP_HITS + "']");
+        assertQ(req("q", "*:*","facet", "true","facet.field", qnameField),
+                "//*[@name = 'hits']");
     }
 }
