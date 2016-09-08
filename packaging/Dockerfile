@@ -20,7 +20,6 @@ WORKDIR $DIST_DIR
 
 RUN unzip *.zip -d $DIST_DIR/ && rm *.zip &&  \
         mkdir -p $DIST_DIR/data/content &&  \
-        mkdir -p $DIST_DIR/data/indexroot &&  \
         mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ &&  \
         mv $DIST_DIR/solrhome $DIST_DIR/data/ &&  \
         chown -R solr:solr $DIST_DIR

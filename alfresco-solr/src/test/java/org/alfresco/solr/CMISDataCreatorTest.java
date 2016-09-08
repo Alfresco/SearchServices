@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.test;
+package org.alfresco.solr;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
