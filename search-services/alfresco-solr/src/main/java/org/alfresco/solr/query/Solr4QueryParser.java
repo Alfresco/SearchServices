@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
+import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
@@ -468,8 +469,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             return spanQueryBuilder(field, first, last, slop, inOrder);
         } else
         {
-            BytesRef firstBytes = getAnalyzer().normalize(field, first);
-            BytesRef lastBytes = getAnalyzer().normalize(field, last);
+            BytesRef firstBytes = analyzeMultitermTerm(field, first);
+            BytesRef lastBytes = analyzeMultitermTerm(field, last);
             SpanQuery firstTerm = new SpanTermQuery(new Term(field, firstBytes));
             SpanQuery lastTerm = new SpanTermQuery(new Term(field, lastBytes));
             return new SpanNearQuery(new SpanQuery[]
@@ -2833,7 +2834,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 String start = null;
                 try
                 {
-                    getAnalyzer().normalize(FIELD_CASCADETX, part1);
+                    analyzeMultitermTerm(FIELD_CASCADETX, part1);
                     start = part1;
                 } catch (Exception e)
                 {
@@ -2842,7 +2843,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 String end = null;
                 try
                 {
-                    getAnalyzer().normalize(FIELD_CASCADETX, part2);
+                    analyzeMultitermTerm(FIELD_CASCADETX, part2);
                     end = part2;
                 } catch (Exception e)
                 {
@@ -2973,7 +2974,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         String start = null;
                         try
                         {
-                            getAnalyzer().normalize(solrField, part1);
+                            analyzeMultitermTerm(solrField, part1);
                             start = part1;
                         } catch (Exception e)
                         {
@@ -2982,7 +2983,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         String end = null;
                         try
                         {
-                            getAnalyzer().normalize(solrField, part2);
+                            analyzeMultitermTerm(solrField, part2);
                             end = part2;
                         } catch (Exception e)
                         {
@@ -3041,7 +3042,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     String start = null;
                     try
                     {
-                        getAnalyzer().normalize(solrField, part1);
+                        analyzeMultitermTerm(solrField, part1);
                         start = part1;
                     } catch (Exception e)
                     {
@@ -3050,7 +3051,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     String end = null;
                     try
                     {
-                        getAnalyzer().normalize(solrField, part2);
+                        analyzeMultitermTerm(solrField, part2);
                         end = part2;
                     } catch (Exception e)
                     {
@@ -5000,8 +5001,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     private void addLocaleSpecificMLOrTextAttribute(PropertyDefinition pDef, String queryText, SubQuery subQueryBuilder,
             AnalysisMode analysisMode, LuceneFunction luceneFunction, Builder booleanQuery, Locale locale,
             String textFieldName, IndexTokenisationMode tokenisationMode,
-            IndexTokenisationMode preferredTokenisationMode) throws ParseException
-    {
+            IndexTokenisationMode preferredTokenisationMode) throws ParseException {
 
         FieldInstance fieldInstance = getFieldInstance(textFieldName, pDef, locale, preferredTokenisationMode);
         StringBuilder builder = new StringBuilder(queryText.length() + 10);
@@ -5177,8 +5177,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
     protected void addTextSpanQuery(String field, PropertyDefinition pDef, String first, String last, int slop,
             boolean inOrder, String expandedFieldName, IndexTokenisationMode tokenisationMode, Builder booleanQuery,
-            Locale locale)
-    {
+                                    Locale locale) {
         addMLTextOrTextSpanQuery(field, pDef, first, last, slop, inOrder, expandedFieldName, tokenisationMode,
                 booleanQuery, locale);
     }
@@ -5310,8 +5309,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
     protected void addMLTextSpanQuery(String field, PropertyDefinition pDef, String first, String last, int slop,
             boolean inOrder, String expandedFieldName, PropertyDefinition propertyDef,
-            IndexTokenisationMode tokenisationMode, Builder booleanQuery, Locale locale)
-    {
+            IndexTokenisationMode tokenisationMode, Builder booleanQuery, Locale locale) {
         addMLTextOrTextSpanQuery(field, pDef, first, last, slop, inOrder, expandedFieldName, tokenisationMode,
                 booleanQuery, locale);
     }
@@ -5390,4 +5388,54 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     {
         return new SolrDenySetQuery(queryText);
     }
+
+    private BytesRef analyzeMultitermTerm(String field, String part) {
+        return analyzeMultitermTerm(field, part, getAnalyzer());
+    }
+
+    protected BytesRef analyzeMultitermTerm(String field, String part, Analyzer analyzerIn) {
+        if (analyzerIn == null) analyzerIn = getAnalyzer();
+
+        try (TokenStream source = analyzerIn.tokenStream(field, part)) {
+            source.reset();
+
+            TermToBytesRefAttribute termAtt = source.getAttribute(TermToBytesRefAttribute.class);
+
+            if (!source.incrementToken())
+                throw new IllegalArgumentException("analyzer returned no terms for multiTerm term: " + part);
+            BytesRef bytes = BytesRef.deepCopyOf(termAtt.getBytesRef());
+            if (source.incrementToken())
+                throw new IllegalArgumentException("analyzer returned too many terms for multiTerm term: " + part);
+            source.end();
+            return bytes;
+        } catch (IOException e) {
+            throw new RuntimeException("Error analyzing multiTerm term: " + part, e);
+        }
+    }
+
+    private boolean analyzeRangeTerms = true;
+
+    protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+        final BytesRef start;
+        final BytesRef end;
+
+        if (part1 == null) {
+            start = null;
+        } else {
+            start = analyzeRangeTerms ? analyzeMultitermTerm(field, part1) : new BytesRef(part1);
+        }
+
+        if (part2 == null) {
+            end = null;
+        } else {
+            end = analyzeRangeTerms ? analyzeMultitermTerm(field, part2) : new BytesRef(part2);
+        }
+
+        final TermRangeQuery query = new TermRangeQuery(field, start, end, startInclusive, endInclusive);
+
+        query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
+        return query;
+    }
+
+
 }
