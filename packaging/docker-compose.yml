@@ -1,34 +1,32 @@
 version: '2'
 services:
   repo:
-    image: docker-internal.alfresco.com/platform-only:latest
+    image: docker-internal.alfresco.com/platform:latest
     environment:
-        JAVA_OPTS : "-Ddb.url=jdbc:postgresql://database/alfresco -Dsolr.secureComms=none \
+        JAVA_OPTS : "-Dsolr.secureComms=none \
          -Dsolr.useDynamicShardRegistration=true -Dsolr.host=solr6 -Dsolr.port=8983 -Dsolr.baseUrl=/solr"
-    depends_on:
-      - database
     ports:
-          - "7203:7203"
-          - "8082:8080"
+          - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
+          - "5005:5005" #Java debugging
+          - "8082:8080" #Browser port
+  share:
+    image: docker-internal.alfresco.com/share:5.2.1-demo
+    ports:
+      - "8081:8080"
+    environment:
+      - "REPO_HOST=repo:8080"
   solr6:
     image: docker-internal.alfresco.com/alfresco-solr:develop-latest
-    command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a", "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
+    command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a",
+               "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
     environment:
       #Solr needs to know how to call Alfresco
       SOLR_ALFRESCO_HOST: repo
       SOLR_ALFRESCO_PORT: 8080
-      #Alfresco (admin console) needs to know how to call solr
-      SOLR_PROXY_HOST: localhost
-      SOLR_PROXY_PORT: 8083
+      #Alfresco needs to know how to call solr
+      SOLR_PROXY_HOST: solr6
+      SOLR_PROXY_PORT: 8983
     ports:
-          - "8083:8983"
-          - "1044:1044"
-  database:
-    image: postgres:9.4
-    environment:
-      POSTGRES_USER: alfresco
-      POSTGRES_PASSWORD: alfresco
-      POSTGRES_DB: alfresco
-
-
+          - "8083:8983" #Browser port
+          - "1044:1044" #Java debugging
 #In the Index Server Shard Management Admin console the index server is: localhost:8083/solr
