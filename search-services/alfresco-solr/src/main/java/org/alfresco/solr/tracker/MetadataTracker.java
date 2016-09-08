@@ -24,9 +24,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.index.shard.ShardStateBuilder;
+import org.alfresco.repo.search.impl.QueryParserUtils;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
@@ -65,8 +71,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
     private DocRouter docRouter;
-
-
+    private QName shardProperty;
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -75,6 +80,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         //System.out.println("####### MetadatTracker() ########");
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+        String shardKey = p.getProperty("shard.key");
+        if(shardKey != null) {
+            shardProperty = getShardProperty(shardKey);
+        }
+
         docRouter = DocRouterFactory.getRouter(ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -289,6 +299,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setTransactionIds(txs);
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
+                    gnp.setShardProperty(shardProperty);
+
                     List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
                     {
@@ -1060,7 +1072,22 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 return false;
             }
         }
+
     }
+
+    public static QName getShardProperty(String field) {
+        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+        NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
+        DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
+        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
+                                                                                  namespaceDAO,
+                                                                                  dictionaryService,
+                                                                                  field);
+
+        return propertyDef.getName();
+    }
+
+
 
 
 }

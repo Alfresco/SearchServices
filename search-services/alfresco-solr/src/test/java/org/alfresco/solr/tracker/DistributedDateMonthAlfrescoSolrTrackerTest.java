@@ -28,41 +28,44 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.Acl;
-import org.alfresco.solr.client.AclChangeSet;
-import org.alfresco.solr.client.AclReaders;
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.NodeMetaData;
-import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.schema.TrieDateField;
 import org.junit.Rule;
 import org.junit.Test;
 
 /**
  * @author Joel
+ *
+ *
+ *
+ *
  */
+
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
+public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2,getShardMethod());
 
-    @Test
-    public void testAclId() throws Exception
+    //@Test
+    public void testDateMonth() throws Exception
     {
         handle.put("explain", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
@@ -76,26 +79,26 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
         handle.put("_version_", SKIP);
         handle.put("_original_parameters_", SKIP);
 
-        int numAcls = 250;
+        int numAcls = 25;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
         List<Acl> bulkAcls = new ArrayList();
         List<AclReaders> bulkAclReaders = new ArrayList();
 
 
-        for(int i=0; i<numAcls; i++) {
+        for (int i = 0; i < numAcls; i++) {
             Acl bulkAcl = getAcl(bulkAclChangeSet);
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
-                                             bulkAcl,
-                                             list("joel"+bulkAcl.getId()),
-                                             list("phil"+bulkAcl.getId()),
-                                             null));
+                    bulkAcl,
+                    list("joel" + bulkAcl.getId()),
+                    list("phil" + bulkAcl.getId()),
+                    null));
         }
 
         indexAclChangeSet(bulkAclChangeSet,
-                          bulkAcls,
-                          bulkAclReaders);
+                bulkAcls,
+                bulkAclReaders);
 
         int numNodes = 1000;
         List<Node> nodes = new ArrayList();
@@ -103,39 +106,50 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        for(int i=0; i<numNodes; i++) {
+        Date[] dates = new Date[10];
+
+        Calendar cal = new GregorianCalendar();
+        for (int i = 0; i < dates.length; i++) {
+            cal.add(cal.MONTH, -i);
+            dates[i] = cal.getTime();
+        }
+
+        int[] counts = new int[dates.length];
+
+        for (int i = 0; i < numNodes; i++) {
             int aclIndex = i % numAcls;
+            int dateIndex = i % dates.length;
+            String dateString = DefaultTypeConverter.INSTANCE.convert(String.class, dates[dateIndex]);
+            counts[dateIndex]++;
             Node node = getNode(bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            node.setShardPropertyValue(dateString);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "mike", null, false);
+            nodeMetaData.getProperties().put(ContentModel.PROP_CREATED,
+                    new StringPropertyValue(dateString));
+
             nodeMetaDatas.add(nodeMetaData);
         }
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
-        waitForDocCount(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), numAcls, 100000);
+        waitForDocCountAllCores(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), numAcls, 100000);
 
-        for(int i=0; i<numAcls; i++) {
-            Acl acl = bulkAcls.get(i);
-            long aclId = acl.getId();
+        List<AlfrescoSolrDataModel.FieldInstance> fieldInstanceList = AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(MetadataTracker.getShardProperty("created")).getFields();
+        AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
+        String fieldName = fieldInstance.getField();
 
-            QueryResponse response = query(getDefaultTestClient(),
-                    "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel" + aclId + "\"], \"tenants\": [ \"\" ]}",
-                    params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc","fq","{!afts}AUTHORITY_FILTER_FROM_JSON"));
-
-            assertTrue(response.getResults().getNumFound() > 0);
+        for (int i = 0; i < dates.length; i++) {
+            LegacyNumericRangeQuery query = LegacyNumericRangeQuery.newLongRange(fieldName, dates[i].getTime(), dates[i].getTime() + 1, true, false);
+            assertCountAndColocation(query, counts[i]);
         }
-    }
 
-    protected Properties getShardMethod() 
+     }
+
+    protected Properties getShardMethod()
     {
-        Random random = random();
-        List<ShardMethodEnum> methods = new ArrayList();
-        methods.add(ShardMethodEnum.ACL_ID);
-        methods.add(ShardMethodEnum.MOD_ACL_ID);
-        Collections.shuffle(methods, random);
         Properties prop = new Properties();
-        prop.put("shard.method", methods.get(0).toString());
+        prop.put("shard.method", ShardMethodEnum.DATE_MONTH.toString());
         return prop;
     }
 }
