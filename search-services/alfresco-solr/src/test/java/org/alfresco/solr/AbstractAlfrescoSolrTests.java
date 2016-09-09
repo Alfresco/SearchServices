@@ -42,6 +42,7 @@ import org.alfresco.solr.client.Transaction;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONArray;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONObject;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -120,7 +121,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      * @param schema
      * @throws Exception
      */
-    public static void initAlfrescoCore(String config, String schema) throws Exception
+    public static void initAlfrescoCore(String schema) throws Exception
     {
         log.info("##################################### init Alfresco core ##############");
         log.info("####initCore");
@@ -135,51 +136,53 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
         System.setProperty("solr.tests.mergePolicy", "org.apache.lucene.index.TieredMergePolicy");
-
         if (solrConfig == null) 
         {
-            createAlfrescoCore(config, schema);
+            createAlfrescoCore(schema);
         }
         log.info("####initCore end");
     }
 
-    public static void createAlfrescoCore(String config, String schema) throws ParserConfigurationException, IOException, SAXException
+    public static void createAlfrescoCore(String schema) throws ParserConfigurationException, IOException, SAXException
     {
         Properties properties = new Properties();
         properties.put("solr.tests.maxBufferedDocs", "1000");
         properties.put("solr.tests.maxIndexingThreads", "10");
         properties.put("solr.tests.ramBufferSizeMB", "1024");
         properties.put("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
-        String configFile = config;
-        if (configFile != null) 
+        if("schema.xml".equalsIgnoreCase(schema))
         {
-            CoreContainer coreContainer = new CoreContainer(TEST_FILES_LOCATION);
-            SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
-            solrConfig = new SolrConfig(resourceLoader, config, null);
-            IndexSchema indexSchema = IndexSchemaFactory.buildIndexSchema(schema, solrConfig);
-            TestCoresLocator locator = new TestCoresLocator(SolrTestCaseJ4.DEFAULT_TEST_CORENAME,
-                                                            "data", 
-                                                            solrConfig.getResourceName(),
-                                                            indexSchema.getResourceName());
-            
-            NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("name", coreContainer.getResourceLoader())
-                    .setUseSchemaCache(false)
-                    .setCoreAdminHandlerClass("org.alfresco.solr.AlfrescoCoreAdminHandler")
-                    .build();
-            coreContainer.shutdown();
-            try
-            {
-                h = new TestHarness(nodeConfig, locator);
-                h.coreName = SolrTestCaseJ4.DEFAULT_TEST_CORENAME;
-                
-            }
-            catch(Exception e)
-            {
-                log.info("we hit an issue", e);
-            }
-            lrf = h.getRequestFactory
-                    ("standard",0,20, CommonParams.VERSION,"2.2");
+            //currently this is hard coded to use the rerank production schema.
+            FileUtils.copyFile(Paths.get(RERANK_CONF + schema).toFile(), Paths.get(TEST_SOLR_CONF + schema).toFile());
         }
+        
+        // The local test solrconfig with RAMDirectoryFactory and lockType of single.
+        CoreContainer coreContainer = new CoreContainer(TEST_FILES_LOCATION);
+        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
+        solrConfig = new SolrConfig(resourceLoader, "solrconfig.xml", null);
+        IndexSchema indexSchema = IndexSchemaFactory.buildIndexSchema(schema, solrConfig);
+        TestCoresLocator locator = new TestCoresLocator(SolrTestCaseJ4.DEFAULT_TEST_CORENAME,
+                                                        "data", 
+                                                        solrConfig.getResourceName(),
+                                                        indexSchema.getResourceName());
+        
+        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("name", coreContainer.getResourceLoader())
+                .setUseSchemaCache(false)
+                .setCoreAdminHandlerClass("org.alfresco.solr.AlfrescoCoreAdminHandler")
+                .build();
+        coreContainer.shutdown();
+        try
+        {
+            h = new TestHarness(nodeConfig, locator);
+            h.coreName = SolrTestCaseJ4.DEFAULT_TEST_CORENAME;
+            
+        }
+        catch(Exception e)
+        {
+            log.info("we hit an issue", e);
+        }
+        lrf = h.getRequestFactory
+                ("standard",0,20, CommonParams.VERSION,"2.2");
     }
     @AfterClass
     public static void tearDown()

@@ -55,7 +55,7 @@ public class AuthDataLoad extends AbstractAlfrescoSolrTests
     public static void setup() throws Exception
     {
         //Start test haness
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        initAlfrescoCore("schema.xml");
         // Root
 
         NodeRef rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());

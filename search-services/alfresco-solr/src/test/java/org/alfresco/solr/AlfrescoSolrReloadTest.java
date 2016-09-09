@@ -44,7 +44,7 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        initAlfrescoCore("schema.xml");
         admin = (AlfrescoCoreAdminHandler)h.getCore().getCoreDescriptor().getCoreContainer().getMultiCoreHandler();
     }
 
