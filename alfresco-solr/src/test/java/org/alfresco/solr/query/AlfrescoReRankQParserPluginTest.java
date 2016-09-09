@@ -45,7 +45,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
     @BeforeClass
     public static void beforeClass() throws Exception
     {
-        initAlfrescoCore("solrconfig-rerank.xml", "schema-rerank.xml");
+        initAlfrescoCore("schema-rerank.xml");
     }
     @Before
     public void setUp() throws Exception

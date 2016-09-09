@@ -194,7 +194,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
     @BeforeClass
     public static void loadCMISTestSet() throws Exception 
     {
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        initAlfrescoCore("schema.xml");
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         dataModel.getNamespaceDAO().removePrefix("");

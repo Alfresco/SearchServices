@@ -25,7 +25,7 @@ import org.junit.Test;
 
 
 /**
- * Validate schema changes, ensures field return both tokenised and untokenised values
+ * Validate schema changes, ensures field return both tokenised and untokenised value
  * for NodeRef, boolean,category and qname.
  * 
  * @author Michael Suzuki
@@ -51,7 +51,7 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
     @Before
     public void setup() throws Exception
     {
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        initAlfrescoCore("schema.xml");
         assertU(adoc("id", "1", 
                 nodeRefS, nodeRef,
                 nodeRefM, nodeRef, 
@@ -62,8 +62,9 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
                 categoryField, categoryValue,
                 categoryDocField, categoryValue,
                 qnameField, ContentModel.PROP_HITS.toString(),
-                qnameDocField, ContentModel.PROP_HITS.toString(),
-                "_version_","1"));
+                qnameDocField, ContentModel.PROP_HITS.toString()
+//                "_version_","1"
+                ));
         assertU(commit());
     }
     
