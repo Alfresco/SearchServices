@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Suite" parallel="classes">
+<suite name="REST API DEMO TESTS" parallel="classes">
 	<listeners>
 		<listener class-name="org.alfresco.utility.report.ReportListenerAdapter"></listener>
+		<listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"></listener>
+		<listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
 	</listeners>
 	<test name="Test">
 		<classes>
