@@ -3,12 +3,15 @@ package org.alfresco.rest;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+@Test(groups = { "rest-api", "people", "sanity" })
 public class SamplePeopleTest extends RestTest
 {
     @Autowired
@@ -29,21 +32,21 @@ public class SamplePeopleTest extends RestTest
         peopleAPI.useRestClient(restClient);
     }
 
-    @Test
-    public void adminIsAbleToRetrievePerson() throws Exception
+    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY)
+    public void adminShouldRetrievePerson() throws Exception
     {
         peopleAPI.getPerson(userModel.getUsername())
-                    .assertResponseIsNotEmpty();        
-        
+            .assertResponseIsNotEmpty();
+
         peopleAPI.usingRestWrapper()
-                    .assertStatusCodeIs(HttpStatus.OK.toString());
+            .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
-    @Test
-    public void adminIsAbleToRetrieveItself() throws Exception
+    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY)
+    public void adminShouldRetrieveItself() throws Exception
     {
         peopleAPI.getPerson(adminUser.getUsername())
-                    .assertPersonHasName(adminUser.getUsername());
+            .assertPersonHasName(adminUser.getUsername());
     }
 
 }

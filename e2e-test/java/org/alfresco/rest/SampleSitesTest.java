@@ -7,12 +7,15 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+@Test(groups = { "rest-api", "people", "sanity" })
 public class SampleSitesTest extends RestTest
 {
     @Autowired
@@ -36,68 +39,69 @@ public class SampleSitesTest extends RestTest
         siteAPI.useRestClient(restClient);
     }
 
-    @Test
-    public void adminCanGetSiteDetails() throws JsonToModelConversionException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldGetSiteDetails() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getSite(siteModel.getId()).assertResponseIsNotEmpty();
+        siteAPI.getSite(siteModel.getId())
+            .assertResponseIsNotEmpty();
     }
 
-    @Test
-    public void adminCanAccessSiteDetails() throws JsonToModelConversionException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldGetSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId());
         siteAPI.usingRestWrapper()
-                .assertStatusCodeIs(HttpStatus.OK.toString());
+            .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
-    @Test
-    public void adminCanAccessSites() throws JsonToModelConversionException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldAccessSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites()
-                .assertThatResponseIsNotEmpty();
+            .assertThatResponseIsNotEmpty();
     }
 
-    @Test
-    public void adminIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldRetrieveSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites();
         siteAPI.usingRestWrapper()
-                .assertStatusCodeIs(HttpStatus.OK.toString());
+            .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
-    @Test
-    public void adminIsAbleToAccessResponsePagination() throws JsonToModelConversionException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getSites().assertResponseHasPagination();
+        siteAPI.getSites()
+            .assertResponseHasPagination();
     }
 
-    @Test
-    public void adminIsAbleToAddNewSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldAddNewSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMember siteMember = new SiteMember(Role.SiteCollaborator.toString(), 
-                                    newMember.getUsername());
-        
+        SiteMember siteMember = new SiteMember(Role.SiteCollaborator.toString(), newMember.getUsername());
+
         siteAPI.addPerson(siteModel.getId(), siteMember);
         siteAPI.usingRestWrapper()
-                .assertStatusCodeIs(HttpStatus.CREATED.toString());
+            .assertStatusCodeIs(HttpStatus.CREATED.toString());
     }
 
-    @Test
-    public void adminIsAbleToGetSiteFromSitesList() throws JsonToModelConversionException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
         siteAPI.getAllSites()
-                .assertThatResponseHasSite(siteModel.getId());
+            .assertThatResponseHasSite(siteModel.getId());
     }
 
-    @Test
-    public void adminIsAbleToAccessSiteDetails() throws JsonToModelConversionException, Exception
+    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY)
+    public void adminShouldAccessSiteDetails1() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId())
-                .assertResponseIsNotEmpty()
-                .assertSiteHasDescription(siteModel.getDescription())
-                .assertSiteHasTitle(siteModel.getTitle())
-                .assertSiteHasVisibility(siteModel.getVisibility());
+            .assertResponseIsNotEmpty()
+            .assertSiteHasDescription(siteModel.getDescription())
+            .assertSiteHasTitle(siteModel.getTitle())
+            .assertSiteHasVisibility(siteModel.getVisibility());
     }
 
 }
