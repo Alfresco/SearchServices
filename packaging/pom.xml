@@ -7,6 +7,9 @@
     <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+      <alfresco.solr.config># Alfresco configuration
+# This file is automatically included by solr. You can define your custom settings here
+SOLR_OPTS="$SOLR_OPTS -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.threads.stop.timeout=300000"</alfresco.solr.config>
     </properties>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -121,6 +124,12 @@
                             <target>
                                 <replace token= "SOLR_SERVER_DIR/solr" value="SOLR_TIP/../solrhome" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr"/>
+                                </replace>
+                                <replace token= "HOME/.solr.in.sh" value="SOLR_TIP/../solr.in.sh" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr"/>
+                                </replace>
+                                <replace token= "# Set the thread stack size" value="${alfresco.solr.config}${line.separator}${line.separator}# Set the thread stack size" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh"/>
                                 </replace>
                                 <chmod file="target/solr-${solr.version}/bin/solr" perm="755"/>
                             </target>
