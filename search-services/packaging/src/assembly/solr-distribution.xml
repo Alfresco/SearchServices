@@ -6,6 +6,13 @@
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
+        <fileSet>
+            <directory>target/solr-${solr.version}/bin</directory>
+            <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>solr.in.sh</include>
+            </includes>
+        </fileSet>
         <!-- Solr war dependency unpacked earlier to get rid of the root dir -->
         <fileSet>
             <directory>target/solr-${solr.version}</directory>
@@ -13,6 +20,7 @@
             <excludes>
                 <exclude>**/server/solr/**</exclude>
                 <exclude>**/example/**</exclude>
+                <exclude>**/bin/solr.in.sh</exclude>
             </excludes>
         </fileSet>
         <!-- Solr config -->
