@@ -20,10 +20,14 @@ package org.alfresco.solr.query;
 
 import java.io.IOException;
 
+import org.alfresco.solr.cache.CacheConstants;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Weight;
+import org.apache.solr.search.DocSet;
 import org.apache.solr.search.SolrIndexSearcher;
+import org.apache.solr.search.WrappedQuery;
 
 /**
  * Decorator that executes a SolrPathQuery and returns cached results where possible.
@@ -43,13 +47,29 @@ public class SolrCachingPathQuery extends Query
     /*
      * @see org.apache.lucene.search.Query#createWeight(org.apache.lucene.search.Searcher)
      */
-    public Weight createWeight(IndexSearcher searcher, boolean requiresScore) throws IOException
+    public Weight createWeight(IndexSearcher indexSearcher, boolean requiresScore) throws IOException
     {
-        if(!(searcher instanceof SolrIndexSearcher))
+        SolrIndexSearcher searcher = null;
+        if(!(indexSearcher instanceof SolrIndexSearcher))
         {
             throw new IllegalStateException("Must have a SolrIndexSearcher");
         }
-        return new SolrCachingPathWeight(this, (SolrIndexSearcher)searcher);
+        else
+        {
+            searcher = (SolrIndexSearcher)indexSearcher;
+        }
+
+        DocSet results = (DocSet) searcher.cacheLookup(CacheConstants.ALFRESCO_PATH_CACHE, pathQuery);
+        if (results == null)
+        {
+            // Cache miss: get path query results and cache them
+            WrappedQuery wrapped = new WrappedQuery(pathQuery);
+            wrapped.setCache(false);
+            results = searcher.getDocSet(wrapped);
+            searcher.cacheInsert(CacheConstants.ALFRESCO_PATH_CACHE, pathQuery, results);
+        }
+
+        return new ConstantScoreQuery(results.getTopFilter()).createWeight(searcher, false);
     }
 
     /*
