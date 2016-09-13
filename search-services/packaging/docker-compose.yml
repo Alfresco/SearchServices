@@ -3,8 +3,7 @@ services:
   repo:
     image: docker-internal.alfresco.com/platform:latest
     environment:
-        JAVA_OPTS : "-Dsolr.secureComms=none \
-         -Dsolr.useDynamicShardRegistration=true -Dsolr.host=solr6 -Dsolr.port=8983 -Dsolr.baseUrl=/solr"
+        JAVA_OPTS : "-Dsolr.secureComms=none -Dsolr.useDynamicShardRegistration=true"
     ports:
           - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
           - "5005:5005" #Java debugging
