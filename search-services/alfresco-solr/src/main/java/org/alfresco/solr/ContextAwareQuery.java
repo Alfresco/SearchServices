@@ -36,9 +36,8 @@ public class ContextAwareQuery extends Query
 {
     protected final static Logger log = LoggerFactory.getLogger(ContextAwareQuery.class);
 
-    private Query luceneQuery;
-    
-    private SearchParameters searchParameters;
+    private final Query luceneQuery;
+    private final SearchParameters searchParameters;
     
     /**
      * @param luceneQuery Query
@@ -64,7 +63,7 @@ public class ContextAwareQuery extends Query
      * @param searcher IndexSearcher
      * @return Weight
      * @throws IOException
-     * @see org.apache.lucene.search.Query#createWeight(org.apache.lucene.search.IndexSearcher)
+     * @see org.apache.lucene.search.Query#createWeight(IndexSearcher, boolean)
      */
     public Weight createWeight(IndexSearcher searcher, boolean needsScore) throws IOException
     {
@@ -83,48 +82,24 @@ public class ContextAwareQuery extends Query
     {
         return luceneQuery.rewrite(reader);
     }
-   
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+
     @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((luceneQuery == null) ? 0 : luceneQuery.hashCode());
-        result = prime * result + ((searchParameters == null) ? 0 : searchParameters.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ContextAwareQuery)) return false;
+
+        ContextAwareQuery that = (ContextAwareQuery) o;
+
+        if (luceneQuery != null ? !luceneQuery.equals(that.luceneQuery) : that.luceneQuery != null) return false;
+        return searchParameters != null ? searchParameters.equals(that.searchParameters) : that.searchParameters == null;
+
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ContextAwareQuery other = (ContextAwareQuery) obj;
-        if (luceneQuery == null)
-        {
-            if (other.luceneQuery != null)
-                return false;
-        }
-        else if (!luceneQuery.equals(other.luceneQuery))
-            return false;
-        if (searchParameters == null)
-        {
-            if (other.searchParameters != null)
-                return false;
-        }
-        else if (!searchParameters.equals(other.searchParameters))
-            return false;
-        return true;
+    public int hashCode() {
+        int result = luceneQuery != null ? luceneQuery.hashCode() : 0;
+        result = 31 * result + (searchParameters != null ? searchParameters.hashCode() : 0);
+        return result;
     }
 
     public Query getLuceneQuery()

@@ -10,10 +10,9 @@
     <version>6.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Solr parent</name>
-
     <properties>
-        <solr.version>6.0.1</solr.version>
-        <alfresco-solr.version>5.2-SEARCH-API-SNAPSHOT</alfresco-solr.version>        
+        <solr.version>6.2.0</solr.version>
+        <alfresco-solr.version>5.2.1-SNAPSHOT</alfresco-solr.version>        
     </properties>
 
     <modules>

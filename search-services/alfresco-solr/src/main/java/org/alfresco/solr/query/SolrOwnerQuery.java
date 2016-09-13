@@ -19,15 +19,16 @@
 package org.alfresco.solr.query;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Weight;
+import org.apache.lucene.search.*;
+import org.apache.lucene.util.FixedBitSet;
 import org.apache.solr.search.SolrIndexSearcher;
 
 /**
@@ -48,7 +49,9 @@ public class SolrOwnerQuery extends AbstractAuthorityQuery
         {
             throw new IllegalStateException("Must have a SolrIndexSearcher");
         }
-        return new SolrOwnerQueryWeight((SolrIndexSearcher)searcher, this, authority);
+
+        BitsFilter ownerFilter = getOwnerFilter(authority, (SolrIndexSearcher)searcher);
+        return new ConstantScoreQuery(ownerFilter).createWeight(searcher, false);
     }
 
     @Override
@@ -59,24 +62,53 @@ public class SolrOwnerQuery extends AbstractAuthorityQuery
         stringBuilder.append(authority);
         return stringBuilder.toString();
     }
-    
-    private class SolrOwnerQueryWeight extends AbstractAuthorityQueryWeight
+
+    private BitsFilter getOwnerFilter(String owner, SolrIndexSearcher searcher) throws IOException
     {
-        public SolrOwnerQueryWeight(SolrIndexSearcher searcher, Query query, String authority) throws IOException
+        Query query =  new TermQuery(new Term(QueryConstants.FIELD_OWNER, owner));
+        BitsFilterCollector collector = new BitsFilterCollector(searcher.getTopReaderContext().leaves().size());
+        searcher.search(query, collector);
+        return collector.getBitsFilter();
+    }
+
+    class BitsFilterCollector implements Collector, LeafCollector
+    {
+        private List<FixedBitSet> sets;
+        private FixedBitSet set;
+
+        public BitsFilterCollector(int leafCount)
         {
-            super(searcher, false, query, QueryConstants.FIELD_OWNER, authority);
+            this.sets = new ArrayList<FixedBitSet>(leafCount);
+        }
+
+        public BitsFilter getBitsFilter() {
+            return new BitsFilter(sets);
+        }
+
+        public boolean acceptsDocsOutOfOrder() {
+            return false;
+        }
+
+        public void setScorer(Scorer scorer) {
+
+        }
+
+        public void collect(int doc) {
+            set.set(doc);
         }
 
         @Override
-        public Scorer scorer(LeafReaderContext context) throws IOException
-        {
-            return SolrOwnerScorer.createOwnerScorer(this, context, searcher, SolrOwnerQuery.this.authority);
+        public LeafCollector getLeafCollector(LeafReaderContext context)
+                throws IOException {
+            set = new FixedBitSet(context.reader().maxDoc());
+            sets.add(set);
+            return this;
         }
 
-    	@Override
-		public void extractTerms(Set<Term> terms) 
-		{
-			terms.add(new Term(QueryConstants.FIELD_OWNER, authority));
-		}   
+        @Override
+        public boolean needsScores() {
+            // TODO Auto-generated method stub
+            return false;
+        }
     }
 }

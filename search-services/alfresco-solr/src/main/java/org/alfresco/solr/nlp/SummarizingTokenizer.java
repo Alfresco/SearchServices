@@ -40,7 +40,7 @@ import org.apache.lucene.analysis.minhash.MinHashFilter;
 import org.apache.lucene.analysis.minhash.MinHashFilter.LongPair;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.analysis.util.CharArraySet;
+import org.apache.lucene.analysis.CharArraySet;
 
 /**
  * @author Andy
