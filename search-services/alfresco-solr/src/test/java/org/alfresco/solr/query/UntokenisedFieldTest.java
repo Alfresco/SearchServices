@@ -62,8 +62,8 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
                 categoryField, categoryValue,
                 categoryDocField, categoryValue,
                 qnameField, ContentModel.PROP_HITS.toString(),
-                qnameDocField, ContentModel.PROP_HITS.toString()
-//                "_version_","1"
+                qnameDocField, ContentModel.PROP_HITS.toString(),
+                "_version_","1"
                 ));
         assertU(commit());
     }
