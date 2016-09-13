@@ -313,50 +313,76 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         "Error executing implementation of admin request " + action, ex);
         }
     }
-    
 
-    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+        SolrParams params = req.getParams();
+        req.getContext();
+
+        // If numCore > 1 we are createing a collection of cores for a sole node in a cluster
+        int numShards = params.getInt("numShards", 1);
+
+        String store = "";
+        if (params.get("storeRef") != null) {
+            store = params.get("storeRef");
+        }
+        if ((store == null) || (store.length() == 0)) {
+            return false;
+        }
+        StoreRef storeRef = new StoreRef(store);
+
+        String templateName = "vanilla";
+        if (params.get("template") != null) {
+            templateName = params.get("template");
+        }
+
+        int replicationFactor =  params.getInt("replicationFactor", 1);
+        int nodeInstance =  params.getInt("nodeInstance", -1);
+        int numNodes =  params.getInt("numNodes", 1);
+
+        String coreName = params.get("coreName");
+        String shardIds = params.get("shardIds");
+
+        Properties properties = extractCustomProperties(params);
+        return newCore(coreName,numShards,storeRef,templateName,replicationFactor,nodeInstance,numNodes,shardIds,properties,rsp);
+    }
+
+    protected Properties extractCustomProperties(SolrParams params) {
+        Properties properties = new Properties();
+        //Add any custom properties.
+        for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+        {
+            String paramName = it.next();
+            if (paramName.startsWith("property."))
+            {
+                properties.setProperty(paramName.substring("property.".length()), params.get(paramName));
+            }
+        }
+        return properties;
+    }
+
+    protected boolean newUnShardedCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+    {
+        return newCore(coreName, 1, storeRef, templateName, 1, 1, 1, null, extraProperties, rsp);
+    }
+
+    protected boolean newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
     {
         try
         {
-            SolrParams params = req.getParams();
-            req.getContext();
-            
-            // If numCore > 1 we are createing a collection of cores for a sole node in a cluster
-            int numShards = params.getInt("numShards", 1);
-            
-            String store = "";
-            if (params.get("storeRef") != null)
-            {
-                store = params.get("storeRef");
-            }
-            if ((store == null) || (store.length() == 0)) { return false; }
-            StoreRef storeRef = new StoreRef(store);
-
-            String templateName = "vanilla";
-            if (params.get("template") != null)
-            {
-                templateName = params.get("template");
-            }
-
             // copy core from template
             File solrHome = new File(coreContainer.getSolrHome());
             File templates = new File(solrHome, "templates");
             File template = new File(templates, templateName);
 
-            
             if(numShards > 1 )
             {
-                int replicationFactor =  params.getInt("replicationFactor", 1);
-                int nodeInstance =  params.getInt("nodeInstance", -1);
-                int numNodes =  params.getInt("numNodes", 1);
-                
+
                 String collectionName = templateName + "--" + storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
                 String coreBase = storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "-";
-                if (params.get("coreName") != null)
+                if (coreName != null)
                 {
-                    collectionName = templateName + "--" + params.get("coreName") + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
-                    coreBase = params.get("coreName") + "-";
+                    collectionName = templateName + "--" + coreName + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
+                    coreBase = coreName + "-";
                 }
               
                 File baseDirectory = new File(solrHome, collectionName);    
@@ -367,7 +393,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 }
                 
                 List<Integer> shards;
-                String shardIds = params.get("shardIds");
                 if(shardIds != null)
                 {
                     shards = extractShards(shardIds, numShards);
@@ -384,10 +409,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 
                 for(Integer shard : shards)
                 {
-                    String coreName = coreBase+shard;
+                    coreName = coreBase+shard;
                     File newCore = new File(baseDirectory, coreName);
                     String solrCoreName = coreName;
-                    if (params.get("coreName") == null)
+                    if (coreName == null)
                     {
                         if(storeRef.equals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
                         {
@@ -398,20 +423,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                             solrCoreName = "archive-"+shard;
                         }
                     }
-                    createAndRegisterNewCore(rsp, params, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
+                    createAndRegisterNewCore(rsp, extraProperties, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
                 }
                        
                 return true;
             }
             else
             {
-                String coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
-                if (params.get("coreName") != null)
+                if (coreName == null)
                 {
-                    coreName = params.get("coreName");
+                    coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
                 }
                 File newCore = new File(solrHome, coreName);
-                createAndRegisterNewCore(rsp, params, storeRef, template, coreName, newCore, 0, 0, templateName);
+                createAndRegisterNewCore(rsp, extraProperties, storeRef, template, coreName, newCore, 0, 0, templateName);
 
                 return true;
             }
@@ -459,7 +483,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
+    private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
         copyDirectory(template, newCore, false);
@@ -487,13 +511,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         properties.setProperty(DATA_DIR_ROOT, ConfigUtil.locateProperty(DATA_DIR_ROOT, properties.getProperty(DATA_DIR_ROOT)));
 
         //Still allow the properties to be overidden via url params
-        for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+        if (extraProperties != null && !extraProperties.isEmpty())
         {
-            String paramName = it.next();
-            if (paramName.startsWith("property."))
-            {
-                properties.setProperty(paramName.substring("property.".length()), params.get(paramName));
-            }
+            properties.putAll(extraProperties);
         }
 
         properties.store(new FileOutputStream(config), null);
@@ -539,18 +559,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             
             File config = new File(configLocaltion, "solrcore.properties");
 
-
             // fix configuration properties
             Properties properties = new Properties();
             properties.load(new FileInputStream(config));
 
-            for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+            Properties extraProperties = extractCustomProperties(params);
+            //Allow the properties to be overidden via url params
+            if (extraProperties != null && !extraProperties.isEmpty())
             {
-                String paramName = it.next();
-                if (paramName.startsWith("property."))
-                {
-                    properties.setProperty(paramName.substring("property.".length()), params.get(paramName));
-                }
+                properties.putAll(extraProperties);
             }
 
             properties.store(new FileOutputStream(config), null);
