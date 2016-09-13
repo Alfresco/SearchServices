@@ -43,7 +43,7 @@ import org.apache.solr.search.SolrIndexSearcher;
  */
 public abstract class AbstractAuthoritySetQuery extends Query
 {
-    protected String authorities;
+    protected final String authorities;
 
     /**
      * Construct with authorities.
@@ -53,6 +53,7 @@ public abstract class AbstractAuthoritySetQuery extends Query
     public AbstractAuthoritySetQuery(String authorities)
     {
         super();
+        if (authorities == null) throw new IllegalStateException("authorities cannot be null");
         this.authorities = authorities;
     }
 
@@ -64,34 +65,21 @@ public abstract class AbstractAuthoritySetQuery extends Query
     {
         return toString();
     }
-    
+
     @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((authorities == null) ? 0 : authorities.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractAuthoritySetQuery)) return false;
+
+        AbstractAuthoritySetQuery that = (AbstractAuthoritySetQuery) o;
+
+        return authorities.equals(that.authorities);
+
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AbstractAuthoritySetQuery other = (AbstractAuthoritySetQuery) obj;
-        if (authorities == null)
-        {
-            if (other.authorities != null)
-                return false;
-        }
-        else if (!authorities.equals(other.authorities))
-            return false;
-        return true;
+    public int hashCode() {
+        return authorities.hashCode();
     }
 
     protected HybridBitSet getACLSet(String[] auths, String field, SolrIndexSearcher searcher) throws IOException
