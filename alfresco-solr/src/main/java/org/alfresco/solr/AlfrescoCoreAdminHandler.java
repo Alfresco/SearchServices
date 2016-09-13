@@ -64,6 +64,7 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.alfresco.solr.HandlerOfResources.*;
+import static org.alfresco.solr.HandlerReportBuilder.*;
 
 public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 {
@@ -690,198 +691,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-
-    private NamedList<Object> buildAclTxReport(String coreName, AclTracker tracker, Long acltxid) 
-                throws AuthenticationException, IOException, JSONException, EncoderException
-    {
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("TXID", acltxid);
-        nr.add("transaction", buildTrackerReport(coreName, 0l, 0l, acltxid, acltxid, null, null));
-        NamedList<Object> nodes = new SimpleOrderedMap<Object>();
-        // add node reports ....
-        List<Long> dbAclIds = tracker.getAclsForDbAclTransaction(acltxid);
-        for (Long aclid : dbAclIds)
-        {
-            nodes.add("ACLID " + aclid, buildAclReport(tracker, aclid));
-        }
-        nr.add("aclTxDbAclCount", dbAclIds.size());
-        nr.add("nodes", nodes);
-        return nr;
-    }
-    
-
-    private NamedList<Object> buildAclReport(AclTracker tracker, Long aclid) throws IOException, JSONException
-    {
-        AclReport aclReport = tracker.checkAcl(aclid);
-
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("Acl Id", aclReport.getAclId());
-        nr.add("Acl doc in index", aclReport.getIndexAclDoc());
-        if (aclReport.getIndexAclDoc() != null)
-        {
-            nr.add("Acl tx in Index", aclReport.getIndexAclTx());
-        }
-
-        return nr;
-    }
-
-    private NamedList<Object> buildTxReport(String coreName, MetadataTracker tracker, Long txid) 
-                throws AuthenticationException, IOException, JSONException, EncoderException
-    {
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("TXID", txid);
-        nr.add("transaction", buildTrackerReport(coreName, txid, txid, 0l, 0l, null, null));
-        NamedList<Object> nodes = new SimpleOrderedMap<Object>();
-        // add node reports ....
-        List<Node> dbNodes = tracker.getFullNodesForDbTransaction(txid);
-        for (Node node : dbNodes)
-        {
-            nodes.add("DBID " + node.getId(), buildNodeReport(tracker, node));
-        }
-
-        nr.add("txDbNodeCount", dbNodes.size());
-        nr.add("nodes", nodes);
-        return nr;
-    }
-    
-
-
-    private NamedList<Object> buildNodeReport(MetadataTracker tracker, Node node) throws IOException, JSONException
-    {
-        NodeReport nodeReport = tracker.checkNode(node);
-
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("Node DBID", nodeReport.getDbid());
-        nr.add("DB TX", nodeReport.getDbTx());
-        nr.add("DB TX status", nodeReport.getDbNodeStatus().toString());
-        if (nodeReport.getIndexLeafDoc() != null)
-        {
-            nr.add("Leaf tx in Index", nodeReport.getIndexLeafTx());
-        }
-        if (nodeReport.getIndexAuxDoc() != null)
-        {
-            nr.add("Aux tx in Index", nodeReport.getIndexAuxTx());
-        }
-        nr.add("Indexed Node Doc Count", nodeReport.getIndexedNodeDocCount());
-        return nr;
-    }
-
-    private NamedList<Object> buildNodeReport(MetadataTracker tracker, Long dbid) throws IOException, JSONException
-    {
-        NodeReport nodeReport = tracker.checkNode(dbid);
-
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("Node DBID", nodeReport.getDbid());
-        nr.add("DB TX", nodeReport.getDbTx());
-        nr.add("DB TX status", nodeReport.getDbNodeStatus().toString());
-        if (nodeReport.getIndexLeafDoc() != null)
-        {
-            nr.add("Leaf tx in Index", nodeReport.getIndexLeafTx());
-        }
-        if (nodeReport.getIndexAuxDoc() != null)
-        {
-            nr.add("Aux tx in Index", nodeReport.getIndexAuxTx());
-        }
-        nr.add("Indexed Node Doc Count", nodeReport.getIndexedNodeDocCount());
-        return nr;
-    }
-
-    private NamedList<Object> buildTrackerReport(String coreName, Long fromTx, Long toTx, Long fromAclTx, Long toAclTx,
-                Long fromTime, Long toTime) throws IOException, JSONException, AuthenticationException, EncoderException
-    {
-        // ACL
-        AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-        IndexHealthReport aclReport = aclTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
-        NamedList<Object> ihr = new SimpleOrderedMap<Object>();
-        ihr.add("Alfresco version", aclTracker.getAlfrescoVersion());
-        ihr.add("DB acl transaction count", aclReport.getDbAclTransactionCount());
-        ihr.add("Count of duplicated acl transactions in the index", aclReport.getDuplicatedAclTxInIndex()
-                    .cardinality());
-        if (aclReport.getDuplicatedAclTxInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate acl tx", aclReport.getDuplicatedAclTxInIndex().nextSetBit(0L));
-        }
-        ihr.add("Count of acl transactions in the index but not the DB", aclReport.getAclTxInIndexButNotInDb()
-                    .cardinality());
-        if (aclReport.getAclTxInIndexButNotInDb().cardinality() > 0)
-        {
-            ihr.add("First acl transaction in the index but not the DB", aclReport.getAclTxInIndexButNotInDb()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Count of missing acl transactions from the Index", aclReport.getMissingAclTxFromIndex()
-                    .cardinality());
-        if (aclReport.getMissingAclTxFromIndex().cardinality() > 0)
-        {
-            ihr.add("First acl transaction missing from the Index", aclReport.getMissingAclTxFromIndex()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Index acl transaction count", aclReport.getAclTransactionDocsInIndex());
-        ihr.add("Index unique acl transaction count", aclReport.getAclTransactionDocsInIndex());
-        TrackerState aclState = aclTracker.getTrackerState();
-        ihr.add("Last indexed change set commit time", aclState.getLastIndexedChangeSetCommitTime());
-        Date lastChangeSetDate = new Date(aclState.getLastIndexedChangeSetCommitTime());
-        ihr.add("Last indexed change set commit date", CachingDateFormat.getDateFormat().format(lastChangeSetDate));
-        ihr.add("Last changeset id before holes", aclState.getLastIndexedChangeSetIdBeforeHoles());
-
-        // Metadata
-        MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-        IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
-        ihr.add("DB transaction count", metaReport.getDbTransactionCount());
-        ihr.add("Count of duplicated transactions in the index", metaReport.getDuplicatedTxInIndex()
-                    .cardinality());
-        if (metaReport.getDuplicatedTxInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate", metaReport.getDuplicatedTxInIndex().nextSetBit(0L));
-        }
-        ihr.add("Count of transactions in the index but not the DB", metaReport.getTxInIndexButNotInDb()
-                    .cardinality());
-        if (metaReport.getTxInIndexButNotInDb().cardinality() > 0)
-        {
-            ihr.add("First transaction in the index but not the DB", metaReport.getTxInIndexButNotInDb()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Count of missing transactions from the Index", metaReport.getMissingTxFromIndex().cardinality());
-        if (metaReport.getMissingTxFromIndex().cardinality() > 0)
-        {
-            ihr.add("First transaction missing from the Index", metaReport.getMissingTxFromIndex()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Index transaction count", metaReport.getTransactionDocsInIndex());
-        ihr.add("Index unique transaction count", metaReport.getTransactionDocsInIndex());
-        ihr.add("Index node count", metaReport.getLeafDocCountInIndex());
-        ihr.add("Count of duplicate nodes in the index", metaReport.getDuplicatedLeafInIndex().cardinality());
-        if (metaReport.getDuplicatedLeafInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate node id in the index", metaReport.getDuplicatedLeafInIndex().nextSetBit(0L));
-        }
-        ihr.add("Index error count", metaReport.getErrorDocCountInIndex());
-        ihr.add("Count of duplicate error docs in the index", metaReport.getDuplicatedErrorInIndex()
-                    .cardinality());
-        if (metaReport.getDuplicatedErrorInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate error in the index", SolrInformationServer.PREFIX_ERROR
-                        + metaReport.getDuplicatedErrorInIndex().nextSetBit(0L));
-        }
-        ihr.add("Index unindexed count", metaReport.getUnindexedDocCountInIndex());
-        ihr.add("Count of duplicate unindexed docs in the index", metaReport.getDuplicatedUnindexedInIndex()
-                    .cardinality());
-        if (metaReport.getDuplicatedUnindexedInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate unindexed in the index", 
-                        metaReport.getDuplicatedUnindexedInIndex().nextSetBit(0L));
-        }
-        TrackerState metaState = metadataTracker.getTrackerState();
-        ihr.add("Last indexed transaction commit time", metaState.getLastIndexedTxCommitTime());
-        Date lastTxDate = new Date(metaState.getLastIndexedTxCommitTime());
-        ihr.add("Last indexed transaction commit date", CachingDateFormat.getDateFormat().format(lastTxDate));
-        ihr.add("Last TX id before holes", metaState.getLastIndexedTxIdBeforeHoles());
-        
-        InformationServer srv = informationServers.get(coreName);
-        srv.addFTSStatusCounts(ihr);
-        
-        return ihr;
-    }
-    
     private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws AuthenticationException,
                 IOException, JSONException, EncoderException
     {
@@ -889,13 +698,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             throw new AlfrescoRuntimeException("No txid parameter set");
         }
-        
+
         if (cname != null)
         {
             MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname, MetadataTracker.class);
             Long txid = Long.valueOf(params.get(ARG_TXID));
             NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildTxReport(cname, tracker, txid));
+            report.add(cname, buildTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, txid));
             rsp.add("report", report);
         }
         else
@@ -906,7 +715,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             {
                 MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname,
                             MetadataTracker.class);
-                report.add(coreName, buildTxReport(coreName, tracker, txid));
+                report.add(coreName, buildTxReport(getTrackerRegistry(), informationServers.get(coreName), coreName, tracker, txid));
             }
             rsp.add("report", report);
         }
@@ -925,7 +734,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             AclTracker tracker = trackerRegistry.getTrackerForCore(cname, AclTracker.class);
             Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
             NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildAclTxReport(cname, tracker, acltxid));
+            report.add(cname, buildAclTxReport(getTrackerRegistry(), informationServers.get(cname),cname, tracker, acltxid));
             rsp.add("report", report);
         }
         else
@@ -935,7 +744,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             for (String coreName : trackerRegistry.getCoreNames())
             {
                 AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                report.add(coreName, buildAclTxReport(coreName, tracker, acltxid));
+                report.add(coreName, buildAclTxReport(getTrackerRegistry(), informationServers.get(coreName), coreName, tracker, acltxid));
             }
             rsp.add("report", report);
         }
@@ -956,7 +765,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             NamedList<Object> report = new SimpleOrderedMap<Object>();
             if (trackerRegistry.hasTrackersForCore(cname))
             {
-                report.add(cname, buildTrackerReport(cname, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
+                report.add(cname, buildTrackerReport(getTrackerRegistry(), informationServers.get(cname),cname, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
                 rsp.add("report", report);
             }
             else 
@@ -971,7 +780,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             {
                 if (trackerRegistry.hasTrackersForCore(coreName))
                 {
-                    report.add(coreName, buildTrackerReport(coreName, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
+                    report.add(coreName, buildTrackerReport(getTrackerRegistry(), informationServers.get(coreName), coreName, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
                 }
                 else 
                 {
