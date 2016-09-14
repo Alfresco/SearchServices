@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.alfresco.repo.index.shard.ShardMethodEnum.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
@@ -65,6 +66,7 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         //The default sharding method is DB_ID
         assertEquals(DB_ID.toString(), props.get("shard.method"));
 
+        TimeUnit.SECONDS.sleep(10);
         //Call custom actions
         SolrQueryResponse response = callHandler(coreAdminHandler, testingCore, "check");
         assertNotNull(response);
