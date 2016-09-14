@@ -764,6 +764,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setTransactionIds(txIds);
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
+        gnp.setShardProperty(shardProperty);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
         
         ArrayList<Node> nodeBatch = new ArrayList<>();
