@@ -66,7 +66,6 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
         //The default sharding method is DB_ID
         assertEquals(DB_ID.toString(), props.get("shard.method"));
 
-        TimeUnit.SECONDS.sleep(10);
         //Call custom actions
         SolrQueryResponse response = callHandler(coreAdminHandler, testingCore, "check");
         assertNotNull(response);
