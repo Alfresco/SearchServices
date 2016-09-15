@@ -468,13 +468,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         File config = new File(newCore, "conf/solrcore.properties");
         Properties properties = new Properties();
         //Set defaults
-        properties.setProperty(DATA_DIR_ROOT, newCore.getCanonicalPath()+"/data");
-        String shardRef = "";
-        if(shardCount > 0)
-        {
-            shardRef = "-"+shardInstance;
-        }
-        properties.setProperty("data.dir.store", storeRef.getProtocol() + "-" + storeRef.getIdentifier()+shardRef);
+        properties.setProperty(DATA_DIR_ROOT, newCore.getCanonicalPath());
+        properties.setProperty("data.dir.store", coreName);
         properties.setProperty("alfresco.stores", storeRef.toString());
 
         //Potentially override the defaults
