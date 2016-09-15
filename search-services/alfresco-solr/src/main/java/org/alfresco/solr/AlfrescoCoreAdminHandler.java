@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +34,6 @@ import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.solr.adapters.IOpenBitSet;
-import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.tracker.AclTracker;
@@ -46,7 +44,6 @@ import org.alfresco.solr.tracker.ModelTracker;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
-import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -221,6 +218,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 case "REMOVECORE":
                     removeCore(req, rsp);
                     break;
+                case "NEWUNSHARDEDCORE":
+                    newUnshardedCore(req, rsp);
+                    break;
                 case "CHECK":
                     actionCHECK(cname);
                     break;
@@ -362,7 +362,23 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return properties;
     }
 
-    protected boolean newUnShardedCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+    private boolean newUnshardedCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+
+        SolrParams params = req.getParams();
+        String coreName = params.get("coreName") != null?params.get("coreName"):"alfresco";
+        StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        String templateName = params.get("template") != null?params.get("template"):"rerank";
+        Properties extraProperties = extractCustomProperties(params);
+
+        if (params.get("storeRef") != null) {
+            String store = params.get("storeRef");
+            storeRef = new StoreRef(store);
+        }
+
+        return newUnshardedCore(coreName,storeRef,templateName,extraProperties,rsp);
+    }
+
+    protected boolean newUnshardedCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
     {
         return newCore(coreName, 1, storeRef, templateName, 1, 1, 1, null, extraProperties, rsp);
     }
