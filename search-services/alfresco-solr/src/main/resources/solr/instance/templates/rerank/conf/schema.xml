@@ -676,6 +676,7 @@
       <dynamicField name="qname@md_@*"        type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true"/>
       <dynamicField name="category@m_@*"      type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="true"  multiValued="true" />
       <dynamicField name="category@md_@*"     type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true" />
+      <dynamicField name="category@sd_@*"     type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="false" docValues="true" sortMissingLast="true" />
       <dynamicField name="noderef@m_@*"       type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
       <dynamicField name="noderef@md@*"       type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true" />
       <dynamicField name="childassocref@m_@*" type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
