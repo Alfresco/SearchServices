@@ -1,6 +1,8 @@
 package org.alfresco.solr;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.core.CoreContainer;
 
 import java.io.*;
 
@@ -8,8 +10,7 @@ import java.io.*;
  * Created by gethin on 13/09/16.
  */
 public class HandlerOfResources {
-
-
+    
     /**
      * Note files can alter due to background processes so file not found is Ok
      *
@@ -20,129 +21,52 @@ public class HandlerOfResources {
      */
     public static void copyDirectory(File srcDir, File destDir, boolean preserveFileDate) throws IOException
     {
-        if (destDir.exists())
-        {
-            throw new IOException("Destination should be created from clean");
-        }
-        else
-        {
-            if (!destDir.mkdirs()) { throw new IOException("Destination '" + destDir + "' directory cannot be created"); }
-            if (preserveFileDate)
-            {
-                // OL if file not found so does not need to check
-                destDir.setLastModified(srcDir.lastModified());
-            }
-        }
-        if (!destDir.canWrite()) { throw new IOException("No access to destination directory" + destDir); }
-
-        File[] files = srcDir.listFiles();
-        if (files != null)
-        {
-            for (int i = 0; i < files.length; i++)
-            {
-                File currentCopyTarget = new File(destDir, files[i].getName());
-                if (files[i].isDirectory())
-                {
-                    copyDirectory(files[i], currentCopyTarget, preserveFileDate);
-                }
-                else
-                {
-                    copyFile(files[i], currentCopyTarget, preserveFileDate);
-                }
-            }
-        }
+        FileUtils.copyDirectory(srcDir,destDir,preserveFileDate);
     }
 
     public static void copyFile(File srcFile, File destFile, boolean preserveFileDate) throws IOException
     {
-        try
-        {
-            if (destFile.exists()) { throw new IOException("File shoud not exist " + destFile); }
-
-            FileInputStream input = new FileInputStream(srcFile);
-            try
-            {
-                FileOutputStream output = new FileOutputStream(destFile);
-                try
-                {
-                    copy(input, output);
-                }
-                finally
-                {
-                    try
-                    {
-                        output.close();
-                    }
-                    catch (IOException io)
-                    {
-
-                    }
-                }
-            }
-            finally
-            {
-                try
-                {
-                    input.close();
-                }
-                catch (IOException io)
-                {
-
-                }
-            }
-
-            // check copy
-            if (srcFile.length() != destFile.length()) { throw new IOException("Failed to copy full from '" + srcFile
-                    + "' to '" + destFile + "'"); }
-            if (preserveFileDate)
-            {
-                destFile.setLastModified(srcFile.lastModified());
-            }
-        }
-        catch (FileNotFoundException fnfe)
-        {
-            fnfe.printStackTrace();
-        }
-    }
-
-    public static int copy(InputStream input, OutputStream output) throws IOException
-    {
-        byte[] buffer = new byte[2048 * 4];
-        int count = 0;
-        int n = 0;
-        while ((n = input.read(buffer)) != -1)
-        {
-            output.write(buffer, 0, n);
-            count += n;
-        }
-        return count;
+        FileUtils.copyFile(srcFile,destFile,preserveFileDate);
     }
 
     public void deleteDirectory(File directory) throws IOException
     {
-        if (!directory.exists()) { return; }
-        if (!directory.isDirectory()) { throw new IllegalArgumentException("Not a directory " + directory); }
-
-        File[] files = directory.listFiles();
-        if (files == null) { throw new IOException("Failed to delete director - no access" + directory); }
-
-        for (int i = 0; i < files.length; i++)
-        {
-            File file = files[i];
-
-            if (file.isDirectory())
-            {
-                deleteDirectory(file);
-            }
-            else
-            {
-                if (!file.delete()) { throw new IOException("Unable to delete file: " + file); }
-            }
-        }
-
-        if (!directory.delete()) { throw new IOException("Unable to delete directory " + directory); }
+        FileUtils.deleteDirectory(directory);
     }
 
+    public static InputStream openResource(String solrHome, String resource)
+    {
+        InputStream is = null;
+        try
+        {
+            File f0 = new File(resource);
+            File f = f0;
+            if (!f.isAbsolute())
+            {
+                // try $CWD/$configDir/$resource
+                String path = solrHome;
+                path = path.endsWith("/") ? path : path + "/";
+                f = new File(path + resource);
+            }
+            if (f.isFile() && f.canRead())
+            {
+                return new FileInputStream(f);
+            }
+            else if (f != f0)
+            { // no success with $CWD/$configDir/$resource
+                if (f0.isFile() && f0.canRead()) return new FileInputStream(f0);
+            }
+            // delegate to the class loader (looking into $INSTANCE_DIR/lib jars)
+            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error opening " + resource, e);
+        }
+        if (is == null) { throw new RuntimeException("Can't find resource '" + resource + "' in classpath or '"
+                + solrHome + "', cwd=" + System.getProperty("user.dir")); }
+        return is;
+    }
 
     public static boolean getSafeBoolean(SolrParams params, String paramName)
     {
