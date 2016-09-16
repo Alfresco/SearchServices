@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ *
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.solr;
 
 import org.apache.commons.io.FileUtils;
@@ -10,21 +31,6 @@ import java.io.*;
  * Methods taken from AlfrescoCoreAdminHandler that deal with I/O resources
  */
 public class HandlerOfResources {
-
-    public static void copyDirectory(File srcDir, File destDir, boolean preserveFileDate) throws IOException
-    {
-        FileUtils.copyDirectory(srcDir,destDir,preserveFileDate);
-    }
-
-    public static void copyFile(File srcFile, File destFile, boolean preserveFileDate) throws IOException
-    {
-        FileUtils.copyFile(srcFile,destFile,preserveFileDate);
-    }
-
-    public void deleteDirectory(File directory) throws IOException
-    {
-        FileUtils.deleteDirectory(directory);
-    }
 
     /**
      * Opens an InputStream
