@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
@@ -74,6 +75,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private static final String ARG_NODEID = "nodeid";
     private static final String ARG_QUERY = "query";
     public static final String DATA_DIR_ROOT = "data.dir.root";
+    public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
+    public static final String DEFAULT_TEMPLATE = "rerank";
 
     private SolrTrackerScheduler scheduler = null;
     private TrackerRegistry trackerRegistry = null;
@@ -105,6 +108,30 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         trackerRegistry = new TrackerRegistry();
         informationServers = new ConcurrentHashMap<String, InformationServer>();
         this.scheduler = new SolrTrackerScheduler(this);
+
+        boolean createDefaultCores = Boolean.valueOf(ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "false"));
+        if (createDefaultCores)
+        {
+            Runnable runnable = () -> {
+                try {
+                    TimeUnit.SECONDS.sleep(10); //Wait a little for the container to start up
+                } catch (InterruptedException e) {
+                    //Don't care
+                }
+
+                log.info("Attempting to create default alfresco cores");
+                SolrQueryResponse response = new SolrQueryResponse();
+                try {
+                    newUnshardedCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
+                    newUnshardedCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
+                } catch (Exception e) {
+                    log.error("Failed to create default alfresco cores", e);
+                }
+            };
+
+            Thread thread = new Thread(runnable);
+            thread.start();
+        }
     }
 
     /**
@@ -333,7 +360,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         SolrParams params = req.getParams();
         String coreName = params.get("coreName") != null?params.get("coreName"):"alfresco";
         StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-        String templateName = params.get("template") != null?params.get("template"):"rerank";
+        String templateName = params.get("template") != null?params.get("template"): DEFAULT_TEMPLATE;
         Properties extraProperties = extractCustomProperties(params);
 
         if (params.get("storeRef") != null) {
@@ -470,6 +497,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
+        if (coreContainer.getCoreNames().contains(coreName))
+        {
+            //Core alfresco exists
+            log.warn(coreName + " already exists, not creating again.");
+            rsp.add("core", coreName);
+            return;
+        }
+
         FileUtils.copyDirectory(template, newCore, false);
 
         // fix configuration properties
