@@ -32,7 +32,8 @@ public class SamplePeopleTest extends RestTest
         peopleAPI.useRestClient(restClient);
     }
 
-    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY)
+    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY,
+            description = "Verify admin user gets person with Rest API and response is not empty")
     public void adminShouldRetrievePerson() throws Exception
     {
         peopleAPI.getPerson(userModel.getUsername())
@@ -42,7 +43,8 @@ public class SamplePeopleTest extends RestTest
             .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
-    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY)
+    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY,
+            description = "Admin user gets own person information with Rest Api and assert that name is correct")
     public void adminShouldRetrieveItself() throws Exception
     {
         peopleAPI.getPerson(adminUser.getUsername())

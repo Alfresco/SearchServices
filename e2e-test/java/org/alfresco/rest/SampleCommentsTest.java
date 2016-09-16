@@ -35,7 +35,8 @@ public class SampleCommentsTest extends RestTest
         document = dataContent.usingResource("Shared").usingUser(userModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY)
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify admin user adds comments with Rest API")
     public void admiShouldAddComment() throws JsonToModelConversionException, Exception
     {
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment");
@@ -43,7 +44,8 @@ public class SampleCommentsTest extends RestTest
             .assertStatusCodeIs(HttpStatus.CREATED.toString());
     }
 
-    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY)
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify admin user gets comments with Rest API")
     public void admiShouldRetrieveComments() throws JsonToModelConversionException
     {
         commentsAPI.getNodeComments(document.getNodeRef());
@@ -51,7 +53,8 @@ public class SampleCommentsTest extends RestTest
             .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
-    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY)
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify admin user updates comments with Rest API")
     public void adminShouldUpdateComment() throws JsonToModelConversionException, Exception
     {
         // add initial comment
