@@ -27,6 +27,7 @@
 package org.alfresco.solr.client;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.util.*;
 
 import org.alfresco.httpclient.AuthenticationException;
@@ -53,25 +54,24 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
     public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList());
     public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap());
     public static Map<Long, NodeMetaData> nodeMetaDataMap = Collections.synchronizedMap(new HashMap());
+    private static boolean throwException;
 
     public SOLRAPIQueueClient(NamespaceDAO namespaceDAO)
     {
         super(null,null,namespaceDAO);
     }
 
-    /**
-     * Get the ACL ChangeSets
-     *
-     * @param fromCommitTime                the lowest commit time (optional)
-     * @param minAclChangeSetId             the lowest ChangeSet ID (optional)
-     * @param maxResults                    the maximum number of results (a reasonable value only)
-     * @return                              the ACL ChangeSets in order of commit time and ID
-     */
-
+    public static void setThrowException(boolean _throwException) {
+        throwException = _throwException;
+    }
 
     public AclChangeSets getAclChangeSets(Long fromCommitTime, Long minAclChangeSetId, Long toCommitTime, Long maxAclChangeSetId, int maxResults)
         throws AuthenticationException, IOException, JSONException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
+
         int size = aclChangeSetQueue.size();
         long maxTime = 0L;
         long maxId = 0L;
@@ -140,6 +140,10 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
      */
     public List<Acl> getAcls(List<AclChangeSet> aclChangeSets, Long minAclId, int maxResults) throws AuthenticationException, IOException, JSONException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
+
         List<Acl> allAcls = new ArrayList();
         for(AclChangeSet aclChangeSet : aclChangeSets)
         {
@@ -157,6 +161,10 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
      */
     public List<AclReaders> getAclReaders(List<Acl> acls) throws AuthenticationException, IOException, JSONException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
+
         List<AclReaders> allAclReaders = new ArrayList();
         for(Acl acl : acls)
         {
@@ -169,12 +177,18 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
     public List<AlfrescoModelDiff> getModelsDiff(List<AlfrescoModel> currentModels) throws AuthenticationException, IOException, JSONException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
         return new ArrayList();
     }
 
 
     public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults) throws AuthenticationException, IOException, JSONException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
         try
         {
             return getTransactions(fromCommitTime, minTxnId, toCommitTime, maxTxnId, maxResults, null);
@@ -190,6 +204,10 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
     public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults, ShardState shardState) throws AuthenticationException, IOException, JSONException, EncoderException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
+
         int size = transactionQueue.size();
 
         long maxTime = 0L;
@@ -250,6 +268,10 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
     public List<Node> getNodes(GetNodesParameters parameters, int maxResults) throws AuthenticationException, IOException, JSONException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
+
         List<Long> txnIds = parameters.getTransactionIds();
         List<Node> allNodes = new ArrayList();
         for(long txnId : txnIds)
@@ -263,6 +285,10 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
     public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws AuthenticationException, IOException, JSONException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
+
         List<NodeMetaData> nodeMetaDatas = new ArrayList();
         List<Long> nodeIds = params.getNodeIds();
         if(nodeIds != null) {
@@ -281,6 +307,9 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
     public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
     {
+        if(throwException) {
+            throw new ConnectException("THROWING EXCEPTION, better be ready!");
+        }
         //Just put the nodeId innto the content so we query for this in tests.
         return new GetTextContentResponse(new DummyResponse("Hello world "+nodeId));
     }
