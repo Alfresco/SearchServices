@@ -36,7 +36,7 @@ public class SampleCommentsTest extends RestTest
     }
 
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
-            description= "Verify admin user adds comments with Rest API")
+            description= "Verify admin user adds comments with Rest API and status code is 200")
     public void admiShouldAddComment() throws JsonToModelConversionException, Exception
     {
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment");
@@ -45,7 +45,7 @@ public class SampleCommentsTest extends RestTest
     }
 
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
-            description= "Verify admin user gets comments with Rest API")
+            description= "Verify admin user gets comments with Rest API and status code is 200")
     public void admiShouldRetrieveComments() throws JsonToModelConversionException
     {
         commentsAPI.getNodeComments(document.getNodeRef());
