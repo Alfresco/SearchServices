@@ -7,18 +7,10 @@ import org.apache.solr.core.CoreContainer;
 import java.io.*;
 
 /**
- * Created by gethin on 13/09/16.
+ * Methods taken from AlfrescoCoreAdminHandler that deal with I/O resources
  */
 public class HandlerOfResources {
-    
-    /**
-     * Note files can alter due to background processes so file not found is Ok
-     *
-     * @param srcDir
-     * @param destDir
-     * @param preserveFileDate
-     * @throws IOException
-     */
+
     public static void copyDirectory(File srcDir, File destDir, boolean preserveFileDate) throws IOException
     {
         FileUtils.copyDirectory(srcDir,destDir,preserveFileDate);
@@ -34,6 +26,12 @@ public class HandlerOfResources {
         FileUtils.deleteDirectory(directory);
     }
 
+    /**
+     * Opens an InputStream
+     * @param solrHome
+     * @param resource
+     * @return InputStream
+     */
     public static InputStream openResource(String solrHome, String resource)
     {
         InputStream is = null;
@@ -68,6 +66,12 @@ public class HandlerOfResources {
         return is;
     }
 
+    /**
+     * Safely gets a boolean from SolrParams
+     * @param params
+     * @param paramName
+     * @return boolean
+     */
     public static boolean getSafeBoolean(SolrParams params, String paramName)
     {
         boolean paramValue = false;
@@ -78,6 +82,12 @@ public class HandlerOfResources {
         return paramValue;
     }
 
+    /**
+     * Safely gets a Long from SolrParams
+     * @param params
+     * @param paramName
+     * @return Long
+     */
     public static Long getSafeLong(SolrParams params, String paramName)
     {
         Long paramValue = null;
