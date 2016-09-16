@@ -47,6 +47,7 @@ import org.alfresco.solr.tracker.TrackerRegistry;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.SolrParams;
@@ -469,7 +470,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
-        copyDirectory(template, newCore, false);
+        FileUtils.copyDirectory(template, newCore, false);
 
         // fix configuration properties
         File config = new File(newCore, "conf/solrcore.properties");
