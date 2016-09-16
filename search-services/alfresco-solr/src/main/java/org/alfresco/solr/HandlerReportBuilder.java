@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ *
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.solr;
 
 import org.alfresco.httpclient.AuthenticationException;
@@ -17,13 +38,67 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by gethin on 13/09/16.
+ * Methods taken from AlfrescoCoreAdminHandler that deal with building reports
  */
 public class HandlerReportBuilder {
 
+    /**
+     * Builds AclReport
+     * @param tracker
+     * @param aclid
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
+    public static NamedList<Object> buildAclReport(AclTracker tracker, Long aclid) throws IOException, JSONException
+    {
+        AclReport aclReport = tracker.checkAcl(aclid);
+
+        NamedList<Object> nr = new SimpleOrderedMap<Object>();
+        nr.add("Acl Id", aclReport.getAclId());
+        nr.add("Acl doc in index", aclReport.getIndexAclDoc());
+        if (aclReport.getIndexAclDoc() != null)
+        {
+            nr.add("Acl tx in Index", aclReport.getIndexAclTx());
+        }
+
+        return nr;
+    }
 
     /**
-     *
+     * Builds TxReport
+     * @param trackerRegistry
+     * @param srv
+     * @param coreName
+     * @param tracker
+     * @param txid
+     * @return
+     * @throws AuthenticationException
+     * @throws IOException
+     * @throws JSONException
+     * @throws EncoderException
+     */
+    public static NamedList<Object> buildTxReport(TrackerRegistry trackerRegistry, InformationServer srv, String coreName, MetadataTracker tracker, Long txid)
+            throws AuthenticationException, IOException, JSONException, EncoderException
+    {
+        NamedList<Object> nr = new SimpleOrderedMap<Object>();
+        nr.add("TXID", txid);
+        nr.add("transaction", buildTrackerReport(trackerRegistry, srv, coreName, txid, txid, 0l, 0l, null, null));
+        NamedList<Object> nodes = new SimpleOrderedMap<Object>();
+        // add node reports ....
+        List<Node> dbNodes = tracker.getFullNodesForDbTransaction(txid);
+        for (Node node : dbNodes)
+        {
+            nodes.add("DBID " + node.getId(), buildNodeReport(tracker, node));
+        }
+
+        nr.add("txDbNodeCount", dbNodes.size());
+        nr.add("nodes", nodes);
+        return nr;
+    }
+
+    /**
+     * Builds AclTxReport
      * @param trackerRegistry
      * @param srv
      * @param coreName
@@ -53,41 +128,14 @@ public class HandlerReportBuilder {
         return nr;
     }
 
-
-    public static NamedList<Object> buildAclReport(AclTracker tracker, Long aclid) throws IOException, JSONException
-    {
-        AclReport aclReport = tracker.checkAcl(aclid);
-
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("Acl Id", aclReport.getAclId());
-        nr.add("Acl doc in index", aclReport.getIndexAclDoc());
-        if (aclReport.getIndexAclDoc() != null)
-        {
-            nr.add("Acl tx in Index", aclReport.getIndexAclTx());
-        }
-
-        return nr;
-    }
-
-    public static NamedList<Object> buildTxReport(TrackerRegistry trackerRegistry, InformationServer srv, String coreName, MetadataTracker tracker, Long txid)
-            throws AuthenticationException, IOException, JSONException, EncoderException
-    {
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("TXID", txid);
-        nr.add("transaction", buildTrackerReport(trackerRegistry, srv, coreName, txid, txid, 0l, 0l, null, null));
-        NamedList<Object> nodes = new SimpleOrderedMap<Object>();
-        // add node reports ....
-        List<Node> dbNodes = tracker.getFullNodesForDbTransaction(txid);
-        for (Node node : dbNodes)
-        {
-            nodes.add("DBID " + node.getId(), buildNodeReport(tracker, node));
-        }
-
-        nr.add("txDbNodeCount", dbNodes.size());
-        nr.add("nodes", nodes);
-        return nr;
-    }
-
+    /**
+     * Builds Node report
+     * @param tracker
+     * @param node
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
     public static NamedList<Object> buildNodeReport(MetadataTracker tracker, Node node) throws IOException, JSONException
     {
         NodeReport nodeReport = tracker.checkNode(node);
@@ -108,6 +156,14 @@ public class HandlerReportBuilder {
         return nr;
     }
 
+    /**
+     * Builds Node Report
+     * @param tracker
+     * @param dbid
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
     public static NamedList<Object> buildNodeReport(MetadataTracker tracker, Long dbid) throws IOException, JSONException
     {
         NodeReport nodeReport = tracker.checkNode(dbid);
@@ -128,7 +184,23 @@ public class HandlerReportBuilder {
         return nr;
     }
 
-
+    /**
+     * Builds Tracker report
+     * @param trackerRegistry
+     * @param srv
+     * @param coreName
+     * @param fromTx
+     * @param toTx
+     * @param fromAclTx
+     * @param toAclTx
+     * @param fromTime
+     * @param toTime
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     * @throws AuthenticationException
+     * @throws EncoderException
+     */
     public static NamedList<Object> buildTrackerReport(TrackerRegistry trackerRegistry, InformationServer srv, String coreName, Long fromTx, Long toTx, Long fromAclTx, Long toAclTx,
                                                  Long fromTime, Long toTime) throws IOException, JSONException, AuthenticationException, EncoderException
     {
@@ -226,6 +298,7 @@ public class HandlerReportBuilder {
 
 
     /**
+     * Adds a core summary
      * @param cname
      * @param detail
      * @param hist
