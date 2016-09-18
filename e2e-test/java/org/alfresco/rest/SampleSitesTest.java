@@ -103,7 +103,7 @@ public class SampleSitesTest extends RestTest
 
     @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
             description = "Verify site details: response not empty, description, title, visibility")
-    public void adminShouldAccessSiteDetails1() throws JsonToModelConversionException, Exception
+    public void adminShouldAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel.getId())
             .assertResponseIsNotEmpty()
