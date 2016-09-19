@@ -104,6 +104,17 @@ public class DefaultCoresDistributedTest extends AbstractAlfrescoDistributedTest
 
         assertEquals("3456", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalConnections"));
         assertEquals("99", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalBagels"));
+
+
+        //Test updating properties
+        updateCore(coreAdminHandler,coreName, "property.alfresco.maxTotalBagels", "101", "property.alfresco.maxTotalConnections", "55");
+        /**
+         * See: https://issues.apache.org/jira/browse/SOLR-9533, this needs to be fixed first
+        defaultCore = getCore(coreContainer, coreName);
+        assertEquals("55", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalConnections"));
+        assertEquals("101", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalBagels"));
+         **/
+
     }
 
     public static void createSimpleCore(AlfrescoCoreAdminHandler coreAdminHandler,
@@ -121,5 +132,16 @@ public class DefaultCoresDistributedTest extends AbstractAlfrescoDistributedTest
         TimeUnit.SECONDS.sleep(2);
     }
 
+    public static void updateCore(AlfrescoCoreAdminHandler coreAdminHandler,
+                                        String coreName,
+                                        String... extraParams) throws InterruptedException {
+
+        ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "UPDATECORE", "coreName", coreName);
+        coreParams.add(params(extraParams));
+        SolrQueryRequest request = new LocalSolrQueryRequest(null,coreParams);
+        SolrQueryResponse response = new SolrQueryResponse();
+        coreAdminHandler.handleCustomAction(request, response);
+        TimeUnit.SECONDS.sleep(2);
+    }
 }
 
