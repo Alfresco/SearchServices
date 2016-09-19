@@ -539,22 +539,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     private boolean updateCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
-        try
-        {
             String coreName = null;
-            
-            String store = "";
             SolrParams params = req.getParams();
-            if (params.get("storeRef") != null)
-            {
-                store = params.get("storeRef");
-                if ((store != null) && (store.length() > 0)) 
-                { 
-                    StoreRef storeRef = new StoreRef(store);
-                    coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
-                }
-            }
-            
+
             if (params.get("coreName") != null)
             {
                 coreName = params.get("coreName");
@@ -562,39 +549,48 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             
             if ((coreName == null) || (coreName.length() == 0)) { return false; }
 
-            SolrCore core = coreContainer.getCore(coreName);
-            
-            if(core == null)
+            SolrCore core = null;
+            try {
+                core = coreContainer.getCore(coreName);
+
+                if(core == null)
+                {
+                    return false;
+                }
+
+                String  configLocaltion = core.getResourceLoader().getConfigDir();
+                File config = new File(configLocaltion, "solrcore.properties");
+
+                // fix configuration properties
+                Properties properties = new Properties();
+                properties.load(new FileInputStream(config));
+
+                Properties extraProperties = extractCustomProperties(params);
+                //Allow the properties to be overidden via url params
+                if (extraProperties != null && !extraProperties.isEmpty())
+                {
+                    properties.putAll(extraProperties);
+                }
+
+                properties.store(new FileOutputStream(config), null);
+
+                coreContainer.reload(coreName);
+                
+                return true;
+            } catch (IOException e)
             {
-                return false;
+                log.error("Failed to update core "+coreName, e);
             }
-            
-            String  configLocaltion = core.getResourceLoader().getConfigDir();
-            
-            File config = new File(configLocaltion, "solrcore.properties");
-
-            // fix configuration properties
-            Properties properties = new Properties();
-            properties.load(new FileInputStream(config));
-
-            Properties extraProperties = extractCustomProperties(params);
-            //Allow the properties to be overidden via url params
-            if (extraProperties != null && !extraProperties.isEmpty())
+            finally
             {
-                properties.putAll(extraProperties);
+                //Decrement core open count
+                if(core != null)
+                {
+                    core.close();
+                }
             }
 
-            properties.store(new FileOutputStream(config), null);
-
-            coreContainer.reload(coreName);
-
-            return false;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            return false;
-        }
+        return false;
     }
 
 
