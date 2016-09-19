@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
+import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
@@ -167,7 +168,7 @@ public abstract class AbstractTracker implements Tracker
             catch(Throwable t)
             {
                 setRollback(true);
-                if (t instanceof SocketTimeoutException)
+                if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
                     if (log.isDebugEnabled())
                     {
