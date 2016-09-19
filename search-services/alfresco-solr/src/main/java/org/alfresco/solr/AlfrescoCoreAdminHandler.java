@@ -19,32 +19,13 @@
 
 package org.alfresco.solr;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
-import org.alfresco.solr.tracker.AclTracker;
-import org.alfresco.solr.tracker.ContentTracker;
-import org.alfresco.solr.tracker.IndexHealthReport;
-import org.alfresco.solr.tracker.MetadataTracker;
-import org.alfresco.solr.tracker.ModelTracker;
-import org.alfresco.solr.tracker.SolrTrackerScheduler;
-import org.alfresco.solr.tracker.Tracker;
-import org.alfresco.solr.tracker.TrackerRegistry;
+import org.alfresco.solr.tracker.*;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -62,6 +43,13 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
 import static org.alfresco.solr.HandlerOfResources.*;
 import static org.alfresco.solr.HandlerReportBuilder.*;
 
@@ -112,20 +100,27 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         boolean createDefaultCores = Boolean.valueOf(ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "false"));
         if (createDefaultCores)
         {
-            Runnable runnable = () -> {
-                try {
+            Runnable runnable = () ->
+            {
+                try
+                {
                     TimeUnit.SECONDS.sleep(10); //Wait a little for the container to start up
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e)
+                {
                     //Don't care
                 }
 
-                log.info("Attempting to create default alfresco cores");
+                log.info("Attempting to create default alfresco cores, workspace and archive stores.");
                 SolrQueryResponse response = new SolrQueryResponse();
-                try {
+                try
+                {
                     newUnshardedCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
                     newUnshardedCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
-                } catch (Exception e) {
-                    log.error("Failed to create default alfresco cores", e);
+                }
+                catch (Exception e)
+                {
+                    log.error("Failed to create default alfresco cores (workspace/archive stores).", e);
                 }
             };
 
