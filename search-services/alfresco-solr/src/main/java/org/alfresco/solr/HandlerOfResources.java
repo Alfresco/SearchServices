@@ -26,6 +26,8 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.core.CoreContainer;
 
 import java.io.*;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Methods taken from AlfrescoCoreAdminHandler that deal with I/O resources
@@ -70,6 +72,48 @@ public class HandlerOfResources {
         if (is == null) { throw new RuntimeException("Can't find resource '" + resource + "' in classpath or '"
                 + solrHome + "', cwd=" + System.getProperty("user.dir")); }
         return is;
+    }
+
+
+    /**
+     * Updates a properties file using the SolrParams
+     *
+     * @param params
+     * @param config
+     * @throws IOException
+     */
+    public static void updatePropertiesFile(SolrParams params, File config) throws IOException {
+        // fix configuration properties
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(config));
+
+        Properties extraProperties = extractCustomProperties(params);
+        //Allow the properties to be overidden via url params
+        if (extraProperties != null && !extraProperties.isEmpty())
+        {
+            properties.putAll(extraProperties);
+        }
+
+        properties.store(new FileOutputStream(config), null);
+    }
+
+    /**
+     * Extracts Custom Properties from SolrParams
+     * @param params
+     * @return Properties
+     */
+    public static Properties extractCustomProperties(SolrParams params) {
+        Properties properties = new Properties();
+        //Add any custom properties.
+        for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+        {
+            String paramName = it.next();
+            if (paramName.startsWith("property."))
+            {
+                properties.setProperty(paramName.substring("property.".length()), params.get(paramName));
+            }
+        }
+        return properties;
     }
 
     /**

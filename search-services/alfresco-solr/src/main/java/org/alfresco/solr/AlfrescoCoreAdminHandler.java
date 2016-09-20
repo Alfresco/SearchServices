@@ -336,20 +336,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return newCore(coreName,numShards,storeRef,templateName,replicationFactor,nodeInstance,numNodes,shardIds,properties,rsp);
     }
 
-    protected Properties extractCustomProperties(SolrParams params) {
-        Properties properties = new Properties();
-        //Add any custom properties.
-        for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
-        {
-            String paramName = it.next();
-            if (paramName.startsWith("property."))
-            {
-                properties.setProperty(paramName.substring("property.".length()), params.get(paramName));
-            }
-        }
-        return properties;
-    }
-
     private boolean newUnshardedCore(SolrQueryRequest req, SolrQueryResponse rsp) {
 
         SolrParams params = req.getParams();
@@ -560,19 +546,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
                 String  configLocaltion = core.getResourceLoader().getConfigDir();
                 File config = new File(configLocaltion, "solrcore.properties");
-
-                // fix configuration properties
-                Properties properties = new Properties();
-                properties.load(new FileInputStream(config));
-
-                Properties extraProperties = extractCustomProperties(params);
-                //Allow the properties to be overidden via url params
-                if (extraProperties != null && !extraProperties.isEmpty())
-                {
-                    properties.putAll(extraProperties);
-                }
-
-                properties.store(new FileOutputStream(config), null);
+                updatePropertiesFile(params, config);
 
                 coreContainer.reload(coreName);
                 
@@ -592,7 +566,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         return false;
     }
-
 
     private boolean removeCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
