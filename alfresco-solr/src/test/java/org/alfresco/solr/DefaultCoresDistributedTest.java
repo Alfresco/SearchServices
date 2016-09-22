@@ -121,7 +121,7 @@ public class DefaultCoresDistributedTest extends AbstractAlfrescoDistributedTest
                                         String coreName, String storeRef, String templateName,
                                         String... extraParams) throws InterruptedException {
 
-        ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "NEWUNSHARDEDCORE",
+        ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "NEWDEFAULTINDEX",
                 "storeRef", storeRef,
                 "coreName", coreName,
                 "template", templateName);
