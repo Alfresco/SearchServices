@@ -494,8 +494,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         // fix configuration properties
         File config = new File(newCore, "conf/solrcore.properties");
         Properties properties = new Properties();
+
+        String defaultRoot = newCore.getCanonicalPath();
+        if (defaultRoot.endsWith(coreName)) defaultRoot = defaultRoot.substring(0,defaultRoot.length()-coreName.length());
         //Set defaults
-        properties.setProperty(DATA_DIR_ROOT, newCore.getCanonicalPath());
+        properties.setProperty(DATA_DIR_ROOT, defaultRoot);
         properties.setProperty("data.dir.store", coreName);
         properties.setProperty("alfresco.stores", storeRef.toString());
 
