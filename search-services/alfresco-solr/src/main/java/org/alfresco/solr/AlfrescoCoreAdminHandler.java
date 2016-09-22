@@ -19,37 +19,17 @@
 
 package org.alfresco.solr;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.solr.adapters.IOpenBitSet;
-import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
-import org.alfresco.solr.tracker.AclTracker;
-import org.alfresco.solr.tracker.ContentTracker;
-import org.alfresco.solr.tracker.IndexHealthReport;
-import org.alfresco.solr.tracker.MetadataTracker;
-import org.alfresco.solr.tracker.ModelTracker;
-import org.alfresco.solr.tracker.SolrTrackerScheduler;
-import org.alfresco.solr.tracker.Tracker;
-import org.alfresco.solr.tracker.TrackerRegistry;
-import org.alfresco.util.CachingDateFormat;
+import org.alfresco.solr.tracker.*;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.SolrParams;
@@ -64,6 +44,15 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static org.alfresco.solr.HandlerOfResources.*;
+import static org.alfresco.solr.HandlerReportBuilder.*;
+
 public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 {
     protected final static Logger log = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
@@ -74,6 +63,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private static final String ARG_NODEID = "nodeid";
     private static final String ARG_QUERY = "query";
     public static final String DATA_DIR_ROOT = "data.dir.root";
+    public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
+    public static final String DEFAULT_TEMPLATE = "rerank";
 
     private SolrTrackerScheduler scheduler = null;
     private TrackerRegistry trackerRegistry = null;
@@ -105,6 +96,37 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         trackerRegistry = new TrackerRegistry();
         informationServers = new ConcurrentHashMap<String, InformationServer>();
         this.scheduler = new SolrTrackerScheduler(this);
+
+        boolean createDefaultCores = Boolean.valueOf(ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "false"));
+        if (createDefaultCores)
+        {
+            Runnable runnable = () ->
+            {
+                try
+                {
+                    TimeUnit.SECONDS.sleep(10); //Wait a little for the container to start up
+                }
+                catch (InterruptedException e)
+                {
+                    //Don't care
+                }
+
+                log.info("Attempting to create default alfresco cores, workspace and archive stores.");
+                SolrQueryResponse response = new SolrQueryResponse();
+                try
+                {
+                    newDefaultCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
+                    newDefaultCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
+                }
+                catch (Exception e)
+                {
+                    log.error("Failed to create default alfresco cores (workspace/archive stores)", e);
+                }
+            };
+
+            Thread thread = new Thread(runnable);
+            thread.start();
+        }
     }
 
     /**
@@ -150,7 +172,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             Class<?> clazz = Class.forName("org.apache.log4j.PropertyConfigurator");
             Method method = clazz.getMethod("configure", Properties.class);
-            InputStream is = openResource(coreContainer, resource);
+            InputStream is = openResource(coreContainer.getSolrHome(), resource);
             Properties p = new Properties();
             p.load(is);
             method.invoke(null, p);
@@ -164,41 +186,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             log.info("Failed to load " + resource, e);
         }
     }
-
-    private InputStream openResource(CoreContainer coreContainer, String resource)
-    {
-        InputStream is = null;
-        try
-        {
-            File f0 = new File(resource);
-            File f = f0;
-            if (!f.isAbsolute())
-            {
-                // try $CWD/$configDir/$resource
-                String path = coreContainer.getSolrHome();
-                path = path.endsWith("/") ? path : path + "/";
-                f = new File(path + resource);
-            }
-            if (f.isFile() && f.canRead())
-            {
-                return new FileInputStream(f);
-            }
-            else if (f != f0)
-            { // no success with $CWD/$configDir/$resource
-                if (f0.isFile() && f0.canRead()) return new FileInputStream(f0);
-            }
-            // delegate to the class loader (looking into $INSTANCE_DIR/lib jars)
-            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Error opening " + resource, e);
-        }
-        if (is == null) { throw new RuntimeException("Can't find resource '" + resource + "' in classpath or '"
-                    + coreContainer.getSolrHome() + "', cwd=" + System.getProperty("user.dir")); }
-        return is;
-    }
-
 
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
@@ -218,6 +205,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     break;
                 case "REMOVECORE":
                     removeCore(req, rsp);
+                    break;
+                case "NEWDEFAULTINDEX":
+                    newDefaultCore(req, rsp);
                     break;
                 case "CHECK":
                     actionCHECK(cname);
@@ -313,50 +303,78 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         "Error executing implementation of admin request " + action, ex);
         }
     }
-    
 
-    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+        SolrParams params = req.getParams();
+        req.getContext();
+
+        // If numCore > 1 we are createing a collection of cores for a sole node in a cluster
+        int numShards = params.getInt("numShards", 1);
+
+        String store = "";
+        if (params.get("storeRef") != null) {
+            store = params.get("storeRef");
+        }
+        if ((store == null) || (store.length() == 0)) {
+            return false;
+        }
+        StoreRef storeRef = new StoreRef(store);
+
+        String templateName = "vanilla";
+        if (params.get("template") != null) {
+            templateName = params.get("template");
+        }
+
+        int replicationFactor =  params.getInt("replicationFactor", 1);
+        int nodeInstance =  params.getInt("nodeInstance", -1);
+        int numNodes =  params.getInt("numNodes", 1);
+
+        String coreName = params.get("coreName");
+        String shardIds = params.get("shardIds");
+
+        Properties properties = extractCustomProperties(params);
+        return newCore(coreName,numShards,storeRef,templateName,replicationFactor,nodeInstance,numNodes,shardIds,properties,rsp);
+    }
+
+    private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+
+        SolrParams params = req.getParams();
+        String coreName = params.get("coreName") != null?params.get("coreName"):"alfresco";
+        StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        String templateName = params.get("template") != null?params.get("template"): DEFAULT_TEMPLATE;
+        Properties extraProperties = extractCustomProperties(params);
+
+        if (params.get("storeRef") != null) {
+            String store = params.get("storeRef");
+            storeRef = new StoreRef(store);
+        }
+
+        return newDefaultCore(coreName,storeRef,templateName,extraProperties,rsp);
+    }
+
+    protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+    {
+        return newCore(coreName, 1, storeRef, templateName, 1, 1, 1, null, extraProperties, rsp);
+    }
+
+    protected boolean newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
     {
         try
         {
-            SolrParams params = req.getParams();
-            req.getContext();
-            
-            // If numCore > 1 we are createing a collection of cores for a sole node in a cluster
-            int numShards = params.getInt("numShards", 1);
-            
-            String store = "";
-            if (params.get("storeRef") != null)
-            {
-                store = params.get("storeRef");
-            }
-            if ((store == null) || (store.length() == 0)) { return false; }
-            StoreRef storeRef = new StoreRef(store);
-
-            String templateName = "vanilla";
-            if (params.get("template") != null)
-            {
-                templateName = params.get("template");
-            }
-
             // copy core from template
             File solrHome = new File(coreContainer.getSolrHome());
             File templates = new File(solrHome, "templates");
             File template = new File(templates, templateName);
 
-            
             if(numShards > 1 )
             {
-                int replicationFactor =  params.getInt("replicationFactor", 1);
-                int nodeInstance =  params.getInt("nodeInstance", -1);
-                int numNodes =  params.getInt("numNodes", 1);
-                
+
                 String collectionName = templateName + "--" + storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
                 String coreBase = storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "-";
-                if (params.get("coreName") != null)
+                if (coreName != null)
                 {
-                    collectionName = templateName + "--" + params.get("coreName") + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
-                    coreBase = params.get("coreName") + "-";
+                    collectionName = templateName + "--" + coreName + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
+                    coreBase = coreName + "-";
                 }
               
                 File baseDirectory = new File(solrHome, collectionName);    
@@ -367,7 +385,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 }
                 
                 List<Integer> shards;
-                String shardIds = params.get("shardIds");
                 if(shardIds != null)
                 {
                     shards = extractShards(shardIds, numShards);
@@ -384,10 +401,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 
                 for(Integer shard : shards)
                 {
-                    String coreName = coreBase+shard;
+                    coreName = coreBase+shard;
                     File newCore = new File(baseDirectory, coreName);
                     String solrCoreName = coreName;
-                    if (params.get("coreName") == null)
+                    if (coreName == null)
                     {
                         if(storeRef.equals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
                         {
@@ -398,20 +415,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                             solrCoreName = "archive-"+shard;
                         }
                     }
-                    createAndRegisterNewCore(rsp, params, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
+                    createAndRegisterNewCore(rsp, extraProperties, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
                 }
                        
                 return true;
             }
             else
             {
-                String coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
-                if (params.get("coreName") != null)
+                if (coreName == null)
                 {
-                    coreName = params.get("coreName");
+                    coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
                 }
                 File newCore = new File(solrHome, coreName);
-                createAndRegisterNewCore(rsp, params, storeRef, template, coreName, newCore, 0, 0, templateName);
+                createAndRegisterNewCore(rsp, extraProperties, storeRef, template, coreName, newCore, 0, 0, templateName);
 
                 return true;
             }
@@ -459,10 +475,18 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private void createAndRegisterNewCore(SolrQueryResponse rsp, SolrParams params, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
+    private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
-        copyDirectory(template, newCore, false);
+        if (coreContainer.getCoreNames().contains(coreName))
+        {
+            //Core alfresco exists
+            log.warn(coreName + " already exists, not creating again.");
+            rsp.add("core", coreName);
+            return;
+        }
+
+        FileUtils.copyDirectory(template, newCore, false);
 
         // fix configuration properties
         File config = new File(newCore, "conf/solrcore.properties");
@@ -487,13 +511,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         properties.setProperty(DATA_DIR_ROOT, ConfigUtil.locateProperty(DATA_DIR_ROOT, properties.getProperty(DATA_DIR_ROOT)));
 
         //Still allow the properties to be overidden via url params
-        for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+        if (extraProperties != null && !extraProperties.isEmpty())
         {
-            String paramName = it.next();
-            if (paramName.startsWith("property."))
-            {
-                properties.setProperty(paramName.substring("property.".length()), params.get(paramName));
-            }
+            properties.putAll(extraProperties);
         }
 
         properties.store(new FileOutputStream(config), null);
@@ -505,22 +525,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     private boolean updateCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
-        try
-        {
             String coreName = null;
-            
-            String store = "";
             SolrParams params = req.getParams();
-            if (params.get("storeRef") != null)
-            {
-                store = params.get("storeRef");
-                if ((store != null) && (store.length() > 0)) 
-                { 
-                    StoreRef storeRef = new StoreRef(store);
-                    coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
-                }
-            }
-            
+
             if (params.get("coreName") != null)
             {
                 coreName = params.get("coreName");
@@ -528,44 +535,37 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             
             if ((coreName == null) || (coreName.length() == 0)) { return false; }
 
-            SolrCore core = coreContainer.getCore(coreName);
-            
-            if(core == null)
-            {
-                return false;
-            }
-            
-            String  configLocaltion = core.getResourceLoader().getConfigDir();
-            
-            File config = new File(configLocaltion, "solrcore.properties");
+            SolrCore core = null;
+            try {
+                core = coreContainer.getCore(coreName);
 
-
-            // fix configuration properties
-            Properties properties = new Properties();
-            properties.load(new FileInputStream(config));
-
-            for (Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
-            {
-                String paramName = it.next();
-                if (paramName.startsWith("property."))
+                if(core == null)
                 {
-                    properties.setProperty(paramName.substring("property.".length()), params.get(paramName));
+                    return false;
+                }
+
+                String  configLocaltion = core.getResourceLoader().getConfigDir();
+                File config = new File(configLocaltion, "solrcore.properties");
+                updatePropertiesFile(params, config);
+
+                coreContainer.reload(coreName);
+                
+                return true;
+            } catch (IOException e)
+            {
+                log.error("Failed to update core "+coreName, e);
+            }
+            finally
+            {
+                //Decrement core open count
+                if(core != null)
+                {
+                    core.close();
                 }
             }
 
-            properties.store(new FileOutputStream(config), null);
-
-            coreContainer.reload(coreName);
-
-            return false;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            return false;
-        }
+        return false;
     }
-
 
     private boolean removeCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
@@ -672,198 +672,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-
-    private NamedList<Object> buildAclTxReport(String coreName, AclTracker tracker, Long acltxid) 
-                throws AuthenticationException, IOException, JSONException, EncoderException
-    {
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("TXID", acltxid);
-        nr.add("transaction", buildTrackerReport(coreName, 0l, 0l, acltxid, acltxid, null, null));
-        NamedList<Object> nodes = new SimpleOrderedMap<Object>();
-        // add node reports ....
-        List<Long> dbAclIds = tracker.getAclsForDbAclTransaction(acltxid);
-        for (Long aclid : dbAclIds)
-        {
-            nodes.add("ACLID " + aclid, buildAclReport(tracker, aclid));
-        }
-        nr.add("aclTxDbAclCount", dbAclIds.size());
-        nr.add("nodes", nodes);
-        return nr;
-    }
-    
-
-    private NamedList<Object> buildAclReport(AclTracker tracker, Long aclid) throws IOException, JSONException
-    {
-        AclReport aclReport = tracker.checkAcl(aclid);
-
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("Acl Id", aclReport.getAclId());
-        nr.add("Acl doc in index", aclReport.getIndexAclDoc());
-        if (aclReport.getIndexAclDoc() != null)
-        {
-            nr.add("Acl tx in Index", aclReport.getIndexAclTx());
-        }
-
-        return nr;
-    }
-
-    private NamedList<Object> buildTxReport(String coreName, MetadataTracker tracker, Long txid) 
-                throws AuthenticationException, IOException, JSONException, EncoderException
-    {
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("TXID", txid);
-        nr.add("transaction", buildTrackerReport(coreName, txid, txid, 0l, 0l, null, null));
-        NamedList<Object> nodes = new SimpleOrderedMap<Object>();
-        // add node reports ....
-        List<Node> dbNodes = tracker.getFullNodesForDbTransaction(txid);
-        for (Node node : dbNodes)
-        {
-            nodes.add("DBID " + node.getId(), buildNodeReport(tracker, node));
-        }
-
-        nr.add("txDbNodeCount", dbNodes.size());
-        nr.add("nodes", nodes);
-        return nr;
-    }
-    
-
-
-    private NamedList<Object> buildNodeReport(MetadataTracker tracker, Node node) throws IOException, JSONException
-    {
-        NodeReport nodeReport = tracker.checkNode(node);
-
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("Node DBID", nodeReport.getDbid());
-        nr.add("DB TX", nodeReport.getDbTx());
-        nr.add("DB TX status", nodeReport.getDbNodeStatus().toString());
-        if (nodeReport.getIndexLeafDoc() != null)
-        {
-            nr.add("Leaf tx in Index", nodeReport.getIndexLeafTx());
-        }
-        if (nodeReport.getIndexAuxDoc() != null)
-        {
-            nr.add("Aux tx in Index", nodeReport.getIndexAuxTx());
-        }
-        nr.add("Indexed Node Doc Count", nodeReport.getIndexedNodeDocCount());
-        return nr;
-    }
-
-    private NamedList<Object> buildNodeReport(MetadataTracker tracker, Long dbid) throws IOException, JSONException
-    {
-        NodeReport nodeReport = tracker.checkNode(dbid);
-
-        NamedList<Object> nr = new SimpleOrderedMap<Object>();
-        nr.add("Node DBID", nodeReport.getDbid());
-        nr.add("DB TX", nodeReport.getDbTx());
-        nr.add("DB TX status", nodeReport.getDbNodeStatus().toString());
-        if (nodeReport.getIndexLeafDoc() != null)
-        {
-            nr.add("Leaf tx in Index", nodeReport.getIndexLeafTx());
-        }
-        if (nodeReport.getIndexAuxDoc() != null)
-        {
-            nr.add("Aux tx in Index", nodeReport.getIndexAuxTx());
-        }
-        nr.add("Indexed Node Doc Count", nodeReport.getIndexedNodeDocCount());
-        return nr;
-    }
-
-    private NamedList<Object> buildTrackerReport(String coreName, Long fromTx, Long toTx, Long fromAclTx, Long toAclTx,
-                Long fromTime, Long toTime) throws IOException, JSONException, AuthenticationException, EncoderException
-    {
-        // ACL
-        AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-        IndexHealthReport aclReport = aclTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
-        NamedList<Object> ihr = new SimpleOrderedMap<Object>();
-        ihr.add("Alfresco version", aclTracker.getAlfrescoVersion());
-        ihr.add("DB acl transaction count", aclReport.getDbAclTransactionCount());
-        ihr.add("Count of duplicated acl transactions in the index", aclReport.getDuplicatedAclTxInIndex()
-                    .cardinality());
-        if (aclReport.getDuplicatedAclTxInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate acl tx", aclReport.getDuplicatedAclTxInIndex().nextSetBit(0L));
-        }
-        ihr.add("Count of acl transactions in the index but not the DB", aclReport.getAclTxInIndexButNotInDb()
-                    .cardinality());
-        if (aclReport.getAclTxInIndexButNotInDb().cardinality() > 0)
-        {
-            ihr.add("First acl transaction in the index but not the DB", aclReport.getAclTxInIndexButNotInDb()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Count of missing acl transactions from the Index", aclReport.getMissingAclTxFromIndex()
-                    .cardinality());
-        if (aclReport.getMissingAclTxFromIndex().cardinality() > 0)
-        {
-            ihr.add("First acl transaction missing from the Index", aclReport.getMissingAclTxFromIndex()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Index acl transaction count", aclReport.getAclTransactionDocsInIndex());
-        ihr.add("Index unique acl transaction count", aclReport.getAclTransactionDocsInIndex());
-        TrackerState aclState = aclTracker.getTrackerState();
-        ihr.add("Last indexed change set commit time", aclState.getLastIndexedChangeSetCommitTime());
-        Date lastChangeSetDate = new Date(aclState.getLastIndexedChangeSetCommitTime());
-        ihr.add("Last indexed change set commit date", CachingDateFormat.getDateFormat().format(lastChangeSetDate));
-        ihr.add("Last changeset id before holes", aclState.getLastIndexedChangeSetIdBeforeHoles());
-
-        // Metadata
-        MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-        IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
-        ihr.add("DB transaction count", metaReport.getDbTransactionCount());
-        ihr.add("Count of duplicated transactions in the index", metaReport.getDuplicatedTxInIndex()
-                    .cardinality());
-        if (metaReport.getDuplicatedTxInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate", metaReport.getDuplicatedTxInIndex().nextSetBit(0L));
-        }
-        ihr.add("Count of transactions in the index but not the DB", metaReport.getTxInIndexButNotInDb()
-                    .cardinality());
-        if (metaReport.getTxInIndexButNotInDb().cardinality() > 0)
-        {
-            ihr.add("First transaction in the index but not the DB", metaReport.getTxInIndexButNotInDb()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Count of missing transactions from the Index", metaReport.getMissingTxFromIndex().cardinality());
-        if (metaReport.getMissingTxFromIndex().cardinality() > 0)
-        {
-            ihr.add("First transaction missing from the Index", metaReport.getMissingTxFromIndex()
-                        .nextSetBit(0L));
-        }
-        ihr.add("Index transaction count", metaReport.getTransactionDocsInIndex());
-        ihr.add("Index unique transaction count", metaReport.getTransactionDocsInIndex());
-        ihr.add("Index node count", metaReport.getLeafDocCountInIndex());
-        ihr.add("Count of duplicate nodes in the index", metaReport.getDuplicatedLeafInIndex().cardinality());
-        if (metaReport.getDuplicatedLeafInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate node id in the index", metaReport.getDuplicatedLeafInIndex().nextSetBit(0L));
-        }
-        ihr.add("Index error count", metaReport.getErrorDocCountInIndex());
-        ihr.add("Count of duplicate error docs in the index", metaReport.getDuplicatedErrorInIndex()
-                    .cardinality());
-        if (metaReport.getDuplicatedErrorInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate error in the index", SolrInformationServer.PREFIX_ERROR
-                        + metaReport.getDuplicatedErrorInIndex().nextSetBit(0L));
-        }
-        ihr.add("Index unindexed count", metaReport.getUnindexedDocCountInIndex());
-        ihr.add("Count of duplicate unindexed docs in the index", metaReport.getDuplicatedUnindexedInIndex()
-                    .cardinality());
-        if (metaReport.getDuplicatedUnindexedInIndex().cardinality() > 0)
-        {
-            ihr.add("First duplicate unindexed in the index", 
-                        metaReport.getDuplicatedUnindexedInIndex().nextSetBit(0L));
-        }
-        TrackerState metaState = metadataTracker.getTrackerState();
-        ihr.add("Last indexed transaction commit time", metaState.getLastIndexedTxCommitTime());
-        Date lastTxDate = new Date(metaState.getLastIndexedTxCommitTime());
-        ihr.add("Last indexed transaction commit date", CachingDateFormat.getDateFormat().format(lastTxDate));
-        ihr.add("Last TX id before holes", metaState.getLastIndexedTxIdBeforeHoles());
-        
-        InformationServer srv = informationServers.get(coreName);
-        srv.addFTSStatusCounts(ihr);
-        
-        return ihr;
-    }
-    
     private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws AuthenticationException,
                 IOException, JSONException, EncoderException
     {
@@ -871,13 +679,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             throw new AlfrescoRuntimeException("No txid parameter set");
         }
-        
+
         if (cname != null)
         {
             MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname, MetadataTracker.class);
             Long txid = Long.valueOf(params.get(ARG_TXID));
             NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildTxReport(cname, tracker, txid));
+            report.add(cname, buildTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, txid));
             rsp.add("report", report);
         }
         else
@@ -888,7 +696,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             {
                 MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname,
                             MetadataTracker.class);
-                report.add(coreName, buildTxReport(coreName, tracker, txid));
+                report.add(coreName, buildTxReport(getTrackerRegistry(), informationServers.get(coreName), coreName, tracker, txid));
             }
             rsp.add("report", report);
         }
@@ -907,7 +715,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             AclTracker tracker = trackerRegistry.getTrackerForCore(cname, AclTracker.class);
             Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
             NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildAclTxReport(cname, tracker, acltxid));
+            report.add(cname, buildAclTxReport(getTrackerRegistry(), informationServers.get(cname),cname, tracker, acltxid));
             rsp.add("report", report);
         }
         else
@@ -917,7 +725,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             for (String coreName : trackerRegistry.getCoreNames())
             {
                 AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                report.add(coreName, buildAclTxReport(coreName, tracker, acltxid));
+                report.add(coreName, buildAclTxReport(getTrackerRegistry(), informationServers.get(coreName), coreName, tracker, acltxid));
             }
             rsp.add("report", report);
         }
@@ -938,7 +746,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             NamedList<Object> report = new SimpleOrderedMap<Object>();
             if (trackerRegistry.hasTrackersForCore(cname))
             {
-                report.add(cname, buildTrackerReport(cname, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
+                report.add(cname, buildTrackerReport(getTrackerRegistry(), informationServers.get(cname),cname, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
                 rsp.add("report", report);
             }
             else 
@@ -953,7 +761,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             {
                 if (trackerRegistry.hasTrackersForCore(coreName))
                 {
-                    report.add(coreName, buildTrackerReport(coreName, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
+                    report.add(coreName, buildTrackerReport(getTrackerRegistry(), informationServers.get(coreName), coreName, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
                 }
                 else 
                 {
@@ -962,27 +770,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             }
             rsp.add("report", report);
         }
-    }
-
-
-    private boolean getSafeBoolean(SolrParams params, String paramName)
-    {
-        boolean paramValue = false;
-        if (params.get(paramName) != null)
-        {
-            paramValue = Boolean.valueOf(params.get(paramName));
-        }
-        return paramValue;
-    }
-
-    private Long getSafeLong(SolrParams params, String paramName)
-    {
-        Long paramValue = null;
-        if (params.get(paramName) != null)
-        {
-            paramValue = Long.valueOf(params.get(paramName));
-        }
-        return paramValue;
     }
 
     private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
@@ -1039,7 +826,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         InformationServer srv = informationServers.get(coreName);
         if (srv != null)
         {
-            addCoreSummary(coreName, detail, hist, values, srv, report);
+            addCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
 
             if (reset)
             {
@@ -1050,191 +837,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             report.add(coreName, "Core unknown");
         }
-    }
-
-
-    /**
-     * @param cname
-     * @param detail
-     * @param hist
-     * @param values
-     * @param srv
-     * @param report
-     * @throws IOException
-     */
-    private void addCoreSummary(String cname, boolean detail, boolean hist, boolean values,
-                InformationServer srv, NamedList<Object> report) throws IOException
-    {
-        NamedList<Object> coreSummary = new SimpleOrderedMap<Object>();
-        coreSummary.addAll((SimpleOrderedMap<Object>) srv.getCoreStats());
-        
-        MetadataTracker metaTrkr = trackerRegistry.getTrackerForCore(cname, MetadataTracker.class);
-        TrackerState metadataTrkrState = metaTrkr.getTrackerState();
-        long lastIndexTxCommitTime = metadataTrkrState.getLastIndexedTxCommitTime();
-        
-        long lastIndexedTxId = metadataTrkrState.getLastIndexedTxId();
-        long lastTxCommitTimeOnServer = metadataTrkrState.getLastTxCommitTimeOnServer();
-        long lastTxIdOnServer = metadataTrkrState.getLastTxIdOnServer();
-        Date lastIndexTxCommitDate = new Date(lastIndexTxCommitTime);
-        Date lastTxOnServerDate = new Date(lastTxCommitTimeOnServer);
-        long transactionsToDo = lastTxIdOnServer - lastIndexedTxId;
-        if (transactionsToDo < 0)
-        {
-            transactionsToDo = 0;
-        }
-
-        AclTracker aclTrkr = trackerRegistry.getTrackerForCore(cname, AclTracker.class);
-        TrackerState aclTrkrState = aclTrkr.getTrackerState();
-        long lastIndexChangeSetCommitTime = aclTrkrState.getLastIndexedChangeSetCommitTime();
-        long lastIndexedChangeSetId = aclTrkrState.getLastIndexedChangeSetId();
-        long lastChangeSetCommitTimeOnServer = aclTrkrState.getLastChangeSetCommitTimeOnServer();
-        long lastChangeSetIdOnServer = aclTrkrState.getLastChangeSetIdOnServer();
-        Date lastIndexChangeSetCommitDate = new Date(lastIndexChangeSetCommitTime);
-        Date lastChangeSetOnServerDate = new Date(lastChangeSetCommitTimeOnServer);
-        long changeSetsToDo = lastChangeSetIdOnServer - lastIndexedChangeSetId;
-        if (changeSetsToDo < 0)
-        {
-            changeSetsToDo = 0;
-        }
-
-        long nodesToDo = 0;
-        long remainingTxTimeMillis = 0;
-        if (transactionsToDo > 0)
-        {
-            // We now use the elapsed time as seen by the single thread farming out metadata indexing
-            double meanDocsPerTx = srv.getTrackerStats().getMeanDocsPerTx();
-            double meanNodeElaspedIndexTime = srv.getTrackerStats().getMeanNodeElapsedIndexTime();
-            nodesToDo = (long)(transactionsToDo * meanDocsPerTx);
-            remainingTxTimeMillis = (long) (nodesToDo * meanNodeElaspedIndexTime);
-        }
-        Date now = new Date();
-        Date end = new Date(now.getTime() + remainingTxTimeMillis);
-        Duration remainingTx = new Duration(now, end);
-
-        long remainingChangeSetTimeMillis = 0;
-        if (changeSetsToDo > 0)
-        {
-         // We now use the elapsed time as seen by the single thread farming out alc indexing
-            double meanAclsPerChangeSet = srv.getTrackerStats().getMeanAclsPerChangeSet();
-            double meanAclElapsedIndexTime = srv.getTrackerStats().getMeanAclElapsedIndexTime();
-            remainingChangeSetTimeMillis = (long) (changeSetsToDo * meanAclsPerChangeSet * meanAclElapsedIndexTime);
-        }
-        now = new Date();
-        end = new Date(now.getTime() + remainingChangeSetTimeMillis);
-        Duration remainingChangeSet = new Duration(now, end);
-        
-        NamedList<Object> ftsSummary = new SimpleOrderedMap<Object>();
-        long remainingContentTimeMillis = 0;
-        srv.addFTSStatusCounts(ftsSummary);
-        long cleanCount = ((Long)ftsSummary.get("Node count with FTSStatus Clean")).longValue();
-        long dirtyCount = ((Long)ftsSummary.get("Node count with FTSStatus Dirty")).longValue();
-        long newCount = ((Long)ftsSummary.get("Node count with FTSStatus New")).longValue();
-        long nodesInIndex = ((Long)coreSummary.get("Alfresco Nodes in Index"));
-        long contentYetToSee = nodesInIndex > 0 ? nodesToDo * (cleanCount + dirtyCount + newCount)/nodesInIndex  : 0;;
-        if (dirtyCount + newCount + contentYetToSee > 0)
-        {
-            // We now use the elapsed time as seen by the single thread farming out alc indexing
-            double meanContentElapsedIndexTime = srv.getTrackerStats().getMeanContentElapsedIndexTime();
-            remainingContentTimeMillis = (long) ((dirtyCount + newCount + contentYetToSee) * meanContentElapsedIndexTime);
-        }
-        now = new Date();
-        end = new Date(now.getTime() + remainingContentTimeMillis);
-        Duration remainingContent = new Duration(now, end);
-        coreSummary.add("FTS",ftsSummary);
-
-        Duration txLag = new Duration(lastIndexTxCommitDate, lastTxOnServerDate);
-        if (lastIndexTxCommitDate.compareTo(lastTxOnServerDate) > 0)
-        {
-            txLag = new Duration();
-        }
-        long txLagSeconds = (lastTxCommitTimeOnServer - lastIndexTxCommitTime) / 1000;
-        if (txLagSeconds < 0)
-        {
-            txLagSeconds = 0;
-        }
-
-        Duration changeSetLag = new Duration(lastIndexChangeSetCommitDate, lastChangeSetOnServerDate);
-        if (lastIndexChangeSetCommitDate.compareTo(lastChangeSetOnServerDate) > 0)
-        {
-            changeSetLag = new Duration();
-        }
-        long changeSetLagSeconds = (lastChangeSetCommitTimeOnServer - lastIndexChangeSetCommitTime) / 1000;
-        if (txLagSeconds < 0)
-        {
-            txLagSeconds = 0;
-        }
-
-        ContentTracker contentTrkr = trackerRegistry.getTrackerForCore(cname, ContentTracker.class);
-        TrackerState contentTrkrState = contentTrkr.getTrackerState();
-        // Leave ModelTracker out of this check, because it is common
-        boolean aTrackerIsRunning = aclTrkrState.isRunning() || metadataTrkrState.isRunning()
-                    || contentTrkrState.isRunning();
-        coreSummary.add("Active", aTrackerIsRunning);
-        
-        ModelTracker modelTrkr = trackerRegistry.getModelTracker();
-        TrackerState modelTrkrState = modelTrkr.getTrackerState();
-        coreSummary.add("ModelTracker Active", modelTrkrState.isRunning());
-        coreSummary.add("ContentTracker Active", contentTrkrState.isRunning());
-        coreSummary.add("MetadataTracker Active", metadataTrkrState.isRunning());
-        coreSummary.add("AclTracker Active", aclTrkrState.isRunning());
-
-        // TX
-
-        coreSummary.add("Last Index TX Commit Time", lastIndexTxCommitTime);
-        coreSummary.add("Last Index TX Commit Date", lastIndexTxCommitDate);
-        coreSummary.add("TX Lag", txLagSeconds + " s");
-        coreSummary.add("TX Duration", txLag.toString());
-        coreSummary.add("Timestamp for last TX on server", lastTxCommitTimeOnServer);
-        coreSummary.add("Date for last TX on server", lastTxOnServerDate);
-        coreSummary.add("Id for last TX on server", lastTxIdOnServer);
-        coreSummary.add("Id for last TX in index", lastIndexedTxId);
-        coreSummary.add("Approx transactions remaining", transactionsToDo);
-        coreSummary.add("Approx transaction indexing time remaining", remainingTx.largestComponentformattedString());
-
-        // Change set
-
-        coreSummary.add("Last Index Change Set Commit Time", lastIndexChangeSetCommitTime);
-        coreSummary.add("Last Index Change Set Commit Date", lastIndexChangeSetCommitDate);
-        coreSummary.add("Change Set Lag", changeSetLagSeconds + " s");
-        coreSummary.add("Change Set Duration", changeSetLag.toString());
-        coreSummary.add("Timestamp for last Change Set on server", lastChangeSetCommitTimeOnServer);
-        coreSummary.add("Date for last Change Set on server", lastChangeSetOnServerDate);
-        coreSummary.add("Id for last Change Set on server", lastChangeSetIdOnServer);
-        coreSummary.add("Id for last Change Set in index", lastIndexedChangeSetId);
-        coreSummary.add("Approx change sets remaining", changeSetsToDo);
-        coreSummary.add("Approx change set indexing time remaining",
-                    remainingChangeSet.largestComponentformattedString());
-        
-        coreSummary.add("Approx content indexing time remaining",
-                remainingContent.largestComponentformattedString());
-
-        // Stats
-
-        coreSummary.add("Model sync times (ms)",
-                    srv.getTrackerStats().getModelTimes().getNamedList(detail, hist, values));
-        coreSummary.add("Acl index time (ms)",
-                    srv.getTrackerStats().getAclTimes().getNamedList(detail, hist, values));
-        coreSummary.add("Node index time (ms)",
-                    srv.getTrackerStats().getNodeTimes().getNamedList(detail, hist, values));
-        coreSummary.add("Docs/Tx", srv.getTrackerStats().getTxDocs().getNamedList(detail, hist, values));
-        coreSummary.add("Doc Transformation time (ms)", srv.getTrackerStats().getDocTransformationTimes()
-                    .getNamedList(detail, hist, values));
-
-        // Model
-
-        Map<String, Set<String>> modelErrors = srv.getModelErrors();
-        if (modelErrors.size() > 0)
-        {
-            NamedList<Object> errorList = new SimpleOrderedMap<Object>();
-            for (Map.Entry<String, Set<String>> modelNameToErrors : modelErrors.entrySet())
-            {
-                errorList.add(modelNameToErrors.getKey(), modelNameToErrors.getValue());
-            }
-            coreSummary.add("Model changes are not compatible with the existing data model and have not been applied",
-                        errorList);
-        }
-
-        report.add(cname, coreSummary);
     }
 
 
@@ -1340,141 +942,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    
-    
-    /**
-     * Note files can alter due to background processes so file not found is Ok
-     * 
-     * @param srcDir
-     * @param destDir
-     * @param preserveFileDate
-     * @throws IOException
-     */
-    static void copyDirectory(File srcDir, File destDir, boolean preserveFileDate) throws IOException
-    {
-        if (destDir.exists())
-        {
-            throw new IOException("Destination should be created from clean");
-        }
-        else
-        {
-            if (!destDir.mkdirs()) { throw new IOException("Destination '" + destDir + "' directory cannot be created"); }
-            if (preserveFileDate)
-            {
-                // OL if file not found so does not need to check
-                destDir.setLastModified(srcDir.lastModified());
-            }
-        }
-        if (!destDir.canWrite()) { throw new IOException("No access to destination directory" + destDir); }
-
-        File[] files = srcDir.listFiles();
-        if (files != null)
-        {
-            for (int i = 0; i < files.length; i++)
-            {
-                File currentCopyTarget = new File(destDir, files[i].getName());
-                if (files[i].isDirectory())
-                {
-                    copyDirectory(files[i], currentCopyTarget, preserveFileDate);
-                }
-                else
-                {
-                    copyFile(files[i], currentCopyTarget, preserveFileDate);
-                }
-            }
-        }
-    }
-
-    private static void copyFile(File srcFile, File destFile, boolean preserveFileDate) throws IOException
-    {
-        try
-        {
-            if (destFile.exists()) { throw new IOException("File shoud not exist " + destFile); }
-
-            FileInputStream input = new FileInputStream(srcFile);
-            try
-            {
-                FileOutputStream output = new FileOutputStream(destFile);
-                try
-                {
-                    copy(input, output);
-                }
-                finally
-                {
-                    try
-                    {
-                        output.close();
-                    }
-                    catch (IOException io)
-                    {
-
-                    }
-                }
-            }
-            finally
-            {
-                try
-                {
-                    input.close();
-                }
-                catch (IOException io)
-                {
-
-                }
-            }
-
-            // check copy
-            if (srcFile.length() != destFile.length()) { throw new IOException("Failed to copy full from '" + srcFile
-                        + "' to '" + destFile + "'"); }
-            if (preserveFileDate)
-            {
-                destFile.setLastModified(srcFile.lastModified());
-            }
-        }
-        catch (FileNotFoundException fnfe)
-        {
-            fnfe.printStackTrace();
-        }
-    }
-
-    private static int copy(InputStream input, OutputStream output) throws IOException
-    {
-        byte[] buffer = new byte[2048 * 4];
-        int count = 0;
-        int n = 0;
-        while ((n = input.read(buffer)) != -1)
-        {
-            output.write(buffer, 0, n);
-            count += n;
-        }
-        return count;
-    }
-
-    static void deleteDirectory(File directory) throws IOException
-    {
-        if (!directory.exists()) { return; }
-        if (!directory.isDirectory()) { throw new IllegalArgumentException("Not a directory " + directory); }
-
-        File[] files = directory.listFiles();
-        if (files == null) { throw new IOException("Failed to delete director - no access" + directory); }
-
-        for (int i = 0; i < files.length; i++)
-        {
-            File file = files[i];
-
-            if (file.isDirectory())
-            {
-                deleteDirectory(file);
-            }
-            else
-            {
-                if (!file.delete()) { throw new IOException("Unable to delete file: " + file); }
-            }
-        }
-
-        if (!directory.delete()) { throw new IOException("Unable to delete directory " + directory); }
-    }
-    
     public ConcurrentHashMap<String, InformationServer> getInformationServers()
     {
         return this.informationServers;
