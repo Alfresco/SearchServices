@@ -203,6 +203,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 case "UPDATECORE":
                     updateCore(req, rsp);
                     break;
+                case "UPDATESHARED":
+                    updateShared(req, rsp);
+                    break;
                 case "REMOVECORE":
                     removeCore(req, rsp);
                     break;
@@ -522,6 +525,24 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         rsp.add("core", core.getName());
     }
 
+    private boolean updateShared(SolrQueryRequest req, SolrQueryResponse rsp)
+    {
+        SolrParams params = req.getParams();
+
+        try {
+
+            File config = new File(AlfrescoSolrDataModel.getResourceDirectory(), AlfrescoSolrDataModel.SHARED_PROPERTIES);
+            updatePropertiesFile(params, config);
+
+            coreContainer.getCores().forEach(aCore -> coreContainer.reload(aCore.getName()));
+
+            return true;
+        } catch (IOException e)
+        {
+            log.error("Failed to update Shared properties ", e);
+        }
+        return false;
+    }
 
     private boolean updateCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
