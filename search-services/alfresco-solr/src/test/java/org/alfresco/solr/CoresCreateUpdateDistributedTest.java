@@ -29,6 +29,7 @@ import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
+import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -46,12 +47,13 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 
 /**
  * Tests creating the default alfresco cores with workspace,archive stores.
+ * Also tests updating properties with reload.
  *
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DefaultCoresDistributedTest extends AbstractAlfrescoDistributedTest
+public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistributedTest
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     final String JETTY_SERVER_ID = this.getClass().getSimpleName();
@@ -78,6 +80,37 @@ public class DefaultCoresDistributedTest extends AbstractAlfrescoDistributedTest
         //Call custom actions
         SolrQueryResponse response = callHandler(coreAdminHandler, defaultCore, "SUMMARY");
         assertSummaryCorrect(response, defaultCore.getName());
+    }
+
+
+    @Test
+    public void newCoreThenUpdateSharedProperties() throws Exception {
+        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+
+        //Now create the new core with
+        AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
+        assertNotNull(coreAdminHandler);
+        String coreName = "alfSharedCore";
+
+        //AlfrescoSolrDataModel.getResourceDirectory() looks for solrhome in a system property or jndi.
+        //In production there's always a solr.home but not in this test, so this is the workaround.
+        //Set it here and clean up with a @AfterClass method.
+        System.setProperty("solr.solr.home", coreContainer.getSolrHome());
+
+        createSimpleCore(coreAdminHandler, coreName, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString(), null);
+        //Get a reference to the new core
+        SolrCore defaultCore = getCore(coreContainer, coreName);
+
+        TimeUnit.SECONDS.sleep(3); //Wait a little for background threads to catchup
+        assertNotNull(defaultCore);
+
+        Properties props = AlfrescoSolrDataModel.getCommonConfig();
+        String solrHost = props.getProperty("solr.host");
+        assertFalse(props.containsKey("new.property"));
+        updateShared(coreAdminHandler,"property.solr.host", "myhost", "property.new.property", "catchup");
+        props = AlfrescoSolrDataModel.getCommonConfig();
+        assertEquals(props.getProperty("new.property"), "catchup");
+        assertNotEquals(props.getProperty("solr.host"), solrHost);
     }
 
     @Test
@@ -117,6 +150,12 @@ public class DefaultCoresDistributedTest extends AbstractAlfrescoDistributedTest
 
     }
 
+    @AfterClass
+    protected static void cleanupProp()
+    {
+        System.clearProperty("solr.solr.home");
+    }
+
     public static void createSimpleCore(AlfrescoCoreAdminHandler coreAdminHandler,
                                         String coreName, String storeRef, String templateName,
                                         String... extraParams) throws InterruptedException {
@@ -137,6 +176,17 @@ public class DefaultCoresDistributedTest extends AbstractAlfrescoDistributedTest
                                         String... extraParams) throws InterruptedException {
 
         ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "UPDATECORE", "coreName", coreName);
+        coreParams.add(params(extraParams));
+        SolrQueryRequest request = new LocalSolrQueryRequest(null,coreParams);
+        SolrQueryResponse response = new SolrQueryResponse();
+        coreAdminHandler.handleCustomAction(request, response);
+        TimeUnit.SECONDS.sleep(2);
+    }
+
+    public static void updateShared(AlfrescoCoreAdminHandler coreAdminHandler,
+                                    String... extraParams) throws InterruptedException {
+
+        ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "UPDATESHARED");
         coreParams.add(params(extraParams));
         SolrQueryRequest request = new LocalSolrQueryRequest(null,coreParams);
         SolrQueryResponse response = new SolrQueryResponse();

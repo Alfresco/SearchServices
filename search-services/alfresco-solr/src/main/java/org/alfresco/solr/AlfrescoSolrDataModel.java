@@ -115,6 +115,9 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  */
 public class AlfrescoSolrDataModel implements QueryConstants
 {
+
+    public static final String SHARED_PROPERTIES = "shared.properties";
+
     public static enum FieldUse
     {
         FTS,          // Term/Phrase/Range/Fuzzy/Prefix/Proximity/Wild
@@ -553,7 +556,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         File resourceDirectory = getResourceDirectory();
         // If we ever need to filter out models in the future, then we must put a filter somewhere.
         // Currently, we do not need to filter any models, so this filter does not exist.
-        File propertiesFile = new File(resourceDirectory, "shared.properties");
+        File propertiesFile = new File(resourceDirectory, SHARED_PROPERTIES);
 
         Properties props = new Properties();
         if(!propertiesFile.exists())
@@ -602,7 +605,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
     
-    private static File getResourceDirectory()
+    public static File getResourceDirectory()
     {
         return new File(SolrResourceLoader.locateSolrHome().toFile(), "conf");
     }  
