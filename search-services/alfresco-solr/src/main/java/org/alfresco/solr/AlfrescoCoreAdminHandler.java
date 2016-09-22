@@ -115,12 +115,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 SolrQueryResponse response = new SolrQueryResponse();
                 try
                 {
-                    newUnshardedCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
-                    newUnshardedCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
+                    newDefaultCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
+                    newDefaultCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
                 }
                 catch (Exception e)
                 {
-                    log.error("Failed to create default alfresco cores (workspace/archive stores).", e);
+                    log.error("Failed to create default alfresco cores (workspace/archive stores)", e);
                 }
             };
 
@@ -206,8 +206,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 case "REMOVECORE":
                     removeCore(req, rsp);
                     break;
-                case "NEWUNSHARDEDCORE":
-                    newUnshardedCore(req, rsp);
+                case "NEWDEFAULTINDEX":
+                    newDefaultCore(req, rsp);
                     break;
                 case "CHECK":
                     actionCHECK(cname);
@@ -336,7 +336,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return newCore(coreName,numShards,storeRef,templateName,replicationFactor,nodeInstance,numNodes,shardIds,properties,rsp);
     }
 
-    private boolean newUnshardedCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+    private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse rsp) {
 
         SolrParams params = req.getParams();
         String coreName = params.get("coreName") != null?params.get("coreName"):"alfresco";
@@ -349,10 +349,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             storeRef = new StoreRef(store);
         }
 
-        return newUnshardedCore(coreName,storeRef,templateName,extraProperties,rsp);
+        return newDefaultCore(coreName,storeRef,templateName,extraProperties,rsp);
     }
 
-    protected boolean newUnshardedCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+    protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
     {
         return newCore(coreName, 1, storeRef, templateName, 1, 1, 1, null, extraProperties, rsp);
     }
