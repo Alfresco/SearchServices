@@ -1,10 +1,10 @@
 package org.alfresco.cmis;
 
 import org.alfresco.cmis.CmisWrapper;
-import org.alfresco.utility.ServerHealth;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.network.ServerHealth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
