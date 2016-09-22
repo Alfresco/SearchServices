@@ -23,8 +23,8 @@ services:
       SOLR_ALFRESCO_HOST: repo
       SOLR_ALFRESCO_PORT: 8080
       #Alfresco needs to know how to call solr
-      SOLR_PROXY_HOST: solr6
-      SOLR_PROXY_PORT: 8983
+      SOLR_SOLR_HOST: solr6
+      SOLR_SOLR_PORT: 8983
     ports:
           - "8083:8983" #Browser port
           - "1044:1044" #Java debugging

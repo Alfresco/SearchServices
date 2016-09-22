@@ -24,7 +24,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTX
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADETX;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADE_FLAG;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DENIED;
@@ -224,9 +223,9 @@ public class SolrInformationServer implements InformationServer
     public static final String DOC_TYPE_ACL_TX = "AclTx";
     public static final String DOC_TYPE_STATE = "State";
 
-    public static final String SOLR_PROXY_HOST = "proxy.host";
-    public static final String SOLR_PROXY_PORT = "proxy.port";
-    public static final String SOLR_PROXY_BASEURL = "proxy.baseurl";
+    public static final String SOLR_HOST = "solr.host";
+    public static final String SOLR_PORT = "solr.port";
+    public static final String SOLR_BASEURL = "solr.baseurl";
 
     private static final Pattern CAPTURE_SITE = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/site/1\\.0\\}sites/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0}([^/]*)/.*" ); 
     private static final Pattern CAPTURE_TAG = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}taggable/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}([^/]*)/\\{\\}member");
@@ -334,8 +333,8 @@ public class SolrInformationServer implements InformationServer
         // build base URL - host and port have to come from configuration.
         Properties props = AlfrescoSolrDataModel.getCommonConfig();
 
-        hostName = ConfigUtil.locateProperty(SOLR_PROXY_HOST, props.getProperty(SOLR_PROXY_HOST));
-        String portNumber = ConfigUtil.locateProperty(SOLR_PROXY_PORT, props.getProperty(SOLR_PROXY_PORT));
+        hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
+        String portNumber = ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
         if(portNumber != null)
         {
             try 
@@ -345,7 +344,7 @@ public class SolrInformationServer implements InformationServer
                 log.error("Failed to find a valid solr.port number, the default value is in shared.properties");
                 throw e;
             }
-            baseUrl = ConfigUtil.locateProperty(SOLR_PROXY_BASEURL, props.getProperty(SOLR_PROXY_BASEURL));
+            baseUrl = ConfigUtil.locateProperty(SOLR_BASEURL, props.getProperty(SOLR_BASEURL));
             baseUrl = (baseUrl.startsWith("/") ? "" : "/") + baseUrl + "/" + core.getName() + "/";
         }
     }
