@@ -5,6 +5,7 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -32,7 +33,7 @@ public class SampleCommentsTest extends RestTest
         restClient.authenticateUser(userModel);
         commentsAPI.useRestClient(restClient);
 
-        document = dataContent.usingResource("Shared").usingUser(userModel).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingResource(new FolderModel("Shared")).usingUser(userModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
