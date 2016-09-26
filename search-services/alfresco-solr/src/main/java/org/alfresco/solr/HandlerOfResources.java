@@ -22,11 +22,14 @@
 package org.alfresco.solr;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.core.CoreContainer;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -34,6 +37,10 @@ import java.util.Properties;
  */
 public class HandlerOfResources {
 
+    public static final List<String> DISALLOWED_SHARED_UPDATES = Arrays.asList("alfresco.identifier.property.",
+            "alfresco.suggestable.property.",
+            "alfresco.cross.locale.property.",
+            "alfresco.cross.locale.datatype.");
     /**
      * Opens an InputStream
      * @param solrHome
@@ -74,6 +81,21 @@ public class HandlerOfResources {
         return is;
     }
 
+    /**
+     * Updates a properties file using the SolrParams
+     *
+     * @param params
+     * @param config
+     * @throws IOException
+     */
+    public static void updateSharedProperties(SolrParams params, File config) throws IOException {
+        try {
+            updatePropertiesFile(params,config, DISALLOWED_SHARED_UPDATES);
+        } catch (IllegalArgumentException e) {
+            throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
+               "For shared properties you are not allowed to update any of the following "+DISALLOWED_SHARED_UPDATES);
+        }
+    }
 
     /**
      * Updates a properties file using the SolrParams
@@ -82,7 +104,7 @@ public class HandlerOfResources {
      * @param config
      * @throws IOException
      */
-    public static void updatePropertiesFile(SolrParams params, File config) throws IOException {
+    public static void updatePropertiesFile(SolrParams params, File config, List<String> disallowed) throws IOException {
         // fix configuration properties
         Properties properties = new Properties();
         properties.load(new FileInputStream(config));
@@ -91,10 +113,34 @@ public class HandlerOfResources {
         //Allow the properties to be overidden via url params
         if (extraProperties != null && !extraProperties.isEmpty())
         {
+            if (!allowedProperties(extraProperties, disallowed))
+            {
+                throw new IllegalArgumentException("You are not permitted to update these properties.");
+            }
             properties.putAll(extraProperties);
         }
 
         properties.store(new FileOutputStream(config), null);
+    }
+
+    /**
+     * Checks a list of properties to see if they are allowed
+     * It actually checks if the property starts with any value in the List<String> disallowed.
+     * @param toCheck
+     * @param disallowed
+     * @return
+     */
+    public static boolean allowedProperties(Properties toCheck, List<String> disallowed)
+    {
+        if (toCheck == null || toCheck.isEmpty() || disallowed == null || disallowed.isEmpty()) return true;
+
+        for (Object key: toCheck.keySet())
+        {
+            for (String prop :disallowed) {
+                if (key.toString().startsWith(prop)) return false;
+            }
+        }
+        return true;
     }
 
     /**
