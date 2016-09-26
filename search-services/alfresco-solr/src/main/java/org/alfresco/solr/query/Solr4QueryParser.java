@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
@@ -62,11 +61,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoAnalyzerWrapper;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.AlfrescoSolrDataModel.ContentFieldType;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.Pair;
@@ -83,6 +82,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
 import org.apache.lucene.document.Document;
@@ -96,7 +96,6 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.RegexpQuery;
@@ -111,7 +110,6 @@ import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.apache.solr.analysis.TokenizerChain;
-import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.request.SolrQueryRequest;
@@ -1691,9 +1689,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             }
         }
 
-        // Remove small bits already covered in larger fragments
-        list = getNonContained(list);
-
         Collections.sort(list, new Comparator<PackedTokenAttributeImpl>()
         {
 
@@ -2023,12 +2018,12 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 String post = postfix.toString();
                 int oldPositionIncrement = replace.getPositionIncrement();
                 String replaceTermText = replace.toString();
-                replace = new PackedTokenAttributeImpl();
-                replace.setEmpty().append(replaceTermText + post);
-                replace.setOffset(replace.startOffset(), replace.endOffset() + post.length());
-                replace.setType(replace.type());
-                replace.setPositionIncrement(oldPositionIncrement);
-                fixedTokenSequence.add(replace);
+                PackedTokenAttributeImpl terminal = new PackedTokenAttributeImpl();
+                terminal.setEmpty().append(replaceTermText + post);
+                terminal.setOffset(replace.startOffset(), replace.endOffset() + post.length());
+                terminal.setType(replace.type());
+                terminal.setPositionIncrement(oldPositionIncrement);
+                fixedTokenSequence.add(terminal);
             }
         }
 
@@ -2112,7 +2107,9 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         boolean forceConjuncion = rerankPhase == RerankPhase.QUERY_PHASE;
 
         if (list.size() == 0)
+        {
             return null;
+        }
         else if (list.size() == 1)
         {
             nextToken = list.get(0);
@@ -2120,11 +2117,13 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             if (!isNumeric && (termText.contains("*") || termText.contains("?")))
             {
                 return newWildcardQuery(new Term(field, termText));
-            } else
+            } 
+            else
             {
                 return newTermQuery(new Term(field, termText));
             }
-        } else
+        } 
+        else
         {
             if (severalTokensAtSamePosition)
             {
@@ -2147,7 +2146,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         q.add(currentQuery, BooleanClause.Occur.SHOULD);
                     }
                     return q.build();
-                } else if (forceConjuncion)
+                } 
+                else if (forceConjuncion)
                 {
                     BooleanQuery.Builder or = new BooleanQuery.Builder();
 
@@ -2204,71 +2204,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     return weakPhrase.build();
 
                 }
-                // Consider if we can use a multi-phrase query (e.g for synonym
-                // use rather then WordDelimiterFilterFactory)
-                else if (canUseMultiPhraseQuery(fixedTokenSequences))
-                {
-                    // phrase query:
-                    org.apache.lucene.search.MultiPhraseQuery.Builder mpqb = new MultiPhraseQuery.Builder();
-                    ;
-                    mpqb.setSlop(internalSlop);
-                    ArrayList<Term> multiTerms = new ArrayList<Term>();
-                    int position = 0;
-                    for (int i = 0; i < list.size(); i++)
-                    {
-                        nextToken = list.get(i);
-                        String termText = nextToken.toString();
-
-                        Term term = new Term(field, termText);
-                        if ((termText != null) && (termText.contains("*") || termText.contains("?")))
-                        {
-                            throw new IllegalStateException("Wildcards are not allowed in multi phrase anymore");
-                        } else
-                        {
-                            multiTerms.add(term);
-                        }
-
-                        if (nextToken.getPositionIncrement() > 0 && multiTerms.size() > 0)
-                        {
-                            if (getEnablePositionIncrements())
-                            {
-                                mpqb.add(multiTerms.toArray(new Term[0]), position);
-                            } else
-                            {
-                                mpqb.add(multiTerms.toArray(new Term[0]));
-                            }
-                            checkTermCount(field, queryText, mpqb.build());
-                            multiTerms.clear();
-                        }
-                        position += nextToken.getPositionIncrement();
-
-                    }
-                    if (getEnablePositionIncrements())
-                    {
-                        if (multiTerms.size() > 0)
-                        {
-                            mpqb.add(multiTerms.toArray(new Term[0]), position);
-                        }
-                        // else
-                        // {
-                        // mpq.add(new Term[] { new Term(field, "\u0000") },
-                        // position);
-                        // }
-                    } else
-                    {
-                        if (multiTerms.size() > 0)
-                        {
-                            mpqb.add(multiTerms.toArray(new Term[0]));
-                        }
-                        // else
-                        // {
-                        // mpq.add(new Term[] { new Term(field, "\u0000") });
-                        // }
-                    }
-                    checkTermCount(field, queryText, mpqb.build());
-                    return mpqb.build();
-
-                }
                 // Word delimiter factory and other odd things generate complex
                 // token patterns
                 // Smart skip token sequences with small tokens that generate
@@ -2284,7 +2219,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     return generateSpanOrQuery(field, fixedTokenSequences);
 
                 }
-            } else
+            } 
+            else
             {
                 if (forceConjuncion)
                 {
@@ -2304,7 +2240,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                 org.apache.lucene.search.WildcardQuery wildQuery = new org.apache.lucene.search.WildcardQuery(
                                         term);
                                 and.add(wildQuery, Occur.MUST);
-                            } else
+                            } 
+                            else
                             {
                                 TermQuery termQuery = new TermQuery(term);
                                 and.add(termQuery, Occur.MUST);
@@ -2316,7 +2253,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         }
                     }
                     return or.build();
-                } else
+                } 
+                else
                 {
                     SpanQuery spanQuery = null;
                     ArrayList<SpanQuery> atSamePositionSpanOrQueryParts = new ArrayList<SpanQuery>();
@@ -2337,32 +2275,37 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                         wildQuery);
                                 wrapper.setRewriteMethod(new TopTermsSpanBooleanQueryRewrite(topTermSpanRewriteLimit));
                                 nextSpanQuery = wrapper;
-                            } else
+                            } 
+                            else
                             {
                                 nextSpanQuery = new SpanTermQuery(term);
                             }
                             if (gap == 0)
                             {
                                 atSamePositionSpanOrQueryParts.add(nextSpanQuery);
-                            } else
+                            } 
+                            else
                             {
                                 if (atSamePositionSpanOrQueryParts.size() == 0)
                                 {
                                     if (spanQuery == null)
                                     {
                                         spanQuery = nextSpanQuery;
-                                    } else
+                                    } 
+                                    else
                                     {
                                         spanQuery = new SpanNearQuery(new SpanQuery[]
                                         { spanQuery, nextSpanQuery }, (gap - 1) + internalSlop, internalSlop < 2);
                                     }
                                     atSamePositionSpanOrQueryParts = new ArrayList<SpanQuery>();
-                                } else if (atSamePositionSpanOrQueryParts.size() == 1)
+                                } 
+                                else if (atSamePositionSpanOrQueryParts.size() == 1)
                                 {
                                     if (spanQuery == null)
                                     {
                                         spanQuery = atSamePositionSpanOrQueryParts.get(0);
-                                    } else
+                                    } 
+                                    else
                                     {
                                         spanQuery = new SpanNearQuery(new SpanQuery[]
                                         { spanQuery, atSamePositionSpanOrQueryParts.get(0) }, (gap - 1) + internalSlop,
@@ -2370,14 +2313,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                     }
                                     atSamePositionSpanOrQueryParts = new ArrayList<SpanQuery>();
                                     atSamePositionSpanOrQueryParts.add(nextSpanQuery);
-                                } else
+                                } 
+                                else
                                 {
                                     if (spanQuery == null)
                                     {
                                         spanQuery = new SpanOrQuery(
                                                 atSamePositionSpanOrQueryParts.toArray(new SpanQuery[]
                                         {}));
-                                    } else
+                                    } 
+                                    else
                                     {
                                         spanQuery = new SpanNearQuery(new SpanQuery[]
                                         { spanQuery,
@@ -2389,7 +2334,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                 }
                             }
                             gap = nextToken.getPositionIncrement();
-                        } else
+                        } 
+                        else
                         {
                             SpanQuery nextSpanQuery;
                             if ((termText != null) && (termText.contains("*") || termText.contains("?")))
@@ -2400,14 +2346,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                         wildQuery);
                                 wrapper.setRewriteMethod(new TopTermsSpanBooleanQueryRewrite(topTermSpanRewriteLimit));
                                 nextSpanQuery = wrapper;
-                            } else
+                            } 
+                            else
                             {
                                 nextSpanQuery = new SpanTermQuery(term);
                             }
                             if (spanQuery == null)
                             {
                                 spanQuery = new SpanOrQuery(nextSpanQuery);
-                            } else
+                            } 
+                            else
                             {
                                 spanQuery = new SpanOrQuery(spanQuery, nextSpanQuery);
                             }
@@ -2416,25 +2364,29 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     if (atSamePositionSpanOrQueryParts.size() == 0)
                     {
                         return spanQuery;
-                    } else if (atSamePositionSpanOrQueryParts.size() == 1)
+                    } 
+                    else if (atSamePositionSpanOrQueryParts.size() == 1)
                     {
                         if (spanQuery == null)
                         {
                             spanQuery = atSamePositionSpanOrQueryParts.get(0);
-                        } else
+                        } 
+                        else
                         {
                             spanQuery = new SpanNearQuery(new SpanQuery[]
                             { spanQuery, atSamePositionSpanOrQueryParts.get(0) }, (gap - 1) + internalSlop,
                                     internalSlop < 2);
                         }
                         return spanQuery;
-                    } else
+                    } 
+                    else
                     {
                         if (spanQuery == null)
                         {
                             spanQuery = new SpanOrQuery(atSamePositionSpanOrQueryParts.toArray(new SpanQuery[]
                             {}));
-                        } else
+                        } 
+                        else
                         {
                             spanQuery = new SpanNearQuery(new SpanQuery[]
                             { spanQuery, new SpanOrQuery(atSamePositionSpanOrQueryParts.toArray(new SpanQuery[]
@@ -2677,75 +2629,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             return true;
         }
         return false;
-    }
-
-    /**
-     * @param field
-     *            String
-     * @param queryText
-     * @param mpq
-     * @return
-     * @throws ParseException
-     */
-    private void checkTermCount(String field, String queryText, MultiPhraseQuery mpq) throws ParseException
-    {
-        if (exceedsTermCount(mpq))
-        {
-            throw new ParseException("Wildcard has generated too many clauses: " + field + " " + queryText);
-        }
-    }
-
-    /**
-     * 
-     * @param mpq
-     *            MultiPhraseQuery
-     * @return boolean
-     */
-    private boolean exceedsTermCount(MultiPhraseQuery mpq)
-    {
-        int termCount = 0;
-        for (Term[] arr : mpq.getTermArrays())
-        {
-            termCount += arr.length;
-            if (termCount > BooleanQuery.getMaxClauseCount())
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param fixedTokenSequences
-     *            LinkedList<LinkedList<Token>>
-     * @return boolean
-     */
-    private boolean canUseMultiPhraseQuery(LinkedList<LinkedList<PackedTokenAttributeImpl>> fixedTokenSequences)
-    {
-        LinkedList<PackedTokenAttributeImpl> first = fixedTokenSequences.get(0);
-        for (int i = 0; i < fixedTokenSequences.size(); i++)
-        {
-            LinkedList<PackedTokenAttributeImpl> current = fixedTokenSequences.get(i);
-            if (first.size() != current.size())
-            {
-                return false;
-            }
-            for (int j = 0; j < first.size(); j++)
-            {
-                PackedTokenAttributeImpl fromFirst = first.get(j);
-                PackedTokenAttributeImpl fromCurrent = current.get(j);
-                if (fromFirst.startOffset() != fromCurrent.startOffset())
-                {
-                    return false;
-                }
-                String termText = fromCurrent.toString();
-                if ((termText != null) && (termText.contains("*") || termText.contains("?")))
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private Set<Integer> getWildcardPositions(String string)
