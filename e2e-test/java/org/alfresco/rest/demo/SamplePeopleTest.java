@@ -1,5 +1,7 @@
-package org.alfresco.rest;
+package org.alfresco.rest.demo;
 
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.UserModel;

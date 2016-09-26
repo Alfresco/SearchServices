@@ -1,7 +1,9 @@
-package org.alfresco.rest;
+package org.alfresco.rest.demo;
 
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.SiteMember;
+import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;

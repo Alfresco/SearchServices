@@ -8,9 +8,9 @@
 	</listeners>
 	<test name="Test">
 		<classes>
-			<class name="org.alfresco.rest.SamplePeopleTest"></class>
-			<class name="org.alfresco.rest.SampleSitesTest"></class>
-			<class name="org.alfresco.rest.SampleCommentsTest"></class>
+			<class name="org.alfresco.rest.demo.SamplePeopleTest"></class>
+			<class name="org.alfresco.rest.demo.SampleSitesTest"></class>
+			<class name="org.alfresco.rest.demo.SampleCommentsTest"></class>
 		</classes>
 
 	</test> <!-- Test -->

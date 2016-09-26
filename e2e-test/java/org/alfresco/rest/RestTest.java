@@ -30,13 +30,13 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     protected RestWrapper restClient;
     
     @Autowired
-    DataUser dataUser;
+    protected DataUser dataUser;
 
     @Autowired
-    DataSite dataSite;
+    protected DataSite dataSite;
     
     @Autowired
-    DataContent dataContent;
+    protected DataContent dataContent;
 
     @BeforeClass(alwaysRun = true)
     public void setupRestTest() throws Exception

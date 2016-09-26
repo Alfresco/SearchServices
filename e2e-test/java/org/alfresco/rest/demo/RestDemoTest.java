@@ -1,9 +1,12 @@
-package org.alfresco.rest;
+package org.alfresco.rest.demo;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
-import org.alfresco.rest.model.SiteMember;
+import org.alfresco.rest.requests.RestCommentsApi;
+import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
