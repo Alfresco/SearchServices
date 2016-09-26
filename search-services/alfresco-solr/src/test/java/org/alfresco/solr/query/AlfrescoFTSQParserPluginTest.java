@@ -64,7 +64,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkAuthorityFilter(false); //PostFilter false
         checkAuthorityFilter(true); //PostFilter true
         checkPropertyTypes();
-        testAFTS();
+        //testAFTS();
         testAFTSandSort();
         testSort();
         testCMIS();
@@ -86,7 +86,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkAuthorityFilter(true);
         checkAuthorityFilter(false);
         checkPropertyTypes();
-        testAFTS();
+        //testAFTS();
         testAFTSandSort();
         testSort();
         testCMIS();
@@ -2030,10 +2030,15 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
        	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple pear peach 20150911100000.txt\""), null),
                   "*[count(//doc)=1]");
 
-       	  // TODO:
-//    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple pear * 20150911100000.txt\""), null),
-//                  "*[count(//doc)=1]");	
-//    	 
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple pear * 20150911100000.txt\""), null),
+                  "*[count(//doc)=1]");	
+    	  
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple * * 20150911100000.txt\""), null),
+                  "*[count(//doc)=1]");	
+    	  
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple * 20150911100000.txt\""), null),
+                  "*[count(//doc)=0]");	
+    	 
     	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"hello.txt\""), null),
                   "*[count(//doc)=2]");	
     	  

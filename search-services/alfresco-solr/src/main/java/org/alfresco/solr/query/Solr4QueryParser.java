@@ -1673,7 +1673,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         }
 
         // Put in real position increments as we treat them correctly
-
+     
         int curentIncrement = -1;
         for (PackedTokenAttributeImpl c : list)
         {
@@ -1689,6 +1689,28 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             }
         }
 
+        // Fix up position increments for in phrase isolated wildcards
+        
+        boolean lastWasWild = false;
+        for(int i = 0; i < list.size() -1; i++)
+        {
+        	for(int j = list.get(i).endOffset() + 1; j < list.get(i + 1).startOffset() - 1; j++)
+        	{
+        		if(wildcardPoistions.contains(j))
+        		{
+        			if(!lastWasWild)
+        			{
+        			    list.get(i+1).setPositionIncrement(list.get(i+1).getPositionIncrement() + 1);
+        			}
+        			lastWasWild = true;
+        		}
+        		else
+        		{
+        			lastWasWild = false;
+        		}
+        	}
+        }
+        
         Collections.sort(list, new Comparator<PackedTokenAttributeImpl>()
         {
 
