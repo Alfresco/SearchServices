@@ -528,6 +528,21 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         rsp.add("core", core.getName());
     }
 
+    /**
+     * Tests to see if one of the cores is an Alfresco special core!
+     * @param cores
+     * @return
+     */
+    public boolean hasAlfrescoCore(Collection<SolrCore> cores)
+    {
+        if (cores == null || cores.isEmpty()) return false;
+        for (SolrCore core:cores)
+        {
+            if (trackerRegistry.hasTrackersForCore(core.getName())) return true;
+        }
+        return false;
+    }
+
     private boolean updateShared(SolrQueryRequest req, SolrQueryResponse rsp)
     {
         SolrParams params = req.getParams();
@@ -535,7 +550,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         try {
 
             File config = new File(AlfrescoSolrDataModel.getResourceDirectory(), AlfrescoSolrDataModel.SHARED_PROPERTIES);
-            updateSharedProperties(params, config);
+            updateSharedProperties(params, config, hasAlfrescoCore(coreContainer.getCores()));
 
             coreContainer.getCores().forEach(aCore -> coreContainer.reload(aCore.getName()));
 
