@@ -85,7 +85,7 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
 
 
     @Test
-    public void newCoreThenUpdateSharedProperties() throws Exception {
+    public void newCoreWithUpdateSharedProperties() throws Exception {
         CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
 
         //Now create the new core with
@@ -98,6 +98,13 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         //Set it here and clean up with a @AfterClass method.
         System.setProperty("solr.solr.home", coreContainer.getSolrHome());
 
+        //First, we have no cores so we can update the shared properties, including disallowed
+        updateShared(coreAdminHandler,"property.solr.host", "myhost", "property.my.property", "chocolate",
+                "property.alfresco.identifier.property.0", "http://www.alfresco.org/model/content/1.0}userName");
+        Properties props = AlfrescoSolrDataModel.getCommonConfig();
+        assertEquals(props.getProperty("my.property"), "chocolate");
+        assertEquals(props.getProperty("alfresco.identifier.property.0"), "http://www.alfresco.org/model/content/1.0}userName");
+
         createSimpleCore(coreAdminHandler, coreName, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString(), null);
         //Get a reference to the new core
         SolrCore defaultCore = getCore(coreContainer, coreName);
@@ -105,16 +112,15 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         TimeUnit.SECONDS.sleep(3); //Wait a little for background threads to catchup
         assertNotNull(defaultCore);
 
-        Properties props = AlfrescoSolrDataModel.getCommonConfig();
         String solrHost = props.getProperty("solr.host");
         assertFalse(props.containsKey("new.property"));
         try {
-            updateShared(coreAdminHandler,"property.solr.host", "myhost", "property.new.property", "catchup", "property.alfresco.identifier.property.0", "not_this_time");
+            updateShared(coreAdminHandler,"property.solr.host", "superhost", "property.new.property", "catchup", "property.alfresco.identifier.property.0", "not_this_time");
             assertFalse(true); //Should not get here
         } catch (SolrException se) {
             assertEquals(SolrException.ErrorCode.BAD_REQUEST.code, se.code());
         }
-        updateShared(coreAdminHandler,"property.solr.host", "myhost", "property.new.property", "catchup");
+        updateShared(coreAdminHandler,"property.solr.host", "superhost", "property.new.property", "catchup");
         props = AlfrescoSolrDataModel.getCommonConfig();
         assertEquals(props.getProperty("new.property"), "catchup");
         assertNotEquals(props.getProperty("solr.host"), solrHost);

@@ -25,12 +25,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.SolrCore;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Methods taken from AlfrescoCoreAdminHandler that deal with I/O resources
@@ -88,9 +86,12 @@ public class HandlerOfResources {
      * @param config
      * @throws IOException
      */
-    public static void updateSharedProperties(SolrParams params, File config) throws IOException {
+    public static void updateSharedProperties(SolrParams params, File config, boolean disallow) throws IOException {
+
+        List<String> disallowed = disallow?DISALLOWED_SHARED_UPDATES:Collections.emptyList();
+
         try {
-            updatePropertiesFile(params,config, DISALLOWED_SHARED_UPDATES);
+            updatePropertiesFile(params,config, disallowed);
         } catch (IllegalArgumentException e) {
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
                "For shared properties you are not allowed to update any of the following "+DISALLOWED_SHARED_UPDATES);
