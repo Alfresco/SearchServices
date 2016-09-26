@@ -64,7 +64,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkAuthorityFilter(false); //PostFilter false
         checkAuthorityFilter(true); //PostFilter true
         checkPropertyTypes();
-        //testAFTS();
+        testAFTS();
         testAFTSandSort();
         testSort();
         testCMIS();
@@ -86,7 +86,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         checkAuthorityFilter(true);
         checkAuthorityFilter(false);
         checkPropertyTypes();
-        //testAFTS();
+        testAFTS();
         testAFTSandSort();
         testSort();
         testCMIS();
