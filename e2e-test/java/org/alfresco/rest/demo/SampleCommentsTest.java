@@ -8,6 +8,7 @@ import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -26,16 +27,20 @@ public class SampleCommentsTest extends RestTest
     RestCommentsApi commentsAPI;
 
     private UserModel userModel;
+    private FolderModel folderModel;
+    private SiteModel siteModel;
     private FileModel document;
 
     @BeforeClass
     public void initTest() throws Exception
     {
         userModel = dataUser.getAdminUser();
+        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
+        folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
         restClient.authenticateUser(userModel);
         commentsAPI.useRestClient(restClient);
 
-        document = dataContent.usingResource(new FolderModel("Shared")).usingUser(userModel).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
