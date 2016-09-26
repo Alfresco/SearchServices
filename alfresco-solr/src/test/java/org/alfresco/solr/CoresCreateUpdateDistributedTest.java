@@ -21,6 +21,7 @@ package org.alfresco.solr;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
@@ -107,6 +108,12 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         Properties props = AlfrescoSolrDataModel.getCommonConfig();
         String solrHost = props.getProperty("solr.host");
         assertFalse(props.containsKey("new.property"));
+        try {
+            updateShared(coreAdminHandler,"property.solr.host", "myhost", "property.new.property", "catchup", "property.alfresco.identifier.property.0", "not_this_time");
+            assertFalse(true); //Should not get here
+        } catch (SolrException se) {
+            assertEquals(SolrException.ErrorCode.BAD_REQUEST.code, se.code());
+        }
         updateShared(coreAdminHandler,"property.solr.host", "myhost", "property.new.property", "catchup");
         props = AlfrescoSolrDataModel.getCommonConfig();
         assertEquals(props.getProperty("new.property"), "catchup");

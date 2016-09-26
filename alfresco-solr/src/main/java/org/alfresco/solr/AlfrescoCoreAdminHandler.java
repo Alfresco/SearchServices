@@ -535,7 +535,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         try {
 
             File config = new File(AlfrescoSolrDataModel.getResourceDirectory(), AlfrescoSolrDataModel.SHARED_PROPERTIES);
-            updatePropertiesFile(params, config);
+            updateSharedProperties(params, config);
 
             coreContainer.getCores().forEach(aCore -> coreContainer.reload(aCore.getName()));
 
@@ -570,7 +570,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
                 String  configLocaltion = core.getResourceLoader().getConfigDir();
                 File config = new File(configLocaltion, "solrcore.properties");
-                updatePropertiesFile(params, config);
+                updatePropertiesFile(params, config, null);
 
                 coreContainer.reload(coreName);
                 
