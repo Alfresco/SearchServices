@@ -3087,26 +3087,21 @@ public class SolrInformationServer implements InformationServer
 
             Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
             TokenStream ts = analyzer.tokenStream("min_hash", textContent);
-            StringBuilder hashBuff = new StringBuilder();
             CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
             ts.reset();
             while (ts.incrementToken())
             {
                 StringBuilder tokenBuff = new StringBuilder();
-                if(hashBuff.length() > 0) {
-                    hashBuff.append(" ");
-                }
-
                 char[] buff = termAttribute.buffer();
 
                 for(int i=0; i<termAttribute.length();i++) {
                     tokenBuff.append(Integer.toHexString(buff[i]));
                 }
-                hashBuff.append(tokenBuff.toString());
+                doc.addField(FINGERPRINT, tokenBuff.toString());
+
             }
             ts.end();
             ts.close();
-            doc.addField(FINGERPRINT, hashBuff.toString());
         }
 
         long end = System.nanoTime();
