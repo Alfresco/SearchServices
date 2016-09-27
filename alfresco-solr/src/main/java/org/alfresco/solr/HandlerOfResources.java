@@ -86,13 +86,15 @@ public class HandlerOfResources {
      * @param config
      * @throws IOException
      */
-    public static void updateSharedProperties(SolrParams params, File config, boolean disallow) throws IOException {
+    public static void updateSharedProperties(SolrParams params, File config, boolean disallow) throws IOException
+    {
 
         List<String> disallowed = disallow?DISALLOWED_SHARED_UPDATES:Collections.emptyList();
 
         try {
             updatePropertiesFile(params,config, disallowed);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e)
+        {
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
                "For shared properties you are not allowed to update any of the following "+DISALLOWED_SHARED_UPDATES);
         }
@@ -105,23 +107,33 @@ public class HandlerOfResources {
      * @param config
      * @throws IOException
      */
-    public static void updatePropertiesFile(SolrParams params, File config, List<String> disallowed) throws IOException {
+    public static void updatePropertiesFile(SolrParams params, File config, List<String> disallowed)
+    {
         // fix configuration properties
         Properties properties = new Properties();
-        properties.load(new FileInputStream(config));
-
         Properties extraProperties = extractCustomProperties(params);
-        //Allow the properties to be overidden via url params
-        if (extraProperties != null && !extraProperties.isEmpty())
+
+        try (FileInputStream configFile = new FileInputStream(config))
         {
-            if (!allowedProperties(extraProperties, disallowed))
+            properties.load(configFile);
+            //Allow the properties to be overidden via url params
+            if (extraProperties != null && !extraProperties.isEmpty())
             {
-                throw new IllegalArgumentException("You are not permitted to update these properties.");
+                if (!allowedProperties(extraProperties, disallowed))
+                {
+                    throw new IllegalArgumentException("You are not permitted to update these properties.");
+                }
+                properties.putAll(extraProperties);
             }
-            properties.putAll(extraProperties);
+
+            properties.store(new FileOutputStream(config), "Generated from Solr");
+        } // FileInputStream is closed
+        catch (IOException e)
+        {
+            throw new SolrException(SolrException.ErrorCode.SERVER_ERROR,
+                    "Unabled to update properties file, "+e.getMessage());
         }
 
-        properties.store(new FileOutputStream(config), null);
     }
 
     /**
