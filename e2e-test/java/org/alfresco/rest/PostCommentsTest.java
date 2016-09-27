@@ -1,9 +1,13 @@
 package org.alfresco.rest;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -26,6 +30,7 @@ public class PostCommentsTest extends RestTest
     private UserModel adminUserModel;
     private FileModel document;
     private SiteModel siteModel;
+    private HashMap<UserRole, UserModel> usersWithRoles;
     
     @BeforeClass
     public void initTest() throws Exception
@@ -34,7 +39,8 @@ public class PostCommentsTest extends RestTest
         restClient.authenticateUser(adminUserModel);
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         commentsAPI.useRestClient(restClient);
-        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);  
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN); 
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
     }
 	
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
@@ -42,6 +48,15 @@ public class PostCommentsTest extends RestTest
     public void admiIsAbleToAddComment() throws JsonToModelConversionException, Exception
     {
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by " + adminUserModel.getUsername());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED.toString());
+    }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify Manager user adds comments with Rest API and status code is 201")
+    public void managerIsAbleToAddComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
+        commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by user with role: " + UserRole.SiteManager);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED.toString());
     }
 
