@@ -55,7 +55,7 @@ import static org.alfresco.solr.HandlerReportBuilder.*;
 
 public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 {
-    protected final static Logger log = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
+    protected static final Logger log = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
     
     private static final String ARG_ACLTXID = "acltxid";
     private static final String ARG_TXID = "txid";
@@ -612,9 +612,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 coreContainer.reload(coreName);
                 
                 return true;
-            } catch (IOException e)
-            {
-                log.error("Failed to update core "+coreName, e);
             }
             finally
             {
@@ -624,8 +621,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     core.close();
                 }
             }
-
-        return false;
     }
 
     private boolean removeCore(SolrQueryRequest req, SolrQueryResponse rsp)

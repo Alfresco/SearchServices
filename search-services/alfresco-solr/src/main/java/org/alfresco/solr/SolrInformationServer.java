@@ -293,26 +293,15 @@ public class SolrInformationServer implements InformationServer
     private LRU cleanCascadeCache = new LRU(250000);
     private Set locks = new HashSet();
     // write a BytesRef as a byte array
-    JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver()
-    {
-        @Override
-        public Object resolve(Object o, JavaBinCodec codec) throws IOException
+    JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
+        if (o instanceof BytesRef)
         {
-            if (o instanceof BytesRef)
-            {
-                BytesRef br = (BytesRef) o;
-                codec.writeByteArray(br.bytes, br.offset, br.length);
-                return null;
-            }
-            return o;
+            BytesRef br = (BytesRef) o;
+            codec.writeByteArray(br.bytes, br.offset, br.length);
+            return null;
         }
+        return o;
     };
-    
-    @Override
-    public AlfrescoCoreAdminHandler getAdminHandler()
-    {
-        return this.adminHandler;
-    }
 
     public SolrInformationServer(AlfrescoCoreAdminHandler adminHandler,
                                  SolrCore core,
@@ -357,7 +346,15 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    synchronized public void initSkippingDescendantDocs()
+
+    @Override
+    public AlfrescoCoreAdminHandler getAdminHandler()
+    {
+        return this.adminHandler;
+    }
+
+    @Override
+    public synchronized void initSkippingDescendantDocs()
     {
         if (isSkippingDocsInitialized)
         {
@@ -367,30 +364,19 @@ public class SolrInformationServer implements InformationServer
         skipDescendantDocsForSpecificTypes = Boolean.parseBoolean(p.getProperty("alfresco.metadata.skipDescendantDocsForSpecificTypes", "false"));
         if (skipDescendantDocsForSpecificTypes)
         {
-            initSkippingDescendantDocs(p, typesForSkippingDescendantDocs, PROP_PREFIX_PARENT_TYPE, FIELD_TYPE, new DefinitionExistChecker()
-            {
-                @Override
-                public boolean isDefinitionExists(QName qName)
-                {
-                    return (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getType(qName));
-                }
-            });
+            initSkippingDescendantDocs(p, typesForSkippingDescendantDocs, PROP_PREFIX_PARENT_TYPE, FIELD_TYPE,
+                    qName -> (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getType(qName)));
         }
         skipDescendantDocsForSpecificAspects = Boolean.parseBoolean(p.getProperty("alfresco.metadata.skipDescendantDocsForSpecificAspects", "false"));
         if (skipDescendantDocsForSpecificAspects)
         {
-            initSkippingDescendantDocs(p, aspectsForSkippingDescendantDocs, PROP_PREFIX_PARENT_ASPECT, FIELD_ASPECT, new DefinitionExistChecker()
-            {
-                @Override
-                public boolean isDefinitionExists(QName qName)
-                {
-                    return (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAspect(qName));
-                }
-            });
+            initSkippingDescendantDocs(p, aspectsForSkippingDescendantDocs, PROP_PREFIX_PARENT_ASPECT, FIELD_ASPECT,
+                    qName -> (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAspect(qName)));
         }
         isSkippingDocsInitialized = true;
     }
 
+    @FunctionalInterface
     private interface DefinitionExistChecker
     {
         boolean isDefinitionExists(QName qName);
@@ -429,6 +415,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public void addFTSStatusCounts(NamedList<Object> report)
     {
         SolrQueryRequest request = null;
@@ -529,37 +516,19 @@ public class SolrInformationServer implements InformationServer
             
             // NODE
             setDuplicates(report, request, DOC_TYPE_NODE,
-                        new SetDuplicatesCommand() 
-                        {
-                            public void execute(IndexHealthReport indexHealthReport, long id)
-                            {
-                                indexHealthReport.setDuplicatedLeafInIndex(id);
-                            }
-                        });
+                    (indexHealthReport, id) -> indexHealthReport.setDuplicatedLeafInIndex(id));
             long leafDocCountInIndex = getSafeCount(docTypeCounts, DOC_TYPE_NODE);
             report.setLeafDocCountInIndex(leafDocCountInIndex);
             
             // ERROR
             setDuplicates(report, request, DOC_TYPE_ERROR_NODE,
-                        new SetDuplicatesCommand() 
-                        {
-                            public void execute(IndexHealthReport indexHealthReport, long id)
-                            {
-                                indexHealthReport.setDuplicatedErrorInIndex(id);
-                            }
-                        });
+                    (indexHealthReport, id) -> indexHealthReport.setDuplicatedErrorInIndex(id));
             long errorCount = getSafeCount(docTypeCounts, DOC_TYPE_ERROR_NODE);
             report.setErrorDocCountInIndex(errorCount);
             
             // UNINDEXED
             setDuplicates(report, request, DOC_TYPE_UNINDEXED_NODE,
-                        new SetDuplicatesCommand() 
-                        {
-                            public void execute(IndexHealthReport indexHealthReport, long id)
-                            {
-                                indexHealthReport.setDuplicatedUnindexedInIndex(id);
-                            }
-                        });
+                    (indexHealthReport, id) -> indexHealthReport.setDuplicatedUnindexedInIndex(id));
             long unindexedDocCountInIndex = getSafeCount(docTypeCounts, DOC_TYPE_UNINDEXED_NODE);
             report.setUnindexedDocCountInIndex(unindexedDocCountInIndex);
             return report;
