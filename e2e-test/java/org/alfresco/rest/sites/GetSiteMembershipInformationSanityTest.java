@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.body.SiteMembership;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.data.DataSite;
@@ -33,10 +32,8 @@ public class GetSiteMembershipInformationSanityTest extends RestTest
     DataSite dataSite;
 
     private SiteModel siteModel;
-    
-    private HashMap<UserRole, UserModel> usersWithRoles;
-
     private UserModel adminUser;
+    private HashMap<UserRole, UserModel> usersWithRoles;
 
     @BeforeClass
     public void initTest() throws DataPreparationException
@@ -45,17 +42,30 @@ public class GetSiteMembershipInformationSanityTest extends RestTest
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersToSiteWithRoles(siteModel,
                 Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
-        
+
         siteAPI.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api",
-            "sites" }, executionType = ExecutionType.SANITY, description = "Verify site manager is able to retrieve site membership information of another user")
+    @TestRail(section = { "rest-api", "sites" }, 
+                executionType = ExecutionType.SANITY, 
+                description = "Verify site manager is able to retrieve site membership information of another user")
     public void siteManagerCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
         siteAPI.getSiteMembershipInformation(adminUser.getUsername());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        siteAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+
+    @TestRail(section = { "rest-api", "sites" }, 
+            executionType = ExecutionType.SANITY, 
+            description = "Verify site collaborator is able to retrieve site membership information of another user")
+    public void siteCollaboratorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
+        siteAPI.getSiteMembershipInformation(adminUser.getUsername());
+        siteAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
 }
