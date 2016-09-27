@@ -24,13 +24,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 
+import org.alfresco.repo.search.impl.parsers.FTSQueryException;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.Version;
 import org.apache.solr.request.SolrQueryRequest;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -41,12 +45,14 @@ public class Solr4QueryParserTest
     private Solr4QueryParser parser;
     private final static String TEST_FIELD = "creator";
     private final static String TEST_QUERY = "user@1user1";
+    private SearchParameters searchParameters = new SearchParameters();
     
     @Before
     public void setUp() throws Exception
     {
         SolrQueryRequest req = Mockito.mock(SolrQueryRequest.class);
         parser = new Solr4QueryParser(req, Version.LUCENE_5_5_0, "TEXT", null, FTSQueryParser.RerankPhase.SINGLE_PASS);
+        parser.setSearchParameters(searchParameters);
     }
 
     private PackedTokenAttributeImpl getTokenAttribute(String text, int startOffset, int endOffset)
@@ -55,6 +61,26 @@ public class Solr4QueryParserTest
     	token.setEmpty().append(text);
     	token.setOffset(startOffset, endOffset);
     	return token;
+    }
+    
+    @Test
+    public void testGetSearchParameters()
+    {
+    	assertEquals(searchParameters, parser.getSearchParameters());
+    }
+    
+    @Test
+    public void testSQLTranslationFailure() throws ParseException
+    {
+    	try
+    	{
+    	    parser.getLikeQuery("example", "_%woof_\\" , null);
+    	    Assert.fail();
+    	}
+    	catch(FTSQueryException e)
+    	{
+    		
+    	}
     }
     
     @Test
