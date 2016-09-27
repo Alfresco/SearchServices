@@ -2,6 +2,9 @@ package org.alfresco.rest.networks;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestNetworksApi;
+import org.alfresco.utility.data.UserRole;
+import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -21,9 +24,13 @@ public class RestGetNetworkTest extends RestTest
 
     UserModel adminTenantUser;
     UserModel tenantUser;
+    UserModel managerTenantUser;
+    UserModel collaboratorTenantUser;
+    UserModel consumerTenantUser;
+    UserModel contributorTenantUser;
 
     @BeforeClass
-    public void setup()
+    public void setup() throws DataPreparationException
     {
         // input data should be created for handle tenants:
         // create tenant "tenant1" with password "password"
@@ -31,6 +38,21 @@ public class RestGetNetworkTest extends RestTest
         // with admin "admin@tenant1" create user "test1@tenant1" with password "password"
         adminTenantUser = new UserModel("admin@tenant1", "password");
         tenantUser = new UserModel("test1@tenant1", "password");
+//        managerTenantUser = dataUser.usingUser(adminTenantUser).createUser("manTenant2@tenant1");
+//        collaboratorTenantUser = dataUser.usingUser(adminTenantUser).createUser("manTenant2@tenant1");
+//        consumerTenantUser = dataUser.usingUser(adminTenantUser).createUser("manTenant2@tenant1");
+//        contributorTenantUser = dataUser.usingUser(adminTenantUser).createUser("manTenant2@tenant1");
+        managerTenantUser = new UserModel("manTenant@tenant1", "password");
+        collaboratorTenantUser = new UserModel("colTenant@tenant1", "password");
+        consumerTenantUser = new UserModel("consTenant@tenant1", "password");
+        contributorTenantUser = new UserModel("contTenant@tenant1", "password");      
+        
+        SiteModel site=dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        dataUser.usingUser(adminTenantUser).addUserToSite(managerTenantUser, site, UserRole.SiteManager);
+        dataUser.usingUser(adminTenantUser).addUserToSite(collaboratorTenantUser, site, UserRole.SiteCollaborator);
+        dataUser.usingUser(adminTenantUser).addUserToSite(consumerTenantUser, site, UserRole.SiteConsumer);
+        dataUser.usingUser(adminTenantUser).addUserToSite(contributorTenantUser, site, UserRole.SiteConsumer);
+        
     }
 
     @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify non existing user gets another exisiting network with Rest API and checks the forbidden status")
@@ -120,5 +142,45 @@ public class RestGetNetworkTest extends RestTest
         networkApi.useRestClient(restClient);
         networkApi.getNetwork(tenantName);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify manager tenant user gets its network with Rest API and response is not empty")
+    public void tenantManagerUserChecksIfNetworkIsPresent() throws Exception
+    {
+        String tenantName = "tenant1";
+        restClient.authenticateUser(managerTenantUser);
+        networkApi.useRestClient(restClient);
+        networkApi.getNetwork(tenantName);
+        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify collaborator tenant user gets its network with Rest API and response is not empty")
+    public void tenantCollaboratorUserChecksIfNetworkIsPresent() throws Exception
+    {
+        String tenantName = "tenant1";
+        restClient.authenticateUser(collaboratorTenantUser);
+        networkApi.useRestClient(restClient);
+        networkApi.getNetwork(tenantName);
+        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify consumer tenant user gets its network with Rest API and response is not empty")
+    public void tenantConsumerUserChecksIfNetworkIsPresent() throws Exception
+    {
+        String tenantName = "tenant1";
+        restClient.authenticateUser(consumerTenantUser);
+        networkApi.useRestClient(restClient);
+        networkApi.getNetwork(tenantName);
+        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify contributor tenant user gets its network with Rest API and response is not empty")
+    public void tenantContributorUserChecksIfNetworkIsPresent() throws Exception
+    {
+        String tenantName = "tenant1";
+        restClient.authenticateUser(contributorTenantUser);
+        networkApi.useRestClient(restClient);
+        networkApi.getNetwork(tenantName);
+        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
 }
