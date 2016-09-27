@@ -97,8 +97,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         informationServers = new ConcurrentHashMap<String, InformationServer>();
         this.scheduler = new SolrTrackerScheduler(this);
 
-        boolean createDefaultCores = Boolean.valueOf(ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "false"));
-        if (createDefaultCores)
+        String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
+        if (createDefaultCores != null && !createDefaultCores.isEmpty())
         {
             Runnable runnable = () ->
             {
@@ -110,22 +110,44 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 {
                     //Don't care
                 }
-
-                log.info("Attempting to create default alfresco cores, workspace and archive stores.");
-                SolrQueryResponse response = new SolrQueryResponse();
-                try
-                {
-                    newDefaultCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
-                    newDefaultCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
-                }
-                catch (Exception e)
-                {
-                    log.error("Failed to create default alfresco cores (workspace/archive stores)", e);
-                }
+                setupNewDefaultCores(createDefaultCores);
             };
 
             Thread thread = new Thread(runnable);
             thread.start();
+        }
+    }
+
+    /**
+     * Creates new default cores based on the "createDefaultCores" String passed in
+     * @param createDefaultCores comma delimited list of corenames.
+     */
+    protected void setupNewDefaultCores(String createDefaultCores)
+    {
+
+        SolrQueryResponse response = new SolrQueryResponse();
+        try
+        {
+            String[] coreNames = createDefaultCores.toLowerCase().split(",");
+            for (String coreName:coreNames)
+            {
+                log.info("Attempting to create default alfresco core: "+coreName);
+                switch (coreName)
+                {
+                    case "archive":
+                        newDefaultCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
+                        break;
+                    case "alfresco":
+                        newDefaultCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
+                        break;
+                    default:
+                        log.error("Invalid '"+ALFRESCO_DEFAULTS+"' permitted values are alfresco,archive");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            log.error("Failed to create default alfresco cores (workspace/archive stores)", e);
         }
     }
 

@@ -25,6 +25,8 @@ services:
       #Alfresco needs to know how to call solr
       SOLR_SOLR_HOST: solr6
       SOLR_SOLR_PORT: 8983
+      #Create the alfresco and archive cores
+      SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive
     ports:
           - "8083:8983" #Browser port
           - "1044:1044" #Java debugging
