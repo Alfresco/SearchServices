@@ -223,6 +223,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         return searchParameters;
     }
 
+    @Override
     protected Query getFieldQuery(String field, String queryText, int slop) throws ParseException
     {
         try
