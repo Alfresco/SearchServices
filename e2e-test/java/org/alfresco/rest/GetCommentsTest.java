@@ -62,4 +62,13 @@ public class GetCommentsTest extends RestTest
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify Contributor user gets comments created by admin user with Rest API and status code is 200")
+    public void contributorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
+        commentsAPI.getNodeComments(document.getNodeRef());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 }
