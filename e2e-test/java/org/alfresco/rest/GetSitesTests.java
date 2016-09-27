@@ -56,4 +56,13 @@ public class GetSitesTests extends RestTest
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role gets sites information and gets status code OK (200)")
+    public void getSitesWithCollaboratorRole() throws JsonToModelConversionException, Exception
+    {
+
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
+        siteAPI.getAllSites();
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 }
