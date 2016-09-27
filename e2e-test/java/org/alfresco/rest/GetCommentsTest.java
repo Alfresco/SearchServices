@@ -116,4 +116,17 @@ public class GetCommentsTest extends RestTest
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify admin user gets comments created by another user and status code is 200")
+    public void adminIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
+    {
+        userModel = usersWithRoles.get(UserRole.SiteCollaborator);
+        restClient.authenticateUser(userModel);
+        commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by " + userModel.getUsername());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED.toString()); 
+        restClient.authenticateUser(adminUserModel);
+        commentsAPI.getNodeComments(document.getNodeRef());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 }
