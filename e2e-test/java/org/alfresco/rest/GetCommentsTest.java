@@ -31,6 +31,7 @@ public class GetCommentsTest extends RestTest
     
     private FileModel document;
     private SiteModel siteModel;
+    private UserModel userModel;
     private HashMap<UserRole, UserModel> usersWithRoles;
 	
     @BeforeClass
@@ -88,5 +89,18 @@ public class GetCommentsTest extends RestTest
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteConsumer));
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        userModel = usersWithRoles.get(UserRole.SiteManager);
+        userModel.setPassword("incorrectPassword");
+        restClient.authenticateUser(userModel);
+        commentsAPI.getNodeComments(document.getNodeRef());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
+        userModel.setPassword("password");
+        restClient.authenticateUser(userModel);
     }
 }
