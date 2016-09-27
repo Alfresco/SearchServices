@@ -95,6 +95,13 @@
             <tokenizer class="solr.KeywordTokenizerFactory" />
          </analyzer>
       </fieldType>
+
+
+       <fieldType name="text_plain" class="solr.TextField" positionIncrementGap="100">
+           <analyzer>
+               <tokenizer class="solr.ICUTokenizerFactory"/>
+           </analyzer>
+       </fieldType>
       
 
       <!-- Cross-locale -->
@@ -557,11 +564,9 @@
    <fields>
       <!-- For SOLR cloud - should be the node version -->
       <field name="_version_"             type="version"     indexed="false"                   stored="true"                        docValues="true"  required="true" />
+      <field name="FINGERPRINT"           type="text_plain"  indexed="true"  omitNorms="true"  stored="false" multiValued="false"  required="false"  docValues="false"/>
 
-
-
-      
-      <!-- For block join - currently not used -->
+       <!-- For block join - currently not used -->
       <field name="_root_"                type="identifier"  indexed="true"                    stored="false"/>
 
       <!-- Unique identifier - based on DBID -->
