@@ -85,4 +85,13 @@ public class GetSiteTests extends RestTest
         siteAPI.getSite(siteModel.getId());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role gets site information and gets status code OK (200)")
+    public void getSiteWithAdminRole() throws JsonToModelConversionException, Exception
+    {
+
+        restClient.authenticateUser(adminUserModel);
+        siteAPI.getSite(siteModel.getId());
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 }
