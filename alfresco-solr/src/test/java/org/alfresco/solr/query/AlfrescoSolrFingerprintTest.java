@@ -19,10 +19,7 @@
 
 package org.alfresco.solr.query;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.client.*;
 import org.apache.commons.logging.Log;
@@ -39,12 +36,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
-import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
@@ -129,10 +123,10 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl, "mike", null, false);
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl, "mike", null, false);
 
-        List content = list("aaaa bbbb cccc dddd eeee ffff hhhh iiii jjjj kkkk",
-                            "aaaa bbbb cccc dddd eeee ffff hhhh iiii",
-                            "aaaa bbbb cccc dddd eeee ffff hhhh iiii jjjj",
-                            "aaaa bbbb cccc dddd eeee ffff hhhh");
+        List content = list("aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25",
+                            "aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20",
+                            "aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24",
+                            "aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14");
 
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
@@ -160,19 +154,54 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
         logger.info("#################### Passed Third Test ##############################");
 
 
-
-
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "FINGERPRINT:" + node1.getId());  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
+        params.add("qt", "/afts");
+        params.add("fl", "DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        SolrServletRequest req = areq(params, null);
+        assertQ(req, "*[count(//doc)=4]",
+                "//result/doc[1]/long[@name='DBID'][.='" + node1.getId() + "']",
+                "//result/doc[2]/long[@name='DBID'][.='" + node3.getId() + "']",
+                "//result/doc[3]/long[@name='DBID'][.='" + node2.getId() + "']",
+                "//result/doc[4]/long[@name='DBID'][.='" + node4.getId() + "']");
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + node1.getId() + "_90");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
         params.add("qt", "/afts");
         params.add("fl","DBID,score");
         params.add("start", "0");
         params.add("rows", "6");
-        SolrServletRequest req = areq(params, null);
-        assertQ(req, "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
-                     "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
-                     "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']",
-                     "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 2]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']");
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + node1.getId()+"_70");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
+        params.add("qt", "/afts");
+        params.add("fl","DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 3]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']");
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + node1.getId()+"_40");
+        params.add("qt", "/afts");
+        params.add("fl","DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
 
     }
 }

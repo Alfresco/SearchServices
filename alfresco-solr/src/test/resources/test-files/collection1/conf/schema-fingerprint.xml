@@ -571,7 +571,7 @@
 
         <!-- Unique identifier - based on DBID -->
         <field name="id"                    type="identifier"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
-        <field name="FINGERPRINT"     type="text_plain"  indexed="true"  omitNorms="true"  stored="false" multiValued="false"  required="false"  docValues="false"/>
+        <field name="FINGERPRINT"     type="identifier"  indexed="true"  omitNorms="true"  stored="false" multiValued="true"  required="false"  docValues="false"/>
 
         <!-- Special fields -->
         <field name="LID"                   type="identifier"  indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />

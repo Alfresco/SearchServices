@@ -703,8 +703,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             SolrInputField mh = solrDoc.getField("FINGERPRINT");
             if (mh != null)
             {
-                String fingerprint = mh.getValue().toString();
-                String[] tokens = fingerprint.split(" ");
+                Collection values = mh.getValues();
                 int bandSize = 1;
                 float fraction = -1;
                 float truePositive = 1;
@@ -723,14 +722,14 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     {
                         truePositive /= 100;
                     }
-                    bandSize = computeBandSize(tokens.length, fraction, truePositive);
+                    bandSize = computeBandSize(values.size(), fraction, truePositive);
                 }
                 BooleanQuery.Builder builder = new BooleanQuery.Builder();
                 BooleanQuery.Builder childBuilder = new BooleanQuery.Builder();
                 int rowInBand = 0;
-                for (String token : tokens)
+                for (Object token : values)
                 {
-                    TermQuery tq = new TermQuery(new Term("FINGERPRINT", token));
+                    TermQuery tq = new TermQuery(new Term("FINGERPRINT", token.toString()));
                     if (bandSize == 1)
                     {
                         builder.add(new ConstantScoreQuery(tq), Occur.SHOULD);
@@ -751,9 +750,9 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 // start
                 if (childBuilder.build().clauses().size() > 0)
                 {
-                    for (String token : tokens)
+                    for (Object token : values)
                     {
-                        TermQuery tq = new TermQuery(new Term("FINGERPRINT", token));
+                        TermQuery tq = new TermQuery(new Term("FINGERPRINT", token.toString()));
                         childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
                         rowInBand++;
                         if (rowInBand == bandSize)
@@ -767,7 +766,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 builder.setDisableCoord(true);
                 if (parts.length == 2)
                 {
-                    builder.setMinimumNumberShouldMatch((int) (Math.ceil(tokens.length * fraction)));
+                    builder.setMinimumNumberShouldMatch((int) (Math.ceil(values.size() * fraction)));
                 }
                 Query q = builder.build();
                 return q;
