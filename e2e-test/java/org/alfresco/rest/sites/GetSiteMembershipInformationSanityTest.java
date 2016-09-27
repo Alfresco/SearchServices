@@ -67,5 +67,16 @@ public class GetSiteMembershipInformationSanityTest extends RestTest
         siteAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section = { "rest-api", "sites" }, 
+            executionType = ExecutionType.SANITY, 
+            description = "Verify site contributor is able to retrieve site membership information of another user")
+    public void siteContributorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
+        siteAPI.getSiteMembershipInformation(adminUser.getUsername());
+        siteAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 
 }
