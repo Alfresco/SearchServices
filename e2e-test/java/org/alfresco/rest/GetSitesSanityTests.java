@@ -20,8 +20,8 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { "rest-api", "comments", "sanity" })
-public class GetSitesTests extends RestTest
+@Test(groups = { "rest-api", "sites", "sanity" })
+public class GetSitesSanityTests extends RestTest
 {
     @Autowired
     RestSitesApi siteAPI;
@@ -46,7 +46,6 @@ public class GetSitesTests extends RestTest
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
                 Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
-
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets sites information and gets status code OK (200)")
@@ -57,8 +56,9 @@ public class GetSitesTests extends RestTest
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
-    
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role gets sites information and gets status code OK (200)")
+
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Collaborator role gets sites information and gets status code OK (200)")
     public void getSitesWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
 
@@ -66,8 +66,9 @@ public class GetSitesTests extends RestTest
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
-    
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role gets sites information and gets status code OK (200)")
+
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Contributor role gets sites information and gets status code OK (200)")
     public void getSitesWithContributorRole() throws JsonToModelConversionException, Exception
     {
 
@@ -75,8 +76,9 @@ public class GetSitesTests extends RestTest
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
-    
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role gets sites information and gets status code OK (200)")
+
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Consumer role gets sites information and gets status code OK (200)")
     public void getSitesWithConsumerRole() throws JsonToModelConversionException, Exception
     {
 
@@ -84,16 +86,18 @@ public class GetSitesTests extends RestTest
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
-    
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Admin user gets sites information and gets status code OK (200)")
+
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Admin user gets sites information and gets status code OK (200)")
     public void getSitesWithAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
-    
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Failed authentication get sites call returns status code 401 with Manager role")
+
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Failed authentication get sites call returns status code 401 with Manager role")
     public void getSitesWithManagerRoleFailedAuth() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
