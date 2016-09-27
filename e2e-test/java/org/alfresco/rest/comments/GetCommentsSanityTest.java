@@ -1,9 +1,10 @@
-package org.alfresco.rest;
+package org.alfresco.rest.comments;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.data.DataUser;
@@ -19,7 +20,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "comments", "sanity" })
-public class GetCommentsTest extends RestTest
+public class GetCommentsSanityTest extends RestTest
 {
     @Autowired
     RestCommentsApi commentsAPI;
@@ -95,13 +96,10 @@ public class GetCommentsTest extends RestTest
             description= "Verify Manager user gets status code 401 if authentication call fails")
     public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
-        userModel = usersWithRoles.get(UserRole.SiteManager);
-        userModel.setPassword("incorrectPassword");
-        restClient.authenticateUser(userModel);
+        UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
+        restClient.authenticateUser(nonexistentModel);
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
-        userModel.setPassword("password");
-        restClient.authenticateUser(userModel);
     }
     
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
@@ -113,6 +111,19 @@ public class GetCommentsTest extends RestTest
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by " + userModel.getUsername());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED.toString()); 
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
+        commentsAPI.getNodeComments(document.getNodeRef());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify admin user gets comments created by another user and status code is 200")
+    public void adminIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
+    {
+        userModel = usersWithRoles.get(UserRole.SiteCollaborator);
+        restClient.authenticateUser(userModel);
+        commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by " + userModel.getUsername());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED.toString()); 
+        restClient.authenticateUser(adminUserModel);
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
