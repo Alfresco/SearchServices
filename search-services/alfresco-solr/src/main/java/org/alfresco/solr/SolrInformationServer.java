@@ -135,6 +135,9 @@ import org.alfresco.solr.tracker.TrackerStats;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
@@ -173,6 +176,7 @@ import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.FieldType;
+import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
@@ -227,6 +231,7 @@ public class SolrInformationServer implements InformationServer
     public static final String SOLR_PORT = "solr.port";
     public static final String SOLR_BASEURL = "solr.baseurl";
 
+
     private static final Pattern CAPTURE_SITE = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/site/1\\.0\\}sites/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0}([^/]*)/.*" ); 
     private static final Pattern CAPTURE_TAG = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}taggable/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}([^/]*)/\\{\\}member");
     private static final Pattern CAPTURE_SHARED_FILES = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}shared/.*" );
@@ -249,7 +254,9 @@ public class SolrInformationServer implements InformationServer
     private long lag;
     private long holeRetention;
     private int contentStreamLimit;
-    
+    private boolean minHash;
+    private String FINGERPRINT = "FINGERPRINT";
+
     // Metadata pulling control
     private boolean skipDescendantDocsForSpecificTypes;
     private boolean skipDescendantDocsForSpecificAspects;
@@ -325,7 +332,8 @@ public class SolrInformationServer implements InformationServer
         recordUnindexedNodes = Boolean.parseBoolean(p.getProperty("alfresco.recordUnindexedNodes", "true"));
         lag = Integer.parseInt(p.getProperty("alfresco.lag", "1000"));
         holeRetention = Integer.parseInt(p.getProperty("alfresco.hole.retention", "3600000"));
-        
+        minHash = Boolean.parseBoolean(p.getProperty("alfresco.fingerprint", "true"));
+
         dataModel = AlfrescoSolrDataModel.getInstance();
 
         contentStreamLimit = Integer.parseInt(p.getProperty("alfresco.contentStreamLimit", "10000000"));
@@ -3074,7 +3082,33 @@ public class SolrInformationServer implements InformationServer
             // release the response only when the content has been read
             response.release();
         }
-        
+
+        if(minHash && textContent.length() > 0) {
+
+            Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
+            TokenStream ts = analyzer.tokenStream("min_hash", textContent);
+            StringBuilder hashBuff = new StringBuilder();
+            CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
+            ts.reset();
+            while (ts.incrementToken())
+            {
+                StringBuilder tokenBuff = new StringBuilder();
+                if(hashBuff.length() > 0) {
+                    hashBuff.append(" ");
+                }
+
+                char[] buff = termAttribute.buffer();
+
+                for(int i=0; i<termAttribute.length();i++) {
+                    tokenBuff.append(Integer.toHexString(buff[i]));
+                }
+                hashBuff.append(tokenBuff.toString());
+            }
+            ts.end();
+            ts.close();
+            doc.addField(FINGERPRINT, hashBuff.toString());
+        }
+
         long end = System.nanoTime();
         this.getTrackerStats().addDocTransformationTime(end - start);
         

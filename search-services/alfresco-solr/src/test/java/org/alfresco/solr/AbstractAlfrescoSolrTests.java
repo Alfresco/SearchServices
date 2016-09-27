@@ -117,7 +117,6 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     protected static Date ftsTestDate;
     /**
      * Creates a Solr Alfresco test harness.
-     * @param config
      * @param schema
      * @throws Exception
      */
@@ -161,6 +160,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
         solrConfig = new SolrConfig(resourceLoader, "solrconfig.xml", null);
         IndexSchema indexSchema = IndexSchemaFactory.buildIndexSchema(schema, solrConfig);
+        System.out.println("################ Index schema:"+schema+":"+indexSchema.getResourceName());
         TestCoresLocator locator = new TestCoresLocator(SolrTestCaseJ4.DEFAULT_TEST_CORENAME,
                                                         "data", 
                                                         solrConfig.getResourceName(),
@@ -262,13 +262,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     {
       return TestHarness.commit(args);
     }
-    /**
-     * Generates a simple &lt;add&gt;&lt;doc&gt;... XML String with no options
-     *
-     * @param fieldsAndValues 0th and Even numbered args are fields names odds are field values.
-     * @see #add
-     * @see #doc
-     */
+
     public static String adoc(String... fieldsAndValues)
     {
         XmlDoc d = doc(fieldsAndValues);
@@ -478,6 +472,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
                         "txid", Long.toString(txnId)),
                 resp);
     }
+
     public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
     {
         //First map the nodes to a transaction.
@@ -492,6 +487,25 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         //Next add the transaction to the queue
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
+
+    public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<String> content)
+    {
+        //First map the nodes to a transaction.
+        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+
+        //Next map a node to the NodeMetaData
+        int i=0;
+        for(NodeMetaData nodeMetaData : nodeMetaDatas)
+        {
+            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.nodeContentMap.put(nodeMetaData.getId(), content.get(i++));
+        }
+
+        //Next add the transaction to the queue
+        SOLRAPIQueueClient.transactionQueue.add(transaction);
+    }
+
+
     public void purgeAclId(long aclId) throws Exception
     {
         CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();

@@ -180,7 +180,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         params.add("sort", "id asc");
         params.add("fq", "{!afts}AUTHORITY_FILTER_FROM_JSON");
         SolrServletRequest req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"joel\"], \"tenants\": [ \"\" ]}");
-        //FIX ME  assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='"+fileNode.getId()+"']");
+        assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='"+fileNode.getId()+"']");
 
         logger.info("#################### Passed Fourth Test ##############################");
 
@@ -221,8 +221,6 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         logger.info("#################### Passed Sixth Test ##############################");
 
 
-
-
         TermQuery termQuery1 = new TermQuery(new Term(QueryConstants.FIELD_ANCESTOR, nodeRef.toString()));
 
         waitForDocCount(termQuery1, 1, MAX_WAIT_TIME);
@@ -235,7 +233,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         params.add("sort", "id asc");
         params.add("fq", "{!afts}AUTHORITY_FILTER_FROM_JSON");
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"mike\"], \"tenants\": [ \"\" ]}");
-//        assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
+        assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
 
 
         logger.info("#################### Passed Seventh Test ##############################");
@@ -320,7 +318,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         params.add("sort", "id asc");
         params.add("fq", "{!afts}AUTHORITY_FILTER_FROM_JSON");
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"amy\"], \"tenants\": [ \"\" ]}");
-        //FIX ME assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
+        assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
 
         logger.info("#################### Passed Fourteenth Test ##############################");
 
@@ -334,7 +332,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         params.add("sort", "id asc");
         params.add("fq", "{!afts}AUTHORITY_FILTER_FROM_JSON");
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"jill\"], \"tenants\": [ \"\" ]}");
-        //FIX ME assertQ(req, "*[count(//doc)=1]", "//result/doc[1]/long[@name='DBID'][.='" + folderNode.getId() + "']");
+        assertQ(req, "*[count(//doc)=1]", "//result/doc[1]/long[@name='DBID'][.='" + folderNode.getId() + "']");
 
         logger.info("#################### Passed Fifteenth Test ##############################");
 

@@ -111,6 +111,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.apache.solr.analysis.TokenizerChain;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
@@ -678,6 +679,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
      * @param field
      * @param queryText
      * @param analysisMode
+     *
      * @param luceneFunction
      * @return
      * @throws IOException
@@ -697,11 +699,11 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         if (solrDoc != null)
         {
 
-            Document doc = DocumentBuilder.toDocument(solrDoc, schema);
-            IndexableField mh = doc.getField("min_hash");
+            SolrInputField mh = solrDoc.getField("FINGERPRINT");
             if (mh != null)
             {
-                ArrayList<String> tokens = getTokens(mh);
+                String fingerprint = mh.getValue().toString();
+                String[] tokens = fingerprint.split(" ");
                 int bandSize = 1;
                 float fraction = -1;
                 float truePositive = 1;
@@ -720,14 +722,14 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     {
                         truePositive /= 100;
                     }
-                    bandSize = computeBandSize(tokens.size(), fraction, truePositive);
+                    bandSize = computeBandSize(tokens.length, fraction, truePositive);
                 }
                 BooleanQuery.Builder builder = new BooleanQuery.Builder();
                 BooleanQuery.Builder childBuilder = new BooleanQuery.Builder();
                 int rowInBand = 0;
                 for (String token : tokens)
                 {
-                    TermQuery tq = new TermQuery(new Term("min_hash", token));
+                    TermQuery tq = new TermQuery(new Term("FINGERPRINT", token));
                     if (bandSize == 1)
                     {
                         builder.add(new ConstantScoreQuery(tq), Occur.SHOULD);
@@ -750,7 +752,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 {
                     for (String token : tokens)
                     {
-                        TermQuery tq = new TermQuery(new Term("min_hash", token));
+                        TermQuery tq = new TermQuery(new Term("FINGERPRINT", token));
                         childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
                         rowInBand++;
                         if (rowInBand == bandSize)
@@ -764,18 +766,21 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 builder.setDisableCoord(true);
                 if (parts.length == 2)
                 {
-                    builder.setMinimumNumberShouldMatch((int) (Math.ceil(tokens.size() * fraction)));
+                    builder.setMinimumNumberShouldMatch((int) (Math.ceil(tokens.length * fraction)));
                 }
-                return builder.build();
+                Query q = builder.build();
+                return q;
             } else
             {
                 return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
             }
-        } else
+        }
+        else
         {
             return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
         }
     }
+
 
     private int computeBandSize(int numHash, double sim, double expectedTruePositive)
     {
