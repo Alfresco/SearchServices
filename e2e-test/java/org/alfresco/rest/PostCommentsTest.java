@@ -59,5 +59,14 @@ public class PostCommentsTest extends RestTest
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by user with role: " + UserRole.SiteManager);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED.toString());
     }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify Contributor user adds comments with Rest API and status code is 201")
+    public void contributorIsAbleToAddComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
+        commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by user with role" + UserRole.SiteContributor);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED.toString());
+    }
 
 }
