@@ -5,7 +5,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.requests.RestCommentsApi;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -20,9 +19,6 @@ import org.testng.annotations.Test;
 @Test(groups = { "rest-api", "comments", "sanity" })
 public class SampleCommentsTest extends RestTest
 {
-    @Autowired
-    DataUser dataUser;
-
     @Autowired
     RestCommentsApi commentsAPI;
 
