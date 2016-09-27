@@ -1,5 +1,6 @@
-package org.alfresco.rest;
+package org.alfresco.rest.networks;
 
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestNetworksApi;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -13,7 +14,7 @@ import org.testng.annotations.Test;
  * Created by Cristina Axinte on 9/26/2016.
  */
 @Test(groups = { "rest-api", "networks", "sanity" })
-public class RestNetworksTest extends RestTest
+public class RestGetNetworkTest extends RestTest
 {
     @Autowired
     RestNetworksApi networkApi;
