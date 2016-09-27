@@ -32,7 +32,7 @@ public class AddSiteMembershipRequestSanityTest extends RestTest
     DataSite dataSite;
 
     private SiteModel siteModel;
-    
+
     private HashMap<UserRole, UserModel> usersWithRoles;
 
     private UserModel adminUser;
@@ -42,9 +42,9 @@ public class AddSiteMembershipRequestSanityTest extends RestTest
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersToSiteWithRoles(siteModel,
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
                 Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
-        
+
         siteAPI.useRestClient(restClient);
     }
 
@@ -55,7 +55,7 @@ public class AddSiteMembershipRequestSanityTest extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMembership siteMembership = new SiteMembership("Please accept me", siteModel.getId(), "New request");
-        
+
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
         siteAPI.addSiteMembershipRequest(newMember.getUsername(), siteMembership);
         siteAPI.getSite(siteModel.getId()).assertResponseIsNotEmpty();
