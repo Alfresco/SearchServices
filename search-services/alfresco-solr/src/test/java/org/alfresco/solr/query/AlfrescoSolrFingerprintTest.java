@@ -36,7 +36,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
@@ -72,7 +74,7 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
 
 
     @Test
-    public void testFingerPrint() throws Exception
+    public void testBasciFingerPrint() throws Exception
     {
         /*
         * Create and index an AclChangeSet.
@@ -123,17 +125,31 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl, "mike", null, false);
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl, "mike", null, false);
 
-        List content = list("aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25",
-                            "aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20",
-                            "aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24",
-                            "aaaa 1 2 3 4 5 6 7 8 9 10 11 12 13 14");
+        List<String> content = new ArrayList();
+        int[] sizes = {2000, 1000, 1500, 750};
+
+        Random r = new Random(1);
+        String token1 = Integer.toString(Math.abs(r.nextInt()));
+
+        for(int i=0; i<4; i++) {
+            Random rand = new Random(1);
+            StringBuilder buf = new StringBuilder();
+            int size = sizes[i];
+            for(int s=0; s<size; s++) {
+                if(s>0) {
+                    buf.append(" ");
+                }
+                buf.append(Integer.toString(Math.abs(rand.nextInt())));
+            }
+            content.add(buf.toString());
+        }
 
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                list(node1, node2, node3, node4),
-                list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4),
-                content);
+                         list(node1, node2, node3, node4),
+                         list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4),
+                         content);
 
         //Check for the TXN state stamp.
         logger.info("#################### Started Second Test ##############################");
@@ -148,11 +164,11 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
         /*
         * Query the index for the content
         */
+
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "aaaa")), 4, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", token1)), 4, MAX_WAIT_TIME);
 
         logger.info("#################### Passed Third Test ##############################");
-
 
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("q", "FINGERPRINT:" + node1.getId());  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
@@ -168,7 +184,7 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
                 "//result/doc[4]/long[@name='DBID'][.='" + node4.getId() + "']");
 
         params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node1.getId() + "_90");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
+        params.add("q", "FINGERPRINT:" + node1.getId() + "_70");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
         params.add("qt", "/afts");
         params.add("fl","DBID,score");
         params.add("start", "0");
@@ -179,7 +195,7 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
                 "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']");
 
         params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node1.getId()+"_70");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
+        params.add("q", "FINGERPRINT:" + node1.getId()+"_45");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
         params.add("qt", "/afts");
         params.add("fl","DBID,score");
         params.add("start", "0");
@@ -191,7 +207,7 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
                 "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']");
 
         params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node1.getId()+"_40");
+        params.add("q", "FINGERPRINT:" + node1.getId()+"_30");
         params.add("qt", "/afts");
         params.add("fl","DBID,score");
         params.add("start", "0");
@@ -202,6 +218,5 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
                 "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
                 "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']",
                 "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
-
     }
 }
