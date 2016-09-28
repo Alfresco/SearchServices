@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.data.DataUser;
@@ -19,7 +20,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "comments", "sanity" })
-public class PostCommentsTest extends RestTest
+public class PostCommentsSanityTest extends RestTest
 {
     @Autowired
     RestCommentsApi commentsAPI;
