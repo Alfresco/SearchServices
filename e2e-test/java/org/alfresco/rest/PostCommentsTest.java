@@ -1,4 +1,4 @@
-package org.alfresco.rest;
+package org.alfresco.rest.comments;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -85,6 +85,16 @@ public class PostCommentsTest extends RestTest
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteConsumer));
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by user with role: " + UserRole.SiteConsumer);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+    }
+    
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToAddCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        usersWithRoles.get(UserRole.SiteManager).setPassword("wrongPassword");
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
+        commentsAPI.addComment(document.getNodeRef(), "This is a new comment added by user with role:  " + UserRole.SiteManager);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
     }
 
 }
