@@ -486,6 +486,7 @@
             </analyzer>
         </fieldType>
 
+
         <!-- Romanian -->
         <fieldType name="text_ro" class="solr.TextField" positionIncrementGap="100">
             <analyzer>
@@ -538,6 +539,21 @@
             </analyzer>
         </fieldType>
 
+        <fieldType name="text_min_hash" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <tokenizer class="solr.ICUTokenizerFactory"/>
+                <filter class="solr.ICUNormalizer2FilterFactory" name="nfkc_cf" mode="compose" />
+                <filter class="solr.ShingleFilterFactory" minShingleSize="5" maxShingleSize="5" outputUnigrams="false" outputUnigramsIfNoShingles="false" tokenSeparator=" " />
+                <!--
+                        <filter class="org.apache.lucene.analysis.minhash.ContextAccumulatingFilterFactory" />
+                -->
+                <filter class="org.apache.lucene.analysis.minhash.MinHashFilterFactory" hashCount="1" hashSetSize="1" bucketCount="512" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.KeywordTokenizerFactory" />
+            </analyzer>
+        </fieldType>
+
 
     </types>
     <fields>
@@ -552,6 +568,7 @@
 
         <!-- Unique identifier - based on DBID -->
         <field name="id"                    type="identifier"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+        <field name="FINGERPRINT"     type="identifier"  indexed="true"  omitNorms="true"  stored="false" multiValued="true"  required="false"  docValues="false"/>
 
         <!-- Special fields -->
         <field name="LID"                   type="identifier"  indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
@@ -604,6 +621,8 @@
 
         <!-- Suggestion -->
         <field name="suggest"               type="text_shingle"    indexed="true"  omitNorms="true"  omitPositions="true" stored="false"  multiValued="true" />
+
+        <field name="min_hash"               type="text_min_hash"    indexed="true"  omitNorms="true"  omitPositions="true" stored="false"  multiValued="true" />
 
         <!-- Dummy field used to create no matches for unknonw properties -->
         <field name="_dummy_"   type="identifier"  indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
