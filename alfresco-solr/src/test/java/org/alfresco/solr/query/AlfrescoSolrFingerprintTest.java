@@ -147,9 +147,9 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                         list(node1, node2, node3, node4),
-                         list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4),
-                         content);
+                list(node1, node2, node3, node4),
+                list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4),
+                content);
 
         //Check for the TXN state stamp.
         logger.info("#################### Started Second Test ##############################");
@@ -218,5 +218,19 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
                 "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
                 "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']",
                 "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+
+        
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + node4.getId());
+        params.add("qt", "/afts");
+        params.add("fl","DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node4.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node1.getId()+"']");
     }
 }
