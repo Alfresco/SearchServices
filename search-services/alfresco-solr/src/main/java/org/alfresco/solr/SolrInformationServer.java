@@ -255,7 +255,7 @@ public class SolrInformationServer implements InformationServer
     private long holeRetention;
     private int contentStreamLimit;
     private boolean minHash;
-    private String FINGERPRINT = "FINGERPRINT";
+    public static final String FINGERPRINT_FIELD = "MINHASH";
 
     // Metadata pulling control
     private boolean skipDescendantDocsForSpecificTypes;
@@ -3066,7 +3066,7 @@ public class SolrInformationServer implements InformationServer
                 for(int i=0; i<termAttribute.length();i++) {
                     tokenBuff.append(Integer.toHexString(buff[i]));
                 }
-                doc.addField(FINGERPRINT, tokenBuff.toString());
+                doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
 
             }
             ts.end();
