@@ -82,4 +82,13 @@ public class GetSiteContainersSanityTests extends RestTest
         siteAPI.getSiteContainers(siteModel.getId());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Admin user gets site containers information and gets status code OK (200)")
+    public void getSiteContainersWithAdminUser() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        siteAPI.getSiteContainers(siteModel.getId());
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 }
