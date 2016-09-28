@@ -45,8 +45,9 @@ public class UpdateCommentsSanityTest extends RestTest
         commentsAPI.useRestClient(restClient);
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         commentModel = commentsAPI.addComment(document.getNodeRef(), "This is a new comment");
-        
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
+
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
+                Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
     }
 
     @TestRail(section = { "rest-api",
@@ -56,14 +57,23 @@ public class UpdateCommentsSanityTest extends RestTest
         commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), commentModel.getContent());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
-    
-    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
-            description= "Verify Manager user updates comments created by admin user with Rest API and status code is 200")
+
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user updates comments created by admin user with Rest API and status code is 200")
     public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
         commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), commentModel.getContent());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user updates comments created by admin user with Rest API and status code is 200")
+    public void contributorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
+        commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), "This is the updated comment with Contributor user");
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
 
 }
