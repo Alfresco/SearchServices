@@ -84,13 +84,14 @@ public class UpdateCommentsSanityTest extends RestTest
         commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), commentModel.getContent());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
-    
-    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
-            description= "Verify Collaborator user updates comments created by admin user with Rest API and status code is 200")
+
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user updates comments created by admin user with Rest API and status code is 200")
     public void collaboratorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
-        RestCommentModel commentEntry = commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), "This is the updated comment with Collaborator user");
+        RestCommentModel commentEntry = commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(),
+                "This is the updated comment with Collaborator user");
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
         commentEntry.assertCommentContentIs("This is the updated comment with Collaborator user");
     }
@@ -104,18 +105,16 @@ public class UpdateCommentsSanityTest extends RestTest
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
     }
-    
-    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
-            description= "Verify if nodeId is not set the status code is 404")
+
+    @TestRail(section = { "rest-api", "comments" }, executionType = ExecutionType.SANITY, description = "Verify if nodeId is not set the status code is 404")
     public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentsAPI.updateComment("unexistingId", commentModel.getId(), commentModel.getContent());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND.toString());
     }
-    
-    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
-            description= "Verify if commentId is not set the status code is 404")
+
+    @TestRail(section = { "rest-api", "comments" }, executionType = ExecutionType.SANITY, description = "Verify if commentId is not set the status code is 404")
     public void canNotUpdateCommentIfCommentIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
