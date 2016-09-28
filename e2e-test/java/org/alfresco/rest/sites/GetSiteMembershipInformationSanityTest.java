@@ -6,9 +6,10 @@ import java.util.HashMap;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.data.UserRole;
+import org.alfresco.utility.data.TestData;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -40,7 +41,7 @@ public class GetSiteMembershipInformationSanityTest extends RestTest
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersToSiteWithRoles(siteModel,
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
                 Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
 
         siteAPI.useRestClient(restClient);
@@ -99,6 +100,18 @@ public class GetSiteMembershipInformationSanityTest extends RestTest
         siteAPI.getSiteMembershipInformation(usersWithRoles.get(UserRole.SiteManager).getUsername());
         siteAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "sites" }, 
+            executionType = ExecutionType.SANITY, 
+            description = "Verify that unauthenticated user is not able to retrieve site membership information")
+    public void unauthenticatedUserCannotRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
+    {
+        UserModel inexistentUser = new UserModel("inexistent user", "wrong password");
+        restClient.authenticateUser(inexistentUser);
+        siteAPI.getSiteMembershipInformation(usersWithRoles.get(UserRole.SiteManager).getUsername());
+        siteAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
     }
 
 }
