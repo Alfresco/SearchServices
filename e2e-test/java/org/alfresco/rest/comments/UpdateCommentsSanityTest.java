@@ -76,4 +76,13 @@ public class UpdateCommentsSanityTest extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
 
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user updates comments created by admin user with Rest API and status code is 200")
+    public void consumerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteConsumer));
+        commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), commentModel.getContent());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+    }
+
 }
