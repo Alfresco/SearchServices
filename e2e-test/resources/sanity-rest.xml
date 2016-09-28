@@ -3,15 +3,19 @@
 <suite name="REST API DEMO TESTS" parallel="classes">
 	<listeners>
 		<listener class-name="org.alfresco.utility.report.ReportListenerAdapter"></listener>
-		<listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"></listener>
+		<!-- <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"></listener> -->
 		<listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
 	</listeners>
-	<test name="Test">
-		<classes>
-			<class name="org.alfresco.rest.demo.SamplePeopleTest"></class>
-			<class name="org.alfresco.rest.demo.SampleSitesTest"></class>
-			<class name="org.alfresco.rest.demo.SampleCommentsTest"></class>
-		</classes>
+	<test name="Rest API Tests">		
+		<groups>
+			<run>
+				<include name="sanity" />
+			</run>
+		</groups>
+		<packages>
+			<package name="org.alfresco.rest.demo"></package>
+			<package name="org.alfresco.rest.networks"></package>
+		</packages>
 
 	</test> <!-- Test -->
 </suite> <!-- Suite -->
