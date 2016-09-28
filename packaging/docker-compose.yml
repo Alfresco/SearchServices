@@ -30,4 +30,4 @@ services:
     ports:
       - "8083:8983" #Browser port
       - "1044:1044" #Java debugging
-#In the Index Server Shard Management Admin console the index server is: localhost:8083/solr
+#In the Index Server Shard Management Admin console the index server is: solr6:8983/solr
