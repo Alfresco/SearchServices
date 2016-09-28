@@ -18,10 +18,31 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+
 import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
@@ -29,16 +50,6 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * @author Joel
@@ -48,7 +59,7 @@ import java.util.Random;
 public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2);
+    public JettyServerRule jetty = new JettyServerRule(2,getShardMethod());
 
     @Test
     public void testAclId() throws Exception
@@ -116,14 +127,16 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
         }
     }
 
-    protected ShardMethodEnum getShardMethod() {
+    protected Properties getShardMethod() 
+    {
         Random random = random();
         List<ShardMethodEnum> methods = new ArrayList();
         methods.add(ShardMethodEnum.ACL_ID);
         methods.add(ShardMethodEnum.MOD_ACL_ID);
         Collections.shuffle(methods, random);
-        return methods.get(0);
-
+        Properties prop = new Properties();
+        prop.put("shard.method", methods.get(0).toString());
+        return prop;
     }
 }
 
