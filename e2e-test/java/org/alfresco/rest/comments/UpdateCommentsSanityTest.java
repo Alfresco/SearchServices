@@ -85,4 +85,14 @@ public class UpdateCommentsSanityTest extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
 
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToUpdateCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        UserModel incorrectUserModel = new UserModel("userName", "password");
+        restClient.authenticateUser(incorrectUserModel);
+        commentsAPI.getNodeComments(document.getNodeRef());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
+    }
+
 }
