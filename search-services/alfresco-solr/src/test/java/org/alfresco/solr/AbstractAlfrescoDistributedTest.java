@@ -1,8 +1,6 @@
 package org.alfresco.solr;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,15 +24,14 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.Filter;
 
-import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
+import org.alfresco.solr.client.Transaction;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
@@ -62,7 +59,6 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
@@ -256,7 +252,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param waitMillis
      * @throws Exception
      */
-    public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception {
+    public void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception
+    {
         List<SolrCore> cores = getJettyCores(jettyContainers.values());
         cores.addAll(getJettyCores(jettyShards));
 
@@ -273,10 +270,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param waitMillis
      * @throws Exception
      */
-    public void waitForDocCount(Query query, int count, long waitMillis) throws Exception {
-
+    public void waitForDocCount(Query query, int count, long waitMillis) throws Exception 
+    {
         long begin = System.currentTimeMillis();
-
         List<SolrCore> cores = getJettyCores(jettyContainers.values());
         //TODO: Support multiple cores per jetty
         SolrCore controlCore = cores.get(0); //Get the first one
@@ -292,7 +288,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @param start
      * @throws Exception
      */
-    public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception {
+    public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception
+    {
         List<SolrCore> cores = getJettyCores(jettyShards);
         long timeOut = start+waitMillis;
         int totalCount = 0;
@@ -323,7 +320,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected List<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
     {
         List<SolrCore> cores = new ArrayList();
-        for (JettySolrRunner jettySolrRunner : runners) {
+        for (JettySolrRunner jettySolrRunner : runners) 
+        {
             jettySolrRunner.getCoreContainer().getCores().forEach(aCore -> cores.add(aCore));
         }
         return cores;
@@ -338,19 +336,25 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return jettyClients.get(DEFAULT_TEST_CORENAME);
     }
 
-    public void assertNodesPerShardGreaterThan(int count) throws Exception {
+    public void assertNodesPerShardGreaterThan(int count) throws Exception
+    {
         List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
-            for (SolrCore core : cores) {
+            for (SolrCore core : cores)
+            {
                 RefCounted<SolrIndexSearcher> refCounted = null;
-                try {
+                try 
+                {
                     refCounted = core.getSearcher();
                     SolrIndexSearcher searcher = refCounted.get();
                     TopDocs topDocs = searcher.search(query, 10);
-                    if(topDocs.totalHits < count) {
+                    if(topDocs.totalHits < count) 
+                    {
                         throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
                     }
-                } finally {
+                } 
+                finally 
+                {
                     refCounted.decref();
                 }
             }
@@ -469,7 +473,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         JettySolrRunner jsr =  createJetty(jettyKey);
         jettyContainers.put(jettyKey, jsr);
 
-        for (int i = 0; i < coreNames.length; i++) {
+        for (int i = 0; i < coreNames.length; i++) 
+        {
             addCoreToJetty(jettyKey, coreNames[i], coreNames[i], additionalProperties);
         }
 
@@ -477,7 +482,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         startJetty(jsr);
 
         int jettyPort = jsr.getLocalPort();
-        for (int i = 0; i < coreNames.length; i++) {
+        for (int i = 0; i < coreNames.length; i++)
+        {
             String url = buildUrl(jettyPort) + "/" + coreNames[i];
             log.info(url);
             jettyClients.put(coreNames[i], createNewSolrClient(url));
@@ -485,8 +491,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
-        String shardMethod = getShardMethod().toString();
-        log.info("################# shardMethod:"+shardMethod);
 
         for (int i = 0; i < numShards; i++)
         {
@@ -494,7 +498,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             final String shardname = "shard" + i;
             if (additionalProperties == null) additionalProperties = new Properties();
             additionalProperties.put("shard.instance", Integer.toString(i));
-            additionalProperties.put("shard.method", shardMethod);
             additionalProperties.put("shard.count", Integer.toString(numShards));
 
             String shardKey = jettyKey+"_shard_"+i;
@@ -512,11 +515,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
         shards = sb.toString();
     }
-
-    protected ShardMethodEnum getShardMethod() {
-        return ShardMethodEnum.DB_ID;
-    }
-
 
     protected void setDistributedParams(ModifiableSolrParams params)
     {
@@ -1489,6 +1487,18 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.numShards = numShards;
             this.solrcoreProperties = new Properties();
+        }
+        /**
+         * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * @param numShards
+         * @param solr core properties
+         */
+        public JettyServerRule(int numShards, Properties solrcoreProperties)
+        {
+            this.serverName = DEFAULT_TEST_CORENAME;
+            coreNames = new String[]{DEFAULT_TEST_CORENAME};
+            this.numShards = numShards;
+            this.solrcoreProperties = solrcoreProperties;
         }
 
         @Override
