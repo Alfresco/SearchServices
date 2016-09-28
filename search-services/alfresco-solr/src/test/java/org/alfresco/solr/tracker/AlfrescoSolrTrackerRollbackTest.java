@@ -65,7 +65,7 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
     @BeforeClass
     public static void beforeClass() throws Exception
     {
-        initAlfrescoCore("solrconfig-afts.xml", "schema-afts.xml");
+        initAlfrescoCore("schema.xml");
     }
 
     @Before

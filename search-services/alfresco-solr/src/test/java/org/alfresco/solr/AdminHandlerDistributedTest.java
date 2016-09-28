@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.alfresco.repo.index.shard.ShardMethodEnum.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;

@@ -29,7 +29,7 @@ import org.apache.lucene.search.Weight;
  */
 public abstract class AbstractAuthorityQuery extends Query
 {
-    protected String authority;
+    protected final String authority;
     
     /**
      * Construct with authority.
@@ -38,10 +38,10 @@ public abstract class AbstractAuthorityQuery extends Query
      */
     public AbstractAuthorityQuery(String authority)
     {
+        if (authority == null) throw new IllegalStateException("authority cannot be null");
         this.authority = authority;
     }
 
-    
     @Override
     public abstract Weight createWeight(IndexSearcher searcher, boolean needsScores) throws IOException;
     
@@ -49,33 +49,20 @@ public abstract class AbstractAuthorityQuery extends Query
     {
         return toString();
     }
-    
+
     @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((authority == null) ? 0 : authority.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractAuthorityQuery)) return false;
+
+        AbstractAuthorityQuery that = (AbstractAuthorityQuery) o;
+
+        return authority.equals(that.authority);
+
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AbstractAuthorityQuery other = (AbstractAuthorityQuery) obj;
-        if (authority == null)
-        {
-            if (other.authority != null)
-                return false;
-        }
-        else if (!authority.equals(other.authority))
-            return false;
-        return true;
+    public int hashCode() {
+        return authority.hashCode();
     }
 }
