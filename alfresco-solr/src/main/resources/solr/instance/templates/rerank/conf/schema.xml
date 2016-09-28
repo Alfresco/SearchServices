@@ -564,7 +564,7 @@
    <fields>
       <!-- For SOLR cloud - should be the node version -->
       <field name="_version_"             type="version"     indexed="false"                   stored="true"                        docValues="true"  required="true" />
-      <field name="FINGERPRINT"           type="identifier"  indexed="true"  omitNorms="true"  stored="false" multiValued="true"  required="false"  docValues="false"/>
+      <field name="MINHASH"           type="identifier"  indexed="true"  omitNorms="true"  stored="false" multiValued="true"  required="false"  docValues="false"/>
 
        <!-- For block join - currently not used -->
       <field name="_root_"                type="identifier"  indexed="true"                    stored="false"/>

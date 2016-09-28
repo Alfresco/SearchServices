@@ -700,7 +700,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         if (solrDoc != null)
         {
 
-            SolrInputField mh = solrDoc.getField("FINGERPRINT");
+            SolrInputField mh = solrDoc.getField("MINHASH");
             if (mh != null)
             {
                 Collection values = mh.getValues();
@@ -729,7 +729,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 int rowInBand = 0;
                 for (Object token : values)
                 {
-                    TermQuery tq = new TermQuery(new Term("FINGERPRINT", token.toString()));
+                    TermQuery tq = new TermQuery(new Term("MINHASH", token.toString()));
                     if (bandSize == 1)
                     {
                         builder.add(new ConstantScoreQuery(tq), Occur.SHOULD);
@@ -752,7 +752,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 {
                     for (Object token : values)
                     {
-                        TermQuery tq = new TermQuery(new Term("FINGERPRINT", token.toString()));
+                        TermQuery tq = new TermQuery(new Term("MINHASH", token.toString()));
                         childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
                         rowInBand++;
                         if (rowInBand == bandSize)
