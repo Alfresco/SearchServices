@@ -1,10 +1,14 @@
 package org.alfresco.rest.comments;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.requests.RestCommentsApi;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -17,7 +21,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "comments", "sanity" })
-public class UpdateCommentsTest extends RestTest
+public class UpdateCommentsSanityTest extends RestTest
 {
 
     @Autowired
@@ -30,6 +34,7 @@ public class UpdateCommentsTest extends RestTest
     private FileModel document;
     private SiteModel siteModel;
     private RestCommentModel commentModel;
+    private HashMap<UserRole, UserModel> usersWithRoles;
 
     @BeforeClass
     public void initTest() throws Exception
@@ -40,12 +45,23 @@ public class UpdateCommentsTest extends RestTest
         commentsAPI.useRestClient(restClient);
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         commentModel = commentsAPI.addComment(document.getNodeRef(), "This is a new comment");
+        
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
     }
 
     @TestRail(section = { "rest-api",
             "comments" }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments with Rest API and status code is 200")
     public void adminIsAbleToUpdateComments() throws JsonToModelConversionException, Exception
     {
+        commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), commentModel.getContent());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify Manager user updates comments created by admin user with Rest API and status code is 200")
+    public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
         commentsAPI.updateComment(document.getNodeRef(), commentModel.getId(), commentModel.getContent());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
