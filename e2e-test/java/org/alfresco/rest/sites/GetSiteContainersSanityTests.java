@@ -36,6 +36,7 @@ public class GetSiteContainersSanityTests extends RestTest
     private UserModel adminUserModel;
     private SiteModel siteModel;
     private HashMap<UserRole, UserModel> usersWithRoles;
+    private UserModel userModel;
 
     @BeforeClass
     public void initTest() throws Exception
@@ -90,5 +91,17 @@ public class GetSiteContainersSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         siteAPI.getSiteContainers(siteModel.getId());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Failed authentication get site containers call returns status code 401 with Manager role")
+    public void getSiteContainersWithManagerRoleFailedAuth() throws JsonToModelConversionException, Exception
+    {
+        userModel = dataUser.createRandomTestUser();
+        userModel.setPassword("user wrong password");
+        dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
+        restClient.authenticateUser(userModel);
+        siteAPI.getSiteContainers(siteModel.getId());
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
     }
 }
