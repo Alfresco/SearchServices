@@ -9,7 +9,6 @@ import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +70,8 @@ public class RestDemoTest extends RestTest
     @Test  
     public void adminCanPostAndUpdateComments() throws Exception
     {
-        FileModel fileModel = dataContent.usingResource(new FolderModel("Shared"))
-        			       .usingUser(userModel)
-        			       .createContent(DocumentType.TEXT_PLAIN);
+        FileModel fileModel = dataContent.usingUser(userModel).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        
         // add new comment
         RestCommentModel commentEntry = commentsAPI.addComment(fileModel.getNodeRef(), "This is a new comment");
         commentsAPI.getNodeComments(fileModel.getNodeRef())

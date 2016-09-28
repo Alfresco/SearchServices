@@ -45,7 +45,8 @@ public class GetCommentsSanityTest extends RestTest
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         commentsAPI.addComment(document.getNodeRef(), "This is a new comment");
         
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
+                    Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
     }
     
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,

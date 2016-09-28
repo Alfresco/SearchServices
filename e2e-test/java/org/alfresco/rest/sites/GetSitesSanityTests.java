@@ -1,8 +1,9 @@
-package org.alfresco.rest;
+package org.alfresco.rest.sites;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.data.DataSite;
@@ -48,10 +49,10 @@ public class GetSitesSanityTests extends RestTest
                 Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
     }
 
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets sites information and gets status code OK (200)")
-    public void getSitesWithManagerRole() throws JsonToModelConversionException, Exception
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Manager role gets sites information and gets status code OK (200)")
+    public void managerIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
-
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
@@ -59,9 +60,8 @@ public class GetSitesSanityTests extends RestTest
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets sites information and gets status code OK (200)")
-    public void getSitesWithCollaboratorRole() throws JsonToModelConversionException, Exception
+    public void collaboratorIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
-
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
@@ -69,9 +69,8 @@ public class GetSitesSanityTests extends RestTest
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets sites information and gets status code OK (200)")
-    public void getSitesWithContributorRole() throws JsonToModelConversionException, Exception
+    public void contributorIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
-
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
@@ -79,17 +78,16 @@ public class GetSitesSanityTests extends RestTest
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets sites information and gets status code OK (200)")
-    public void getSitesWithConsumerRole() throws JsonToModelConversionException, Exception
+    public void consumerIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
-
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteConsumer));
         siteAPI.getAllSites();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Verify user with Admin user gets sites information and gets status code OK (200)")
-    public void getSitesWithAdminUser() throws JsonToModelConversionException, Exception
+            description = "Verify admin user gets sites information and gets status code OK (200)")
+    public void adminUserIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
         siteAPI.getAllSites();
@@ -97,8 +95,8 @@ public class GetSitesSanityTests extends RestTest
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get sites call returns status code 401 with Manager role")
-    public void getSitesWithManagerRoleFailedAuth() throws JsonToModelConversionException, Exception
+            description = "Failed authentication on get sites call returns status code 401")
+    public void unauthenticatedUserIsNotAuthorizedToRetrieveSites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
         userModel = dataUser.createRandomTestUser();

@@ -1,8 +1,9 @@
-package org.alfresco.rest;
+package org.alfresco.rest.sites;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.data.DataSite;
@@ -21,7 +22,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-
 @Test(groups = { "rest-api", "sites", "sanity" })
 public class GetSiteSanityTests extends RestTest
 {
@@ -44,7 +44,6 @@ public class GetSiteSanityTests extends RestTest
     public void initTest() throws DataPreparationException
     {
         adminUserModel = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUserModel);
         siteAPI.useRestClient(restClient);
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
@@ -88,7 +87,7 @@ public class GetSiteSanityTests extends RestTest
     }
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Verify user with admin role gets site information and gets status code OK (200)")
+            description = "Verify admin user gets site information and gets status code OK (200)")
     public void getSiteWithAdminRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -97,7 +96,7 @@ public class GetSiteSanityTests extends RestTest
     }
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get site call returns status code 401 with Manager role")
+            description = "Failed authentication get site call returns status code 401")
     public void getSiteWithManagerRoleFailedAuth() throws JsonToModelConversionException, Exception
     {
         userModel = dataUser.createRandomTestUser();
