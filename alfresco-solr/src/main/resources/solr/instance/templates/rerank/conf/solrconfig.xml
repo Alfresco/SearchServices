@@ -835,6 +835,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
       <str>mlt</str>
@@ -864,6 +865,7 @@
    <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
       <str>mlt</str>
@@ -1795,6 +1797,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
       <str>mlt</str>
@@ -1837,6 +1840,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
       <str>mlt</str>
@@ -1861,6 +1865,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
       <str>mlt</str>
@@ -1900,6 +1905,6 @@
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
   <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
-
+  <searchComponent name="consistencyComponent"     class="org.alfresco.solr.component.ConsistencyComponent" />
 
 </config>

@@ -83,7 +83,7 @@
           <arr name="env"> <str>MYVAR=val1</str> </arr>
         </listener>
         -->
-
+<!--
         <updateLog enable="${enable.update.log:true}">
             <str name="dir">${solr.ulog.dir:}</str>
         </updateLog>
@@ -91,6 +91,7 @@
         <commitWithin>
             <softCommit>${solr.commitwithin.softcommit:true}</softCommit>
         </commitWithin>
+        -->
 
     </updateHandler>
 

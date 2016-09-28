@@ -37,7 +37,6 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.uninverting.UninvertingReader.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.QueryBuilder;
@@ -48,6 +47,7 @@ import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.QParser;
+import org.apache.solr.uninverting.UninvertingReader.Type;
 
 /**
  * Basic behaviour filtched from TextField

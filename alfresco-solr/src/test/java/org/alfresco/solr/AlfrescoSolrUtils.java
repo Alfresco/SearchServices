@@ -797,6 +797,7 @@ public class AlfrescoSolrUtils
             testingCore = getCore(coreContainer, coreName);
         }
 
+        TimeUnit.SECONDS.sleep(4); //Wait a little for background threads to catchup
         assertNotNull(testingCore);
         return testingCore;
     }
