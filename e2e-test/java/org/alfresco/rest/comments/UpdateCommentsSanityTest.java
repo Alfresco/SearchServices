@@ -94,5 +94,14 @@ public class UpdateCommentsSanityTest extends RestTest
         commentsAPI.getNodeComments(document.getNodeRef());
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
     }
+    
+    @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
+            description= "Verify if nodeId is not set the status code is 404")
+    public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        commentsAPI.updateComment("unexistingId", commentModel.getId(), commentModel.getContent());
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND.toString());
+    }
 
 }
