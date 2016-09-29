@@ -3,6 +3,7 @@ package org.alfresco.rest.people;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -89,5 +90,18 @@ public class GetPeopleTest extends RestTest
         restClient.authenticateUser(adminUser);
         peopleApi.getPerson(searchedUser.getUsername());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
+
+    @Test(groups = "sanity")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a non existing person with Rest API and person is not found")
+    public void managerUserChecksIfNonExistingPersonIsPresent() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        UserModel searchedNonUser = new UserModel("nonexistinguser", DataUser.PASSWORD);
+
+        restClient.authenticateUser(managerUser);
+        peopleApi.getPerson(searchedNonUser.getUsername());
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND.toString());
     }
 }
