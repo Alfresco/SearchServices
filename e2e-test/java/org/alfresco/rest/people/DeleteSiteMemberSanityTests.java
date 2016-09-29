@@ -12,6 +12,7 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         sitesApi.addPerson(siteModel, siteMember);
         
-        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        peopleApi.deleteSiteMember(newUser, siteModel);
         sitesApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -79,15 +80,15 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(adminUser);
         sitesApi.addPerson(siteModel, siteMember);
         
-        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        peopleApi.deleteSiteMember(newUser, siteModel);
         sitesApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
-            description = "Verify site collaborator does not have permission to delete another member of the site")
-    // TODO BUG ACE-5444
+            description = "Verify site collaborator does not have permission to delete another member of the site")    
+    @Bug(id="ACE-5444")
     public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         newUser = dataUser.createRandomTestUser();
@@ -96,14 +97,14 @@ public class DeleteSiteMemberSanityTests extends RestTest
         sitesApi.addPerson(siteModel, siteMember);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
-        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        peopleApi.deleteSiteMember(newUser, siteModel);
         sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
             description = "Verify site contributor does not have permission to delete another member of the site")
-    // TODO BUG ACE-5444
+    @Bug(id="ACE-5444")
     public void siteContributorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         newUser = dataUser.createRandomTestUser();
@@ -112,14 +113,14 @@ public class DeleteSiteMemberSanityTests extends RestTest
         sitesApi.addPerson(siteModel, siteMember);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
-        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        peopleApi.deleteSiteMember(newUser, siteModel);
         sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
             description = "Verify site consumer does not have permission to delete another member of the site")
-    // TODO BUG ACE-5444
+    @Bug(id="ACE-5444")
     public void siteConsumerIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         newUser = dataUser.createRandomTestUser();
@@ -128,7 +129,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         sitesApi.addPerson(siteModel, siteMember);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
-        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        peopleApi.deleteSiteMember(newUser, siteModel);
         sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
@@ -139,7 +140,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
-        peopleApi.deleteSiteMember(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer).getUsername(), siteModel.getId());
+        peopleApi.deleteSiteMember(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer), siteModel);
         sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
