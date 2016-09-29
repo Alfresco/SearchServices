@@ -93,4 +93,13 @@ public class DeleteCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
 
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't delete comments created by admin user with Rest API and status code is 403")
+    public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteConsumer));
+        commentsAPI.deleteComment(document.getNodeRef(), commentId);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+    }
+
 }
