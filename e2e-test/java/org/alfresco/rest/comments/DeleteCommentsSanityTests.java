@@ -102,4 +102,14 @@ public class DeleteCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
 
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToDeleteCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
+        restClient.authenticateUser(nonexistentModel);
+        commentsAPI.deleteComment(document.getNodeRef(), commentId);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
+    }
+
 }
