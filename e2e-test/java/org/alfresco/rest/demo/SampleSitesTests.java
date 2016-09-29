@@ -4,8 +4,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -22,12 +20,6 @@ public class SampleSitesTests extends RestTest
 {
     @Autowired
     RestSitesApi siteAPI;
-
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
 
     private UserModel userModel;
     private SiteModel siteModel;
