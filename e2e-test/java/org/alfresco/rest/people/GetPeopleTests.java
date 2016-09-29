@@ -14,7 +14,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "people" })
-public class GetPeopleTest extends RestTest
+public class GetPeopleTests extends RestTest
 {
     @Autowired
     RestPeopleApi peopleApi;
@@ -41,8 +41,8 @@ public class GetPeopleTest extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPerson(searchedUser.getUsername());
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        peopleApi.getPerson(searchedUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = "sanity")
@@ -53,8 +53,8 @@ public class GetPeopleTest extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPerson(searchedUser.getUsername());
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        peopleApi.getPerson(searchedUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = "sanity")
@@ -65,8 +65,8 @@ public class GetPeopleTest extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPerson(searchedUser.getUsername());
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        peopleApi.getPerson(searchedUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = "sanity")
@@ -77,8 +77,8 @@ public class GetPeopleTest extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPerson(searchedUser.getUsername());
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        peopleApi.getPerson(searchedUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = "sanity")
@@ -88,8 +88,8 @@ public class GetPeopleTest extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getPerson(searchedUser.getUsername());
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        peopleApi.getPerson(searchedUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = "sanity")
@@ -101,7 +101,7 @@ public class GetPeopleTest extends RestTest
         UserModel searchedNonUser = new UserModel("nonexistinguser", DataUser.PASSWORD);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPerson(searchedNonUser.getUsername());
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND.toString());
+        peopleApi.getPerson(searchedNonUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }
