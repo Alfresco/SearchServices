@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,29 +18,41 @@
  */
 package org.alfresco.solr;
 
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.SolrException;
+import org.apache.solr.common.params.CoreAdminParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
+import org.apache.solr.request.LocalSolrQueryRequest;
+import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.lang.invoke.MethodHandles;
+import java.util.Properties;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.assertSummaryCorrect;
+import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 
 /**
- * Tests the different templates.
+ * Tests creating the default alfresco cores with a property.
  *
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
+public class CoresCreateViaPropertyTest extends AbstractAlfrescoDistributedTest
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     final String JETTY_SERVER_ID = this.getClass().getSimpleName();
@@ -48,37 +60,38 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
     @Rule
     public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
 
+
+    @BeforeClass
+    public static void setProps()
+    {
+        System.setProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS, "alfresco,archive");
+    }
+
+    @AfterClass
+    protected static void cleanupProp()
+    {
+        System.clearProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS);
+    }
+
     @Test
-    public void newCoreUsinglshTemplate() throws Exception
+    public void newCoreUsingAllDefaults() throws Exception
     {
         CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
         assertNotNull(coreAdminHandler);
-        SolrCore rankCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "templateWithrerank", "rerank", 2, 1);
 
-        //Call custom actions
-        SolrQueryResponse response = callHandler(coreAdminHandler, rankCore, "SUMMARY");
-        assertSummaryCorrect(response, rankCore.getName());
+        TimeUnit.SECONDS.sleep(15); //Wait a little for background threads to catchup
+
+        //Get a reference to the new core
+        SolrCore defaultCore = getCore(coreContainer, "alfresco");
+        SolrCore archiveCore = getCore(coreContainer, "archive");
+
+        assertNotNull(defaultCore);
+        assertNotNull(archiveCore);
+
     }
-
-    @Test
-    public void newCoreUsingQlogTemplate() throws Exception
-    {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
-
-        //Now create the new core with
-        AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
-        assertNotNull(coreAdminHandler);
-        SolrCore corererank = createCoreUsingTemplate(coreContainer, coreAdminHandler, "woof", "rerankWithQueryLog/rerank", 1, 1);
-        SolrCore coreqlog = createCoreUsingTemplate(coreContainer, coreAdminHandler, "woof_qlog", "rerankWithQueryLog/qlog", 1, 1);
-
-        //Call custom actions
-        SolrQueryResponse response = callHandler(coreAdminHandler, corererank, "SUMMARY");
-        assertSummaryCorrect(response, corererank.getName());
-    }
-
 
 }
 

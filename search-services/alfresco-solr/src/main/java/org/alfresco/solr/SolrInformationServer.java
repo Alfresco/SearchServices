@@ -24,7 +24,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTX
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADETX;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADE_FLAG;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DENIED;
@@ -136,6 +135,9 @@ import org.alfresco.solr.tracker.TrackerStats;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
@@ -174,6 +176,7 @@ import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.FieldType;
+import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
@@ -224,9 +227,10 @@ public class SolrInformationServer implements InformationServer
     public static final String DOC_TYPE_ACL_TX = "AclTx";
     public static final String DOC_TYPE_STATE = "State";
 
-    public static final String SOLR_PROXY_HOST = "proxy.host";
-    public static final String SOLR_PROXY_PORT = "proxy.port";
-    public static final String SOLR_PROXY_BASEURL = "proxy.baseurl";
+    public static final String SOLR_HOST = "solr.host";
+    public static final String SOLR_PORT = "solr.port";
+    public static final String SOLR_BASEURL = "solr.baseurl";
+
 
     private static final Pattern CAPTURE_SITE = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/site/1\\.0\\}sites/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0}([^/]*)/.*" ); 
     private static final Pattern CAPTURE_TAG = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}taggable/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}([^/]*)/\\{\\}member");
@@ -250,7 +254,9 @@ public class SolrInformationServer implements InformationServer
     private long lag;
     private long holeRetention;
     private int contentStreamLimit;
-    
+    private boolean minHash;
+    public static final String FINGERPRINT_FIELD = "MINHASH";
+
     // Metadata pulling control
     private boolean skipDescendantDocsForSpecificTypes;
     private boolean skipDescendantDocsForSpecificAspects;
@@ -287,26 +293,15 @@ public class SolrInformationServer implements InformationServer
     private LRU cleanCascadeCache = new LRU(250000);
     private Set locks = new HashSet();
     // write a BytesRef as a byte array
-    JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver()
-    {
-        @Override
-        public Object resolve(Object o, JavaBinCodec codec) throws IOException
+    JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
+        if (o instanceof BytesRef)
         {
-            if (o instanceof BytesRef)
-            {
-                BytesRef br = (BytesRef) o;
-                codec.writeByteArray(br.bytes, br.offset, br.length);
-                return null;
-            }
-            return o;
+            BytesRef br = (BytesRef) o;
+            codec.writeByteArray(br.bytes, br.offset, br.length);
+            return null;
         }
+        return o;
     };
-    
-    @Override
-    public AlfrescoCoreAdminHandler getAdminHandler()
-    {
-        return this.adminHandler;
-    }
 
     public SolrInformationServer(AlfrescoCoreAdminHandler adminHandler,
                                  SolrCore core,
@@ -326,7 +321,8 @@ public class SolrInformationServer implements InformationServer
         recordUnindexedNodes = Boolean.parseBoolean(p.getProperty("alfresco.recordUnindexedNodes", "true"));
         lag = Integer.parseInt(p.getProperty("alfresco.lag", "1000"));
         holeRetention = Integer.parseInt(p.getProperty("alfresco.hole.retention", "3600000"));
-        
+        minHash = Boolean.parseBoolean(p.getProperty("alfresco.fingerprint", "true"));
+
         dataModel = AlfrescoSolrDataModel.getInstance();
 
         contentStreamLimit = Integer.parseInt(p.getProperty("alfresco.contentStreamLimit", "10000000"));
@@ -334,8 +330,8 @@ public class SolrInformationServer implements InformationServer
         // build base URL - host and port have to come from configuration.
         Properties props = AlfrescoSolrDataModel.getCommonConfig();
 
-        hostName = ConfigUtil.locateProperty(SOLR_PROXY_HOST, props.getProperty(SOLR_PROXY_HOST));
-        String portNumber = ConfigUtil.locateProperty(SOLR_PROXY_PORT, props.getProperty(SOLR_PROXY_PORT));
+        hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
+        String portNumber = ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
         if(portNumber != null)
         {
             try 
@@ -345,12 +341,20 @@ public class SolrInformationServer implements InformationServer
                 log.error("Failed to find a valid solr.port number, the default value is in shared.properties");
                 throw e;
             }
-            baseUrl = ConfigUtil.locateProperty(SOLR_PROXY_BASEURL, props.getProperty(SOLR_PROXY_BASEURL));
+            baseUrl = ConfigUtil.locateProperty(SOLR_BASEURL, props.getProperty(SOLR_BASEURL));
             baseUrl = (baseUrl.startsWith("/") ? "" : "/") + baseUrl + "/" + core.getName() + "/";
         }
     }
 
-    synchronized public void initSkippingDescendantDocs()
+
+    @Override
+    public AlfrescoCoreAdminHandler getAdminHandler()
+    {
+        return this.adminHandler;
+    }
+
+    @Override
+    public synchronized void initSkippingDescendantDocs()
     {
         if (isSkippingDocsInitialized)
         {
@@ -360,30 +364,19 @@ public class SolrInformationServer implements InformationServer
         skipDescendantDocsForSpecificTypes = Boolean.parseBoolean(p.getProperty("alfresco.metadata.skipDescendantDocsForSpecificTypes", "false"));
         if (skipDescendantDocsForSpecificTypes)
         {
-            initSkippingDescendantDocs(p, typesForSkippingDescendantDocs, PROP_PREFIX_PARENT_TYPE, FIELD_TYPE, new DefinitionExistChecker()
-            {
-                @Override
-                public boolean isDefinitionExists(QName qName)
-                {
-                    return (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getType(qName));
-                }
-            });
+            initSkippingDescendantDocs(p, typesForSkippingDescendantDocs, PROP_PREFIX_PARENT_TYPE, FIELD_TYPE,
+                    qName -> (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getType(qName)));
         }
         skipDescendantDocsForSpecificAspects = Boolean.parseBoolean(p.getProperty("alfresco.metadata.skipDescendantDocsForSpecificAspects", "false"));
         if (skipDescendantDocsForSpecificAspects)
         {
-            initSkippingDescendantDocs(p, aspectsForSkippingDescendantDocs, PROP_PREFIX_PARENT_ASPECT, FIELD_ASPECT, new DefinitionExistChecker()
-            {
-                @Override
-                public boolean isDefinitionExists(QName qName)
-                {
-                    return (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAspect(qName));
-                }
-            });
+            initSkippingDescendantDocs(p, aspectsForSkippingDescendantDocs, PROP_PREFIX_PARENT_ASPECT, FIELD_ASPECT,
+                    qName -> (null != dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAspect(qName)));
         }
         isSkippingDocsInitialized = true;
     }
 
+    @FunctionalInterface
     private interface DefinitionExistChecker
     {
         boolean isDefinitionExists(QName qName);
@@ -422,6 +415,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public void addFTSStatusCounts(NamedList<Object> report)
     {
         SolrQueryRequest request = null;
@@ -522,37 +516,19 @@ public class SolrInformationServer implements InformationServer
             
             // NODE
             setDuplicates(report, request, DOC_TYPE_NODE,
-                        new SetDuplicatesCommand() 
-                        {
-                            public void execute(IndexHealthReport indexHealthReport, long id)
-                            {
-                                indexHealthReport.setDuplicatedLeafInIndex(id);
-                            }
-                        });
+                    (indexHealthReport, id) -> indexHealthReport.setDuplicatedLeafInIndex(id));
             long leafDocCountInIndex = getSafeCount(docTypeCounts, DOC_TYPE_NODE);
             report.setLeafDocCountInIndex(leafDocCountInIndex);
             
             // ERROR
             setDuplicates(report, request, DOC_TYPE_ERROR_NODE,
-                        new SetDuplicatesCommand() 
-                        {
-                            public void execute(IndexHealthReport indexHealthReport, long id)
-                            {
-                                indexHealthReport.setDuplicatedErrorInIndex(id);
-                            }
-                        });
+                    (indexHealthReport, id) -> indexHealthReport.setDuplicatedErrorInIndex(id));
             long errorCount = getSafeCount(docTypeCounts, DOC_TYPE_ERROR_NODE);
             report.setErrorDocCountInIndex(errorCount);
             
             // UNINDEXED
             setDuplicates(report, request, DOC_TYPE_UNINDEXED_NODE,
-                        new SetDuplicatesCommand() 
-                        {
-                            public void execute(IndexHealthReport indexHealthReport, long id)
-                            {
-                                indexHealthReport.setDuplicatedUnindexedInIndex(id);
-                            }
-                        });
+                    (indexHealthReport, id) -> indexHealthReport.setDuplicatedUnindexedInIndex(id));
             long unindexedDocCountInIndex = getSafeCount(docTypeCounts, DOC_TYPE_UNINDEXED_NODE);
             report.setUnindexedDocCountInIndex(unindexedDocCountInIndex);
             return report;
@@ -3075,7 +3051,28 @@ public class SolrInformationServer implements InformationServer
             // release the response only when the content has been read
             response.release();
         }
-        
+
+        if(minHash && textContent.length() > 0) {
+
+            Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
+            TokenStream ts = analyzer.tokenStream("min_hash", textContent);
+            CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
+            ts.reset();
+            while (ts.incrementToken())
+            {
+                StringBuilder tokenBuff = new StringBuilder();
+                char[] buff = termAttribute.buffer();
+
+                for(int i=0; i<termAttribute.length();i++) {
+                    tokenBuff.append(Integer.toHexString(buff[i]));
+                }
+                doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
+
+            }
+            ts.end();
+            ts.close();
+        }
+
         long end = System.nanoTime();
         this.getTrackerStats().addDocTransformationTime(end - start);
         

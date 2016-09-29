@@ -41,12 +41,12 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
     String boolenField = "boolean@m_@mytest";
     String booleanValue = "aaa-true";
     String boolenDocField = "boolean@md_@mytest";
-    String categoryField = "category@m_@test";
-    String categoryDocField = "category@md_@test";
+    String categoryMultiField = "category@m_@test";
+    String categoryMultiDocField = "category@md_@test";
+    String categorySingleDocField = "category@sd_@test";
     String categoryValue = "test category-1";
     String qnameField = "qname@m_@hits";
     String qnameDocField = "qname@md_@hits";
-    
     
     @Before
     public void setup() throws Exception
@@ -59,8 +59,9 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
                 nodeRefSD, nodeRef, 
                 boolenField, booleanValue,
                 boolenDocField, booleanValue,
-                categoryField, categoryValue,
-                categoryDocField, categoryValue,
+                categoryMultiField, categoryValue,
+                categoryMultiDocField, categoryValue,
+                categorySingleDocField, categoryValue,
                 qnameField, ContentModel.PROP_HITS.toString(),
                 qnameDocField, ContentModel.PROP_HITS.toString(),
                 "_version_","1"
@@ -108,9 +109,11 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
     @Test
     public void testCategory() throws Exception
     {
-        assertQ(req("q", "*:*","facet", "true","facet.field", categoryDocField),
+        assertQ(req("q", "*:*","facet", "true","facet.field", categoryMultiDocField),
                 "//*[@name = '" + categoryValue + "']");
-        assertQ(req("q", "*:*","facet", "true","facet.field", categoryField),
+        assertQ(req("q", "*:*","facet", "true","facet.field", categorySingleDocField),
+                "//*[@name = '" + categoryValue + "']");
+        assertQ(req("q", "*:*","facet", "true","facet.field", categoryMultiField),
                 "//*[@name = 'test']");
     }
     @Test

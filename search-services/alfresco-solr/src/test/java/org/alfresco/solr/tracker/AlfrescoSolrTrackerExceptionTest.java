@@ -62,13 +62,14 @@ import org.junit.Test;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
+public class AlfrescoSolrTrackerExceptionTest extends AbstractAlfrescoSolrTests
 {
     private static Log logger = LogFactory.getLog(AlfrescoSolrTrackerTest.class);
     private static long MAX_WAIT_TIME = 80000;
     @BeforeClass
-    public static void beforeClass() throws Exception 
+    public static void beforeClass() throws Exception
     {
+        SOLRAPIQueueClient.setThrowException(true);
         initAlfrescoCore("schema.xml");
     }
 
@@ -99,7 +100,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         */
 
         logger.info("######### Starting tracker test ###########");
-        AclChangeSet aclChangeSet = getAclChangeSet(1);
+        AclChangeSet aclChangeSet = getAclChangeSet(1, 1);
 
         Acl acl = getAcl(aclChangeSet);
         Acl acl2 = getAcl(aclChangeSet);
@@ -108,10 +109,13 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
         AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
 
+        Thread.sleep(20000);
+        SOLRAPIQueueClient.setThrowException(false);
+        logger.info("#################### Stop throwing exceptions ##############################");
 
         indexAclChangeSet(aclChangeSet,
-                list(acl, acl2),
-                list(aclReaders, aclReaders2));
+                          list(acl, acl2),
+                          list(aclReaders, aclReaders2));
 
 
         //Check for the ACL state stamp.
@@ -122,6 +126,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
 
         logger.info("#################### Passed First Test ##############################");
+        //assert(false);
 
 
         /*
@@ -129,7 +134,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         */
 
         //First create a transaction.
-        Transaction txn = getTransaction(0, 2);
+        Transaction txn = getTransaction(0, 2, 1);
 
         //Next create two nodes to update for the transaction
         Node folderNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
@@ -146,8 +151,15 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                         list(errorNode, folderNode, fileNode),
-                         list(errorMetaData, folderMetaData, fileMetaData));
+                list(errorNode, folderNode, fileNode),
+                list(errorMetaData, folderMetaData, fileMetaData));
+
+        logger.info("#################### Start throwing exceptions ##############################");
+        SOLRAPIQueueClient.setThrowException(true);
+        Thread.sleep(10000);
+        SOLRAPIQueueClient.setThrowException(false);
+        logger.info("#################### Stop throwing exceptions ##############################");
+
 
         //Check for the TXN state stamp.
         logger.info("#################### Started Second Test ##############################");
@@ -197,7 +209,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
 
 
         //Mark the folder as needing cascade
-        Transaction txn1 = getTransaction(0, 1);
+        Transaction txn1 = getTransaction(0, 1, 2);
         //Update the properties on the Node and NodeMetaData to simulate an update to the Node.
         folderMetaData.getProperties().put(ContentModel.PROP_CASCADE_TX, new StringPropertyValue(Long.toString(txn1.getId())));
         folderNode.setTxnId(txn1.getId()); // Update the txnId
@@ -219,6 +231,8 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
         logger.info("#################### Passed Sixth Test ##############################");
+
+
 
 
         TermQuery termQuery1 = new TermQuery(new Term(QueryConstants.FIELD_ANCESTOR, nodeRef.toString()));
@@ -361,7 +375,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         params.add("sort", "id asc");
         params.add("fq", "{!afts}AUTHORITY_FILTER_FROM_JSON");
         req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"andy\"], \"tenants\": [ \"\" ]}");
-        //FIX ME assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
+        assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
 
         logger.info("#################### Passed Seventeenth Test ##############################");
 

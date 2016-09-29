@@ -20,29 +20,25 @@
 package org.alfresco.solr.query;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
+import org.alfresco.util.ISO9075;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Date;
-import java.util.Calendar;
-import org.alfresco.util.ISO9075;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
@@ -98,6 +94,9 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         loadEscapingTestData();
         testChildNameEscaping();
+        
+        loadMntTestData();
+        testMnt();
     }
 
     private void checkRootNodes() throws Exception {
@@ -1292,7 +1291,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         // Synonyms
         assertAQueryHasNumberOfDocs("\"leaping reynard\"", 1);
-        //TODO: assertAQueryHasNumberOfDocs("\"springer\"", 1);
+        assertAQueryHasNumberOfDocs("\"springer\"", 1);
 
         // 1 word in text 1..2 in query
         assertAQueryHasNumberOfDocs("lazy", 1);
@@ -1718,11 +1717,13 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         qname = QName.createQName(TEST_NAMESPACE, "boolean-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"true\"", 1);
 
-        qname = QName.createQName(TEST_NAMESPACE, "qname-ista");
-        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"{wibble}wobble\"", 1);
-        
+        /**
+         * //TODO:
         qname = QName.createQName(TEST_NAMESPACE, "noderef-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"" + testNodeRef + "\"", 1);
+
+        qname = QName.createQName(TEST_NAMESPACE, "qname-ista");
+        assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"{wibble}wobble\"", 1);
 
         qname = QName.createQName(TEST_NAMESPACE, "category-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\""
@@ -1732,6 +1733,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         qname = QName.createQName(TEST_NAMESPACE, "path-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"/{"
                         + NamespaceService.CONTENT_MODEL_1_0_URI + "}three\"", 1);
+        **/
 
         qname = QName.createQName(TEST_NAMESPACE, "any-many-ista");
         assertAQuery("\\@" + SearchLanguageConversion.escapeLuceneQuery(qname.toString()) + ":\"100\"", 1);
@@ -2003,5 +2005,47 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
     private void testChildNameEscaping() throws Exception {
         assertAQuery("PATH:\"/cm:" + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", 1);
         assertAQuery("PATH:\"/cm:" + ISO9075.encode(NUMERIC_LOCAL_NAME) + "\"", 1);
+    }
+    
+    private void testMnt() throws Exception 
+    {
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"one_two\""), null),
+                 "*[count(//doc)=3]");	
+    	 	  
+         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"Print\""), null),
+                  "*[count(//doc)=2]");	
+         
+         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"Print-Toolkit\""), null),
+                 "*[count(//doc)=2]");	
+         
+         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"Print-Toolkit-3204\""), null),
+                 "*[count(//doc)=1]");	
+    	 
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"Print-Toolkit-3204-The-Print-Toolkit-has-a-new-look-565022.html\""), null),
+                  "*[count(//doc)=1]");	
+    	  
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"*20150911100000*\""), null),
+                  "*[count(//doc)=1]");	
+    	  
+       	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple pear peach 20150911100000.txt\""), null),
+                  "*[count(//doc)=1]");
+
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple pear * 20150911100000.txt\""), null),
+                  "*[count(//doc)=1]");	
+    	  
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple * * 20150911100000.txt\""), null),
+                  "*[count(//doc)=1]");	
+    	  
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple * 20150911100000.txt\""), null),
+                  "*[count(//doc)=0]");	
+    	 
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"hello.txt\""), null),
+                  "*[count(//doc)=2]");	
+    	  
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"Test.hello.txt\""), null),
+                  "*[count(//doc)=1]");	
+    	  
+    	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"Test1.hello.txt\""), null),
+                  "*[count(//doc)=1]");	
     }
 }
