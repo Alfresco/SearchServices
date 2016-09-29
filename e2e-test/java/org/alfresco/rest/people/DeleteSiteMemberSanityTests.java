@@ -73,6 +73,21 @@ public class DeleteSiteMemberSanityTests extends RestTest
     
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
+            description = "Verify admin user is able to delete another member of the site")
+    public void adminIsAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
+    {
+        newUser = dataUser.createRandomTestUser();
+        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
+        restClient.authenticateUser(adminUser);
+        sitesApi.addPerson(siteModel.getId(), siteMember);
+        
+        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        sitesApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, 
             description = "Verify site collaborator does not have permission to delete another member of the site")
     // TODO BUG ACE-5444
     public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
@@ -121,17 +136,12 @@ public class DeleteSiteMemberSanityTests extends RestTest
     
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
-            description = "Verify admin user is able to delete another member of the site")
-    public void adminIsAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
+            description = "Verify unauthenticated user is not able to delete another member of the site")
+    public void unauthenticatedUserIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
-        newUser = dataUser.createRandomTestUser();
-        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
-        restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel.getId(), siteMember);
-        
-        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
-        sitesApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
-    }
+        restClient.authenticateUser(new UserModel("random user", "random password"));
 
+        peopleApi.deleteSiteMember(usersWithRoles.get(UserRole.SiteConsumer).getUsername(), siteModel.getId());
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
+    }
 }
