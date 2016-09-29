@@ -75,13 +75,29 @@ public class DeleteSiteMemberSanityTests extends RestTest
             executionType = ExecutionType.SANITY, 
             description = "Verify site collaborator does not have permission to delete another member of the site")
     // TODO BUG ACE-5444
-    public void siteCollaboratorCanDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
+    public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         newUser = dataUser.createRandomTestUser();
         siteMember = new SiteMember(Role.SiteContributor.toString(), newUser.getUsername());
         restClient.authenticateUser(adminUser);
         sitesApi.addPerson(siteModel.getId(), siteMember);
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
+
+        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+    }
+    
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, 
+            description = "Verify site contributor does not have permission to delete another member of the site")
+    // TODO BUG ACE-5444
+    public void siteContributorUIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
+    {
+        newUser = dataUser.createRandomTestUser();
+        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
+        restClient.authenticateUser(adminUser);
+        sitesApi.addPerson(siteModel.getId(), siteMember);
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
 
         peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
         sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
