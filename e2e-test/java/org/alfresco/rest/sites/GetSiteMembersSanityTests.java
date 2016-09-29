@@ -67,4 +67,13 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.getSiteMembers(siteModel.getId());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Contributor role gets site members and gets status code OK (200)")
+    public void getSiteMembersWithContributorRole() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
+        siteAPI.getSiteMembers(siteModel.getId());
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 }
