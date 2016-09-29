@@ -1,14 +1,12 @@
 package org.alfresco.rest.sites;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -36,7 +34,7 @@ public class GetSiteMembersSanityTests extends RestTest
 
     private SiteModel siteModel;
     private UserModel adminUser;
-    private HashMap<UserRole, UserModel> usersWithRoles;
+    private ListUserWithRoles usersWithRoles;
     private UserModel userModel;
 
     @BeforeClass(alwaysRun=true)
@@ -45,45 +43,43 @@ public class GetSiteMembersSanityTests extends RestTest
         adminUser = dataUser.getAdminUser();
         siteAPI.useRestClient(restClient);
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
-                Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
-
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site members and gets status code OK (200)")
     public void getSiteMembersWithManagerRole() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
-        siteAPI.getSiteMembers(siteModel.getId());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        siteAPI.getSiteMembers(siteModel);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site members and gets status code OK (200)")
     public void getSiteMembersWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
-        siteAPI.getSiteMembers(siteModel.getId());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        siteAPI.getSiteMembers(siteModel);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site members and gets status code OK (200)")
     public void getSiteMembersWithContributorRole() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
-        siteAPI.getSiteMembers(siteModel.getId());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        siteAPI.getSiteMembers(siteModel);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site members and gets status code OK (200)")
     public void getSiteMembersWithConsumerRole() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteConsumer));
-        siteAPI.getSiteMembers(siteModel.getId());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        siteAPI.getSiteMembers(siteModel);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
@@ -91,8 +87,8 @@ public class GetSiteMembersSanityTests extends RestTest
     public void getSiteMembersWithAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
-        siteAPI.getSiteMembers(siteModel.getId());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+        siteAPI.getSiteMembers(siteModel);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
@@ -103,7 +99,7 @@ public class GetSiteMembersSanityTests extends RestTest
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
-        siteAPI.getSiteMembers(siteModel.getId());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
+        siteAPI.getSiteMembers(siteModel);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
