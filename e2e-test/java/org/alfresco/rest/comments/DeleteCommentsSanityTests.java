@@ -76,10 +76,19 @@ public class DeleteCommentsSanityTests extends RestTest
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user delete comments created by admin user with Rest API and status code is 403")
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can't delete comments created by admin user with Rest API and status code is 403")
     public void collaboratorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
+        commentsAPI.deleteComment(document.getNodeRef(), commentId);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+    }
+
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete comments created by admin user with Rest API and status code is 403")
+    public void contributorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
         commentsAPI.deleteComment(document.getNodeRef(), commentId);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
