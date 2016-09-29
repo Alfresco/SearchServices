@@ -83,6 +83,15 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     private static ChildAssociationRef n14CAR_12;
     private static ChildAssociationRef n14CAR_13;
     private static ChildAssociationRef n15CAR;
+    private static ChildAssociationRef n19CAR;
+    private static ChildAssociationRef n20CAR;
+    private static ChildAssociationRef n21CAR;
+    private static ChildAssociationRef n22CAR;
+    private static ChildAssociationRef n23CAR;
+    private static ChildAssociationRef n24CAR;
+    private static ChildAssociationRef n25CAR;
+    private static ChildAssociationRef n26CAR;
+    
 
     private static NodeRef n01NodeRef;
     private static NodeRef n02NodeRef;
@@ -99,6 +108,14 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     private static NodeRef n13NodeRef;
     private static NodeRef n14NodeRef;
     private static NodeRef n15NodeRef;
+    private static NodeRef n19NodeRef;
+    private static NodeRef n20NodeRef;
+    private static NodeRef n21NodeRef;
+    private static NodeRef n22NodeRef;
+    private static NodeRef n23NodeRef;
+    private static NodeRef n24NodeRef;
+    private static NodeRef n25NodeRef;
+    private static NodeRef n26NodeRef;
 
     private static NodeRef rootNodeRef;
     private static QName n01QName;
@@ -120,6 +137,14 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     private static QName n14QName;
     private static QName n14QNameCommon;
     private static QName n15QName;
+    private static QName n19QName;
+    private static QName n20QName;
+    private static QName n21QName;
+    private static QName n22QName;
+    private static QName n23QName;
+    private static QName n24QName;
+    private static QName n25QName;
+    private static QName n26QName;
 
 
 
@@ -129,6 +154,14 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     private static HashMap<QName, String> content14;
     private static HashMap<QName, PropertyValue> properties15;
     private static HashMap<QName, String> content15;
+    private static HashMap<QName, PropertyValue> properties19;
+    private static HashMap<QName, PropertyValue> properties20;
+    private static HashMap<QName, PropertyValue> properties21;
+    private static HashMap<QName, PropertyValue> properties22;
+    private static HashMap<QName, PropertyValue> properties23;
+    private static HashMap<QName, PropertyValue> properties24;
+    private static HashMap<QName, PropertyValue> properties25;
+    private static HashMap<QName, PropertyValue> properties26;
 
 
     @BeforeClass
@@ -663,6 +696,111 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         addNode(core, dataModel, 1, 18, 1, testSuperType, null, null, null, "system",
                 new ChildAssociationRef[] { numericCAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
                         + pathNumericNameEscapingQName.toString() }, numericNameEscapingNodeRef, true);
+    }
+    
+    public static void loadMntTestData() throws Exception {
+        SolrCore core = h.getCore();
+
+        properties19= new HashMap<QName, PropertyValue>();
+        properties19.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("Test.hello.txt"));
+        n19NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n19QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "nineteen");
+        n19CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n19QName,
+        		n19NodeRef, true, 0);
+        addNode(core, dataModel, 1, 19, 1,  ContentModel.TYPE_CONTENT, null, properties19, null, "system",
+                new ChildAssociationRef[] { n19CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n19QName.toString() }, n19NodeRef, true);
+        
+        
+        properties20 = new HashMap<QName, PropertyValue>();
+        properties20.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("Test1.hello.txt"));
+        n20NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n20QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twenty");
+        n20CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n20QName,
+        		n20NodeRef, true, 0);
+        addNode(core, dataModel, 1, 20, 1,  ContentModel.TYPE_CONTENT, null, properties20, null, "system",
+                new ChildAssociationRef[] { n20CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n20QName.toString() }, n20NodeRef, true);
+        
+        
+        properties21 = new HashMap<QName, PropertyValue>();
+        properties21.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("one_two_three.txt"));
+        n21NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n21QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twentyone");
+        n21CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n21QName,
+        		n21NodeRef, true, 0);
+        addNode(core, dataModel, 1, 21, 1,  ContentModel.TYPE_CONTENT, null, properties21, null, "system",
+                new ChildAssociationRef[] { n21CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n21QName.toString() }, n21NodeRef, true);
+        
+        properties22 = new HashMap<QName, PropertyValue>();
+        properties22.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("one_two_four.txt"));
+        n22NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n22QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twnetytwo");
+        n22CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n22QName,
+        		n22NodeRef, true, 0);
+        addNode(core, dataModel, 1, 22, 1,  ContentModel.TYPE_CONTENT, null, properties22, null, "system",
+                new ChildAssociationRef[] { n22CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n22QName.toString() }, n22NodeRef, true);
+        
+        properties23 = new HashMap<QName, PropertyValue>();
+        properties23.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("one_two.txt"));
+        n23NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n23QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twentythree");
+        n23CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n23QName,
+        		n23NodeRef, true, 0);
+        addNode(core, dataModel, 1, 23, 1,  ContentModel.TYPE_CONTENT, null, properties23, null, "system",
+                new ChildAssociationRef[] { n23CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n23QName.toString() }, n23NodeRef, true);
+        
+        properties24 = new HashMap<QName, PropertyValue>();
+        properties24.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("Print-Toolkit-3204-The-Print-Toolkit-has-a-new-look-565022.html"));
+        n24NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n24QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twentyfour");
+        n24CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n24QName,
+        		n24NodeRef, true, 0);
+        addNode(core, dataModel, 1, 24, 1,  ContentModel.TYPE_CONTENT, null, properties24, null, "system",
+                new ChildAssociationRef[] { n24CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n24QName.toString() }, n24NodeRef, true);
+        
+        
+        properties25 = new HashMap<QName, PropertyValue>();
+        properties25.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("Print-Toolkitf-3204-The-Print-Toolkit-has-a-new-look-565022.html"));
+        n25NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n25QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twentyfive");
+        n25CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n25QName,
+        		n25NodeRef, true, 0);
+        addNode(core, dataModel, 1, 25, 1,  ContentModel.TYPE_CONTENT, null, properties25, null, "system",
+                new ChildAssociationRef[] { n25CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n25QName.toString() }, n25NodeRef, true);
+        
+        properties26 = new HashMap<QName, PropertyValue>();
+        properties26.put(
+                ContentModel.PROP_NAME,
+                new StringPropertyValue("apple pear peach 20150911100000.txt"));
+        n26NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
+        n26QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "twentysix");
+        n26CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rootNodeRef, n26QName,
+        		n26NodeRef, true, 0);
+        addNode(core, dataModel, 1, 26, 1,  ContentModel.TYPE_CONTENT, null, properties26, null, "system",
+                new ChildAssociationRef[] { n26CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
+                        + n26QName.toString() }, n26NodeRef, true);
+
+
     }
 
 

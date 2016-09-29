@@ -18,6 +18,8 @@
  */
 package org.alfresco.solr.config;
 
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
+import org.alfresco.solr.SolrInformationServer;
 import org.junit.Test;
 
 import java.util.Map;
@@ -59,7 +61,10 @@ public class ConfigUtilTest {
         assertEquals("SOLR_GETHIN",ConfigUtil.convertPropertyNameToEnvironmentParam("gethin"));
         assertEquals("SOLR_SOLR_CONTENT_DIR",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.content.dir"));
         assertEquals("SOLR_SOLR_MODEL_DIR",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.model.dir"));
-        assertEquals("SOLR_SOLR_HOST",ConfigUtil.convertPropertyNameToEnvironmentParam("solr.host"));
+        assertEquals("SOLR_CREATE_ALFRESCO_DEFAULTS",ConfigUtil.convertPropertyNameToEnvironmentParam(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS));
+        assertEquals("SOLR_SOLR_HOST",ConfigUtil.convertPropertyNameToEnvironmentParam(SolrInformationServer.SOLR_HOST));
+        assertEquals("SOLR_SOLR_PORT",ConfigUtil.convertPropertyNameToEnvironmentParam(SolrInformationServer.SOLR_PORT));
+        assertEquals("SOLR_SOLR_BASEURL",ConfigUtil.convertPropertyNameToEnvironmentParam(SolrInformationServer.SOLR_BASEURL));
     }
 
 }

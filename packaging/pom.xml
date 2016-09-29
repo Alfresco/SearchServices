@@ -10,6 +10,9 @@
       <alfresco.solr.config># Alfresco configuration
 # This file is automatically included by solr. You can define your custom settings here
 SOLR_OPTS="$SOLR_OPTS -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.threads.stop.timeout=300000"</alfresco.solr.config>
+      <alfresco.solr.config.win>REM Alfresco configuration
+REM This file is automatically included by solr. You can define your custom settings here
+set SOLR_OPTS=%SOLR_OPTS% -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.threads.stop.timeout=300000</alfresco.solr.config.win>
     </properties>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -125,11 +128,20 @@ SOLR_OPTS="$SOLR_OPTS -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.thre
                                 <replace token= "SOLR_SERVER_DIR/solr" value="SOLR_TIP/../solrhome" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr"/>
                                 </replace>
+                                <replace token= "%SOLR_SERVER_DIR%\solr" value="%SOLR_TIP%\..\solrhome" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.cmd"/>
+                                </replace>
                                 <replace token= "HOME/.solr.in.sh" value="SOLR_TIP/../solr.in.sh" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr"/>
                                 </replace>
+                                <replace token= "\bin\solr.in.cmd" value="\..\solr.in.cmd" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.cmd"/>
+                                </replace>
                                 <replace token= "# Set the thread stack size" value="${alfresco.solr.config}${line.separator}${line.separator}# Set the thread stack size" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.sh"/>
+                                </replace>
+                                <replace token= "REM Set the thread stack size" value="${alfresco.solr.config.win}${line.separator}${line.separator}REM Set the thread stack size" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd"/>
                                 </replace>
                                 <chmod file="target/solr-${solr.version}/bin/solr" perm="755"/>
                             </target>

@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
@@ -83,6 +82,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
 import org.apache.lucene.document.Document;
@@ -96,7 +96,6 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.RegexpQuery;
@@ -112,6 +111,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.apache.solr.analysis.TokenizerChain;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
@@ -223,6 +223,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         return searchParameters;
     }
 
+    @Override
     protected Query getFieldQuery(String field, String queryText, int slop) throws ParseException
     {
         try
@@ -679,6 +680,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
      * @param field
      * @param queryText
      * @param analysisMode
+     *
      * @param luceneFunction
      * @return
      * @throws IOException
@@ -698,11 +700,10 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         if (solrDoc != null)
         {
 
-            Document doc = DocumentBuilder.toDocument(solrDoc, schema);
-            IndexableField mh = doc.getField("min_hash");
+            SolrInputField mh = solrDoc.getField("MINHASH");
             if (mh != null)
             {
-                ArrayList<String> tokens = getTokens(mh);
+                Collection values = mh.getValues();
                 int bandSize = 1;
                 float fraction = -1;
                 float truePositive = 1;
@@ -721,14 +722,14 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     {
                         truePositive /= 100;
                     }
-                    bandSize = computeBandSize(tokens.size(), fraction, truePositive);
+                    bandSize = computeBandSize(values.size(), fraction, truePositive);
                 }
                 BooleanQuery.Builder builder = new BooleanQuery.Builder();
                 BooleanQuery.Builder childBuilder = new BooleanQuery.Builder();
                 int rowInBand = 0;
-                for (String token : tokens)
+                for (Object token : values)
                 {
-                    TermQuery tq = new TermQuery(new Term("min_hash", token));
+                    TermQuery tq = new TermQuery(new Term("MINHASH", token.toString()));
                     if (bandSize == 1)
                     {
                         builder.add(new ConstantScoreQuery(tq), Occur.SHOULD);
@@ -749,9 +750,9 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 // start
                 if (childBuilder.build().clauses().size() > 0)
                 {
-                    for (String token : tokens)
+                    for (Object token : values)
                     {
-                        TermQuery tq = new TermQuery(new Term("min_hash", token));
+                        TermQuery tq = new TermQuery(new Term("MINHASH", token.toString()));
                         childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
                         rowInBand++;
                         if (rowInBand == bandSize)
@@ -765,18 +766,21 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 builder.setDisableCoord(true);
                 if (parts.length == 2)
                 {
-                    builder.setMinimumNumberShouldMatch((int) (Math.ceil(tokens.size() * fraction)));
+                    builder.setMinimumNumberShouldMatch((int) (Math.ceil(values.size() * fraction)));
                 }
-                return builder.build();
+                Query q = builder.build();
+                return q;
             } else
             {
                 return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
             }
-        } else
+        }
+        else
         {
             return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
         }
     }
+
 
     private int computeBandSize(int numHash, double sim, double expectedTruePositive)
     {
@@ -1674,7 +1678,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         }
 
         // Put in real position increments as we treat them correctly
-
+     
         int curentIncrement = -1;
         for (PackedTokenAttributeImpl c : list)
         {
@@ -1690,9 +1694,28 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             }
         }
 
-        // Remove small bits already covered in larger fragments
-        list = getNonContained(list);
-
+        // Fix up position increments for in phrase isolated wildcards
+        
+        boolean lastWasWild = false;
+        for(int i = 0; i < list.size() -1; i++)
+        {
+        	for(int j = list.get(i).endOffset() + 1; j < list.get(i + 1).startOffset() - 1; j++)
+        	{
+        		if(wildcardPoistions.contains(j))
+        		{
+        			if(!lastWasWild)
+        			{
+        			    list.get(i+1).setPositionIncrement(list.get(i+1).getPositionIncrement() + 1);
+        			}
+        			lastWasWild = true;
+        		}
+        		else
+        		{
+        			lastWasWild = false;
+        		}
+        	}
+        }
+        
         Collections.sort(list, new Comparator<PackedTokenAttributeImpl>()
         {
 
@@ -2022,12 +2045,12 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 String post = postfix.toString();
                 int oldPositionIncrement = replace.getPositionIncrement();
                 String replaceTermText = replace.toString();
-                replace = new PackedTokenAttributeImpl();
-                replace.setEmpty().append(replaceTermText + post);
-                replace.setOffset(replace.startOffset(), replace.endOffset() + post.length());
-                replace.setType(replace.type());
-                replace.setPositionIncrement(oldPositionIncrement);
-                fixedTokenSequence.add(replace);
+                PackedTokenAttributeImpl terminal = new PackedTokenAttributeImpl();
+                terminal.setEmpty().append(replaceTermText + post);
+                terminal.setOffset(replace.startOffset(), replace.endOffset() + post.length());
+                terminal.setType(replace.type());
+                terminal.setPositionIncrement(oldPositionIncrement);
+                fixedTokenSequence.add(terminal);
             }
         }
 
@@ -2041,7 +2064,27 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 fixed.add(token);
             }
         }
+
+        // reorder by start position and increment
+
+        Collections.sort(fixed, new Comparator<PackedTokenAttributeImpl>()
+        {
+
+            public int compare(PackedTokenAttributeImpl o1, PackedTokenAttributeImpl o2)
+            {
+                int dif = o1.startOffset() - o2.startOffset();
+                if (dif != 0)
+                {
+                    return dif;
+                } else
+                {
+                    return o1.getPositionIncrement() - o2.getPositionIncrement();
+                }
+            }
+        });
+
         // make sure we remove any tokens we have duplicated
+
         @SuppressWarnings("rawtypes")
         OrderedHashSet unique = new OrderedHashSet();
         unique.addAll(fixed);
@@ -2091,7 +2134,9 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         boolean forceConjuncion = rerankPhase == RerankPhase.QUERY_PHASE;
 
         if (list.size() == 0)
+        {
             return null;
+        }
         else if (list.size() == 1)
         {
             nextToken = list.get(0);
@@ -2099,11 +2144,13 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             if (!isNumeric && (termText.contains("*") || termText.contains("?")))
             {
                 return newWildcardQuery(new Term(field, termText));
-            } else
+            } 
+            else
             {
                 return newTermQuery(new Term(field, termText));
             }
-        } else
+        } 
+        else
         {
             if (severalTokensAtSamePosition)
             {
@@ -2126,7 +2173,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         q.add(currentQuery, BooleanClause.Occur.SHOULD);
                     }
                     return q.build();
-                } else if (forceConjuncion)
+                } 
+                else if (forceConjuncion)
                 {
                     BooleanQuery.Builder or = new BooleanQuery.Builder();
 
@@ -2183,71 +2231,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     return weakPhrase.build();
 
                 }
-                // Consider if we can use a multi-phrase query (e.g for synonym
-                // use rather then WordDelimiterFilterFactory)
-                else if (canUseMultiPhraseQuery(fixedTokenSequences))
-                {
-                    // phrase query:
-                    org.apache.lucene.search.MultiPhraseQuery.Builder mpqb = new MultiPhraseQuery.Builder();
-                    ;
-                    mpqb.setSlop(internalSlop);
-                    ArrayList<Term> multiTerms = new ArrayList<Term>();
-                    int position = 0;
-                    for (int i = 0; i < list.size(); i++)
-                    {
-                        nextToken = list.get(i);
-                        String termText = nextToken.toString();
-
-                        Term term = new Term(field, termText);
-                        if ((termText != null) && (termText.contains("*") || termText.contains("?")))
-                        {
-                            throw new IllegalStateException("Wildcards are not allowed in multi phrase anymore");
-                        } else
-                        {
-                            multiTerms.add(term);
-                        }
-
-                        if (nextToken.getPositionIncrement() > 0 && multiTerms.size() > 0)
-                        {
-                            if (getEnablePositionIncrements())
-                            {
-                                mpqb.add(multiTerms.toArray(new Term[0]), position);
-                            } else
-                            {
-                                mpqb.add(multiTerms.toArray(new Term[0]));
-                            }
-                            checkTermCount(field, queryText, mpqb.build());
-                            multiTerms.clear();
-                        }
-                        position += nextToken.getPositionIncrement();
-
-                    }
-                    if (getEnablePositionIncrements())
-                    {
-                        if (multiTerms.size() > 0)
-                        {
-                            mpqb.add(multiTerms.toArray(new Term[0]), position);
-                        }
-                        // else
-                        // {
-                        // mpq.add(new Term[] { new Term(field, "\u0000") },
-                        // position);
-                        // }
-                    } else
-                    {
-                        if (multiTerms.size() > 0)
-                        {
-                            mpqb.add(multiTerms.toArray(new Term[0]));
-                        }
-                        // else
-                        // {
-                        // mpq.add(new Term[] { new Term(field, "\u0000") });
-                        // }
-                    }
-                    checkTermCount(field, queryText, mpqb.build());
-                    return mpqb.build();
-
-                }
                 // Word delimiter factory and other odd things generate complex
                 // token patterns
                 // Smart skip token sequences with small tokens that generate
@@ -2263,7 +2246,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     return generateSpanOrQuery(field, fixedTokenSequences);
 
                 }
-            } else
+            } 
+            else
             {
                 if (forceConjuncion)
                 {
@@ -2283,7 +2267,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                 org.apache.lucene.search.WildcardQuery wildQuery = new org.apache.lucene.search.WildcardQuery(
                                         term);
                                 and.add(wildQuery, Occur.MUST);
-                            } else
+                            } 
+                            else
                             {
                                 TermQuery termQuery = new TermQuery(term);
                                 and.add(termQuery, Occur.MUST);
@@ -2295,7 +2280,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         }
                     }
                     return or.build();
-                } else
+                } 
+                else
                 {
                     SpanQuery spanQuery = null;
                     ArrayList<SpanQuery> atSamePositionSpanOrQueryParts = new ArrayList<SpanQuery>();
@@ -2316,32 +2302,37 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                         wildQuery);
                                 wrapper.setRewriteMethod(new TopTermsSpanBooleanQueryRewrite(topTermSpanRewriteLimit));
                                 nextSpanQuery = wrapper;
-                            } else
+                            } 
+                            else
                             {
                                 nextSpanQuery = new SpanTermQuery(term);
                             }
                             if (gap == 0)
                             {
                                 atSamePositionSpanOrQueryParts.add(nextSpanQuery);
-                            } else
+                            } 
+                            else
                             {
                                 if (atSamePositionSpanOrQueryParts.size() == 0)
                                 {
                                     if (spanQuery == null)
                                     {
                                         spanQuery = nextSpanQuery;
-                                    } else
+                                    } 
+                                    else
                                     {
                                         spanQuery = new SpanNearQuery(new SpanQuery[]
                                         { spanQuery, nextSpanQuery }, (gap - 1) + internalSlop, internalSlop < 2);
                                     }
                                     atSamePositionSpanOrQueryParts = new ArrayList<SpanQuery>();
-                                } else if (atSamePositionSpanOrQueryParts.size() == 1)
+                                } 
+                                else if (atSamePositionSpanOrQueryParts.size() == 1)
                                 {
                                     if (spanQuery == null)
                                     {
                                         spanQuery = atSamePositionSpanOrQueryParts.get(0);
-                                    } else
+                                    } 
+                                    else
                                     {
                                         spanQuery = new SpanNearQuery(new SpanQuery[]
                                         { spanQuery, atSamePositionSpanOrQueryParts.get(0) }, (gap - 1) + internalSlop,
@@ -2349,14 +2340,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                     }
                                     atSamePositionSpanOrQueryParts = new ArrayList<SpanQuery>();
                                     atSamePositionSpanOrQueryParts.add(nextSpanQuery);
-                                } else
+                                } 
+                                else
                                 {
                                     if (spanQuery == null)
                                     {
                                         spanQuery = new SpanOrQuery(
                                                 atSamePositionSpanOrQueryParts.toArray(new SpanQuery[]
                                         {}));
-                                    } else
+                                    } 
+                                    else
                                     {
                                         spanQuery = new SpanNearQuery(new SpanQuery[]
                                         { spanQuery,
@@ -2368,7 +2361,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                 }
                             }
                             gap = nextToken.getPositionIncrement();
-                        } else
+                        } 
+                        else
                         {
                             SpanQuery nextSpanQuery;
                             if ((termText != null) && (termText.contains("*") || termText.contains("?")))
@@ -2379,14 +2373,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                                         wildQuery);
                                 wrapper.setRewriteMethod(new TopTermsSpanBooleanQueryRewrite(topTermSpanRewriteLimit));
                                 nextSpanQuery = wrapper;
-                            } else
+                            } 
+                            else
                             {
                                 nextSpanQuery = new SpanTermQuery(term);
                             }
                             if (spanQuery == null)
                             {
                                 spanQuery = new SpanOrQuery(nextSpanQuery);
-                            } else
+                            } 
+                            else
                             {
                                 spanQuery = new SpanOrQuery(spanQuery, nextSpanQuery);
                             }
@@ -2395,25 +2391,29 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     if (atSamePositionSpanOrQueryParts.size() == 0)
                     {
                         return spanQuery;
-                    } else if (atSamePositionSpanOrQueryParts.size() == 1)
+                    } 
+                    else if (atSamePositionSpanOrQueryParts.size() == 1)
                     {
                         if (spanQuery == null)
                         {
                             spanQuery = atSamePositionSpanOrQueryParts.get(0);
-                        } else
+                        } 
+                        else
                         {
                             spanQuery = new SpanNearQuery(new SpanQuery[]
                             { spanQuery, atSamePositionSpanOrQueryParts.get(0) }, (gap - 1) + internalSlop,
                                     internalSlop < 2);
                         }
                         return spanQuery;
-                    } else
+                    } 
+                    else
                     {
                         if (spanQuery == null)
                         {
                             spanQuery = new SpanOrQuery(atSamePositionSpanOrQueryParts.toArray(new SpanQuery[]
                             {}));
-                        } else
+                        } 
+                        else
                         {
                             spanQuery = new SpanNearQuery(new SpanQuery[]
                             { spanQuery, new SpanOrQuery(atSamePositionSpanOrQueryParts.toArray(new SpanQuery[]
@@ -2656,75 +2656,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             return true;
         }
         return false;
-    }
-
-    /**
-     * @param field
-     *            String
-     * @param queryText
-     * @param mpq
-     * @return
-     * @throws ParseException
-     */
-    private void checkTermCount(String field, String queryText, MultiPhraseQuery mpq) throws ParseException
-    {
-        if (exceedsTermCount(mpq))
-        {
-            throw new ParseException("Wildcard has generated too many clauses: " + field + " " + queryText);
-        }
-    }
-
-    /**
-     * 
-     * @param mpq
-     *            MultiPhraseQuery
-     * @return boolean
-     */
-    private boolean exceedsTermCount(MultiPhraseQuery mpq)
-    {
-        int termCount = 0;
-        for (Term[] arr : mpq.getTermArrays())
-        {
-            termCount += arr.length;
-            if (termCount > BooleanQuery.getMaxClauseCount())
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param fixedTokenSequences
-     *            LinkedList<LinkedList<Token>>
-     * @return boolean
-     */
-    private boolean canUseMultiPhraseQuery(LinkedList<LinkedList<PackedTokenAttributeImpl>> fixedTokenSequences)
-    {
-        LinkedList<PackedTokenAttributeImpl> first = fixedTokenSequences.get(0);
-        for (int i = 0; i < fixedTokenSequences.size(); i++)
-        {
-            LinkedList<PackedTokenAttributeImpl> current = fixedTokenSequences.get(i);
-            if (first.size() != current.size())
-            {
-                return false;
-            }
-            for (int j = 0; j < first.size(); j++)
-            {
-                PackedTokenAttributeImpl fromFirst = first.get(j);
-                PackedTokenAttributeImpl fromCurrent = current.get(j);
-                if (fromFirst.startOffset() != fromCurrent.startOffset())
-                {
-                    return false;
-                }
-                String termText = fromCurrent.toString();
-                if ((termText != null) && (termText.contains("*") || termText.contains("?")))
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private Set<Integer> getWildcardPositions(String string)

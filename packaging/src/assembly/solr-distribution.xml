@@ -11,6 +11,7 @@
             <outputDirectory>.</outputDirectory>
             <includes>
                 <include>solr.in.sh</include>
+                <include>solr.in.cmd</include>
             </includes>
         </fileSet>
         <!-- Solr war dependency unpacked earlier to get rid of the root dir -->
@@ -21,6 +22,7 @@
                 <exclude>**/server/solr/**</exclude>
                 <exclude>**/example/**</exclude>
                 <exclude>**/bin/solr.in.sh</exclude>
+                <exclude>**/bin/solr.in.cmd</exclude>
             </excludes>
         </fileSet>
         <!-- Solr config -->
