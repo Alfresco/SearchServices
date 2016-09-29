@@ -94,4 +94,16 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.getSiteMembers(siteModel.getId());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+    
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Failed authentication get site members call returns status code 401 with Manager role")
+    public void getSiteMembersWithManagerRoleFailedAuth() throws JsonToModelConversionException, Exception
+    {
+        userModel = dataUser.createRandomTestUser();
+        userModel.setPassword("user wrong password");
+        dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
+        restClient.authenticateUser(userModel);
+        siteAPI.getSiteMembers(siteModel.getId());
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
+    }
 }
