@@ -118,5 +118,20 @@ public class DeleteSiteMemberSanityTests extends RestTest
         peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
         sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
     }
+    
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, 
+            description = "Verify admin user is able to delete another member of the site")
+    public void adminIsAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
+    {
+        newUser = dataUser.createRandomTestUser();
+        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
+        restClient.authenticateUser(adminUser);
+        sitesApi.addPerson(siteModel.getId(), siteMember);
+        
+        peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
+        sitesApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
+    }
 
 }
