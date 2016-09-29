@@ -56,11 +56,11 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
         assertNotNull(coreAdminHandler);
-        SolrCore lshCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "templaterelsh", "lsh", 2, 1);
+        SolrCore rankCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "templateWithrerank", "rerank", 2, 1);
 
         //Call custom actions
-        SolrQueryResponse response = callHandler(coreAdminHandler, lshCore, "SUMMARY");
-        assertSummaryCorrect(response, lshCore.getName());
+        SolrQueryResponse response = callHandler(coreAdminHandler, rankCore, "SUMMARY");
+        assertSummaryCorrect(response, rankCore.getName());
     }
 
     @Test
