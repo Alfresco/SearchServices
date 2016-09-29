@@ -26,6 +26,7 @@ public class RestGetNetworkTest extends RestTest
     RestTenantApi tenantApi;
 
     UserModel adminTenantUser;
+    SiteModel site;
     UserModel tenantUser;
     UserModel managerTenantUser;
     UserModel collaboratorTenantUser;
@@ -48,18 +49,9 @@ public class RestGetNetworkTest extends RestTest
         anotherTenantName = adminAnotherTenantUser.getDomain();
         tenantApi.createTenant(anotherTenantName);
 
-        tenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("uTenant");
-        managerTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("manTenant");
-        collaboratorTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("colTenant");
-        consumerTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("consTenant");
-        contributorTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("contTenant");
-
-        SiteModel site = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        dataUser.usingUser(adminTenantUser).addUserToSite(managerTenantUser, site, UserRole.SiteManager);
-        dataUser.usingUser(adminTenantUser).addUserToSite(collaboratorTenantUser, site, UserRole.SiteCollaborator);
-        dataUser.usingUser(adminTenantUser).addUserToSite(consumerTenantUser, site, UserRole.SiteConsumer);
-        dataUser.usingUser(adminTenantUser).addUserToSite(contributorTenantUser, site, UserRole.SiteConsumer);
-
+        tenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("uTenant"); 
+        site = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        
         networkApi.useRestClient(restClient);
     }
 
@@ -143,6 +135,9 @@ public class RestGetNetworkTest extends RestTest
     @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify manager tenant user gets its network with Rest API and response is not empty")
     public void tenantManagerUserChecksIfNetworkIsPresent() throws Exception
     {
+        managerTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("manTenant");
+        dataUser.usingUser(adminTenantUser).addUserToSite(managerTenantUser, site, UserRole.SiteManager);
+        
         restClient.authenticateUser(managerTenantUser);
         networkApi.getNetwork(tenantName);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
@@ -152,6 +147,9 @@ public class RestGetNetworkTest extends RestTest
     @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify collaborator tenant user gets its network with Rest API and response is not empty")
     public void tenantCollaboratorUserChecksIfNetworkIsPresent() throws Exception
     {
+        collaboratorTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("colTenant");
+        dataUser.usingUser(adminTenantUser).addUserToSite(collaboratorTenantUser, site, UserRole.SiteCollaborator);
+        
         restClient.authenticateUser(collaboratorTenantUser);
         networkApi.getNetwork(tenantName);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
@@ -161,6 +159,9 @@ public class RestGetNetworkTest extends RestTest
     @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify consumer tenant user gets its network with Rest API and response is not empty")
     public void tenantConsumerUserChecksIfNetworkIsPresent() throws Exception
     {
+        consumerTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("contTenant");
+        dataUser.usingUser(adminTenantUser).addUserToSite(consumerTenantUser, site, UserRole.SiteConsumer);
+        
         restClient.authenticateUser(consumerTenantUser);
         networkApi.getNetwork(tenantName);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
@@ -170,6 +171,9 @@ public class RestGetNetworkTest extends RestTest
     @TestRail(section = { "rest-api", "networks" }, executionType = ExecutionType.SANITY, description = "Verify contributor tenant user gets its network with Rest API and response is not empty")
     public void tenantContributorUserChecksIfNetworkIsPresent() throws Exception
     {
+        contributorTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("contTenant");
+        dataUser.usingUser(adminTenantUser).addUserToSite(contributorTenantUser, site, UserRole.SiteContributor);
+        
         restClient.authenticateUser(contributorTenantUser);
         networkApi.getNetwork(tenantName);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
