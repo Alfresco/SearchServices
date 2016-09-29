@@ -10,8 +10,7 @@
 		<groups>
 			<run>
 				<include name="sanity" />
-				<exclude name="demo"></exclude>
-				<exclude name=""></exclude>
+				<exclude name="demo"></exclude>				
 			</run>
 		</groups>
 		<packages>
