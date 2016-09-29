@@ -55,4 +55,16 @@ public class GetPeopleTest extends RestTest
         peopleApi.getPerson(searchedUser.getUsername());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
     }
+
+    @Test(groups = "sanity")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets a person with Rest API and response is successful")
+    public void contributorUserChecksIfPersonIsPresent() throws Exception
+    {
+        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
+
+        restClient.authenticateUser(contributorUser);
+        peopleApi.getPerson(searchedUser.getUsername());
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK.toString());
+    }
 }
