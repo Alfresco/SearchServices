@@ -1,5 +1,6 @@
-package org.alfresco.rest;
+package org.alfresco.rest.sites;
 
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
