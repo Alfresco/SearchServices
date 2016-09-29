@@ -1,8 +1,5 @@
 package org.alfresco.rest.sites;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.SiteMembership;
 import org.alfresco.rest.exception.JsonToModelConversionException;
@@ -10,9 +7,11 @@ import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "sites", "sanity" })
-public class AddSiteMembershipRequestSanityTest extends RestTest
+public class AddSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
     RestSitesApi siteAPI;
@@ -33,32 +32,31 @@ public class AddSiteMembershipRequestSanityTest extends RestTest
 
     private SiteModel siteModel;
 
-    private HashMap<UserRole, UserModel> usersWithRoles;
+    private ListUserWithRoles usersWithRoles;
 
     private UserModel adminUser;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun=true)
     public void initTest() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
-                Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
 
         siteAPI.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api",
-            "sites" }, executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")
-    @Test(enabled = false, description = "Fails due to MNT-16557")
+    @TestRail(section = { "rest-api","sites" }, executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")    
+    @Bug(id="MNT-16557")
+    @Test(enabled=false)
     public void siteManagerCanCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMembership siteMembership = new SiteMembership("Please accept me", siteModel.getId(), "New request");
 
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
-        siteAPI.addSiteMembershipRequest(newMember.getUsername(), siteMembership);
-        siteAPI.getSite(siteModel.getId()).assertResponseIsNotEmpty();
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        siteAPI.addSiteMembershipRequest(newMember, siteMembership);
+        siteAPI.getSite(siteModel).assertResponseIsNotEmpty();
     }
 
 }

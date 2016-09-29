@@ -1,8 +1,5 @@
 package org.alfresco.rest.people;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
@@ -11,6 +8,7 @@ import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -41,7 +39,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
     private UserModel adminUser;
     private UserModel newUser;
     private SiteMember siteMember;
-    private HashMap<UserRole, UserModel> usersWithRoles;
+    private ListUserWithRoles usersWithRoles;
 
     @BeforeClass
     public void initTest() throws DataPreparationException
@@ -50,7 +48,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
-                Arrays.asList(UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor));
+                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
 
         peopleApi.useRestClient(restClient);
         sitesApi.useRestClient(restClient);
@@ -63,12 +61,12 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         newUser = dataUser.createRandomTestUser();
         siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteManager));
-        sitesApi.addPerson(siteModel.getId(), siteMember);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        sitesApi.addPerson(siteModel, siteMember);
         
         peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
         sitesApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
@@ -79,11 +77,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
         newUser = dataUser.createRandomTestUser();
         siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel.getId(), siteMember);
+        sitesApi.addPerson(siteModel, siteMember);
         
         peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
         sitesApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
@@ -95,11 +93,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
         newUser = dataUser.createRandomTestUser();
         siteMember = new SiteMember(Role.SiteContributor.toString(), newUser.getUsername());
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel.getId(), siteMember);
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteCollaborator));
+        sitesApi.addPerson(siteModel, siteMember);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
@@ -111,11 +109,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
         newUser = dataUser.createRandomTestUser();
         siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel.getId(), siteMember);
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteContributor));
+        sitesApi.addPerson(siteModel, siteMember);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
@@ -127,11 +125,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
         newUser = dataUser.createRandomTestUser();
         siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel.getId(), siteMember);
-        restClient.authenticateUser(usersWithRoles.get(UserRole.SiteConsumer));
+        sitesApi.addPerson(siteModel, siteMember);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         peopleApi.deleteSiteMember(newUser.getUsername(), siteModel.getId());
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN.toString());
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @TestRail(section = { "rest-api", "people" }, 
@@ -141,7 +139,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
-        peopleApi.deleteSiteMember(usersWithRoles.get(UserRole.SiteConsumer).getUsername(), siteModel.getId());
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED.toString());
+        peopleApi.deleteSiteMember(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer).getUsername(), siteModel.getId());
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

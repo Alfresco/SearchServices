@@ -19,7 +19,8 @@ import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class RestDemoTest extends RestTest
+@Test(groups = { "demo" })
+public class RestDemoTests extends RestTest
 {
     @Autowired
     RestSitesApi sitesApi;
@@ -30,8 +31,8 @@ public class RestDemoTest extends RestTest
     private UserModel userModel;
     private SiteModel siteModel;
 
-    @BeforeClass
-    public void setUp() throws DataPreparationException
+    @BeforeClass(alwaysRun=true)
+    public void dataPreparation() throws DataPreparationException
     {       
         userModel = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
@@ -70,24 +71,24 @@ public class RestDemoTest extends RestTest
      */
     @Test  
     public void adminCanPostAndUpdateComments() throws Exception
-    {
-        FileModel fileModel = dataContent.usingResource(new FolderModel("Shared"))
-        			       .usingUser(userModel)
+    {       
+        FileModel fileModel = dataContent.usingUser(userModel)
+                                       .usingResource(FolderModel.getSharedFolderModel())        			       
         			       .createContent(DocumentType.TEXT_PLAIN);
         // add new comment
-        RestCommentModel commentEntry = commentsAPI.addComment(fileModel.getNodeRef(), "This is a new comment");
-        commentsAPI.getNodeComments(fileModel.getNodeRef())
+        RestCommentModel commentEntry = commentsAPI.addComment(fileModel, "This is a new comment");
+        commentsAPI.getNodeComments(fileModel)
             .assertThatResponseIsNotEmpty()
-            .assertThatCommentWithIdExists(commentEntry.getId())
+            .assertThatCommentWithIdExists(commentEntry)
             .assertThatCommentWithContentExists("This is a new comment");
 
         // update comment
-        commentEntry = commentsAPI.updateComment(fileModel.getNodeRef(), 
-                                                    commentEntry.getId(), 
+        commentEntry = commentsAPI.updateComment(fileModel, 
+                                                    commentEntry, 
                                                     "This is the updated comment");
-        commentsAPI.getNodeComments(fileModel.getNodeRef())
+        commentsAPI.getNodeComments(fileModel)
             .assertThatResponseIsNotEmpty()
-            .assertThatCommentWithIdExists(commentEntry.getId())
+            .assertThatCommentWithIdExists(commentEntry)
             .assertThatCommentWithContentExists("This is the updated comment");
     }
 
@@ -108,25 +109,22 @@ public class RestDemoTest extends RestTest
                                                 newUser.getUsername());
 
         // add user as Consumer to site
-        sitesApi.addPerson(siteModel.getId(), siteMember);
-        sitesApi.getSiteMembers(siteModel.getId())
+        sitesApi.addPerson(siteModel, siteMember);
+        sitesApi.getSiteMembers(siteModel)
             .assertThatSiteHasMember(siteMember.getId())
             .getSiteMember(siteMember.getId())
             .assertSiteMemberHasRole(Role.SiteConsumer);
 
         // update site member to Manager
         siteMember.setRole(Role.SiteManager.toString());
-        sitesApi.updateSiteMember(siteModel.getId(), 
-                    newUser.getUsername(), siteMember);
-        sitesApi.getSiteMembers(siteModel.getId())
+        sitesApi.updateSiteMember(siteModel, newUser, siteMember);
+        sitesApi.getSiteMembers(siteModel)
             .assertThatSiteHasMember(siteMember.getId())
             .getSiteMember(siteMember.getId())
             .assertSiteMemberHasRole(Role.SiteManager);
 
-        // delete site member
-        sitesApi.deleteSiteMember(siteModel.getId(), 
-                                    newUser.getUsername());
+        sitesApi.deleteSiteMember(siteModel, newUser);
         sitesApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT.toString());
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 }
