@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="REST API DEMO TESTS" parallel="classes">
+<suite name="REST API DEMO TESTS" parallel="classes" preserve-order="true" thread-count="5">
 	<listeners>
 		<listener class-name="org.alfresco.utility.report.ReportListenerAdapter"></listener>
 		<listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"></listener>
 		<listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
 	</listeners>
-	<test name="Test">
-		<classes>
-			<class name="org.alfresco.rest.demo.SamplePeopleTest"></class>
-			<class name="org.alfresco.rest.demo.SampleSitesTest"></class>
-			<class name="org.alfresco.rest.demo.SampleCommentsTest"></class>
-		</classes>
+	<test name="RestAPI Sanity Tests">
+		<groups>
+			<run>
+				<include name="sanity" />
+				<exclude name="demo"></exclude>
+				<exclude name=""></exclude>
+			</run>
+		</groups>
+		<packages>
+			<package name="org.alfresco.rest.*"></package>
+		</packages>
 
 	</test> <!-- Test -->
 </suite> <!-- Suite -->

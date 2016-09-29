@@ -13,8 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "people", "sanity" })
-public class SamplePeopleTest extends RestTest
+@Test(groups = { "demo" })
+public class SamplePeopleTests extends RestTest
 {
     @Autowired
     RestPeopleApi peopleAPI;
@@ -25,8 +25,8 @@ public class SamplePeopleTest extends RestTest
     private UserModel userModel;
     private UserModel adminUser;
 
-    @BeforeClass
-    public void setUp() throws DataPreparationException
+    @BeforeClass(alwaysRun=true)
+    public void dataPreparation() throws DataPreparationException
     {
         userModel = dataUser.createUser(RandomStringUtils.randomAlphanumeric(20));
         adminUser = dataUser.getAdminUser();
@@ -34,23 +34,21 @@ public class SamplePeopleTest extends RestTest
         peopleAPI.useRestClient(restClient);
     }
 
-    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify admin user gets person with Rest API and response is not empty")
     public void adminShouldRetrievePerson() throws Exception
     {
-        peopleAPI.getPerson(userModel.getUsername())
-            .assertResponseIsNotEmpty();
+        peopleAPI.getPerson(userModel).assertResponseIsNotEmpty();
 
         peopleAPI.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK.toString());
+            .assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section={"rest-api", "people"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Admin user gets own person information with Rest Api and assert that name is correct")
     public void adminShouldRetrieveItself() throws Exception
     {
-        peopleAPI.getPerson(adminUser.getUsername())
-            .assertPersonHasName(adminUser.getUsername());
+        peopleAPI.getPerson(adminUser).assertPersonHasName(adminUser);
     }
 
 }

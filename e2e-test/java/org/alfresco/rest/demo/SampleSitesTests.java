@@ -17,8 +17,8 @@ import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "people", "sanity" })
-public class SampleSitesTest extends RestTest
+@Test(groups = { "demo" })
+public class SampleSitesTests extends RestTest
 {
     @Autowired
     RestSitesApi siteAPI;
@@ -32,8 +32,8 @@ public class SampleSitesTest extends RestTest
     private UserModel userModel;
     private SiteModel siteModel;
 
-    @BeforeClass
-    public void initTest() throws DataPreparationException
+    @BeforeClass(alwaysRun=true)
+    public void dataPreparation() throws DataPreparationException
     {
         userModel = dataUser.getAdminUser();
         restClient.authenticateUser(userModel);
@@ -41,24 +41,24 @@ public class SampleSitesTest extends RestTest
         siteAPI.useRestClient(restClient);
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify admin user gets site details with Rest API and response is not empty")
     public void adminShouldGetSiteDetails() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getSite(siteModel.getId())
+        siteAPI.getSite(siteModel)
             .assertResponseIsNotEmpty();
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify admin user gets site information and gets status code OK (200)")
     public void adminShouldGetSites() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getSite(siteModel.getId());
+        siteAPI.getSite(siteModel);
         siteAPI.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK.toString());
+            .assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify admin user gets sites with Rest API and the response is not empty")
     public void adminShouldAccessSites() throws JsonToModelConversionException, Exception
     {
@@ -66,16 +66,16 @@ public class SampleSitesTest extends RestTest
             .assertThatResponseIsNotEmpty();
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify admin user gets sites with Rest API and status code is 200")
     public void adminShouldRetrieveSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites();
         siteAPI.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK.toString());
+            .assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify admin user gets sites with Rest API and status code is 200")
     public void adminShouldAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
@@ -83,31 +83,31 @@ public class SampleSitesTest extends RestTest
             .assertResponseHasPagination();
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify admin user adds site member with Rest API and status code is 201")
     public void adminShouldAddNewSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMember siteMember = new SiteMember(Role.SiteCollaborator.toString(), newMember.getUsername());
 
-        siteAPI.addPerson(siteModel.getId(), siteMember);
+        siteAPI.addPerson(siteModel, siteMember);
         siteAPI.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.CREATED.toString());
+            .assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify that site exists from get all sites request")
     public void adminShouldGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
         siteAPI.getAllSites()
-            .assertThatResponseHasSite(siteModel.getId());
+            .assertThatResponseHasSite(siteModel);
     }
 
-    @TestRail(section={"rest-api", "sites"}, executionType= ExecutionType.SANITY,
+    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify site details: response not empty, description, title, visibility")
     public void adminShouldAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getSite(siteModel.getId())
+        siteAPI.getSite(siteModel)
             .assertResponseIsNotEmpty()
             .assertSiteHasDescription(siteModel.getDescription())
             .assertSiteHasTitle(siteModel.getTitle())
