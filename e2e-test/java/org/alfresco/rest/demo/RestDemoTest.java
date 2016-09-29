@@ -77,7 +77,7 @@ public class RestDemoTest extends RestTest
         // add new comment
         RestCommentModel commentEntry = commentsAPI.addComment(fileModel.getNodeRef(), "This is a new comment");
         commentsAPI.getNodeComments(fileModel.getNodeRef())
-            .assertThatResponseIsNotEmpty()
+            .assertResponseIsNotEmpty()
             .assertThatCommentWithIdExists(commentEntry.getId())
             .assertThatCommentWithContentExists("This is a new comment");
 
@@ -86,7 +86,7 @@ public class RestDemoTest extends RestTest
                                                     commentEntry.getId(), 
                                                     "This is the updated comment");
         commentsAPI.getNodeComments(fileModel.getNodeRef())
-            .assertThatResponseIsNotEmpty()
+            .assertResponseIsNotEmpty()
             .assertThatCommentWithIdExists(commentEntry.getId())
             .assertThatCommentWithContentExists("This is the updated comment");
     }
