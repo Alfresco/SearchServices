@@ -42,8 +42,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
     private SiteMember siteMember;
     private ListUserWithRoles usersWithRoles;
 
-    @BeforeClass
-    public void initTest() throws DataPreparationException
+    @BeforeClass(alwaysRun=true)
+    public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();

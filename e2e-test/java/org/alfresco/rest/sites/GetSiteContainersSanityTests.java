@@ -36,7 +36,7 @@ public class GetSiteContainersSanityTests extends RestTest
     private ListUserWithRoles usersWithRoles;
     private UserModel userModel;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();

@@ -36,8 +36,8 @@ public class DeleteCommentsSanityTests extends RestTest
     private RestCommentModel comment;
     private ListUserWithRoles usersWithRoles;
 
-    @BeforeClass
-    public void initTest() throws Exception
+    @BeforeClass(alwaysRun=true)
+    public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
         restClient.authenticateUser(adminUserModel);
@@ -48,8 +48,8 @@ public class DeleteCommentsSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
-    @BeforeMethod
-    public void initMethod() throws Exception
+    @BeforeMethod(alwaysRun=true)
+    public void addCommentToDocument() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentsAPI.useRestClient(restClient);

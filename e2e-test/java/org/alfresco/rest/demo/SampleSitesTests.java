@@ -55,7 +55,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldAccessSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites()
-            .assertThatResponseIsNotEmpty();
+            .assertResponseIsNotEmpty();
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,

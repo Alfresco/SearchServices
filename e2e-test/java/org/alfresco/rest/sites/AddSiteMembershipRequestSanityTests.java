@@ -37,7 +37,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     private UserModel adminUser;
 
     @BeforeClass(alwaysRun=true)
-    public void initTest() throws DataPreparationException
+    public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();

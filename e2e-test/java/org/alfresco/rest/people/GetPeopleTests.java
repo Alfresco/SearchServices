@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "people" })
+@Test(groups = { "rest-api", "people", "sanity" })
 public class GetPeopleTests extends RestTest
 {
     @Autowired
@@ -23,7 +23,7 @@ public class GetPeopleTests extends RestTest
     SiteModel siteModel;
     UserModel searchedUser;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
         userModel = dataUser.createRandomTestUser();
@@ -33,7 +33,6 @@ public class GetPeopleTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
 
-    @Test(groups = "sanity")
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
     public void managerUserChecksIfPersonIsPresent() throws Exception
     {
@@ -45,7 +44,6 @@ public class GetPeopleTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = "sanity")
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets a person with Rest API and response is successful")
     public void collaboratorUserChecksIfPersonIsPresent() throws Exception
     {
@@ -68,8 +66,7 @@ public class GetPeopleTests extends RestTest
         peopleApi.getPerson(searchedUser);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-
-    @Test(groups = "sanity")
+   
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets a person with Rest API and response is successful")
     public void consumerUserChecksIfPersonIsPresent() throws Exception
     {
@@ -81,7 +78,6 @@ public class GetPeopleTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = "sanity")
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets a person with Rest API and response is successful")
     public void adminUserChecksIfPersonIsPresent() throws Exception
     {
@@ -91,8 +87,7 @@ public class GetPeopleTests extends RestTest
         peopleApi.getPerson(searchedUser);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-
-    @Test(groups = "sanity")
+    
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a non existing person with Rest API and person is not found")
     public void managerUserChecksIfNonExistingPersonIsPresent() throws Exception
     {
