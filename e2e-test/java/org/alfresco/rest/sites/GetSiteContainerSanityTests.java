@@ -38,6 +38,7 @@ public class GetSiteContainerSanityTests extends RestTest
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
     private List<RestSiteContainerModel> listOfFoldersIds;
+    private UserModel userModel;
 
     @BeforeClass(alwaysRun=true)
     public void initTest() throws Exception
@@ -97,5 +98,19 @@ public class GetSiteContainerSanityTests extends RestTest
         listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
         siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Failed authentication get site container call returns status code 401 with Manager role")
+    public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        userModel = dataUser.createRandomTestUser();
+        userModel.setPassword("user wrong password");
+        dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
+        restClient.authenticateUser(userModel);
+        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
+        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
