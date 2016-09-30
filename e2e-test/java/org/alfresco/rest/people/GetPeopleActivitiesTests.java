@@ -6,6 +6,7 @@ import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,5 +95,18 @@ public class GetPeopleActivitiesTests extends RestTest
         restClient.authenticateUser(adminUser);
         peopleApi.getPersonActivities(userModel).assertActivityListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @Bug(id = "")
+    @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets another user activities with Rest API")
+    public void managerUserGetsPeopleActivitiesListIsNotAuthorized() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        managerUser.setPassword("newpassword");
+
+        restClient.authenticateUser(managerUser);
+        peopleApi.getPersonActivities(userModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
