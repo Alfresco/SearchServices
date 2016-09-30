@@ -40,11 +40,4 @@ public class SamplePeopleTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
-            description = "Admin user gets own person information with Rest Api and assert that name is correct")
-    public void adminShouldRetrieveItself() throws Exception
-    {
-        peopleAPI.getPerson(adminUser).assertPersonHasName(adminUser);
-    }
-
 }
