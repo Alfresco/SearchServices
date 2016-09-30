@@ -85,4 +85,14 @@ public class GetPeopleActivitiesTests extends RestTest
         peopleApi.getPersonActivities(consumerUser).assertActivityListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user activities with Rest API and response is successful")
+    public void adminUserGetsPeopleActivitiesListSuccessful() throws Exception
+    {
+        UserModel adminUser = dataUser.getAdminUser();
+
+        restClient.authenticateUser(adminUser);
+        peopleApi.getPersonActivities(userModel).assertActivityListIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
