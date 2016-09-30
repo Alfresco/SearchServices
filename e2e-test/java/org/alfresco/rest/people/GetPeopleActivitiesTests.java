@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
  * Tests for getActivities (/people/{personId}/activities) RestAPI call
  * 
  */
-@Test(groups = { "rest-api", "people", "activities" })
+@Test(groups = { "rest-api", "people", "activities", "sanity" })
 public class GetPeopleActivitiesTests extends RestTest
 {
     @Autowired
@@ -39,15 +39,27 @@ public class GetPeopleActivitiesTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
-    public void managerUserChecksIfPersonIsPresent() throws Exception
+    @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its activities with Rest API and response is successful")
+    public void managerUserGetsPeopleActivitiesListSuccessful() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonActivities(managerUser);
+        peopleApi.getPersonActivities(managerUser).assertActivityListIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its activities with Rest API and response is successful")
+    public void collaboratorUserGetsPeopleActivitiesListSuccessful() throws Exception
+    {
+        UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
+        dataContent.usingUser(collaboratorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+
+        restClient.authenticateUser(collaboratorUser);
+        peopleApi.getPersonActivities(collaboratorUser).assertActivityListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
