@@ -58,12 +58,22 @@ public class GetSiteContainerSanityTests extends RestTest
         siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site container and gets status code OK (200)")
     public void getSiteContainerWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
+        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Contributor role gets site container and gets status code OK (200)")
+    public void getSiteContainerWithContributorRole() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
         siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
