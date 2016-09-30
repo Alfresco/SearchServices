@@ -1,4 +1,4 @@
-package tags;
+package org.alfresco.rest.tags;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
