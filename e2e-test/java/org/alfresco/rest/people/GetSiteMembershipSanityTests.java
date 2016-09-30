@@ -96,4 +96,14 @@ public class GetSiteMembershipSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
+    @TestRail(section = { "rest-api",
+            "people" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve site membership information of another user")
+    public void unauthenticatedUserCannotRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        peopleApi.getSiteMembership(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel);
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+    
 }
