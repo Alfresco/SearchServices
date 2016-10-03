@@ -1,6 +1,7 @@
 package org.alfresco.solr;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,6 +60,7 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
@@ -1559,6 +1561,45 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             {
                 log.error("Failed to shutdown test properly ", e);
             }
+        }
+    }
+
+    /**
+     * Creates a Jetty instance with the default "alfresco" core that uses the production rerank template.
+     * There is only 1 shard.
+     */
+    public class DefaultAlrescoCoreRule extends JettyServerRule
+    {
+        SolrCore defaultCore;
+        SolrClient defaultClient;
+
+        public DefaultAlrescoCoreRule(String serverName) {
+            super(serverName, 0, null, null);
+        }
+
+        @Override
+        protected void before() throws Throwable {
+            super.before();
+
+            JettySolrRunner jsr = jettyContainers.get(serverName);
+            CoreContainer coreContainer = jsr.getCoreContainer();
+            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
+            assertNotNull(coreAdminHandler);
+            defaultCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "alfresco", "rerank", 1, 1);
+            assertNotNull(defaultCore);
+            String url = buildUrl(jsr.getLocalPort()) + "/" + "alfresco";
+            defaultClient = createNewSolrClient(url);
+            assertNotNull(defaultClient);
+            jettyClients.put("alfresco", defaultClient);
+
+        }
+
+        public SolrCore getDefaultCore() {
+            return defaultCore;
+        }
+
+        public SolrClient getDefaultClient() {
+            return defaultClient;
         }
     }
 }
