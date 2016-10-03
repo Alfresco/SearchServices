@@ -1,6 +1,7 @@
 package org.alfresco.rest.sites;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
@@ -92,5 +93,15 @@ public class GetSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(adminUser);
         restSitesApi.getSiteMember(siteModel, userModel);
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Failed authentication get site member call returns status code 401 with Manager role")
+    public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteMember() throws JsonToModelConversionException, Exception
+    {
+        UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
+        restClient.authenticateUser(inexistentUser);
+        restSitesApi.getSiteMember(siteModel, userModel);
+        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
