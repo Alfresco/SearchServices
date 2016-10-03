@@ -59,4 +59,13 @@ public class AddTagSanityTests extends RestTest
         tagsAPI.addTag(document, "tag" + UserRole.SiteManager);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds tags with Rest API and status code is 201")
+    public void collaboratorIsAbleToAddTag() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        tagsAPI.addTag(document, "tag" + UserRole.SiteCollaborator);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
 }
