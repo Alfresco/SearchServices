@@ -77,4 +77,13 @@ public class AddTagSanityTests extends RestTest
         tagsAPI.addTag(document, "tag" + UserRole.SiteContributor);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user doesn't have permission to add tags with Rest API and status code is 403")
+    public void consumerIsNotAbleToAddTag() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        tagsAPI.addTag(document, "tag" + UserRole.SiteConsumer);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
