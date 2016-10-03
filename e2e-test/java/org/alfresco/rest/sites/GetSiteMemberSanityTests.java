@@ -57,4 +57,13 @@ public class GetSiteMemberSanityTests extends RestTest
         restSitesApi.getSiteMember(siteModel, userModel);
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Collaborator role gets site member and gets status code OK (200)")
+    public void getSiteMemberWithCollaboratorRole() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        restSitesApi.getSiteMember(siteModel, userModel);
+        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
