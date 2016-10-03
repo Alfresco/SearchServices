@@ -2,6 +2,7 @@ package org.alfresco.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.body.FiveStarRatingBody;
 import org.alfresco.rest.body.LikeRatingBody;
 import org.alfresco.rest.body.LikeRatingBody.ratingTypes;
 import org.alfresco.rest.requests.RestRatingsApi;
@@ -32,7 +33,8 @@ public class AddRateSanityTests extends RestTest
     private UserModel adminUser;
     private FolderModel folderModel;
     private FileModel document;
-    private LikeRatingBody rating;
+    private LikeRatingBody likeRating;
+    private FiveStarRatingBody fiveStarRating;
     private ListUserWithRoles usersWithRoles;
     
     @BeforeClass(alwaysRun=true)
@@ -56,10 +58,10 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Manager role is able to post like rating to a document")
     public void managerIsAbleToLikeDocument() throws Exception
     {
-        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(ratingTypes.fiveStar.toString(), true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        ratingsApi.addRate(document, rating);
+        ratingsApi.likeDocument(document, likeRating);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -68,10 +70,10 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Collaborator role is able to post like rating to a document")
     public void collaboratorIsAbleToLikeDocument() throws Exception
     {
-        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        ratingsApi.addRate(document, rating);
+        ratingsApi.likeDocument(document, likeRating);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -80,10 +82,10 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Contributor role is able to post like rating to a document")
     public void contributorIsAbleToLikeDocument() throws Exception
     {
-        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        ratingsApi.addRate(document, rating);
+        ratingsApi.likeDocument(document, likeRating);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -92,10 +94,10 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Consumer role is able to post like rating to a document")
     public void consumerIsAbleToLikeDocument() throws Exception
     {
-        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        ratingsApi.addRate(document, rating);
+        ratingsApi.likeDocument(document, likeRating);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -104,10 +106,10 @@ public class AddRateSanityTests extends RestTest
             description = "Verify admin user is able to post like rating to a document")
     public void adminIsAbleToLikeDocument() throws Exception
     {
-        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
         
         restClient.authenticateUser(adminUser);
-        ratingsApi.addRate(document, rating);
+        ratingsApi.likeDocument(document, likeRating);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -116,11 +118,23 @@ public class AddRateSanityTests extends RestTest
             description = "Verify unauthenticated user is not able to post like rating to a document")
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
-        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
         
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        ratingsApi.addRate(document, rating);
+        ratingsApi.likeDocument(document, likeRating);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Manager role is able to post stars rating to a document")
+    public void managerIsAbleToAddStarsToDocument() throws Exception
+    {
+        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.CREATED);
     }
 }
