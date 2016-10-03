@@ -5,6 +5,8 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.LikeRatingBody;
 import org.alfresco.rest.body.LikeRatingBody.ratingTypes;
 import org.alfresco.rest.requests.RestRatingsApi;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -31,6 +33,7 @@ public class AddRateSanityTests extends RestTest
     private FolderModel folderModel;
     private FileModel document;
     private LikeRatingBody rating;
+    private ListUserWithRoles usersWithRoles;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
@@ -38,9 +41,9 @@ public class AddRateSanityTests extends RestTest
         userModel = dataUser.createUser(RandomStringUtils.randomAlphanumeric(20));
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        
-        restClient.authenticateUser(adminUser);
         ratingsApi.useRestClient(restClient);
+        
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
     
     @BeforeMethod
@@ -54,6 +57,20 @@ public class AddRateSanityTests extends RestTest
     public void managerIsAbleToLikeDocument() throws Exception
     {
         rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        ratingsApi.addRate(document, rating);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.CREATED);
+    }
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Collaborator role is able to post like rating to a document")
+    public void collaboratorIsAbleToLikeDocument() throws Exception
+    {
+        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         ratingsApi.addRate(document, rating);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
