@@ -99,4 +99,16 @@ public class AddRateSanityTests extends RestTest
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify admin user is able to post like rating to a document")
+    public void adminIsAbleToLikeDocument() throws Exception
+    {
+        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        
+        restClient.authenticateUser(adminUser);
+        ratingsApi.addRate(document, rating);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.CREATED);
+    }
 }
