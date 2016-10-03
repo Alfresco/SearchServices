@@ -173,4 +173,16 @@ public class AddRateSanityTests extends RestTest
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify admin user is able to post stars rating to a document")
+    public void adminIsAbleToAddStarsToDocument() throws Exception
+    {
+        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        
+        restClient.authenticateUser(adminUser);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.CREATED);
+    }
 }
