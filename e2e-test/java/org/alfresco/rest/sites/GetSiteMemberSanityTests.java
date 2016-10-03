@@ -84,4 +84,13 @@ public class GetSiteMemberSanityTests extends RestTest
         restSitesApi.getSiteMember(siteModel, userModel);
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with admin user gets site member and gets status code OK (200)")
+    public void getSiteMemberWithAdminUser() throws Exception
+    {
+        restClient.authenticateUser(adminUser);
+        restSitesApi.getSiteMember(siteModel, userModel);
+        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
