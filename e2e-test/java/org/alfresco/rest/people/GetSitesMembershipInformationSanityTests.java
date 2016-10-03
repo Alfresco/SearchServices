@@ -23,12 +23,6 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     @Autowired
     RestPeopleApi peopleApi;
 
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
     private SiteModel siteModel;
     private UserModel adminUser;
     private ListUserWithRoles usersWithRoles;
@@ -46,7 +40,7 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     @TestRail(section = { "rest-api", "people" }, 
                 executionType = ExecutionType.SANITY, 
                 description = "Verify site manager is able to retrieve sites membership information of another user")
-    public void siteManagerCanRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
+    public void siteManagerIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         peopleApi.getSitesMembershipInformation(adminUser);
@@ -57,7 +51,7 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
             description = "Verify site collaborator is able to retrieve sites membership information of another user")
-    public void siteCollaboratorCanRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
+    public void siteCollaboratorIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         peopleApi.getSitesMembershipInformation(adminUser);
@@ -68,7 +62,7 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
             description = "Verify site contributor is able to retrieve sites membership information of another user")
-    public void siteContributorCanRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
+    public void siteContributorIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         peopleApi.getSitesMembershipInformation(adminUser);
@@ -79,7 +73,7 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
             description = "Verify site consumer is able to retrieve sites membership information of another user")
-    public void siteConsumerCanRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
+    public void siteConsumerIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         peopleApi.getSitesMembershipInformation(adminUser);
@@ -90,7 +84,7 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     @TestRail(section = { "rest-api", "people" }, 
             executionType = ExecutionType.SANITY, 
             description = "Verify admin is able to retrieve sites membership information of another user")
-    public void siteAdminCanRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
+    public void siteAdminIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
         peopleApi.getSitesMembershipInformation(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));

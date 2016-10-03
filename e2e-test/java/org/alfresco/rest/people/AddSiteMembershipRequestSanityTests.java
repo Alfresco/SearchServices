@@ -58,7 +58,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         peopleApi.addSiteMembershipRequest(newMember, siteMembership);
         peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+            .assertStatusCodeIs(HttpStatus.CREATED);
     }
 
 }
