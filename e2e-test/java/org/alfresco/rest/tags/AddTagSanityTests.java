@@ -44,12 +44,19 @@ public class AddTagSanityTests extends RestTest
         tagsAPI.useRestClient(restClient);
     }
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify admin user adds tags with Rest API and status code is 201")
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify admin user adds tags with Rest API and status code is 201")
     public void adminIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         tagsAPI.addTag(document, "tag" + adminUserModel.getUsername());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds tags with Rest API and status code is 201")
+    public void managerIsAbleToAddTag() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        tagsAPI.addTag(document, "tag" + UserRole.SiteManager);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
 }
