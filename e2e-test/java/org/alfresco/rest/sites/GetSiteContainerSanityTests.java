@@ -55,7 +55,7 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
+        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getEntries();
         siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
