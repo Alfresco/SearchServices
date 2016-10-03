@@ -1,7 +1,5 @@
 package org.alfresco.rest.sites;
 
-import java.util.List;
-
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestSiteContainerModel;
@@ -28,20 +26,14 @@ public class GetSiteContainerSanityTests extends RestTest
     @Autowired
     RestSitesApi siteAPI;
 
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
     private UserModel adminUserModel;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
-    private List<RestSiteContainerModel> listOfFoldersIds;
+    private RestSiteContainerModel siteContainerModel;
     private UserModel userModel;
 
     @BeforeClass(alwaysRun=true)
-    public void initTest() throws Exception
+    public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
         siteAPI.useRestClient(restClient);
@@ -52,65 +44,65 @@ public class GetSiteContainerSanityTests extends RestTest
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site container and gets status code OK (200)")
-    public void getSiteContainerWithManagerRole() throws JsonToModelConversionException, Exception
+    public void getSiteContainerWithManagerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getEntries();
-        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site container and gets status code OK (200)")
-    public void getSiteContainerWithCollaboratorRole() throws JsonToModelConversionException, Exception
+    public void getSiteContainerWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
-        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site container and gets status code OK (200)")
-    public void getSiteContainerWithContributorRole() throws JsonToModelConversionException, Exception
+    public void getSiteContainerWithContributorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
-        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site container and gets status code OK (200)")
-    public void getSiteContainerWithConsumerRole() throws JsonToModelConversionException, Exception
+    public void getSiteContainerWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
-        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Verify user with admin user gets site container and gets status code OK (200)")
-    public void getSiteContainerWithAdminUser() throws JsonToModelConversionException, Exception
+    public void getSiteContainerWithAdminUser() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
-        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site container call returns status code 401 with Manager role")
-    public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws JsonToModelConversionException, Exception
+    public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
-        listOfFoldersIds = siteAPI.getSiteContainers(siteModel).getSiteContainersList();
-        siteAPI.getSiteContainer(siteModel, listOfFoldersIds.get(0));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
