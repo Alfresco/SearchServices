@@ -63,4 +63,14 @@ public class PostFavoritesSanityTests extends RestTest
         favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
+    
+    @TestRail(section={"rest-api", "favorites"}, executionType= ExecutionType.SANITY,
+            description= "Verify Collaborator user add site to favorites with Rest API and status code is 201")
+    public void collaboratorIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
+    
 }
