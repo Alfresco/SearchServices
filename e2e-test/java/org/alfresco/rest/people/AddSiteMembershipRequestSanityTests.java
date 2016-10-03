@@ -1,9 +1,9 @@
-package org.alfresco.rest.sites;
+package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.SiteMembership;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestSitesApi;
+import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -15,14 +15,15 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "sites", "sanity" })
+@Test(groups = { "rest-api", "people", "sanity" })
 public class AddSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
-    RestSitesApi siteAPI;
+    RestPeopleApi peopleApi;
 
     @Autowired
     DataUser dataUser;
@@ -43,20 +44,21 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
 
-        siteAPI.useRestClient(restClient);
+        peopleApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api","sites" }, executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")    
-    @Bug(id="MNT-16557")
-    @Test(enabled=false)
+    @TestRail(section = { "rest-api","people" }, 
+                executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")    
+    @Bug(id="MNT-16557")    
     public void siteManagerCanCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMembership siteMembership = new SiteMembership("Please accept me", siteModel.getId(), "New request");
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteAPI.addSiteMembershipRequest(newMember, siteMembership);
-        siteAPI.getSite(siteModel).assertResponseIsNotEmpty();
+        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
     }
 
 }
