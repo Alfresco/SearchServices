@@ -71,4 +71,16 @@ public class GetPeoplePreferencesTests extends RestTest
         peopleApi.getPersonPreferences(contributorUser).assertPreferencesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its preferences with Rest API and response is successful (200)")
+    public void consumerUserGetsPeoplePreferencesWithSuccess() throws Exception
+    {
+        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
+        dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
+
+        restClient.authenticateUser(consumerUser);
+        peopleApi.getPersonPreferences(consumerUser).assertPreferencesListIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
