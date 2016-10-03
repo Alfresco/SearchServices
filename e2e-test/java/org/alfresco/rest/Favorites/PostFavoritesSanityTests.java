@@ -22,18 +22,18 @@ public class PostFavoritesSanityTests extends RestTest
 
     @Autowired
     RestFavoritesApi favoritesAPI;
-    
+
     @Autowired
     RestSitesApi sitesApi;
-    
+
     @Autowired
     DataUser dataUser;
-    
-    private UserModel adminUserModel; 
+
+    private UserModel adminUserModel;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
-    
-    @BeforeClass(alwaysRun=true)
+
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
@@ -42,52 +42,64 @@ public class PostFavoritesSanityTests extends RestTest
         favoritesAPI.useRestClient(restClient);
         sitesApi.useRestClient(restClient);
         siteModel.setGuid(sitesApi.getSite(siteModel).getGuid());
-        
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
+                UserRole.SiteContributor);
     }
-    
-    @TestRail(section={"rest-api", "favorites"}, executionType= ExecutionType.SANITY,
-            description= "Verify Admin user add site to favorites with Rest API and status code is 201")
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Admin user add site to favorites with Rest API and status code is 201")
     public void adminIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
-        
+
         favoritesAPI.addUserFavorites(adminUserModel, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-    @TestRail(section={"rest-api", "favorites"}, executionType= ExecutionType.SANITY,
-            description= "Verify Manager user add site to favorites with Rest API and status code is 201")
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Manager user add site to favorites with Rest API and status code is 201")
     public void managerIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-    @TestRail(section={"rest-api", "favorites"}, executionType= ExecutionType.SANITY,
-            description= "Verify Collaborator user add site to favorites with Rest API and status code is 201")
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user add site to favorites with Rest API and status code is 201")
     public void collaboratorIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-    @TestRail(section={"rest-api", "favorites"}, executionType= ExecutionType.SANITY,
-            description= "Verify Contributor user add site to favorites with Rest API and status code is 201")
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user add site to favorites with Rest API and status code is 201")
     public void contributorIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor), siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-    @TestRail(section={"rest-api", "favorites"}, executionType= ExecutionType.SANITY,
-            description= "Verify Consumer user add site to favorites with Rest API and status code is 201")
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user add site to favorites with Rest API and status code is 201")
     public void consumerIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer), siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToAddCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        siteManager.setPassword("wrongPassword");
+        restClient.authenticateUser(siteManager);
+        favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer), siteModel);
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
