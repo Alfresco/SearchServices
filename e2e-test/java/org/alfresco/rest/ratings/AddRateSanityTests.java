@@ -111,4 +111,16 @@ public class AddRateSanityTests extends RestTest
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify unauthenticated user is not able to post like rating to a document")
+    public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
+    {
+        rating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        ratingsApi.addRate(document, rating);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
