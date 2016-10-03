@@ -2,6 +2,7 @@ package org.alfresco.rest.comments;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.body.CommentContent;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.requests.RestCommentsApi;
@@ -12,6 +13,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,54 +50,68 @@ public class UpdateCommentsSanityTests extends RestTest
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments with Rest API and status code is 200")
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments and status code is 200")
     public void adminIsAbleToUpdateComments() throws JsonToModelConversionException, Exception
     {
-        commentsAPI.updateComment(document, commentModel, commentModel.getContent());
+        CommentContent commentContent = new CommentContent("This is the updated comment with admin user");
+        
+        commentsAPI.updateComment(document, commentModel, commentContent);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user updates comments created by admin user with Rest API and status code is 200")
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user updates comments created by admin user and status code is 200")
     public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        commentsAPI.updateComment(document, commentModel, commentModel.getContent());
+        
+        CommentContent commentContent = new CommentContent("This is the updated comment with Manager user");
+        
+        commentsAPI.updateComment(document, commentModel, commentContent);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user updates comments created by admin user with Rest API and status code is 200")
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user updates comments created by admin user and status code is 200")
     public void contributorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        commentsAPI.updateComment(document, commentModel, "This is the updated comment with Contributor user");
+        
+        CommentContent commentContent = new CommentContent("This is the updated comment with Contributor user");
+        
+        commentsAPI.updateComment(document, commentModel, commentContent);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user updates comments created by admin user with Rest API and status code is 200")
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user updates comments created by admin user and status code is 200")
     public void consumerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        commentsAPI.updateComment(document, commentModel, commentModel.getContent());
+        
+        CommentContent commentContent = new CommentContent("This is the updated comment with Consumer user");
+        
+        commentsAPI.updateComment(document, commentModel, commentContent);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user updates comments created by admin user with Rest API and status code is 200")
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user updates comment created by admin user and status code is 200")
+    @Bug(id="REPO-1011")
     public void collaboratorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        RestCommentModel commentEntry = commentsAPI.updateComment(document, commentModel,
-                "This is the updated comment with Collaborator user");
+        
+        CommentContent commentContent = new CommentContent("This is the updated comment with Collaborator user");
+        
+        RestCommentModel commentEntry = commentsAPI.updateComment(document, commentModel, commentContent);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
         commentEntry.assertCommentContentIs("This is the updated comment with Collaborator user");
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
-    public void managerIsNotAbleToUpdateCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on update comment call")
+    public void unauthenticatedUserIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         UserModel incorrectUserModel = new UserModel("userName", "password");
         restClient.authenticateUser(incorrectUserModel);
@@ -103,11 +119,17 @@ public class UpdateCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { "rest-api", "comments" }, executionType = ExecutionType.SANITY, description = "Verify if nodeId is not set the status code is 404")
+    @TestRail(section = { "rest-api", "comments" }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")
     public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        commentsAPI.updateComment(FolderModel.getRandomFolderModel(), commentModel, commentModel.getContent());
+        
+        FolderModel content = FolderModel.getRandomFolderModel();
+        content.setNodeRef("node ref that does not exist");
+        
+        CommentContent comment = new CommentContent("This is the updated comment.");
+        
+        commentsAPI.updateComment(content, commentModel, comment);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
@@ -115,7 +137,13 @@ public class UpdateCommentsSanityTests extends RestTest
     public void canNotUpdateCommentIfCommentIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        commentsAPI.updateComment(document, new RestCommentModel(), commentModel.getContent());
+        
+        RestCommentModel comment = new RestCommentModel();
+        comment.setId("comment id that does not exist");
+        
+        CommentContent commentContent = new CommentContent("This is the updated comment.");
+        
+        commentsAPI.updateComment(document, comment, commentContent);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 

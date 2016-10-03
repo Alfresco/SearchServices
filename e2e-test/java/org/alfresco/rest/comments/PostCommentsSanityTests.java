@@ -87,13 +87,11 @@ public class PostCommentsSanityTests extends RestTest
     }
 
     @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
-    public void managerIsNotAbleToAddCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
-    {
-        UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
-        siteManager.setPassword("wrongPassword");
-        restClient.authenticateUser(siteManager);
-        commentsAPI.addComment(document, "This is a new comment added by user with role:  " + UserRole.SiteManager);
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post comments call")
+    public void unauthenticatedUserIsNotAbleToAddComment() throws JsonToModelConversionException, Exception
+    {        
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        commentsAPI.addComment(document, "This is a new comment");
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 

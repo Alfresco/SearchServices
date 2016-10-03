@@ -2,6 +2,7 @@ package org.alfresco.rest.demo;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.body.CommentContent;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.requests.RestCommentsApi;
@@ -61,11 +62,10 @@ public class SampleCommentsTests extends RestTest
             description= "Verify admin user updates comments with Rest API")
     public void adminShouldUpdateComment() throws JsonToModelConversionException, Exception
     {
-        // add initial comment
         RestCommentModel commentModel = commentsAPI.addComment(document, "This is a new comment");
 
-        // update comment
-        RestCommentModel commentEntry = commentsAPI.updateComment(document, commentModel, "This is the updated comment");
+        CommentContent commentContent = new CommentContent("This is the updated comment with Collaborator user");
+        RestCommentModel commentEntry = commentsAPI.updateComment(document, commentModel, commentContent);
         commentEntry.assertCommentContentIs("This is the updated comment");
     }
 
