@@ -32,7 +32,6 @@ public class GetPeoplePreferencesTests extends RestTest
     {
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        //mark site as favorite (cum fac asta? fol data prep-care face call la rest API sau pot sa fol durect restAPI necesar?
 
         peopleApi.useRestClient(restClient);
     }
@@ -46,6 +45,18 @@ public class GetPeoplePreferencesTests extends RestTest
 
         restClient.authenticateUser(managerUser);
         peopleApi.getPersonPreferences(managerUser).assertPreferencesListIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its preferences with Rest API and response is successful (200)")
+    public void collaboratorUserGetsPeoplePreferencesWithSuccess() throws Exception
+    {
+        UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
+        dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
+
+        restClient.authenticateUser(collaboratorUser);
+        peopleApi.getPersonPreferences(collaboratorUser).assertPreferencesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
