@@ -97,4 +97,14 @@ public class RemoveTagSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToDeleteTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        siteManager.setPassword("wrongPassword");
+        restClient.authenticateUser(siteManager);
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
