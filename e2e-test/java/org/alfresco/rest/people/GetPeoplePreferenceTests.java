@@ -6,6 +6,7 @@ import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,5 +95,19 @@ public class GetPeoplePreferenceTests extends RestTest
         restClient.authenticateUser(adminUser);
         peopleApi.getPersonPreferenceInformation(adminUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @Bug(id = "")
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to get a specific preference with Rest API when authentication fails (401)")
+    public void managerUserNotAuthorizedFailsToGetsAPreference() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
+        managerUser.setPassword("newpassword");
+
+        restClient.authenticateUser(managerUser);
+        peopleApi.getPersonPreferenceInformation(managerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
