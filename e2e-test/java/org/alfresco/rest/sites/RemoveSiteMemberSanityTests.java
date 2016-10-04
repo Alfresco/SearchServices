@@ -76,4 +76,13 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+    
+    @Bug(id="ACE-5444")
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that site consumer cannot delete site member and gets status code 403, 'Forbidden'")
+    public void siteConsumerIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException{
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        restSitesAPI.deleteSiteMember(siteModel, testUserModel);
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
