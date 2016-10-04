@@ -54,4 +54,16 @@ public class GatFavoriteSitesTests extends RestTest
         peopleApi.getFavoriteSites(collaboratorUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its favorite sites with Rest API and response is successful (200)")
+    public void contributorUserGetsFavoriteSitesWithSuccess() throws Exception
+    {
+        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
+        dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
+
+        restClient.authenticateUser(contributorUser);
+        peopleApi.getFavoriteSites(contributorUser).assertResponseIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
