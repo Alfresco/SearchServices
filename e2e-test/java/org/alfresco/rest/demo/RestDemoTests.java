@@ -2,6 +2,7 @@ package org.alfresco.rest.demo;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.body.CommentContent;
 import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
@@ -82,9 +83,8 @@ public class RestDemoTests extends RestTest
             .assertCommentWithIdExists(commentEntry);
 
         // update comment
-        commentEntry = commentsAPI.updateComment(fileModel, 
-                                                    commentEntry, 
-                                                    "This is the updated comment");
+        CommentContent commentContent = new CommentContent("This is the updated comment with Collaborator user");
+        commentEntry = commentsAPI.updateComment(fileModel, commentEntry, commentContent);
 
         commentsAPI.getNodeComments(fileModel)
             .assertResponseIsNotEmpty()
