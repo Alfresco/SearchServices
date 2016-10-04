@@ -49,4 +49,14 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         networkApi.getNetworkForUser(adminTenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
+    
+    @Test(groups = "sanity")
+    @TestRail(section = { "rest-api",
+            "networks" }, executionType = ExecutionType.SANITY, description = "Verify tenant admin user gets specific network with Rest API and response is not empty")
+    public void adminTenantChecksIfNetworkIsPresent() throws Exception
+    {
+        restClient.authenticateUser(adminTenantUser);
+        networkApi.getNetworkForUser(adminTenantUser);
+        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
