@@ -78,4 +78,13 @@ public class RemoveTagSanityTests extends RestTest
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete tags created by admin user with Rest API and status code is 403")
+    public void contributorIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
