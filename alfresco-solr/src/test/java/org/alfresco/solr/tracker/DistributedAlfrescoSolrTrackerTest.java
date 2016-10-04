@@ -107,7 +107,7 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
         handle.put("_original_parameters_", SKIP);
 
         //This will run the query on the control client and the cluster and compare the result.
-        query(getDefaultTestClient(), "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+        query(getDefaultTestClient(), true, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
                 params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
 
         //Load 1000 nodes
@@ -129,7 +129,7 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes + 2, 100000);
 
 
-        query(getDefaultTestClient(), "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+        query(getDefaultTestClient(), true, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
                 params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc"));
 
         assertNodesPerShardGreaterThan((int)(numNodes*.44));
