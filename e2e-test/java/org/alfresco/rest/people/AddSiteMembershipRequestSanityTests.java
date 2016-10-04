@@ -89,4 +89,18 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
     
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, description = "Verify site consumer is able to create new site membership request")
+    @Bug(id = "MNT-16557")
+    public void siteConsumerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
+
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.CREATED);
+}
+    
 }
