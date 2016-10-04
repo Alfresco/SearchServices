@@ -64,8 +64,8 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api",
-            "people" }, executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to retrieve site membership request")
+    @TestRail(section = { "rest-api", "people" }, 
+                executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void siteCollaboratorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
@@ -79,5 +79,20 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, 
+                executionType = ExecutionType.SANITY, description = "Verify site contributor is able to retrieve site membership request")
+    @Bug(id = "MNT-16557")
+    public void siteContributorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        SiteMembership siteMembership = new SiteMembership("Please accept me", siteModel.getId(), "New request");
+
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+
+        peopleApi.getSiteMembershipRequest(newMember, siteModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+}
 
 }
