@@ -27,31 +27,23 @@ public class GetSiteMemberSanityTests extends RestTest
     @Autowired
     RestSitesApi restSitesApi;
 
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
     private UserModel adminUser;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
     private UserModel userModel;
 
     @BeforeClass(alwaysRun = true)
-    public void initSetup() throws DataPreparationException
+    public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         restSitesApi.useRestClient(restClient);
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
-        userModel = dataUser.createRandomTestUser();
-        dataUser.addUserToSite(userModel, siteModel, UserRole.SiteConsumer);
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Verify user with Manager role gets site member and gets status code OK (200)")
+            description = "Verify user with Manager role gets site member and status code is OK (200)")
     public void getSiteMemberWithManagerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -96,7 +88,7 @@ public class GetSiteMemberSanityTests extends RestTest
     }
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get site member call returns status code 401 with Manager role")
+            description = "Failed authentication get site member call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteMember() throws JsonToModelConversionException, Exception
     {
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
