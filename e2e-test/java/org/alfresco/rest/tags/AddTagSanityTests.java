@@ -47,7 +47,7 @@ public class AddTagSanityTests extends RestTest
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify admin user adds tags with Rest API and status code is 201")
     public void adminIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
-        tagsAPI.addTag(document, "tag" + adminUserModel.getUsername());
+        tagsAPI.addTag(document, "tag" + adminUserModel.getUsername()).assertTagIs("tag" + adminUserModel.getUsername());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -56,7 +56,7 @@ public class AddTagSanityTests extends RestTest
     public void managerIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        tagsAPI.addTag(document, "tag" + UserRole.SiteManager);
+        tagsAPI.addTag(document, "tag" + UserRole.SiteManager).assertTagIs("tag" + UserRole.SiteManager);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -65,7 +65,7 @@ public class AddTagSanityTests extends RestTest
     public void collaboratorIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        tagsAPI.addTag(document, "tag" + UserRole.SiteCollaborator);
+        tagsAPI.addTag(document, "tag" + UserRole.SiteCollaborator).assertTagIs("tag" + UserRole.SiteCollaborator);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
