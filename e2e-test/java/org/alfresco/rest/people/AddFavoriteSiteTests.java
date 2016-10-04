@@ -52,4 +52,15 @@ public class AddFavoriteSiteTests extends RestTest
         peopleApi.addFavoriteSite(collaboratorUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user add a favorite site with Rest API and response is successful (201)")
+    public void contributorUserAddFavoriteSiteWithSuccess() throws Exception
+    {
+        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
+
+        restClient.authenticateUser(contributorUser);
+        peopleApi.addFavoriteSite(contributorUser, siteModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
 }
