@@ -85,4 +85,12 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+    
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that admin user can delete site member and gets status code 204, 'No Content'")
+    public void adminUserIsAbleToDeleteSiteMember() throws JsonToModelConversionException{
+        restClient.authenticateUser(adminUserModel);
+        restSitesAPI.deleteSiteMember(siteModel, testUserModel);
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
 }
