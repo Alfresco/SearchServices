@@ -4,8 +4,8 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.FiveStarRatingBody;
 import org.alfresco.rest.body.LikeRatingBody;
-import org.alfresco.rest.body.LikeRatingBody.ratingTypes;
 import org.alfresco.rest.requests.RestRatingsApi;
+import org.alfresco.utility.constants.Rating;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -58,7 +58,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Manager role is able to post like rating to a document")
     public void managerIsAbleToLikeDocument() throws Exception
     {
-        likeRating = new LikeRatingBody(ratingTypes.fiveStar.toString(), true);
+        likeRating = new LikeRatingBody(Rating.fiveStar, true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         ratingsApi.likeDocument(document, likeRating);
@@ -70,7 +70,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Collaborator role is able to post like rating to a document")
     public void collaboratorIsAbleToLikeDocument() throws Exception
     {
-        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(Rating.likes, true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         ratingsApi.likeDocument(document, likeRating);
@@ -82,7 +82,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Contributor role is able to post like rating to a document")
     public void contributorIsAbleToLikeDocument() throws Exception
     {
-        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(Rating.likes, true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         ratingsApi.likeDocument(document, likeRating);
@@ -94,7 +94,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Consumer role is able to post like rating to a document")
     public void consumerIsAbleToLikeDocument() throws Exception
     {
-        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(Rating.likes, true);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         ratingsApi.likeDocument(document, likeRating);
@@ -106,7 +106,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify admin user is able to post like rating to a document")
     public void adminIsAbleToLikeDocument() throws Exception
     {
-        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(Rating.likes, true);
         
         restClient.authenticateUser(adminUser);
         ratingsApi.likeDocument(document, likeRating);
@@ -118,7 +118,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify unauthenticated user is not able to post like rating to a document")
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
-        likeRating = new LikeRatingBody(ratingTypes.likes.toString(), true);
+        likeRating = new LikeRatingBody(Rating.likes, true);
         
         restClient.authenticateUser(new UserModel("random user", "random password"));
         ratingsApi.likeDocument(document, likeRating);
@@ -130,7 +130,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Manager role is able to post stars rating to a document")
     public void managerIsAbleToAddStarsToDocument() throws Exception
     {
-        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
@@ -142,7 +142,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Collaborator role is able to post stars rating to a document")
     public void collaboratorIsAbleToAddStarsToDocument() throws Exception
     {
-        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
@@ -154,7 +154,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Contributor role is able to post stars rating to a document")
     public void contributorIsAbleToAddStarsToDocument() throws Exception
     {
-        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
@@ -166,7 +166,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify user with Consumer role is able to post stars rating to a document")
     public void consumerIsAbleToAddStarsToDocument() throws Exception
     {
-        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
@@ -178,7 +178,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify admin user is able to post stars rating to a document")
     public void adminIsAbleToAddStarsToDocument() throws Exception
     {
-        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
         
         restClient.authenticateUser(adminUser);
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
@@ -190,7 +190,7 @@ public class AddRateSanityTests extends RestTest
             description = "Verify unauthenticated user is not able to post stars rating to a document")
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {
-        fiveStarRating = new FiveStarRatingBody(ratingTypes.fiveStar.toString(), 5);
+        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
         
         restClient.authenticateUser(new UserModel("random user", "random password"));
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
