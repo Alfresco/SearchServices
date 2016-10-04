@@ -14,17 +14,17 @@ import org.testng.annotations.Test;
 @Test(groups = { "rest-api", "networks", "sanity" })
 public class RestGetNetworkForPersonSanityTests extends RestTest
 {
-    
+
     @Autowired
     RestTenantApi tenantApi;
-    
+
     @Autowired
     RestNetworksApi networkApi;
-    
+
     private UserModel adminUserModel;
     UserModel adminTenantUser;
     UserModel tenantUser;
-    
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -37,7 +37,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         tenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("uTenant");
         networkApi.useRestClient(restClient);
     }
-    
+
     @Test(groups = "sanity")
     @TestRail(section = { "rest-api",
             "networks" }, executionType = ExecutionType.SANITY, description = "Verify non existing user gets another exisiting network with Rest API and checks the forbidden status")
@@ -49,7 +49,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         networkApi.getNetworkForUser(adminTenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
-    
+
     @Test(groups = "sanity")
     @TestRail(section = { "rest-api",
             "networks" }, executionType = ExecutionType.SANITY, description = "Verify tenant admin user gets specific network with Rest API and response is not empty")
@@ -59,4 +59,15 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         networkApi.getNetworkForUser(adminTenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @Test(groups = "sanity")
+    @TestRail(section = { "rest-api",
+            "networks" }, executionType = ExecutionType.SANITY, description = "Verify tenant user is not authorized to check network of another user with Rest API and checks the forbidden status")
+    public void tenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
+    {
+        restClient.authenticateUser(tenantUser);
+        networkApi.getNetworkForUser(adminTenantUser);
+        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+
 }
