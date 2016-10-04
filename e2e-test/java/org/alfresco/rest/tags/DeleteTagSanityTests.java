@@ -1,0 +1,121 @@
+package org.alfresco.rest.tags;
+
+import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestTagModel;
+import org.alfresco.rest.requests.RestTagsApi;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+/**
+ * Created by Claudia Agache on 10/4/2016.
+ */
+@Test(groups = { "rest-api", "tags", "sanity" })
+public class DeleteTagSanityTests extends RestTest
+{
+    @Autowired
+    private DataUser dataUser;
+
+    @Autowired
+    private RestTagsApi tagsAPI;
+
+    private UserModel adminUserModel;
+    private SiteModel siteModel;
+    private DataUser.ListUserWithRoles usersWithRoles;
+    private RestTagModel tag;
+    private FileModel document;
+
+    @BeforeClass(alwaysRun=true)
+    public void dataPreparation() throws Exception
+    {
+        adminUserModel = dataUser.getAdminUser();
+        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        tagsAPI.useRestClient(restClient);
+    }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Admin user deletes tags with Rest API and status code is 204")
+    public void adminIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user deletes tags created by admin user with Rest API and status code is 204")
+    public void managerIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user deletes tags created by admin user with Rest API and status code is 204")
+    public void collaboratorIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+                
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete tags created by admin user with Rest API and status code is 403")
+    public void contributorIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+                
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't delete tags created by admin user with Rest API and status code is 403")
+    public void consumerIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToDeleteTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
+        UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        siteManager.setPassword("wrongPassword");
+        restClient.authenticateUser(siteManager);
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+}
