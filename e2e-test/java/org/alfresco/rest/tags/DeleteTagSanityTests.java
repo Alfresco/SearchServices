@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
  * Created by Claudia Agache on 10/4/2016.
  */
 @Test(groups = { "rest-api", "tags", "sanity" })
-public class RemoveTagSanityTests extends RestTest
+public class DeleteTagSanityTests extends RestTest
 {
     @Autowired
     private DataUser dataUser;
@@ -43,20 +43,16 @@ public class RemoveTagSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-    }
-
-    @BeforeMethod(alwaysRun=true)
-    public void addTagToDocument() throws Exception
-    {
-        restClient.authenticateUser(adminUserModel);
         tagsAPI.useRestClient(restClient);
-        tag = tagsAPI.addTag(document, "testtag");
     }
 
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Admin user deletes tags with Rest API and status code is 204")
     public void adminIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -65,6 +61,9 @@ public class RemoveTagSanityTests extends RestTest
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user deletes tags created by admin user with Rest API and status code is 204")
     public void managerIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -74,6 +73,9 @@ public class RemoveTagSanityTests extends RestTest
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user deletes tags created by admin user with Rest API and status code is 204")
     public void collaboratorIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+                
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -83,6 +85,9 @@ public class RemoveTagSanityTests extends RestTest
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete tags created by admin user with Rest API and status code is 403")
     public void contributorIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+                
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -92,6 +97,9 @@ public class RemoveTagSanityTests extends RestTest
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't delete tags created by admin user with Rest API and status code is 403")
     public void consumerIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -101,6 +109,9 @@ public class RemoveTagSanityTests extends RestTest
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
     public void managerIsNotAbleToDeleteTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        tag = tagsAPI.addTag(document, "testtag");
+        
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
