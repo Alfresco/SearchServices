@@ -93,4 +93,13 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
+    
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that unauthenticated user is not able to delete site member")
+    public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMmeber() throws Exception{
+        UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
+        restClient.authenticateUser(inexistentUser);
+        restSitesAPI.deleteSiteMember(siteModel, testUserModel);
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
