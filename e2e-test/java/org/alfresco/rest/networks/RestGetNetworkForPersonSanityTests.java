@@ -62,11 +62,22 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
     
     @Test(groups = "sanity")
     @TestRail(section = { "rest-api",
-            "networks" }, executionType = ExecutionType.SANITY, description = "Verify tenant user is not authorized to check network of another user with Rest API and checks the forbidden status")
-    public void tenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
-    {
+            "networks" }, executionType = ExecutionType.SANITY, description = "Verify tenant user is not authorized to check network of admin user with Rest API and checks the forbidden status")
+    public void tenantUserIsNotAuthorizedToCheckNetworkOfAdminUser() throws Exception
+    { 
         restClient.authenticateUser(tenantUser);
         networkApi.getNetworkForUser(adminTenantUser);
+        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+    
+    @Test(groups = "sanity")
+    @TestRail(section = { "rest-api",
+            "networks" }, executionType = ExecutionType.SANITY, description = "Verify admin tenant user is not authorized to check network of another user with Rest API and checks the forbidden status")
+    public void adminTenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
+    {
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
+        restClient.authenticateUser(adminTenantUser);
+        networkApi.getNetworkForUser(tenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
