@@ -1,12 +1,9 @@
 package org.alfresco.rest.sites;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestSiteContainerModel;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -93,7 +90,7 @@ public class GetSiteContainerSanityTests extends RestTest
     }
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get site container call returns status code 401 with Manager role")
+            description = "Failed authentication get site container call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
