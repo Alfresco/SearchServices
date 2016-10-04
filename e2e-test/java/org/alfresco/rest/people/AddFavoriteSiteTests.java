@@ -5,6 +5,7 @@ import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class AddFavoriteSiteTests extends RestTest
         peopleApi.addFavoriteSite(managerUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user add a favorite site with Rest API and response is successful (201)")
     public void collaboratorUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -52,7 +53,7 @@ public class AddFavoriteSiteTests extends RestTest
         peopleApi.addFavoriteSite(collaboratorUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user add a favorite site with Rest API and response is successful (201)")
     public void contributorUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -63,7 +64,7 @@ public class AddFavoriteSiteTests extends RestTest
         peopleApi.addFavoriteSite(contributorUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user add a favorite site with Rest API and response is successful (201)")
     public void consumerUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -74,7 +75,7 @@ public class AddFavoriteSiteTests extends RestTest
         peopleApi.addFavoriteSite(consumerUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify admin user add a favorite site with Rest API and response is successful (201)")
     public void adminUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -83,5 +84,18 @@ public class AddFavoriteSiteTests extends RestTest
         restClient.authenticateUser(adminUser);
         peopleApi.addFavoriteSite(adminUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
+
+    @Bug(id = "")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify a manager user is NOT Authorized to add a favorite site with Rest API when authentication fails (401)")
+    public void managerUserNotAuthorizedFailsToAddFavoriteSite() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        managerUser.setPassword("newpassword");
+
+        restClient.authenticateUser(managerUser);
+        peopleApi.addFavoriteSite(managerUser, siteModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
