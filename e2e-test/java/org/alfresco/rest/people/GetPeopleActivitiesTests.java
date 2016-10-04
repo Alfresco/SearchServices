@@ -41,65 +41,64 @@ public class GetPeopleActivitiesTests extends RestTest
     }
 
     @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its activities with Rest API and response is successful")
-    public void managerUserGetsPeopleActivitiesListSuccessful() throws Exception
+    public void managerUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonActivities(managerUser).assertActivityListIsNotEmpty();
+        peopleApi.getPersonActivities(managerUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its activities with Rest API and response is successful")
-    public void collaboratorUserGetsPeopleActivitiesListSuccessful() throws Exception
+    public void collaboratorUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         dataContent.usingUser(collaboratorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPersonActivities(collaboratorUser).assertActivityListIsNotEmpty();
+        peopleApi.getPersonActivities(collaboratorUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its activities with Rest API and response is successful")
-    public void contributorUserGetsPeopleActivitiesListSuccessful() throws Exception
+    public void contributorUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         dataContent.usingUser(contributorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPersonActivities(contributorUser).assertActivityListIsNotEmpty();
+        peopleApi.getPersonActivities(contributorUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its activities with Rest API and response is successful")
-    public void consumerUserGetsPeopleActivitiesListSuccessful() throws Exception
+    public void consumerUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
-
+        dataContent.usingUser(consumerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPersonActivities(consumerUser).assertActivityListIsNotEmpty();
+        peopleApi.getPersonActivities(consumerUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user activities with Rest API and response is successful")
-    public void adminUserGetsPeopleActivitiesListSuccessful() throws Exception
+    public void adminUserShouldGetPeopleActivitiesList() throws Exception
     {
-        UserModel adminUser = dataUser.getAdminUser();
-
-        restClient.authenticateUser(adminUser);
-        peopleApi.getPersonActivities(userModel).assertActivityListIsNotEmpty();
+        restClient.authenticateUser(dataUser.getAdminUser());
+        peopleApi.getPersonActivities(userModel).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id = "")
     @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets another user activities with Rest API")
-    public void managerUserGetsPeopleActivitiesListIsNotAuthorized() throws Exception
+    public void managerUserShouldGetPeopleActivitiesListIsNotAuthorized() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
