@@ -18,18 +18,11 @@
  */
 package org.alfresco.solr.highlight;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.client.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.AlfrescoSolrHighlighter;
 import org.apache.solr.handler.component.HighlightComponent;
@@ -37,19 +30,14 @@ import org.apache.solr.highlight.SolrHighlighter;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-
 /**
  * Tests Alfresco-specific logic.
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class AlfrescoHighligherTest extends AbstractAlfrescoDistributedTest
+public class AlfrescoHighligherDistributedTest extends AbstractAlfrescoDistributedTest
 {
-    private static Log logger = LogFactory.getLog(AlfrescoHighligherTest.class);
+    private static Log logger = LogFactory.getLog(AlfrescoHighligherDistributedTest.class);
 
     @Rule
     public DefaultAlrescoCoreRule jetty = new DefaultAlrescoCoreRule(this.getClass().getSimpleName(), DEFAULT_CORE_PROPS);
