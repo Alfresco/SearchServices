@@ -36,11 +36,12 @@ public class GatFavoriteSitesTests extends RestTest
     public void managerUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
+        dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getFavoriteSites(managerUser).assertResponseIsNotEmpty();
+        peopleApi.getFavoriteSites(collaboratorUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -48,11 +49,14 @@ public class GatFavoriteSitesTests extends RestTest
     public void collaboratorUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
+        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
+        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
+        
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getFavoriteSites(collaboratorUser).assertResponseIsNotEmpty();
+        peopleApi.getFavoriteSites(contributorUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -60,11 +64,13 @@ public class GatFavoriteSitesTests extends RestTest
     public void contributorUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
-        dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getFavoriteSites(contributorUser).assertResponseIsNotEmpty();
+        peopleApi.getFavoriteSites(managerUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -72,11 +78,13 @@ public class GatFavoriteSitesTests extends RestTest
     public void consumerUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
+        UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
+        dataUser.usingUser(collaboratorUser).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getFavoriteSites(consumerUser).assertResponseIsNotEmpty();
+        peopleApi.getFavoriteSites(collaboratorUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -84,10 +92,12 @@ public class GatFavoriteSitesTests extends RestTest
     public void adminUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
-        dataSite.usingUser(adminUser).usingSite(siteModel).addSiteToFavorites();
+        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
+        dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getFavoriteSites(adminUser).assertResponseIsNotEmpty();
+        peopleApi.getFavoriteSites(consumerUser).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -96,12 +106,16 @@ public class GatFavoriteSitesTests extends RestTest
     public void managerUserGetsFavoriteSitesIsNotAuthorized() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
+        
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
+        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
+        dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
+        
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getFavoriteSites(managerUser);
+        peopleApi.getFavoriteSites(consumerUser);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
