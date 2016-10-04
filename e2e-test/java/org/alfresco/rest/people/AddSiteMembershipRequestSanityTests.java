@@ -50,7 +50,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     @TestRail(section = { "rest-api", "people" }, 
                 executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")    
     @Bug(id="MNT-16557")    
-    public void siteManagerCanCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    public void siteManagerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
@@ -64,7 +64,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     @TestRail(section = { "rest-api", "people" }, 
                 executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to create new site membership request")
     @Bug(id = "MNT-16557")
-    public void siteCollaboatorCanCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    public void siteCollaboatorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
@@ -73,6 +73,20 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
         peopleApi.addSiteMembershipRequest(newMember, siteMembership);
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
-}
+    }
 
+    @TestRail(section = { "rest-api", "people" }, 
+                executionType = ExecutionType.SANITY, description = "Verify site contributor is able to create new site membership request")
+    @Bug(id = "MNT-16557")
+    public void siteContributorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
+
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.CREATED);
+    }
+    
 }
