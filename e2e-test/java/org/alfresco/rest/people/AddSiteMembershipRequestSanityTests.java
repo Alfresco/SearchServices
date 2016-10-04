@@ -9,7 +9,6 @@ import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -118,4 +117,17 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
     
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to create new site membership request")
+    @Bug(id = "MNT-16557")
+    public void unauthenticatedUserIsNotAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
+
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
