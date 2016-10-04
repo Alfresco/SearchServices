@@ -2,7 +2,6 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.SiteMembership;
-import org.alfresco.rest.body.SiteMembershipRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
@@ -128,4 +127,20 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve site membership request")
+    @Bug(id = "MNT-16557")
+    public void unauthenticatedUserIsNotAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        SiteMembership siteMembership = new SiteMembership("Please accept me", siteModel.getId(), "New request");
+
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+
+        peopleApi.getSiteMembershipRequest(newMember, siteModel);
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+    
 }
