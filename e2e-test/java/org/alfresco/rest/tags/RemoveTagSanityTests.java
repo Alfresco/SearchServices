@@ -61,5 +61,12 @@ public class RemoveTagSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user deletes tags created by admin user with Rest API and status code is 204")
+    public void managerIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
 }
