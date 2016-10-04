@@ -111,5 +111,21 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, description = "Verify admin user is able to retrieve site membership request")
+    @Bug(id = "MNT-16557")
+    public void adminIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        SiteMembership siteMembership = new SiteMembership("Please accept me", siteModel.getId(), "New request");
+
+        restClient.authenticateUser(adminUser);
+        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+
+        peopleApi.getSiteMembershipRequest(newMember, siteModel);
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }
 
 }
