@@ -14,7 +14,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "people", "sanity" })
-public class GatFavoriteSitesTests extends RestTest
+public class GetFavoriteSitesTests extends RestTest
 {
     @Autowired
     RestPeopleApi peopleApi;
