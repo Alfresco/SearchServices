@@ -86,4 +86,14 @@ public class GetFavoriteSanityTests extends RestTest
         favoritesAPI.getUserFavorite(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel.getGuid());
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user gets favorite site with Rest API and status code is 200")
+    public void collaboratorIsAbleToRetrieveFavorites() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
+        favoritesAPI.getUserFavorite(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel.getGuid());
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
