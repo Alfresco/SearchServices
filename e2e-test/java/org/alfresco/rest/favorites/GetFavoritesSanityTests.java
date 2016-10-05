@@ -1,5 +1,6 @@
 package org.alfresco.rest.favorites;
 
+import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestFavoritesApi;
@@ -7,6 +8,8 @@ import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.SpecificParametersForFavorites;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -29,6 +32,10 @@ public class GetFavoritesSanityTests extends RestTest
     private UserModel adminUserModel;
     private SiteModel firstSiteModel;
     private SiteModel secondSiteModel;
+    private FileModel firstFileModel;
+    private FileModel secondFileModel;
+    private FolderModel firstFolderModel;
+    private FolderModel secondFolderModel;
     private ListUserWithRoles usersWithRoles;
 
     @BeforeClass(alwaysRun = true)
@@ -38,6 +45,10 @@ public class GetFavoritesSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         firstSiteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         secondSiteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
+        firstFolderModel = dataContent.usingUser(adminUserModel).usingSite(firstSiteModel).createFolder();
+        secondFolderModel = dataContent.usingUser(adminUserModel).usingSite(firstSiteModel).createFolder();
+        firstFileModel = dataContent.usingUser(adminUserModel).usingResource(firstFolderModel).createContent(DocumentType.TEXT_PLAIN);
+        secondFileModel = dataContent.usingUser(adminUserModel).usingResource(firstFolderModel).createContent(DocumentType.TEXT_PLAIN);
 
         favoritesAPI.useRestClient(restClient);
         sitesApi.useRestClient(restClient);
@@ -55,6 +66,16 @@ public class GetFavoritesSanityTests extends RestTest
         favoritesAPI.addUserFavorites(adminUserModel, firstSiteModel);
         favoritesAPI.addUserFavorites(adminUserModel, secondSiteModel);
         favoritesAPI.getUserFavorites(adminUserModel, SpecificParametersForFavorites.SITE.toString());
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorites folders with Rest API and status code is 200")
+    public void adminIsAbleToRetrieveFavoritesFolders() throws JsonToModelConversionException, Exception
+    {
+        favoritesAPI.addUserFavorites(adminUserModel, firstFolderModel);
+        favoritesAPI.addUserFavorites(adminUserModel, secondFolderModel);
+        favoritesAPI.getUserFavorites(adminUserModel, SpecificParametersForFavorites.FOLDER.toString());
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
