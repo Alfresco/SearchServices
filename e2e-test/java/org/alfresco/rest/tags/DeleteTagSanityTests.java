@@ -7,6 +7,7 @@ import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.requests.RestTagsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -30,11 +31,11 @@ public class DeleteTagSanityTests extends RestTest
     @Autowired
     private RestTagsApi tagsAPI;
 
-    private UserModel adminUserModel;
+    private UserModel adminUserModel, userModel;
     private SiteModel siteModel;
     private DataUser.ListUserWithRoles usersWithRoles;
     private RestTagModel tag;
-    private FileModel document;
+    private FileModel document, contributorDoc;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -52,7 +53,7 @@ public class DeleteTagSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         tag = tagsAPI.addTag(document, "testtag");
-        
+
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -63,7 +64,7 @@ public class DeleteTagSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         tag = tagsAPI.addTag(document, "testtag");
-        
+
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -75,7 +76,7 @@ public class DeleteTagSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         tag = tagsAPI.addTag(document, "testtag");
-                
+
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -83,14 +84,26 @@ public class DeleteTagSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete tags created by admin user with Rest API and status code is 403")
-    public void contributorIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
+    public void contributorIsNotAbleToDeleteTagsForAnotherUserContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
         tag = tagsAPI.addTag(document, "testtag");
-                
+
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user deletes tags created by him with Rest API and status code is 204")
+    public void contributorIsAbleToDeleteTagsForHisContent() throws JsonToModelConversionException, Exception
+    {
+        userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
+        restClient.authenticateUser(userModel);
+        contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);;
+        tag = tagsAPI.addTag(contributorDoc, "contributortag");
+        tagsAPI.deleteTag(document, tag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { "rest-api",
@@ -99,7 +112,7 @@ public class DeleteTagSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         tag = tagsAPI.addTag(document, "testtag");
-        
+
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         tagsAPI.deleteTag(document, tag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -111,7 +124,7 @@ public class DeleteTagSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         tag = tagsAPI.addTag(document, "testtag");
-        
+
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
