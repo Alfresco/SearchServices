@@ -13,9 +13,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * 
  * @author Cristina Axinte
- *
  */
 @Test(groups = { "rest-api", "people", "sanity" })
 public class DeleteFavoriteSiteSanityTests extends RestTest
@@ -28,7 +26,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
     SiteModel siteModel2;
     UserModel searchedUser;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         userModel = dataUser.createRandomTestUser();
@@ -37,7 +35,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
 
         peopleApi.useRestClient(restClient);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void managerUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
@@ -47,10 +45,10 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.removeFavoriteSite(managerUser,siteModel1);
+        peopleApi.removeFavoriteSite(managerUser, siteModel1);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void collaboratorUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
@@ -60,10 +58,10 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.removeFavoriteSite(collaboratorUser,siteModel1);
+        peopleApi.removeFavoriteSite(collaboratorUser, siteModel1);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void contributorUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
@@ -73,7 +71,20 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.removeFavoriteSite(contributorUser,siteModel1);
+        peopleApi.removeFavoriteSite(contributorUser, siteModel1);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
+
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user removes a site from its favorite sites list with Rest API and response is successful (204)")
+    public void consumerUserRemovesFavoriteSiteWithSuccess() throws Exception
+    {
+        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel1, UserRole.SiteConsumer);
+        dataSite.usingUser(consumerUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
+
+        restClient.authenticateUser(consumerUser);
+        peopleApi.removeFavoriteSite(consumerUser, siteModel1);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 }
