@@ -13,6 +13,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -111,5 +112,16 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.getRatings(document);
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify unauthenticated user is not able to retrieve document ratings")
+    @Bug(id = "MNT-16904")
+    public void unauthenticatedUserIsNotAbleToRetrieveDocumentRatings() throws Exception
+    {
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        ratingsApi.getRatings(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
