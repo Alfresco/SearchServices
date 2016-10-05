@@ -159,4 +159,16 @@ public class GetFavoritesSanityTests extends RestTest
         favoritesAPI.getUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), SpecificParametersForFavorites.SITE.toString());
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
+    public void userIsNotAbleToRetrieveFavoritesIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        siteManager.setPassword("wrongPassword");
+        restClient.authenticateUser(siteManager);
+        favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), firstSiteModel);
+        favoritesAPI.addUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), secondSiteModel);
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
