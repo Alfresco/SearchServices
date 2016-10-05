@@ -117,4 +117,42 @@ public class GetFavoriteSanityTests extends RestTest
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify user doesn't get favorite site of another user with Rest API and status code is 404")
+    public void userIsNotAbleToRetrieveFavoriteSiteOfAnotherUser() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        favoritesAPI.getUserFavorite(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel.getGuid());
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify user doesn't get favorite site of admin user with Rest API and status code is 404")
+    public void userIsNotAbleToRetrieveFavoritesOfAdminUser() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        favoritesAPI.getUserFavorite(adminUserModel, siteModel.getGuid());
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify admin user doesn't get favorite site of another user with Rest API and status code is 404")
+    public void adminIsNotAbleToRetrieveFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        favoritesAPI.getUserFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel.getGuid());
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
+    public void userIsNotAbleToRetrieveFavoritesIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        siteManager.setPassword("wrongPassword");
+        restClient.authenticateUser(siteManager);
+        favoritesAPI.getUserFavorite(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel.getGuid());
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+
 }
