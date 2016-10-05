@@ -90,7 +90,7 @@ public class UpdateTagSanityTests extends RestTest
         tagsAPI.updateTag(oldTag, newTag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
-    
+
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't update tags with Rest API and status code is 403")
     public void consumerIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
@@ -100,6 +100,15 @@ public class UpdateTagSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    public void managerIsNotAbleToUpdateTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    {
+        UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        siteManager.setPassword("wrongPassword");
+        restClient.authenticateUser(siteManager);
+        tagsAPI.updateTag(oldTag, newTag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 
 }
