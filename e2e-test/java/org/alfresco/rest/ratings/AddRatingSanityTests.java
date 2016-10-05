@@ -23,7 +23,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "ratings", "sanity" })
-public class AddRateSanityTests extends RestTest
+public class AddRatingSanityTests extends RestTest
 {
     @Autowired
     RestRatingsApi ratingsApi;
