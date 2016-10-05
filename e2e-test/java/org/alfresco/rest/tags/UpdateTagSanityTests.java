@@ -73,4 +73,14 @@ public class UpdateTagSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can't update tags with Rest API and status code is 403")
+    public void collaboratorIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        tagsAPI.updateTag(oldTag, newTag);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+
+
 }
