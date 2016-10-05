@@ -73,4 +73,13 @@ public class GetRatingSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Collaborator role is able to retrieve document ratings")
+    public void collaboratorIsAbleToRetrieveDocumentRatings() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        ratingsApi.getRatings(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }
 }
