@@ -87,7 +87,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         peopleApi.removeFavoriteSite(consumerUser, siteModel1);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
-    
+
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify admin user removes a site from any user's favorite sites list with Rest API and response is successful (204)")
     public void adminUserRemovesAnyFavoriteSiteWithSuccess() throws Exception
     {
@@ -99,5 +99,32 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.authenticateUser(adminUser);
         peopleApi.removeFavoriteSite(anyUser, siteModel1);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
+
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify a user removes a site from another user's favorite sites list with Rest API and response is permission denied (403)")
+    public void userUserRemovesAnotherUserFavoriteSiteWithSuccess() throws Exception
+    {
+        UserModel userAuth = dataUser.usingAdmin().createRandomTestUser();
+        UserModel anotherUser = dataUser.usingAdmin().createRandomTestUser();
+        dataSite.usingUser(anotherUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(anotherUser).usingSite(siteModel2).addSiteToFavorites();
+
+        restClient.authenticateUser(userAuth);
+        peopleApi.removeFavoriteSite(anotherUser, siteModel1);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to remove a site from its favorite sites list with Rest API when authentication fails (401)")
+    public void managerUserNotAuthorizedFailsToRemoveFavoriteSite() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel1, UserRole.SiteManager);
+        dataSite.usingUser(managerUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
+        managerUser.setPassword("newpassword");
+
+        restClient.authenticateUser(managerUser);
+        peopleApi.removeFavoriteSite(managerUser, siteModel1);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
