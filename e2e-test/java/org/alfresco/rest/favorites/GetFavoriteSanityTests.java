@@ -67,4 +67,13 @@ public class GetFavoriteSanityTests extends RestTest
         favoritesAPI.getUserFavorite(adminUserModel, folderModel.getNodeRef());
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+
+    @TestRail(section = { "rest-api",
+            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorite file with Rest API and status code is 200")
+    public void adminIsAbleToRetrieveFavoritesFile() throws JsonToModelConversionException, Exception
+    {
+        favoritesAPI.addUserFavorites(adminUserModel, fileModel);
+        favoritesAPI.getUserFavorite(adminUserModel, fileModel.getNodeRef());
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
