@@ -63,4 +63,17 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         peopleApi.removeFavoriteSite(collaboratorUser,siteModel1);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user removes a site from its favorite sites list with Rest API and response is successful (204)")
+    public void contributorUserRemovesFavoriteSiteWithSuccess() throws Exception
+    {
+        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel1, UserRole.SiteContributor);
+        dataSite.usingUser(contributorUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
+
+        restClient.authenticateUser(contributorUser);
+        peopleApi.removeFavoriteSite(contributorUser,siteModel1);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
 }
