@@ -56,6 +56,13 @@ public class UpdateTagSanityTests extends RestTest
         newTag = new Tag(RandomData.getRandomName("tag"));
     }
 
+    @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates tags and status code is 200")
+    public void adminIsAbleToUpdateTags() throws JsonToModelConversionException, Exception
+    {
+        tagsAPI.updateTag(oldTag, newTag).assertTagIs(newTag.getTag());
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user can't update tags with Rest API and status code is 403")
