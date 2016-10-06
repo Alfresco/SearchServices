@@ -13,6 +13,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,7 +155,6 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.likeDocument(document, likeRating);
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
 
-
         ratingsApi.getLikeRating(document)
             .assertLikeRatingExists()
             .assertMyLikeRatingIs(Boolean.TRUE);
@@ -168,4 +168,23 @@ public class GetRatingSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }   
     
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify unauthenticated user is not able to retrieve rating of a document")
+    @Bug(id = "MNT-16904")
+    public void unauthenticatedUserIsNotAbleToRetrieveRating() throws Exception
+    {
+        restClient.authenticateUser(adminUser);
+        ratingsApi.likeDocument(document, likeRating);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        
+        ratingsApi.getLikeRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        
+        ratingsApi.getFiveStarRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }   
 }
