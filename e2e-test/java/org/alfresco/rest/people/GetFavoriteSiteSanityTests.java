@@ -5,6 +5,7 @@ import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,6 +118,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
+    @Bug(id = "MNT-16904")
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized gets its specific favorite site with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToGetFavoriteSite() throws Exception
     {
