@@ -13,6 +13,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,6 +178,30 @@ public class DeleteRatingSanityTests extends RestTest
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
         
         restClient.authenticateUser(new UserModel("random user", "random password"));
+        
+        ratingsApi.deleteLikeRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        
+        ratingsApi.deleteFiveStarRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }  
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify one user is not able to remove rating added by another user")
+    @Bug(id = "ACE-5459")
+    public void oneUserIsNotAbleToDeleteRatingsOfAnotherUser() throws Exception
+    {
+        UserModel userA = dataUser.createRandomTestUser();
+        UserModel userB = dataUser.createRandomTestUser();
+        
+        restClient.authenticateUser(userA);
+        
+        ratingsApi.likeDocument(document, likeRating);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+        
+        restClient.authenticateUser(userB);
         
         ratingsApi.deleteLikeRating(document);
         ratingsApi.usingRestWrapper()
