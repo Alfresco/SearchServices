@@ -68,7 +68,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getSiteMembershipRequests(newMember).assertEntriesListIsNotEmpty();
+        peopleApi.getSiteMembershipRequests(newMember);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
@@ -80,7 +80,19 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         
         restClient.authenticateUser(contributorUser);
-        peopleApi.getSiteMembershipRequests(newMember).assertEntriesListIsNotEmpty();
+        peopleApi.getSiteMembershipRequests(newMember);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+    
+    @Bug(id = "MNT-16557")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get all site membership requests of another user with Rest API (403)")
+    public void consumerUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
+    {
+        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteContributor);
+        
+        restClient.authenticateUser(consumerUser);
+        peopleApi.getSiteMembershipRequests(newMember);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 }
