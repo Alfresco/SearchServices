@@ -46,15 +46,15 @@ public class DeleteRatingSanityTests extends RestTest
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
                 UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        
+        likeRating = new LikeRatingBody(Rating.likes, true);
+        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
     }
     
     @BeforeMethod()
     public void setUp() throws DataPreparationException, Exception {
         folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
         document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
-
-        likeRating = new LikeRatingBody(Rating.likes, true);
-        fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
     }
 
     @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
@@ -78,4 +78,26 @@ public class DeleteRatingSanityTests extends RestTest
             .assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating();        
     }   
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Collaborator role is able to remove its own rating of a document")
+    public void collaboratorIsAbleToDeleteItsOwnRatings() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+
+        ratingsApi.likeDocument(document, likeRating);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+        
+        ratingsApi.deleteLikeRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        ratingsApi.deleteFiveStarRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        ratingsApi.getRatings(document)
+            .assertNodeIsNotLiked()
+            .assertNodeHasNoFiveStarRating();        
+    }  
 }
