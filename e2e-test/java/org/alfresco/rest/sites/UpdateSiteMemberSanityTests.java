@@ -92,4 +92,15 @@ public class UpdateSiteMemberSanityTests extends RestTest
         siteAPI.updateSiteMember(siteModel, testUserModel, siteMember);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @Bug(id="MNT-16904")
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that unauthenticated user is not able to update site member")
+    public void unauthenticatedUserIsNotAuthorizedToUpdateSiteMmeber() throws Exception{
+        SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), testUserModel.getUsername());
+        UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
+        restClient.authenticateUser(inexistentUser);
+        siteAPI.updateSiteMember(siteModel, testUserModel, siteMember);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
