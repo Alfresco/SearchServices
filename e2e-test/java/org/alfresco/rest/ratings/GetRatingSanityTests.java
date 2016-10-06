@@ -27,7 +27,6 @@ public class GetRatingSanityTests extends RestTest
     @Autowired
     RestRatingsApi ratingsApi;
 
-    private UserModel userModel;
     private SiteModel siteModel;
     private UserModel adminUser;
     private FolderModel folderModel;
@@ -39,7 +38,6 @@ public class GetRatingSanityTests extends RestTest
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
     {
-       // userModel = dataUser.createRandomTestUser();
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         
@@ -54,8 +52,8 @@ public class GetRatingSanityTests extends RestTest
     
     @BeforeMethod()
     public void setUp() throws DataPreparationException, Exception {
-        folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
-        document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
     @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
@@ -133,6 +131,30 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.likeDocument(document, likeRating);
         ratingsApi.rateStarsToDocument(document, fiveStarRating);
         
+        ratingsApi.getLikeRating(document)
+            .assertLikeRatingExists()
+            .assertMyLikeRatingIs(Boolean.TRUE);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+        
+        ratingsApi.getFiveStarRating(document)
+            .assertFiveStarRatingExists()
+            .assertMyFiveStarRatingIs(5);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }   
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify admin user is able to retrieve rating of a document")
+    public void adminIsAbleToRetrieveRating() throws Exception
+    {
+        document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+
+        restClient.authenticateUser(adminUser);
+        ratingsApi.likeDocument(document, likeRating);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+
+
         ratingsApi.getLikeRating(document)
             .assertLikeRatingExists()
             .assertMyLikeRatingIs(Boolean.TRUE);
