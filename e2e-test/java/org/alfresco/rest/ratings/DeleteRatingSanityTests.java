@@ -166,4 +166,24 @@ public class DeleteRatingSanityTests extends RestTest
             .assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating();        
     }  
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify unauthenticated user is not able to remove its own rating of a document")
+    public void unauthenticatedUserIsNotAbleToDeleteRatings() throws Exception
+    {
+        restClient.authenticateUser(adminUser);
+        
+        ratingsApi.likeDocument(document, likeRating);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+        
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        
+        ratingsApi.deleteLikeRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        
+        ratingsApi.deleteFiveStarRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }  
 }
