@@ -2,6 +2,7 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestPeopleApi;
+import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -14,13 +15,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * Tests for Get Peferences (/people/{personId}/preferences) RestAPI call
+ * Tests for Get a Peference (/people/{personId}/preferences/{preferenceName}) RestAPI call
  * 
  * @author Cristina Axinte
  *
  */
 @Test(groups = { "rest-api", "people", "preferences", "sanity" })
-public class GetPeoplePreferencesTests extends RestTest
+public class GetPeoplePreferenceSanityTests extends RestTest
 {
     @Autowired
     RestPeopleApi peopleApi;
@@ -37,70 +38,68 @@ public class GetPeoplePreferencesTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
     
-    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its preferences with Rest API and response is successful (200)")
-    public void managerUserGetsPeoplePreferencesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a specific preference with Rest API and response is successful (200)")
+    public void managerUserGetsAPreferenceWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonPreferences(managerUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferenceInformation(managerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its preferences with Rest API and response is successful (200)")
-    public void collaboratorUserGetsPeoplePreferencesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets a specific preference with Rest API and response is successful (200)")
+    public void collaboratorUserGetsAPreferenceWithSuccess() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPersonPreferences(collaboratorUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferenceInformation(collaboratorUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its preferences with Rest API and response is successful (200)")
-    public void contributorUserGetsPeoplePreferencesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets a specific preference with Rest API and response is successful (200)")
+    public void contributorUserGetsAPreferenceWithSuccess() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPersonPreferences(contributorUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferenceInformation(contributorUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its preferences with Rest API and response is successful (200)")
-    public void consumerUserGetsPeoplePreferencesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets a specific preference with Rest API and response is successful (200)")
+    public void consumerUserGetsAPreferenceWithSuccess() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPersonPreferences(consumerUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferenceInformation(consumerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user preferences with Rest API and response is successful (200)")
-    public void adminUserGetsPeoplePreferencesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets a specific preference with Rest API and response is successful (200)")
+    public void adminUserGetsAPreferenceWithSuccess() throws Exception
     {
-        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
-        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
         UserModel adminUser = dataUser.getAdminUser();
+        dataSite.usingUser(adminUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getPersonPreferences(managerUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferenceInformation(adminUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @Bug(id = "")
-    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets its preferences with Rest API when authentication fails(401)")
-    public void managerUserGetsPeoplePreferencesIsNotAUthorized() throws Exception
+    @Bug(id = "MNT-16904")
+    @TestRail(section = { "rest-api", "people", "preferences" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to get a specific preference with Rest API when authentication fails (401)")
+    public void managerUserNotAuthorizedFailsToGetsAPreference() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
@@ -108,7 +107,7 @@ public class GetPeoplePreferencesTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonPreferences(managerUser);
+        peopleApi.getPersonPreferenceInformation(managerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
