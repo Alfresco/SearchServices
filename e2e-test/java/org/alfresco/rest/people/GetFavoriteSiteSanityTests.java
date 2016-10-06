@@ -40,7 +40,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
     }
 
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its specific favorite site with Rest API and response is successful (200)")
-    public void managerUserGetsFavoriteSitesWithSuccess() throws Exception
+    public void managerUserGetsFavoriteSiteWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel1, UserRole.SiteManager);
@@ -53,7 +53,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
     }
     
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its specific favorite site with Rest API and response is successful (200)")
-    public void collaboratorUserGetsFavoriteSitesWithSuccess() throws Exception
+    public void collaboratorUserGetsFavoriteSiteWithSuccess() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel1, UserRole.SiteCollaborator);
@@ -62,6 +62,19 @@ public class GetFavoriteSiteSanityTests extends RestTest
 
         restClient.authenticateUser(collaboratorUser);
         peopleApi.getFavoriteSite(collaboratorUser, siteModel1).assertResponseIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its specific favorite site with Rest API and response is successful (200)")
+    public void contributorUserGetsFavoriteSiteWithSuccess() throws Exception
+    {
+        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel1, UserRole.SiteContributor);
+        dataSite.usingUser(contributorUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
+
+        restClient.authenticateUser(contributorUser);
+        peopleApi.getFavoriteSite(contributorUser, siteModel1).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
