@@ -119,4 +119,12 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         peopleApi.getSiteMembershipRequests(newMember);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify a user gets all its own site membership requests with Rest API and response is successful (200)")
+    public void oneUserGetsItsOwnSiteMembershipRequestsWithSuccess() throws Exception
+    {
+        restClient.authenticateUser(newMember);
+        peopleApi.getSiteMembershipRequests(newMember).assertEntriesListIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
