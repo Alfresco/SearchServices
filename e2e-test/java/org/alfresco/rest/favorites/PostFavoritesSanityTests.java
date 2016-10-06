@@ -1,4 +1,4 @@
-package org.alfresco.rest.Favorites;
+package org.alfresco.rest.favorites;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
