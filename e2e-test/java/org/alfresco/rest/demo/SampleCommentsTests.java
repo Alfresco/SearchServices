@@ -51,7 +51,7 @@ public class SampleCommentsTests extends RestTest
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description= "Verify admin user gets comments with Rest API and status code is 200")
-    public void admiShouldRetrieveComments() throws JsonToModelConversionException
+    public void admiShouldRetrieveComments() throws Exception
     {
         commentsAPI.getNodeComments(document);
         commentsAPI.usingRestWrapper()
