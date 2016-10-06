@@ -3,6 +3,7 @@ package org.alfresco.solr.component.spellcheck;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.solr.common.params.ShardParams;
 import org.apache.solr.common.params.SolrParams;
@@ -53,6 +54,8 @@ public class AlfrescoSpellCheckComponent extends SpellCheckComponent
         // even in cases when the internal rank is the same.
         Collections.sort(collations);
 
+        NamedList collationList = new NamedList();
+
         for (AlfrescoSpellCheckCollation collation : collations)
         {
             if (collationExtendedResults)
@@ -66,16 +69,18 @@ public class AlfrescoSpellCheckComponent extends SpellCheckComponent
                 {
                     extendedResult.add("collationInternalRank", collation.getInternalRank());
                 }
-                response.add("collation", extendedResult);
+                collationList.add("collation", extendedResult);
             }
             else
             {
-                response.add("collation", collation.getCollationQuery());
+                collationList.add("collation", collation.getCollationQuery());
                 if (maxCollationTries > 0 && shard)
                 {
-                    response.add("collationInternalRank", collation.getInternalRank());
+                   collationList.add("collationInternalRank", collation.getInternalRank());
                 }
             }
         }
+
+        response.add("collations", collationList);
     }
 }
