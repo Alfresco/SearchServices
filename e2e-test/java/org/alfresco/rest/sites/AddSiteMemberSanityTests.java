@@ -91,4 +91,16 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.addPerson(siteModel, siteMember);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
     }
+    
+    @Bug(id="MNT-16904")
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that unauthenticated user is not able to add site member")
+    public void unauthenticatedUserIsNotAuthorizedToAddSiteMmeber() throws Exception{
+        UserModel newUser = dataUser.createRandomTestUser();
+        SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
+        UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
+        restClient.authenticateUser(inexistentUser);
+        siteAPI.addPerson(siteModel, siteMember);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
