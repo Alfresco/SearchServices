@@ -77,7 +77,7 @@
          <analyzer type="query">
             <tokenizer class="solr.ICUTokenizerFactory"/>
             <filter class="solr.ICUNormalizer2FilterFactory" name="nfkc_cf" mode="compose" />
-	    <filter class="solr.ShingleFilterFactory" minShingleSize="2" maxShingleSize="3" outputUnigrams="false" outputUnigramsIfNoShingles="true" tokenSeparator=" " />
+	    <filter class="solr.ShingleFilterFactory" minShingleSize="2" maxShingleSize="3" outputUnigrams="true" outputUnigramsIfNoShingles="true" tokenSeparator=" " />
          </analyzer>
       </fieldType>
 
