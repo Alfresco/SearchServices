@@ -122,4 +122,26 @@ public class DeleteRatingSanityTests extends RestTest
             .assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating();        
     }  
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Consumer role is able to remove its own rating of a document")
+    public void consumerIsAbleToDeleteItsOwnRatings() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+
+        ratingsApi.likeDocument(document, likeRating);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+        
+        ratingsApi.deleteLikeRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        ratingsApi.deleteFiveStarRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        ratingsApi.getRatings(document)
+            .assertNodeIsNotLiked()
+            .assertNodeHasNoFiveStarRating();        
+    }  
 }
