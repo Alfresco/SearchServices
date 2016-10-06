@@ -38,7 +38,7 @@ public class AddSiteMemberSanityTests extends RestTest
     }
 
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Verify that manager is able to update site member and gets status code OK (200)")
+            description = "Verify that manager is able to add site member and gets status code CREATED (201)")
     public void managerIsAbleToAddSiteMember() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
@@ -46,5 +46,16 @@ public class AddSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         siteAPI.addPerson(siteModel, siteMember);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
+    }
+    
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that site collaborator is not able to add site member and gets status code FORBIDDEN (403)")
+    public void collaboratorIsNotAbleToAddSiteMember() throws Exception
+    {
+        UserModel newUser = dataUser.createRandomTestUser();
+        SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        siteAPI.addPerson(siteModel, siteMember);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
 }
