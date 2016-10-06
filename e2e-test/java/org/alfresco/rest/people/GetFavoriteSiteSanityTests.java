@@ -77,4 +77,17 @@ public class GetFavoriteSiteSanityTests extends RestTest
         peopleApi.getFavoriteSite(contributorUser, siteModel1).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its specific favorite site with Rest API and response is successful (200)")
+    public void consumerUserGetsFavoriteSiteWithSuccess() throws Exception
+    {
+        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel1, UserRole.SiteConsumer);
+        dataSite.usingUser(consumerUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
+
+        restClient.authenticateUser(consumerUser);
+        peopleApi.getFavoriteSite(consumerUser, siteModel1).assertResponseIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
