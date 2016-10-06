@@ -4,8 +4,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
@@ -40,6 +38,8 @@ public class GetSiteMemberSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
+        userModel = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(userModel, siteModel, UserRole.SiteConsumer);
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
