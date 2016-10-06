@@ -80,4 +80,15 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.addPerson(siteModel, siteMember);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
+    
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that admin user is able to add site member and gets status code CREATED (201)")
+    public void adminIsAbleToAddSiteMember() throws Exception
+    {
+        UserModel newUser = dataUser.createRandomTestUser();
+        SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), newUser.getUsername());
+        restClient.authenticateUser(adminUserModel);
+        siteAPI.addPerson(siteModel, siteMember);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
+    }
 }
