@@ -102,4 +102,26 @@ public class GetRatingSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }   
     
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Contributor role is able to retrieve rating of a document")
+    public void contributorIsAbleToRetrieveRating() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+
+        ratingsApi.likeDocument(document, likeRating);
+        ratingsApi.rateStarsToDocument(document, fiveStarRating);
+        
+        ratingsApi.getLikeRating(document)
+            .assertLikeRatingExists()
+            .assertMyLikeRatingIs(Boolean.TRUE);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+        
+        ratingsApi.getFiveStarRating(document)
+            .assertFiveStarRatingExists()
+            .assertMyFiveStarRatingIs(5);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }   
+    
 }
