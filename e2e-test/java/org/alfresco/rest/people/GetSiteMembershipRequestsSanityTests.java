@@ -40,8 +40,8 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createSite(new SiteModel(Visibility.MODERATED, siteId, siteId, siteId, siteId));
         newMember = dataUser.createRandomTestUser();
         siteMembershipRequest = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
-        restClient.authenticateUser(newMember);
         peopleApi.useRestClient(restClient);
+        restClient.authenticateUser(newMember);
         peopleApi.addSiteMembershipRequest(newMember, siteMembershipRequest);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
 
@@ -89,10 +89,21 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     public void consumerUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
-        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteContributor);
+        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         
         restClient.authenticateUser(consumerUser);
         peopleApi.getSiteMembershipRequests(newMember);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+    
+    @Bug(id = "MNT-16557")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets all site membership requests of a specific person with Rest API and response is successful (200)")
+    public void adminUserGetsSiteMembershipRequestsWithSuccess() throws Exception
+    {
+        UserModel adminUser = dataUser.getAdminUser();
+        
+        restClient.authenticateUser(adminUser);
+        peopleApi.getSiteMembershipRequests(newMember).assertEntriesListIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
