@@ -39,7 +39,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its favorite sites with Rest API and response is successful (200)")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its specific favorite site with Rest API and response is successful (200)")
     public void managerUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -49,6 +49,19 @@ public class GetFavoriteSiteSanityTests extends RestTest
 
         restClient.authenticateUser(managerUser);
         peopleApi.getFavoriteSite(managerUser, siteModel1).assertResponseIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its specific favorite site with Rest API and response is successful (200)")
+    public void collaboratorUserGetsFavoriteSitesWithSuccess() throws Exception
+    {
+        UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel1, UserRole.SiteCollaborator);
+        dataSite.usingUser(collaboratorUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
+
+        restClient.authenticateUser(collaboratorUser);
+        peopleApi.getFavoriteSite(collaboratorUser, siteModel1).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
