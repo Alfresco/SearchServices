@@ -81,7 +81,6 @@ public class GetPeopleActivitiesSanityTests extends RestTest
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
-        dataContent.usingUser(consumerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         
         restClient.authenticateUser(consumerUser);
         peopleApi.getPersonActivities(consumerUser).assertResponseIsNotEmpty();
