@@ -37,9 +37,13 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     {
         userModel = dataUser.createRandomTestUser();
         String siteId = RandomData.getRandomName("site");
-        siteModel = dataSite.usingUser(userModel).createSite(new SiteModel(Visibility.PRIVATE, siteId, siteId, siteId, siteId));
+        siteModel = dataSite.usingUser(userModel).createSite(new SiteModel(Visibility.MODERATED, siteId, siteId, siteId, siteId));
         newMember = dataUser.createRandomTestUser();
         siteMembershipRequest = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
+        restClient.authenticateUser(newMember);
+        peopleApi.useRestClient(restClient);
+        peopleApi.addSiteMembershipRequest(newMember, siteMembershipRequest);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
 
         peopleApi.useRestClient(restClient);
     }
@@ -50,10 +54,21 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        
         restClient.authenticateUser(managerUser);
-        peopleApi.addSiteMembershipRequest(newMember, siteMembershipRequest);
-
         peopleApi.getSiteMembershipRequests(newMember).assertEntriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @Bug(id = "MNT-16557")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get all site membership requests of another user with Rest API (403)")
+    public void collaboratorUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
+    {
+        UserModel collaboratorrUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(collaboratorrUser, siteModel, UserRole.SiteCollaborator);
+        
+        restClient.authenticateUser(collaboratorrUser);
+        peopleApi.getSiteMembershipRequests(newMember).assertEntriesListIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 }
