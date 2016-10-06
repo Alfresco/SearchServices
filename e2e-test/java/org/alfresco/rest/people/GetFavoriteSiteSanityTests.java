@@ -103,4 +103,31 @@ public class GetFavoriteSiteSanityTests extends RestTest
         peopleApi.getFavoriteSite(anyUser, siteModel1).assertResponseIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get specific favorite site of another user with Rest API and response is successful (403)")
+    public void managerUserFailsToGetFavoriteSiteOfAnotherUser() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel1, UserRole.SiteManager);
+        dataSite.usingUser(managerUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
+
+        restClient.authenticateUser(managerUser);
+        peopleApi.getFavoriteSite(userModel, siteModel1);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized gets its specific favorite site with Rest API when authentication fails (401)")
+    public void managerUserNotAuthorizedFailsToGetFavoriteSite() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel1, UserRole.SiteManager);
+        dataSite.usingUser(managerUser).usingSite(siteModel1).addSiteToFavorites();
+        dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
+        managerUser.setPassword("newpassword");
+
+        restClient.authenticateUser(managerUser);
+        peopleApi.getFavoriteSite(managerUser, siteModel1);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
