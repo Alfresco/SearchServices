@@ -256,7 +256,7 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=2]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very {long} name']",
                 "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some {long}']");
-/**
+
         logger.info("######### testLocal ###########");
 
         req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
@@ -274,8 +274,8 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=2]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very [long] name']",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some [long] text']");
-        /**
+                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some [long] text.  It has the word [long] in many places.  In fact, it has [long] on some']");
+        
         logger.info("######### requireFieldMatch ###########");
 
         req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
@@ -292,9 +292,9 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
         //add name
 
-        req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
+        req = areq(params( "q", "name:long OR title:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
-                HighlightParams.Q, "long",
+                HighlightParams.Q, "title:long",
                 HighlightParams.FIELDS, "name,title",
                 HighlightParams.FIELD_MATCH, "true",
                 HighlightParams.SIMPLE_PRE, "{",
@@ -323,9 +323,9 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
 
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=2]",
-                "//lst[@name='highlighting']/lst/arr/str[.='{some} very {long} name']",
-                "//lst[@name='highlighting']/lst/arr/str[.='this is {some} {long} text.  It has the word {long} in many places.  In fact, it has {long} on {some}']");
-        **/
+                "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=0]",
+                "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]");
+        
     }
 
 }

@@ -23,6 +23,8 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +52,7 @@ import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter;
 import org.apache.lucene.search.vectorhighlight.FieldQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.HighlightParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
@@ -237,8 +240,19 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 			// Highlight per-field
 			for (String fieldName : fieldNames) {
 				String schemaFieldName = AlfrescoSolrDataModel.getInstance().mapProperty(fieldName, FieldUse.HIGHLIGHT, req);
+				
+				// rewrite field specific parameters .....
 				SchemaField schemaField = schema.getFieldOrNull(schemaFieldName);
-
+				ModifiableSolrParams fixedFieldParams =  new ModifiableSolrParams();
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_PRE, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_POST, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.FRAGSIZE, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SNIPPETS, fieldName, schemaFieldName);
+               
+                copyOtherQueryParams(fixedFieldParams, params);
+                req.setParams(fixedFieldParams);
+				
 				Object fieldHighlights; // object type allows flexibility for
 										// subclassers
 				if (schemaField == null) {
@@ -247,19 +261,19 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 					// TODO: highlighting numeric fields is broken (Lucene) - so
 					// we disable them until fixed (see LUCENE-3080)!
 					fieldHighlights = null;
-				} else if (useFastVectorHighlighter(params, schemaField)) {
+				} else if (useFastVectorHighlighter(fixedFieldParams, schemaField)) {
 					if (fvhFieldQuery == null) {
 						fvh = new FastVectorHighlighter(
 						// FVH cannot process hl.usePhraseHighlighter parameter
 						// per-field basis
-								params.getBool(
+								fixedFieldParams.getBool(
 										HighlightParams.USE_PHRASE_HIGHLIGHTER,
 										true),
 								// FVH cannot process hl.requireFieldMatch
 								// parameter per-field basis
-								params.getBool(HighlightParams.FIELD_MATCH,
+								fixedFieldParams.getBool(HighlightParams.FIELD_MATCH,
 										false));
-						fvh.setPhraseLimit(params.getInt(
+						fvh.setPhraseLimit(fixedFieldParams.getInt(
 								HighlightParams.PHRASE_LIMIT,
 								SolrHighlighter.DEFAULT_PHRASE_LIMIT));
 						fvhFieldQuery = fvh.getFieldQuery(query, reader);
@@ -289,8 +303,48 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 		} // for each doc
 		return fragments;
 	}
-
 	
+	private void copyOtherQueryParams(ModifiableSolrParams fixed, SolrParams params)
+	{
+		for(Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+		{
+			String name = it.next();
+
+			fixed.set(name, params.getParams(name));
+
+		}
+	}
+
+
+	private void rewriteHighlightFieldOptions(ModifiableSolrParams fixed, SolrParams params, String paramName, String oldField, String newField)
+	{
+		for(Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+		{
+			String name = it.next();
+			if(name.startsWith("f."))
+			{
+				if(name.endsWith("."+paramName))
+				{
+
+					String source = name.substring(2, name.length() - paramName.length() - 1);
+					if(source.equals(oldField))
+					{
+						fixed.set("f."+newField+"."+paramName, params.getParams(name));
+					}
+					else
+					{
+						fixed.set(name, params.getParams(name));
+					}
+
+
+				}
+				else
+				{
+					fixed.set(name, params.getParams(name));
+				}
+			}       
+		}
+	}
 
 	private String fixLocalisedText(String text) {
 		if ((text == null) || (text.length() == 0)) {
