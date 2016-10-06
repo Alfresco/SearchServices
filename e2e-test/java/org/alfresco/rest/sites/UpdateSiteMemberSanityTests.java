@@ -49,4 +49,15 @@ public class UpdateSiteMemberSanityTests extends RestTest
         siteAPI.updateSiteMember(siteModel, testUserModel, siteMember);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @Bug(id="ACE-5444")
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that collaborator is not able to update site member and gets status code FORBIDDEN (403)")
+    public void collaboratorIsNotAbleToUpdateSiteMember() throws Exception
+    {
+        SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), testUserModel.getUsername());
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        siteAPI.updateSiteMember(siteModel, testUserModel, siteMember);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
