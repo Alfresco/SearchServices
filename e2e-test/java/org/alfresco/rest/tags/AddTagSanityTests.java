@@ -10,11 +10,13 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -29,38 +31,44 @@ public class AddTagSanityTests extends RestTest
     @Autowired
     private RestTagsApi tagsAPI;
 
-    private UserModel adminUserModel;
-    private FileModel document;
+    private UserModel adminUserModel, userModel;
+    private FileModel document, contributorDoc;
     private SiteModel siteModel;
     private DataUser.ListUserWithRoles usersWithRoles;
     private String tagValue;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
         restClient.authenticateUser(adminUserModel);
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
+                UserRole.SiteContributor);
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         tagsAPI.useRestClient(restClient);
     }
+
+    @BeforeMethod(alwaysRun = true)
+    public void generateRandomTag()
+    {
+        tagValue = RandomData.getRandomName("tag");
+    }
+
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify admin user adds tags with Rest API and status code is 201")
     public void adminIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
-        tagValue =  RandomData.getRandomName("tag");
         restClient.authenticateUser(adminUserModel);
         tagsAPI.addTag(document, tagValue).assertTagIs(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        
+
     }
 
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds tags with Rest API and status code is 201")
     public void managerIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
-        tagValue =  RandomData.getRandomName("tag");
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         tagsAPI.addTag(document, tagValue).assertTagIs(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
@@ -70,7 +78,6 @@ public class AddTagSanityTests extends RestTest
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds tags with Rest API and status code is 201")
     public void collaboratorIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
-        tagValue =  RandomData.getRandomName("tag");
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         tagsAPI.addTag(document, tagValue).assertTagIs(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
@@ -78,19 +85,28 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user doesn't have permission to add tags with Rest API and status code is 403")
-    public void contributorIsNotAbleToAddTag() throws JsonToModelConversionException, Exception
+    public void contributorIsNotAbleToAddTagToAnotherContent() throws JsonToModelConversionException, Exception
     {
-        tagValue =  RandomData.getRandomName("tag");
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         tagsAPI.addTag(document, tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @TestRail(section = { "rest-api",
+            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds tags to his content with Rest API and status code is 201")
+    public void contributorIsAbleToAddTagToHisContent() throws JsonToModelConversionException, Exception
+    {
+        userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
+        restClient.authenticateUser(userModel);
+        contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        tagsAPI.addTag(contributorDoc, tagValue).assertTagIs(tagValue);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
+
+    @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user doesn't have permission to add tags with Rest API and status code is 403")
     public void consumerIsNotAbleToAddTag() throws JsonToModelConversionException, Exception
     {
-        tagValue =  RandomData.getRandomName("tag");
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         tagsAPI.addTag(document, tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -98,6 +114,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    @Bug(id="MNT-16904")
     public void managerIsNotAbleToAddTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
