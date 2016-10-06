@@ -106,4 +106,17 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         peopleApi.getSiteMembershipRequests(newMember).assertEntriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @Bug(id = "MNT-16904")
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    public void managerUserNotAuthorizedFailsToGetSiteMembershipRequests() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        managerUser.setPassword("newpassword");
+        
+        restClient.authenticateUser(managerUser);
+        peopleApi.getSiteMembershipRequests(newMember);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
