@@ -82,4 +82,14 @@ public class UpdateSiteMemberSanityTests extends RestTest
         siteAPI.updateSiteMember(siteModel, testUserModel, siteMember);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+    
+    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that admin is able to update site member and gets status code OK (200)")
+    public void adminIsAbleToUpdateSiteMember() throws Exception
+    {
+        SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), testUserModel.getUsername());
+        restClient.authenticateUser(adminUserModel);
+        siteAPI.updateSiteMember(siteModel, testUserModel, siteMember);
+        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
