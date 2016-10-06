@@ -13,6 +13,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,7 +24,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "ratings", "sanity" })
-public class AddRateSanityTests extends RestTest
+public class AddRatingSanityTests extends RestTest
 {
     @Autowired
     RestRatingsApi ratingsApi;
@@ -116,6 +117,7 @@ public class AddRateSanityTests extends RestTest
     
     @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
             description = "Verify unauthenticated user is not able to post like rating to a document")
+    @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
         likeRating = new LikeRatingBody(Rating.likes, true);
@@ -188,6 +190,7 @@ public class AddRateSanityTests extends RestTest
     
     @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
             description = "Verify unauthenticated user is not able to post stars rating to a document")
+    @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {
         fiveStarRating = new FiveStarRatingBody(Rating.fiveStar, 5);
