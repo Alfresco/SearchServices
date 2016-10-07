@@ -13,10 +13,10 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "ratings", "sanity" })
@@ -25,87 +25,158 @@ public class GetRatingSanityTests extends RestTest
     @Autowired
     RestRatingsApi ratingsApi;
 
-    private UserModel userModel;
     private SiteModel siteModel;
     private UserModel adminUser;
     private FolderModel folderModel;
-    private FileModel document;
+    private FileModel document;   
     private ListUserWithRoles usersWithRoles;
-
-    @BeforeClass(alwaysRun = true)
+    
+    @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
     {
-        userModel = dataUser.createUser(RandomStringUtils.randomAlphanumeric(20));
         adminUser = dataUser.getAdminUser();
-        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
+        siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
+        
         ratingsApi.useRestClient(restClient);
-
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
-                UserRole.SiteContributor);
+        
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
+                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);                
+    }
+    
+    @BeforeMethod()
+    public void setUp() throws DataPreparationException, Exception {
+        folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @BeforeClass
-    public void setUp() throws Exception
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Manager role is able to retrieve rating of a document")
+    public void managerIsAbleToRetrieveRating() throws Exception
     {
-        folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
-        document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+
+        ratingsApi.likeDocument(document);
+        ratingsApi.rateStarsToDocument(document, 5);
+        
+        ratingsApi.getLikeRating(document)
+            .assertLikeRatingExists()
+            .assertMyLikeRatingIs(Boolean.TRUE);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+        
+        ratingsApi.getFiveStarRating(document)
+            .assertFiveStarRatingExists()
+            .assertMyFiveStarRatingIs(5);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }   
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Collaborator role is able to retrieve rating of a document")
+    public void collaboratorIsAbleToRetrieveRating() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+
+        ratingsApi.likeDocument(document);
+        ratingsApi.rateStarsToDocument(document, 5);
+        
+        ratingsApi.getLikeRating(document)
+            .assertLikeRatingExists()
+            .assertMyLikeRatingIs(Boolean.TRUE);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+        
+        ratingsApi.getFiveStarRating(document)
+            .assertFiveStarRatingExists()
+            .assertMyFiveStarRatingIs(5);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }   
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Contributor role is able to retrieve rating of a document")
+    public void contributorIsAbleToRetrieveRating() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+
+        ratingsApi.likeDocument(document);
+        ratingsApi.rateStarsToDocument(document, 5);
+        
+        ratingsApi.getLikeRating(document)
+            .assertLikeRatingExists()
+            .assertMyLikeRatingIs(Boolean.TRUE);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+        
+        ratingsApi.getFiveStarRating(document)
+            .assertFiveStarRatingExists()
+            .assertMyFiveStarRatingIs(5);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }   
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify user with Consumer role is able to retrieve rating of a document")
+    public void consumerIsAbleToRetrieveRating() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+
+        ratingsApi.likeDocument(document);
+        ratingsApi.rateStarsToDocument(document, 5);
+        
+        ratingsApi.getLikeRating(document)
+            .assertLikeRatingExists()
+            .assertMyLikeRatingIs(Boolean.TRUE);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+        
+        ratingsApi.getFiveStarRating(document)
+            .assertFiveStarRatingExists()
+            .assertMyFiveStarRatingIs(5);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }   
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify admin user is able to retrieve rating of a document")
+    public void adminIsAbleToRetrieveRating() throws Exception
+    {
+        document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+
         restClient.authenticateUser(adminUser);
         ratingsApi.likeDocument(document);
         ratingsApi.rateStarsToDocument(document, 5);
-        restClient.disconnect();
-    }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to retrieve document ratings")
-    public void managerIsAbleToRetrieveDocumentRatings() throws Exception
-    {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        ratingsApi.getRatings(document);
-        ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to retrieve document ratings")
-    public void collaboratorIsAbleToRetrieveDocumentRatings() throws Exception
-    {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        ratingsApi.getRatings(document);
-        ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to retrieve document ratings")
-    public void contributorIsAbleToRetrieveDocumentRatings() throws Exception
-    {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        ratingsApi.getRatings(document);
-        ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to retrieve document ratings")
-    public void consumerIsAbleToRetrieveDocumentRatings() throws Exception
-    {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        ratingsApi.getRatings(document);
-        ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { "rest-api", "ratings" }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to retrieve document ratings")
-    public void adminIsAbleToRetrieveDocumentRatings() throws Exception
+        ratingsApi.getLikeRating(document)
+            .assertLikeRatingExists()
+            .assertMyLikeRatingIs(Boolean.TRUE);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+        
+        ratingsApi.getFiveStarRating(document)
+            .assertFiveStarRatingExists()
+            .assertMyFiveStarRatingIs(5);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }   
+    
+    @TestRail(section = {"rest-api", "ratings" }, executionType = ExecutionType.SANITY, 
+            description = "Verify unauthenticated user is not able to retrieve rating of a document")
+    @Bug(id = "MNT-16904")
+    public void unauthenticatedUserIsNotAbleToRetrieveRating() throws Exception
     {
         restClient.authenticateUser(adminUser);
-        ratingsApi.getRatings(document);
-        ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-    }
+        ratingsApi.likeDocument(document);
+        ratingsApi.rateStarsToDocument(document, 5);
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve document ratings")
-    @Bug(id = "MNT-16904")
-    public void unauthenticatedUserIsNotAbleToRetrieveDocumentRatings() throws Exception
-    {
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        ratingsApi.getRatings(document);
-        ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
-    }
+        
+        ratingsApi.getLikeRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        
+        ratingsApi.getFiveStarRating(document);
+        ratingsApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }   
 }
