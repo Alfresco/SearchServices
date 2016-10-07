@@ -83,4 +83,16 @@ public class GetNodeTagsSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
+    @TestRail(section = { "rest-api", "tags" }, 
+            executionType = ExecutionType.SANITY, description = "Verify site Contributor is able to get node tags")
+    public void siteContributorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        tagsAPI.addTag(document, tagValue);
+
+        tagsAPI.getNodeTags(document).assertTagExists(tagValue);
+
+        tagsAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }
 }
