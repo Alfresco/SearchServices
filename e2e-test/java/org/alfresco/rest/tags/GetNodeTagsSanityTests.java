@@ -101,4 +101,15 @@ public class GetNodeTagsSanityTests extends RestTest
         tagsAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "tags" }, 
+            executionType = ExecutionType.SANITY, description = "Verify admin is able to get node tags")
+    public void adminIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        tagsAPI.getNodeTags(document).assertTagExists(tagValue);
+
+        tagsAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }
 }
