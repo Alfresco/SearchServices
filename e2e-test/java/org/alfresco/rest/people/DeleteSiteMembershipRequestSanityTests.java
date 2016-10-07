@@ -57,4 +57,17 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         peopleApi.deleteSiteMembershipRequest(siteMember, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
+    
+    @Bug(id="MNT-16916")
+    @TestRail(section = {"rest-api", "people" }, executionType = ExecutionType.SANITY, 
+            description = "Verify site manager is able to delete site membership request")
+    public void siteManagerCanDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
+    {
+        siteMember = dataUser.createRandomTestUser();
+        restClient.authenticateUser(siteMember);
+        peopleApi.addSiteMembershipRequest(siteMember, siteMembershipRequest);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        peopleApi.deleteSiteMembershipRequest(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
 }
