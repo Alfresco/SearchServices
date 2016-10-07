@@ -4,8 +4,10 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestNetworksApi;
 import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +31,6 @@ public class RestGetNetworkTest extends RestTest
     UserModel adminAnotherTenantUser;
     SiteModel site;
     UserModel tenantUser;
-    UserModel managerTenantUser;
-    UserModel collaboratorTenantUser;
-    UserModel consumerTenantUser;
-    UserModel contributorTenantUser;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -45,12 +43,13 @@ public class RestGetNetworkTest extends RestTest
         adminAnotherTenantUser = UserModel.getAdminTenantUser();
         tenantApi.createTenant(adminAnotherTenantUser);
 
-        tenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("uTenant");
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         site = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
 
         networkApi.useRestClient(restClient);
     }
 
+    @Bug(id = "MNT-16904")
     @Test(groups = "sanity")
     @TestRail(section = { "rest-api",
             "networks" }, executionType = ExecutionType.SANITY, description = "Verify non existing user gets another exisiting network with Rest API and checks the forbidden status")
@@ -124,6 +123,7 @@ public class RestGetNetworkTest extends RestTest
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
+    @Test(groups = "sanity")
     @TestRail(section = { "rest-api",
             "networks" }, description = "Verify any tenant user gets another exisiting network with Rest API and checks the forbidden status")
     public void userTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
@@ -138,7 +138,7 @@ public class RestGetNetworkTest extends RestTest
             "networks" }, executionType = ExecutionType.SANITY, description = "Verify manager tenant user gets its network with Rest API and response is not empty")
     public void tenantManagerUserChecksIfNetworkIsPresent() throws Exception
     {
-        managerTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("manTenant");
+        UserModel managerTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("manTenant");
         dataUser.usingUser(adminTenantUser).addUserToSite(managerTenantUser, site, UserRole.SiteManager);
 
         restClient.authenticateUser(managerTenantUser);
@@ -151,7 +151,7 @@ public class RestGetNetworkTest extends RestTest
             "networks" }, executionType = ExecutionType.SANITY, description = "Verify collaborator tenant user gets its network with Rest API and response is not empty")
     public void tenantCollaboratorUserChecksIfNetworkIsPresent() throws Exception
     {
-        collaboratorTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("colTenant");
+        UserModel collaboratorTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("colTenant");
         dataUser.usingUser(adminTenantUser).addUserToSite(collaboratorTenantUser, site, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorTenantUser);
@@ -164,7 +164,7 @@ public class RestGetNetworkTest extends RestTest
             "networks" }, executionType = ExecutionType.SANITY, description = "Verify consumer tenant user gets its network with Rest API and response is not empty")
     public void tenantConsumerUserChecksIfNetworkIsPresent() throws Exception
     {
-        consumerTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("contTenant");
+        UserModel consumerTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("consTenant");
         dataUser.usingUser(adminTenantUser).addUserToSite(consumerTenantUser, site, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerTenantUser);
@@ -175,9 +175,9 @@ public class RestGetNetworkTest extends RestTest
     @Test(groups = "sanity")
     @TestRail(section = { "rest-api",
             "networks" }, executionType = ExecutionType.SANITY, description = "Verify contributor tenant user gets its network with Rest API and response is not empty")
-    public void tenantContributorUserChecksIfNetworkIsPresent() throws Exception
+    public void tenantContributorUserChecksIfItsNetworkIsPresent() throws Exception
     {
-        contributorTenantUser = dataUser.usingUser(adminTenantUser).createRandomTestUser("contTenant");
+        UserModel contributorTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("contTenant");
         dataUser.usingUser(adminTenantUser).addUserToSite(contributorTenantUser, site, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorTenantUser);
