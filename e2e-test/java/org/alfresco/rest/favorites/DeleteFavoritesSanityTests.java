@@ -102,6 +102,7 @@ public class DeleteFavoritesSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "favorites" }, executionType = ExecutionType.SANITY, description = "Verify user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
+    @Bug(id="MNT-16557")
     public void userIsNotAbleToDeleteFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -113,6 +114,7 @@ public class DeleteFavoritesSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "favorites" }, executionType = ExecutionType.SANITY, description = "Verify user doesn't have permission to delete favorites of admin user with Rest API and status code is 404")
+    @Bug(id="MNT-16557")
     public void userIsNotAbleToDeleteFavoritesOfAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -124,6 +126,7 @@ public class DeleteFavoritesSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "favorites" }, executionType = ExecutionType.SANITY, description = "Verify admin user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
+    @Bug(id="MNT-16557")
     public void adminIsNotAbleToDeleteFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
