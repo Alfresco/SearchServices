@@ -38,6 +38,8 @@ public class GetSiteMemberSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
+        userModel = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(userModel, siteModel, UserRole.SiteConsumer);
     }
 
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
