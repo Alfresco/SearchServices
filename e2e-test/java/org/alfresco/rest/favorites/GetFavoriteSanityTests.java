@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+@Test(groups = { "rest-api", "favorites", "sanity" })
 public class GetFavoriteSanityTests extends RestTest
 {
 
