@@ -32,90 +32,94 @@ public class GetFavoriteSitesSanityTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its favorite sites with Rest API and response is successful (200)")
-    public void managerUserGetsFavoriteSitesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get an user favorite sites with Rest API (403)")
+    public void managerUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
-        UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
+        UserModel anotherUser = dataUser.usingAdmin().createRandomTestUser();    
+        dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getFavoriteSites(collaboratorUser).assertResponseIsNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        peopleApi.getFavoriteSites(anotherUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its favorite sites with Rest API and response is successful (200)")
-    public void collaboratorUserGetsFavoriteSitesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get an user favorite sites with Rest API (403)")
+    public void collaboratorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
-        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
-        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
-        
-        dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
+        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);    
+        dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getFavoriteSites(contributorUser).assertResponseIsNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        peopleApi.getFavoriteSites(contributorUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its favorite sites with Rest API and response is successful (200)")
-    public void contributorUserGetsFavoriteSitesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user fails to get an user favorite sites with Rest API (403)")
+    public void contributorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
-        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        UserModel contributorUser2 = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
-        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
+        dataUser.usingUser(userModel).addUserToSite(contributorUser2, siteModel, UserRole.SiteContributor);
+        dataSite.usingUser(contributorUser2).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getFavoriteSites(managerUser).assertResponseIsNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        peopleApi.getFavoriteSites(contributorUser2);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its favorite sites with Rest API and response is successful (200)")
-    public void consumerUserGetsFavoriteSitesWithSuccess() throws Exception
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get an user favorite sites with Rest API (403)")
+    public void consumerUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         dataUser.usingUser(collaboratorUser).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
-        dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
+        dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getFavoriteSites(collaboratorUser).assertResponseIsNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        peopleApi.getFavoriteSites(collaboratorUser);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets its favorite sites with Rest API and response is successful (200)")
     public void adminUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
-        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
-        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
-        dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
+        UserModel anotherUser = dataUser.usingAdmin().createRandomTestUser();
+        dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getFavoriteSites(consumerUser).assertResponseIsNotEmpty();
+        peopleApi.getFavoriteSites(anotherUser).assertResponseIsNotEmpty();
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify any user gets its own user favorite sites with Rest API and response is successful (200)")
+    public void anyUserGetsItsUserFavoriteSites() throws Exception
+    {
+        UserModel anyUser = dataUser.usingAdmin().createRandomTestUser();   
+        dataSite.usingUser(anyUser).usingSite(siteModel).addSiteToFavorites();
+
+        restClient.authenticateUser(anyUser);
+        peopleApi.getFavoriteSites(anyUser);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id = "MNT-16904")
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to get its favorite sites with Rest API when authentication fails (401)")
-    public void managerUserGetsFavoriteSitesIsNotAuthorized() throws Exception
+    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify any user is NOT Authorized to get its favorite sites with Rest API when authentication fails (401)")
+    public void anyUserNotAuthenticatedIsNotAuthorizedToGetFavoriteSites() throws Exception
     {
-        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
-        UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
-        
-        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
-        dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
-        
-        managerUser.setPassword("newpassword");
+        UserModel anyUser = dataUser.usingAdmin().createRandomTestUser();   
+        dataSite.usingUser(anyUser).usingSite(siteModel).addSiteToFavorites();
+        anyUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser);
-        peopleApi.getFavoriteSites(consumerUser);
+        restClient.authenticateUser(anyUser);
+        peopleApi.getFavoriteSites(anyUser);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
