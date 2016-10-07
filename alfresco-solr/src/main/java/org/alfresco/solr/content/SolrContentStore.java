@@ -211,20 +211,6 @@ public class SolrContentStore implements ContentStore
         return writer;
     }
 
-    @Deprecated
-    @Override
-    public void getUrls(ContentUrlHandler handler) throws ContentIOException
-    {
-        throw new UnsupportedOperationException("Auto-created method not implemented.");
-    }
-
-    @Deprecated
-    @Override
-    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
-    {
-        throw new UnsupportedOperationException("Auto-created method not implemented.");
-    }
-
     @Override
     public boolean delete(String contentUrl)
     {
