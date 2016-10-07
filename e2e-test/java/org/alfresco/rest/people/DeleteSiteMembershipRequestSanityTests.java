@@ -98,4 +98,17 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         peopleApi.deleteSiteMembershipRequest(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+    
+    @Bug(id="MNT-16916")
+    @TestRail(section = {"rest-api", "people" }, executionType = ExecutionType.SANITY, 
+            description = "Verify contributor user is not able to delete site memebership request")
+    public void contributorCannotDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
+    {
+        siteMember = dataUser.createRandomTestUser();
+        restClient.authenticateUser(siteMember);
+        peopleApi.addSiteMembershipRequest(siteMember, siteMembershipRequest);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        peopleApi.deleteSiteMembershipRequest(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor), siteModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
