@@ -1,14 +1,11 @@
 package org.alfresco.rest.favorites;
 
-import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestFavoritesApi;
 import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -30,8 +27,6 @@ public class DeleteFavoritesSanityTests extends RestTest
 
     private UserModel adminUserModel;
     private SiteModel siteModel;
-    private FileModel fileModel;
-    private FolderModel folderModel;
     private ListUserWithRoles usersWithRoles;
 
     @BeforeClass(alwaysRun = true)
@@ -40,8 +35,6 @@ public class DeleteFavoritesSanityTests extends RestTest
         adminUserModel = dataUser.getAdminUser();
         restClient.authenticateUser(adminUserModel);
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
-        fileModel = dataContent.usingUser(adminUserModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
 
         favoritesAPI.useRestClient(restClient);
         sitesApi.useRestClient(restClient);
@@ -109,7 +102,7 @@ public class DeleteFavoritesSanityTests extends RestTest
         favoritesAPI.addSiteToFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         favoritesAPI.deleteSiteFromFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
-        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @TestRail(section = { "rest-api",
@@ -121,7 +114,7 @@ public class DeleteFavoritesSanityTests extends RestTest
         favoritesAPI.addSiteToFavorites(adminUserModel, siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         favoritesAPI.deleteSiteFromFavorites(adminUserModel, siteModel);
-        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @TestRail(section = { "rest-api",
@@ -133,7 +126,7 @@ public class DeleteFavoritesSanityTests extends RestTest
         favoritesAPI.addSiteToFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
         restClient.authenticateUser(adminUserModel);
         favoritesAPI.deleteSiteFromFavorites(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
-        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @TestRail(section = { "rest-api",

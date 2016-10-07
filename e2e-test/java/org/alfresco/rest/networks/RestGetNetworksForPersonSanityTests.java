@@ -13,9 +13,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "networks", "sanity" })
-public class RestGetNetworkForPersonSanityTests extends RestTest
+public class RestGetNetworksForPersonSanityTests extends RestTest
 {
-
     @Autowired
     RestTenantApi tenantApi;
 
@@ -38,7 +37,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         networkApi.useRestClient(restClient);
     }
-
+    
     @Bug(id = "MNT-16904")
     @Test(groups = "sanity")
     @TestRail(section = { "rest-api",
@@ -48,7 +47,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         UserModel tenantUser = new UserModel("nonexisting", "password");
         tenantUser.setDomain(adminTenantUser.getDomain());
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetworkForUser(adminTenantUser);
+        networkApi.getNetworksForUser(adminTenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
@@ -58,7 +57,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
     public void adminTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetworkForUser(adminTenantUser);
+        networkApi.getNetworksForUser(adminTenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -68,7 +67,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
     public void tenantUserIsNotAuthorizedToCheckNetworkOfAdminUser() throws Exception
     { 
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetworkForUser(adminTenantUser);
+        networkApi.getNetworksForUser(adminTenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
     
@@ -80,9 +79,8 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         UserModel secondAdminTenantUser = UserModel.getAdminTenantUser();
         tenantApi.createTenant(secondAdminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
-        restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetworkForUser(tenantUser);
+        restClient.authenticateUser(secondAdminTenantUser);
+        networkApi.getNetworksForUser(tenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
-
 }

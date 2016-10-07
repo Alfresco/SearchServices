@@ -111,6 +111,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "comments" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on update comment call")
+    @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         UserModel incorrectUserModel = new UserModel("userName", "password");

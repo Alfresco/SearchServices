@@ -10,6 +10,7 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={"rest-api", "comments"}, executionType= ExecutionType.SANITY,
             description= "Verify Manager user gets status code 401 if authentication call fails")
+    @Bug(id="MNT-16904")
     public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");

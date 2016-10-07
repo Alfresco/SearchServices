@@ -10,6 +10,7 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,7 @@ public class PostCommentsSanityTests extends RestTest
 
     @TestRail(section = { "rest-api",
             "comments" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post comments call")
+    @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToAddComment() throws JsonToModelConversionException, Exception
     {        
         restClient.authenticateUser(new UserModel("random user", "random password"));
