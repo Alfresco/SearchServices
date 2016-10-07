@@ -11,12 +11,12 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "tags", "sanity" })
@@ -111,5 +111,17 @@ public class GetNodeTagsSanityTests extends RestTest
 
         tagsAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "tags" }, 
+            executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to get node tags")
+    @Bug(id="MNT-16904")
+    public void unauthenticatedUserIsNotAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        tagsAPI.getNodeTags(document).assertTagExists(tagValue);
+
+        tagsAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
