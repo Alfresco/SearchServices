@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
  * 
  */
 @Test(groups = { "rest-api", "people", "activities", "sanity" })
-public class GetPeopleActivitiesTests extends RestTest
+public class GetPeopleActivitiesSanityTests extends RestTest
 {
     @Autowired
     RestPeopleApi peopleApi;
@@ -81,7 +81,6 @@ public class GetPeopleActivitiesTests extends RestTest
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
-        dataContent.usingUser(consumerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         
         restClient.authenticateUser(consumerUser);
         peopleApi.getPersonActivities(consumerUser).assertResponseIsNotEmpty();
@@ -96,7 +95,7 @@ public class GetPeopleActivitiesTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @Bug(id = "")
+    @Bug(id = "MNT-16904")
     @TestRail(section = { "rest-api", "people", "activities" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets another user activities with Rest API")
     public void managerUserShouldGetPeopleActivitiesListIsNotAuthorized() throws Exception
     {

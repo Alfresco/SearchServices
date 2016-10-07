@@ -14,7 +14,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "people", "sanity" })
-public class AddFavoriteSiteTests extends RestTest
+public class AddFavoriteSiteSanityTests extends RestTest
 {
     @Autowired
     RestPeopleApi peopleApi;
@@ -86,7 +86,7 @@ public class AddFavoriteSiteTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Bug(id = "")
+    @Bug(id = "MNT-16904")
     @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify a manager user is NOT Authorized to add a favorite site with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToAddFavoriteSite() throws Exception
     {
