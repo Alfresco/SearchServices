@@ -19,9 +19,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Claudia Agache on 10/7/2016.
  */
@@ -38,7 +35,7 @@ public class AddTagsSanityTests extends RestTest
     private FileModel document, contributorDoc;
     private SiteModel siteModel;
     private DataUser.ListUserWithRoles usersWithRoles;
-    private List<String> tagValues;
+    private String tag1, tag2;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -55,11 +52,8 @@ public class AddTagsSanityTests extends RestTest
     @BeforeMethod(alwaysRun = true)
     public void generateRandomTagsList()
     {
-        tagValues = new ArrayList<>();
-        for (int i = 0; i < 3; i++)
-        {
-            tagValues.add(RandomData.getRandomName("tag"));
-        }
+        tag1 = RandomData.getRandomName("tag");
+        tag2 = RandomData.getRandomName("tag");
     }
 
     @TestRail(section = { "rest-api",
@@ -67,7 +61,7 @@ public class AddTagsSanityTests extends RestTest
     public void adminIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tagsAPI.addTags(document, tagValues).assertThatResponseHasTags(tagValues);
+        tagsAPI.addTags(document, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -76,7 +70,7 @@ public class AddTagsSanityTests extends RestTest
     public void managerIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        tagsAPI.addTags(document, tagValues).assertThatResponseHasTags(tagValues);
+        tagsAPI.addTags(document, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -85,7 +79,7 @@ public class AddTagsSanityTests extends RestTest
     public void collaboratorIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        tagsAPI.addTags(document, tagValues).assertThatResponseHasTags(tagValues);
+        tagsAPI.addTags(document, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -94,7 +88,7 @@ public class AddTagsSanityTests extends RestTest
     public void contributorIsNotAbleToAddTagsToAnotherContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.addTags(document, tagValues);
+        tagsAPI.addTags(document, tag1, tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
@@ -105,7 +99,7 @@ public class AddTagsSanityTests extends RestTest
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(userModel);
         contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        tagsAPI.addTags(contributorDoc, tagValues).assertThatResponseHasTags(tagValues);
+        tagsAPI.addTags(contributorDoc, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -114,7 +108,7 @@ public class AddTagsSanityTests extends RestTest
     public void consumerIsNotAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.addTags(document, tagValues);
+        tagsAPI.addTags(document, tag1, tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
@@ -126,7 +120,7 @@ public class AddTagsSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
-        tagsAPI.addTags(document, tagValues);
+        tagsAPI.addTags(document, tag1, tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
