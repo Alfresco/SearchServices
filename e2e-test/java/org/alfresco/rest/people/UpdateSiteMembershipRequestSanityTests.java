@@ -142,4 +142,22 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+    
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, description = "Verify one user is not able to update membership request of another user")
+    @Bug(id = "MNT-16919")
+    public void oneUserIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        UserModel otherMember = dataUser.createRandomTestUser();
+
+        restClient.authenticateUser(newMember);
+        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+
+        restClient.authenticateUser(otherMember);
+        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
