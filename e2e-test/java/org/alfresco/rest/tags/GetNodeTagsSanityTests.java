@@ -48,12 +48,9 @@ public class GetNodeTagsSanityTests extends RestTest
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         
         tagsAPI.useRestClient(restClient);
-    }
-    
-    @BeforeMethod(alwaysRun = true)
-    public void generateRandomTag()
-    {
+        
         tagValue = RandomData.getRandomName("tag");
+        tagsAPI.addTag(document, tagValue);
     }
     
     @TestRail(section = { "rest-api", "tags" }, 
@@ -75,7 +72,7 @@ public class GetNodeTagsSanityTests extends RestTest
     public void siteCollaboratorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        tagsAPI.addTag(document, tagValue);
+   
 
         tagsAPI.getNodeTags(document).assertTagExists(tagValue);
 
@@ -88,8 +85,17 @@ public class GetNodeTagsSanityTests extends RestTest
     public void siteContributorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.addTag(document, tagValue);
+        tagsAPI.getNodeTags(document).assertTagExists(tagValue);
 
+        tagsAPI.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "tags" }, 
+            executionType = ExecutionType.SANITY, description = "Verify site Consumer is able to get node tags")
+    public void siteConsumerIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         tagsAPI.getNodeTags(document).assertTagExists(tagValue);
 
         tagsAPI.usingRestWrapper()
