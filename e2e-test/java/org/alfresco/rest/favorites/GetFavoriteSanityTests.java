@@ -16,7 +16,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetFavoriteSanityTests extends RestTest
 {
