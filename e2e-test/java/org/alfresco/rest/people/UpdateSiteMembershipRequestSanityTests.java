@@ -5,7 +5,6 @@ import org.alfresco.rest.body.SiteMembershipRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
-import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
@@ -13,10 +12,12 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -33,10 +34,13 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     DataSite dataSite;
 
     private SiteModel siteModel;
-
     private ListUserWithRoles usersWithRoles;
-
     private UserModel adminUser;
+    private String initialMessage;
+    private String updatedMessage;
+
+    private SiteMembershipRequest initialSiteMembership;
+    private SiteMembershipRequest updatedSiteMembership;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
@@ -48,6 +52,12 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
 
         peopleApi.useRestClient(restClient);
+        
+        initialMessage = "Please accept me";
+        updatedMessage = "Please review my request";
+        
+        initialSiteMembership = new SiteMembershipRequest(initialMessage, siteModel.getId(), "New request");
+        updatedSiteMembership = new SiteMembershipRequest(updatedMessage, siteModel.getId(), "New request updated");
     }
 
     @TestRail(section = { "rest-api", "people" }, 
@@ -55,17 +65,30 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     public void userIsAbleToUpdateItsOwnSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
         
-        String newMessage = "Please review my request";
-        siteMembership = new SiteMembershipRequest(newMessage, siteModel.getId(), null);
-        peopleApi.updateSiteMembershipRequest(newMember, siteMembership).assertMembershipRequestMessageIs(newMessage);
-        
+        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership)
+            .assertMembershipRequestMessageIs(updatedMessage);
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @TestRail(section = { "rest-api", "people" }, 
+            executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update membership request of another user")
+    @Bug(id = "MNT-16919")
+    public void siteManagerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+
+        restClient.authenticateUser(newMember);
+        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+
+        peopleApi.usingRestWrapper()
+            .assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
