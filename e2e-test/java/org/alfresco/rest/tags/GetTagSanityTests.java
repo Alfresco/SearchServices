@@ -7,22 +7,19 @@ import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.requests.RestTagsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.log.LogsListener;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "tags", "sanity" })
-@Listeners(LogsListener.class)
 public class GetTagSanityTests extends RestTest
 {
 
