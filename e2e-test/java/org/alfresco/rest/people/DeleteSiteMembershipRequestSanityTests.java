@@ -138,4 +138,18 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         peopleApi.deleteSiteMembershipRequest(randomUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+    
+    @Bug(id="MNT-16904")
+    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+            description = "Failed authentication get site member call returns status code 401")
+    public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMmebershipRequest() throws JsonToModelConversionException, Exception
+    {
+        siteMember = dataUser.createRandomTestUser();
+        restClient.authenticateUser(siteMember);
+        peopleApi.addSiteMembershipRequest(siteMember, siteMembershipRequest);
+        UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
+        restClient.authenticateUser(inexistentUser);
+        peopleApi.deleteSiteMembershipRequest(inexistentUser, siteModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
