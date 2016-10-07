@@ -299,6 +299,10 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 					docHighlights.add(fieldName, fieldHighlights);
 				}
 			} // for each field
+			if(doc.get("DBID") != null)
+			{
+			    docHighlights.add("DBID", doc.get("DBID"));
+			}
 			fragments.add(schema.printableUniqueKey(doc), docHighlights);
 		} // for each doc
 		return fragments;
