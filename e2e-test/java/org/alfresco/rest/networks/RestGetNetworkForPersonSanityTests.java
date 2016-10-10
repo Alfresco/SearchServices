@@ -79,9 +79,9 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
     {
         UserModel secondAdminTenantUser = UserModel.getAdminTenantUser();
         tenantApi.createTenant(secondAdminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
+        UserModel secondTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
         restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetworkForUser(tenantUser);
+        networkApi.getNetworkForUser(secondTenantUser);
         networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
