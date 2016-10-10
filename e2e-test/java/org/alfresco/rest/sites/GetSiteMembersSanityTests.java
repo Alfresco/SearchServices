@@ -10,6 +10,7 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class GetSiteMembersSanityTests extends RestTest
     private UserModel userModel;
 
     @BeforeClass(alwaysRun=true)
-    public void initTest() throws DataPreparationException
+    public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteAPI.useRestClient(restClient);
@@ -91,9 +92,10 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
+    @Bug(id="MNT-16904")
     @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get site members call returns status code 401 with Manager role")
-    public void getSiteMembersWithManagerRoleFailedAuth() throws JsonToModelConversionException, Exception
+            description = "Failed authentication get site members call returns status code 401")
+    public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteMembers() throws JsonToModelConversionException, Exception
     {
         userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");

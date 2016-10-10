@@ -90,6 +90,7 @@ public class GetSiteContainerSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
+    @Bug(id="MNT-16904")
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site container call returns status code 401")
     @Bug(id="MNT-16904")
