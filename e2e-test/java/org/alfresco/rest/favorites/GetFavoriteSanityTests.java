@@ -22,7 +22,6 @@ import org.testng.annotations.Test;
 @Test(groups = { "rest-api", "favorites", "sanity" })
 public class GetFavoriteSanityTests extends RestTest
 {
-
     @Autowired
     RestFavoritesApi favoritesAPI;
 

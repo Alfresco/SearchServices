@@ -7,6 +7,7 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,7 @@ public class GetSiteContainerSanityTests extends RestTest
     
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site container call returns status code 401")
+    @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
