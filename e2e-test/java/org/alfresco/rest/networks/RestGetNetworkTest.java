@@ -4,7 +4,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestNetworksApi;
 import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
