@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +95,9 @@ public class GetSitesSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Bug(id="MNT-16904")
     @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get sites call returns status code 401 with Manager role")
+            description = "Failed authentication get sites call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
