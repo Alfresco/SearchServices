@@ -281,6 +281,7 @@
             <str>clearLocale</str>
             <str>rewriteFacetCounts</str>
             <str>spellcheck</str>
+            <str>spellcheckbackcompat</str>
             <str>setProcessedDenies</str>
         </arr>
         <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
@@ -527,7 +528,7 @@
         </lst>
 
     </searchComponent>
-
+    <searchComponent name="spellcheckbackcompat" class="org.alfresco.solr.component.spellcheck.AlfrescoSpellCheckBackCompatComponent"/>
     <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
     <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
     <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />

@@ -846,6 +846,7 @@
       <str>rewriteFacetCounts</str>
       <!-- <str>addTxId</str> -->
       <str>spellcheck</str>
+      <str>spellcheckbackcompat</str>
       <str>setProcessedDenies</str>
     </arr>
   </requestHandler>
@@ -1215,7 +1216,7 @@
        always be executed after the "last-components" 
        
      -->
-  
+
    <!-- Spell Check
 
         The spell check component can return a list of alternative spelling
@@ -1267,20 +1268,23 @@
     </lst>
     
   </searchComponent>
-  
-  <!-- A request handler for demonstrating the spellcheck component.  
 
-       NOTE: This is purely as an example.  The whole purpose of the
-       SpellCheckComponent is to hook it into the request handler that
-       handles your normal user queries so that a separate request is
-       not needed to get suggestions.
+  <searchComponent name="spellcheckbackcompat" class="org.alfresco.solr.component.spellcheck.AlfrescoSpellCheckBackCompatComponent"/>
 
-       IN OTHER WORDS, THERE IS REALLY GOOD CHANCE THE SETUP BELOW IS
-       NOT WHAT YOU WANT FOR YOUR PRODUCTION SYSTEM!
-       
-       See http://wiki.apache.org/solr/SpellCheckComponent for details
-       on the request parameters.
-    -->
+
+    <!-- A request handler for demonstrating the spellcheck component.
+
+         NOTE: This is purely as an example.  The whole purpose of the
+         SpellCheckComponent is to hook it into the request handler that
+         handles your normal user queries so that a separate request is
+         not needed to get suggestions.
+
+         IN OTHER WORDS, THERE IS REALLY GOOD CHANCE THE SETUP BELOW IS
+         NOT WHAT YOU WANT FOR YOUR PRODUCTION SYSTEM!
+
+         See http://wiki.apache.org/solr/SpellCheckComponent for details
+         on the request parameters.
+      -->
   <requestHandler name="/spell" class="solr.SearchHandler" startup="lazy">
     <lst name="defaults">
       <str name="df">suggest</str>
@@ -1302,6 +1306,8 @@
     </lst>
     <arr name="last-components">
       <str>spellcheck</str>
+      <str>spellcheckbackcompat</str>
+
     </arr>
   </requestHandler>
 
@@ -1851,8 +1857,8 @@
       <str>rewriteFacetCounts</str>
       <!-- <str>addTxId</str> -->
       <str>spellcheck</str>
+      <str>spellcheckbackcompat</str>
       <str>setProcessedDenies</str>
-
       <str>clustering</str>
     </arr>
       <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
