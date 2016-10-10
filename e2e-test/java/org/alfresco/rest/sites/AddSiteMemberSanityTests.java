@@ -8,18 +8,15 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
-import org.alfresco.utility.report.HtmlReportListener;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 @Test(groups = { "rest-api", "sites", "sanity" })
-@Listeners(value=HtmlReportListener.class)
 public class AddSiteMemberSanityTests extends RestTest
 {
     @Autowired
