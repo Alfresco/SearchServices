@@ -95,12 +95,12 @@ public class AlfrescoSolrSpellcheckerTest extends AbstractAlfrescoSolrTests
         SolrQueryRequest req = areq(params,
                                     "{\"query\":\"(YYYYY BBBBB AND (id:(1 2 3 4 5 6)))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}");
         assertQ(req,
-                "*[count(//lst[@name='spellcheck']/lst[@name='collations']/lst[@name='collation'])=2]",
-                "/response/lst[@name='spellcheck']/lst[@name='collations']/lst[@name='collation'][1]/int[@name='hits'][.='2']",
-                "/response/lst[@name='spellcheck']/lst[@name='collations']/lst[@name='collation'][2]/int[@name='hits'][.='1']",
-                "/response/lst[@name='spellcheck']/lst[@name='collations']/lst[@name='collation'][1]/str[@name='collationQueryString'][.='yyyyyya bbbbbbb']",
-                "/response/lst[@name='spellcheck']/lst[@name='collations']/lst[@name='collation'][2]/str[@name='collationQueryString'][.='yyyyyyy bbbbbbb']",
-                "/response/lst[@name='spellcheck']/lst[@name='collations']/lst[@name='collation'][1]/str[@name='collationQuery'][.='(yyyyyya bbbbbbb AND (id:(1 2 3 4 5 6)))']",
-                "/response/lst[@name='spellcheck']/lst[@name='collations']/lst[@name='collation'][2]/str[@name='collationQuery'][.='(yyyyyyy bbbbbbb AND (id:(1 2 3 4 5 6)))']");
+                "*[count(//lst[@name='spellcheck']/lst[@name='suggestions']/lst[@name='collation'])=2]",
+                "/response/lst[@name='spellcheck']/lst[@name='suggestions']/lst[@name='collation'][1]/int[@name='hits'][.='2']",
+                "/response/lst[@name='spellcheck']/lst[@name='suggestions']/lst[@name='collation'][2]/int[@name='hits'][.='1']",
+                "/response/lst[@name='spellcheck']/lst[@name='suggestions']/lst[@name='collation'][1]/str[@name='collationQueryString'][.='yyyyyya bbbbbbb']",
+                "/response/lst[@name='spellcheck']/lst[@name='suggestions']/lst[@name='collation'][2]/str[@name='collationQueryString'][.='yyyyyyy bbbbbbb']",
+                "/response/lst[@name='spellcheck']/lst[@name='suggestions']/lst[@name='collation'][1]/str[@name='collationQuery'][.='(yyyyyya bbbbbbb AND (id:(1 2 3 4 5 6)))']",
+                "/response/lst[@name='spellcheck']/lst[@name='suggestions']/lst[@name='collation'][2]/str[@name='collationQuery'][.='(yyyyyyy bbbbbbb AND (id:(1 2 3 4 5 6)))']");
     }
 }
