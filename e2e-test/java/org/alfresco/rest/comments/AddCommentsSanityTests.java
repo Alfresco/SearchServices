@@ -97,4 +97,13 @@ public class AddCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post multiple comments call")
+    @Bug(id="MNT-16904")
+    public void unauthenticatedUserIsNotAbleToAddComments() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(new UserModel("random user", "random password"));
+        commentsAPI.addComments(document, comment1, comment2);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
 }
