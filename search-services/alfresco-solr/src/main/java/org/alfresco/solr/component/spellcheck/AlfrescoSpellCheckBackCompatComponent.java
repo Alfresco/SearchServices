@@ -89,9 +89,18 @@ public class AlfrescoSpellCheckBackCompatComponent extends SearchComponent
 
         NamedList response = rb.rsp.getValues();
         NamedList spellcheck = (NamedList)response.get("spellcheck");
+
+        if(spellcheck == null) {
+            return;
+        }
+
         NamedList collations = (NamedList)spellcheck.get("collations");
         NamedList suggest = (NamedList)spellcheck.get("suggest");
 
+        if(collations == null && suggest == null) {
+            return;
+        }
+        
         NamedList collationList = collations != null ? collations : suggest;
 
         for(int i=0; i<collationList.size(); i++) {
