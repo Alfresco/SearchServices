@@ -49,6 +49,7 @@ import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SpellCheckResponse;
+import org.apache.solr.common.util.NamedList;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -69,8 +70,8 @@ public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDis
         index(getDefaultTestClient(), true, "id", "2",  "suggest", "AAAAAAAA", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "AAAAAAAA");
         index(getDefaultTestClient(), true, "id", "3",  "suggest", "BBBBBBB", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "BBBBBBB");
         index(getDefaultTestClient(), true, "id", "4",  "suggest", "CCCC", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "CCCC");
-        index(getDefaultTestClient(), true, "id", "5",  "suggest", "YYYYYYY", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYYYYY BBBBBBB");
-        index(getDefaultTestClient(), true, "id", "6",  "suggest", "EEEE", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "EEEE");
+        index(getDefaultTestClient(), true, "id", "5", "suggest", "YYYYYYY", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYYYYY BBBBBBB");
+        index(getDefaultTestClient(), true, "id", "6", "suggest", "EEEE", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "EEEE");
         commit(getDefaultTestClient(), true);
 
         handle.put("explain", SKIPVAL);
@@ -80,22 +81,27 @@ public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDis
         handle.put("distrib", SKIP);
         handle.put("shards.qt", SKIP);
         handle.put("shards", SKIP);
-        handle.put("collationQueryString", SKIP); // No longer used can be removed in Solr 6.
+        handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
         handle.put("q", SKIP);
         handle.put("maxScore", SKIPVAL);
         handle.put("_version_", SKIP);
         handle.put("_original_parameters_", SKIP);
 
         QueryResponse response = query(getDefaultTestClient(), true,
-                                       "{\"query\":\"(YYYYY BBBBB AND (id:(1 2 3 4 5 6)))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
-                                        params("spellcheck.q", "YYYYY BBBBB", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100","spellcheck","true"));
+                "{\"query\":\"(YYYYY BBBBB AND (id:(1 2 3 4 5 6)))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+                params("spellcheck.q", "YYYYY BBBBB", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "spellcheck", "true"));
 
-        SpellCheckResponse spellCheckResponse = response.getSpellCheckResponse();
-        List<SpellCheckResponse.Collation> collations = spellCheckResponse.getCollatedResults();
-        SpellCheckResponse.Collation collation = collations.get(0);
+        NamedList res = response.getResponse();
+        NamedList spellcheck = (NamedList)res.get("spellcheck");
+        NamedList collations = (NamedList)spellcheck.get("collations");
         assertTrue(collations.size() == 1);
-        assertTrue(collation.getNumberOfHits() == 3);
-        assertTrue(collation.getCollationQueryString().equals("(yyyyyyy bbbbbbb AND (id:(1 2 3 4 5 6)))"));
+        NamedList collation = (NamedList)collations.getVal(0);
+        String collationQuery = (String)collation.get("collationQuery");
+        String collationQueryString = (String)collation.get("collationQueryString");
+        int hits = (int)collation.get("hits");
+        assertTrue(hits == 3);
+        assertTrue(collationQuery.equals("(yyyyyyy bbbbbbb AND (id:(1 2 3 4 5 6)))"));
+        assertTrue(collationQueryString.equals("yyyyyyy bbbbbbb"));
     }
 }
 

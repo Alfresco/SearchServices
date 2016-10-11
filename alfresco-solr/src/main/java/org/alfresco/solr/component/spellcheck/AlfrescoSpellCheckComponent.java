@@ -62,13 +62,13 @@ public class AlfrescoSpellCheckComponent extends SpellCheckComponent
             {
                 NamedList extendedResult = new SimpleOrderedMap();
                 extendedResult.add("collationQuery", collation.getCollationQuery());
-                extendedResult.add("collationQueryString", collation.getCollationQueryString());
                 extendedResult.add("hits", collation.getHits());
                 extendedResult.add("misspellingsAndCorrections", collation.getMisspellingsAndCorrections());
                 if (maxCollationTries > 0 && shard)
                 {
                     extendedResult.add("collationInternalRank", collation.getInternalRank());
                 }
+                extendedResult.add("collationQueryString", collation.getCollationQueryString());
                 collationList.add("collation", extendedResult);
             }
             else
