@@ -140,6 +140,7 @@ public class SolrContentStore implements ContentStore
         return (contentUrl != null && contentUrl.startsWith(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX));
     }
 
+
     /**
      * @return <tt>true</tt> always
      */
@@ -171,6 +172,14 @@ public class SolrContentStore implements ContentStore
     public String getRootLocation()
     {
         return root;
+    }
+
+    public void getUrls(Date var1, Date var2, ContentStore.ContentUrlHandler var3) throws ContentIOException {
+
+    }
+
+    public void getUrls(ContentStore.ContentUrlHandler var1) throws ContentIOException {
+
     }
 
     /**

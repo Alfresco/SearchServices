@@ -21,12 +21,25 @@ public class AlfrescoSpellCheckBackCompatComponent extends SearchComponent
     }
 
     public void process(ResponseBuilder responseBuilder) {
-        responseBuilder.req.getParams().get("spellcheck");
+        if(!responseBuilder.req.getParams().getBool(SpellCheckComponent.COMPONENT_NAME, false)) {
+            return;
+        }
         NamedList response = responseBuilder.rsp.getValues();
+
         NamedList spellcheck = (NamedList)response.get("spellcheck");
+        if(spellcheck == null) {
+            return;
+        }
+
         NamedList collations = (NamedList)spellcheck.get("collations");
         NamedList suggest = (NamedList)spellcheck.get("suggest");
+
+        if(collations == null && suggest == null) {
+            return;
+        }
+
         NamedList collationList = collations != null ? collations : suggest;
+
         NamedList spellCheckExtras = new NamedList();
 
         for(int i=0; i<collationList.size(); i++) {
