@@ -95,20 +95,29 @@ public class AlfrescoSpellCheckBackCompatComponent extends SearchComponent
         }
 
         NamedList collations = (NamedList)spellcheck.get("collations");
-        NamedList suggest = (NamedList)spellcheck.get("suggest");
+        NamedList suggestions = (NamedList)spellcheck.get("suggestions");
 
-        if(collations == null && suggest == null) {
-            return;
-        }
-        
-        NamedList collationList = collations != null ? collations : suggest;
-
-        for(int i=0; i<collationList.size(); i++) {
-            if("collation".equals(collationList.getName(i))) {
-                NamedList collation = (NamedList) collationList.getVal(i);
-                String collationQuery = (String) collation.get("collationQuery");
-                String collationQueryString = (String) extras.get(collationQuery);
-                collation.add("collationQueryString", collationQueryString);
+        if(collations != null) {
+            //Fix up the collationQueryString in Solr 6
+            for (int i = 0; i < collations.size(); i++) {
+                if ("collation".equals(collations.getName(i))) {
+                    NamedList collation = (NamedList) collations.getVal(i);
+                    String collationQuery = (String) collation.get("collationQuery");
+                    String collationQueryString = (String) extras.get(collationQuery);
+                    collation.add("collationQueryString", collationQueryString);
+                }
+            }
+            //Add the collations to the suggestions to support the Solr 4 format
+            suggestions.addAll(collations);
+        } else {
+            //Fix up the collationQueryString Solr4
+            for (int i = 0; i < suggestions.size(); i++) {
+                if ("collation".equals(suggestions.getName(i))) {
+                    NamedList collation = (NamedList) suggestions.getVal(i);
+                    String collationQuery = (String) collation.get("collationQuery");
+                    String collationQueryString = (String) extras.get(collationQuery);
+                    collation.add("collationQueryString", collationQueryString);
+                }
             }
         }
     }

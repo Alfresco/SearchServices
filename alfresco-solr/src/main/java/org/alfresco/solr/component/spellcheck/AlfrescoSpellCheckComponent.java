@@ -81,6 +81,11 @@ public class AlfrescoSpellCheckComponent extends SpellCheckComponent
             }
         }
 
+        //Support Solr 4 output format
+        NamedList suggestions = (NamedList)response.get("suggestions");
+        suggestions.addAll(collationList);
+
+        //Support Solr distributed merge format.
         response.add("collations", collationList);
     }
 }
