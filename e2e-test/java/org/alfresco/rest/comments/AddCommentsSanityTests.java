@@ -70,4 +70,13 @@ public class AddCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
+    @TestRail(section = { "rest-api",
+            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple comments with Rest API and status code is 201")
+    public void contributorIsAbleToAddComments() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        commentsAPI.addComments(document, comment1, comment2);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
+
 }
