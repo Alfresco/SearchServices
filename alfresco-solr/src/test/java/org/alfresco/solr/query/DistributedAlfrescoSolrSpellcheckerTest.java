@@ -93,9 +93,8 @@ public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDis
 
         NamedList res = response.getResponse();
         NamedList spellcheck = (NamedList)res.get("spellcheck");
-        NamedList collations = (NamedList)spellcheck.get("collations");
-        assertTrue(collations.size() == 1);
-        NamedList collation = (NamedList)collations.getVal(0);
+        NamedList suggestions = (NamedList)spellcheck.get("suggestions"); // Solr 4 format
+        NamedList collation = (NamedList)suggestions.getVal(2); // The third suggestion should be collation in the Solr format.
         String collationQuery = (String)collation.get("collationQuery");
         String collationQueryString = (String)collation.get("collationQueryString");
         int hits = (int)collation.get("hits");
