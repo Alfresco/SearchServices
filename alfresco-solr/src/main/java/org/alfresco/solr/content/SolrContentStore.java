@@ -174,14 +174,6 @@ public class SolrContentStore implements ContentStore
         return root;
     }
 
-    public void getUrls(Date var1, Date var2, ContentStore.ContentUrlHandler var3) throws ContentIOException {
-
-    }
-
-    public void getUrls(ContentStore.ContentUrlHandler var1) throws ContentIOException {
-
-    }
-
     /**
      * Convert a content URL into a File, whether it exists or not
      */
