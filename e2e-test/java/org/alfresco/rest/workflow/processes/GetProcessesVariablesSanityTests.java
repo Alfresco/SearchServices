@@ -53,4 +53,14 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
         processesApi.getProcessesVariables(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Verify get all process variables call using a user that is involved in the process")
+    public void getProcessVariablesUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(assignee);
+        processModel = processesApi.getProcesses().getOneEntry();
+        processesApi.getProcessesVariables(processModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
