@@ -46,8 +46,16 @@ public class GetTasksSanityTests extends RestWorkflowTest
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets all existing tasks with Rest API and response is successfull (200)")
+    @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify asignee user gets its existing tasks with Rest API and response is successfull (200)")
     public void asigneeUserGetsItsTasks() throws Exception
+    {
+        restClient.authenticateUser(assigneeUser);
+        tasksApi.getTasks().assertEntriesListIsNotEmpty();
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify candidate user gets its existing tasks with Rest API and response is successfull (200)")
+    public void candidateUserGetsItsTasks() throws Exception
     {
         restClient.authenticateUser(assigneeUser);
         tasksApi.getTasks().assertEntriesListIsNotEmpty();
