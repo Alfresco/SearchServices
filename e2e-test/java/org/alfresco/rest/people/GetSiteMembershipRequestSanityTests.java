@@ -1,7 +1,6 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.body.SiteMembershipRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
@@ -53,10 +52,8 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteManagerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
-
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
         
         peopleApi.getSiteMembershipRequest(newMember, siteModel);
         peopleApi.usingRestWrapper()
@@ -69,10 +66,8 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteCollaboratorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
-
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         peopleApi.getSiteMembershipRequest(newMember, siteModel);
         peopleApi.usingRestWrapper()
@@ -85,10 +80,8 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteContributorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
-
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         peopleApi.getSiteMembershipRequest(newMember, siteModel);
         peopleApi.usingRestWrapper()
@@ -101,10 +94,8 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteConsumerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
-
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         peopleApi.getSiteMembershipRequest(newMember, siteModel);
         peopleApi.usingRestWrapper()
@@ -117,10 +108,8 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void adminIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
-
         restClient.authenticateUser(adminUser);
-        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         peopleApi.getSiteMembershipRequest(newMember, siteModel);
         peopleApi.usingRestWrapper()
@@ -133,10 +122,8 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        SiteMembershipRequest siteMembership = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
-
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        peopleApi.addSiteMembershipRequest(newMember, siteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         peopleApi.getSiteMembershipRequest(newMember, siteModel);
         peopleApi.usingRestWrapper()

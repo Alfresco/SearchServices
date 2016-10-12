@@ -3,11 +3,11 @@ package org.alfresco.rest.demo;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.body.CommentContent;
-import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.rest.requests.RestSitesApi;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -104,26 +104,25 @@ public class RestDemoTests extends RestTest
     @Test
     public void adminCanAddAndUpdateSiteMemberDetails() throws Exception
     {
-        UserModel newUser = dataUser.createRandomTestUser();
-        SiteMember siteMember = new SiteMember(Role.SiteConsumer.toString(), 
-                                                newUser.getUsername());
+        UserModel testUser = dataUser.createRandomTestUser("testUser");
+        testUser.setUserRole(UserRole.SiteConsumer);
 
         // add user as Consumer to site
-        sitesApi.addPerson(siteModel, siteMember);
+        sitesApi.addPerson(siteModel, testUser);
         sitesApi.getSiteMembers(siteModel)
-            .assertThatSiteHasMember(siteMember.getId())
-            .getSiteMember(siteMember.getId())
+            .assertThatSiteHasMember(testUser.getUsername())
+            .getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteConsumer);
 
         // update site member to Manager
-        siteMember.setRole(Role.SiteManager.toString());
-        sitesApi.updateSiteMember(siteModel, newUser, siteMember);
+        testUser.setUserRole(UserRole.SiteCollaborator);
+        sitesApi.updateSiteMember(siteModel, testUser);
         sitesApi.getSiteMembers(siteModel)
-            .assertThatSiteHasMember(siteMember.getId())
-            .getSiteMember(siteMember.getId())
-            .assertSiteMemberHasRole(Role.SiteManager);
+            .assertThatSiteHasMember(testUser.getUsername())
+            .getSiteMember(testUser.getUsername())
+            .assertSiteMemberHasRole(Role.SiteCollaborator);
 
-        sitesApi.deleteSiteMember(siteModel, newUser);
+        sitesApi.deleteSiteMember(siteModel, testUser);
         sitesApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }

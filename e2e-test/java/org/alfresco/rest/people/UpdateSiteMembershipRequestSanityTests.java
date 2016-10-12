@@ -1,7 +1,6 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.body.SiteMembershipRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
@@ -36,11 +35,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
     private UserModel adminUser;
-    private String initialMessage;
     private String updatedMessage;
-
-    private SiteMembershipRequest initialSiteMembership;
-    private SiteMembershipRequest updatedSiteMembership;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
@@ -53,11 +48,8 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
 
         peopleApi.useRestClient(restClient);
         
-        initialMessage = "Please accept me";
         updatedMessage = "Please review my request";
-        
-        initialSiteMembership = new SiteMembershipRequest(initialMessage, siteModel.getId(), "New request");
-        updatedSiteMembership = new SiteMembershipRequest(updatedMessage, siteModel.getId(), "New request updated");
+      
     }
 
     @TestRail(section = { "rest-api", "people" }, 
@@ -67,9 +59,9 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
         
-        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership)
+        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage)
             .assertMembershipRequestMessageIs(updatedMessage);
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
@@ -83,10 +75,10 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
 
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -100,10 +92,10 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
 
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -117,10 +109,10 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);      
 
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -134,10 +126,10 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
 
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -152,10 +144,10 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel otherMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         restClient.authenticateUser(otherMember);
-        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
 
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
@@ -169,10 +161,10 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, initialSiteMembership);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
 
         restClient.authenticateUser(adminUser);
-        peopleApi.updateSiteMembershipRequest(newMember, updatedSiteMembership);            
+        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
 
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);

@@ -1,9 +1,9 @@
 package org.alfresco.rest.demo;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestSitesApi;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -11,7 +11,6 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -79,10 +78,9 @@ public class SampleSitesTests extends RestTest
             description = "Verify admin user adds site member with Rest API and status code is 201")
     public void adminShouldAddNewSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
-        UserModel newMember = dataUser.createRandomTestUser();
-        SiteMember siteMember = new SiteMember(Role.SiteCollaborator.toString(), newMember.getUsername());
-
-        siteAPI.addPerson(siteModel, siteMember);
+        UserModel testUser = dataUser.createRandomTestUser("testUser");
+        testUser.setUserRole(UserRole.SiteConsumer);
+        siteAPI.addPerson(siteModel, testUser);
         siteAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }

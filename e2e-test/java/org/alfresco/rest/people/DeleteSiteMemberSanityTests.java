@@ -1,7 +1,6 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.body.SiteMember;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.rest.requests.RestSitesApi;
@@ -17,7 +16,6 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -38,8 +36,6 @@ public class DeleteSiteMemberSanityTests extends RestTest
 
     private SiteModel siteModel;
     private UserModel adminUser;
-    private UserModel newUser;
-    private SiteMember siteMember;
     private ListUserWithRoles usersWithRoles;
 
     @BeforeClass(alwaysRun=true)
@@ -60,10 +56,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
                 description = "Verify site manager is able to delete another member of the site")
     public void siteManagerCanDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
-        newUser = dataUser.createRandomTestUser();
-        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
+        UserModel newUser = dataUser.createRandomTestUser("testUser");
+        newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        sitesApi.addPerson(siteModel, siteMember);
+        sitesApi.addPerson(siteModel, newUser);
         
         peopleApi.deleteSiteMember(newUser, siteModel);
         sitesApi.usingRestWrapper()
@@ -75,10 +71,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
             description = "Verify admin user is able to delete another member of the site")
     public void adminIsAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
-        newUser = dataUser.createRandomTestUser();
-        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
+        UserModel newUser = dataUser.createRandomTestUser("testUser");
+        newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, siteMember);
+        sitesApi.addPerson(siteModel, newUser);
         
         peopleApi.deleteSiteMember(newUser, siteModel);
         sitesApi.usingRestWrapper()
@@ -91,10 +87,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
     @Bug(id="ACE-5444")
     public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
-        newUser = dataUser.createRandomTestUser();
-        siteMember = new SiteMember(Role.SiteContributor.toString(), newUser.getUsername());
+        UserModel newUser = dataUser.createRandomTestUser("testUser");
+        newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, siteMember);
+        sitesApi.addPerson(siteModel, newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
@@ -107,10 +103,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
     @Bug(id="ACE-5444")
     public void siteContributorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
-        newUser = dataUser.createRandomTestUser();
-        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
+        UserModel newUser = dataUser.createRandomTestUser("testUser");
+        newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, siteMember);
+        sitesApi.addPerson(siteModel, newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
@@ -123,10 +119,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
     @Bug(id="ACE-5444")
     public void siteConsumerIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
-        newUser = dataUser.createRandomTestUser();
-        siteMember = new SiteMember(Role.SiteCollaborator.toString(), newUser.getUsername());
+        UserModel newUser = dataUser.createRandomTestUser("testUser");
+        newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, siteMember);
+        sitesApi.addPerson(siteModel, newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         peopleApi.deleteSiteMember(newUser, siteModel);

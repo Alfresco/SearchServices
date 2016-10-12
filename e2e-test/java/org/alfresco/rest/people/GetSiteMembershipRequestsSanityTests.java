@@ -1,7 +1,6 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.body.SiteMembershipRequest;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
@@ -30,7 +29,6 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     UserModel userModel;
     SiteModel siteModel;
     UserModel newMember;
-    SiteMembershipRequest siteMembershipRequest;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -39,10 +37,9 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         String siteId = RandomData.getRandomName("site");
         siteModel = dataSite.usingUser(userModel).createSite(new SiteModel(Visibility.MODERATED, siteId, siteId, siteId, siteId));
         newMember = dataUser.createRandomTestUser();
-        siteMembershipRequest = new SiteMembershipRequest("Please accept me", siteModel.getId(), "New request");
         peopleApi.useRestClient(restClient);
         restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteMembershipRequest);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
 
         peopleApi.useRestClient(restClient);
