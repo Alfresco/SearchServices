@@ -60,4 +60,14 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         processesApi.getProcesses().assertProcessDoesNotExist(task);
     }
 
+    @TestRail(section = { "rest-api",
+            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process assigned to him using REST API and status code is OK (204)")
+    public void deleteProcessByAssignedUser() throws Exception
+    {
+        restClient.authenticateUser(assignee);
+        processesApi.deleteProcess(task);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        processesApi.getProcesses().assertProcessDoesNotExist(task);
+    }
+
 }
