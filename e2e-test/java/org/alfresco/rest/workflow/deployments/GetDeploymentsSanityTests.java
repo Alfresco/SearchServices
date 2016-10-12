@@ -47,4 +47,17 @@ public class GetDeploymentsSanityTests extends RestWorkflowTest
         deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
+    // works on alfresco.server=172.29.100.215
+    @TestRail(section = { "rest-api",
+            "deployments" }, executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
+
+    @Test(groups = { "networks" })
+    public void getNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
+    {
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        restClient.authenticateUser(adminTenantUser);
+        deploymentsApi.getDeployments().assertResponseIsNotEmpty();
+        deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
