@@ -619,21 +619,20 @@
         <!-- Single value indexed  -->
         <dynamicField name="any@s_@*"           type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
         <dynamicField name="encrypted@s_@*"     type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
-        <dynamicField name="int@s_@*"           type="int"               indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
-        <dynamicField name="long@s_@*"          type="long"              indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
-        <dynamicField name="float@s_@*"         type="float"             indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
-        <dynamicField name="double@s_@*"        type="double"            indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
-        <dynamicField name="date@s_@*"          type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
-        <dynamicField name="datetime@s_@*"      type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
+        <dynamicField name="int@s_@*"           type="int"                 indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
+        <dynamicField name="long@s_@*"          type="long"                indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
+        <dynamicField name="float@s_@*"         type="float"               indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
+        <dynamicField name="double@s_@*"        type="double"              indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
+        <dynamicField name="date@s_@*"          type="date"                indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
+        <dynamicField name="datetime@s_@*"      type="date"                indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
         <dynamicField name="boolean@s_@*"       type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
-        <dynamicField name="qname@s_@*"         type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
+        <dynamicField name="qname@s_@*"         type="path"                indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
         <dynamicField name="category@s_@*"      type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
         <dynamicField name="noderef@s_@*"       type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
-        <dynamicField name="noderef@sd_@*"       type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true" />
         <dynamicField name="childassocref@s_@*" type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
         <dynamicField name="assocref@s_@*"      type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
-        <dynamicField name="path@s_@*"          type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
-        <dynamicField name="locale@s_@*"        type="lowercase_id" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
+        <dynamicField name="path@s_@*"          type="path"                indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
+        <dynamicField name="locale@s_@*"        type="lowercase_id"        indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
         <dynamicField name="period@s_@*"        type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
 
         <!-- Single + doc values value wildcard matches -->
@@ -643,7 +642,9 @@
         <dynamicField name="double@sd@*"        type="double"            indexed="true" omitNorms="true"  stored="false"  multiValued="false"  docValues="true" sortMissingLast="false" sortMissingFirst="false" />
         <dynamicField name="date@sd@*"          type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="false"  docValues="true" sortMissingLast="false" sortMissingFirst="false" />
         <dynamicField name="datetime@sd@*"      type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="false"  docValues="true" sortMissingLast="false" sortMissingFirst="false" />
-
+        <dynamicField name="boolean@sd@*"       type="identifier"        indexed="true" omitNorms="true"  stored="false"  multiValued="false"  docValues="true" sortMissingLast="true" />
+        <dynamicField name="category@sd@*"      type="identifier"        indexed="true" omitNorms="true"  stored="false"  multiValued="false"  docValues="true" sortMissingLast="true" />
+        <dynamicField name="noderef@sd@*"       type="identifier"        indexed="true" omitNorms="true"  stored="false"  multiValued="false"  docValues="true" sortMissingLast="true" />
 
         <!-- Multi - value indexed  -->
         <dynamicField name="any@m_@*"           type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
@@ -655,13 +656,9 @@
         <dynamicField name="date@m_@*"          type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
         <dynamicField name="datetime@m_@*"      type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
         <dynamicField name="boolean@m_@*"       type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
-        <dynamicField name="boolean@md_@*"      type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true"/>
-        <dynamicField name="qname@m_@*"         type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
-        <dynamicField name="qname@md_@*"        type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true"/>
-        <dynamicField name="category@m_@*"      type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
-        <dynamicField name="category@md_@*"     type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true" />
+        <dynamicField name="qname@m_@*"         type="path" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />  
+        <dynamicField name="category@m_@*"      type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />     
         <dynamicField name="noderef@m_@*"       type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
-        <dynamicField name="noderef@md@*"       type="identifier" indexed="true" omitNorms="true"  stored="false"  multiValued="true" docValues="true" sortMissingLast="true" />
         <dynamicField name="childassocref@m_@*" type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
         <dynamicField name="assocref@m_@*"      type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
         <dynamicField name="path@m_@*"          type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="true" />
@@ -675,6 +672,9 @@
         <dynamicField name="double@md@*"        type="double"            indexed="true" omitNorms="true"  stored="false"  multiValued="true"  docValues="true" />
         <dynamicField name="date@md@*"          type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="true"  docValues="true" />
         <dynamicField name="datetime@md@*"      type="date"              indexed="true" omitNorms="true"  stored="false"  multiValued="true"  docValues="true" />
+        <dynamicField name="boolean@md@*"       type="identifier"        indexed="true" omitNorms="true"  stored="false"  multiValued="true"  docValues="true" sortMissingLast="true"/>
+        <dynamicField name="category@md@*"      type="identifier"        indexed="true" omitNorms="true"  stored="false"  multiValued="true"  docValues="true" sortMissingLast="true" />
+        <dynamicField name="noderef@md@*"       type="identifier"        indexed="true" omitNorms="true"  stored="false"  multiValued="true"  docValues="true" sortMissingLast="true" />
 
 
         <dynamicField name="text@s____@*"          type="identifier"        indexed="true" omitNorms="true"   stored="false"  multiValued="false" sortMissingLast="true" />
