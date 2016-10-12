@@ -70,4 +70,13 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         processesApi.getProcesses().assertProcessDoesNotExist(task);
     }
 
+    @TestRail(section = { "rest-api",
+            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")
+    public void deleteProcessByAnotherUser() throws Exception
+    {
+        restClient.authenticateUser(anotherUser);
+        processesApi.deleteProcess(task);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+
 }
