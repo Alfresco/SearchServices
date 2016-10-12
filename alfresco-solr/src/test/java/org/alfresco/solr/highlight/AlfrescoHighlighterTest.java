@@ -43,7 +43,9 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import static junit.framework.TestCase.assertTrue;
@@ -121,11 +123,17 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "Let us see what happens to long in this case.";
 
         fileMetaData.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("some very long name"));
-        fileMetaData.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1 is very long"));
-        fileMetaData.getProperties().put(ContentModel.PROP_DESCRIPTION, new StringPropertyValue("mydesc"));
+        HashMap<Locale, String> title = new HashMap<Locale, String> ();
+        title.put(Locale.ENGLISH, "title1 is very long");
+        fileMetaData.getProperties().put(ContentModel.PROP_TITLE, new  MLTextPropertyValue(title));
+        HashMap<Locale, String> desc = new HashMap<Locale, String> ();
+        desc.put(Locale.ENGLISH, "mydesc");
+        fileMetaData.getProperties().put(ContentModel.PROP_DESCRIPTION, new  MLTextPropertyValue(desc));
 
         fileMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue(LONG_TEXT));
-        fileMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
+        HashMap<Locale, String> title2 = new HashMap<Locale, String> ();
+        title2.put(Locale.ENGLISH, "title2");
+        fileMetaData2.getProperties().put(ContentModel.PROP_TITLE,  new  MLTextPropertyValue(title2));
 
        // List<String> content = Arrays.asList(LONG_TEXT, LONG_TEXT);
 
