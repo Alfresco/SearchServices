@@ -37,8 +37,8 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
     }
 
     // works on docker
-    @TestRail(section = { "rest-api",
-            "process-definitions" }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets process definitions for non-network deployments using REST API and status code is OK (200)")
+    @TestRail(section = { "rest-api", "process-definitions" },
+            executionType = ExecutionType.SANITY, description = "Verify Admin user gets process definitions for non-network deployments using REST API and status code is OK (200)")
     public void nonNetworkAdminGetsProcessDefinitions() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -46,4 +46,17 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
+    // works on alfresco.server=172.29.100.215
+    @TestRail(section = { "rest-api", "process-definitions" },
+            executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets process definitions for network deployments using REST API and status code is OK (200)")
+
+    @Test(groups = { "networks" })
+    public void networkAdminGetsProcessDefinitions() throws Exception
+    {
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        restClient.authenticateUser(adminTenantUser);
+        processDefinitionsApi.getProcessDefinitions().assertResponseIsNotEmpty();
+        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
