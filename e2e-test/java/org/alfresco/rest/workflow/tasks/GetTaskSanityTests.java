@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.GroupModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.UserModel;
@@ -72,5 +73,19 @@ public class GetTaskSanityTests extends RestWorkflowTest
         restClient.authenticateUser(anyUser);
         tasksApi.getTask(taskModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
+    
+    @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify candidate user gets its specific task and no other user claimed the task with Rest API and response is successfull (200)")
+    public void candidateUserGetsItsTasks() throws Exception
+    {
+        UserModel userModel1 = dataUser.createRandomTestUser();
+        UserModel userModel2 = dataUser.createRandomTestUser();
+        GroupModel group = dataGroup.createRandomGroup();
+        dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
+        TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
+        
+        restClient.authenticateUser(userModel1);
+        tasksApi.getTask(taskModel);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
