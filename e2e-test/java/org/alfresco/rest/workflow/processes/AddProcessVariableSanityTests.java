@@ -82,5 +82,16 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processModel = processesApi.getProcesses().getOneEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
     
+    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Adding process variable is falling in case invalid variableBody is provided")
+    public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUser);
+        RestProcessVariableModel variableModel = new RestProcessVariableModel(RandomData.getRandomName("name"), RandomData.getRandomName("value"), "incorrect type");
+        processModel = processesApi.getProcesses().getOneEntry();
+        processesApi.addProcessVariable(processModel, variableModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+    }
 }
