@@ -45,4 +45,13 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @TestRail(section = { "rest-api", "process-definitions" },
+            executionType = ExecutionType.SANITY,
+            description = "Verify Any user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
+    public void anyUserGetsProcessDefinition() throws Exception
+    {
+        restClient.authenticateUser(testUser);
+        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).assertProcessDefinitionNameIs(randomProcessDefinition.onModel().getName());
+        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
