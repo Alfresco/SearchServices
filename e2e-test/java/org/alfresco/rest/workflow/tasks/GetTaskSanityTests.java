@@ -55,4 +55,12 @@ public class GetTaskSanityTests extends RestWorkflowTest
         tasksApi.getTask(taskModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify user that started the task gets the started task with Rest API and response is successfull (200)")
+    public void starterUserGetsItsTaskWithSuccess() throws Exception
+    {
+        restClient.authenticateUser(userModel);
+        tasksApi.getTask(taskModel);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
