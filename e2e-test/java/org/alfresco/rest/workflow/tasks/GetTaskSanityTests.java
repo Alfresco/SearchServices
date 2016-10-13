@@ -63,4 +63,14 @@ public class GetTaskSanityTests extends RestWorkflowTest
         tasksApi.getTask(taskModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify any user with no relation to task id forbidden to get other task with Rest API (403)")
+    public void anyUserIsForbiddenToGetOtherTask() throws Exception
+    {
+        UserModel anyUser= dataUser.createRandomTestUser();
+        
+        restClient.authenticateUser(anyUser);
+        tasksApi.getTask(taskModel);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }
