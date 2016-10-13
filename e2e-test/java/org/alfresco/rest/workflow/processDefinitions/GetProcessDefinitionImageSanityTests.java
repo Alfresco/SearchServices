@@ -43,4 +43,12 @@ public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
         processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition).assertResponseContainsImage();
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+
+    @TestRail(section = { "rest-api",  "process-definitions" },
+            executionType = ExecutionType.SANITY, description = "Verify Admin user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
+    public void adminGetsProcessDefinitionImage() throws Exception
+    {
+        processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition).assertResponseContainsImage();
+        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
