@@ -6,6 +6,7 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.rest.requests.RestProcessesApi;
+import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
@@ -29,10 +30,13 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
 
     @Autowired
     private RestProcessesApi processesApi;
+    
+    @Autowired
+    RestTenantApi tenantApi;
 
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsTask, assignee;
+    private UserModel userWhoStartsTask, assignee, adminTenantUser, tenantUser, tenantUserAssignee;
     private RestProcessModel processModel;
     private UserModel adminUser;
 
@@ -53,7 +57,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     public void addProcessVariable() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
-        RestProcessVariableModel variableModel = new RestProcessVariableModel(RandomData.getRandomName("name"), RandomData.getRandomName("value"), "d:text");
+        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = processesApi.getProcesses().getOneEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
@@ -64,8 +68,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     public void updateExistingProcessVariable() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
-        String variableName = RandomData.getRandomName("name");
-        RestProcessVariableModel variableModel = new RestProcessVariableModel(variableName, RandomData.getRandomName("value"), "d:text");
+        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = processesApi.getProcesses().getOneEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         variableModel.setValue(RandomData.getRandomName("newValue"));
@@ -74,11 +77,23 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     }
     
     @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
-            description = "Add process variable using admin user")
+            description = "Add process variable using admin user from same network")
     public void addProcessVariableByAdmin() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(adminUser);
-        RestProcessVariableModel variableModel = new RestProcessVariableModel(RandomData.getRandomName("name"), RandomData.getRandomName("value"), "d:text");
+        UserModel adminuser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminuser);
+        
+        adminTenantUser = UserModel.getAdminTenantUser();
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
+        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
+        
+        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = processesApi.getProcesses().getOneEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
@@ -89,7 +104,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
-        RestProcessVariableModel variableModel = new RestProcessVariableModel(RandomData.getRandomName("name"), RandomData.getRandomName("value"), "incorrect type");
+        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("incorrect type");
         processModel = processesApi.getProcesses().getOneEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
