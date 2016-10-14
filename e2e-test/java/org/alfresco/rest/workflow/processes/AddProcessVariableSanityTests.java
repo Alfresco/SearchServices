@@ -76,6 +76,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
+    @Test(groups = { "networks" })
     @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
             description = "Add process variable using admin user from same network")
     public void addProcessVariableByAdmin() throws JsonToModelConversionException, Exception
