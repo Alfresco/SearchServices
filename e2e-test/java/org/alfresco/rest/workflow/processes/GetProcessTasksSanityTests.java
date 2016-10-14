@@ -71,4 +71,18 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
             .assertTaskWithAssigneeExists(assignee3);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { "rest-api", "workflow", "processes" }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
+    public void involvedUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
+    {
+        ProcessModel process = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(document)
+                .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
+        dataWorkflow.usingUser(assignee1).approveTask(process);
+        
+        restClient.authenticateUser(assignee2);
+        processesApi.getProcessTasks(process)
+            .assertEntriesListIsNotEmpty()
+            .assertTaskWithAssigneeExists(userModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
