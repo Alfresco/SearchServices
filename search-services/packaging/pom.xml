@@ -7,12 +7,6 @@
     <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <alfresco.solr.config># Alfresco configuration
-# This file is automatically included by solr. You can define your custom settings here
-SOLR_OPTS="$SOLR_OPTS -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.threads.stop.timeout=300000"</alfresco.solr.config>
-      <alfresco.solr.config.win>REM Alfresco configuration
-REM This file is automatically included by solr. You can define your custom settings here
-set SOLR_OPTS=%SOLR_OPTS% -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.threads.stop.timeout=300000</alfresco.solr.config.win>
     </properties>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -36,6 +30,24 @@ set SOLR_OPTS=%SOLR_OPTS% -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.
     <build>
         <finalName>alfresco-solr-distribution-${project.version}</finalName>
         <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>properties-maven-plugin</artifactId>
+            <version>1.0.0</version>
+            <executions>
+                <execution>
+                    <phase>initialize</phase>
+                    <goals>
+                        <goal>read-project-properties</goal>
+                    </goals>
+                    <configuration>
+                        <files>
+                            <file>config.properties</file>
+                        </files>
+                    </configuration>
+                </execution>
+            </executions>
+          </plugin>
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-dependency-plugin</artifactId>
@@ -142,6 +154,9 @@ set SOLR_OPTS=%SOLR_OPTS% -Dsolr.jetty.request.header.size=1000000 -Dsolr.jetty.
                                 </replace>
                                 <replace token= "REM Set the thread stack size" value="${alfresco.solr.config.win}${line.separator}${line.separator}REM Set the thread stack size" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.cmd"/>
+                                </replace>
+                                <replace token= "${alfresco.solr.ssl.token}" value="${alfresco.solr.ssl}${line.separator}  ${alfresco.solr.ssl.token}" dir="target/solr-${solr.version}">
+                                    <include name="**/server/etc/jetty*.xml"/>
                                 </replace>
                                 <chmod file="target/solr-${solr.version}/bin/solr" perm="755"/>
                             </target>
