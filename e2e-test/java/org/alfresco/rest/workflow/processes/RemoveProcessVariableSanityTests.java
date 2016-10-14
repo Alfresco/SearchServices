@@ -58,4 +58,17 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         processesApi.deleteProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
+    
+    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Try to delete existing variable using invalid processId")
+    public void deleteProcessVariableUsingInvalidProcessId() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUser);
+        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = processesApi.getProcesses().getOneEntry();
+        processesApi.addProcessVariable(processModel, variableModel);
+        processModel = processesApi.getProcesses().getOneEntry();
+        processesApi.deleteProcessVariable(processModel, variableModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
 }
