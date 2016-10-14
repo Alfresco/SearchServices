@@ -900,6 +900,7 @@
      </lst>
   </requestHandler>
 
+  <requestHandler name="/admin/luke"       class="org.apache.solr.handler.component.AlfrescoLukeRequestHandler" />
  
   <!-- A Robust Example 
        
