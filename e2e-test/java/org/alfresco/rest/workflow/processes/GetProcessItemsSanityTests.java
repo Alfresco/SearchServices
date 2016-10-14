@@ -51,7 +51,6 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    //Run on docker
     @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that started the process gets all process items")
     public void getProcessItemsUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
@@ -62,12 +61,34 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    // Run on docker
     @TestRail(section = { "rest-api", "processes" }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that is involved in the process gets all process items")
     public void getProcessItemsUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee);
+        processModel = processesApi.getProcesses().getOneEntry();
+        processesApi.getProcessesItems(processModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @Test(groups = { "networks" })
+    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Get process items using admin from same network")
+    public void getProcessItemsUsingAdminUserFromSameNetwork() throws JsonToModelConversionException, Exception
+    {
+        UserModel adminuser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminuser);
+        
+        adminTenantUser = UserModel.getAdminTenantUser();
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
+        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
+        
         processModel = processesApi.getProcesses().getOneEntry();
         processesApi.getProcessesItems(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
