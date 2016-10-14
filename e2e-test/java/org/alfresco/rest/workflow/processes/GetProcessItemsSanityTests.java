@@ -61,4 +61,15 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.getProcessesItems(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    // Run on docker
+    @TestRail(section = { "rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Verify that user that is involved in the process gets all process items")
+    public void getProcessItemsUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(assignee);
+        processModel = processesApi.getProcesses().getOneEntry();
+        processesApi.getProcessesItems(processModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
