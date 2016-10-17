@@ -45,7 +45,7 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithManagerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -55,7 +55,7 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -65,7 +65,7 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithContributorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -75,7 +75,7 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -85,7 +85,7 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithAdminUser() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -101,7 +101,7 @@ public class GetSiteContainerSanityTests extends RestTest
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneEntry();
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

@@ -32,7 +32,7 @@ public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
         testUser = dataUser.createRandomTestUser();
         processDefinitionsApi.useRestClient(restClient);
         restClient.authenticateUser(dataUser.getAdminUser());
-        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneEntry();
+        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
     }
 
     @TestRail(section = { "rest-api", "process-definitions" },

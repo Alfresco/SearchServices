@@ -78,14 +78,14 @@ public class RestDemoTests extends RestTest
         // add new comment
         RestCommentModel commentEntry = commentsAPI.addComment(fileModel, "This is a new comment");
         commentsAPI.getNodeComments(fileModel)
-            .assertResponseIsNotEmpty()
+            .assertEntriesListIsNotEmpty()
             .assertCommentWithIdExists(commentEntry);
 
         // update comment
         commentEntry = commentsAPI.updateComment(fileModel, commentEntry, "This is the updated comment with Collaborator user");
 
         commentsAPI.getNodeComments(fileModel)
-            .assertResponseIsNotEmpty()
+            .assertEntriesListIsNotEmpty()
             .assertCommentWithIdExists(commentEntry)
             .assertCommentWithContentExists("This is the updated comment");
     }

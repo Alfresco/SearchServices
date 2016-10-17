@@ -2,7 +2,6 @@ package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
-import org.alfresco.rest.model.RestProcessDefinitionModelsCollection;
 import org.alfresco.rest.requests.RestProcessDefinitionsApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
@@ -33,7 +32,7 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
         testUser = dataUser.createRandomTestUser();
         processDefinitionsApi.useRestClient(restClient);
         restClient.authenticateUser(dataUser.getAdminUser());
-        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneEntry();
+        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
     }
 
     @TestRail(section = { "rest-api", "process-definitions" },

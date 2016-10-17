@@ -49,7 +49,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
     public void getProcessVariablesUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.getProcessesVariables(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -59,7 +59,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
     public void getProcessVariablesUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee);
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.getProcessesVariables(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }

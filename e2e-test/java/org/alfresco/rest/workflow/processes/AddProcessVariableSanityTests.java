@@ -58,7 +58,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(userWhoStartsTask);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -69,7 +69,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(userWhoStartsTask);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         variableModel.setValue(RandomData.getRandomName("newValue"));
         processesApi.addProcessVariable(processModel, variableModel);
@@ -95,7 +95,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
         
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -106,7 +106,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("incorrect type");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }

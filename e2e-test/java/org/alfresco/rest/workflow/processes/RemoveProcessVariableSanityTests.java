@@ -53,7 +53,7 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);      
         processesApi.deleteProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -65,9 +65,9 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.deleteProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }

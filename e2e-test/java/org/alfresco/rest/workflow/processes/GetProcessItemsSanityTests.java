@@ -56,7 +56,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
     public void getProcessItemsUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.getProcessesItems(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -66,7 +66,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
     public void getProcessItemsUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee);
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.getProcessesItems(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -89,7 +89,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
         
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.getProcessesItems(processModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
