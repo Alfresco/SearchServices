@@ -71,4 +71,16 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
         processesApi.updateProcessVariable(processModel, variableModel).assertProcessVariableHasValue("newValue");
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Try to add process variable using an invalid processId")
+    public void addProcessVariableUsingInvalidProcessId() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUser);
+        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = processesApi.getProcesses().getOneEntry();
+        processModel.onModel().setId("abc");
+        processesApi.updateProcessVariable(processModel, variableModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }   
 }
