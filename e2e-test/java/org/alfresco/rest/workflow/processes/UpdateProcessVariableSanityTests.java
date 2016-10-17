@@ -54,7 +54,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.updateProcessVariable(processModel, variableModel);
         processesApi.getProcessesVariables(processModel).assertProcessVariableExists(variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
@@ -66,7 +66,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
         variableModel.setValue("newValue");
         processesApi.updateProcessVariable(processModel, variableModel).assertProcessVariableHasValue("newValue");
@@ -79,7 +79,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneEntry();
+        processModel = processesApi.getProcesses().getOneRandomEntry();
         processModel.onModel().setId("abc");
         processesApi.updateProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
