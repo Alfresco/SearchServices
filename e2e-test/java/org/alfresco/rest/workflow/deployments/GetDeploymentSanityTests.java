@@ -26,21 +26,36 @@ public class GetDeploymentSanityTests extends RestWorkflowTest
     @Autowired
     private RestDeploymentsApi deploymentsApi;
 
-    private UserModel adminUserModel;
+    private UserModel adminUser;
+    private UserModel anotherUser;
+    private RestDeploymentModel deployment;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
+        adminUser = dataUser.getAdminUser();
+        anotherUser = dataUser.createRandomTestUser();
+        
         deploymentsApi.useRestClient(restClient);
+        restClient.authenticateUser(adminUser);
+        deployment = deploymentsApi.getDeployments().getOneEntry();
     }
 
     @TestRail(section = { "rest-api", "workflow", "deployments" }, 
             executionType = ExecutionType.SANITY, description = "Verify admin user gets a non-network deployment using REST API and status code is OK (200)")
     public void adminGetsNonNetworkDeploymentWithSuccess() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(adminUserModel);
-        deploymentsApi.getDeployment(deploymentsApi.getDeployments().getOneEntry());
+        restClient.authenticateUser(adminUser);
+        deploymentsApi.getDeployment(deployment);
         deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @TestRail(section = { "rest-api", "workflow", "deployments" }, 
+            executionType = ExecutionType.SANITY, description = "Verify non admin user is forbidden to get a non-network deployment using REST API (403)")
+    public void nonAdminIsForbiddenToGetNonNetworkDeployment() throws JsonToModelConversionException, Exception
+    {        
+        restClient.authenticateUser(anotherUser);
+        deploymentsApi.getDeployment(deployment);
+        deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 }
