@@ -61,6 +61,7 @@ public class DeleteCommentsSanityTests extends RestTest
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user delete comments with Rest API and status code is 204")
     public void adminIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
         commentsAPI.deleteComment(document, comment);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }

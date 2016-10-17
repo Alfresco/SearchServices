@@ -52,6 +52,7 @@ public class GetCommentsSanityTests extends RestTest
             description= "Verify Admin user gets comments with Rest API and status code is 200")
     public void adminIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
         commentsAPI.getNodeComments(document);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }

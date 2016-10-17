@@ -53,6 +53,7 @@ public class UpdateCommentsSanityTests extends RestTest
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments and status code is 200")
     public void adminIsAbleToUpdateComments() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
         commentsAPI.updateComment(document, commentModel, "This is the updated comment with admin user");
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }

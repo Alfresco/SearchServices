@@ -58,6 +58,7 @@ public class AddCommentsSanityTests extends RestTest
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple comments with Rest API and status code is 201")
     public void adminIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
         commentsAPI.addComments(document, comment1, comment2);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }

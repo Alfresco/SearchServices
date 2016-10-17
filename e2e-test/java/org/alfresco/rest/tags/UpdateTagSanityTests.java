@@ -60,6 +60,7 @@ public class UpdateTagSanityTests extends RestTest
     @Bug(id="MNT-16917")
     public void adminIsAbleToUpdateTags() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
         tagsAPI.updateTag(oldTag, randomTag).assertTagIs(randomTag);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
