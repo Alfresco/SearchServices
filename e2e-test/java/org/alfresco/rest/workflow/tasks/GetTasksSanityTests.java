@@ -8,6 +8,7 @@ import org.alfresco.utility.model.GroupModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,21 @@ public class GetTasksSanityTests extends RestWorkflowTest
     public void asigneeUserGetsItsTasks() throws Exception
     {
         restClient.authenticateUser(assigneeUser);
+        tasksApi.getTasks().assertEntriesListIsNotEmpty();
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @Bug(id = "MNT-16967")
+    @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify candidate user gets its existing tasks and no other user claimed the task with Rest API and response is successfull (200)")
+    public void candidateUserGetsItsTasks() throws Exception
+    {
+        UserModel userModel1 = dataUser.createRandomTestUser();
+        UserModel userModel2 = dataUser.createRandomTestUser();
+        GroupModel group = dataGroup.createRandomGroup();
+        dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
+        dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
+        
+        restClient.authenticateUser(userModel1);
         tasksApi.getTasks().assertEntriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
