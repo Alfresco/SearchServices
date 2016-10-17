@@ -21,7 +21,7 @@ import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class UpdateSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired

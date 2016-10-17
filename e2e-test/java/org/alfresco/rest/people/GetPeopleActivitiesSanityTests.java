@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
  * Tests for getActivities (/people/{personId}/activities) RestAPI call
  * 
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, "activities", TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, "activities", TestGroup.SANITY })
 public class GetPeopleActivitiesSanityTests extends RestTest
 {
     @Autowired

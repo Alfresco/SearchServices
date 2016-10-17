@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, "preferences", TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, "preferences", TestGroup.SANITY })
 public class GetPeoplePreferencesSanityTests extends RestTest
 {
     @Autowired

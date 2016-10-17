@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class GetFavoriteSitesSanityTests extends RestTest
 {
     @Autowired

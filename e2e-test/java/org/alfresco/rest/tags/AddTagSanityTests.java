@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/3/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class AddTagSanityTests extends RestTest
 {
     @Autowired

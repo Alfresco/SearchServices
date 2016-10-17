@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/12/2016.
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
 public class DeleteProcessSanityTests extends RestWorkflowTest
 {
     @Autowired

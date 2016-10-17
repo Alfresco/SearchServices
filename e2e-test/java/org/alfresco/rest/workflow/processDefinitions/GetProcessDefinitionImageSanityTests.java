@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/13/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION, TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
 public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest {
   @Autowired
   private DataUser dataUser;

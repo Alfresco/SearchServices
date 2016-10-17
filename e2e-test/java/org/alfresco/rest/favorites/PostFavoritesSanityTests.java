@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, "favorites", TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
 public class PostFavoritesSanityTests extends RestTest
 {
     @Autowired
@@ -49,7 +49,7 @@ public class PostFavoritesSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Admin user add site to favorites with Rest API and status code is 201")
+            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user add site to favorites with Rest API and status code is 201")
     public void adminIsAbleToAddToFavorites() throws Exception
     {
         favoritesAPI.addSiteToFavorites(adminUserModel, siteModel);
@@ -57,7 +57,7 @@ public class PostFavoritesSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Manager user add site to favorites with Rest API and status code is 201")
+            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Manager user add site to favorites with Rest API and status code is 201")
     public void managerIsAbleToAddToFavorites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -66,7 +66,7 @@ public class PostFavoritesSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user add site to favorites with Rest API and status code is 201")
+            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user add site to favorites with Rest API and status code is 201")
     public void collaboratorIsAbleToAddToFavorites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -75,7 +75,7 @@ public class PostFavoritesSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user add site to favorites with Rest API and status code is 201")
+            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Contributor user add site to favorites with Rest API and status code is 201")
     public void contributorIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -84,7 +84,7 @@ public class PostFavoritesSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user add site to favorites with Rest API and status code is 201")
+            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Consumer user add site to favorites with Rest API and status code is 201")
     public void consumerIsAbleToAddToFavorites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -93,7 +93,7 @@ public class PostFavoritesSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "favorites" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
     @Bug(id="MNT-16904")
     public void managerIsNotAbleToAddCommentIfAuthenticationFails() throws Exception
     {

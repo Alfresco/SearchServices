@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
+@Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class DeleteSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired

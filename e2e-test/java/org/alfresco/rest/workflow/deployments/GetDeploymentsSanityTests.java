@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/4/2016.
  */
-@Test(groups = { TestGroup.REST_API, "deployments", TestGroup.COMMENTS, TestGroup.NETWORKS })
+@Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.NETWORKS })
 public class GetDeploymentsSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -39,7 +39,7 @@ public class GetDeploymentsSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "deployments" }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets non-network deployments using REST API and status code is OK (200)")
+        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets non-network deployments using REST API and status code is OK (200)")
     public void getNonNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -48,7 +48,7 @@ public class GetDeploymentsSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "deployments" }, executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
+        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
     public void getNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
     {
         tenantApi.useRestClient(restClient);

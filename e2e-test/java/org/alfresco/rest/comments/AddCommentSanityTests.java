@@ -19,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.SANITY, TestGroup.SANITY })
 public class AddCommentSanityTests extends RestTest
 {
     @Autowired

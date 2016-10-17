@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
 public class AddProcessVariableSanityTests extends RestWorkflowTest
 {
     @Autowired

@@ -9,6 +9,7 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class GetTasksSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -53,6 +54,22 @@ public class GetTasksSanityTests extends RestWorkflowTest
     public void asigneeUserGetsItsTasks() throws Exception
     {
         restClient.authenticateUser(assigneeUser);
+        tasksApi.getTasks().assertEntriesListIsNotEmpty();
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
+    @Bug(id = "MNT-16967")    
+    public void candidateUserGetsItsTasks() throws Exception
+    {
+        UserModel userModel1 = dataUser.createRandomTestUser();
+        UserModel userModel2 = dataUser.createRandomTestUser();
+        GroupModel group = dataGroup.createRandomGroup();
+        dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
+        dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
+        
+        restClient.authenticateUser(userModel1);
         tasksApi.getTasks().assertEntriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }

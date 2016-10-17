@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
 public class RestGetNetworksForPersonSanityTests extends RestTest
 {
     @Autowired

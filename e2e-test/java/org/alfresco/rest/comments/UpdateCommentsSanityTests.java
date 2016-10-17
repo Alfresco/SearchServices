@@ -21,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.SANITY, TestGroup.SANITY })
 public class UpdateCommentsSanityTests extends RestTest
 {
     @Autowired
@@ -106,22 +106,22 @@ public class UpdateCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SANITY }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")
     public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        
+
         FolderModel content = FolderModel.getRandomFolderModel();
         content.setNodeRef("node ref that does not exist");
         commentsAPI.updateComment(content, commentModel, "This is the updated comment.");
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify if commentId is not set the status code is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SANITY }, executionType = ExecutionType.SANITY, description = "Verify if commentId is not set the status code is 404")
     public void canNotUpdateCommentIfCommentIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        
+
         RestCommentModel comment = new RestCommentModel();
         comment.setId("comment id that does not exist");
         commentsAPI.updateComment(document, comment, "This is the updated comment.");

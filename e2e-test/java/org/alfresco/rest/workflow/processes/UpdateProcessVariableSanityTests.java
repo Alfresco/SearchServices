@@ -21,15 +21,15 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
-public class RemoveProcessVariableSanityTests extends RestWorkflowTest
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
+public class UpdateProcessVariableSanityTests extends RestWorkflowTest     
 {
     @Autowired
     private DataUser dataUser;
 
     @Autowired
     private RestProcessesApi processesApi;
-
+    
     private FileModel document;
     private SiteModel siteModel;
     private UserModel userWhoStartsTask, assignee;
@@ -48,28 +48,40 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
     
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
-            description = "Delete existing variable")
-    public void deleteProcessVariable() throws JsonToModelConversionException, Exception
+    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Create non-existing variable using put call")
+    public void addProcessVariable() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneRandomEntry();
-        processesApi.addProcessVariable(processModel, variableModel);      
-        processesApi.deleteProcessVariable(processModel, variableModel);
-        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        processModel = processesApi.getProcesses().getOneEntry();
+        processesApi.updateProcessVariable(processModel, variableModel);
+        processesApi.getProcessesVariables(processModel).assertProcessVariableExists(variableModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
-            description = "Try to delete existing variable using invalid processId")
-    public void deleteProcessVariableUsingInvalidProcessId() throws JsonToModelConversionException, Exception
+    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Update existing variable using put call")
+    public void updateProcessVariable() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneRandomEntry();
+        processModel = processesApi.getProcesses().getOneEntry();
         processesApi.addProcessVariable(processModel, variableModel);
-        processModel = processesApi.getProcesses().getOneRandomEntry();
-        processesApi.deleteProcessVariable(processModel, variableModel);
-        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        variableModel.setValue("newValue");
+        processesApi.updateProcessVariable(processModel, variableModel).assertProcessVariableHasValue("newValue");
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Try to add process variable using an invalid processId")
+    public void addProcessVariableUsingInvalidProcessId() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUser);
+        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = processesApi.getProcesses().getOneEntry();
+        processModel.onModel().setId("abc");
+        processesApi.updateProcessVariable(processModel, variableModel);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }   
 }

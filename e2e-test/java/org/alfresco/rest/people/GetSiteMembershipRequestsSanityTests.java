@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
  * 
  * @author Cristina Axinte
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class GetSiteMembershipRequestsSanityTests extends RestTest
 {
     @Autowired
