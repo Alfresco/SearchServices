@@ -10,6 +10,7 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -20,7 +21,7 @@ import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "people", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
 public class UpdateSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
@@ -52,7 +53,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
       
     }
 
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
                 executionType = ExecutionType.SANITY, description = "Verify user is able to update its own site membership request")
     public void userIsAbleToUpdateItsOwnSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
@@ -67,7 +68,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update membership request of another user")
     @Bug(id = "MNT-16919")
     public void siteManagerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -84,7 +85,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify site collaborator is not able to update membership request of another user")
     @Bug(id = "MNT-16919")
     public void siteCollaboratorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -101,7 +102,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify site contributor is not able to update membership request of another user")
     @Bug(id = "MNT-16919")
     public void siteContributorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -118,7 +119,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify site consumer is not able to update membership request of another user")
     @Bug(id = "MNT-16919")
     public void siteConsumerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -135,7 +136,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify one user is not able to update membership request of another user")
     @Bug(id = "MNT-16919")
     public void oneUserIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -153,7 +154,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify admin is not able to update membership request of another user")
     @Bug(id = "MNT-16919")
     public void adminIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception

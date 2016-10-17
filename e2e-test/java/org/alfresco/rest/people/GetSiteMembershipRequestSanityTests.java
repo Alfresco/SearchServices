@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -18,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "people", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
 public class GetSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
@@ -46,7 +47,7 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api","people" }, 
+    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, 
                 executionType = ExecutionType.SANITY, description = "Verify site manager is able to retrieve site membership request")    
     @Bug(id="MNT-16557")  
     public void siteManagerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -60,7 +61,7 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
                 executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void siteCollaboratorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -74,7 +75,7 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
                 executionType = ExecutionType.SANITY, description = "Verify site contributor is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void siteContributorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -88,7 +89,7 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify site consumer is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void siteConsumerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -102,7 +103,7 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify admin user is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void adminIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -116,7 +117,7 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void unauthenticatedUserIsNotAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception

@@ -5,6 +5,7 @@ import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -20,7 +21,7 @@ import org.testng.annotations.Test;
  * 
  * @author Cristina Axinte
  */
-@Test(groups = { "rest-api", "people", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
 public class GetSiteMembershipRequestsSanityTests extends RestTest
 {
     @Autowired
@@ -46,7 +47,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     }
 
     @Bug(id = "MNT-16557")
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets all site membership requests of a specific person with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets all site membership requests of a specific person with Rest API and response is successful (200)")
     public void managerUserGetsSiteMembershipRequestsWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -58,7 +59,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16557")
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get all site membership requests of another user with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get all site membership requests of another user with Rest API (403)")
     public void collaboratorUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -70,7 +71,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16557")
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify contributor user fails to get all site membership requests of another user with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user fails to get all site membership requests of another user with Rest API (403)")
     public void contributorUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -82,7 +83,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16557")
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get all site membership requests of another user with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get all site membership requests of another user with Rest API (403)")
     public void consumerUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -94,7 +95,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16557")
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets all site membership requests of a specific person with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets all site membership requests of a specific person with Rest API and response is successful (200)")
     public void adminUserGetsSiteMembershipRequestsWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
@@ -105,7 +106,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16904")
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
     public void managerUserNotAuthorizedFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -117,7 +118,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, description = "Verify a user gets all its own site membership requests with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a user gets all its own site membership requests with Rest API and response is successful (200)")
     public void oneUserGetsItsOwnSiteMembershipRequestsWithSuccess() throws Exception
     {
         restClient.authenticateUser(newMember);

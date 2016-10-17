@@ -9,6 +9,7 @@ import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -21,7 +22,7 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 
-@Test(groups = { "rest-api", "processes", "sanity" })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
 public class GetProcessItemsSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -51,7 +52,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that started the process gets all process items")
     public void getProcessItemsUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
@@ -61,7 +62,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that is involved in the process gets all process items")
     public void getProcessItemsUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {
@@ -71,8 +72,8 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @Test(groups = { "networks" })
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @Test(groups = { TestGroup.NETWORKS })
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Get process items using admin from same network")
     public void getProcessItemsUsingAdminUserFromSameNetwork() throws JsonToModelConversionException, Exception
     {

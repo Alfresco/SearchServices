@@ -11,6 +11,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -22,7 +23,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { "rest-api", "processes", "sanity" })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
 public class AddProcessVariableSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -52,7 +53,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Create non-existing variable")
     public void addProcessVariable() throws JsonToModelConversionException, Exception
     {
@@ -63,7 +64,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Update existing variable")
     public void updateExistingProcessVariable() throws JsonToModelConversionException, Exception
     {
@@ -76,8 +77,8 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @Test(groups = { "networks" })
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @Test(groups = { TestGroup.NETWORKS })
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Add process variable using admin user from same network")
     public void addProcessVariableByAdmin() throws JsonToModelConversionException, Exception
     {
@@ -100,7 +101,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Adding process variable is falling in case invalid variableBody is provided")
     public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws JsonToModelConversionException, Exception
     {

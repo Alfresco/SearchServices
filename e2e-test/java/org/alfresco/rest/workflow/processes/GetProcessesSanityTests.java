@@ -8,6 +8,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -19,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/11/2016.
  */
-@Test(groups = { "rest-api", "processes", "sanity" })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
 public class GetProcessesSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -45,7 +46,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api",
+    @TestRail(section = { TestGroup.REST_API,
             "processes" }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes started by him using REST API and status code is OK (200)")
     public void getProcessesByUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
@@ -54,7 +55,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api",
+    @TestRail(section = { TestGroup.REST_API,
             "processes" }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes assigned to him using REST API and status code is OK (200)")
     public void getProcessesByAssignedUser() throws JsonToModelConversionException, Exception
     {
@@ -63,7 +64,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api",
+    @TestRail(section = { TestGroup.REST_API,
             "processes" }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process can not get that process using REST API and status code is OK (200)")
     public void getProcessesByAnotherUser() throws JsonToModelConversionException, Exception
     {
@@ -72,7 +73,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api",
+    @TestRail(section = { TestGroup.REST_API,
             "processes" }, executionType = ExecutionType.SANITY, description = "Verify Admin gets all processes, even if he isn't involved in a process, using REST API and status code is OK (200)")
     public void getProcessesByAdmin() throws JsonToModelConversionException, Exception
     {

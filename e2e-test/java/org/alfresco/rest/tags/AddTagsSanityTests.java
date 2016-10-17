@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -22,7 +23,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/7/2016.
  */
-@Test(groups = { "rest-api", "tags", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.COMMENTS })
 public class AddTagsSanityTests extends RestTest
 {
     @Autowired
@@ -56,8 +57,8 @@ public class AddTagsSanityTests extends RestTest
         tag2 = RandomData.getRandomName("tag");
     }
 
-    @TestRail(section = { "rest-api",
-            "tags" }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple tags with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple tags with Rest API and status code is 201")
     public void adminIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -65,8 +66,8 @@ public class AddTagsSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds multiple tags with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds multiple tags with Rest API and status code is 201")
     public void managerIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -74,8 +75,8 @@ public class AddTagsSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple tags with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple tags with Rest API and status code is 201")
     public void collaboratorIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -83,8 +84,8 @@ public class AddTagsSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user doesn't have permission to add multiple tags with Rest API and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user doesn't have permission to add multiple tags with Rest API and status code is 403")
     public void contributorIsNotAbleToAddTagsToAnotherContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -92,8 +93,8 @@ public class AddTagsSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple tags to his content with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple tags to his content with Rest API and status code is 201")
     public void contributorIsAbleToAddTagsToHisContent() throws JsonToModelConversionException, Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
@@ -103,8 +104,8 @@ public class AddTagsSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user doesn't have permission to add multiple tags with Rest API and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user doesn't have permission to add multiple tags with Rest API and status code is 403")
     public void consumerIsNotAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -112,8 +113,8 @@ public class AddTagsSanityTests extends RestTest
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "tags" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
     @Bug(id="MNT-16904")
     public void managerIsNotAbleToAddTagsIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {

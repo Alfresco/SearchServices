@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -18,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "people", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.COMMENTS })
 public class AddSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
@@ -46,7 +47,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
                 executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")    
     @Bug(id="MNT-16557")    
     public void siteManagerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -58,7 +59,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
                 executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void siteCollaboatorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -70,7 +71,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
                 executionType = ExecutionType.SANITY, description = "Verify site contributor is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void siteContributorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -82,7 +83,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify site consumer is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void siteConsumerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -94,7 +95,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = { "rest-api", "people" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
             description = "Verify admin user is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void adminUserIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
@@ -105,7 +106,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = { "rest-api", "people" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void unauthenticatedUserIsNotAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception

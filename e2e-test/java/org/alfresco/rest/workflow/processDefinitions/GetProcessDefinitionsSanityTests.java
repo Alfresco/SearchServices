@@ -4,6 +4,7 @@ import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.requests.RestProcessDefinitionsApi;
 import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -15,7 +16,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/13/2016.
  */
-@Test(groups = { "rest-api", "process-definitions", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION, TestGroup.COMMENTS })
 public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -37,7 +38,7 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
     }
 
     // works on docker
-    @TestRail(section = { "rest-api", "process-definitions" },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY, description = "Verify Admin user gets process definitions for non-network deployments using REST API and status code is OK (200)")
     public void nonNetworkAdminGetsProcessDefinitions() throws Exception
     {
@@ -47,10 +48,10 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
     }
 
     // works on alfresco.server=172.29.100.215
-    @TestRail(section = { "rest-api", "process-definitions" },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets process definitions for network deployments using REST API and status code is OK (200)")
 
-    @Test(groups = { "networks" })
+    @Test(groups = { TestGroup.NETWORKS })
     public void networkAdminGetsProcessDefinitions() throws Exception
     {
         tenantApi.useRestClient(restClient);

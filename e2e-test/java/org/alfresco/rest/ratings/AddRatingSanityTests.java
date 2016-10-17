@@ -9,6 +9,7 @@ import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -20,7 +21,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "ratings", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.COMMENTS })
 public class AddRatingSanityTests extends RestTest
 {
     @Autowired
@@ -52,8 +53,8 @@ public class AddRatingSanityTests extends RestTest
         document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to post like rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to post like rating to a document")
     public void managerIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -61,8 +62,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to post like rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to post like rating to a document")
     public void collaboratorIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -70,8 +71,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post like rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post like rating to a document")
     public void contributorIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -79,8 +80,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post like rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post like rating to a document")
     public void consumerIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -88,8 +89,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post like rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post like rating to a document")
     public void adminIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -97,8 +98,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post like rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post like rating to a document")
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
@@ -107,8 +108,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to post stars rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to post stars rating to a document")
     public void managerIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -116,8 +117,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to post stars rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to post stars rating to a document")
     public void collaboratorIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -125,8 +126,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post stars rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post stars rating to a document")
     public void contributorIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -134,8 +135,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post stars rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post stars rating to a document")
     public void consumerIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -143,8 +144,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post stars rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post stars rating to a document")
     public void adminIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -152,8 +153,8 @@ public class AddRatingSanityTests extends RestTest
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "ratings" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post stars rating to a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post stars rating to a document")
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {

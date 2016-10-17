@@ -9,6 +9,7 @@ import org.alfresco.rest.requests.RestProcessesApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -20,7 +21,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { "rest-api", "processes", "sanity" })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
 public class RemoveProcessVariableSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -47,7 +48,7 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
     
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Delete existing variable")
     public void deleteProcessVariable() throws JsonToModelConversionException, Exception
     {
@@ -59,7 +60,7 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Try to delete existing variable using invalid processId")
     public void deleteProcessVariableUsingInvalidProcessId() throws JsonToModelConversionException, Exception
     {

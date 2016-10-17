@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -22,7 +23,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/10/2016.
  */
-@Test(groups = { "rest-api", "comments", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class AddCommentsSanityTests extends RestTest
 {
     @Autowired RestCommentsApi commentsAPI;
@@ -53,16 +54,16 @@ public class AddCommentsSanityTests extends RestTest
         comment2 = RandomData.getRandomName("comment2");
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple comments with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple comments with Rest API and status code is 201")
     public void adminIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         commentsAPI.addComments(document, comment1, comment2);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds multiple comments with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds multiple comments with Rest API and status code is 201")
     public void managerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -70,8 +71,8 @@ public class AddCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple comments with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple comments with Rest API and status code is 201")
     public void contributorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -79,8 +80,8 @@ public class AddCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple comments with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple comments with Rest API and status code is 201")
     public void collaboratorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -88,8 +89,8 @@ public class AddCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user adds multiple comments with Rest API and status code is 201")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user adds multiple comments with Rest API and status code is 201")
     public void consumerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -97,8 +98,8 @@ public class AddCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post multiple comments call")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post multiple comments call")
     @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToAddComments() throws JsonToModelConversionException, Exception
     {

@@ -7,6 +7,7 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -19,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { "rest-api", "sites", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.COMMENTS })
 public class GetSiteMemberSanityTests extends RestTest
 {
 
@@ -43,7 +44,7 @@ public class GetSiteMemberSanityTests extends RestTest
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteConsumer);
     }
 
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site member and status code is OK (200)")
     public void getSiteMemberWithManagerRole() throws Exception
     {
@@ -52,7 +53,7 @@ public class GetSiteMemberSanityTests extends RestTest
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site member and gets status code OK (200)")
     public void getSiteMemberWithCollaboratorRole() throws Exception
     {
@@ -61,7 +62,7 @@ public class GetSiteMemberSanityTests extends RestTest
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site member and gets status code OK (200)")
     public void getSiteMemberWithContributorRole() throws Exception
     {
@@ -70,7 +71,7 @@ public class GetSiteMemberSanityTests extends RestTest
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site member and gets status code OK (200)")
     public void getSiteMemberWithConsumerRole() throws Exception
     {
@@ -79,7 +80,7 @@ public class GetSiteMemberSanityTests extends RestTest
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with admin user gets site member and gets status code OK (200)")
     public void getSiteMemberWithAdminUser() throws Exception
     {
@@ -88,7 +89,7 @@ public class GetSiteMemberSanityTests extends RestTest
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site member call returns status code 401")
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteMember() throws JsonToModelConversionException, Exception

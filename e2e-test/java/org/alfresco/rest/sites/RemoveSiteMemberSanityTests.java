@@ -7,6 +7,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -20,7 +21,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = {"rest-api", "sites", "sanity"})
+@Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.COMMENTS})
 public class RemoveSiteMemberSanityTests extends RestTest
 {
 
@@ -50,7 +51,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
         dataUser.addUserToSite(testUserModel, siteModel, UserRole.SiteConsumer);
     }
 
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site manager can delete site member and gets status code 204, 'No Content'")
     public void siteManagerIsAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -59,7 +60,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site collaborator cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -68,7 +69,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site contributor cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteContributorIsNotAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -77,7 +78,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site consumer cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteConsumerIsNotAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -85,7 +86,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that admin user can delete site member and gets status code 204, 'No Content'")
     public void adminUserIsAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(adminUserModel);
@@ -93,7 +94,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to delete site member")
     public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMember() throws Exception{
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");

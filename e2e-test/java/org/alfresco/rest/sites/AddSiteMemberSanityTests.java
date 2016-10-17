@@ -5,6 +5,7 @@ import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -14,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "sites", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.COMMENTS })
 public class AddSiteMemberSanityTests extends RestTest
 {
     @Autowired
@@ -35,7 +36,7 @@ public class AddSiteMemberSanityTests extends RestTest
 
     }
 
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that manager is able to add site member and gets status code CREATED (201)")
     public void managerIsAbleToAddSiteMember() throws Exception
     {
@@ -46,7 +47,7 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site collaborator is not able to add site member and gets status code FORBIDDEN (403)")
     public void collaboratorIsNotAbleToAddSiteMember() throws Exception
     {
@@ -57,7 +58,7 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site contributor is not able to add site member and gets status code FORBIDDEN (403)")
     public void contributorIsNotAbleToAddSiteMember() throws Exception
     {
@@ -68,7 +69,7 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site consumer is not able to add site member and gets status code FORBIDDEN (403)")
     public void consumerIsNotAbleToAddSiteMember() throws Exception
     {
@@ -79,7 +80,7 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that admin user is able to add site member and gets status code CREATED (201)")
     public void adminIsAbleToAddSiteMember() throws Exception
     {
@@ -91,7 +92,7 @@ public class AddSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="MNT-16904")
-    @TestRail(section = {"rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to add site member")
     public void unauthenticatedUserIsNotAuthorizedToAddSiteMmeber() throws Exception{
         UserModel testUser = dataUser.createRandomTestUser("testUser");

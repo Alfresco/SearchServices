@@ -11,6 +11,7 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -20,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "comments", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class UpdateCommentsSanityTests extends RestTest
 {
     @Autowired
@@ -48,16 +49,16 @@ public class UpdateCommentsSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments and status code is 200")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments and status code is 200")
     public void adminIsAbleToUpdateComments() throws JsonToModelConversionException, Exception
     {
         commentsAPI.updateComment(document, commentModel, "This is the updated comment with admin user");
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user updates comments created by admin user and status code is 200")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user updates comments created by admin user and status code is 200")
     public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -65,8 +66,8 @@ public class UpdateCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can not update comments created by admin user and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can not update comments created by admin user and status code is 403")
     public void contributorIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -74,8 +75,8 @@ public class UpdateCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can not update comments created by admin user and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can not update comments created by admin user and status code is 403")
     public void consumerIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -83,8 +84,8 @@ public class UpdateCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can not update comment created by admin user and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can not update comment created by admin user and status code is 403")
     @Bug(id="REPO-1011")
     public void collaboratorIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
@@ -94,8 +95,8 @@ public class UpdateCommentsSanityTests extends RestTest
         commentEntry.assertCommentContentIs("This is the updated comment with Collaborator user");
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on update comment call")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on update comment call")
     @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
@@ -105,7 +106,7 @@ public class UpdateCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { "rest-api", "comments" }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")
     public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -116,7 +117,7 @@ public class UpdateCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
-    @TestRail(section = { "rest-api", "comments" }, executionType = ExecutionType.SANITY, description = "Verify if commentId is not set the status code is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify if commentId is not set the status code is 404")
     public void canNotUpdateCommentIfCommentIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);

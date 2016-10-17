@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -22,7 +23,7 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 
-@Test(groups = { "rest-api", "sites", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.COMMENTS })
 public class GetSiteSanityTests extends RestTest
 {
     @Autowired
@@ -49,7 +50,7 @@ public class GetSiteSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site information and gets status code OK (200)")
     public void getSiteWithManagerRole() throws JsonToModelConversionException, Exception
     {
@@ -58,7 +59,7 @@ public class GetSiteSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site information and gets status code OK (200)")
     public void getSiteWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
@@ -67,7 +68,7 @@ public class GetSiteSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site information and gets status code OK (200)")
     public void getSiteWithContributorRole() throws JsonToModelConversionException, Exception
     {
@@ -76,7 +77,7 @@ public class GetSiteSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site information and gets status code OK (200)")
     public void getSiteWithConsumerRole() throws JsonToModelConversionException, Exception
     {
@@ -85,7 +86,7 @@ public class GetSiteSanityTests extends RestTest
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with admin role gets site information and gets status code OK (200)")
     public void getSiteWithAdminRole() throws JsonToModelConversionException, Exception
     {
@@ -95,7 +96,7 @@ public class GetSiteSanityTests extends RestTest
     }
     
     @Bug(id="MNT-16904")
-    @TestRail(section = { "rest-api", "sites" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSite() throws JsonToModelConversionException, Exception
     {

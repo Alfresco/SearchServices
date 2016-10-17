@@ -10,6 +10,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -19,7 +20,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "comments", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class DeleteCommentsSanityTests extends RestTest
 {
 
@@ -56,16 +57,16 @@ public class DeleteCommentsSanityTests extends RestTest
         comment = commentsAPI.addComment(document, "This is a new comment");
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Admin user delete comments with Rest API and status code is 204")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user delete comments with Rest API and status code is 204")
     public void adminIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         commentsAPI.deleteComment(document, comment);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user delete comments created by admin user with Rest API and status code is 204")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user delete comments created by admin user with Rest API and status code is 204")
     public void managerIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -73,8 +74,8 @@ public class DeleteCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can't delete comments created by admin user with Rest API and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can't delete comments created by admin user with Rest API and status code is 403")
     public void collaboratorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -82,8 +83,8 @@ public class DeleteCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete comments created by admin user with Rest API and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete comments created by admin user with Rest API and status code is 403")
     public void contributorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -91,8 +92,8 @@ public class DeleteCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't delete comments created by admin user with Rest API and status code is 403")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't delete comments created by admin user with Rest API and status code is 403")
     public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -100,8 +101,8 @@ public class DeleteCommentsSanityTests extends RestTest
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { "rest-api",
-            "comments" }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
     public void managerIsNotAbleToDeleteCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");

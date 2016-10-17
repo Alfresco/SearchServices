@@ -4,6 +4,7 @@ import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.requests.RestProcessDefinitionsApi;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -15,7 +16,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/13/2016.
  */
-@Test(groups = { "rest-api", "process-definitions", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION, TestGroup.COMMENTS })
 public class GetProcessDefinitionSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -35,7 +36,7 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
         randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
     }
 
-    @TestRail(section = { "rest-api", "process-definitions" },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Admin user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
     public void adminGetsProcessDefinition() throws Exception
@@ -44,7 +45,7 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { "rest-api", "process-definitions" },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Any user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
     public void anyUserGetsProcessDefinition() throws Exception

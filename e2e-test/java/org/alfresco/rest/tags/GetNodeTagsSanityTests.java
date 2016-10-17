@@ -6,10 +6,11 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestTagsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -19,7 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "rest-api", "tags", "sanity" })
+@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.COMMENTS })
 public class GetNodeTagsSanityTests extends RestTest
 {
     @Autowired
@@ -53,7 +54,7 @@ public class GetNodeTagsSanityTests extends RestTest
         tagsAPI.addTag(document, tagValue);
     }
     
-    @TestRail(section = { "rest-api", "tags" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
                 executionType = ExecutionType.SANITY, description = "Verify site Manager is able to get node tags")
     public void siteManagerIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
@@ -67,7 +68,7 @@ public class GetNodeTagsSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "tags" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify site Collaborator is able to get node tags")
     public void siteCollaboratorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
@@ -80,7 +81,7 @@ public class GetNodeTagsSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "tags" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify site Contributor is able to get node tags")
     public void siteContributorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
@@ -91,7 +92,7 @@ public class GetNodeTagsSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "tags" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify site Consumer is able to get node tags")
     public void siteConsumerIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
@@ -102,7 +103,7 @@ public class GetNodeTagsSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "tags" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify admin is able to get node tags")
     public void adminIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
@@ -113,7 +114,7 @@ public class GetNodeTagsSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "tags" }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to get node tags")
     @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception

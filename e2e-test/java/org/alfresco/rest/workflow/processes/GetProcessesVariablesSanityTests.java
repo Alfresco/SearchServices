@@ -8,6 +8,7 @@ import org.alfresco.rest.requests.RestProcessesApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -19,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { "rest-api", "processes", "sanity" })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
 public class GetProcessesVariablesSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -44,7 +45,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that started the process gets all process variables")
     public void getProcessVariablesUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
@@ -54,7 +55,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { "rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
             description = "Verify get all process variables call using a user that is involved in the process")
     public void getProcessVariablesUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {

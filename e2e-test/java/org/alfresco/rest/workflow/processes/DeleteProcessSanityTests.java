@@ -7,6 +7,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -19,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/12/2016.
  */
-@Test(groups = { "rest-api", "processes", "sanity" })
+@Test(groups = { TestGroup.REST_API, "processes", TestGroup.COMMENTS })
 public class DeleteProcessSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -50,7 +51,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         task = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
 
-    @TestRail(section = { "rest-api",
+    @TestRail(section = { TestGroup.REST_API,
             "processes" }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process started by him using REST API and status code is OK (204)")
     public void deleteProcessByUserWhoStartedProcess() throws Exception
     {
@@ -60,7 +61,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         processesApi.getProcesses().assertProcessDoesNotExist(task);
     }
 
-    @TestRail(section = { "rest-api",
+    @TestRail(section = { TestGroup.REST_API,
             "processes" }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process assigned to him using REST API and status code is OK (204)")
     public void deleteProcessByAssignedUser() throws Exception
     {
@@ -70,7 +71,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         processesApi.getProcesses().assertProcessDoesNotExist(task);
     }
 
-    @TestRail(section = { "rest-api",
+    @TestRail(section = { TestGroup.REST_API,
             "processes" }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")
     public void deleteProcessByAnotherUser() throws Exception
     {
