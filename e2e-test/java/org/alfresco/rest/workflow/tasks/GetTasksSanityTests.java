@@ -57,7 +57,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @Bug(id = "")
+    @Bug(id = "MNT-16967")
     @TestRail(section = { "rest-api", "workflow", "tasks" }, executionType = ExecutionType.SANITY, description = "Verify candidate user gets its existing tasks and no other user claimed the task with Rest API and response is successfull (200)")
     public void candidateUserGetsItsTasks() throws Exception
     {
