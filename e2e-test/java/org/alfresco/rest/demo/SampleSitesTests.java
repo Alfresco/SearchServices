@@ -37,7 +37,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldGetSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel)
-            .assertResponseIsNotEmpty();
+            .and().assertField("id").isNotNull();
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
@@ -98,10 +98,10 @@ public class SampleSitesTests extends RestTest
     public void adminShouldAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel)
-            .assertResponseIsNotEmpty()
-            .assertSiteHasDescription(siteModel.getDescription())
-            .assertSiteHasTitle(siteModel.getTitle())
-            .assertSiteHasVisibility(siteModel.getVisibility());
+            .and().assertField("id").isNotNull()
+            .and().assertField("description").is(siteModel.getDescription())
+            .and().assertField("title").is(siteModel.getTitle())
+            .and().assertField("visibility").is(siteModel.getVisibility());            
     }
 
 }
