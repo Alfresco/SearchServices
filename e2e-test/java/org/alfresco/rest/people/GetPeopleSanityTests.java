@@ -41,7 +41,7 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPerson(searchedUser);
+        peopleApi.getPerson(searchedUser).assertIDIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
