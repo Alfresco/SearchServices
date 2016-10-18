@@ -14,7 +14,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -43,18 +42,13 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         processesApi.useRestClient(restClient);
-    }
-
-    @BeforeMethod(alwaysRun = true)
-    public void createTask() throws Exception
-    {
-        task = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
-    }
+    }   
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process started by him using REST API and status code is OK (204)")
     public void deleteProcessByUserWhoStartedProcess() throws Exception
     {
+        task = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);  
         restClient.authenticateUser(userWhoStartsTask);
         processesApi.deleteProcess(task);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -65,16 +59,17 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process assigned to him using REST API and status code is OK (204)")
     public void deleteProcessByAssignedUser() throws Exception
     {
+        task = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);  
         restClient.authenticateUser(assignee);
         processesApi.deleteProcess(task);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
         processesApi.getProcesses().assertProcessDoesNotExist(task);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")
     public void deleteProcessByAnotherUser() throws Exception
     {
+        task = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
         restClient.authenticateUser(anotherUser);
         processesApi.deleteProcess(task);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
