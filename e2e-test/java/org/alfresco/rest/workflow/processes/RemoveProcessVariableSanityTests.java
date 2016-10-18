@@ -58,6 +58,7 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         processesApi.addProcessVariable(processModel, variableModel);      
         processesApi.deleteProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        processesApi.getProcessesVariables(processModel).assertProcessVariableDoesNotExist(variableModel);
     }
     
     @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
@@ -68,7 +69,7 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
-        processModel = processesApi.getProcesses().getOneRandomEntry();
+        processModel.onModel().setId("incorrectProcessId");
         processesApi.deleteProcessVariable(processModel, variableModel);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }

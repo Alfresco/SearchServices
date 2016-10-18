@@ -61,4 +61,17 @@ public class RemoveProcessItemSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
         processesApi.getProcessesItems(processModel).assertProcessItemDoesNotExists(processItem);
     }
+    
+    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+            description = "Try to delete existing process item using invalid processId")
+    public void deleteProcessItemUsingInvalidProcessId() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUser);
+        processModel = processesApi.getProcesses().getOneRandomEntry();
+        document3 = dataContent.usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
+        processItem = processesApi.addProcessItem(processModel, document3);  
+        processModel.onModel().setId("incorrectProcessId");
+        processesApi.deleteProcessItem(processModel, processItem);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
 }
