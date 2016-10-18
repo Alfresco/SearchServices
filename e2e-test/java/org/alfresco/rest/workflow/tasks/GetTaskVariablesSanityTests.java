@@ -70,4 +70,15 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
         tasksApi.getTaskVariables(taskModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Verify that admin gets task variables")
+    public void getTaskVariablesUsingAdmin() throws Exception
+    {
+        UserModel adminUser = dataUser.getAdminUser();
+        
+        restClient.authenticateUser(adminUser);
+        tasksApi.getTaskVariables(taskModel);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
