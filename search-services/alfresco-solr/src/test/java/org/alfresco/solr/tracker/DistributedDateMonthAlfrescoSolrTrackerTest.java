@@ -62,11 +62,12 @@ import org.junit.Test;
 public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2,getShardMethod());
+    public JettyServerRule jetty = new JettyServerRule(5,getShardMethod());
 
-    //@Test
+    @Test
     public void testDateMonth() throws Exception
     {
+        Thread.sleep(10000);
         handle.put("explain", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
         handle.put("score", SKIPVAL);
@@ -106,11 +107,11 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        Date[] dates = new Date[10];
+        Date[] dates = new Date[5];
 
         Calendar cal = new GregorianCalendar();
         for (int i = 0; i < dates.length; i++) {
-            cal.add(cal.MONTH, -i);
+            cal.set(1971, i + 7, 21);
             dates[i] = cal.getTime();
         }
 
@@ -142,9 +143,9 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
         for (int i = 0; i < dates.length; i++) {
             LegacyNumericRangeQuery query = LegacyNumericRangeQuery.newLongRange(fieldName, dates[i].getTime(), dates[i].getTime() + 1, true, false);
             assertCountAndColocation(query, counts[i]);
+            assertShardSequence(i, query, counts[i]);
         }
-
-     }
+    }
 
     protected Properties getShardMethod()
     {
