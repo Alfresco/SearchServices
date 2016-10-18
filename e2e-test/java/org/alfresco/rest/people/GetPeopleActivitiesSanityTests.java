@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
  * Tests for getActivities (/people/{personId}/activities) RestAPI call
  * 
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, "activities", TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
 public class GetPeopleActivitiesSanityTests extends RestTest
 {
     @Autowired
@@ -41,7 +41,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         peopleApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, "activities" }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its activities with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its activities with Rest API and response is successful")
     public void managerUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -53,7 +53,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, "activities" }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its activities with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its activities with Rest API and response is successful")
     public void collaboratorUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -65,7 +65,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, "activities" }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its activities with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its activities with Rest API and response is successful")
     public void contributorUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -77,7 +77,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, "activities" }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its activities with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its activities with Rest API and response is successful")
     public void consumerUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -88,7 +88,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, "activities" }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user activities with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user activities with Rest API and response is successful")
     public void adminUserShouldGetPeopleActivitiesList() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());
@@ -97,7 +97,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, "activities" }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets another user activities with Rest API")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets another user activities with Rest API")
     public void managerUserShouldGetPeopleActivitiesListIsNotAuthorized() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
