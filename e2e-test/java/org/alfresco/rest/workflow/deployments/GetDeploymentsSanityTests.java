@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/4/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.NETWORKS })
+@Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY})
 public class GetDeploymentsSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -49,6 +49,7 @@ public class GetDeploymentsSanityTests extends RestWorkflowTest
 
     @TestRail(section = { TestGroup.REST_API,
         TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.NETWORKS })
     public void getNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
     {
         tenantApi.useRestClient(restClient);
