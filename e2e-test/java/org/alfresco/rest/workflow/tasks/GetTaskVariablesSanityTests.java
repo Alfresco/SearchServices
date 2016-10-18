@@ -50,4 +50,13 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
         tasksApi.getTaskVariables(taskModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Verify that user that is involved in the process gets task variables")
+    public void getTaskVariablesByUserInvolvedInProcess() throws Exception
+    {
+        restClient.authenticateUser(assignee);
+        tasksApi.getTaskVariables(taskModel);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
