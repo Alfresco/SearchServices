@@ -60,4 +60,17 @@ public class UpdateTaskVariableSanityTests extends RestWorkflowTest
         tasksApi.updateTaskVariable(taskModel, variableModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Update existing task variable")
+    public void updateTaskVariable() throws Exception
+    {
+        UserModel adminUser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminUser);
+        RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
+        tasksApi.updateTaskVariable(taskModel, variableModel);
+        variableModel.setValue("updatedValue");
+        tasksApi.updateTaskVariable(taskModel, variableModel).assertTaskVariableHasValue("updatedValue");
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
