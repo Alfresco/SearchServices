@@ -386,6 +386,30 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
+    public void assertShardSequence(int shard, Query query, int count) throws Exception
+    {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        int totalCount = 0;
+        SolrCore core = cores.get(shard);
+
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        try
+        {
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+            TopDocs topDocs = searcher.search(query, 10);
+            totalCount = topDocs.totalHits;
+        }
+        finally
+        {
+            refCounted.decref();
+        }
+
+        if(totalCount != count) {
+            throw new Exception(totalCount+" docs found for query: "+query.toString()+" expecting "+count);
+        }
+    }
+
     public void waitForDocCountCore(SolrCore core,
                                  Query query,
                                  long expectedNumFound,
@@ -417,7 +441,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     /**
      * Creates a JettySolrRunner (if one didn't exist already). DOES NOT START IT.
-     * @param name
      * @return
      * @throws Exception
      */

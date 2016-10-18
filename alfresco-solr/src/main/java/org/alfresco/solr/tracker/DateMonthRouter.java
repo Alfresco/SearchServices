@@ -47,7 +47,6 @@ public class DateMonthRouter implements DocRouter
         cal.setTime(date);
         int month = cal.get(cal.MONTH);
         int year  = cal.get(cal.YEAR);
-        String s = year+"_"+month;
-        return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % numShards) == shardInstance;
+        return (((year * 12) + (month+1)) % numShards) == shardInstance;
     }
 }
