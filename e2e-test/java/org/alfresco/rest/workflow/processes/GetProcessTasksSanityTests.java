@@ -47,7 +47,7 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, "processes" }, executionType = ExecutionType.SANITY, description = "Verify user who started the process gets all tasks of started process with Rest API and response is successfull (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user who started the process gets all tasks of started process with Rest API and response is successfull (200)")
     public void userWhoStartedProcessCanGetProcessTasks() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userModel);
@@ -59,7 +59,7 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, "processes" }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
     public void assigneeUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee1);
@@ -71,7 +71,7 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, "processes" }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
     public void involvedUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
     {
         ProcessModel process = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(document)

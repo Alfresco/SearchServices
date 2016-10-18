@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/12/2016.
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
 public class DeleteProcessSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -52,7 +52,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process started by him using REST API and status code is OK (204)")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process started by him using REST API and status code is OK (204)")
     public void deleteProcessByUserWhoStartedProcess() throws Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
@@ -62,7 +62,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process assigned to him using REST API and status code is OK (204)")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process assigned to him using REST API and status code is OK (204)")
     public void deleteProcessByAssignedUser() throws Exception
     {
         restClient.authenticateUser(assignee);
@@ -72,7 +72,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")
     public void deleteProcessByAnotherUser() throws Exception
     {
         restClient.authenticateUser(anotherUser);

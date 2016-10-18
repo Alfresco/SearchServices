@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessesVariablesSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -45,7 +45,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that started the process gets all process variables")
     public void getProcessVariablesUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
@@ -55,7 +55,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Verify get all process variables call using a user that is involved in the process")
     public void getProcessVariablesUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {

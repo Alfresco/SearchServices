@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
 public class RemoveProcessVariableSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -48,7 +48,7 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
     
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Delete existing variable")
     public void deleteProcessVariable() throws JsonToModelConversionException, Exception
     {
@@ -61,7 +61,7 @@ public class RemoveProcessVariableSanityTests extends RestWorkflowTest
         processesApi.getProcessesVariables(processModel).assertProcessVariableDoesNotExist(variableModel);
     }
     
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Try to delete existing variable using invalid processId")
     public void deleteProcessVariableUsingInvalidProcessId() throws JsonToModelConversionException, Exception
     {

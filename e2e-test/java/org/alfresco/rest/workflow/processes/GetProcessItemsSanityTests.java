@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessItemsSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -52,7 +52,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that started the process gets all process items")
     public void getProcessItemsUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
@@ -62,7 +62,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that is involved in the process gets all process items")
     public void getProcessItemsUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {
@@ -73,7 +73,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
     }
     
     @Test(groups = { TestGroup.NETWORKS })
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Get process items using admin from same network")
     public void getProcessItemsUsingAdminUserFromSameNetwork() throws JsonToModelConversionException, Exception
     {

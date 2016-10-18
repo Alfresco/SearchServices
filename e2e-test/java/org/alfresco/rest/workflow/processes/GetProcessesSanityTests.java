@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/11/2016.
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessesSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -47,7 +47,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes started by him using REST API and status code is OK (200)")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes started by him using REST API and status code is OK (200)")
     public void getProcessesByUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
@@ -56,7 +56,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes assigned to him using REST API and status code is OK (200)")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes assigned to him using REST API and status code is OK (200)")
     public void getProcessesByAssignedUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee);
@@ -65,7 +65,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "processes" }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process can not get that process using REST API and status code is OK (200)")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process can not get that process using REST API and status code is OK (200)")
     public void getProcessesByAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(anotherUser);
@@ -74,7 +74,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            "processes" }, executionType = ExecutionType.SANITY, description = "Verify Admin gets all processes, even if he isn't involved in a process, using REST API and status code is OK (200)")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify Admin gets all processes, even if he isn't involved in a process, using REST API and status code is OK (200)")
     public void getProcessesByAdmin() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());

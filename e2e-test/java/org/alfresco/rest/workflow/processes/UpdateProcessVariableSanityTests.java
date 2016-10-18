@@ -48,7 +48,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
     
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {"rest-api", TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Create non-existing variable using put call")
     public void addProcessVariable() throws JsonToModelConversionException, Exception
     {
@@ -60,7 +60,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {"rest-api", TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Update existing variable using put call")
     public void updateProcessVariable() throws JsonToModelConversionException, Exception
     {
@@ -73,7 +73,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = {"rest-api", "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {"rest-api", TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Try to add process variable using an invalid processId")
     public void addProcessVariableUsingInvalidProcessId() throws JsonToModelConversionException, Exception
     {

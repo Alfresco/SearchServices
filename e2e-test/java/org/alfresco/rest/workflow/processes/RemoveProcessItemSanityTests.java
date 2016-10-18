@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, "processes", TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
 public class RemoveProcessItemSanityTests extends RestWorkflowTest
 {
     @Autowired
@@ -49,7 +49,7 @@ public class RemoveProcessItemSanityTests extends RestWorkflowTest
         processesApi.useRestClient(restClient);
     }
     
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Delete existing process item")
     public void deleteProcessItem() throws JsonToModelConversionException, Exception
     {
@@ -62,7 +62,7 @@ public class RemoveProcessItemSanityTests extends RestWorkflowTest
         processesApi.getProcessesItems(processModel).assertProcessItemDoesNotExists(processItem);
     }
     
-    @TestRail(section = {TestGroup.REST_API, "processes" }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
             description = "Try to delete existing process item using invalid processId")
     public void deleteProcessItemUsingInvalidProcessId() throws JsonToModelConversionException, Exception
     {
