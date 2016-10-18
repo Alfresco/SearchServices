@@ -73,4 +73,29 @@ public class UpdateTaskVariableSanityTests extends RestWorkflowTest
         tasksApi.updateTaskVariable(taskModel, variableModel).assertTaskVariableHasValue("updatedValue");
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @Test(groups = {TestGroup.NETWORKS })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Update existing task variable by admin in the same network")
+    public void updateTaskVariableByAdminInSameNetwork() throws Exception
+    {
+        UserModel adminUser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminUser);
+        
+        adminTenantUser = UserModel.getAdminTenantUser();
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
+        tenantTask = dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
+        
+        RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
+        tasksApi.updateTaskVariable(tenantTask, variableModel);
+        variableModel.setValue("updatedValue");
+        tasksApi.updateTaskVariable(taskModel, variableModel).assertTaskVariableHasValue("updatedValue");
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
