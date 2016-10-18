@@ -50,5 +50,18 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-
+    // works on 215
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+            executionType = ExecutionType.SANITY,
+            description = "Verify Tenant Admin gets a model of the start form type definition for network deployments using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.NETWORKS })
+    public void networkAdminGetsStartFormModel() throws Exception
+    {
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        restClient.authenticateUser(adminTenantUser);
+        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
+        processDefinitionsApi.getProcessDefinitionStartFormModel(randomProcessDefinition).assertEntriesListIsNotEmpty();
+        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
