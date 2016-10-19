@@ -52,6 +52,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         restClient.authenticateUser(userWhoStartsTask);
         processesApi.deleteProcess(task);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
         processesApi.getProcesses().assertEntriesListDoesNotContain("id", task.getNodeRef());
     }
 
@@ -63,6 +64,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         restClient.authenticateUser(assignee);
         processesApi.deleteProcess(task);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
         processesApi.getProcesses().assertEntriesListDoesNotContain("id", task.getNodeRef());
     }
 

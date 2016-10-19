@@ -39,7 +39,6 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
         restClient.authenticateUser(adminUserModel);
     }
 
-    // works on docker
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Admin gets a model of the start form type definition for non-network deployments using REST API and status code is OK (200)")
@@ -50,7 +49,6 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-    // works on 215
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Tenant Admin gets a model of the start form type definition for network deployments using REST API and status code is OK (200)")

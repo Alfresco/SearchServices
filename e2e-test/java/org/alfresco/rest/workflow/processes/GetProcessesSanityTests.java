@@ -51,6 +51,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
+
         processesApi.getProcesses().assertEntriesListContains("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -60,6 +61,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByAssignedUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee);
+
         processesApi.getProcesses().assertEntriesListContains("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -69,6 +71,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(anotherUser);
+
         processesApi.getProcesses().assertEntriesListDoesNotContain("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -78,6 +81,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByAdmin() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());
+
         processesApi.getProcesses().assertEntriesListContains("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
