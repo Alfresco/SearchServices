@@ -54,12 +54,11 @@ public class RestDemoTests extends RestTest
     @Test
     public void adminRetrievesCorrectSiteDetails() throws JsonToModelConversionException, Exception
     {
-        sitesApi.getAllSites()
-            .assertThatResponseHasSite(siteModel)
-        	.getSite(siteModel)
-                .assertSiteHasVisibility(Visibility.PUBLIC)
-                .assertSiteHasTitle(siteModel.getTitle())
-                .assertSiteHasDescription(siteModel.getDescription());
+        sitesApi.getAllSites().assertThatResponseHasSite(siteModel).getSite(siteModel)
+        .and().assertField("id").isNotNull()
+        .and().assertField("description").is(siteModel.getDescription())
+        .and().assertField("title").is(siteModel.getTitle())
+        .and().assertField("visibility").is(siteModel.getVisibility());
     }
 
     /**
