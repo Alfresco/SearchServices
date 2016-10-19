@@ -51,7 +51,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
-        processesApi.getProcesses().assertProcessExists(task);
+        processesApi.getProcesses().assertProcessExists(task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -60,7 +60,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByAssignedUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee);
-        processesApi.getProcesses().assertProcessExists(task);
+        processesApi.getProcesses().assertProcessExists(task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -69,7 +69,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(anotherUser);
-        processesApi.getProcesses().assertProcessDoesNotExist(task);
+        processesApi.getProcesses().assertProcessDoesNotExist(task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -78,7 +78,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     public void getProcessesByAdmin() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());
-        processesApi.getProcesses().assertProcessExists(task);
+        processesApi.getProcesses().assertProcessExists(task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
