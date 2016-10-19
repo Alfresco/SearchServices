@@ -54,4 +54,16 @@ public class DeleteTaskVariableSanityTests extends RestWorkflowTest
         tasksApi.deleteTaskVariable(taskModel, variableModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Try to delete existing task variable using invalid task id")
+    public void tryToDeleteTaskVariableUsingInvalidTaskId() throws Exception
+    {
+        restClient.authenticateUser(adminUser);
+        RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
+        tasksApi.updateTaskVariable(taskModel, variableModel);
+        taskModel.setId("incorrectTaskId");
+        tasksApi.deleteTaskVariable(taskModel, variableModel);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
 }
