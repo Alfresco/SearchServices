@@ -58,4 +58,18 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         .and().assertField("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Create non-existing task variable with user involved in the process")
+    public void createTaskVariableWithInvolvedUser() throws Exception
+    {
+        restClient.authenticateUser(assigneeUser);
+        RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
+        tasksApi.addTaskVariable(taskModel, variableModel)
+        .and().assertField("scope").is(variableModel.getScope())
+        .and().assertField("name").is(variableModel.getName())
+        .and().assertField("value").is(variableModel.getValue())
+        .and().assertField("type").is(variableModel.getType());
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+    }
 }
