@@ -41,7 +41,7 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
             description = "Verify Admin user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
     public void adminGetsProcessDefinition() throws Exception
     {
-        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).assertProcessDefinitionNameIs(randomProcessDefinition.onModel().getName());
+        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).and().assertField("name").is(randomProcessDefinition.onModel().getName());
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -51,7 +51,7 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
     public void anyUserGetsProcessDefinition() throws Exception
     {
         restClient.authenticateUser(testUser);
-        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).assertProcessDefinitionNameIs(randomProcessDefinition.onModel().getName());
+        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).and().assertField("name").is(randomProcessDefinition.onModel().getName());
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
