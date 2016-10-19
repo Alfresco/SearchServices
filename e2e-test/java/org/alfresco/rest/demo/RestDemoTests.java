@@ -15,6 +15,7 @@ import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Role;
+import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -54,9 +55,9 @@ public class RestDemoTests extends RestTest
     public void adminRetrievesCorrectSiteDetails() throws JsonToModelConversionException, Exception
     {
         sitesApi.getAllSites()
-            .assertThatResponseHasSite(siteModel)
-        	.getSite(siteModel)
-        	  .and().assertField("").is("");
+            .assertEntriesListContains("id", siteModel.getId())            
+            .getSite(siteModel)
+        	  .and().assertField("visibility").is(Visibility.PUBLIC);
         	    
 //                .assertSiteHasVisibility(Visibility.PUBLIC)
 //                .assertSiteHasTitle(siteModel.getTitle())
@@ -74,21 +75,23 @@ public class RestDemoTests extends RestTest
     public void adminCanPostAndUpdateComments() throws Exception
     {       
         FileModel fileModel = dataContent.usingUser(userModel)
-                                       .usingResource(FolderModel.getSharedFolderModel())        			       
-        			       .createContent(DocumentType.TEXT_PLAIN);
+                                  .usingResource(FolderModel.getSharedFolderModel())        			       
+                                  .createContent(DocumentType.TEXT_PLAIN);
         // add new comment
         RestCommentModel commentEntry = commentsAPI.addComment(fileModel, "This is a new comment");
         commentsAPI.getNodeComments(fileModel)
             .assertEntriesListIsNotEmpty()
-            .assertCommentWithIdExists(commentEntry);
+            .assertEntriesListContains("content", "This is a new comment");
+            //.assertEntriesListIsEmpty()
+            //.assertCommentWithIdExists(commentEntry);
 
-        // update comment
-        commentEntry = commentsAPI.updateComment(fileModel, commentEntry, "This is the updated comment with Collaborator user");
-
-        commentsAPI.getNodeComments(fileModel)
-            .assertEntriesListIsNotEmpty()
-            .assertCommentWithIdExists(commentEntry)
-            .assertCommentWithContentExists("This is the updated comment");
+//        // update comment
+//        commentEntry = commentsAPI.updateComment(fileModel, commentEntry, "This is the updated comment with Collaborator user");
+//
+//        commentsAPI.getNodeComments(fileModel)
+//            .assertEntriesListIsNotEmpty();
+            //.assertCommentWithIdExists(commentEntry)
+            //.assertCommentWithContentExists("This is the updated comment");
     }
 
     /**
@@ -108,8 +111,7 @@ public class RestDemoTests extends RestTest
 
         // add user as Consumer to site
         sitesApi.addPerson(siteModel, testUser);
-        sitesApi.getSiteMembers(siteModel)
-            .assertThatSiteHasMember(testUser.getUsername())
+        sitesApi.getSiteMembers(siteModel).assertEntriesListContains("id", testUser.getUsername())            
             .getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteConsumer);
 
@@ -117,7 +119,7 @@ public class RestDemoTests extends RestTest
         testUser.setUserRole(UserRole.SiteCollaborator);
         sitesApi.updateSiteMember(siteModel, testUser);
         sitesApi.getSiteMembers(siteModel)
-            .assertThatSiteHasMember(testUser.getUsername())
+            .assertEntriesListContains("id", testUser.getUsername())
             .getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteCollaborator);
 

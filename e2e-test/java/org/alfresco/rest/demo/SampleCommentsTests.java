@@ -63,8 +63,8 @@ public class SampleCommentsTests extends RestTest
     {
         RestCommentModel commentModel = commentsAPI.addComment(document, "This is a new comment");
 
-        RestCommentModel commentEntry = commentsAPI.updateComment(document, commentModel, "This is the updated comment with Collaborator user");
-        commentEntry.assertCommentContentIs("This is the updated comment");
+        commentsAPI.updateComment(document, commentModel, "This is the updated comment with Collaborator user")
+                    .and().assertField("content").is("This is the updated comment");
     }
 
 }

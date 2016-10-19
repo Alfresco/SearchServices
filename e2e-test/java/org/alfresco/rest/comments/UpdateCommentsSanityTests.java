@@ -63,7 +63,9 @@ public class UpdateCommentsSanityTests extends RestTest
     public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        commentsAPI.updateComment(document, commentModel, "This is the updated comment with Manager user");
+        commentsAPI.updateComment(document, commentModel, "This is the updated comment with Manager user")
+                .and().assertField("content").is("This is the updated comment with Manager user")
+                .and().assertField("canDelete").is(true);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -91,9 +93,10 @@ public class UpdateCommentsSanityTests extends RestTest
     public void collaboratorIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        RestCommentModel commentEntry = commentsAPI.updateComment(document, commentModel, "This is the updated comment with Collaborator user");
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
-        commentEntry.assertCommentContentIs("This is the updated comment with Collaborator user");
+        commentsAPI.updateComment(document, commentModel, "This is the updated comment with Collaborator user")
+            .and().assertField("content").is("This is the updated comment with Collaborator user");
+        
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);        
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -114,7 +117,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
         FolderModel content = FolderModel.getRandomFolderModel();
         content.setNodeRef("node ref that does not exist");
-        commentsAPI.updateComment(content, commentModel, "This is the updated comment.");
+        commentsAPI.updateComment(content, commentModel, "This is the updated comment.");                  
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
@@ -126,6 +129,7 @@ public class UpdateCommentsSanityTests extends RestTest
         RestCommentModel comment = new RestCommentModel();
         comment.setId("comment id that does not exist");
         commentsAPI.updateComment(document, comment, "This is the updated comment.");
+            
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 

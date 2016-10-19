@@ -42,6 +42,10 @@ public class AddFavoriteSiteSanityTests extends RestTest
         restClient.authenticateUser(managerUser);
         peopleApi.addFavoriteSite(managerUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        
+        peopleApi.addFavoriteSite(managerUser, siteModel);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CONFLICT);        
+        peopleApi.usingRestWrapper().assertLastError().containsSummary("i3s already a favourite site");        
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user add a favorite site with Rest API and response is successful (201)")

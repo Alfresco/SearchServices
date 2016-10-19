@@ -62,7 +62,10 @@ public class AddTagsSanityTests extends RestTest
     public void adminIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tagsAPI.addTags(document, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
+        tagsAPI.addTags(document, tag1, tag2)
+                .assertEntriesListContains("tag", tag1.toLowerCase())
+                .assertEntriesListContains("tag", tag2.toLowerCase());
+                    
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -71,7 +74,10 @@ public class AddTagsSanityTests extends RestTest
     public void managerIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        tagsAPI.addTags(document, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
+        tagsAPI.addTags(document, tag1, tag2)
+                  .assertEntriesListContains("tag", tag1.toLowerCase())
+                  .assertEntriesListContains("tag", tag2.toLowerCase());
+
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -80,7 +86,10 @@ public class AddTagsSanityTests extends RestTest
     public void collaboratorIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        tagsAPI.addTags(document, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
+        tagsAPI.addTags(document, tag1, tag2)
+                .assertEntriesListContains("tag", tag1.toLowerCase())
+                .assertEntriesListContains("tag", tag2.toLowerCase());
+
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -100,7 +109,9 @@ public class AddTagsSanityTests extends RestTest
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(userModel);
         contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        tagsAPI.addTags(contributorDoc, tag1, tag2).assertThatResponseHasTags(tag1, tag2);
+        tagsAPI.addTags(contributorDoc, tag1, tag2)
+                  .assertEntriesListContains("tag", tag1.toLowerCase())
+                  .assertEntriesListContains("tag", tag2.toLowerCase());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 

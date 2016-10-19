@@ -90,7 +90,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
         siteAPI.getAllSites()
-            .assertThatResponseHasSite(siteModel);
+            .assertEntriesListContains("id", siteModel.getId());    
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
