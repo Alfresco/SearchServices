@@ -31,27 +31,33 @@ public class AddProcessSanityTests extends RestWorkflowTest
     private RestProcessesApi processesApi;
 
     @Autowired
-    private RestProcessDefinitionsApi processDefinitionsApi;
-
-    @Autowired
     private RestTenantApi tenantApi;
     
     private UserModel userWhoStartsProcess, assignee;
     private UserModel adminTenantUser, tenantUserWhoStartsProcess, tenantAssignee;
-    private RestProcessDefinitionModel randomProcessDefinition;
     private RestProcessModel addedProcess;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        processDefinitionsApi.useRestClient(restClient);
         processesApi.useRestClient(restClient);
         tenantApi.useRestClient(restClient);
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(dataUser.getAdminUser());
     }
 
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify non network user is able to start new process using REST API and status code is OK (200)")
+    public void nonNetworkUserStartsNewProcess() throws JsonToModelConversionException, Exception
+    {
+        userWhoStartsProcess = dataUser.createRandomTestUser();
+        assignee = dataUser.createRandomTestUser();
 
+        restClient.authenticateUser(userWhoStartsProcess);
+        addedProcess = processesApi.addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+        processesApi.getProcesses().assertProcessExists(addedProcess.getId());
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify network user is able to start new process using REST API and status code is OK (200)")
@@ -62,10 +68,9 @@ public class AddProcessSanityTests extends RestWorkflowTest
         restClient.authenticateUser(adminTenantUser);
         tenantUserWhoStartsProcess = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("u2Tenant");
-        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
 
         restClient.authenticateUser(tenantUserWhoStartsProcess);
-        addedProcess = processesApi.addProcess(randomProcessDefinition, tenantAssignee, false, Priority.Normal);
+        addedProcess = processesApi.addProcess("activitiAdhoc", tenantAssignee, false, Priority.Normal);
         processesApi.getProcesses().assertProcessExists(addedProcess.getId());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
