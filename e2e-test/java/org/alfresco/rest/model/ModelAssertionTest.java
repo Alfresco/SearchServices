@@ -49,13 +49,10 @@ public class ModelAssertionTest {
       this.id = id;
     }
     
-    public ModelAssertion and()
+    public ModelAssertion<Person> and()
     {
-      return new ModelAssertion(this);
+      return new ModelAssertion<Person>(this);
     }
-
   }
-
-  
 
 }

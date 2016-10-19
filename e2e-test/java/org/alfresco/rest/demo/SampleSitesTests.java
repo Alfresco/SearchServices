@@ -71,7 +71,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites()
-            .assertResponseHasPagination();
+            .assertPaginationExist();
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
