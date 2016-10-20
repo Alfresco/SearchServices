@@ -48,5 +48,12 @@ public class GetProcessSanityTests extends RestWorkflowTest
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
-
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user is able to get the process assigned to him using REST API and status code is OK (200)")
+    public void getProcessByAssignee() throws Exception
+    {
+        restClient.authenticateUser(assignee);
+        processesApi.getProcess(addedProcess);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
