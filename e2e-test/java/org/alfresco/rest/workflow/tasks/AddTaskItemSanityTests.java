@@ -67,4 +67,25 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
             .and().assertField("mimeType").is(taskItem.getMimeType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
+    
+    @Bug(id = "MNT-16966")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Verify that in case task item exists request ")
+    public void createTaskItemThatAlreadyExists() throws Exception
+    {
+        UserModel adminUser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminUser);
+        document3 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
+        taskItem = tasksApi.addTaskItem(taskModel, document3);
+        taskItem.and().assertField("createdAt").is(taskItem.getCreatedAt())
+            .and().assertField("size").is(taskItem.getSize())
+            .and().assertField("createdBy").is(taskItem.getCreatedBy())
+            .and().assertField("modifiedAt").is(taskItem.getModifiedAt())
+            .and().assertField("name").is(taskItem.getName())
+            .and().assertField("modifiedBy").is(taskItem.getModifiedBy())
+            .and().assertField("id").is(taskItem.getId())
+            .and().assertField("mimeType").is(taskItem.getMimeType());
+        taskItem = tasksApi.addTaskItem(taskModel, document3);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+    }
 }
