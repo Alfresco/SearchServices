@@ -3,7 +3,7 @@ package org.alfresco.rest.workflow.tasks;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestProcessItemModel;
+import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.model.FileModel;
@@ -33,7 +33,7 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
     private FileModel fileModel, document2, document3, document4;
     private TaskModel taskModel;
 
-    private RestProcessItemModel taskItem;
+    private RestItemModel taskItem;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -87,5 +87,28 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
             .and().assertField("mimeType").is(taskItem.getMimeType());
         taskItem = tasksApi.addTaskItem(taskModel, document3);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+    }
+    
+    @Test(groups = { TestGroup.NETWORKS })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
+            description = "Add task item using admin user from same network")
+    public void addTaskItemByAdminSameNetwork() throws JsonToModelConversionException, Exception
+    {
+        UserModel adminuser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminuser);
+        
+        adminTenantUser = UserModel.getAdminTenantUser();
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
+        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
+        
+        document4 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
+        taskItem = tasksApi.addTaskItem(taskModel, document4);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 }
