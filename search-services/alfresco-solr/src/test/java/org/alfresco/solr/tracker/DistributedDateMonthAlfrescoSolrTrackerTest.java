@@ -111,7 +111,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
 
         Calendar cal = new GregorianCalendar();
         for (int i = 0; i < dates.length; i++) {
-            cal.set(1971, i + 7, 21);
+            cal.set(1969, i + 1, 21);
             dates[i] = cal.getTime();
         }
 
