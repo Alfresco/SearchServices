@@ -44,4 +44,12 @@ public class GetTaskFormModelSanityTests extends RestWorkflowTest
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
+            executionType = ExecutionType.SANITY, description = "Verify user involved in task gets all the task form models with Rest API and response is successful (200)")
+    public void involvedUserGetsTaskFormModels() throws Exception
+    {
+        restClient.authenticateUser(userModel);
+        tasksApi.getTaskFormModel(taskModel).assertEntriesListIsNotEmpty();
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
