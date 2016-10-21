@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/11/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessesSanityTests extends RestWorkflowTest
 {
     @Autowired
