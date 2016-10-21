@@ -57,4 +57,17 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
 
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Verify that involved user in process gets task items")
+    public void getTaskItemsByUserInvolvedInProcess() throws Exception
+    {
+        restClient.authenticateUser(assignee);
+        document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
+        taskItem = tasksApi.addTaskItem(taskModel, document1);
+        tasksApi.getTaskItems(taskModel)
+        .assertEntriesListIsNotEmpty()
+        .assertEntriesListContains("id", taskItem.getId());
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
