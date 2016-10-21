@@ -70,4 +70,29 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         .assertEntriesListContains("id", taskItem.getId());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+            description = "Verify that user that started the process gets task items")
+    public void getTaskItemsByAdminInSameNetwork() throws Exception
+    {
+        UserModel adminuser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminuser);
+
+        adminTenantUser = UserModel.getAdminTenantUser();
+        tenantApi.useRestClient(restClient);
+        tenantApi.createTenant(adminTenantUser);
+        
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
+        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
+        
+        document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
+        taskItem = tasksApi.addTaskItem(taskModel, document1);
+        tasksApi.getTaskItems(taskModel)
+        .assertEntriesListIsNotEmpty()
+        .assertEntriesListContains("id", taskItem.getId());
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
