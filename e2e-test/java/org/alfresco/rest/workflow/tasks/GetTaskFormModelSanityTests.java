@@ -2,8 +2,13 @@ package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.model.RestFormModelsCollection;
 import org.alfresco.rest.requests.RestTasksApi;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TaskModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +45,29 @@ public class GetTaskFormModelSanityTests extends RestWorkflowTest
     public void adminGetsTaskFormModels() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());
-        tasksApi.getTaskFormModel(taskModel).assertEntriesListIsNotEmpty();
+        RestFormModelsCollection returnedCollection = tasksApi.getTaskFormModel(taskModel);
+            
+        
+        returnedCollection.assertEntriesListIsNotEmpty();
+        
+        String[] qualifiedNames = {
+                               "{http://www.alfresco.org/model/bpm/1.0}percentComplete", 
+                               "{http://www.alfresco.org/model/bpm/1.0}context",
+                               "{http://www.alfresco.org/model/bpm/1.0}completedItems",
+                               "{http://www.alfresco.org/model/content/1.0}name",
+                               "{http://www.alfresco.org/model/bpm/1.0}packageActionGroup",
+                               "{http://www.alfresco.org/model/bpm/1.0}reassignable",
+                               "{http://www.alfresco.org/model/content/1.0}owner",
+                               "{http://www.alfresco.org/model/bpm/1.0}outcome",
+                               "{http://www.alfresco.org/model/bpm/1.0}taskId",
+                               "{http://www.alfresco.org/model/bpm/1.0}packageItemActionGroup",
+                               "{http://www.alfresco.org/model/bpm/1.0}completionDate"};
+        
+        for(String formQualifiedName :  qualifiedNames)
+        {
+          returnedCollection.assertEntriesListContains("qualifiedName", formQualifiedName);
+        }
+        
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
