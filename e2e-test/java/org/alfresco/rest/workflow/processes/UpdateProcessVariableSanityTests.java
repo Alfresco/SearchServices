@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class UpdateProcessVariableSanityTests extends RestWorkflowTest     
 {
     @Autowired
@@ -56,7 +56,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.updateProcessVariable(processModel, variableModel);
-        processesApi.getProcessesVariables(processModel).assertEntriesListDoesNotContain("name", variableModel.getName());
+        processesApi.getProcessesVariables(processModel).assertEntriesListContains("name", variableModel.getName());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

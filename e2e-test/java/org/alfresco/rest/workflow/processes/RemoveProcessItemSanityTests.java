@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class RemoveProcessItemSanityTests extends RestWorkflowTest
 {
     @Autowired

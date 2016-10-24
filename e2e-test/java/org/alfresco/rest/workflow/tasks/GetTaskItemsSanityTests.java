@@ -73,6 +73,7 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
             description = "Verify that user that started the process gets task items")
+    @Test(groups = { TestGroup.NETWORKS })
     public void getTaskItemsByAdminInSameNetwork() throws Exception
     {
         UserModel adminuser = dataUser.getAdminUser();
