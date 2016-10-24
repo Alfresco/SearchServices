@@ -74,7 +74,6 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         task = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
         restClient.authenticateUser(anotherUser);
         processesApi.deleteProcess(task);
-        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("user is not allowed to access information about process");
     }
-
 }

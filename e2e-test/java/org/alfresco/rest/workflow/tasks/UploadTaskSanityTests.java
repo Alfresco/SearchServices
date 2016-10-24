@@ -46,7 +46,9 @@ public class UploadTaskSanityTests extends RestWorkflowTest
     {
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
-        tasksApi.updateTask(taskModel);
+        tasksApi.updateTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -54,7 +56,9 @@ public class UploadTaskSanityTests extends RestWorkflowTest
     public void assigneeUserUpdatesItsTaskWithSuccess() throws Exception
     {
         restClient.authenticateUser(assigneeUser);
-        tasksApi.updateTask(taskModel);
+        tasksApi.updateTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -73,7 +77,7 @@ public class UploadTaskSanityTests extends RestWorkflowTest
         
         restClient.authenticateUser(anyUser);
         tasksApi.updateTask(taskModel);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user updates its specific task and no other user claimed the task with Rest API and response is successfull (200)")
@@ -86,7 +90,9 @@ public class UploadTaskSanityTests extends RestWorkflowTest
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         
         restClient.authenticateUser(userModel1);
-        tasksApi.updateTask(taskModel);
+        tasksApi.updateTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

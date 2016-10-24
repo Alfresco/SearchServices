@@ -47,7 +47,9 @@ public class GetTaskSanityTests extends RestWorkflowTest
     {
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
-        tasksApi.getTask(taskModel);
+        tasksApi.getTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -55,7 +57,9 @@ public class GetTaskSanityTests extends RestWorkflowTest
     public void assigneeUserGetsItsTaskWithSuccess() throws Exception
     {
         restClient.authenticateUser(assigneeUser);
-        tasksApi.getTask(taskModel);
+        tasksApi.getTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -63,7 +67,9 @@ public class GetTaskSanityTests extends RestWorkflowTest
     public void starterUserGetsItsTaskWithSuccess() throws Exception
     {
         restClient.authenticateUser(userModel);
-        tasksApi.getTask(taskModel);
+        tasksApi.getTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -74,7 +80,7 @@ public class GetTaskSanityTests extends RestWorkflowTest
         
         restClient.authenticateUser(anyUser);
         tasksApi.getTask(taskModel);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user gets its specific task and no other user claimed the task with Rest API and response is successfull (200)")
@@ -87,7 +93,9 @@ public class GetTaskSanityTests extends RestWorkflowTest
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         
         restClient.authenticateUser(userModel1);
-        tasksApi.getTask(taskModel);
+        tasksApi.getTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -103,7 +111,9 @@ public class GetTaskSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(userModel1).claimTask(taskModel);
         
         restClient.authenticateUser(userModel2);
-        tasksApi.getTask(taskModel);
+        tasksApi.getTask(taskModel)
+                .and().assertField("id").is(taskModel.getId())
+                .and().assertField("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

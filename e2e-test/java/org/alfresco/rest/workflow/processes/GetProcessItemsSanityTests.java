@@ -58,7 +58,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(userWhoStartsTask);
         processModel = processesApi.getProcesses().getOneRandomEntry();
-        processesApi.getProcessesItems(processModel);
+        processesApi.getProcessesItems(processModel).assertEntriesListIsNotEmpty();
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -68,7 +68,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(assignee);
         processModel = processesApi.getProcesses().getOneRandomEntry();
-        processesApi.getProcessesItems(processModel);
+        processesApi.getProcessesItems(processModel).assertEntriesListIsNotEmpty();
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -91,7 +91,7 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
         
         processModel = processesApi.getProcesses().getOneRandomEntry();
-        processesApi.getProcessesItems(processModel);
+        processesApi.getProcessesItems(processModel).assertEntriesListIsNotEmpty();
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

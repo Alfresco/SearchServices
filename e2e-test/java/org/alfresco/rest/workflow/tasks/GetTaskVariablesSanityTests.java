@@ -47,7 +47,7 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
     public void getTaskVariablesByUserWhoStartedProcess() throws Exception
     {
         restClient.authenticateUser(userWhoStartsTask);
-        tasksApi.getTaskVariables(taskModel);
+        tasksApi.getTaskVariables(taskModel).assertEntriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -56,7 +56,7 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
     public void getTaskVariablesByUserInvolvedInProcess() throws Exception
     {
         restClient.authenticateUser(assignee);
-        tasksApi.getTaskVariables(taskModel);
+        tasksApi.getTaskVariables(taskModel).assertEntriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -68,7 +68,7 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
         
         restClient.authenticateUser(randomUser);
         tasksApi.getTaskVariables(taskModel);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
@@ -78,7 +78,7 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
         UserModel adminUser = dataUser.getAdminUser();
         
         restClient.authenticateUser(adminUser);
-        tasksApi.getTaskVariables(taskModel);
+        tasksApi.getTaskVariables(taskModel).assertEntriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

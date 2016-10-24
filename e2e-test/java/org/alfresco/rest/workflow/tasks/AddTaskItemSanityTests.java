@@ -58,14 +58,15 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
         taskItem = tasksApi.addTaskItem(taskModel, document2);
         
         taskItem.and().assertField("createdAt").is(taskItem.getCreatedAt())
-            .and().assertField("size").is(taskItem.getSize())
-            .and().assertField("createdBy").is(taskItem.getCreatedBy())
-            .and().assertField("modifiedAt").is(taskItem.getModifiedAt())
-            .and().assertField("name").is(taskItem.getName())
-            .and().assertField("modifiedBy").is(taskItem.getModifiedBy())
-            .and().assertField("id").is(taskItem.getId())
-            .and().assertField("mimeType").is(taskItem.getMimeType());
+                .and().assertField("size").is(taskItem.getSize())
+                .and().assertField("createdBy").is(taskItem.getCreatedBy())
+                .and().assertField("modifiedAt").is(taskItem.getModifiedAt())
+                .and().assertField("name").is(taskItem.getName())
+                .and().assertField("modifiedBy").is(taskItem.getModifiedBy())
+                .and().assertField("id").is(taskItem.getId())
+                .and().assertField("mimeType").is(taskItem.getMimeType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        tasksApi.getTaskItems(taskModel).assertEntriesListContains("id", taskItem.getId());
     }
     
     @Bug(id = "MNT-16966")
@@ -78,13 +79,13 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
         document3 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document3);
         taskItem.and().assertField("createdAt").is(taskItem.getCreatedAt())
-            .and().assertField("size").is(taskItem.getSize())
-            .and().assertField("createdBy").is(taskItem.getCreatedBy())
-            .and().assertField("modifiedAt").is(taskItem.getModifiedAt())
-            .and().assertField("name").is(taskItem.getName())
-            .and().assertField("modifiedBy").is(taskItem.getModifiedBy())
-            .and().assertField("id").is(taskItem.getId())
-            .and().assertField("mimeType").is(taskItem.getMimeType());
+                .and().assertField("size").is(taskItem.getSize())
+                .and().assertField("createdBy").is(taskItem.getCreatedBy())
+                .and().assertField("modifiedAt").is(taskItem.getModifiedAt())
+                .and().assertField("name").is(taskItem.getName())
+                .and().assertField("modifiedBy").is(taskItem.getModifiedBy())
+                .and().assertField("id").is(taskItem.getId())
+                .and().assertField("mimeType").is(taskItem.getMimeType());
         taskItem = tasksApi.addTaskItem(taskModel, document3);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
@@ -109,6 +110,14 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
         
         document4 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document4);
+        taskItem.and().assertField("createdAt").is(taskItem.getCreatedAt())
+                .and().assertField("size").is(taskItem.getSize())
+                .and().assertField("createdBy").is(taskItem.getCreatedBy())
+                .and().assertField("modifiedAt").is(taskItem.getModifiedAt())
+                .and().assertField("name").is(taskItem.getName())
+                .and().assertField("modifiedBy").is(taskItem.getModifiedBy())
+                .and().assertField("id").is(taskItem.getId())
+                .and().assertField("mimeType").is(taskItem.getMimeType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 }
