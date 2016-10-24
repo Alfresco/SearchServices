@@ -30,9 +30,9 @@ public class RMDemoTest extends RestTest {
   public void adminCanSeeDetailsOfARandomSiteCreated() throws JsonToModelConversionException, Exception 
   {
     sitesApi.getSite(siteModel)
-          .and().assertField("id").isNotNull()
-          .and().assertField("description").is(siteModel.getDescription())
-          .and().assertField("title").is(siteModel.getTitle());
+          .assertThat().field("id").isNotNull()
+          .and().field("description").is(siteModel.getDescription())
+          .and().field("title").is(siteModel.getTitle());
   }
 
   @Test
@@ -46,10 +46,10 @@ public class RMDemoTest extends RestTest {
     dataSite.usingAdmin().createSite(siteModel);
 
     sitesApi.getSite(siteModel)
-              .and().assertField("id").isNotNull()
-              .and().assertField("description").is("my description")
-              .and().assertField("title").is("MyTitle")
-              .and().assertField("visibility").is(Visibility.PUBLIC);
+              .assertThat().field("id").isNotNull()
+              .and().field("description").is("my description")
+              .and().field("title").is("MyTitle")
+              .and().field("visibility").is(Visibility.PUBLIC);
   }
 
   /**
@@ -61,7 +61,7 @@ public class RMDemoTest extends RestTest {
   public void assertingWithFieldsThatDoesNotExist() throws JsonToModelConversionException, Exception {
     siteModel = dataSite.createPublicRandomSite();
 
-    sitesApi.getSite(siteModel).and().assertField("fieldA").isNotNull();
+    sitesApi.getSite(siteModel).assertThat().field("fieldA").isNotNull();
   }
   
   @Test
@@ -72,9 +72,10 @@ public class RMDemoTest extends RestTest {
      * you can use withParams(String... parameters) method before calling the http method.
      */
     sitesApi.withParams("maxItems=2", "orderyBy=name").getSites()
-            .assertPaginationExist()
-            .assertPaginationField("maxItems").is("2")
-            .assertPaginationField("skipCount").is("0");        
+            .assertThat().paginationExist()
+            .and().paginationField("maxItems").is("2")
+            .and().paginationField("skipCount").is("0");
+      
   }
   
 }

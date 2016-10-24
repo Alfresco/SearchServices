@@ -96,7 +96,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getFavoriteSites(anotherUser).assertEntriesListIsNotEmpty();
+        peopleApi.getFavoriteSites(anotherUser).entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

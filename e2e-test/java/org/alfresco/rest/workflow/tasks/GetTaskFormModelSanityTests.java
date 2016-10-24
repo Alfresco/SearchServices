@@ -48,7 +48,7 @@ public class GetTaskFormModelSanityTests extends RestWorkflowTest
         RestFormModelsCollection returnedCollection = tasksApi.getTaskFormModel(taskModel);
             
         
-        returnedCollection.assertEntriesListIsNotEmpty();
+        returnedCollection.entriesListIsNotEmpty();
         
         String[] qualifiedNames = {
                                "{http://www.alfresco.org/model/bpm/1.0}percentComplete", 
@@ -65,7 +65,7 @@ public class GetTaskFormModelSanityTests extends RestWorkflowTest
         
         for(String formQualifiedName :  qualifiedNames)
         {
-          returnedCollection.assertEntriesListContains("qualifiedName", formQualifiedName);
+          returnedCollection.entriesListContains("qualifiedName", formQualifiedName);
         }
         
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
@@ -76,7 +76,7 @@ public class GetTaskFormModelSanityTests extends RestWorkflowTest
     public void involvedUserGetsTaskFormModels() throws Exception
     {
         restClient.authenticateUser(userModel);
-        tasksApi.getTaskFormModel(taskModel).assertEntriesListIsNotEmpty();
+        tasksApi.getTaskFormModel(taskModel).entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

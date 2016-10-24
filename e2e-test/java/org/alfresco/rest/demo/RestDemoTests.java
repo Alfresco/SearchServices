@@ -56,12 +56,12 @@ public class RestDemoTests extends RestTest
     {
 
         sitesApi.getAllSites()
-            .assertEntriesListContains("id", siteModel.getId())            
+            .entriesListContains("id", siteModel.getId())            
             .getSite(siteModel)
-              .and().assertField("id").isNotNull()
-              .and().assertField("description").is(siteModel.getDescription())
-              .and().assertField("title").is(siteModel.getTitle())            
-          	  .and().assertField("visibility").is(Visibility.PUBLIC);
+              .assertThat().field("id").isNotNull()
+              .assertThat().field("description").is(siteModel.getDescription())
+              .assertThat().field("title").is(siteModel.getTitle())            
+          	  .assertThat().field("visibility").is(Visibility.PUBLIC);
     }
 
     /**
@@ -80,8 +80,8 @@ public class RestDemoTests extends RestTest
         // add new comment
         RestCommentModel commentEntry = commentsAPI.addComment(fileModel, "This is a new comment");
         commentsAPI.getNodeComments(fileModel)
-            .assertEntriesListIsNotEmpty()
-            .assertEntriesListContains("content", "This is a new comment");
+            .entriesListIsNotEmpty()
+            .entriesListContains("content", "This is a new comment");
             //.assertEntriesListIsEmpty()
             //.assertCommentWithIdExists(commentEntry);
 
@@ -111,7 +111,7 @@ public class RestDemoTests extends RestTest
 
         // add user as Consumer to site
         sitesApi.addPerson(siteModel, testUser);
-        sitesApi.getSiteMembers(siteModel).assertEntriesListContains("id", testUser.getUsername())            
+        sitesApi.getSiteMembers(siteModel).entriesListContains("id", testUser.getUsername())            
             .getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteConsumer);
 
@@ -119,7 +119,7 @@ public class RestDemoTests extends RestTest
         testUser.setUserRole(UserRole.SiteCollaborator);
         sitesApi.updateSiteMember(siteModel, testUser);
         sitesApi.getSiteMembers(siteModel)
-            .assertEntriesListContains("id", testUser.getUsername())
+            .entriesListContains("id", testUser.getUsername())
             .getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteCollaborator);
 

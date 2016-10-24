@@ -46,7 +46,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonPreferences(managerUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(managerUser).entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -58,7 +58,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPersonPreferences(collaboratorUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(collaboratorUser).entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -70,7 +70,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPersonPreferences(contributorUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(contributorUser).entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -82,7 +82,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPersonPreferences(consumerUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(consumerUser).entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -95,7 +95,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getPersonPreferences(managerUser).assertEntriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(managerUser).entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

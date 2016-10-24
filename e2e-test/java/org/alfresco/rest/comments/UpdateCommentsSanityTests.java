@@ -64,8 +64,8 @@ public class UpdateCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         commentsAPI.updateComment(document, commentModel, "This is the updated comment with Manager user")
-                .and().assertField("content").is("This is the updated comment with Manager user")
-                .and().assertField("canDelete").is(true);
+                .assertThat().field("content").is("This is the updated comment with Manager user")
+                .and().field("canDelete").is(true);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -94,7 +94,7 @@ public class UpdateCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         commentsAPI.updateComment(document, commentModel, "This is the updated comment with Collaborator user")
-            .and().assertField("content").is("This is the updated comment with Collaborator user");
+            .assertThat().field("content").is("This is the updated comment with Collaborator user");
         
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);        
     }

@@ -61,7 +61,9 @@ public class AddTagSanityTests extends RestTest
     public void adminIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tagsAPI.addTag(document, tagValue).assertTagIs(tagValue);
+        tagsAPI.addTag(document, tagValue)
+            .assertThat().field("tag").is("tagValue")
+            .and().field("id").isNotEmpty();
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
 
     }
@@ -71,7 +73,9 @@ public class AddTagSanityTests extends RestTest
     public void managerIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        tagsAPI.addTag(document, tagValue).assertTagIs(tagValue);
+        tagsAPI.addTag(document, tagValue)
+            .assertThat().field("id").isNotEmpty()
+            .and().field("tag").is(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -80,7 +84,9 @@ public class AddTagSanityTests extends RestTest
     public void collaboratorIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        tagsAPI.addTag(document, tagValue).assertTagIs(tagValue);
+        tagsAPI.addTag(document, tagValue)
+            .assertThat().field("id").isNotEmpty()
+            .and().field("tag").is(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -89,7 +95,9 @@ public class AddTagSanityTests extends RestTest
     public void contributorIsNotAbleToAddTagToAnotherContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.addTag(document, tagValue);
+        tagsAPI.addTag(document, tagValue)
+            .assertThat().field("id").isNotEmpty()
+            .and().field("tag").is(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
@@ -100,7 +108,9 @@ public class AddTagSanityTests extends RestTest
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(userModel);
         contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        tagsAPI.addTag(contributorDoc, tagValue).assertTagIs(tagValue);
+        tagsAPI.addTag(contributorDoc, tagValue)
+            .assertThat().field("id").isNotEmpty()
+            .and().field("tag").is(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -109,7 +119,9 @@ public class AddTagSanityTests extends RestTest
     public void consumerIsNotAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.addTag(document, tagValue);
+        tagsAPI.addTag(document, tagValue)
+            .assertThat().field("id").isNotEmpty()
+            .and().field("tag").is(tagValue);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 

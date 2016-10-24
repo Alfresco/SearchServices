@@ -59,7 +59,7 @@ public class RemoveProcessItemSanityTests extends RestWorkflowTest
         processItem = processesApi.addProcessItem(processModel, document2);    
         processesApi.deleteProcessItem(processModel, processItem);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        processesApi.getProcessesItems(processModel).assertEntriesListDoesNotContain("id", processItem.getId());
+        processesApi.getProcessesItems(processModel).entriesListDoesNotContain("id", processItem.getId());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 

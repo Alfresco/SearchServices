@@ -34,7 +34,7 @@ public class SamplePeopleTests extends RestTest
             description = "Verify admin user gets person with Rest API and response is not empty")
     public void adminShouldRetrievePerson() throws Exception
     {
-        peopleAPI.getPerson(userModel).and().assertField("id").isNotEmpty();
+        peopleAPI.getPerson(userModel).assertThat().field("id").isNotEmpty();
 
         peopleAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);

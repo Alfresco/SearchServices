@@ -53,7 +53,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         processesApi.deleteProcess(task);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        processesApi.getProcesses().assertEntriesListDoesNotContain("id", task.getNodeRef());
+        processesApi.getProcesses().entriesListDoesNotContain("id", task.getNodeRef());
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -65,7 +65,7 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
         processesApi.deleteProcess(task);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        processesApi.getProcesses().assertEntriesListDoesNotContain("id", task.getNodeRef());
+        processesApi.getProcesses().entriesListDoesNotContain("id", task.getNodeRef());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")

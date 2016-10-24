@@ -46,7 +46,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
     {
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
-        tasksApi.getTasks().assertEntriesListIsNotEmpty();
+        tasksApi.getTasks().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -54,7 +54,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
     public void asigneeUserGetsItsTasks() throws Exception
     {
         restClient.authenticateUser(assigneeUser);
-        tasksApi.getTasks().assertEntriesListIsNotEmpty();
+        tasksApi.getTasks().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -70,7 +70,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         
         restClient.authenticateUser(userModel1);
-        tasksApi.getTasks().assertEntriesListIsNotEmpty();
+        tasksApi.getTasks().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -85,7 +85,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(userModel1).claimTask(taskModel);
         
         restClient.authenticateUser(userModel1);
-        tasksApi.getTasks().assertEntriesListIsNotEmpty();
+        tasksApi.getTasks().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -100,7 +100,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(userModel1).claimTask(taskModel);
         
         restClient.authenticateUser(userModel2);
-        tasksApi.getTasks().assertEntriesListIsEmpty();
+        tasksApi.getTasks().entriesListIsEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

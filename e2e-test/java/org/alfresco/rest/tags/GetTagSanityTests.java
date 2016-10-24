@@ -56,7 +56,7 @@ public class GetTagSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         RestTagModel tag = tagsAPI.addTag(document, tagValue);
       
-        tagsAPI.getTag(tag).assertTagIs(tagValue.toLowerCase());
+        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -68,7 +68,7 @@ public class GetTagSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         RestTagModel tag = tagsAPI.addTag(document, tagValue);
        
-        tagsAPI.getTag(tag).assertTagIs(tagValue.toLowerCase());
+        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -79,7 +79,7 @@ public class GetTagSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         RestTagModel tag = tagsAPI.addTag(document, tagValue);
         
-        tagsAPI.getTag(tag).assertTagIs(tagValue.toLowerCase());
+        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -91,7 +91,7 @@ public class GetTagSanityTests extends RestTest
         RestTagModel tag = tagsAPI.addTag(document, tagValue);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.getTag(tag).assertTagIs(tagValue.toLowerCase());
+        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -104,7 +104,7 @@ public class GetTagSanityTests extends RestTest
         RestTagModel tag = tagsAPI.addTag(document, tagValue);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.getTag(tag).assertTagIs(tagValue.toLowerCase());
+        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

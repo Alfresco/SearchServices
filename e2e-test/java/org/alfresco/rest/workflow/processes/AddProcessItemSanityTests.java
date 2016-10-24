@@ -60,7 +60,7 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processItem = processesApi.addProcessItem(processModel, document2);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcessesItems(processModel).assertEntriesListContains("id", processItem.getId()); 
+        processesApi.getProcessesItems(processModel).entriesListContains("id", processItem.getId()); 
         
     }
     
@@ -74,7 +74,7 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processItem = processesApi.addProcessItem(processModel, document3);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcessesItems(processModel).assertEntriesListContains("id", processItem.getId());
+        processesApi.getProcessesItems(processModel).entriesListContains("id", processItem.getId());
         processItem = processesApi.addProcessItem(processModel, document3);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }

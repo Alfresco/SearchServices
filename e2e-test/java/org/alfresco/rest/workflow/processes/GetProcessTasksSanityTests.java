@@ -52,10 +52,10 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(userModel);
         processesApi.getProcessTasks(process)
-            .assertEntriesListIsNotEmpty()
-            .assertEntriesListContains("assignee", assignee1.getUsername())
-            .assertEntriesListContains("assignee", assignee2.getUsername())
-            .assertEntriesListContains("assignee", assignee2.getUsername());
+            .entriesListIsNotEmpty()
+            .entriesListContains("assignee", assignee1.getUsername())
+            .entriesListContains("assignee", assignee2.getUsername())
+            .entriesListContains("assignee", assignee2.getUsername());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -64,10 +64,10 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(assignee1);
         processesApi.getProcessTasks(process)
-            .assertEntriesListIsNotEmpty()
-            .assertEntriesListContains("assignee", assignee1.getUsername())
-            .assertEntriesListContains("assignee", assignee2.getUsername())
-            .assertEntriesListContains("assignee", assignee2.getUsername());
+            .entriesListIsNotEmpty()
+            .entriesListContains("assignee", assignee1.getUsername())
+            .entriesListContains("assignee", assignee2.getUsername())
+            .entriesListContains("assignee", assignee2.getUsername());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -80,8 +80,8 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
         
         restClient.authenticateUser(assignee2);
         processesApi.getProcessTasks(process)
-            .assertEntriesListIsNotEmpty()
-            .assertEntriesListContains("assignee", userModel.getUsername());
+            .entriesListIsNotEmpty()
+            .entriesListContains("assignee", userModel.getUsername());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

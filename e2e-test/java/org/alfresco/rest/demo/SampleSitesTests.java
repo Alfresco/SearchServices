@@ -37,7 +37,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldGetSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel)
-            .and().assertField("id").isNotNull();
+            .assertThat().field("id").isNotNull();
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
@@ -54,7 +54,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldAccessSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites()
-            .assertEntriesListIsNotEmpty();
+            .entriesListIsNotEmpty();
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
@@ -71,7 +71,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites()
-            .assertPaginationExist();
+            .paginationExist();
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
@@ -90,7 +90,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
         siteAPI.getAllSites()
-            .assertEntriesListContains("id", siteModel.getId());    
+            .entriesListContains("id", siteModel.getId());    
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
@@ -98,10 +98,10 @@ public class SampleSitesTests extends RestTest
     public void adminShouldAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel)
-            .and().assertField("id").isNotNull()
-            .and().assertField("description").is(siteModel.getDescription())
-            .and().assertField("title").is(siteModel.getTitle())
-            .and().assertField("visibility").is(siteModel.getVisibility());            
+            .assertThat().field("id").isNotNull()
+            .and().field("description").is(siteModel.getDescription())
+            .and().field("title").is(siteModel.getTitle())
+            .and().field("visibility").is(siteModel.getVisibility());            
     }
 
 }

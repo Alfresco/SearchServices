@@ -60,15 +60,15 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.rateStarsToDocument(document, 5);
         
         ratingsApi.getLikeRating(document)
-            .and().assertField("id").is("likes")
-            .and().assertField("myRating").is("true");
+            .assertThat().field("id").is("likes")
+            .and().field("myRating").is("true");
             
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
         
         ratingsApi.getFiveStarRating(document)
-                    .and().assertField("id").is("fiveStar")
-                    .and().assertField("myRating").is("5");
+                    .assertThat().field("id").is("fiveStar")
+                    .and().field("myRating").is("5");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }   
@@ -83,14 +83,14 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.rateStarsToDocument(document, 5);
         
         ratingsApi.getLikeRating(document)
-                    .and().assertField("id").is("likes")            
-                    .and().assertField("myRating").is("true");
+                    .assertThat().field("id").is("likes")            
+                    .and().field("myRating").is("true");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
         
         ratingsApi.getFiveStarRating(document)
-                    .and().assertField("id").is("fiveStar")
-                    .and().assertField("myRating").is("5");
+                    .assertThat().field("id").is("fiveStar")
+                    .and().field("myRating").is("5");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }   
@@ -105,14 +105,14 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.rateStarsToDocument(document, 5);
         
         ratingsApi.getLikeRating(document)
-                    .and().assertField("id").is("likes")     
-                    .and().assertField("myRating").is("true");
+                    .assertThat().field("id").is("likes")     
+                    .and().field("myRating").is("true");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
         
         ratingsApi.getFiveStarRating(document)
-                      .and().assertField("id").is("fiveStar")
-                      .and().assertField("myRating").is("5");
+                      .assertThat().field("id").is("fiveStar")
+                      .and().field("myRating").is("5");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }   
@@ -127,14 +127,14 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.rateStarsToDocument(document, 5);
         
         ratingsApi.getLikeRating(document)
-             .and().assertField("id").is("likes")  
-             .and().assertField("myRating").is("true");
+             .assertThat().field("id").is("likes")  
+             .and().field("myRating").is("true");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
         
         ratingsApi.getFiveStarRating(document)
-                    .and().assertField("id").is("fiveStar")
-                    .and().assertField("myRating").is("5");
+                    .assertThat().field("id").is("fiveStar")
+                    .and().field("myRating").is("5");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }   
@@ -150,14 +150,14 @@ public class GetRatingSanityTests extends RestTest
         ratingsApi.rateStarsToDocument(document, 5);
 
         ratingsApi.getLikeRating(document)
-                    .and().assertField("id").is("likes")  
-                    .and().assertField("myRating").is("true");
+                    .assertThat().field("id").is("likes")  
+                    .and().field("myRating").is("true");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
         
         ratingsApi.getFiveStarRating(document)
-                    .and().assertField("id").is("fiveStar")
-                    .and().assertField("myRating").is("5");
+                    .assertThat().field("id").is("fiveStar")
+                    .and().field("myRating").is("5");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }   

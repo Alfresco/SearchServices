@@ -52,8 +52,8 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel)
-        .assertEntriesListIsNotEmpty()
-        .assertEntriesListContains("id", taskItem.getId());
+        .entriesListIsNotEmpty()
+        .entriesListContains("id", taskItem.getId());
 
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -66,8 +66,8 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel)
-        .assertEntriesListIsNotEmpty()
-        .assertEntriesListContains("id", taskItem.getId());
+        .entriesListIsNotEmpty()
+        .entriesListContains("id", taskItem.getId());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -92,8 +92,8 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel)
-        .assertEntriesListIsNotEmpty()
-        .assertEntriesListContains("id", taskItem.getId());
+        .entriesListIsNotEmpty()
+        .entriesListContains("id", taskItem.getId());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

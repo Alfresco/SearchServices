@@ -52,10 +52,10 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         restClient.authenticateUser(adminUser);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         tasksApi.addTaskVariable(taskModel, variableModel)
-        .and().assertField("scope").is(variableModel.getScope())
-        .and().assertField("name").is(variableModel.getName())
-        .and().assertField("value").is(variableModel.getValue())
-        .and().assertField("type").is(variableModel.getType());
+        .assertThat().field("scope").is(variableModel.getScope())
+        .and().field("name").is(variableModel.getName())
+        .and().field("value").is(variableModel.getValue())
+        .and().field("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
@@ -66,10 +66,10 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         restClient.authenticateUser(assigneeUser);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         tasksApi.addTaskVariable(taskModel, variableModel)
-        .and().assertField("scope").is(variableModel.getScope())
-        .and().assertField("name").is(variableModel.getName())
-        .and().assertField("value").is(variableModel.getValue())
-        .and().assertField("type").is(variableModel.getType());
+        .assertThat().field("scope").is(variableModel.getScope())
+        .and().field("name").is(variableModel.getName())
+        .and().field("value").is(variableModel.getValue())
+        .and().field("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
@@ -80,10 +80,10 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         restClient.authenticateUser(userWhoStartsTask);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         tasksApi.addTaskVariable(taskModel, variableModel)
-        .and().assertField("scope").is(variableModel.getScope())
-        .and().assertField("name").is(variableModel.getName())
-        .and().assertField("value").is(variableModel.getValue())
-        .and().assertField("type").is(variableModel.getType());
+        .assertThat().field("scope").is(variableModel.getScope())
+        .and().field("name").is(variableModel.getName())
+        .and().field("value").is(variableModel.getValue())
+        .and().field("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     

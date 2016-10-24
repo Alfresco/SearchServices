@@ -43,7 +43,7 @@ public class GetDeploymentsSanityTests extends RestWorkflowTest
     public void getNonNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        deploymentsApi.getDeployments().assertEntriesListIsNotEmpty();
+        deploymentsApi.getDeployments().entriesListIsNotEmpty();
         deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -55,7 +55,7 @@ public class GetDeploymentsSanityTests extends RestWorkflowTest
         tenantApi.useRestClient(restClient);
         tenantApi.createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
-        deploymentsApi.getDeployments().assertEntriesListIsNotEmpty();
+        deploymentsApi.getDeployments().entriesListIsNotEmpty();
         deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
