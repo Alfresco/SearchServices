@@ -6,6 +6,7 @@ import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.requests.RestDeploymentsApi;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ public class DeleteDeploymentSanityTests extends RestWorkflowTest
         deploymentsApi.useRestClient(restClient);
     }
 
+    @Bug(id = "MNT-16996")
     @Test(groups ={"extension-points"})
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, 
             executionType = ExecutionType.SANITY, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
@@ -47,10 +49,12 @@ public class DeleteDeploymentSanityTests extends RestWorkflowTest
         deploymentsApi.getDeployments()
                 .assertEntriesListContains("name", "customWorkflowExtentionForRest.bpmn");
         
+        deployment = deploymentsApi.getDeployments().getDeploymentByName("customWorkflowExtentionForRest.bpmn");
         deploymentsApi.deleteDeployment(deployment);
         deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
+    @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, 
             executionType = ExecutionType.SANITY, description = "Verify admin user cannot delete an inexistent deployment using REST API and status code is successful (204)")
     public void adminCannotDeleteInexistentDeployment() throws JsonToModelConversionException, Exception
