@@ -7,6 +7,7 @@ import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -59,7 +60,10 @@ public class AddCommentsSanityTests extends RestTest
     public void adminIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        commentsAPI.addComments(document, comment1, comment2);
+        commentsAPI.addComments(document, comment1, comment2)
+                   .assertEntriesListIsNotEmpty()
+                   .assertEntriesListContains("content", comment1)
+                   .assertEntriesListContains("content", comment2);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -68,7 +72,11 @@ public class AddCommentsSanityTests extends RestTest
     public void managerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        commentsAPI.addComments(document, comment1, comment2);
+        commentsAPI.addComments(document, comment1, comment2)
+                .assertEntriesListIsNotEmpty()
+                .assertEntriesListContains("content", comment1)
+                .assertEntriesListContains("content", comment2);
+   
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -77,7 +85,10 @@ public class AddCommentsSanityTests extends RestTest
     public void contributorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        commentsAPI.addComments(document, comment1, comment2);
+        commentsAPI.addComments(document, comment1, comment2)
+                .assertEntriesListIsNotEmpty()
+                .assertEntriesListContains("content", comment1)
+                .assertEntriesListContains("content", comment2);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -86,7 +97,10 @@ public class AddCommentsSanityTests extends RestTest
     public void collaboratorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        commentsAPI.addComments(document, comment1, comment2);
+        commentsAPI.addComments(document, comment1, comment2)
+                .assertEntriesListIsNotEmpty()
+                .assertEntriesListContains("content", comment1)
+                .assertEntriesListContains("content", comment2);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -96,7 +110,10 @@ public class AddCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         commentsAPI.addComments(document, comment1, comment2);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        commentsAPI.usingRestWrapper()
+                   .assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+
     }
 
     @TestRail(section = { TestGroup.REST_API,

@@ -8,6 +8,7 @@ import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -81,7 +82,8 @@ public class DeleteCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         commentsAPI.deleteComment(document, comment);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -90,7 +92,9 @@ public class DeleteCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         commentsAPI.deleteComment(document, comment);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        commentsAPI.usingRestWrapper()
+                   .assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -99,7 +103,9 @@ public class DeleteCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         commentsAPI.deleteComment(document, comment);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        commentsAPI.usingRestWrapper()
+                   .assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -110,6 +116,7 @@ public class DeleteCommentsSanityTests extends RestTest
         restClient.authenticateUser(nonexistentModel);
         commentsAPI.deleteComment(document, comment);
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+ 
     }
 
 }
