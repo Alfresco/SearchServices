@@ -40,12 +40,13 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.addFavoriteSite(managerUser, siteModel);
+        peopleApi.addFavoriteSite(managerUser, siteModel)
+            .assertThat().field("id").is(siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
         
         peopleApi.addFavoriteSite(managerUser, siteModel);
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CONFLICT);        
-        peopleApi.usingRestWrapper().assertLastError().containsSummary("is already a favourite site");        
+        peopleApi.usingRestWrapper().assertLastError().containsSummary(String.format("%s is already a favourite site", siteModel.getId()));        
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user add a favorite site with Rest API and response is successful (201)")
@@ -55,7 +56,8 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.addFavoriteSite(collaboratorUser, siteModel);
+        peopleApi.addFavoriteSite(collaboratorUser, siteModel)
+            .assertThat().field("id").is(siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -66,7 +68,8 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.addFavoriteSite(contributorUser, siteModel);
+        peopleApi.addFavoriteSite(contributorUser, siteModel)
+            .assertThat().field("id").is(siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -77,7 +80,8 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.addFavoriteSite(consumerUser, siteModel);
+        peopleApi.addFavoriteSite(consumerUser, siteModel)
+            .assertThat().field("id").is(siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -87,7 +91,8 @@ public class AddFavoriteSiteSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.addFavoriteSite(adminUser, siteModel);
+        peopleApi.addFavoriteSite(adminUser, siteModel)
+            .assertThat().field("id").is(siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 

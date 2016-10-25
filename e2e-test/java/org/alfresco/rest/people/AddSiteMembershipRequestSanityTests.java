@@ -54,7 +54,9 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel)
+            .assertThat().field("id").isNotEmpty()
+            .assertThat().field("title").is(siteModel.getTitle());
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -66,7 +68,9 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel)
+            .assertThat().field("id").isNotEmpty()
+            .assertThat().field("title").is(siteModel.getTitle());
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -78,7 +82,9 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel)
+            .assertThat().field("id").isNotEmpty()
+            .assertThat().field("title").is(siteModel.getTitle());
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -90,7 +96,9 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel)
+            .assertThat().field("id").isNotEmpty()
+            .assertThat().field("title").is(siteModel.getTitle());
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -102,7 +110,9 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(adminUser);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel)
+            .assertThat().field("id").isNotEmpty()
+            .assertThat().field("title").is(siteModel.getTitle());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
@@ -113,7 +123,9 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        peopleApi.addSiteMembershipRequest(newMember, siteModel)
+            .assertThat().field("id").isNotEmpty()
+            .assertThat().field("title").is(siteModel.getTitle());
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

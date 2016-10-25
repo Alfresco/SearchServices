@@ -112,7 +112,7 @@ public class AddCommentsSanityTests extends RestTest
         commentsAPI.addComments(document, comment1, comment2);
         commentsAPI.usingRestWrapper()
                 .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);;
+        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,

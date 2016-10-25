@@ -137,11 +137,12 @@ public class UpdateCommentsSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
 
         RestCommentModel comment = new RestCommentModel();
-        comment.setId("comment id that does not exist");
+        String id = "comment id that does not exist";
+        comment.setId(id);
         commentsAPI.updateComment(document, comment, "This is the updated comment.");
             
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                                       .assertLastError().containsSummary("node ref that does not exist was not found");
+                                       .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, id));
     }
 
 }

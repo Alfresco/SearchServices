@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -95,7 +96,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -111,7 +113,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -127,7 +130,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 

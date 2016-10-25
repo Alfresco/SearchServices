@@ -7,6 +7,7 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -94,7 +95,8 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         peopleApi.addSiteMembershipRequest(siteMember, siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         peopleApi.deleteSiteMembershipRequest(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator), siteModel);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @Bug(id="MNT-16916")
@@ -107,7 +109,8 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         peopleApi.addSiteMembershipRequest(siteMember, siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         peopleApi.deleteSiteMembershipRequest(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor), siteModel);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @Bug(id="MNT-16916")
@@ -120,7 +123,8 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         peopleApi.addSiteMembershipRequest(siteMember, siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         peopleApi.deleteSiteMembershipRequest(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer), siteModel);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @Bug(id="MNT-16916")
@@ -134,7 +138,8 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         UserModel randomUser = dataUser.createRandomTestUser();
         restClient.authenticateUser(randomUser);
         peopleApi.deleteSiteMembershipRequest(randomUser, siteModel);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
