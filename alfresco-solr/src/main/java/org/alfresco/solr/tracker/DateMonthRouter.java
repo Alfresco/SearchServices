@@ -31,6 +31,7 @@ import java.util.GregorianCalendar;
 
 public class DateMonthRouter implements DocRouter
 {
+    DBIDRouter dbidRouter = new DBIDRouter();
     public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
         return true;
     }
@@ -41,12 +42,17 @@ public class DateMonthRouter implements DocRouter
         }
 
         String ISO8601Date = node.getShardPropertyValue();
+
+        if(ISO8601Date == null) {
+            return dbidRouter.routeNode(numShards, shardInstance, node);
+        }
+
         //TODO: we can parse the string to make this more efficient rather then creating a calendar.
         Date date = ISO8601DateFormat.parse(ISO8601Date);
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date);
         int month = cal.get(cal.MONTH);
         int year  = cal.get(cal.YEAR);
-        return (((year * 12) + (month+1)) % numShards) == shardInstance;
+        return (((year * 12) + month) % numShards) == shardInstance;
     }
 }

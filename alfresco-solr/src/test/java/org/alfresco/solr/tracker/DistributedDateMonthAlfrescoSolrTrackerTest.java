@@ -67,7 +67,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
     @Test
     public void testDateMonth() throws Exception
     {
-        Thread.sleep(10000);
+        Thread.sleep(15000);
         handle.put("explain", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
         handle.put("score", SKIPVAL);
@@ -111,7 +111,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
 
         Calendar cal = new GregorianCalendar();
         for (int i = 0; i < dates.length; i++) {
-            cal.set(1969, i + 1, 21);
+            cal.set(1980, i, 21);
             dates[i] = cal.getTime();
         }
 
@@ -145,6 +145,24 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
             assertCountAndColocation(query, counts[i]);
             assertShardSequence(i, query, counts[i]);
         }
+
+        nodes.clear();
+        nodeMetaDatas.clear();
+
+        Transaction bigTxn1 = getTransaction(0, numNodes);
+
+        for (int i = 0; i < numNodes; i++) {
+            int aclIndex = i % numAcls;
+            Node node = getNode(bigTxn1, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn1, bulkAcls.get(aclIndex), "mike", null, false);
+            nodeMetaDatas.add(nodeMetaData);
+        }
+
+        indexTransaction(bigTxn1, nodes, nodeMetaDatas);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes*2, 100000);
+        //There are 5 shards. We should expect roughly 20% of the nodes on each shard
+        assertNodesPerShardGreaterThan((int)((numNodes*2)*.17));
     }
 
     protected Properties getShardMethod()
