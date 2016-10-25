@@ -85,7 +85,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             shardProperty = getShardProperty(shardKey);
         }
 
-        docRouter = DocRouterFactory.getRouter(ShardMethodEnum.getShardMethod(shardMethod));
+        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
     }
