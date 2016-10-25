@@ -22,7 +22,6 @@ import com.carrotsearch.randomizedtesting.RandomizedContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
@@ -34,12 +33,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TENANT;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.apache.commons.lang.math.RandomUtils.nextInt;
 
 /**
  * Test Routes based on a text property field.
@@ -47,6 +43,7 @@ import static org.apache.commons.lang.math.RandomUtils.nextInt;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
+@SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
@@ -83,7 +80,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
                     bulkAcl,
                     list("king" + bulkAcl.getId()),
-                    list("kong" + bulkAcl.getId()),
+                    list("king" + bulkAcl.getId()),
                     null));
         }
 
@@ -91,7 +88,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
                 bulkAcls,
                 bulkAclReaders);
 
-        int numNodes = 100;
+        int numNodes = 1000;
         List<Node> nodes = new ArrayList();
         List<NodeMetaData> nodeMetaDatas = new ArrayList();
 
@@ -104,12 +101,12 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
             Node node = getNode(bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             String domain = DOMAINS[ints.nextInt(DOMAINS.length)];
             domainsCount.put(domain, domainsCount.get(domain)+1);
-
+            //String emailAddress = RANDOM_NAMES[ints.nextInt(RANDOM_NAMES.length)]+ "@"+ domain;
             String emailAddress = "peter.pan"+ "@"+ domain;
             node.setShardPropertyValue(emailAddress);
             nodes.add(node);
-            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "mike", null, false);
-            nodeMetaData.getProperties().put(ContentModel.PROP_EMAIL, new StringPropertyValue(emailAddress));
+            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "king", null, false);
+            nodeMetaData.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue(emailAddress));
             nodeMetaDatas.add(nodeMetaData);
         }
 
@@ -120,7 +117,9 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         for (int i = 0; i < DOMAINS.length; i++)
         {
             //We have split by email domain, so those should be co-located on the same shard.
-            assertCountAndColocation(new TermQuery(new Term("text@s___t@{http://www.alfresco.org/model/content/1.0}email", "peter.pan"+ "@"+ DOMAINS[i])), domainsCount.get(DOMAINS[i]));
+            //I am storing the email address in the cm:name field. This is purely to make it easier to write the TermQuery
+            //and doesn't effect the functionality.
+            assertCountAndColocation(new TermQuery(new Term("text@s____@{http://www.alfresco.org/model/content/1.0}name", "peter.pan"+ "@"+ DOMAINS[i])), domainsCount.get(DOMAINS[i]));
         }
 
     }
