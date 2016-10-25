@@ -29,6 +29,7 @@ import org.alfresco.solr.client.Acl;
 
 public class ACLIDMurmurRouter implements DocRouter
 {
+    @Override
     public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
         if(numShards <= 1) {
             return true;
@@ -38,6 +39,7 @@ public class ACLIDMurmurRouter implements DocRouter
         return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % numShards) == shardInstance;
     }
 
+    @Override
     public boolean routeNode(int numShards, int shardInstance, Node node) {
         if(numShards <= 1) {
             return true;

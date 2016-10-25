@@ -32,10 +32,13 @@ import java.util.GregorianCalendar;
 public class DateMonthRouter implements DocRouter
 {
     DBIDRouter dbidRouter = new DBIDRouter();
+
+    @Override
     public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
         return true;
     }
 
+    @Override
     public boolean routeNode(int numShards, int shardInstance, Node node) {
         if(numShards <= 1) {
             return true;
