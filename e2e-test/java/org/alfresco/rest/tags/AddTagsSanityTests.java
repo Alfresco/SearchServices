@@ -63,8 +63,8 @@ public class AddTagsSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         tagsAPI.addTags(document, tag1, tag2)
-            .assertThat().entriesListContains("tag", tag1.toLowerCase())
-            .and().entriesListContains("tag", tag2.toLowerCase());
+            .assertThat().entriesListContains("tag", tag1)
+            .and().entriesListContains("tag", tag2);
                     
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -75,8 +75,8 @@ public class AddTagsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         tagsAPI.addTags(document, tag1, tag2)
-            .assertThat().entriesListContains("tag", tag1.toLowerCase())
-            .and().entriesListContains("tag", tag2.toLowerCase());
+            .assertThat().entriesListContains("tag", tag1)
+            .and().entriesListContains("tag", tag2);
 
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -87,8 +87,8 @@ public class AddTagsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         tagsAPI.addTags(document, tag1, tag2)
-            .assertThat().entriesListContains("tag", tag1.toLowerCase())
-            .and().entriesListContains("tag", tag2.toLowerCase());
+            .assertThat().entriesListContains("tag", tag1)
+            .and().entriesListContains("tag", tag2);
 
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -110,8 +110,8 @@ public class AddTagsSanityTests extends RestTest
         restClient.authenticateUser(userModel);
         contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         tagsAPI.addTags(contributorDoc, tag1, tag2)
-            .assertThat().entriesListContains("tag", tag1.toLowerCase())
-            .and().entriesListContains("tag", tag2.toLowerCase());
+            .assertThat().entriesListContains("tag", tag1)
+            .and().entriesListContains("tag", tag2);
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 

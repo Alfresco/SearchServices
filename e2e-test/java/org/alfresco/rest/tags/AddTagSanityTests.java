@@ -7,10 +7,7 @@ import org.alfresco.rest.requests.RestTagsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -62,7 +59,7 @@ public class AddTagSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         tagsAPI.addTag(document, tagValue)
-            .assertThat().field("tag").is("tagValue")
+            .assertThat().field("tag").is(tagValue)
             .and().field("id").isNotEmpty();
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
 
@@ -95,10 +92,8 @@ public class AddTagSanityTests extends RestTest
     public void contributorIsNotAbleToAddTagToAnotherContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.addTag(document, tagValue)
-            .assertThat().field("id").isNotEmpty()
-            .and().field("tag").is(tagValue);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        tagsAPI.addTag(document, tagValue);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -119,10 +114,8 @@ public class AddTagSanityTests extends RestTest
     public void consumerIsNotAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.addTag(document, tagValue)
-            .assertThat().field("id").isNotEmpty()
-            .and().field("tag").is(tagValue);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        tagsAPI.addTag(document, tagValue);
+        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
