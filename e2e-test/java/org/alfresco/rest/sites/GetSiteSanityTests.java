@@ -47,7 +47,7 @@ public class GetSiteSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         siteAPI.useRestClient(restClient);
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -55,7 +55,8 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteAPI.getSite(siteModel);
+        siteAPI.getSite(siteModel).and().assertField("id").is(siteModel.getId())
+            .and().assertField("title").is(siteModel.getTitle());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -64,7 +65,8 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        siteAPI.getSite(siteModel);
+        siteAPI.getSite(siteModel).and().assertField("id").is(siteModel.getId())
+        .and().assertField("title").is(siteModel.getTitle());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -73,7 +75,8 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithContributorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        siteAPI.getSite(siteModel);
+        siteAPI.getSite(siteModel).and().assertField("id").is(siteModel.getId())
+        .and().assertField("title").is(siteModel.getTitle());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -82,7 +85,8 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithConsumerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        siteAPI.getSite(siteModel);
+        siteAPI.getSite(siteModel).and().assertField("id").is(siteModel.getId())
+        .and().assertField("title").is(siteModel.getTitle());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -91,7 +95,8 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithAdminRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        siteAPI.getSite(siteModel);
+        siteAPI.getSite(siteModel).and().assertField("id").is(siteModel.getId())
+        .and().assertField("title").is(siteModel.getTitle());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

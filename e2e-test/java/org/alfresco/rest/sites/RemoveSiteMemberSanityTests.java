@@ -57,6 +57,8 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restSitesAPI.getAllSites().assertEntriesListDoesNotContain("id", testUserModel.getUsername());
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id="ACE-5444")
@@ -66,6 +68,8 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restSitesAPI.getAllSites().assertEntriesListContains("id", testUserModel.getUsername());
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id="ACE-5444")
@@ -75,6 +79,8 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restSitesAPI.getAllSites().assertEntriesListContains("id", testUserModel.getUsername());
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id="ACE-5444")
@@ -84,6 +90,8 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restSitesAPI.getAllSites().assertEntriesListContains("id", testUserModel.getUsername());
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -92,6 +100,8 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         restSitesAPI.deleteSiteMember(siteModel, testUserModel);
         restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restSitesAPI.getAllSites().assertEntriesListDoesNotContain("id", testUserModel.getUsername());
+        restSitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 

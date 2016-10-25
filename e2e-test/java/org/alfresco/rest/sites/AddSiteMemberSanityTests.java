@@ -43,7 +43,8 @@ public class AddSiteMemberSanityTests extends RestTest
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteAPI.addPerson(siteModel, testUser);
+        siteAPI.addPerson(siteModel, testUser).and().assertField("id").is(testUser.getUsername())
+            .and().assertField("role").is(testUser.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
@@ -55,6 +56,7 @@ public class AddSiteMemberSanityTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         siteAPI.addPerson(siteModel, testUser);
+        siteAPI.usingRestWrapper().assertLastError().containsSummary("Permission was denied");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
@@ -66,6 +68,7 @@ public class AddSiteMemberSanityTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         siteAPI.addPerson(siteModel, testUser);
+        siteAPI.usingRestWrapper().assertLastError().containsSummary("Permission was denied");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
@@ -77,6 +80,7 @@ public class AddSiteMemberSanityTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         siteAPI.addPerson(siteModel, testUser);
+        siteAPI.usingRestWrapper().assertLastError().containsSummary("Permission was denied");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
@@ -87,7 +91,8 @@ public class AddSiteMemberSanityTests extends RestTest
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(adminUserModel);
-        siteAPI.addPerson(siteModel, testUser);
+        siteAPI.addPerson(siteModel, testUser).and().assertField("id").is(testUser.getUsername())
+            .and().assertField("role").is(testUser.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
