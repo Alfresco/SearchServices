@@ -1465,6 +1465,24 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         FileUtils.copyDirectory(coreSourceConfig.resolve("conf").toFile(), confDir.toFile());
     }
 
+
+    /**
+     * Puts default values for handle
+     */
+    protected void putHandleDefaults() {
+        handle.put("explain", SKIPVAL);
+        handle.put("timestamp", SKIPVAL);
+        handle.put("score", SKIPVAL);
+        handle.put("wt", SKIP);
+        handle.put("distrib", SKIP);
+        handle.put("shards.qt", SKIP);
+        handle.put("shards", SKIP);
+        handle.put("q", SKIP);
+        handle.put("maxScore", SKIPVAL);
+        handle.put("_version_", SKIP);
+        handle.put("_original_parameters_", SKIP);
+    }
+
     protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException
     {
         seedSolrHome(jettyHome);
