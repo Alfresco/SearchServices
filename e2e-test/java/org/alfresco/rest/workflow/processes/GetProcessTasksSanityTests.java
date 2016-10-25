@@ -51,10 +51,10 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
     public void userWhoStartedProcessCanGetProcessTasks() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(userModel);
-        processesApi.getProcessTasks(process)
-            .entriesListIsNotEmpty()
-            .entriesListContains("assignee", assignee1.getUsername())
-            .entriesListContains("assignee", assignee2.getUsername())
+        processesApi.getProcessTasks(process).assertThat()
+            .entriesListIsNotEmpty().and()
+            .entriesListContains("assignee", assignee1.getUsername()).and()
+            .entriesListContains("assignee", assignee2.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -63,10 +63,10 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
     public void assigneeUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(assignee1);
-        processesApi.getProcessTasks(process)
-            .entriesListIsNotEmpty()
-            .entriesListContains("assignee", assignee1.getUsername())
-            .entriesListContains("assignee", assignee2.getUsername())
+        processesApi.getProcessTasks(process).assertThat()
+            .entriesListIsNotEmpty().and()
+            .entriesListContains("assignee", assignee1.getUsername()).and()
+            .entriesListContains("assignee", assignee2.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -79,8 +79,8 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(assignee1).approveTask(process);
         
         restClient.authenticateUser(assignee2);
-        processesApi.getProcessTasks(process)
-            .entriesListIsNotEmpty()
+        processesApi.getProcessTasks(process).assertThat()
+            .entriesListIsNotEmpty().assertThat()
             .entriesListContains("assignee", userModel.getUsername());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }

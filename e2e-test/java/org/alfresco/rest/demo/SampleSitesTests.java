@@ -53,7 +53,7 @@ public class SampleSitesTests extends RestTest
             description = "Verify admin user gets sites with Rest API and the response is not empty")
     public void adminShouldAccessSites() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getSites()
+        siteAPI.getSites().assertThat()
             .entriesListIsNotEmpty();
     }
 
@@ -70,7 +70,7 @@ public class SampleSitesTests extends RestTest
             description = "Verify admin user gets sites with Rest API and status code is 200")
     public void adminShouldAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getSites()
+        siteAPI.getSites().assertThat()
             .paginationExist();
     }
 
@@ -89,7 +89,7 @@ public class SampleSitesTests extends RestTest
             description = "Verify that site exists from get all sites request")
     public void adminShouldGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
-        siteAPI.getAllSites()
+        siteAPI.getAllSites().assertThat()
             .entriesListContains("id", siteModel.getId());    
     }
 

@@ -44,7 +44,8 @@ public class GetProcessSanityTests extends RestWorkflowTest
     public void getProcessByOwner() throws Exception
     {
         restClient.authenticateUser(userWhoStartsProcess);
-        processesApi.getProcess(addedProcess);
+        processesApi.getProcess(addedProcess).and().field("id").is(addedProcess.getId())
+                                             .and().field("startUserId").is(addedProcess.getStartUserId());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -53,7 +54,8 @@ public class GetProcessSanityTests extends RestWorkflowTest
     public void getProcessByAssignee() throws Exception
     {
         restClient.authenticateUser(assignee);
-        processesApi.getProcess(addedProcess);
+        processesApi.getProcess(addedProcess).and().field("id").is(addedProcess.getId())
+                                             .and().field("startUserId").is(addedProcess.getStartUserId());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -62,7 +64,8 @@ public class GetProcessSanityTests extends RestWorkflowTest
     public void getProcessByAdmin() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());
-        processesApi.getProcess(addedProcess);
+        processesApi.getProcess(addedProcess).and().field("id").is(addedProcess.getId())
+                                             .and().field("startUserId").is(addedProcess.getStartUserId());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

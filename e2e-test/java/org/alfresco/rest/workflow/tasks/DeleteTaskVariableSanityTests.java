@@ -50,9 +50,10 @@ public class DeleteTaskVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        tasksApi.updateTaskVariable(taskModel, variableModel);
+        tasksApi.addTaskVariable(taskModel, variableModel);
         tasksApi.deleteTaskVariable(taskModel, variableModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        tasksApi.getTaskVariables(taskModel).assertThat().entriesListDoesNotContain("name", variableModel.getName());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 

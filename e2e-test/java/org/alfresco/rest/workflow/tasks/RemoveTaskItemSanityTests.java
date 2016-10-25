@@ -56,10 +56,11 @@ public class RemoveTaskItemSanityTests extends RestWorkflowTest
         taskItem = tasksApi.addTaskItem(taskModel, document2);
         tasksApi.deleteTaskItem(taskModel, taskItem);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        tasksApi.getTaskItems(taskModel).assertThat().entriesListDoesNotContain("id", taskItem.getId());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
-            description = "Try to D=delete existing task item using invalid taskId")
+            description = "Try to Delete existing task item using invalid taskId")
     public void deleteTaskItemUsingInvalidTaskId() throws Exception
     {
         restClient.authenticateUser(adminUser);

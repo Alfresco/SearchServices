@@ -43,7 +43,7 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
     public void nonNetworkAdminGetsProcessDefinitions() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        processDefinitionsApi.getProcessDefinitions().entriesListIsNotEmpty();
+        processDefinitionsApi.getProcessDefinitions().assertThat().entriesListIsNotEmpty();
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -57,7 +57,7 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
         tenantApi.useRestClient(restClient);
         tenantApi.createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
-        processDefinitionsApi.getProcessDefinitions().entriesListIsNotEmpty();
+        processDefinitionsApi.getProcessDefinitions().assertThat().entriesListIsNotEmpty();
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

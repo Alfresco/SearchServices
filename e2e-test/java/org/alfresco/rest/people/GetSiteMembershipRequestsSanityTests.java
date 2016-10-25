@@ -54,7 +54,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         
         restClient.authenticateUser(managerUser);
-        peopleApi.getSiteMembershipRequests(newMember).entriesListIsNotEmpty();
+        peopleApi.getSiteMembershipRequests(newMember).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -101,7 +101,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
         
         restClient.authenticateUser(adminUser);
-        peopleApi.getSiteMembershipRequests(newMember).entriesListIsNotEmpty();
+        peopleApi.getSiteMembershipRequests(newMember).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -122,7 +122,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     public void oneUserGetsItsOwnSiteMembershipRequestsWithSuccess() throws Exception
     {
         restClient.authenticateUser(newMember);
-        peopleApi.getSiteMembershipRequests(newMember).entriesListIsNotEmpty();
+        peopleApi.getSiteMembershipRequests(newMember).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

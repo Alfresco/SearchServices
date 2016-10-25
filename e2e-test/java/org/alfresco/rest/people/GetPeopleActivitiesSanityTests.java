@@ -49,7 +49,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonActivities(managerUser).entriesListIsNotEmpty();
+        peopleApi.getPersonActivities(managerUser).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -61,7 +61,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataContent.usingUser(collaboratorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPersonActivities(collaboratorUser).entriesListIsNotEmpty();
+        peopleApi.getPersonActivities(collaboratorUser).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -73,7 +73,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataContent.usingUser(contributorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPersonActivities(contributorUser).entriesListIsNotEmpty();
+        peopleApi.getPersonActivities(contributorUser).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -84,7 +84,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPersonActivities(consumerUser).entriesListIsNotEmpty();
+        peopleApi.getPersonActivities(consumerUser).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -92,7 +92,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
     public void adminUserShouldGetPeopleActivitiesList() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());
-        peopleApi.getPersonActivities(userModel).entriesListIsNotEmpty();
+        peopleApi.getPersonActivities(userModel).assertThat().entriesListIsNotEmpty();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

@@ -46,7 +46,7 @@ public class DeleteDeploymentSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         // The deployment with name "customWorkflowExtentionForRest.bpmn" is created by Workflow Extention Point
-        deploymentsApi.getDeployments()
+        deploymentsApi.getDeployments().assertThat()
                 .entriesListContains("name", "customWorkflowExtentionForRest.bpmn");
         
         deployment = deploymentsApi.getDeployments().getDeploymentByName("customWorkflowExtentionForRest.bpmn");

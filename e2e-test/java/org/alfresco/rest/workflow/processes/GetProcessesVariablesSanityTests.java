@@ -51,7 +51,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(userWhoStartsTask);
         processModel = processesApi.getProcesses().getOneRandomEntry();
-        processesApi.getProcessesVariables(processModel);
+        processesApi.getProcessesVariables(processModel).assertThat().entriesListIsNotEmpty();
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -61,7 +61,7 @@ public class GetProcessesVariablesSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(assignee);
         processModel = processesApi.getProcesses().getOneRandomEntry();
-        processesApi.getProcessesVariables(processModel);
+        processesApi.getProcessesVariables(processModel).assertThat().entriesListIsNotEmpty();
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

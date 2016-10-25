@@ -86,7 +86,10 @@ public class AddCommentsSanityTests extends RestTest
     public void collaboratorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        commentsAPI.addComments(document, comment1, comment2);
+        commentsAPI.addComments(document, comment1, comment2)
+                   .assertThat().paginationExist().and().entriesListIsNotEmpty()
+                   .and().paginationExist().and().paginationField("maxItems").is("100");
+                      
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 

@@ -62,6 +62,7 @@ public class GetNodeTagsSanityTests extends RestTest
         tagsAPI.addTag(document, tagValue);
         
         tagsAPI.getNodeTags(document)
+              .assertThat()
               .entriesListContains("tag", tagValue.toLowerCase());            
         
         tagsAPI.usingRestWrapper()
@@ -75,7 +76,7 @@ public class GetNodeTagsSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
    
 
-        tagsAPI.getNodeTags(document).entriesListContains("tag", tagValue.toLowerCase());  
+        tagsAPI.getNodeTags(document).assertThat().entriesListContains("tag", tagValue.toLowerCase());  
 
         tagsAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
@@ -86,7 +87,7 @@ public class GetNodeTagsSanityTests extends RestTest
     public void siteContributorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.getNodeTags(document).entriesListContains("tag", tagValue.toLowerCase());  
+        tagsAPI.getNodeTags(document).assertThat().entriesListContains("tag", tagValue.toLowerCase());  
 
         tagsAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
@@ -97,7 +98,7 @@ public class GetNodeTagsSanityTests extends RestTest
     public void siteConsumerIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.getNodeTags(document).entriesListContains("tag", tagValue.toLowerCase());  
+        tagsAPI.getNodeTags(document).assertThat().entriesListContains("tag", tagValue.toLowerCase());  
 
         tagsAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
@@ -108,7 +109,7 @@ public class GetNodeTagsSanityTests extends RestTest
     public void adminIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tagsAPI.getNodeTags(document).entriesListContains("tag", tagValue.toLowerCase());  
+        tagsAPI.getNodeTags(document).assertThat().entriesListContains("tag", tagValue.toLowerCase());  
 
         tagsAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
@@ -120,7 +121,7 @@ public class GetNodeTagsSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        tagsAPI.getNodeTags(document).entriesListContains("tag", tagValue.toLowerCase());  
+        tagsAPI.getNodeTags(document).assertThat().entriesListContains("tag", tagValue.toLowerCase());  
 
         tagsAPI.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);

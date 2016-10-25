@@ -59,8 +59,17 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processItem = processesApi.addProcessItem(processModel, document2);
+        processItem.assertThat().field("createdAt").is(processItem.getCreatedAt())
+                   .and().field("size").is(processItem.getSize())
+                   .and().field("createdBy").is(processItem.getCreatedBy())
+                   .and().field("modifiedAt").is(processItem.getModifiedAt())
+                   .and().field("name").is(processItem.getName())
+                   .and().field("modifiedBy").is(processItem.getModifiedBy())
+                   .and().field("id").is(processItem.getId())
+                   .and().field("mimeType").is(processItem.getMimeType());
+        
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcessesItems(processModel).entriesListContains("id", processItem.getId()); 
+        processesApi.getProcessesItems(processModel).assertThat().entriesListContains("id", processItem.getId()); 
         
     }
     
@@ -73,8 +82,17 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         document3 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processItem = processesApi.addProcessItem(processModel, document3);
+        processItem.assertThat().field("createdAt").isNotEmpty()
+                   .and().field("size").is("19")
+                   .and().field("createdBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                   .and().field("modifiedAt").isNotEmpty()
+                   .and().field("name").isNotEmpty()
+                   .and().field("modifiedBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                   .and().field("id").is(processModel.getId())
+                   .and().field("mimeType").is(processItem.getMimeType());
+        
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcessesItems(processModel).entriesListContains("id", processItem.getId());
+        processesApi.getProcessesItems(processModel).assertThat().entriesListContains("id", processItem.getId());
         processItem = processesApi.addProcessItem(processModel, document3);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }

@@ -52,10 +52,11 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         restClient.authenticateUser(adminUser);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         tasksApi.addTaskVariable(taskModel, variableModel)
-        .assertThat().field("scope").is(variableModel.getScope())
-        .and().field("name").is(variableModel.getName())
-        .and().field("value").is(variableModel.getValue())
-        .and().field("type").is(variableModel.getType());
+         .assertThat()
+             .field("scope").is(variableModel.getScope())
+             .and().field("name").is(variableModel.getName())
+             .and().field("value").is(variableModel.getValue())
+             .and().field("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
@@ -67,10 +68,11 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         tasksApi.addTaskVariable(taskModel, variableModel)
         .assertThat().field("scope").is(variableModel.getScope())
-        .and().field("name").is(variableModel.getName())
-        .and().field("value").is(variableModel.getValue())
-        .and().field("type").is(variableModel.getType());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+             .and().field("name").is(variableModel.getName())
+             .and().field("value").is(variableModel.getValue())
+             .and().field("type").is(variableModel.getType());
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);        
+        tasksApi.getTaskVariables(taskModel).assertThat().entriesListContains("name", variableModel.getName());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
@@ -81,9 +83,9 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         tasksApi.addTaskVariable(taskModel, variableModel)
         .assertThat().field("scope").is(variableModel.getScope())
-        .and().field("name").is(variableModel.getName())
-        .and().field("value").is(variableModel.getValue())
-        .and().field("type").is(variableModel.getType());
+             .and().field("name").is(variableModel.getName())
+             .and().field("value").is(variableModel.getValue())
+             .and().field("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
     
@@ -95,6 +97,6 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         restClient.authenticateUser(userModel);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         tasksApi.addTaskVariable(taskModel, variableModel);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
 }

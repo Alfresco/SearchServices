@@ -45,7 +45,7 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
     public void nonNetworkAdminGetsStartFormModel() throws Exception
     {
         randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
-        processDefinitionsApi.getProcessDefinitionStartFormModel(randomProcessDefinition).entriesListIsNotEmpty();
+        processDefinitionsApi.getProcessDefinitionStartFormModel(randomProcessDefinition).assertThat().entriesListIsNotEmpty();
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -59,7 +59,7 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
         tenantApi.createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
         randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
-        processDefinitionsApi.getProcessDefinitionStartFormModel(randomProcessDefinition).entriesListIsNotEmpty();
+        processDefinitionsApi.getProcessDefinitionStartFormModel(randomProcessDefinition).assertThat().entriesListIsNotEmpty();
         processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

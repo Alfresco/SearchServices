@@ -52,7 +52,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(userWhoStartsTask);
 
-        processesApi.getProcesses().entriesListContains("id", task.getNodeRef());
+        processesApi.getProcesses().assertThat().entriesListContains("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -62,7 +62,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(assignee);
 
-        processesApi.getProcesses().entriesListContains("id", task.getNodeRef());
+        processesApi.getProcesses().assertThat().entriesListContains("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -72,7 +72,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(anotherUser);
 
-        processesApi.getProcesses().entriesListDoesNotContain("id", task.getNodeRef());
+        processesApi.getProcesses().assertThat().entriesListDoesNotContain("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -82,7 +82,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(dataUser.getAdminUser());
 
-        processesApi.getProcesses().entriesListContains("id", task.getNodeRef());
+        processesApi.getProcesses().assertThat().entriesListContains("id", task.getNodeRef());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
