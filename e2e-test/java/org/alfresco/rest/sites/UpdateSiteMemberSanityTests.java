@@ -44,7 +44,8 @@ public class UpdateSiteMemberSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         testUserModel.setUserRole(UserRole.SiteConsumer);
-        siteAPI.updateSiteMember(siteModel, testUserModel);
+        siteAPI.updateSiteMember(siteModel, testUserModel).and().assertField("id").is(testUserModel.getUsername())
+        .and().assertField("role").is(testUserModel.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -56,6 +57,8 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         siteAPI.updateSiteMember(siteModel, testUserModel);
+        siteAPI.usingRestWrapper().assertLastError()
+            .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
@@ -67,6 +70,8 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         siteAPI.updateSiteMember(siteModel, testUserModel);
+        siteAPI.usingRestWrapper().assertLastError()
+        .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
@@ -78,6 +83,8 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         siteAPI.updateSiteMember(siteModel, testUserModel);
+        siteAPI.usingRestWrapper().assertLastError()
+        .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
@@ -87,7 +94,8 @@ public class UpdateSiteMemberSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         testUserModel.setUserRole(UserRole.SiteCollaborator);
-        siteAPI.updateSiteMember(siteModel, testUserModel);
+        siteAPI.updateSiteMember(siteModel, testUserModel).and().assertField("id").is(testUserModel.getUsername())
+        .and().assertField("role").is(testUserModel.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
