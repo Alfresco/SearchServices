@@ -27,6 +27,7 @@ import org.alfresco.solr.client.Node;
 
 public class ACLIDModRouter implements DocRouter
 {
+    @Override
     public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
         if(shardCount <= 1) {
             return true;
@@ -35,6 +36,7 @@ public class ACLIDModRouter implements DocRouter
         return acl.getId() % shardCount == shardInstance;
     }
 
+    @Override
     public boolean routeNode(int shardCount, int shardInstance, Node node) {
         if(shardCount <= 1) {
             return true;
