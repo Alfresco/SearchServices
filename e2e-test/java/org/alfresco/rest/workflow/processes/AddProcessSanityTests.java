@@ -54,7 +54,7 @@ public class AddProcessSanityTests extends RestWorkflowTest
         restClient.authenticateUser(userWhoStartsProcess);
         addedProcess = processesApi.addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         addedProcess.assertThat().field("id").is(addedProcess.getId())
-                    .and().field("startUserId").is(addedProcess.getStartUserId());
+                    .and().field("startUserId").is(addedProcess.getStartUserId()); 
         
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);            
         processesApi.getProcesses().assertThat().entriesListContains("id", addedProcess.getId());

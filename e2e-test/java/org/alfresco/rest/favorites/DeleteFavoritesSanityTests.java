@@ -50,10 +50,10 @@ public class DeleteFavoritesSanityTests extends RestTest
             TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user deletes site from favorites with Rest API and status code is 204")
     public void adminIsAbleToDeleteFavorites() throws JsonToModelConversionException, Exception
     {
-        favoritesAPI.addSiteToFavorites(adminUserModel, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(adminUserModel, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         favoritesAPI.deleteSiteFromFavorites(adminUserModel, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        favoritesAPI.getFavorites(adminUserModel).assertEntriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        favoritesAPI.getFavorites(adminUserModel).assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -62,10 +62,10 @@ public class DeleteFavoritesSanityTests extends RestTest
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         restClient.authenticateUser(siteManager);
-        favoritesAPI.addSiteToFavorites(siteManager, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(siteManager, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         favoritesAPI.deleteSiteFromFavorites(siteManager, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        favoritesAPI.getFavorites(siteManager).assertEntriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        favoritesAPI.getFavorites(siteManager).assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -74,10 +74,10 @@ public class DeleteFavoritesSanityTests extends RestTest
     {
         UserModel siteCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(siteCollaborator);
-        favoritesAPI.addSiteToFavorites(siteCollaborator, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(siteCollaborator, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         favoritesAPI.deleteSiteFromFavorites(siteCollaborator, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        favoritesAPI.getFavorites(siteCollaborator).assertEntriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        favoritesAPI.getFavorites(siteCollaborator).assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -86,10 +86,10 @@ public class DeleteFavoritesSanityTests extends RestTest
     {
         UserModel siteContributor = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(siteContributor);
-        favoritesAPI.addSiteToFavorites(siteContributor, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(siteContributor, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         favoritesAPI.deleteSiteFromFavorites(siteContributor, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        favoritesAPI.getFavorites(siteContributor).assertEntriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        favoritesAPI.getFavorites(siteContributor).assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -98,10 +98,10 @@ public class DeleteFavoritesSanityTests extends RestTest
     {
         UserModel siteConsumer = usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer);
         restClient.authenticateUser(siteConsumer);
-        favoritesAPI.addSiteToFavorites(siteConsumer, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(siteConsumer, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         favoritesAPI.deleteSiteFromFavorites(siteConsumer, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        favoritesAPI.getFavorites(siteConsumer).assertEntriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        favoritesAPI.getFavorites(siteConsumer).assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -111,7 +111,7 @@ public class DeleteFavoritesSanityTests extends RestTest
     {
         UserModel siteCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(siteCollaborator);
-        favoritesAPI.addSiteToFavorites(siteCollaborator, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(siteCollaborator, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         favoritesAPI.deleteSiteFromFavorites(siteCollaborator, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
@@ -122,7 +122,7 @@ public class DeleteFavoritesSanityTests extends RestTest
     public void userIsNotAbleToDeleteFavoritesOfAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        favoritesAPI.addSiteToFavorites(adminUserModel, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(adminUserModel, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         favoritesAPI.deleteSiteFromFavorites(adminUserModel, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
@@ -134,7 +134,7 @@ public class DeleteFavoritesSanityTests extends RestTest
     {
         UserModel siteCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(siteCollaborator);
-        favoritesAPI.addSiteToFavorites(siteCollaborator, siteModel).and().assertField("targetGuid").is(siteModel.getGuid());
+        favoritesAPI.addSiteToFavorites(siteCollaborator, siteModel).and().field("targetGuid").is(siteModel.getGuid());
         restClient.authenticateUser(adminUserModel);
         favoritesAPI.deleteSiteFromFavorites(siteCollaborator, siteModel);
         favoritesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);

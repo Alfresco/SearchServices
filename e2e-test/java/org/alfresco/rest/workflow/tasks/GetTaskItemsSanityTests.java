@@ -5,6 +5,7 @@ import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.rest.requests.RestTenantApi;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
@@ -51,9 +52,11 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         restClient.authenticateUser(userWhoStartsTask);
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document1);
+        Utility.checkObjectIsInitialized(taskItem, "taskItem");
         tasksApi.getTaskItems(taskModel).assertThat()
         .entriesListIsNotEmpty().and()
-        .entriesListContains("id", taskItem.getId());
+        .entriesListContains("id", taskItem.getId()).and()
+        .entriesListContains("name", document1.getName());
 
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
@@ -67,7 +70,8 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         taskItem = tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel).assertThat()
         .entriesListIsNotEmpty().and()
-        .entriesListContains("id", taskItem.getId());
+        .entriesListContains("id", taskItem.getId()).and()
+        .entriesListContains("name", document1.getName());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -93,7 +97,8 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         taskItem = tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel).assertThat()
         .entriesListIsNotEmpty().and()
-        .entriesListContains("id", taskItem.getId());
+        .entriesListContains("id", taskItem.getId()).and()
+        .entriesListContains("name", document1.getName());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

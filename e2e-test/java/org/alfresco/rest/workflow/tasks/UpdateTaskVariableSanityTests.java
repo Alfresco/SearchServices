@@ -108,7 +108,7 @@ public class UpdateTaskVariableSanityTests extends RestWorkflowTest
         taskVariable.assertThat().field("scope").is(taskVariable.getScope())
             .and().field("name").is(taskVariable.getName())
             .and().field("type").is(taskVariable.getType())
-            .and().field("value").is(taskVariable.getValue());
+            .and().field("value").is(taskVariable.getValue());            
         
         variableModel.setValue("updatedValue");
         taskVariable = tasksApi.updateTaskVariable(taskModel, variableModel).and().field("value").is("updatedValue");

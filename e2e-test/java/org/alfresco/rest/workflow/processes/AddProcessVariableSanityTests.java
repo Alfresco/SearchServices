@@ -65,7 +65,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processVariable = processesApi.addProcessVariable(processModel, variableModel);
         processVariable.assertThat().field("name").is(processVariable.getName())
                        .and().field("type").is(processVariable.getType())
-                       .and().field("value").is(processVariable.getValue());
+                       .and().field("value").is(processVariable.getValue()); 
         
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
         processesApi.getProcessesVariables(processModel).assertThat().entriesListContains("name", processVariable.getName());

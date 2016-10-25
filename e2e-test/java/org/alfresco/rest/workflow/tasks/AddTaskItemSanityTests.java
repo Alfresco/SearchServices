@@ -108,7 +108,7 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
         
         document4 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document4);
+        taskItem = tasksApi.addTaskItem(taskModel, document4);        
         taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt())
                 .and().field("size").is(taskItem.getSize())
                 .and().field("createdBy").is(taskItem.getCreatedBy())
@@ -116,7 +116,7 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
                 .and().field("name").is(taskItem.getName())
                 .and().field("modifiedBy").is(taskItem.getModifiedBy())
                 .and().field("id").is(taskItem.getId())
-                .and().field("mimeType").is(taskItem.getMimeType());
+                .and().field("mimeType").is(taskItem.getMimeType());                
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 }

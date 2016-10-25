@@ -92,7 +92,9 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
                    .and().field("mimeType").is(processItem.getMimeType());
         
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcessesItems(processModel).assertThat().entriesListContains("id", processItem.getId());
+        processesApi.getProcessesItems(processModel)
+                   .assertThat().entriesListContains("id", processItem.getId()).and()
+                   .entriesListContains("name", document3.getName());
         processItem = processesApi.addProcessItem(processModel, document3);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
