@@ -49,8 +49,9 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithManagerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restSitesApi.getSiteMember(siteModel, userModel).and().assertField("id").is(userModel.getUsername())
-        .and().assertField("role").is(userModel.getUserRole());
+        restSitesApi.getSiteMember(siteModel, userModel)
+                    .assertThat().field("id").is(userModel.getUsername())
+                    .and().field("role").is(userModel.getUserRole());
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -59,8 +60,9 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restSitesApi.getSiteMember(siteModel, userModel).and().assertField("id").is(userModel.getUsername())
-        .and().assertField("role").is(userModel.getUserRole());
+        restSitesApi.getSiteMember(siteModel, userModel)
+                    .and().field("id").is(userModel.getUsername())
+                    .and().field("role").is(userModel.getUserRole());
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -69,8 +71,8 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithContributorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        restSitesApi.getSiteMember(siteModel, userModel).and().assertField("id").is(userModel.getUsername())
-        .and().assertField("role").is(userModel.getUserRole());
+        restSitesApi.getSiteMember(siteModel, userModel).and().field("id").is(userModel.getUsername())
+        .and().field("role").is(userModel.getUserRole());
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -79,8 +81,9 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restSitesApi.getSiteMember(siteModel, userModel).and().assertField("id").is(userModel.getUsername())
-        .and().assertField("role").is(userModel.getUserRole());
+        restSitesApi.getSiteMember(siteModel, userModel)
+                    .and().field("id").is(userModel.getUsername())
+                    .and().field("role").is(userModel.getUserRole());
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -89,8 +92,9 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithAdminUser() throws Exception
     {
         restClient.authenticateUser(adminUser);
-        restSitesApi.getSiteMember(siteModel, userModel).and().assertField("id").is(userModel.getUsername())
-        .and().assertField("role").is(userModel.getUserRole());
+        restSitesApi.getSiteMember(siteModel, userModel)
+                    .and().field("id").is(userModel.getUsername())
+                    .and().field("role").is(userModel.getUserRole());
         restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

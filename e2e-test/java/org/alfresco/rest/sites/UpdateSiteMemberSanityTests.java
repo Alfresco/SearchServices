@@ -44,8 +44,9 @@ public class UpdateSiteMemberSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         testUserModel.setUserRole(UserRole.SiteConsumer);
-        siteAPI.updateSiteMember(siteModel, testUserModel).and().assertField("id").is(testUserModel.getUsername())
-        .and().assertField("role").is(testUserModel.getUserRole());
+        siteAPI.updateSiteMember(siteModel, testUserModel)
+              .assertThat().field("id").is(testUserModel.getUsername())
+              .and().field("role").is(testUserModel.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -94,8 +95,9 @@ public class UpdateSiteMemberSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         testUserModel.setUserRole(UserRole.SiteCollaborator);
-        siteAPI.updateSiteMember(siteModel, testUserModel).and().assertField("id").is(testUserModel.getUsername())
-        .and().assertField("role").is(testUserModel.getUserRole());
+        siteAPI.updateSiteMember(siteModel, testUserModel)
+               .assertThat().field("id").is(testUserModel.getUsername())
+               .and().field("role").is(testUserModel.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

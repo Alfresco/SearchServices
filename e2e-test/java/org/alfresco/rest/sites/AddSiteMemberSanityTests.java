@@ -43,8 +43,9 @@ public class AddSiteMemberSanityTests extends RestTest
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteAPI.addPerson(siteModel, testUser).and().assertField("id").is(testUser.getUsername())
-            .and().assertField("role").is(testUser.getUserRole());
+        siteAPI.addPerson(siteModel, testUser)
+               .assertThat().field("id").is(testUser.getUsername())
+               .and().field("role").is(testUser.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
@@ -91,8 +92,9 @@ public class AddSiteMemberSanityTests extends RestTest
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(adminUserModel);
-        siteAPI.addPerson(siteModel, testUser).and().assertField("id").is(testUser.getUsername())
-            .and().assertField("role").is(testUser.getUserRole());
+        siteAPI.addPerson(siteModel, testUser)
+               .and().field("id").is(testUser.getUsername())
+               .and().field("role").is(testUser.getUserRole());
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
