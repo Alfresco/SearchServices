@@ -63,12 +63,12 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         processModel = processesApi.getProcesses().getOneRandomEntry();
         
         processVariable = processesApi.addProcessVariable(processModel, variableModel);
-        processVariable.and().assertField("name").is(processVariable.getName())
-                       .and().assertField("type").is(processVariable.getType())
-                       .and().assertField("value").is(processVariable.getValue());
+        processVariable.and().assertField("name").is(variableModel.getName())
+                       .and().assertField("type").is(variableModel.getType())
+                       .and().assertField("value").is(variableModel.getValue());
         
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcessesVariables(processModel).assertEntriesListContains("name", processVariable.getName());
+        processesApi.getProcessesVariables(processModel).assertEntriesListContains("name", variableModel.getName());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
@@ -79,9 +79,9 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processVariable = processesApi.addProcessVariable(processModel, variableModel);
-        processVariable.and().assertField("name").is(processVariable.getName())
-                       .and().assertField("type").is(processVariable.getType())
-                       .and().assertField("value").is(processVariable.getValue());
+        processVariable.and().assertField("name").is(variableModel.getName())
+                       .and().assertField("type").is(variableModel.getType())
+                       .and().assertField("value").is(variableModel.getValue());
         
         String newValue = RandomData.getRandomName("value");
         variableModel.setValue(newValue);   
@@ -111,9 +111,9 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processesApi.addProcessVariable(processModel, variableModel);
-        processVariable.and().assertField("name").is(processVariable.getName())
-                       .and().assertField("type").is(processVariable.getType())
-                       .and().assertField("value").is(processVariable.getValue());
+        processVariable.and().assertField("name").is(variableModel.getName())
+                       .and().assertField("type").is(variableModel.getType())
+                       .and().assertField("value").is(variableModel.getValue());
         
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }

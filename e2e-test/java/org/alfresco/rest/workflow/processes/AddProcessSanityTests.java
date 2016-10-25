@@ -53,11 +53,10 @@ public class AddProcessSanityTests extends RestWorkflowTest
 
         restClient.authenticateUser(userWhoStartsProcess);
         addedProcess = processesApi.addProcess("activitiAdhoc", assignee, false, Priority.Normal);
-        addedProcess.and().assertField("id").is(addedProcess.getId())
-                    .and().assertField("startUserId").is(addedProcess.getStartUserId());
+        addedProcess.and().assertField("startUserId").is(userWhoStartsProcess.getUsername());
         
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcesses().assertEntriesListContains("id", addedProcess.getId());
+        processesApi.getProcesses().assertEntriesListIsNotEmpty();
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -73,10 +72,9 @@ public class AddProcessSanityTests extends RestWorkflowTest
 
         restClient.authenticateUser(tenantUserWhoStartsProcess);
         addedProcess = processesApi.addProcess("activitiAdhoc", tenantAssignee, false, Priority.Normal);
-        addedProcess.and().assertField("id").is(addedProcess.getId())
-                    .and().assertField("startUserId").is(addedProcess.getStartUserId());
+        addedProcess.and().assertField("startUserId").is(tenantUserWhoStartsProcess.getUsername());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
-        processesApi.getProcesses().assertEntriesListContains("id", addedProcess.getId());
+        processesApi.getProcesses().assertEntriesListIsNotEmpty();
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }

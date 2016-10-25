@@ -60,10 +60,10 @@ public class UpdateTaskVariableSanityTests extends RestWorkflowTest
         restClient.authenticateUser(adminUser);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         taskVariable = tasksApi.updateTaskVariable(taskModel, variableModel);
-        taskVariable.and().assertField("scope").is(taskVariable.getScope())
-                    .and().assertField("name").is(taskVariable.getName())
-                    .and().assertField("type").is(taskVariable.getType())
-                    .and().assertField("value").is(taskVariable.getValue());
+        taskVariable.and().assertField("scope").is(variableModel.getScope())
+                    .and().assertField("name").is(variableModel.getName())
+                    .and().assertField("type").is(variableModel.getType())
+                    .and().assertField("value").is(variableModel.getValue());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -75,10 +75,10 @@ public class UpdateTaskVariableSanityTests extends RestWorkflowTest
         restClient.authenticateUser(adminUser);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         taskVariable = tasksApi.updateTaskVariable(taskModel, variableModel);
-        taskVariable.and().assertField("scope").is(taskVariable.getScope())
-                    .and().assertField("name").is(taskVariable.getName())
-                    .and().assertField("type").is(taskVariable.getType())
-                    .and().assertField("value").is(taskVariable.getValue());
+        taskVariable.and().assertField("scope").is(variableModel.getScope())
+                    .and().assertField("name").is(variableModel.getName())
+                    .and().assertField("type").is(variableModel.getType())
+                    .and().assertField("value").is(variableModel.getValue());
         variableModel.setValue("updatedValue");
         taskVariable = tasksApi.updateTaskVariable(taskModel, variableModel).and().assertField("value").is("updatedValue");
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
@@ -106,9 +106,9 @@ public class UpdateTaskVariableSanityTests extends RestWorkflowTest
         taskVariable = tasksApi.updateTaskVariable(tenantTask, variableModel);
         
         taskVariable.and().assertField("scope").is(taskVariable.getScope())
-            .and().assertField("name").is(taskVariable.getName())
-            .and().assertField("type").is(taskVariable.getType())
-            .and().assertField("value").is(taskVariable.getValue());
+            .and().assertField("name").is(variableModel.getName())
+            .and().assertField("type").is(variableModel.getType())
+            .and().assertField("value").is(variableModel.getValue());
         
         variableModel.setValue("updatedValue");
         taskVariable = tasksApi.updateTaskVariable(taskModel, variableModel).and().assertField("value").is("updatedValue");

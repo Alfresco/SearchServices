@@ -56,7 +56,7 @@ public class RemoveTaskItemSanityTests extends RestWorkflowTest
         taskItem = tasksApi.addTaskItem(taskModel, document2);
         tasksApi.deleteTaskItem(taskModel, taskItem);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        tasksApi.getTaskItems(taskModel).assertEntriesListDoesNotContain("id", taskItem.getId());
+        tasksApi.getTaskItems(taskModel).assertEntriesListDoesNotContain("name", document2.getName());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 

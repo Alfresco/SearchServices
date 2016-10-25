@@ -2,7 +2,6 @@ package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestWorkflowTest;
-import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.model.FileModel;
@@ -30,7 +29,6 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
     private SiteModel siteModel;
     private FileModel fileModel, document1;
     private TaskModel taskModel;
-    private RestItemModel taskItem;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -50,11 +48,10 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(userWhoStartsTask);
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document1);
+        tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel)
-        .assertEntriesListIsNotEmpty()
-        .assertEntriesListContains("id", taskItem.getId());
-
+                .assertEntriesListIsNotEmpty()
+                .assertEntriesListContains("name", document1.getName());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -64,10 +61,10 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(assignee);
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document1);
+        tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel)
-        .assertEntriesListIsNotEmpty()
-        .assertEntriesListContains("id", taskItem.getId());
+                .assertEntriesListIsNotEmpty()
+                .assertEntriesListContains("name", document1.getName());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -90,10 +87,10 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
         
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document1);
+        tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel)
-        .assertEntriesListIsNotEmpty()
-        .assertEntriesListContains("id", taskItem.getId());
+                .assertEntriesListIsNotEmpty()
+                .assertEntriesListContains("name", document1.getName());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
