@@ -1178,6 +1178,18 @@ public class AlfrescoSolrDataModel implements QueryConstants
         {
             return true;
         }
+        else if(dataType.getName().equals(DataTypeDefinition.BOOLEAN))
+        {
+            return true;
+        }
+        else if(dataType.getName().equals(DataTypeDefinition.CATEGORY))
+        {
+            return true;
+        }
+        else if(dataType.getName().equals(DataTypeDefinition.NODE_REF))
+        {
+            return true;
+        }
         else
         {
             return false;

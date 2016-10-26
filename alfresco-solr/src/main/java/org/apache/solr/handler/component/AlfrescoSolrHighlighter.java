@@ -23,16 +23,22 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.content.SolrContentStore;
+import org.apache.lucene.analysis.CachingTokenFilter;
+import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.FilterLeafReader;
@@ -42,20 +48,28 @@ import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.highlight.Encoder;
+import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
+import org.apache.lucene.search.highlight.OffsetLimitTokenFilter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.QueryTermScorer;
 import org.apache.lucene.search.highlight.Scorer;
+import org.apache.lucene.search.highlight.TextFragment;
+import org.apache.lucene.search.highlight.TokenSources;
 import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter;
 import org.apache.lucene.search.vectorhighlight.FieldQuery;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.HighlightParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.highlight.DefaultSolrHighlighter;
+import org.apache.solr.highlight.SolrFragmenter;
 import org.apache.solr.highlight.SolrHighlighter;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
@@ -237,8 +251,19 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 			// Highlight per-field
 			for (String fieldName : fieldNames) {
 				String schemaFieldName = AlfrescoSolrDataModel.getInstance().mapProperty(fieldName, FieldUse.HIGHLIGHT, req);
+				
+				// rewrite field specific parameters .....
 				SchemaField schemaField = schema.getFieldOrNull(schemaFieldName);
-
+				ModifiableSolrParams fixedFieldParams =  new ModifiableSolrParams();
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_PRE, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_POST, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.FRAGSIZE, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS, fieldName, schemaFieldName);
+                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SNIPPETS, fieldName, schemaFieldName);
+               
+                copyOtherQueryParams(fixedFieldParams, params);
+                req.setParams(fixedFieldParams);
+				
 				Object fieldHighlights; // object type allows flexibility for
 										// subclassers
 				if (schemaField == null) {
@@ -247,19 +272,19 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 					// TODO: highlighting numeric fields is broken (Lucene) - so
 					// we disable them until fixed (see LUCENE-3080)!
 					fieldHighlights = null;
-				} else if (useFastVectorHighlighter(params, schemaField)) {
+				} else if (useFastVectorHighlighter(fixedFieldParams, schemaField)) {
 					if (fvhFieldQuery == null) {
 						fvh = new FastVectorHighlighter(
 						// FVH cannot process hl.usePhraseHighlighter parameter
 						// per-field basis
-								params.getBool(
+								fixedFieldParams.getBool(
 										HighlightParams.USE_PHRASE_HIGHLIGHTER,
 										true),
 								// FVH cannot process hl.requireFieldMatch
 								// parameter per-field basis
-								params.getBool(HighlightParams.FIELD_MATCH,
+								fixedFieldParams.getBool(HighlightParams.FIELD_MATCH,
 										false));
-						fvh.setPhraseLimit(params.getInt(
+						fvh.setPhraseLimit(fixedFieldParams.getInt(
 								HighlightParams.PHRASE_LIMIT,
 								SolrHighlighter.DEFAULT_PHRASE_LIMIT));
 						fvhFieldQuery = fvh.getFieldQuery(query, reader);
@@ -285,12 +310,192 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 					docHighlights.add(fieldName, fieldHighlights);
 				}
 			} // for each field
+			if(doc.get("DBID") != null)
+			{
+			    docHighlights.add("DBID", doc.get("DBID"));
+			}
 			fragments.add(schema.printableUniqueKey(doc), docHighlights);
 		} // for each doc
 		return fragments;
 	}
-
 	
+	  /** Highlights and returns the highlight object for this field -- a String[] by default. Null if none. */
+	  @SuppressWarnings("unchecked")
+	  protected Object doHighlightingByHighlighter(Document doc, int docId, SchemaField schemaField, Query query,
+	                                               IndexReader reader, SolrQueryRequest req) throws IOException {
+	    final SolrParams params = req.getParams();
+	    final String fieldName = schemaField.getName();
+
+	    final int mvToExamine =
+	        params.getFieldInt(fieldName, HighlightParams.MAX_MULTIVALUED_TO_EXAMINE,
+	            (schemaField.multiValued()) ? Integer.MAX_VALUE : 1);
+
+	    // Technically this is the max *fragments* (snippets), not max values:
+	    int mvToMatch =
+	        params.getFieldInt(fieldName, HighlightParams.MAX_MULTIVALUED_TO_MATCH, Integer.MAX_VALUE);
+	    if (mvToExamine <= 0 || mvToMatch <= 0) {
+	      return null;
+	    }
+
+	    int maxCharsToAnalyze = params.getFieldInt(fieldName,
+	        HighlightParams.MAX_CHARS,
+	        Highlighter.DEFAULT_MAX_CHARS_TO_ANALYZE);
+	    if (maxCharsToAnalyze < 0) {//e.g. -1
+	      maxCharsToAnalyze = Integer.MAX_VALUE;
+	    }
+
+	    List<String> fieldValues = getFieldValues(doc, fieldName, mvToExamine, maxCharsToAnalyze, req);
+	    if (fieldValues.isEmpty()) {
+	      return null;
+	    }
+
+	    // preserve order of values in a multiValued list
+	    boolean preserveMulti = params.getFieldBool(fieldName, HighlightParams.PRESERVE_MULTI, false);
+
+	    int numFragments = getMaxSnippets(fieldName, params);
+	    boolean mergeContiguousFragments = isMergeContiguousFragments(fieldName, params);
+
+	    List<TextFragment> frags = new ArrayList<>();
+
+	    //Try term vectors, which is faster
+	    //  note: offsets are minimally sufficient for this HL.
+	    final Fields tvFields = schemaField.storeTermOffsets() ? reader.getTermVectors(docId) : null;
+	    final TokenStream tvStream =
+	        TokenSources.getTermVectorTokenStreamOrNull(fieldName, tvFields, maxCharsToAnalyze - 1);
+	    //  We need to wrap in OffsetWindowTokenFilter if multi-valued
+	    final OffsetWindowTokenFilter tvWindowStream;
+	    if (tvStream != null && fieldValues.size() > 1) {
+	      tvWindowStream = new OffsetWindowTokenFilter(tvStream);
+	    } else {
+	      tvWindowStream = null;
+	    }
+
+	    for (String thisText : fieldValues) {
+	      if (mvToMatch <= 0 || maxCharsToAnalyze <= 0) {
+	        break;
+	      }
+
+	      TokenStream tstream;
+	      if (tvWindowStream != null) {
+	        // if we have a multi-valued field with term vectors, then get the next offset window
+	        tstream = tvWindowStream.advanceToNextWindowOfLength(thisText.length());
+	      } else if (tvStream != null) {
+	        tstream = tvStream; // single-valued with term vectors
+	      } else {
+	        // fall back to analyzer
+	        tstream = createAnalyzerTStream(schemaField, thisText);
+	      }
+
+	      Highlighter highlighter;
+	      if (params.getFieldBool(fieldName, HighlightParams.USE_PHRASE_HIGHLIGHTER, true)) {
+	        // We're going to call getPhraseHighlighter and it might consume the tokenStream. If it does, the tokenStream
+	        // needs to implement reset() efficiently.
+
+	        //If the tokenStream is right from the term vectors, then CachingTokenFilter is unnecessary.
+	        //  It should be okay if OffsetLimit won't get applied in this case.
+	        final TokenStream tempTokenStream;
+	        if (tstream != tvStream) {
+	          if (maxCharsToAnalyze >= thisText.length()) {
+	            tempTokenStream = new CachingTokenFilter(tstream);
+	          } else {
+	            tempTokenStream = new CachingTokenFilter(new OffsetLimitTokenFilter(tstream, maxCharsToAnalyze));
+	          }
+	        } else {
+	          tempTokenStream = tstream;
+	        }
+
+	        // get highlighter
+	        highlighter = getPhraseHighlighter(query, fieldName, req, tempTokenStream);
+
+	        // if the CachingTokenFilter was consumed then use it going forward.
+	        if (tempTokenStream instanceof CachingTokenFilter && ((CachingTokenFilter) tempTokenStream).isCached()) {
+	          tstream = tempTokenStream;
+	        }
+	        //tstream.reset(); not needed; getBestTextFragments will reset it.
+	      } else {
+	        // use "the old way"
+	        highlighter = getHighlighter(query, fieldName, req);
+	      }
+
+	      highlighter.setMaxDocCharsToAnalyze(maxCharsToAnalyze);
+	      maxCharsToAnalyze -= thisText.length();
+
+	      // Highlight!
+	      try {
+	        TextFragment[] bestTextFragments =
+	            highlighter.getBestTextFragments(tstream, fixLocalisedText(thisText), mergeContiguousFragments, numFragments);
+	        for (TextFragment bestTextFragment : bestTextFragments) {
+	          if (bestTextFragment == null)//can happen via mergeContiguousFragments
+	            continue;
+	          // normally we want a score (must be highlighted), but if preserveMulti then we return a snippet regardless.
+	          if (bestTextFragment.getScore() > 0 || preserveMulti) {
+	            frags.add(bestTextFragment);
+	            if (bestTextFragment.getScore() > 0)
+	              --mvToMatch; // note: limits fragments (for multi-valued fields), not quite the number of values
+	          }
+	        }
+	      } catch (InvalidTokenOffsetsException e) {
+	        throw new SolrException(SolrException.ErrorCode.SERVER_ERROR, e);
+	      }
+	    }//end field value loop
+
+	    // Put the fragments onto the Solr response (docSummaries)
+	    if (frags.size() > 0) {
+	      // sort such that the fragments with the highest score come first
+	      if (!preserveMulti) {
+	        Collections.sort(frags, (arg0, arg1) -> Float.compare(arg1.getScore(), arg0.getScore()));
+	      }
+
+	      // Truncate list to hl.snippets, but not when hl.preserveMulti
+	      if (frags.size() > numFragments && !preserveMulti) {
+	        frags = frags.subList(0, numFragments);
+	      }
+	      return getResponseForFragments(frags, req);
+	    }
+	    return null;//no highlights for this field
+	  }
+	
+	private void copyOtherQueryParams(ModifiableSolrParams fixed, SolrParams params)
+	{
+		for(Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+		{
+			String name = it.next();
+
+			fixed.set(name, params.getParams(name));
+
+		}
+	}
+
+
+	private void rewriteHighlightFieldOptions(ModifiableSolrParams fixed, SolrParams params, String paramName, String oldField, String newField)
+	{
+		for(Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
+		{
+			String name = it.next();
+			if(name.startsWith("f."))
+			{
+				if(name.endsWith("."+paramName))
+				{
+
+					String source = name.substring(2, name.length() - paramName.length() - 1);
+					if(source.equals(oldField))
+					{
+						fixed.set("f."+newField+"."+paramName, params.getParams(name));
+					}
+					else
+					{
+						fixed.set(name, params.getParams(name));
+					}
+
+
+				}
+				else
+				{
+					fixed.set(name, params.getParams(name));
+				}
+			}       
+		}
+	}
 
 	private String fixLocalisedText(String text) {
 		if ((text == null) || (text.length() == 0)) {
@@ -371,9 +576,6 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 		return altList;
 	}
 
-	
-
-
 	private Document getDocument(Document doc, SolrQueryRequest req)
 			throws IOException {
 		try {
@@ -428,6 +630,74 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 	      tvFields = in.getTermVectors(docID);
 	    }
 	    return tvFields;
+	  }
+	}
+
+	
+	/** For use with term vectors of multi-valued fields. We want an offset based window into its TokenStream. */
+	final class OffsetWindowTokenFilter extends TokenFilter {
+
+	  private final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
+	  private final PositionIncrementAttribute posIncAtt = addAttribute(PositionIncrementAttribute.class);
+	  private int windowStartOffset;
+	  private int windowEndOffset = -1;//exclusive
+	  private boolean windowTokenIncremented = false;
+	  private boolean inputWasReset = false;
+	  private State capturedState;//only used for first token of each subsequent window
+
+	  OffsetWindowTokenFilter(TokenStream input) {//input should not have been reset already
+	    super(input);
+	  }
+
+	  //Called at the start of each value/window
+	  OffsetWindowTokenFilter advanceToNextWindowOfLength(int length) {
+	    windowStartOffset = windowEndOffset + 1;//unclear why there's a single offset gap between values, but tests show it
+	    windowEndOffset = windowStartOffset + length;
+	    windowTokenIncremented = false;//thereby permit reset()
+	    return this;
+	  }
+
+	  @Override
+	  public void reset() throws IOException {
+	    //we do some state checking to ensure this is being used correctly
+	    if (windowTokenIncremented) {
+	      throw new IllegalStateException("This TokenStream does not support being subsequently reset()");
+	    }
+	    if (!inputWasReset) {
+	      super.reset();
+	      inputWasReset = true;
+	    }
+	  }
+
+	  @Override
+	  public boolean incrementToken() throws IOException {
+	    assert inputWasReset;
+	    windowTokenIncremented = true;
+	    while (true) {
+	      //increment Token
+	      if (capturedState == null) {
+	        if (!input.incrementToken()) {
+	          return false;
+	        }
+	      } else {
+	        restoreState(capturedState);
+	        capturedState = null;
+	        //Set posInc to 1 on first token of subsequent windows. To be thorough, we could subtract posIncGap?
+	        posIncAtt.setPositionIncrement(1);
+	      }
+
+	      final int startOffset = offsetAtt.startOffset();
+	      final int endOffset = offsetAtt.endOffset();
+	      if (startOffset >= windowEndOffset) {//end of window
+	        capturedState = captureState();
+	        return false;
+	      }
+	      if (startOffset >= windowStartOffset) {//in this window
+	        offsetAtt.setOffset(startOffset - windowStartOffset, endOffset - windowStartOffset);
+	        return true;
+	      }
+	      //otherwise this token is before the window; continue to advance
+	    }
 	  }
 	}
 }

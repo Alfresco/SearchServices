@@ -19,6 +19,7 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,18 +36,16 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
 {
     String nodeRef = "workspace://SpacesStore/00000000-0000-1-4731-76966678";
     String nodeRefS = "noderef@s_@mytest" ;
-    String nodeRefSD = "noderef@sd_@mytest" ;
+    String nodeRefSD = "noderef@sd@mytest" ;
     String nodeRefM = "noderef@m_@test";
     String nodeRefMD = "noderef@md@test";
     String boolenField = "boolean@m_@mytest";
     String booleanValue = "aaa-true";
-    String boolenDocField = "boolean@md_@mytest";
+    String boolenDocField = "boolean@md@mytest";
     String categoryMultiField = "category@m_@test";
-    String categoryMultiDocField = "category@md_@test";
-    String categorySingleDocField = "category@sd_@test";
+    String categoryMultiDocField = "category@md@test";
+    String categorySingleDocField = "category@sd@test";
     String categoryValue = "test category-1";
-    String qnameField = "qname@m_@hits";
-    String qnameDocField = "qname@md_@hits";
     
     @Before
     public void setup() throws Exception
@@ -62,8 +61,6 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
                 categoryMultiField, categoryValue,
                 categoryMultiDocField, categoryValue,
                 categorySingleDocField, categoryValue,
-                qnameField, ContentModel.PROP_HITS.toString(),
-                qnameDocField, ContentModel.PROP_HITS.toString(),
                 "_version_","1"
                 ));
         assertU(commit());
@@ -115,13 +112,5 @@ public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
                 "//*[@name = '" + categoryValue + "']");
         assertQ(req("q", "*:*","facet", "true","facet.field", categoryMultiField),
                 "//*[@name = 'test']");
-    }
-    @Test
-    public void testQName() throws Exception
-    {
-        assertQ(req("q", "*:*","facet", "true","facet.field", qnameDocField),
-                "//*[@name = '" + ContentModel.PROP_HITS + "']");
-        assertQ(req("q", "*:*","facet", "true","facet.field", qnameField),
-                "//*[@name = 'hits']");
     }
 }

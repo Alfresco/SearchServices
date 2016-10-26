@@ -119,7 +119,7 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
             Acl acl = bulkAcls.get(i);
             long aclId = acl.getId();
 
-            QueryResponse response = query(getDefaultTestClient(),
+            QueryResponse response = query(getDefaultTestClient(), true,
                     "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel" + aclId + "\"], \"tenants\": [ \"\" ]}",
                     params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc","fq","{!afts}AUTHORITY_FILTER_FROM_JSON"));
 
