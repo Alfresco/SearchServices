@@ -95,6 +95,10 @@ public class AlfrescoSpellCheckCollator
             maxDocId = reader.maxDoc();
         }
 
+        JSONObject alfrescoJSON = (JSONObject) ultimateResponse.req.getContext().get(AbstractQParser.ALFRESCO_JSON);
+        String originalAftsQuery = alfrescoJSON.getString("query");
+
+
         int tryNo = 0;
         int collNo = 0;
         PossibilityIterator possibilityIter = new PossibilityIterator(result.getSuggestions(), maxNumberToIterate,
@@ -150,15 +154,13 @@ public class AlfrescoSpellCheckCollator
                 params.remove(GroupParams.GROUP);
 
                 boolean useQStr = true;
-                JSONObject alfrescoJSON = (JSONObject) req.getContext().get(AbstractQParser.ALFRESCO_JSON);
+
                 if (alfrescoJSON != null)
                 {
                     try
                     {
-                        aftsQuery = alfrescoJSON.getString("query");
-                        aftsQuery = aftsQuery.replaceAll(Pattern.quote(originalQuery), Matcher.quoteReplacement(collationQueryStr));
+                        aftsQuery = originalAftsQuery.replaceAll(Pattern.quote(originalQuery), Matcher.quoteReplacement(collationQueryStr));
                         alfrescoJSON.put("query", aftsQuery);
-
                         req.getContext().put(AbstractQParser.ALFRESCO_JSON, alfrescoJSON);
                         useQStr = false;
                     }

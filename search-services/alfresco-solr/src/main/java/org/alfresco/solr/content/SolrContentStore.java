@@ -140,6 +140,7 @@ public class SolrContentStore implements ContentStore
         return (contentUrl != null && contentUrl.startsWith(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX));
     }
 
+
     /**
      * @return <tt>true</tt> always
      */
@@ -209,20 +210,6 @@ public class SolrContentStore implements ContentStore
         SolrFileContentWriter writer = new SolrFileContentWriter(file, url);
         // Done
         return writer;
-    }
-
-    @Deprecated
-    @Override
-    public void getUrls(ContentUrlHandler handler) throws ContentIOException
-    {
-        throw new UnsupportedOperationException("Auto-created method not implemented.");
-    }
-
-    @Deprecated
-    @Override
-    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
-    {
-        throw new UnsupportedOperationException("Auto-created method not implemented.");
     }
 
     @Override

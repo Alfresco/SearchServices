@@ -1,33 +1,5 @@
 package org.alfresco.solr;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.Filter;
-
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
@@ -59,6 +31,7 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
@@ -71,6 +44,17 @@ import org.junit.BeforeClass;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.Filter;
+import java.io.*;
+import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 
 /**
  * Clone of a helper base class for distributed search test cases
@@ -100,6 +84,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     public static Random r;
     private AtomicInteger nodeCnt = new AtomicInteger(0);
     protected boolean useExplicitNodeNames;
+
+    public static Properties DEFAULT_CORE_PROPS = new Properties();
+
+    static {
+        DEFAULT_CORE_PROPS.setProperty("alfresco.commitInterval", "1000");
+        DEFAULT_CORE_PROPS.setProperty("alfresco.newSearcherInterval", "2000");
+    }
 
     /**
      * Set's the value of the "hostContext" system property to a random path
@@ -395,7 +386,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
-    private void waitForDocCountCore(SolrCore core,
+    public void waitForDocCountCore(SolrCore core,
                                  Query query,
                                  long expectedNumFound,
                                  long waitMillis,
@@ -714,13 +705,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }// add random fields to the documet before indexing
 
-    protected void indexr(SolrClient client, Object... fields) throws Exception
+    protected void indexr(SolrClient client, boolean andShards, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
         addFields(doc, fields);
         addFields(doc, "rnd_b", true);
         addRandFields(doc);
-        indexDoc(client, doc);
+        indexDoc(client, andShards, doc);
     }
 
     protected SolrInputDocument addRandFields(SolrInputDocument sdoc)
@@ -729,22 +720,25 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return sdoc;
     }
 
-    protected void index(SolrClient client, Object... fields) throws Exception
+    protected void index(SolrClient client, boolean andShards, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
         addFields(doc, fields);
-        indexDoc(client, doc);
+        indexDoc(client, andShards, doc);
     }
 
     /**
      * Indexes the document in both the client, and a randomly selected shard
      */
-    protected void indexDoc(SolrClient client, SolrInputDocument doc) throws IOException, SolrServerException
+    protected void indexDoc(SolrClient client, boolean andShards, SolrInputDocument doc) throws IOException, SolrServerException
     {
         client.add(doc);
-        int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clientShards.size();
-        SolrClient clientShard = clientShards.get(which);
-        clientShard.add(doc);
+        if (andShards)
+        {
+            int which = (doc.getField(id).toString().hashCode() & 0x7fffffff) % clientShards.size();
+            SolrClient clientShard = clientShards.get(which);
+            clientShard.add(doc);
+        }
     }
 
     /**
@@ -843,17 +837,24 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return rsp;
     }
 
-    protected QueryResponse query(SolrClient solrClient, String json, ModifiableSolrParams params) throws Exception
+    protected QueryResponse query(SolrClient solrClient, boolean andShards, String json, ModifiableSolrParams params) throws Exception
     {
         params.set("distrib", "false");
         QueryRequest request = getAlfrescoRequest(json, params);
         QueryResponse controlRsp = request.process(solrClient);
         validateResponse(controlRsp);
-        params.remove("distrib");
-        setDistributedParams(params);
-        QueryResponse rsp = queryServer(json, params);
-        compareResponses(rsp, controlRsp);
-        return rsp;
+        if (andShards)
+        {
+            params.remove("distrib");
+            setDistributedParams(params);
+            QueryResponse rsp = queryServer(json, params);
+            compareResponses(rsp, controlRsp);
+            return rsp;
+        }
+        else
+        {
+            return controlRsp;
+        }
     }
 
     protected QueryResponse queryServer(String json, SolrParams params) throws SolrServerException, IOException
@@ -1471,6 +1472,23 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
+    public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<String> content)
+    {
+        //First map the nodes to a transaction.
+        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+
+        //Next map a node to the NodeMetaData
+        int i=0;
+        for(NodeMetaData nodeMetaData : nodeMetaDatas)
+        {
+            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.nodeContentMap.put(nodeMetaData.getId(), content.get(i++));
+        }
+
+        //Next add the transaction to the queue
+        SOLRAPIQueueClient.transactionQueue.add(transaction);
+    }
+
     /**
      * Calls the Admin handler with an action.
      * @param coreAdminHandler
@@ -1559,6 +1577,58 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             {
                 log.error("Failed to shutdown test properly ", e);
             }
+        }
+    }
+
+    /**
+     * Creates a Jetty instance with the default "alfresco" core that uses the production rerank template.
+     * There is only 1 shard.
+     */
+    public class DefaultAlrescoCoreRule extends JettyServerRule
+    {
+        SolrCore defaultCore;
+        SolrClient defaultClient;
+        Properties properties;
+
+        public DefaultAlrescoCoreRule(String serverName, Properties properties) {
+            super(serverName, 0, null, null);
+            this.properties = properties;
+        }
+
+        @Override
+        protected void before() throws Throwable {
+            super.before();
+
+            JettySolrRunner jsr = jettyContainers.get(serverName);
+            CoreContainer coreContainer = jsr.getCoreContainer();
+            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
+            assertNotNull(coreAdminHandler);
+            String[] extras = null;
+            if ((properties != null) && !properties.isEmpty())
+            {
+                int i = 0;
+                extras = new String[properties.size()*2];
+                for (Map.Entry<Object, Object> prop:properties.entrySet()) {
+                    extras[i++] = "property."+prop.getKey();
+                    extras[i++] = (String) prop.getValue();
+                }
+
+            }
+            defaultCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "alfresco", "rerank", 1, 1, extras);
+            assertNotNull(defaultCore);
+            String url = buildUrl(jsr.getLocalPort()) + "/" + "alfresco";
+            defaultClient = createNewSolrClient(url);
+            assertNotNull(defaultClient);
+            jettyClients.put("alfresco", defaultClient);
+
+        }
+
+        public SolrCore getDefaultCore() {
+            return defaultCore;
+        }
+
+        public SolrClient getDefaultClient() {
+            return defaultClient;
         }
     }
 }
