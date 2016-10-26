@@ -635,6 +635,8 @@
       <field name="TAG"    type="identifier" indexed="true" omitNorms="true" stored="false" multiValued="true" docValues="true" />
       <field name="PNAME"  type="identifier" indexed="true" omitNorms="true" stored="false" multiValued="true" docValues="true" />
       <field name="NPATH"  type="identifier" indexed="true" omitNorms="true" stored="false" multiValued="true" docValues="true" />
+      <field name="ANAME"  type="identifier" indexed="true" omitNorms="true" stored="false" multiValued="true" docValues="true" />
+      <field name="APATH"  type="identifier" indexed="true" omitNorms="true" stored="false" multiValued="true" docValues="true" />
 
 
       <!-- Single value indexed  -->
