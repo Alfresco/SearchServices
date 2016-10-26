@@ -24,3 +24,4 @@ Thumbs.db
 tlog
 _DEFAULT_
 .recommenders/
+/packaging/src/docker/alfresco-solr-distribution*.zip
