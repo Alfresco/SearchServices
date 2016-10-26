@@ -12,7 +12,7 @@
     </imports>
 
     <namespaces>
-        <namespace uri="tas.cmis.model" prefix="test"/>
+        <namespace uri="tas.cmis.model" prefix="tas"/>
     </namespaces>
 
     <types>
@@ -42,7 +42,7 @@
             </properties>
 
             <associations>
-                <association name="tas:testContent">
+                <association name="tas:content">
                     <source>
                         <mandatory>false</mandatory>
                         <many>false</many>
@@ -81,7 +81,7 @@
             </properties>
 
             <associations>
-                <association name="tas:testFolder">
+                <association name="tas:folder">
                     <source>
                         <mandatory>false</mandatory>
                         <many>false</many>
