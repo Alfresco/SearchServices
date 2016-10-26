@@ -940,14 +940,21 @@ public class SOLRAPIClient
             {
                 JSONArray jsonPaths = jsonNodeInfo.getJSONArray("paths");
                 List<Pair<String, QName>> paths = new ArrayList<Pair<String, QName>>(jsonPaths.length());
+                List<String> ancestorPaths = new ArrayList<String>();
                 for(int j = 0; j < jsonPaths.length(); j++)
                 {
                     JSONObject path = jsonPaths.getJSONObject(j);
                     String pathValue = path.getString("path");
                     QName qname = path.has("qname") ? deserializer.deserializeValue(QName.class, path.getString("qname")) : null;
                     paths.add(new Pair<String, QName>(pathValue, qname));
+                    if(path.has("apath"))
+                    {
+                    	String ancestorPath = path.getString("apath");
+                    	ancestorPaths.add(ancestorPath);
+                    }
                 }
                 metaData.setPaths(paths);
+                metaData.setAncestorPaths(ancestorPaths);
             }
             
             if(jsonNodeInfo.has("namePaths"))
