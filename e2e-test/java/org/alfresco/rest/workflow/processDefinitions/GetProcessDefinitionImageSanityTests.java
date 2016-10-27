@@ -17,37 +17,39 @@ import org.testng.annotations.Test;
  * Created by Claudia Agache on 10/13/2016.
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
-public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest {
-  @Autowired
-  private DataUser dataUser;
-  @Autowired
-  private RestProcessDefinitionsApi processDefinitionsApi;
+public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
+{
+    @Autowired
+    private DataUser dataUser;
+    @Autowired
+    private RestProcessDefinitionsApi processDefinitionsApi;
 
-  private UserModel testUser;
-  private RestProcessDefinitionModel randomProcessDefinition;
+    private UserModel testUser;
+    private RestProcessDefinitionModel randomProcessDefinition;
 
-  @BeforeClass(alwaysRun = true)
-  public void dataPreparation() throws Exception {
-    testUser = dataUser.createRandomTestUser();
-    processDefinitionsApi.useRestClient(restClient);
-    restClient.authenticateUser(dataUser.getAdminUser());
-    randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
-  }
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        testUser = dataUser.createRandomTestUser();
+        processDefinitionsApi.useRestClient(restClient);
+        restClient.authenticateUser(dataUser.getAdminUser());
+        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
+    }
 
-  @TestRail(section = { TestGroup.REST_API,
-      TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Any user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
-  public void anyUserGetsProcessDefinitionImage() throws Exception {
-    restClient.authenticateUser(testUser);
-    processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition)
-        .assertResponseContainsImage();
-    processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-  }
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Any user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
+    public void anyUserGetsProcessDefinitionImage() throws Exception
+    {
+        restClient.authenticateUser(testUser);
+        processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition)
+            .assertResponseContainsImage();
+        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 
-  @TestRail(section = { TestGroup.REST_API,
-      TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
-  public void adminGetsProcessDefinitionImage() throws Exception {
-    processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition)
-        .assertResponseContainsImage();
-    processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-  }
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
+    public void adminGetsProcessDefinitionImage() throws Exception
+    {
+        processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition)
+            .assertResponseContainsImage();
+        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+    }
 }
