@@ -45,7 +45,6 @@ public class GetTagsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tags using REST API and status code is OK (200)")
     public void getTagsWithManagerRole() throws JsonToModelConversionException, Exception
     {
-
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         tagsAPI.getTags();
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
@@ -54,7 +53,6 @@ public class GetTagsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role gets tags using REST API and status code is OK (200)")
     public void getTagsWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
-
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         tagsAPI.getTags();
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
@@ -63,7 +61,6 @@ public class GetTagsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role gets tags using REST API and status code is OK (200)")
     public void getTagsWithContributorRole() throws JsonToModelConversionException, Exception
     {
-
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         tagsAPI.getTags();
         tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
