@@ -65,6 +65,8 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOM
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -2578,6 +2580,7 @@ public class SolrInformationServer implements InformationServer
         doc.removeField(FIELD_SITE);
         doc.removeField(FIELD_TAG);
         doc.removeField(FIELD_TAG_SUGGEST);
+        doc.removeField(FIELD_APATH);
 
 
         boolean repoOnly = true;
@@ -2612,6 +2615,44 @@ public class SolrInformationServer implements InformationServer
         if(repoOnly)
         {
             doc.addField(FIELD_SITE, NO_SITE);
+        }  
+        
+        for(String ancestorPath : nodeMetaData.getAncestorPaths())
+        {
+        	String[] elements;
+        	if((ancestorPath.length() > 0) && (ancestorPath.startsWith("/")))
+        	{
+        		elements = ancestorPath.substring(1).split("/");
+        	}
+        	else
+        	{
+        		elements = ancestorPath.split("/");
+        	}
+        	
+        	StringBuilder builder = new StringBuilder();
+            int i = 0;
+        	for(String element : elements)
+        	{
+                builder.append('/').append(element);
+                doc.addField(FIELD_APATH, "" + i++ + builder.toString());
+            }
+            if(builder.length() > 0)
+            {
+                doc.addField(FIELD_APATH, "F" + builder.toString());
+            }
+
+            builder = new StringBuilder();
+            for(int j = 0;  j < elements.length; j++)
+            {
+                String element = elements[elements.length - 1 - j];
+                builder.insert(0, element);
+                builder.insert(0, '/');
+                doc.addField(FIELD_ANAME, "" + j +  builder.toString());
+            }
+            if(builder.length() > 0)
+            {
+                doc.addField(FIELD_ANAME, "F" +  builder.toString());
+            }
         }
     }
 
@@ -3171,9 +3212,6 @@ public class SolrInformationServer implements InformationServer
         else
         {
             doc.addField(field.getField(), stringPropertyValue.getValue());
-            SolrInputField f = doc.getField(field.getField());
-
-
         }
         addFieldIfNotSet(doc, field);
     }
