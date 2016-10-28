@@ -748,7 +748,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
                addCompletionFields(propertyDefinition, indexedField);
                break;
            case HIGHLIGHT:
-               addSuggestSearchFields(propertyDefinition, indexedField);
+               addHighlightSearchFields(propertyDefinition, indexedField);
                break;
            }
         }
@@ -816,7 +816,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }        
     }
     
-    private void addSuggestSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
+    private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
         if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
                 || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
@@ -824,6 +824,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         	if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
         	{
                 indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
         	}
         	else
         	{
@@ -1942,6 +1943,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
      */
      public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req)
      {
+    	 return mapProperty(potentialProperty, fieldUse, req, 0);
+     }
+     
+     
+     public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req, int position)
+     {
          if(potentialProperty.equals("asc") || potentialProperty.equals("desc") || potentialProperty.equals("_docid_"))
          {
              return potentialProperty;
@@ -1972,7 +1979,14 @@ public class AlfrescoSolrDataModel implements QueryConstants
              IndexedField fields = AlfrescoSolrDataModel.getInstance().getQueryableFields(propertyDef.getName(), getTextField(fieldNameAndEnding.getSecond()), fieldUse);
              if(fields.getFields().size() > 0)
              {
-                 solrSortField = fields.getFields().get(0).getField();
+            	 if(fields.getFields().size() > position)
+            	 {
+            		 solrSortField = fields.getFields().get(position).getField();
+            	 }
+            	 else
+            	 {
+                     solrSortField = fields.getFields().get(0).getField();
+            	 }
              }
              else
              {

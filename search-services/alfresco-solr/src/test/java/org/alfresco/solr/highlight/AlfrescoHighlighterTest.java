@@ -114,10 +114,12 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
         Node folderNode = getNode(foldertxn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node fileNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node fileNode2 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        Node fileNode3 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
 
         NodeMetaData folderMetaData = getNodeMetaData(folderNode, foldertxn, acl, "mike", null, false);
         NodeMetaData fileMetaData   = getNodeMetaData(fileNode,  txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
         NodeMetaData fileMetaData2  = getNodeMetaData(fileNode2, txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
+        NodeMetaData fileMetaData3  = getNodeMetaData(fileNode3, txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
 
         String LONG_TEXT = "this is some long text.  It has the word long in many places.  In fact, it has long on some different fragments.  " +
                 "Let us see what happens to long in this case.";
@@ -134,18 +136,21 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
         HashMap<Locale, String> title2 = new HashMap<Locale, String> ();
         title2.put(Locale.ENGLISH, "title2");
         fileMetaData2.getProperties().put(ContentModel.PROP_TITLE,  new  MLTextPropertyValue(title2));
+        
+        fileMetaData3.getProperties().put(ContentModel.PROP_NAME,  new StringPropertyValue("MixedCabbageString and plurals and discussion"));
+        fileMetaData3.getProperties().put(ContentModel.PROP_TITLE,  new  MLTextPropertyValue(title2));
 
        // List<String> content = Arrays.asList(LONG_TEXT, LONG_TEXT);
 
         //Index the transaction, nodes, and nodeMetaDatas.
         indexTransaction(foldertxn, list(folderNode), list(folderMetaData));
         indexTransaction(txn,
-                list(fileNode, fileNode2),
-                list(fileMetaData, fileMetaData2));
+                list(fileNode, fileNode2, fileNode3),
+                list(fileMetaData, fileMetaData2, fileMetaData3));
         logger.info("######### Waiting for Doc Count ###########");
 
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "mike")), 3, 10000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "mike")), 4, 10000);
 
         logger.info("######### Testing SNIPPETS / FRAGSIZE ###########");
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
@@ -320,6 +325,64 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "*[count(//lst[@name='highlighting']/lst)=2]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=0]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]");
+        
+        
+        logger.info("######### CamelCase ###########");
+
+        req = areq(params( "q", "name:cabbage", "qt", "/afts", "start", "0", "rows", "5",
+                HighlightParams.HIGHLIGHT, "true",
+                //HighlightParams.Q, "lon*",
+                HighlightParams.FIELDS, "name",
+                HighlightParams.HIGHLIGHT_MULTI_TERM, "false",
+                HighlightParams.SIMPLE_PRE, "{",
+                HighlightParams.SIMPLE_POST, "}",
+                HighlightParams.SNIPPETS, String.valueOf(1),
+                HighlightParams.FRAGSIZE, String.valueOf(100)),
+                "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
+
+        assertQ(req,
+                "*[count(//lst[@name='highlighting']/lst)=1]",
+                "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='Mixed{Cabbage}String and plurals and discussion']"
+        		);
+        
+        logger.info("######### Plurals ###########");
+
+        req = areq(params( "q", "name:plural", "qt", "/afts", "start", "0", "rows", "5",
+                HighlightParams.HIGHLIGHT, "true",
+                //HighlightParams.Q, "lon*",
+                HighlightParams.FIELDS, "name",
+                HighlightParams.HIGHLIGHT_MULTI_TERM, "false",
+                HighlightParams.SIMPLE_PRE, "{",
+                HighlightParams.SIMPLE_POST, "}",
+                HighlightParams.SNIPPETS, String.valueOf(1),
+                HighlightParams.FRAGSIZE, String.valueOf(100)),
+                "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
+
+        assertQ(req,
+                "*[count(//lst[@name='highlighting']/lst)=1]",
+                "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and {plurals} and discussion']"
+        		);
+        
+        logger.info("######### stemming ###########");
+
+        req = areq(params( "q", "name:discuss", "qt", "/afts", "start", "0", "rows", "5",
+                HighlightParams.HIGHLIGHT, "true",
+                //HighlightParams.Q, "lon*",
+                HighlightParams.FIELDS, "name",
+                HighlightParams.HIGHLIGHT_MULTI_TERM, "false",
+                HighlightParams.SIMPLE_PRE, "{",
+                HighlightParams.SIMPLE_POST, "}",
+                HighlightParams.SNIPPETS, String.valueOf(1),
+                HighlightParams.FRAGSIZE, String.valueOf(100)),
+                "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
+
+        assertQ(req,
+                "*[count(//lst[@name='highlighting']/lst)=1]",
+                "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and plurals and {discussion}']"
+        		);
         
     }
 
