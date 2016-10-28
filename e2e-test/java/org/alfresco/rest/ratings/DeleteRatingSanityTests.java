@@ -57,8 +57,14 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.likeDocument(document)
+        	.assertThat().field("myRating").is("true")
+        	.and().field("id").is("likes")
+        	.and().field("aggregate").isNotEmpty();
+        ratingsApi.rateStarsToDocument(document, 5)
+        	.assertThat().field("myRating").is("5")
+        	.and().field("id").is("fiveStar")
+        	.and().field("aggregate").isNotEmpty();
         
         ratingsApi.deleteLikeRating(document);
         ratingsApi.usingRestWrapper()
@@ -70,7 +76,9 @@ public class DeleteRatingSanityTests extends RestTest
         
         ratingsApi.getRatings(document)
             .assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating();        
+            .assertNodeHasNoFiveStarRating()
+            .and().entriesListIsNotEmpty()
+            .and().paginationExist();        
     }   
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -79,8 +87,14 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.likeDocument(document)
+    		.assertThat().field("myRating").is("true")
+    		.and().field("id").is("likes")
+    		.and().field("aggregate").isNotEmpty();
+        ratingsApi.rateStarsToDocument(document, 5)
+    		.assertThat().field("myRating").is("5")
+    		.and().field("id").is("fiveStar")
+    		.and().field("aggregate").isNotEmpty();
         
         ratingsApi.deleteLikeRating(document);
         ratingsApi.usingRestWrapper()
@@ -92,7 +106,9 @@ public class DeleteRatingSanityTests extends RestTest
         
         ratingsApi.getRatings(document)
             .assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating();        
+            .assertNodeHasNoFiveStarRating()
+            .and().entriesListIsNotEmpty()
+            .and().paginationExist();        
     }  
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -101,8 +117,14 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.likeDocument(document)
+        	.assertThat().field("myRating").is("true")
+        	.and().field("id").is("likes")
+        	.and().field("aggregate").isNotEmpty();
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();
         
         ratingsApi.deleteLikeRating(document);
         ratingsApi.usingRestWrapper()
@@ -114,7 +136,9 @@ public class DeleteRatingSanityTests extends RestTest
         
         ratingsApi.getRatings(document)
             .assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating();        
+            .assertNodeHasNoFiveStarRating()
+            .and().entriesListIsNotEmpty()
+            .and().paginationExist();        
     }  
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -123,8 +147,14 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.likeDocument(document)
+    		.assertThat().field("myRating").is("true")
+    		.and().field("id").is("likes")
+    		.and().field("aggregate").isNotEmpty();
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();
         
         ratingsApi.deleteLikeRating(document);
         ratingsApi.usingRestWrapper()
@@ -136,17 +166,27 @@ public class DeleteRatingSanityTests extends RestTest
         
         ratingsApi.getRatings(document)
             .assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating();        
+            .assertNodeHasNoFiveStarRating()
+            .and().entriesListIsNotEmpty()
+            .and().paginationExist();        
     }  
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
             description = "Verify admin user is able to remove its own rating of a document")
     public void adminIsAbleToDeleteItsOwnRatings() throws Exception
     {
+    	document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+
         restClient.authenticateUser(adminUser);
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.likeDocument(document)
+			.assertThat().field("myRating").is("true")
+			.and().field("id").is("likes")
+			.and().field("aggregate").isNotEmpty();
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();
         
         ratingsApi.deleteLikeRating(document);
         ratingsApi.usingRestWrapper()
@@ -158,17 +198,26 @@ public class DeleteRatingSanityTests extends RestTest
         
         ratingsApi.getRatings(document)
             .assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating();        
+            .assertNodeHasNoFiveStarRating()
+            .and().entriesListIsNotEmpty()
+            .and().paginationExist();        
     }  
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
             description = "Verify unauthenticated user is not able to remove its own rating of a document")
     public void unauthenticatedUserIsNotAbleToDeleteRatings() throws Exception
     {
+    	document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser);
         
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.likeDocument(document)
+			.assertThat().field("myRating").is("true")
+			.and().field("id").is("likes")
+			.and().field("aggregate").isNotEmpty();
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();
         
         restClient.authenticateUser(new UserModel("random user", "random password"));
         

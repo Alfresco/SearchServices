@@ -53,7 +53,10 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteManagerCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.getSiteMembership(adminUser, siteModel);
+        peopleApi.getSiteMembership(adminUser, siteModel)
+        	.assertThat().field("role").is(UserRole.SiteManager)
+        	.and().field("id").is(siteModel.getId())
+        	.and().field("site").isNotEmpty();
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }
@@ -63,7 +66,9 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteCollaboratorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.getSiteMembership(adminUser, siteModel);
+        peopleApi.getSiteMembership(adminUser, siteModel).onSite()
+        	.assertThat().field("role").is(UserRole.SiteCollaborator)
+        	.and().field("id").is(siteModel.getId());
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }
@@ -73,7 +78,10 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteContributorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.getSiteMembership(adminUser, siteModel);
+        peopleApi.getSiteMembership(adminUser, siteModel)
+        	.assertThat().field("role").is(UserRole.SiteManager)
+        	.and().field("id").is(siteModel.getId())
+        	.and().field("site").isNotEmpty();
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }
@@ -83,7 +91,10 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteConsumerCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.getSiteMembership(adminUser, siteModel);
+        peopleApi.getSiteMembership(adminUser, siteModel)
+    		.assertThat().field("role").is(UserRole.SiteManager)
+    		.and().field("id").is(siteModel.getId())
+    		.and().field("site").isNotEmpty();
         peopleApi.usingRestWrapper()
         .assertStatusCodeIs(HttpStatus.OK);
     }
@@ -93,7 +104,10 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void adminCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
-        peopleApi.getSiteMembership(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel);
+        peopleApi.getSiteMembership(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel)
+        	.assertThat().field("role").is(UserRole.SiteManager)
+        	.and().field("id").is(siteModel.getId())
+        	.and().field("site").isNotEmpty();
         peopleApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }

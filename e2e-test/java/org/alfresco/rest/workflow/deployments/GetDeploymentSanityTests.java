@@ -4,6 +4,7 @@ import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.requests.RestDeploymentsApi;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -45,7 +46,10 @@ public class GetDeploymentSanityTests extends RestWorkflowTest
     public void adminGetsNonNetworkDeploymentWithSuccess() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
-        deploymentsApi.getDeployment(deployment);
+        deploymentsApi.getDeployment(deployment)
+        	.assertThat().field("deployedAt").isNotEmpty()
+        	.and().field("name").is(deployment.getName())
+        	.and().field("id").equals(deployment.getId());
         deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -55,6 +59,7 @@ public class GetDeploymentSanityTests extends RestWorkflowTest
     {        
         restClient.authenticateUser(anotherUser);
         deploymentsApi.getDeployment(deployment);
-        deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 }

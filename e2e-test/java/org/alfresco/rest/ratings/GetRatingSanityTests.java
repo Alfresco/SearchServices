@@ -67,8 +67,8 @@ public class GetRatingSanityTests extends RestTest
             .assertStatusCodeIs(HttpStatus.OK);
         
         ratingsApi.getFiveStarRating(document)
-                    .assertThat().field("id").is("fiveStar")
-                    .and().field("myRating").is("5");
+             .assertThat().field("id").is("fiveStar")
+             .and().field("myRating").is("5");
         ratingsApi.usingRestWrapper()
             .assertStatusCodeIs(HttpStatus.OK);
     }   
@@ -86,7 +86,7 @@ public class GetRatingSanityTests extends RestTest
                     .assertThat().field("id").is("likes")            
                     .and().field("myRating").is("true");
         ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        			.assertStatusCodeIs(HttpStatus.OK);
         
         ratingsApi.getFiveStarRating(document)
                     .assertThat().field("id").is("fiveStar")

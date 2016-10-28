@@ -58,7 +58,10 @@ public class AddRatingSanityTests extends RestTest
     public void managerIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        ratingsApi.likeDocument(document);
+        ratingsApi.likeDocument(document)
+        	.assertThat().field("myRating").is("true")
+        	.and().field("id").is("likes")
+        	.and().field("aggregate").isNotEmpty();
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -67,7 +70,10 @@ public class AddRatingSanityTests extends RestTest
     public void collaboratorIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        ratingsApi.likeDocument(document);
+        ratingsApi.likeDocument(document)
+    		.assertThat().field("myRating").is("true")
+    		.and().field("id").is("likes")
+    		.and().field("aggregate").isNotEmpty();
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -76,7 +82,10 @@ public class AddRatingSanityTests extends RestTest
     public void contributorIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        ratingsApi.likeDocument(document);
+        ratingsApi.likeDocument(document)
+    		.assertThat().field("myRating").is("true")
+    		.and().field("id").is("likes")
+    		.and().field("aggregate").isNotEmpty();
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -85,7 +94,10 @@ public class AddRatingSanityTests extends RestTest
     public void consumerIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        ratingsApi.likeDocument(document);
+        ratingsApi.likeDocument(document)
+    		.assertThat().field("myRating").is("true")
+    		.and().field("id").is("likes")
+    		.and().field("aggregate").isNotEmpty();
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -94,7 +106,10 @@ public class AddRatingSanityTests extends RestTest
     public void adminIsAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(adminUser);
-        ratingsApi.likeDocument(document);
+        ratingsApi.likeDocument(document)
+			.assertThat().field("myRating").is("true")
+			.and().field("id").is("likes")
+			.and().field("aggregate").isNotEmpty();
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -113,7 +128,10 @@ public class AddRatingSanityTests extends RestTest
     public void managerIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -122,7 +140,10 @@ public class AddRatingSanityTests extends RestTest
     public void collaboratorIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();;
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -131,7 +152,10 @@ public class AddRatingSanityTests extends RestTest
     public void contributorIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();;
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -140,7 +164,10 @@ public class AddRatingSanityTests extends RestTest
     public void consumerIsAbleToAddStarsToDocument() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.rateStarsToDocument(document, 5)
+			.assertThat().field("myRating").is("5")
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();;
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -148,8 +175,12 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post stars rating to a document")
     public void adminIsAbleToAddStarsToDocument() throws Exception
     {
+    	int starsNo=3;
         restClient.authenticateUser(adminUser);
-        ratingsApi.rateStarsToDocument(document, 5);
+        ratingsApi.rateStarsToDocument(document, starsNo)
+			.assertThat().field("myRating").is(String.valueOf(starsNo))
+			.and().field("id").is("fiveStar")
+			.and().field("aggregate").isNotEmpty();;
         ratingsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 

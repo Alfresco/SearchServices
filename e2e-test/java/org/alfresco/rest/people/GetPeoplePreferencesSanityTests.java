@@ -2,6 +2,7 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestPeopleApi;
+import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -46,7 +47,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonPreferences(managerUser).assertThat().entriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(managerUser).assertThat().entriesListIsNotEmpty()
+        	.assertThat().paginationExist()
+        	.and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -58,7 +61,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPersonPreferences(collaboratorUser).assertThat().entriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(collaboratorUser).assertThat().entriesListIsNotEmpty()
+        	.assertThat().paginationExist()
+        	.and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -70,7 +75,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPersonPreferences(contributorUser).assertThat().entriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(contributorUser).assertThat().entriesListIsNotEmpty()
+    		.assertThat().paginationExist()
+    		.and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -82,7 +89,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPersonPreferences(consumerUser).assertThat().entriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(consumerUser).assertThat().entriesListIsNotEmpty()
+    		.assertThat().paginationExist()
+    		.and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -95,7 +104,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getPersonPreferences(managerUser).assertThat().entriesListIsNotEmpty();
+        peopleApi.getPersonPreferences(managerUser).assertThat().entriesListIsNotEmpty()
+    		.assertThat().paginationExist()
+    		.and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

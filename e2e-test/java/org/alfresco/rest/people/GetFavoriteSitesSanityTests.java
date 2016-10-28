@@ -3,6 +3,7 @@ package org.alfresco.rest.people;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -43,7 +44,8 @@ public class GetFavoriteSitesSanityTests extends RestTest
 
         restClient.authenticateUser(managerUser);
         peopleApi.getFavoriteSites(anotherUser);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get an user favorite sites with Rest API (403)")
@@ -57,7 +59,8 @@ public class GetFavoriteSitesSanityTests extends RestTest
 
         restClient.authenticateUser(collaboratorUser);
         peopleApi.getFavoriteSites(contributorUser);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user fails to get an user favorite sites with Rest API (403)")
@@ -71,7 +74,8 @@ public class GetFavoriteSitesSanityTests extends RestTest
 
         restClient.authenticateUser(contributorUser);
         peopleApi.getFavoriteSites(contributorUser2);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get an user favorite sites with Rest API (403)")
@@ -85,7 +89,8 @@ public class GetFavoriteSitesSanityTests extends RestTest
 
         restClient.authenticateUser(consumerUser);
         peopleApi.getFavoriteSites(collaboratorUser);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets its favorite sites with Rest API and response is successful (200)")
@@ -96,7 +101,10 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getFavoriteSites(anotherUser).assertThat().entriesListIsNotEmpty();
+        peopleApi.getFavoriteSites(anotherUser)
+        	.assertThat().entriesListIsNotEmpty()
+        	.and().paginationExist()
+        	.and().entriesListContains("id", siteModel.getId());
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -107,7 +115,10 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(anyUser);
-        peopleApi.getFavoriteSites(anyUser);
+        peopleApi.getFavoriteSites(anyUser)
+        	.assertThat().entriesListIsNotEmpty()
+        	.and().entriesListContains("id", siteModel.getId())
+        	.and().paginationExist();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

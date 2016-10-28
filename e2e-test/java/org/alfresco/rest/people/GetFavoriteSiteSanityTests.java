@@ -3,6 +3,7 @@ package org.alfresco.rest.people;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -50,7 +51,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getFavoriteSite(managerUser, siteModel1).assertThat().field("id").isNotNull();
+        peopleApi.getFavoriteSite(managerUser, siteModel1)
+        	.assertThat().field("id").is(siteModel1.getId())
+        	.and().field("title").isNotNull();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -63,7 +66,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getFavoriteSite(collaboratorUser, siteModel1).assertThat().field("id").isNotNull();
+        peopleApi.getFavoriteSite(collaboratorUser, siteModel1)
+        	.assertThat().field("id").is(siteModel1.getId())
+        	.and().field("title").isNotNull();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -76,7 +81,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getFavoriteSite(contributorUser, siteModel1).assertThat().field("id").isNotNull();
+        peopleApi.getFavoriteSite(contributorUser, siteModel1)
+        	.assertThat().field("id").is(siteModel1.getId())
+        	.and().field("title").isNotNull();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -89,7 +96,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getFavoriteSite(consumerUser, siteModel1).assertThat().field("id").isNotNull();
+        peopleApi.getFavoriteSite(consumerUser, siteModel1)
+        	.assertThat().field("id").is(siteModel1.getId())
+        	.and().field("title").isNotNull();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -102,7 +111,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(adminUset);
-        peopleApi.getFavoriteSite(anyUser, siteModel1).assertThat().field("id").isNotNull();
+        peopleApi.getFavoriteSite(anyUser, siteModel1)
+        	.assertThat().field("id").is(siteModel1.getId())
+        	.and().field("title").isNotNull();
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -116,7 +127,8 @@ public class GetFavoriteSiteSanityTests extends RestTest
 
         restClient.authenticateUser(managerUser);
         peopleApi.getFavoriteSite(userModel, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @Bug(id = "MNT-16904")

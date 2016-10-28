@@ -53,7 +53,10 @@ public class GetSitesSanityTests extends RestTest
     {
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteAPI.getAllSites().assertThat().entriesListIsNotEmpty();
+        siteAPI.getAllSites()
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().entriesListContains("id", siteModel.getId())
+        	.and().paginationExist();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -63,7 +66,9 @@ public class GetSitesSanityTests extends RestTest
     {
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        siteAPI.getAllSites().assertThat().entriesListIsNotEmpty();
+        siteAPI.getAllSites().assertThat().entriesListIsNotEmpty()
+    		.assertThat().entriesListContains("id", siteModel.getId())
+    		.and().paginationExist();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -73,7 +78,10 @@ public class GetSitesSanityTests extends RestTest
     {
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        siteAPI.getAllSites().assertThat().entriesListIsNotEmpty();
+        siteAPI.getAllSites()	
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().entriesListContains("id", siteModel.getId())
+        	.and().paginationExist();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -83,7 +91,10 @@ public class GetSitesSanityTests extends RestTest
     {
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        siteAPI.getAllSites().assertThat().entriesListIsNotEmpty();
+        siteAPI.getAllSites()
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().entriesListContains("id", siteModel.getId())
+        	.and().paginationExist();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -92,7 +103,10 @@ public class GetSitesSanityTests extends RestTest
     public void adminUserIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        siteAPI.getAllSites().assertThat().entriesListIsNotEmpty();
+        siteAPI.getAllSites()
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().entriesListContains("id", siteModel.getId())
+        	.and().paginationExist();
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 

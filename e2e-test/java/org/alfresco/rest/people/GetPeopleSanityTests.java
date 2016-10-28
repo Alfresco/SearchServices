@@ -23,6 +23,8 @@ public class GetPeopleSanityTests extends RestTest
     UserModel userModel;
     SiteModel siteModel;
     UserModel searchedUser;
+    
+    private String domain = "@tas-automation.org";
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -41,7 +43,11 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPerson(searchedUser).assertThat().field("id").is(searchedUser.getUsername());;
+        peopleApi.getPerson(searchedUser)
+        	.assertThat().field("id").is(searchedUser.getUsername())
+        	.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+        	.and().field("email").is(searchedUser.getUsername()+ domain)
+        	.and().field("emailNotificationsEnabled").is("true");
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -52,7 +58,11 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPerson(searchedUser);
+        peopleApi.getPerson(searchedUser)
+        	.assertThat().field("id").is(searchedUser.getUsername())
+        	.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+        	.and().field("email").is(searchedUser.getUsername()+ domain)
+        	.and().field("emailNotificationsEnabled").is("true");
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -64,7 +74,11 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPerson(searchedUser);
+        peopleApi.getPerson(searchedUser)
+    		.assertThat().field("id").is(searchedUser.getUsername())
+    		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+    		.and().field("email").is(searchedUser.getUsername()+ domain)
+    		.and().field("emailNotificationsEnabled").is("true");;
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
    
@@ -75,7 +89,11 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPerson(searchedUser);
+        peopleApi.getPerson(searchedUser)
+    		.assertThat().field("id").is(searchedUser.getUsername())
+    		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+    		.and().field("email").is(searchedUser.getUsername()+ domain)
+    		.and().field("emailNotificationsEnabled").is("true");;
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -85,7 +103,11 @@ public class GetPeopleSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getPerson(searchedUser);
+        peopleApi.getPerson(searchedUser)
+    		.assertThat().field("id").is(searchedUser.getUsername())
+    		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+    		.and().field("email").is(searchedUser.getUsername()+ domain)
+    		.and().field("emailNotificationsEnabled").is("true");;
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

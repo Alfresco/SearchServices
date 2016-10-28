@@ -52,7 +52,10 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteAPI.getSiteContainers(siteModel).assertThat().entriesListIsNotEmpty();
+        siteAPI.getSiteContainers(siteModel)
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().paginationExist()
+        	.and().paginationField("count").isNot("0");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -61,7 +64,10 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        siteAPI.getSiteContainers(siteModel).assertThat().entriesListIsNotEmpty();
+        siteAPI.getSiteContainers(siteModel)
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().paginationExist()
+        	.and().paginationField("count").isNot("0");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -70,7 +76,10 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithContributorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        siteAPI.getSiteContainers(siteModel).assertThat().entriesListIsNotEmpty();
+        siteAPI.getSiteContainers(siteModel)
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().paginationExist()
+        	.and().paginationField("count").isNot("0");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -79,7 +88,10 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithConsumerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        siteAPI.getSiteContainers(siteModel).assertThat().entriesListIsNotEmpty();
+        siteAPI.getSiteContainers(siteModel)
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().paginationExist()
+        	.and().paginationField("count").isNot("0");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -88,7 +100,10 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        siteAPI.getSiteContainers(siteModel).assertThat().entriesListIsNotEmpty();
+        siteAPI.getSiteContainers(siteModel)
+        	.assertThat().entriesListIsNotEmpty()
+        	.assertThat().paginationExist()
+        	.and().paginationField("count").isNot("0");
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     

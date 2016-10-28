@@ -29,7 +29,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
     
     UserModel userModel;
     SiteModel siteModel;
-
+  
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
@@ -47,7 +47,9 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser);
-        peopleApi.getPersonPreferenceInformation(managerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        peopleApi.getPersonPreferenceInformation(managerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        	.assertThat().field("id").is( PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        	.and().field("value").is("true");
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -59,7 +61,9 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPersonPreferenceInformation(collaboratorUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        peopleApi.getPersonPreferenceInformation(collaboratorUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        	.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        	.and().field("value").is("true");
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -71,7 +75,9 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser);
-        peopleApi.getPersonPreferenceInformation(contributorUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        peopleApi.getPersonPreferenceInformation(contributorUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        	.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        	.and().field("value").is("true");
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -83,7 +89,9 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser);
-        peopleApi.getPersonPreferenceInformation(consumerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        peopleApi.getPersonPreferenceInformation(consumerUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+    		.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+    		.and().field("value").is("true");
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -94,7 +102,9 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(adminUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser);
-        peopleApi.getPersonPreferenceInformation(adminUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        peopleApi.getPersonPreferenceInformation(adminUser, PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+    		.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+    		.and().field("value").is("true");
         peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
