@@ -18,7 +18,7 @@ import org.testng.annotations.BeforeClass;
 public abstract class CmisTest extends AbstractTestNGSpringContextTests
 {
     @Autowired
-    CmisWrapper cmisApi;
+    protected CmisWrapper cmisApi;
 
     @Autowired
     protected DataUser dataUser;
