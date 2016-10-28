@@ -20,13 +20,15 @@ package org.alfresco.solr.tracker;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 
+import java.util.Properties;
+
 /*
  * @author Joel
  */
 
 public class DocRouterFactory
 {
-    public static DocRouter getRouter(ShardMethodEnum method) {
+    public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
         switch(method) {
             case DB_ID:
                 return new DBIDRouter();
@@ -36,6 +38,10 @@ public class DocRouterFactory
                 return new ACLIDModRouter();
             case DATE_MONTH:
                 return new DateMonthRouter();
+            case PROPERTY:
+                return new PropertyRouter(properties.getProperty("shard.regex", ""));
+    //        case DATE_YEAR:
+    //        case DATE:
             default:
                 return new DBIDRouter();
         }

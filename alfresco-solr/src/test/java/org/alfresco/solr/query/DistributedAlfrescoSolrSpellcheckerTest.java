@@ -74,18 +74,8 @@ public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDis
         index(getDefaultTestClient(), true, "id", "6", "suggest", "EEEE", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "EEEE");
         commit(getDefaultTestClient(), true);
 
-        handle.put("explain", SKIPVAL);
-        handle.put("timestamp", SKIPVAL);
-        handle.put("score", SKIPVAL);
-        handle.put("wt", SKIP);
-        handle.put("distrib", SKIP);
-        handle.put("shards.qt", SKIP);
-        handle.put("shards", SKIP);
+        putHandleDefaults();
         handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
-        handle.put("q", SKIP);
-        handle.put("maxScore", SKIPVAL);
-        handle.put("_version_", SKIP);
-        handle.put("_original_parameters_", SKIP);
 
         QueryResponse response = query(getDefaultTestClient(), true,
                 "{\"query\":\"(YYYYY BBBBB AND (id:(1 2 3 4 5 6)))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",

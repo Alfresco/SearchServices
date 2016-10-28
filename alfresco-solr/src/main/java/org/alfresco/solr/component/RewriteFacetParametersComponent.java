@@ -367,10 +367,13 @@ public class RewriteFacetParametersComponent extends SearchComponent
             for(String facetFields : facetFieldsOrig)
             {
                 StringBuilder commaSeparated = new StringBuilder();
+                StringBuilder mapping = new StringBuilder();
+                StringBuilder unmapped = new StringBuilder();
                 String[] fields = facetFields.split(",");
                 
                 for(String field : fields)
                 {
+                	String prefix = "";
                     field = field.trim();
                     
                     if(field.endsWith("()"))
@@ -379,14 +382,28 @@ public class RewriteFacetParametersComponent extends SearchComponent
                         continue;
                     }
                     
+                    if(field.startsWith("{!afts"))
+                    {
+                    	int index = field.indexOf("}");
+                    	if((index > 0) && (index < (field.length() - 1)))
+                    	{
+                    		prefix = field.substring(0, index+1);
+                    		field = field.substring(index+1);
+                    	}
+                    	
+                    }
                     
                     if(req.getSchema().getFieldOrNull(field) != null)
                     {
                         if(commaSeparated.length() > 0)
                         {
                             commaSeparated.append(",");
+                            mapping.append(",");
+                            unmapped.append(",");
                         }
-                        commaSeparated.append(field);
+                        commaSeparated.append(prefix).append(field);
+                        mapping.append(field);
+                        unmapped.append(field);
                     }
                     else
                     {
@@ -395,13 +412,17 @@ public class RewriteFacetParametersComponent extends SearchComponent
                         if(commaSeparated.length() > 0)
                         {
                             commaSeparated.append(",");
+                            mapping.append(",");
+                            unmapped.append(",");
                         }
-                        commaSeparated.append(mappedField);
+                        commaSeparated.append(prefix).append(mappedField);
+                        mapping.append(mappedField);
+                        unmapped.append(field);
                     }
                 }
                 if(!facetFields.equals(commaSeparated.toString()))
                 {
-                    fieldMappings.put(facetFields, commaSeparated.toString());
+                    fieldMappings.put(unmapped.toString(), mapping.toString());
                 }
                 if(commaSeparated.length() > 0)
                 {
