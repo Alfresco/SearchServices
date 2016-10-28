@@ -1,0 +1,48 @@
+package org.alfresco.cmis.search;
+
+import org.alfresco.cmis.CmisTest;
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.data.provider.XMLTestData;
+import org.alfresco.utility.data.provider.XMLTestDataProvider;
+import org.alfresco.utility.model.QueryModel;
+import org.alfresco.utility.model.TestGroup;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+@Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
+public class SolrSearchByPath extends CmisTest
+{
+    XMLTestData testData;
+
+    @BeforeClass(alwaysRun = true)
+    public void readTestDataFile()
+    {
+        XMLTestDataProvider.setXmlImputFile("src/main/resources/shared-resources/testdata/input-data-search-by-path.xml");
+        cmisApi.authenticateUser(dataUser.getAdminUser());
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void cleanupEnvironment() throws Exception
+    {
+        testData.cleanup(dataContent);
+    }
+
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "prepareEnvironmentData")
+    public void prepareEnvironmentData(XMLTestData testData) throws Exception
+    {
+        this.testData = testData;
+        testData.createUsers(dataUser);
+        testData.createSitesStructure(dataSite, dataContent);
+        // wait for solr index
+        Utility.waitToLoopTime(15);
+    }
+
+    @Test(dependsOnMethods = "prepareEnvironmentData", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    public void executeSearchByPathQueries(QueryModel query) throws Exception
+    {
+        String queryStr = query.getValue();
+        cmisApi.withQuery(queryStr)
+            .assertResultsCountIs(query.getResults());
+    }
+}
