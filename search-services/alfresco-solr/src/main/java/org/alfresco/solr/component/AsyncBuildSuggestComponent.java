@@ -203,7 +203,7 @@ public class AsyncBuildSuggestComponent extends SearchComponent implements SolrC
           boolean buildOnOptimize = Boolean.parseBoolean((String) suggesterParams.get(BUILD_ON_OPTIMIZE_LABEL));
           boolean enabled = Boolean.parseBoolean((String) suggesterParams.get(ENABLED_LABEL));
           long minSecsBetweenBuilds = Long.parseLong(core.getCoreDescriptor().getCoreProperty(MIN_SECS_BETWEEN_BUILDS, "-1")); 
-          SuggesterCache suggesterCache = new SuggesterCache(core, suggesterParams, enabled, buildOnCommit, buildOnOptimize);
+          SuggesterCache suggesterCache = new SuggesterCache(core, suggesterParams, enabled, buildOnCommit, buildOnOptimize, buildOnStartup);
           
           String dictionary = suggester.init(suggesterParams, core);
           if (dictionary != null) {
@@ -655,17 +655,20 @@ public class AsyncBuildSuggestComponent extends SearchComponent implements SolrC
     private final NamedList suggesterParams;
     private final boolean buildOnCommit;
     private final boolean buildOnOptimize;
+    private final boolean buildOnStartup;
     private final boolean enabled;
     private final SolrSuggester initialSuggester;
     private long lastBuild = 0;
     
-    public SuggesterCache(SolrCore core, NamedList suggesterParams, boolean enabled, boolean buildOnCommit, boolean buildOnOptimize)
+    public SuggesterCache(SolrCore core, NamedList suggesterParams, boolean enabled, boolean buildOnCommit, boolean buildOnOptimize, boolean buildOnStartup)
     {
         this.core = core;
         this.suggesterParams = suggesterParams;
         this.enabled = enabled;
         this.buildOnCommit = buildOnCommit;
         this.buildOnOptimize = buildOnOptimize;
+        this.buildOnStartup = buildOnStartup;
+      
         setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
         BlockingQueue<Runnable> threadPool = new LinkedBlockingQueue<Runnable>();
         ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, threadPool, getThreadFactory(core));
@@ -761,7 +764,14 @@ public class AsyncBuildSuggestComponent extends SearchComponent implements SolrC
               try {
                 LOG.info("Loading suggester index for: " + suggester.getName());
                 final long startMillis = System.currentTimeMillis();
-                suggester.reload(core, searcher);
+                if(buildOnStartup)
+                {
+                	 buildSuggesterIndex(suggester, searcher);
+                }
+                else
+                {
+                    suggester.reload(core, searcher);
+                }
                 final long timeTakenMillis = System.currentTimeMillis() - startMillis;
                 LOG.info("Loaded suggester " + suggester.getName() + ", took " + timeTakenMillis + " ms");
               } catch (IOException e) {

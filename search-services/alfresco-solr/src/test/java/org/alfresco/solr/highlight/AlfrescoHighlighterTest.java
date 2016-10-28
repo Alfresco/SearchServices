@@ -187,48 +187,34 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
 
         logger.info("######### Testing PHRASE QUERIES ###########");
 
+        //Phrase hightling is on by default
         req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
-                HighlightParams.Q, "some long",
+                HighlightParams.Q, "\"some long\"",
                 HighlightParams.FIELDS, "name",
-                HighlightParams.SIMPLE_PRE, "{",
-                HighlightParams.SIMPLE_POST, "}",
+                HighlightParams.SIMPLE_PRE, "(",
+                HighlightParams.SIMPLE_POST, ")",
                 HighlightParams.SNIPPETS, String.valueOf(1),
                 HighlightParams.FRAGSIZE, String.valueOf(100)),
                 "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
 
         assertQ(req,
-                "//lst[@name='highlighting']/lst/arr/str[.='{some} very {long} name']",
-                "//lst[@name='highlighting']/lst/arr/str[.='this is {some} {long} text.  It has the word {long} in many places.  In fact, it has {long} on {some}']");
+                "//lst[@name='highlighting']/lst/arr/str[.='this is (some) (long) text.  It has the word long in many places.  In fact, it has long on some']");
 
         req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
-                HighlightParams.Q, "'some long'",
-                HighlightParams.FIELDS, "name",
-                HighlightParams.USE_PHRASE_HIGHLIGHTER, "true",
-                HighlightParams.SIMPLE_PRE, "{",
-                HighlightParams.SIMPLE_POST, "}",
-                HighlightParams.SNIPPETS, String.valueOf(1),
-                HighlightParams.FRAGSIZE, String.valueOf(100)),
-                "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
-
-        assertQ(req,
-                "//lst[@name='highlighting']/lst/arr/str[.='this is {some} {long} text.  It has the word long in many places.  In fact, it has long on some']");
-
-        req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
-                HighlightParams.HIGHLIGHT, "true",
-                HighlightParams.Q, "'some long'",
+                HighlightParams.Q, "\"some long\"",
                 HighlightParams.FIELDS, "name",
                 HighlightParams.USE_PHRASE_HIGHLIGHTER, "false",
-                HighlightParams.SIMPLE_PRE, "{",
-                HighlightParams.SIMPLE_POST, "}",
+                HighlightParams.SIMPLE_PRE, "(",
+                HighlightParams.SIMPLE_POST, ")",
                 HighlightParams.SNIPPETS, String.valueOf(1),
                 HighlightParams.FRAGSIZE, String.valueOf(100)),
                 "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
 
         assertQ(req,
-                "//lst[@name='highlighting']/lst/arr/str[.='{some} very {long} name']",
-                "//lst[@name='highlighting']/lst/arr/str[.='this is {some} {long} text.  It has the word {long} in many places.  In fact, it has {long} on {some}']");
+                "//lst[@name='highlighting']/lst/arr/str[.='(some) very (long) name']",
+                "//lst[@name='highlighting']/lst/arr/str[.='this is (some) (long) text.  It has the word (long) in many places.  In fact, it has (long) on (some)']");
 
         logger.info("######### MergeContiguous ###########");
 

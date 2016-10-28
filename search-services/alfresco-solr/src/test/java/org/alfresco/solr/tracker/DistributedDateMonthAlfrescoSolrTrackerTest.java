@@ -62,22 +62,13 @@ import org.junit.Test;
 public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2,getShardMethod());
+    public JettyServerRule jetty = new JettyServerRule(5,getShardMethod());
 
-    //@Test
+    @Test
     public void testDateMonth() throws Exception
     {
-        handle.put("explain", SKIPVAL);
-        handle.put("timestamp", SKIPVAL);
-        handle.put("score", SKIPVAL);
-        handle.put("wt", SKIP);
-        handle.put("distrib", SKIP);
-        handle.put("shards.qt", SKIP);
-        handle.put("shards", SKIP);
-        handle.put("q", SKIP);
-        handle.put("maxScore", SKIPVAL);
-        handle.put("_version_", SKIP);
-        handle.put("_original_parameters_", SKIP);
+        Thread.sleep(15000);
+        putHandleDefaults();
 
         int numAcls = 25;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
@@ -106,11 +97,11 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        Date[] dates = new Date[10];
+        Date[] dates = new Date[5];
 
         Calendar cal = new GregorianCalendar();
         for (int i = 0; i < dates.length; i++) {
-            cal.add(cal.MONTH, -i);
+            cal.set(1980, i, 21);
             dates[i] = cal.getTime();
         }
 
@@ -142,9 +133,27 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
         for (int i = 0; i < dates.length; i++) {
             LegacyNumericRangeQuery query = LegacyNumericRangeQuery.newLongRange(fieldName, dates[i].getTime(), dates[i].getTime() + 1, true, false);
             assertCountAndColocation(query, counts[i]);
+            assertShardSequence(i, query, counts[i]);
         }
 
-     }
+        nodes.clear();
+        nodeMetaDatas.clear();
+
+        Transaction bigTxn1 = getTransaction(0, numNodes);
+
+        for (int i = 0; i < numNodes; i++) {
+            int aclIndex = i % numAcls;
+            Node node = getNode(bigTxn1, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn1, bulkAcls.get(aclIndex), "mike", null, false);
+            nodeMetaDatas.add(nodeMetaData);
+        }
+
+        indexTransaction(bigTxn1, nodes, nodeMetaDatas);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes*2, 100000);
+        //There are 5 shards. We should expect roughly 20% of the nodes on each shard
+        assertNodesPerShardGreaterThan((int)((numNodes*2)*.17));
+    }
 
     protected Properties getShardMethod()
     {

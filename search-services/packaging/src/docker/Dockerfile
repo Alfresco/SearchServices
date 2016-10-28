@@ -1,16 +1,16 @@
 # Alfresco Solr 6 Docker image
 #
-FROM java:8
+FROM openjdk:8
 MAINTAINER Gethin James, gethin.james@alfresco.com
 
-ENV SOLR_ZIP target/alfresco-solr-distribution-*.zip
+ENV SOLR_ZIP alfresco-solr-distribution-*.zip
 ENV DIST_DIR /opt/alfresco-solr
 
-RUN groupadd -r solr && useradd -r -g solr -s /bin/bash solr
+RUN groupadd -r solr && useradd -m -r -g solr -s /bin/bash solr
 
 RUN apt-get update && apt-get install -y \
 		ca-certificates \
-		curl unzip lsof \
+		vim curl unzip lsof \
 	--no-install-recommends && rm -r /var/lib/apt/lists/*
 
 COPY $SOLR_ZIP $DIST_DIR/

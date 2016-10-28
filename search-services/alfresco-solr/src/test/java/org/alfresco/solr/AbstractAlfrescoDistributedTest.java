@@ -386,6 +386,30 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
+    public void assertShardSequence(int shard, Query query, int count) throws Exception
+    {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        int totalCount = 0;
+        SolrCore core = cores.get(shard);
+
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        try
+        {
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+            TopDocs topDocs = searcher.search(query, 10);
+            totalCount = topDocs.totalHits;
+        }
+        finally
+        {
+            refCounted.decref();
+        }
+
+        if(totalCount != count) {
+            throw new Exception(totalCount+" docs found for query: "+query.toString()+" expecting "+count);
+        }
+    }
+
     public void waitForDocCountCore(SolrCore core,
                                  Query query,
                                  long expectedNumFound,
@@ -417,7 +441,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     /**
      * Creates a JettySolrRunner (if one didn't exist already). DOES NOT START IT.
-     * @param name
      * @return
      * @throws Exception
      */
@@ -1440,6 +1463,24 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         } // else nothing to do, DEFAULT_TEST_CORENAME already exists
         //Add alfresco solr configurations
         FileUtils.copyDirectory(coreSourceConfig.resolve("conf").toFile(), confDir.toFile());
+    }
+
+
+    /**
+     * Puts default values for handle
+     */
+    protected void putHandleDefaults() {
+        handle.put("explain", SKIPVAL);
+        handle.put("timestamp", SKIPVAL);
+        handle.put("score", SKIPVAL);
+        handle.put("wt", SKIP);
+        handle.put("distrib", SKIP);
+        handle.put("shards.qt", SKIP);
+        handle.put("shards", SKIP);
+        handle.put("q", SKIP);
+        handle.put("maxScore", SKIPVAL);
+        handle.put("_version_", SKIP);
+        handle.put("_original_parameters_", SKIP);
     }
 
     protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException

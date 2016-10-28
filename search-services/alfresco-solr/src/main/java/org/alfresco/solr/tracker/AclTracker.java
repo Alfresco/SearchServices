@@ -87,7 +87,7 @@ public class AclTracker extends AbstractTracker
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        docRouter = DocRouterFactory.getRouter(ShardMethodEnum.getShardMethod(shardMethod));
+        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         threadHandler = new ThreadHandler(p, coreName, "AclTracker");
     }
 

@@ -31,23 +31,31 @@ import java.util.GregorianCalendar;
 
 public class DateMonthRouter implements DocRouter
 {
+    DBIDRouter dbidRouter = new DBIDRouter();
+
+    @Override
     public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
         return true;
     }
 
+    @Override
     public boolean routeNode(int numShards, int shardInstance, Node node) {
         if(numShards <= 1) {
             return true;
         }
 
         String ISO8601Date = node.getShardPropertyValue();
+
+        if(ISO8601Date == null) {
+            return dbidRouter.routeNode(numShards, shardInstance, node);
+        }
+
         //TODO: we can parse the string to make this more efficient rather then creating a calendar.
         Date date = ISO8601DateFormat.parse(ISO8601Date);
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date);
         int month = cal.get(cal.MONTH);
         int year  = cal.get(cal.YEAR);
-        String s = year+"_"+month;
-        return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % numShards) == shardInstance;
+        return (((year * 12) + month) % numShards) == shardInstance;
     }
 }
