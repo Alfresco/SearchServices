@@ -158,7 +158,8 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
     protected Properties getShardMethod()
     {
         Properties prop = new Properties();
-        prop.put("shard.method", ShardMethodEnum.DATE_MONTH.toString());
+        prop.put("shard.method", ShardMethodEnum.DATE.toString());
+        prop.put("shard.date.grouping", "1");
         return prop;
     }
 }
