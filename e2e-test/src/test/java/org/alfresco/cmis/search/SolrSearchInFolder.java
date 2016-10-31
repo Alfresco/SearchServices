@@ -2,6 +2,7 @@ package org.alfresco.cmis.search;
 
 import org.alfresco.cmis.CmisTest;
 import org.alfresco.utility.Utility;
+import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestData;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.FileModel;
@@ -27,8 +28,8 @@ public class SolrSearchInFolder extends CmisTest
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception
     {
-        XMLTestDataProvider.setXmlImputFile("src/main/resources/shared-resources/testdata/search-in-folder.xml");
         
+                
         // create input data
         parentFolder = FolderModel.getRandomFolderModel();
         subFolder1 = FolderModel.getRandomFolderModel();
@@ -63,10 +64,10 @@ public class SolrSearchInFolder extends CmisTest
     }
     
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-in-folder.xml")
     public void executeCMISQuery(QueryModel query)
     {
         String currentQuery = String.format(query.getValue(), parentFolder.getNodeRef());
-        cmisApi.withQuery(currentQuery)
-            .assertResultsCountIs(query.getResults());
+        cmisApi.withQuery(currentQuery).assertResultsCountIs(query.getResults());
     }
 }
