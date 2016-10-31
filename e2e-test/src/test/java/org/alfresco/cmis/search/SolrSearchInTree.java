@@ -16,29 +16,30 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
-public class SolrSearchInFolder extends CmisTest
+public class SolrSearchInTree extends CmisTest
 {
     UserModel testUser;
     SiteModel testSite;
     FolderModel parentFolder, subFolder1, subFolder2, subFolder3;
-    FileModel subFile1, subFile2, subFile3, subFile4, subFile5;
+    FileModel subFile1, subFile2, subFile3, subFile4, subFile5, subFile6;
     XMLTestData testData;
     
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception
     {
-        XMLTestDataProvider.setXmlImputFile("src/main/resources/shared-resources/testdata/search-in-folder.xml");
+        XMLTestDataProvider.setXmlImputFile("src/main/resources/shared-resources/testdata/search-in-tree.xml");
         
         // create input data
         parentFolder = FolderModel.getRandomFolderModel();
         subFolder1 = FolderModel.getRandomFolderModel();
         subFolder2 = FolderModel.getRandomFolderModel();
-        subFolder3 = new FolderModel("subFolder");
+        subFolder3 = new FolderModel("subFolder-3");
         subFile5 = new FileModel("fifthFile.txt",FileType.TEXT_PLAIN, "fifthFile content");
         subFile1 = new FileModel("firstFile", FileType.MSEXCEL);
         subFile2 = FileModel.getRandomFileModel(FileType.MSPOWERPOINT2007);
         subFile3 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         subFile4 = new FileModel("fourthFile", "fourthFileTitle", "fourthFileDescription", FileType.MSWORD2007);
+        subFile6 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         
         testUser = dataUser.createRandomTestUser();
         testSite = dataSite.usingUser(testUser).createPublicRandomSite();
@@ -51,9 +52,12 @@ public class SolrSearchInFolder extends CmisTest
                 .createFile(subFile1).and().assertThat().existsInRepo()
                 .createFile(subFile2).and().assertThat().existsInRepo()
                 .createFile(subFile3).and().assertThat().existsInRepo()
-                .createFile(subFile4).and().assertThat().existsInRepo();
+                .createFile(subFile4).and().assertThat().existsInRepo()
+                    .then().usingResource(subFolder1)
+                        .createFile(subFile6).assertThat().existsInRepo()
+                        .createFolder(FolderModel.getRandomFolderModel()).assertThat().existsInRepo();
         // wait for solr index
-        Utility.waitToLoopTime(10);
+        Utility.waitToLoopTime(13);
     }
     
     @AfterClass(alwaysRun = true)
