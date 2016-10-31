@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--CMIS Queries: passing the search query as first param and results expected -->
+<testData>
+	<queries>
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s')" expectedResults="6" />
+		<query value="SELECT * FROM cmis:folder where IN_TREE('%s')" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') AND cmis:name = 'fourthFile'" expectedResults="1" />
+		<query value="SELECT * FROM cmis:folder where IN_TREE('%s') AND cmis:name = 'subFolder-3'" expectedResults="1" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') ORDER BY cmis:name ASC" expectedResults="6" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') ORDER BY cmis:name DESC" expectedResults="6" />
+		<query value="SELECT * FROM cmis:folder where IN_TREE('%s') ORDER BY cmis:lastModificationDate ASC"  expectedResults="4" />
+		<query value="SELECT * FROM cmis:folder where IN_TREE('%s') ORDER BY cmis:lastModificationDate DESC"  expectedResults="4" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') ORDER BY cmis:createdBy DESC" expectedResults="6" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') AND cmis:name IS NOT NULL" expectedResults="6" />
+		<query value="SELECT * FROM cmis:folder where IN_TREE('%s') AND cmis:name IS NOT NULL" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') AND CONTAINS('fifthFile content')" expectedResults="1" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') AND cmis:name LIKE 'fourthFile'" expectedResults="1" />
+		<query value="SELECT * FROM cmis:folder where IN_TREE('%s') AND NOT(cmis:name NOT IN ('subFolder-3'))" expectedResults="1" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') AND cmis:name IN ('fourthFile', 'fifthFile.txt')" expectedResults="2" />
+		<query value="SELECT * FROM cmis:document where IN_TREE('%s') AND cmis:name NOT IN ('fourthFile', 'fifthFile.txt')" expectedResults="4" />
+		<query value="SELECT * FROM cmis:folder where IN_TREE('%s') AND cmis:name &lt;&gt; 'subFolder-3'" expectedResults="3" />
+	</queries>
+</testData> 
