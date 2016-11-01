@@ -26,9 +26,7 @@ public class SolrSearchByIDTest extends CmisTest
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-id.xml")
     public void prepareDataForSolrSearch(XMLTestData testData) throws Exception
     {
-        this.testData = testData;
-        testData.logEntireStructure();
-
+        this.testData = testData;        
         this.testData.createUsers(dataUser);
         this.testData.createSitesStructure(dataSite, dataContent, dataUser);
     }
