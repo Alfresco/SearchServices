@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--CMIS Queries: passing the search query as first param and results expected -->
-<testData>
+<testData xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
 	<queries>
 		<query value="SELECT * FROM cmis:document where IN_TREE('%s')" expectedResults="6" />
 		<query value="SELECT * FROM cmis:folder where IN_TREE('%s')" expectedResults="4" />

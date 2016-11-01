@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testData>
+<testData xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
 	<users>
 		<user name="userSiteSearch" password="password" />
 	</users>
