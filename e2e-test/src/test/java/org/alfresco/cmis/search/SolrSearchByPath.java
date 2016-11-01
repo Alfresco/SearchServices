@@ -25,7 +25,7 @@ public class SolrSearchByPath extends CmisTest
     @AfterClass(alwaysRun = true)
     public void cleanupEnvironment() throws Exception
     {
-        //testData.cleanup(dataContent);
+        testData.cleanup(dataContent);
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")

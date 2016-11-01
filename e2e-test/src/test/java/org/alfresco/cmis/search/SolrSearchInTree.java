@@ -27,7 +27,7 @@ public class SolrSearchInTree extends CmisTest
     
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception
-    {                
+    {
         // create input data
         parentFolder = FolderModel.getRandomFolderModel();
         subFolder1 = FolderModel.getRandomFolderModel();

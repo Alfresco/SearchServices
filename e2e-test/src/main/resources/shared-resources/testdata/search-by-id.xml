@@ -1,99 +1,120 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
 	<users>
-		<user id="1" name="search" password="password" />
+		<user id="u1" name="userSearchId" password="password" />
 	</users>
 
 	<sites>
-		<site id="site1" name="MyCustomSearchSite" createdBy="search"
-			visibility="PUBLIC">
+		<site id="siteId" name="siteSearchById1" createdBy="userSearchId" visibility="PUBLIC">
 			<folders>
-				<folder id="folder1" name="folder1" createdBy="search">
-					<custom-model name="F:tas:folder" />
-					<comments>
-						<comment id="c1" value="my first folder comment"
-							createdBy="admin" />
-					</comments>
+				<folder id="f1" name="tas-folder1" createdBy="userSearchId">
+				<custom-model name="F:tas:folder" />
 					<files>
-						<file id="file1" name="f1.txt" createdBy="admin">
-							<content>content of f1</content>
+						<file id="d1" name="tas-sub-file1.txt" createdBy="userSearchId">
+							<content>content sub-file 1</content>
 							<custom-model name="D:tas:document">
 								<properties>
-									<property name="tas:TextPropertyC" value="abcd" />
-									<property name="tas:IntPropertyC" value="999" />
-								</properties>
+									<property name="tas:TextPropertyC" value="text sub-file-1" />
+								</properties> 
 							</custom-model>
-							<comments>
-								<comment id="c2" value="my comment on f1 file"
-									createdBy="admin" />
-							</comments>
-							<tags>
-								<tag id="tag-1" value="tag1" createdBy="admin" />
-								<tag id="tag-2" value="tag1" createdBy="admin" />
-							</tags>
 						</file>
-						<file id="file2" name="f2.txt" createdBy="admin">
-							<content>content of f1</content>
+						<file id="d2" name="tas-sub-file2.txt" createdBy="userSearchId">
+							<content>content sub-file 2</content>
 							<custom-model name="D:tas:document">
 								<properties>
-									<property name="tas:TextPropertyC" value="abcd" />
-									<property name="tas:IntPropertyC" value="888" />
+									<property name="tas:TextPropertyC" value="text sub-file-2" />
 								</properties>
 							</custom-model>
 						</file>
-						<file id="file3" name="f3.txt" createdBy="admin">
-							<content>content of f1</content>
+						<file id="d3" name="tas-sub-file3.txt" createdBy="userSearchId">
+							<content>content sub-file 3</content>
 							<custom-model name="D:tas:document">
 								<properties>
-									<property name="tas:TextPropertyC" value="abcd" />
-									<property name="tas:IntPropertyC" value="777" />
+									<property name="tas:TextPropertyC" value="text sub-file-3" />
 								</properties>
 							</custom-model>
+						</file>
+						<file id="d4" name="standard-sub-file4.txt" createdBy="userSearchId">
+							<content>content sub-file 4</content>
 						</file>
 					</files>
 					<folders>
-						<folder id="f11" name="folderChildOfFolder1" createdBy="admin" />
+						<folder id="f1-1" name="tas-sub-folder1" createdBy="userSearchId">
+							<custom-model name="F:tas:folder">
+								<properties>
+									<property name="tas:TextPropertyF" value="text sub-folder-1" />
+								</properties>
+							</custom-model>
+						</folder>
+						<folder name="standard-sub-folder2" createdBy="userSearchId"></folder>
 					</folders>
 				</folder>
+				<folder name="tas-folder2" createdBy="userSearchId">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="text folder-2" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="standard-folder3" createdBy="userSearchId"></folder>
 			</folders>
+			<files>
+				<file id="d5" name="tas-file1.txt" createdBy="userSearchId">
+					<custom-model name="D:tas:document">
+						<properties>
+							<property name="tas:TextPropertyC" value="text file-1" />
+						</properties>
+					</custom-model>
+					<content>file 1 content</content>
+				</file>
+				<file id="d6" name="standard-file2.txt" createdBy="userSearchId">
+					<content>file 2 content</content>
+				</file>
+			</files>
 		</site>
 	</sites>
+	
 	<queries>
-
-		<query
-			value="SELECT * FROM cmis:folder WHERE cmis:parentId = 'workspace://SpacesStore/NODE_REF[site1]' ORDER BY cmis:name DESC, cmis:creationDate ASC"
-			expectedResults="1" />
-		<query
-			value="SELECT * FROM tas:document WHERE cmis:objectId &lt;&gt; 'workspace://SpacesStore/NODE_REF[site1]' AND tas:TextPropertyC = 'abcd' ORDER BY cmis:name ASC"
-			expectedResults="1" />
-		<query
-			value="SELECT * FROM tas:document WHERE cmis:objectId &lt;&gt; 'workspace://SpacesStore/NODE_REF[site1]' AND tas:TextPropertyC = 'abcd' ORDER BY cmis:name ASC"
-			expectedResults="1" />
-		<query
-			value="SELECT * FROM tas:document WHERE cmis:objectId &lt;&gt; 'workspace://SpacesStore/NODE_REF[site1]' AND tas:TextPropertyC = 'abcd' ORDER BY cmis:name DESC, cmis:creationDate ASC"
-			expectedResults="1" />
-
-		<query
-			value="SELECT * FROM tas:document WHERE cmis:objectId='workspace://SpacesStore/NODE_REF[file1]'"
-			expectedResults="1"></query>
-		<query
-			value="SELECT * FROM tas:folder WHERE cmis:baseTypeId = 'cmis:folder' and cmis:objectId='workspace://SpacesStore/NODE_REF[folder1]' ORDER BY cmis:name ASC"
-			expectedResults="1" />
-		<query
-			value="SELECT * FROM tas:folder WHERE cmis:baseTypeId = 'cmis:folder' and cmis:objectId='workspace://SpacesStore/NODE_REF[folder1]' ORDER BY cmis:name DESC"
-			expectedResults="1" />
-
-		<query
-			value="SELECT * FROM tas:folder WHERE cmis:baseTypeId = 'cmis:folder' and cmis:objectId='workspace://SpacesStore/NODE_REF[folder1]' ORDER BY cmis:name DESC, cmis:creationDate ASC"
-			expectedResults="1" />
-		<query value="SELECT * FROM tas:document WHERE tas:IntPropertyC = 999"
-			expectedResults="1" />
-		<query
-			value="SELECT * FROM tas:document WHERE tas:IntPropertyC &lt;&gt; 999"
-			expectedResults="2" />
-		<query value="SELECT * FROM tas:document WHERE tas:IntPropertyC &lt; 800"
-			expectedResults="1" />
+		<query value="SELECT * FROM tas:folder" expectedResults="3" />
+		<query value="SELECT * FROM tas:document" expectedResults="4" />
+		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="1" />
+		<query value="SELECT * FROM tas:document WHERE IN_TREE('NODE_REF[siteId]')" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId = 'D:tas:document'" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId &lt;&gt; 'D:tas:document' AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId IN ('D:tas:document') AND cmis:name LIKE 'tas%'" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId NOT IN ('D:tas:document') AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name LIKE 'tas%'" expectedResults="4" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name LIKE 'standard%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name IN('tas-file1.txt', 'tas-sub-file1.txt', 'standard-file2.doc')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name LIKE 'tas%' AND tas:TextPropertyC='text sub-file-3'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name NOT IN('tas-file1.txt', 'tas-sub-file1.txt', 'standard-file2.doc')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId = 'cmis:document' AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="3" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId &lt;&gt; 'cmis:document' AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId IN ('cmis:document') AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="3" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId NOT IN ('cmis:document') AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId = 'NODE_REF[d1]'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId IN ('NODE_REF[d1]', 'NODE_REF[d2]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId NOT IN ('NODE_REF[d1]', 'NODE_REF[d2]')" expectedResults="2" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId = 'F:tas:folder'" expectedResults="3" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId &lt;&gt; 'F:tas:folder' AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId IN ('F:tas:folder') AND cmis:name LIKE 'tas%'" expectedResults="3" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId NOT IN ('F:tas:folder') AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:name LIKE 'tas%' AND tas:TextPropertyF = 'text sub-folder-1'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:name LIKE 'standard%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:name IN('tas-sub-folder1', 'tas-folder2', 'standard-folder3') ORDER BY cmis:name ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId = 'NODE_REF[f1]'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IN ('NODE_REF[f1]', 'NODE_REF[f1-1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId NOT IN ('NODE_REF[f1]', 'NODE_REF[f1-1]')" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId = 'NODE_REF[f1]' ORDER BY cmis:name DESC" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId &lt;&gt; 'NODE_REF[f1]' ORDER BY cmis:name DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId IN('NODE_REF[f1]', 'NODE_REF[f1-1]') ORDER BY cmis:name ASC" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId NOT IN('NODE_REF[f1]', 'NODE_REF[f1-1]') ORDER BY cmis:name ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId='cmis:folder' ORDER BY cmis:createdBy DESC" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId &lt;&gt; 'cmis:folder' ORDER BY cmis:createdBy ASC" expectedResults="0" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId IN('cmis:folder') AND cmis:objectId='NODE_REF[f1]' ORDER BY cmis:creationDate DESC" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId NOT IN('cmis:folder') ORDER BY cmis:creationDate ASC" expectedResults="0" />
+		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="1" />
+		<query value="SELECT * FROM cmis:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="2" />
 	</queries>
 </testData> 
