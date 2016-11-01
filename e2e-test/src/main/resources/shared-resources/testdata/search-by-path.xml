@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testData xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
 	<users>
 		<user name="userSiteSearch" password="password" />
 	</users>
 	<sites>
-		<site name="testSiteSearch1" createdBy="userSiteSearch" visibility="PUBLIC">
+		<site name="testSiteSearch" createdBy="userSiteSearch" visibility="PUBLIC">
 			<folders>
 				<folder name="folder1" createdBy="userSiteSearch">
 					<files>

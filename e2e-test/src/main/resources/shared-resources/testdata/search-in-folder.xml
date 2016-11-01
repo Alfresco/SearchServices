@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--CMIS Queries: passing the search query as first param and results expected -->
-<testData xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
 	<queries>
 		<query value="SELECT * FROM cmis:document where IN_FOLDER('%s')" expectedResults="5" />
 		<query value="SELECT * FROM cmis:folder where IN_FOLDER('%s')" expectedResults="3" />
