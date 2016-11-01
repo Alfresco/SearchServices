@@ -3,7 +3,7 @@
 FROM openjdk:8
 MAINTAINER Gethin James, gethin.james@alfresco.com
 
-ENV SOLR_ZIP alfresco-solr-distribution-*.zip
+ENV SOLR_ZIP alfresco-search-services-*.zip
 ENV DIST_DIR /opt/alfresco-solr
 
 RUN groupadd -r solr && useradd -m -r -g solr -s /bin/bash solr

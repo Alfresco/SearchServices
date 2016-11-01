@@ -1,9 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.alfresco</groupId>
-    <artifactId>alfresco-solr-distribution</artifactId>
-    <name>Alfresco Solr Distribution</name>
-    <description>Produces the solr distribution zip</description>
+    <artifactId>alfresco-search-services</artifactId>
+    <name>Alfresco Search Services</name>
+    <description>Alfresco Search Services Solr distribution zip</description>
+    <packaging>jar</packaging>
     <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -28,7 +29,7 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>alfresco-solr-distribution-${project.version}</finalName>
+        <finalName>alfresco-search-services-${project.version}</finalName>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
