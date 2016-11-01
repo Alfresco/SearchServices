@@ -29,7 +29,7 @@ public class SolrSearchByPath extends CmisTest
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")
-    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/input-data-search-by-path.xml")
+    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-path.xml")
     public void prepareEnvironmentData(XMLTestData testData) throws Exception
     {
         this.testData = testData;
@@ -40,7 +40,7 @@ public class SolrSearchByPath extends CmisTest
     }
 
     @Test(dependsOnMethods = "prepareEnvironmentData", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
-    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/input-data-search-by-path.xml")
+    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-path.xml")
     public void executeSearchByPathQueries(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue()).assertResultsCountIs(query.getResults());

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testData>
+	<users>
+		<user name="userSiteSearch" password="password" />
+	</users>
+	<sites>
+		<site name="testSiteSearch1" createdBy="userSiteSearch" visibility="PUBLIC">
+			<folders>
+				<folder name="folder1" createdBy="userSiteSearch">
+					<files>
+						<file name="sub-file1.txt" createdBy="userSiteSearch">
+							<content>content sub-file 1</content>
+						</file>
+						<file name="sub-file2.txt" createdBy="userSiteSearch">
+							<content>content sub-file 2</content>
+						</file>
+						<file name="sub-file3.txt" createdBy="userSiteSearch">
+							<content>content sub-file 3</content>
+						</file>
+						<file name="sub-file4.txt" createdBy="userSiteSearch">
+							<content>content sub-file 4</content>
+						</file>
+					</files>
+					<folders>
+						<folder name="sub-folder1" createdBy="userSiteSearch"></folder>
+						<folder name="sub-folder2" createdBy="userSiteSearch"></folder>
+					</folders>
+				</folder>
+				<folder name="folder2" createdBy="userSiteSearch"></folder>
+				<folder name="parent-folder3" createdBy="userSiteSearch"></folder>
+			</folders>
+			<files>
+				<file name="file1.txt" createdBy="userSiteSearch">
+					<content>file 1 content</content>
+				</file>
+				<file name="parent-file2.txt" createdBy="admin">
+					<content>file 2 content</content>
+				</file>
+			</files>
+		</site>
+	</sites>
+
+	<!--CMIS Queries: passing the search query as first param and results expected -->
+	<queries>
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;')" 
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;')" 
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/cm:folder1/*&quot;')" 
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/cm:folder1/*&quot;')" 
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name='file1.txt'" 
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name='folder2'" 
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') ORDER BY cmis:name ASC" 
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') ORDER BY cmis:name DESC" 
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') ORDER BY cmis:lastModificationDate ASC" 
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') ORDER BY cmis:createdBy DESC" 
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name IS NOT NULL" 
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND CONTAINS('file 1 content')" 
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name LIKE 'parent%'" 
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND NOT(cmis:name NOT IN ('parent-folder3'))" 
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name IN ('parent-folder3', 'folder2')" 
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name NOT IN ('parent-folder3', 'folder2')" 
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM cmis:folder where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name &lt;&gt; 'folder2'" 
+			expectedResults="2" />
+	</queries>
+</testData>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testData>
+	<users>
+		<user id="u1" name="search" password="password" />
+	</users>
+
+	<sites>
+		<site id="site1" name="MyCustomSearchSite" createdBy="search"
+			visibility="PUBLIC">
+			<folders>
+				<folder id="f1" name="folder1" createdBy="search">
+					<custom-model name="F:tas:folder" />
+					<comments>
+						<comment id="c1" value="my first folder comment" createdBy="admin" />
+					</comments>
+					<files>
+						<file id="f1" name="f1.txt" createdBy="admin">
+							<content>content of f1</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="abcd" />
+								</properties>
+							</custom-model>
+							<comments>
+								<comment id="c2" value="my comment on f1 file" createdBy="admin" />
+							</comments>
+							<tags>
+								<tag id="tag-1" value="tag1" createdBy="admin" />
+								<tag id="tag-2" value="tag1" createdBy="admin" />
+							</tags>
+						</file>
+					</files>
+					<folders>
+						<folder id="f11" name="folderChildOfFolder1" createdBy="admin" />
+					</folders>
+				</folder>
+			</folders>
+		</site>
+	</sites>
+	<queries>
+		<query
+			value="SELECT * FROM cmis:folder WHERE cmis:parentId = 'workspace://SpacesStore/NODE_REF[site1]' ORDER BY cmis:name DESC, cmis:creationDate ASC"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document WHERE cmis:objectId &lt;&gt; 'workspace://SpacesStore/NODE_REF[site1]' AND tas:TextPropertyC = 'abcd' ORDER BY cmis:name ASC"
+			expectedResults="1" />
+	</queries>
+</testData> 
