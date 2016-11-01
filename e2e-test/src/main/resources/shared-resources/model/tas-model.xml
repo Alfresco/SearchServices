@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<model name="tas:model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="tas:cmistasmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
-    <description>Alfresco TAS model</description>
-    <author>BogdanB</author>
+    <description>Alfresco TAS custom model</description>
+    <author>Bogdan</author>
     <version>1.0</version>
 
     <imports>
         <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
         <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
     </imports>
+
 
     <namespaces>
         <namespace uri="tas.cmis.model" prefix="tas"/>
@@ -18,7 +19,7 @@
     <types>
 
         <type name="tas:document">
-            <title>TAS Document</title>
+            <title>CMIS TAS Content</title>
             <parent>cm:content</parent>
             <properties>
                 <property name="tas:TextPropertyC">
@@ -42,7 +43,7 @@
             </properties>
 
             <associations>
-                <association name="tas:content">
+                <association name="tas:tasContent">
                     <source>
                         <mandatory>false</mandatory>
                         <many>false</many>
@@ -57,7 +58,7 @@
         </type>
 
         <type name="tas:folder">
-            <title>TAS Folder</title>
+            <title>CMIS TAS Folder</title>
             <parent>cm:folder</parent>
             <properties>
                 <property name="tas:TextPropertyF">
@@ -81,7 +82,7 @@
             </properties>
 
             <associations>
-                <association name="tas:folder">
+                <association name="tas:tasFolder">
                     <source>
                         <mandatory>false</mandatory>
                         <many>false</many>
@@ -98,8 +99,9 @@
     </types>
 
     <aspects>
-        <aspect name="tas:contentAspect">
-            <title>TAS Content Aspect</title>
+
+        <aspect name="tas:tasContentAspect">
+            <title>tas Content Aspect</title>
             <properties>
                 <property name="tas:TextPropertyAC">
                     <title>Text</title>
@@ -122,7 +124,7 @@
             </properties>
         </aspect>
 
-        <aspect name="tas:folderAspect">
+        <aspect name="tas:tasFolderAspect">
             <title>TAS Folder Aspect</title>
             <properties>
                 <property name="tas:TextPropertyAF">
