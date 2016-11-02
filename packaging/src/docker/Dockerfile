@@ -26,6 +26,8 @@ RUN echo '\n##Docker Setup' >> $DIST_DIR/solr.in.sh \
 #&& echo 'SOLR_HOME=$DIST_DIR/solrhome' >> $DIST_DIR/solr.in.sh \
 
 VOLUME /opt/alfresco-solr/data
+VOLUME /opt/alfresco-solr/solrhome
+
 EXPOSE 8983
 USER solr
 CMD [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f" ]
