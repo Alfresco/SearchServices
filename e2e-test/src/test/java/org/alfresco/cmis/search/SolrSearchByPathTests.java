@@ -12,7 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
-public class SolrSearchByPath extends CmisTest
+public class SolrSearchByPathTests extends CmisTest
 {
     XMLTestData testData;
 

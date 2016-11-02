@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+	<users>
+		<user name="userSearchProperties" password="password" />
+	</users>
+
+	<sites>
+		<site name="siteSearchByProperty" createdBy="userSearchProperties" visibility="PUBLIC">
+			<folders>
+				<folder name="guestf" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="guestf text" />
+							<property name="tas:IntPropertyF" value="222" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="restf" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="restf text" />
+							<property name="tas:IntPropertyF" value="223" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="tesf" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="tesf text" />
+							<property name="tas:IntPropertyF" value="224" />
+						</properties>
+					</custom-model>
+					<files>
+						<file name="guestc" createdBy="userSearchProperties">
+							<content>content guestc</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="guestc text" />
+									<property name="tas:IntPropertyC" value="222" />
+								</properties> 
+							</custom-model>
+						</file>
+						<file name="restc" createdBy="userSearchProperties">
+							<content>content restc</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="restc text" />
+									<property name="tas:IntPropertyC" value="223" />
+								</properties> 
+							</custom-model>
+						</file>
+						<file name="tesc" createdBy="userSearchProperties">
+							<content>content tesc</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="tesc text" />
+									<property name="tas:IntPropertyC" value="224" />
+								</properties> 
+							</custom-model>
+						</file>
+						<file name="testtttc" createdBy="userSearchProperties">
+							<content>content testtttc</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="testtttc text" />
+									<property name="tas:IntPropertyC" value="225" />
+								</properties> 
+							</custom-model>
+						</file>
+						<file name="testc" createdBy="userSearchProperties">
+							<content>content testc</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="testc text" />
+									<property name="tas:IntPropertyC" value="226" />
+								</properties> 
+							</custom-model>
+						</file>
+						<file name="testc1" createdBy="userSearchProperties">
+							<content>content testc1</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="testc1 text" />
+									<property name="tas:IntPropertyC" value="2221" />
+								</properties> 
+							</custom-model>
+						</file>
+						<file name="testc2" createdBy="userSearchProperties">
+							<content>content testc2</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="testc2 text" />
+									<property name="tas:IntPropertyC" value="2222" />
+								</properties> 
+							</custom-model>
+						</file>
+						<file name="testc3" createdBy="userSearchProperties">
+							<content>content testc3</content>
+							<custom-model name="D:tas:document">
+								<properties>
+									<property name="tas:TextPropertyC" value="testc3 text" />
+									<property name="tas:IntPropertyC" value="2223" />
+								</properties> 
+							</custom-model>
+						</file>
+					</files>
+				</folder>
+				<folder name="testtttf" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="testtttf text" />
+							<property name="tas:IntPropertyF" value="225" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="testf" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="testf text" />
+							<property name="tas:IntPropertyF" value="226" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="testf1" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="testf1 text" />
+							<property name="tas:IntPropertyF" value="2221" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="testf2" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="testf2 text" />
+							<property name="tas:IntPropertyF" value="2222" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="testf3" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="testf3 text" />
+							<property name="tas:IntPropertyF" value="2223" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="testf4" createdBy="userSearchProperties">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="testf4 text" />
+							<property name="tas:IntPropertyF" value="2224" />
+						</properties>
+					</custom-model>
+				</folder>
+			</folders>
+			
+		</site>
+	</sites>
+	
+	<queries>
+		<query value="SELECT * FROM tas:document where cmis:name = 'testc'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where cmis:name &lt;&gt; 'testc'" expectedResults="7" />
+		<query value="SELECT * FROM tas:document where cmis:name &lt; 'testc'" expectedResults="3" />
+		<query value="SELECT * FROM tas:document where cmis:name &lt;= 'testc'" expectedResults="4" />
+		<query value="SELECT * FROM tas:document where cmis:name &gt; 'testc'" expectedResults="4" />
+		<query value="SELECT * FROM tas:document where cmis:name &gt;= 'testc'" expectedResults="5" />
+		<query value="SELECT * FROM tas:document where cmis:name IN('testc', 'guestc', 'restc')" expectedResults="3" />
+		<query value="SELECT * FROM tas:document where cmis:name NOT IN('testc', 'gustc', 'restc')" expectedResults="6" />
+		<query value="SELECT * FROM tas:document where cmis:name LIKE '%testc%'" expectedResults="4" />
+		<query value="SELECT * FROM tas:document where cmis:name LIKE 'testc'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where cmis:name LIKE 't%tc'" expectedResults="2" />
+		<query value="SELECT * FROM tas:document where cmis:name LIKE 't__tc'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where cmis:name = 'testf'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where cmis:name &lt;&gt; 'testf'" expectedResults="8" />
+		<query value="SELECT * FROM tas:folder where cmis:name &lt; 'testf'" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder where cmis:name &lt;= 'testf'" expectedResults="4" />
+		<query value="SELECT * FROM tas:folder where cmis:name &gt; 'testf'" expectedResults="5" />
+		<query value="SELECT * FROM tas:folder where cmis:name &gt;= 'testf'" expectedResults="6" />
+		<query value="SELECT * FROM tas:folder where cmis:name IN('testf', 'guestf', 'restf')" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder where cmis:name NOT IN('testf', 'gustf', 'restf')" expectedResults="7" />
+		<query value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%'" expectedResults="5" />
+		<query value="SELECT * FROM tas:folder where cmis:name LIKE 'testf'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where cmis:name LIKE 't%tf'" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder where cmis:name LIKE 't__tf'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where cmis:name LIKE '%testc%' ORDER BY cmis:name ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:document where cmis:name LIKE '%testc%' ORDER BY cmis:name DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:document where cmis:name LIKE '%testc%' ORDER BY cmis:name DESC, cmis:creationDate ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%' ORDER BY cmis:name ASC" expectedResults="5" />
+		<query value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%' ORDER BY cmis:name DESC" expectedResults="5" />
+		<query value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%' ORDER BY cmis:name DESC, cmis:creationDate ASC" expectedResults="5" />
+		<query value="SELECT * FROM tas:document where tas:TextPropertyC = 'restc text'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where tas:TextPropertyC &lt;&gt; 'testc1 text'" expectedResults="7" />
+		<query value="SELECT * FROM tas:document where tas:TextPropertyC IN('restc text', 'testc2 text', 'testc3 text')" expectedResults="3" />
+		<query value="SELECT * FROM tas:document where tas:TextPropertyC NOT IN('restc text', 'testc2 text', 'testc3 text')" expectedResults="5" />
+		<query value="SELECT * FROM tas:document where tas:TextPropertyC LIKE '%restc%'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where tas:TextPropertyC &gt;= 'testc'" expectedResults="5" />
+		<query value="SELECT * FROM tas:document where tas:TextPropertyC LIKE 't__tc text'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where tas:TextPropertyF = 'restf text'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where tas:TextPropertyF &lt;&gt; 'testf1 text'" expectedResults="8" />
+		<query value="SELECT * FROM tas:folder where tas:TextPropertyF IN('restf text', 'testf2 text', 'testf3 text')" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder where tas:TextPropertyF NOT IN('restf text', 'testf2 text', 'testf3 text')" expectedResults="6" />
+		<query value="SELECT * FROM tas:folder where tas:TextPropertyF LIKE '%restf%'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where tas:TextPropertyF &gt;= 'testf text'" expectedResults="6" />
+		<query value="SELECT * FROM tas:folder where tas:TextPropertyF LIKE 't__tf text'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC = '222'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC &lt;&gt; '223'" expectedResults="7" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC &lt; '223'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC &lt;= '224'" expectedResults="3" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC &gt;= '224'" expectedResults="6" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC &gt; '224'" expectedResults="5" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC IN('222', '223', '224', '225')" expectedResults="4" />
+		<query value="SELECT * FROM tas:document where tas:IntPropertyC NOT IN('222', '223', '224')" expectedResults="5" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF = '222'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF &lt;&gt; '223'" expectedResults="8" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF &lt; '223'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF &lt;= '224'" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF &gt;= '224'" expectedResults="7" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF &gt; '224'" expectedResults="6" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF IN('222', '223', '224', '225')" expectedResults="4" />
+		<query value="SELECT * FROM tas:folder where tas:IntPropertyF NOT IN('222', '223', '224')" expectedResults="6" />
+	</queries>
+</testData> 

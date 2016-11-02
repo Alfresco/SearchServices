@@ -5,7 +5,7 @@
 	</users>
 
 	<sites>
-		<site id="siteId" name="siteSearchById1" createdBy="userSearchId" visibility="PUBLIC">
+		<site id="siteId" name="siteSearchById" createdBy="userSearchId" visibility="PUBLIC">
 			<folders>
 				<folder id="f1" name="tas-folder1" createdBy="userSearchId">
 				<custom-model name="F:tas:folder" />
@@ -116,5 +116,9 @@
 		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId NOT IN('cmis:folder') ORDER BY cmis:creationDate ASC" expectedResults="0" />
 		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="1" />
 		<query value="SELECT * FROM cmis:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IS NOT NULL" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IS NULL" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId IS NOT NULL" expectedResults="4" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId IS NULL" expectedResults="0" />
 	</queries>
 </testData> 

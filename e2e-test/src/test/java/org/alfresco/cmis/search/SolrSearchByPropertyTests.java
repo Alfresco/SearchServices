@@ -12,7 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
-public class SolrSearchByIDTest extends CmisTest
+public class SolrSearchByPropertyTests extends CmisTest
 {
     XMLTestData testData;
 
@@ -30,7 +30,7 @@ public class SolrSearchByIDTest extends CmisTest
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")
-    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-id.xml")
+    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-property.xml")
     public void prepareDataForSolrSearch(XMLTestData testData) throws Exception
     {
         this.testData = testData;
@@ -39,7 +39,7 @@ public class SolrSearchByIDTest extends CmisTest
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSolrSearch")
-    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-id.xml")
+    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-property.xml")
     public void executeSortedSearchByID(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue())

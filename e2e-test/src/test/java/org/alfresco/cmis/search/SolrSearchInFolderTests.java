@@ -17,7 +17,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
-public class SolrSearchInFolder extends CmisTest
+public class SolrSearchInFolderTests extends CmisTest
 {
     UserModel testUser;
     SiteModel testSite;
