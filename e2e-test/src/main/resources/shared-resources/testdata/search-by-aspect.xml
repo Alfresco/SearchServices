@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
 	<users>
-		<user id="u1" name="userSearchAspect" password="password" />
+		<user id="userSearchAspect" name="userSearchAspect" password="password" />
 	</users>
 
 	<sites>
-		<site id="s1" name="siteSearchByAspect" createdBy="userSearchAspect" visibility="PUBLIC">
+		<site id="s1" name="siteSearchByAspect" createdBy="u1" visibility="PUBLIC">
 			<folders>
 				<folder id="f1" name="tas-folder1" createdBy="userSearchAspect">
 					<custom-model name="F:tas:folder" />
