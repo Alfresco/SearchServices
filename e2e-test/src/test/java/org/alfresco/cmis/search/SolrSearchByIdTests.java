@@ -31,14 +31,14 @@ public class SolrSearchByIdTests extends CmisTest
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-id.xml")
-    public void prepareDataForSolrSearch(XMLTestData testData) throws Exception
+    public void prepareDataForSearchById(XMLTestData testData) throws Exception
     {
         this.testData = testData;
         this.testData.createUsers(dataUser);
         this.testData.createSitesStructure(dataSite, dataContent, dataUser);
     }
 
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSolrSearch")
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchById")
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-id.xml")
     public void executeSortedSearchByID(QueryModel query) throws Exception
     {

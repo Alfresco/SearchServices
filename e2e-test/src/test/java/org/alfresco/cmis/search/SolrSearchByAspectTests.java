@@ -12,7 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
-public class SolrSearchByPropertyTests extends CmisTest
+public class SolrSearchByAspectTests extends CmisTest
 {
     XMLTestData testData;
 
@@ -30,16 +30,16 @@ public class SolrSearchByPropertyTests extends CmisTest
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")
-    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-property.xml")
-    public void prepareDataForSearchWithProperty(XMLTestData testData) throws Exception
+    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-aspect.xml")
+    public void prepareDataForAspectSearch(XMLTestData testData) throws Exception
     {
         this.testData = testData;
         this.testData.createUsers(dataUser);
         this.testData.createSitesStructure(dataSite, dataContent, dataUser);
     }
 
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchWithProperty")
-    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-property.xml")
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForAspectSearch")
+    @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-aspect.xml")
     public void executeSortedSearchByID(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue())

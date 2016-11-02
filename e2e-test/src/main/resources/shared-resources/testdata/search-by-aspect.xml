@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+	<users>
+		<user id="u1" name="userSearchAspect" password="password" />
+	</users>
+
+	<sites>
+		<site id="s1" name="siteSearchByAspect" createdBy="userSearchAspect" visibility="PUBLIC">
+			<folders>
+				<folder id="f1" name="tas-folder1" createdBy="userSearchAspect">
+					<custom-model name="F:tas:folder" />
+					<aspects>
+						<aspect name="P:tas:tasFolderAspect" />
+					</aspects>
+						<files>
+							<file id="d1" name="tas-sub-file1.txt" createdBy="userSearchAspect">
+								<content>content sub-file 1</content>
+								<custom-model name="D:tas:document">
+									<properties>
+										<property name="tas:TextPropertyC" value="text sub-file-1" />
+										<property name="tas:IntPropertyC" value="11" />
+									</properties> 
+								</custom-model>
+								<aspects>
+									<aspect name = "P:tas:tasContentAspect" />
+								</aspects>
+							</file> 
+							<file id="d2" name="tas-sub-file2.txt" createdBy="userSearchAspect">
+								<content>content sub-file 2</content>
+								<custom-model name="D:tas:document">
+									<properties>
+										<property name="tas:TextPropertyC" value="text sub-file-2" />
+										<property name="tas:IntPropertyC" value="12" />
+									</properties>
+								</custom-model>
+								<aspects>
+									<aspect name = "P:tas:tasContentAspect" />
+								</aspects>
+							</file>
+							<file id="d3" name="tas-sub-file3.txt" createdBy="userSearchAspect">
+								<content>content sub-file 3</content>
+								<custom-model name="D:tas:document"></custom-model>
+								<aspects>
+									<aspect name = "P:tas:tasContentAspect" />
+								</aspects>
+							</file>
+							<file id="d4" name="standard-sub-file4.txt" createdBy="userSearchAspect">
+								<content>content sub-file 4</content>
+							</file>
+						</files>
+					<folders>
+						<folder id="f1-1" name="tas-sub-folder1" createdBy="userSearchAspect">
+							<custom-model name="F:tas:folder">
+								<properties>
+									<property name="tas:TextPropertyF" value="text sub-folder-1" />
+								</properties>
+							</custom-model>
+							<aspects>
+								<aspect name="P:tas:tasFolderAspect" />
+							</aspects>
+						</folder>
+						<folder name="standard-sub-folder2" createdBy="userSearchAspect">
+							<aspects>
+								<aspect name="P:tas:tasFolderAspect" />
+							</aspects>
+						</folder>
+					</folders>
+				</folder>
+				<folder name="tas-folder2" createdBy="userSearchAspect">
+					<custom-model name="F:tas:folder">
+						<properties>
+							<property name="tas:TextPropertyF" value="text folder-2" />
+						</properties>
+					</custom-model>
+				</folder>
+				<folder name="standard-folder3" createdBy="userSearchAspect">
+					<aspects>
+						<aspect name="P:tas:tasFolderAspect" />
+					</aspects>
+				</folder>
+			</folders>
+			<files>
+				<file id="d5" name="tas-file1.txt" createdBy="userSearchAspect">
+					<custom-model name="D:tas:document">
+						<properties>
+							<property name="tas:TextPropertyC" value="text file-1" />
+						</properties>
+					</custom-model>
+					<aspects>
+						<aspect name = "P:tas:tasContentAspect" />
+					</aspects>
+					<content>file 1 content</content>
+				</file>
+				<file id="d6" name="standard-file2.txt" createdBy="userSearchAspect">
+					<content>file 2 content</content>
+				</file>
+			</files>
+		</site>
+	</sites>
+	
+	<queries>
+		<query value="SELECT * FROM tas:tasContentAspect" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]')" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy DESC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy ASC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="3" />
+		<query value="SELECT * FROM cm:dublincore where IN_FOLDER('NODE_REF[f1]')" expectedResults="0" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[s1]')" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[s1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[f1]')" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]')" expectedResults="4" />
+		<query value="SELECT * FROM cm:dublincore where IN_TREE('NODE_REF[f1]')" expectedResults="0" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]')" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:createdBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:createdBy ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:createdBy ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:createdBy DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="4" />
+	</queries>
+</testData> 
