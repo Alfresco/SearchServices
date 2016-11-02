@@ -3,8 +3,8 @@ services:
   repo:
     image: docker-internal.alfresco.com/platform:latest
     environment:
-         JAVA_OPTS : "-Dsolr.useDynamicShardRegistration=false -Dsolr.port.ssl=8983
-         -Dsolr.host=solr6 -Dsolr.port=8983 -Dsolr.secureComms=https -Ddir.keystore=/opt/alfresco/alf_data/keystore
+         JAVA_OPTS : "-Dsolr.useDynamicShardRegistration=false -Dsolr.port.ssl=8984
+         -Dsolr.host=solr6 -Dsolr.port=8984 -Dsolr.secureComms=https -Ddir.keystore=/opt/alfresco/alf_data/keystore
          -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
     ports:
           - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
@@ -18,7 +18,7 @@ services:
       - "REPO_HOST=repo:8080"
   solr6:
     image: docker-internal.alfresco.com/search-services:develop-latest
-    command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a",
+    command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f""-p","8984", "-a",
                "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
     environment:
       #Solr needs to know how to register itself with Alfresco
@@ -26,21 +26,22 @@ services:
       SOLR_ALFRESCO_PORT: 8080
       #Alfresco needs to know how to call solr
       SOLR_SOLR_HOST: solr6
-      SOLR_SOLR_PORT: 8983
+      SOLR_SOLR_PORT: 8984
       #Create the default alfresco and archive cores
       SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive
 
       #SSL setup
       #SOLR_OPTS: "$SOLR_OPTS -Djavax.net.debug=SSL,keymanager,trustmanager"
-      SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.keystore
+      SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
       SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
-      SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.truststore
+      SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
       SOLR_SSL_TRUST_STORE_PASSWORD: kT9X6oe68t
-      #SOLR_SSL_NEED_CLIENT_AUTH : "true"
+     # SOLR_JETTY_KEYSTORE_TYPE: JKS
+     # SOLR_JETTY_TRUSTSTORE_TYPE: JKS
 
     ports:
-      - "8083:8983" #Browser port
+      - "8984:8984" #Browser port
       - "1044:1044" #Java debugging
     volumes_from:
      - repo:ro
-#In the Index Server Shard Management Admin console the index server is: solr6:8983/solr
+#In the Index Server Shard Management Admin console the index server is: solr6:8984/solr
