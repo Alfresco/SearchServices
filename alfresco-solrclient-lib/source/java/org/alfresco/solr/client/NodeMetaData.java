@@ -57,6 +57,7 @@ public class NodeMetaData
     private long txnId;
     private Set<NodeRef> ancestors;
     private String tenantDomain;
+	private List<String> ancestorPaths;
     
     public long getId()
     {
@@ -117,6 +118,16 @@ public class NodeMetaData
     public void setPaths(List<Pair<String, QName>> paths)
     {
         this.paths = paths;
+    }
+    
+    public List<String> getAncestorPaths()
+    {
+    	return ancestorPaths;
+    }
+    
+    public void setAncestorPaths(List<String> ancestorPaths)
+    {
+        this.ancestorPaths = ancestorPaths;
     }
     
     public List<List<String>> getNamePaths()
