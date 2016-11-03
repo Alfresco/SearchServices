@@ -1820,6 +1820,12 @@
   </requestHandler>
 
 
+  <requestHandler name="/fingerprint" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
+      <arr name="components">
+            <str>fingerprint</str>
+      </arr>
+  </requestHandler>
+
   <requestHandler name="/afts" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
     <lst name="defaults">
      <str name="defType">afts</str>
@@ -1861,7 +1867,6 @@
       <str>spellcheckbackcompat</str>
       <str>setProcessedDenies</str>
       <str>clustering</str>
-      <str>fingerprint</str>
     </arr>
       <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
   </requestHandler>
