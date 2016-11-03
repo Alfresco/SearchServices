@@ -251,6 +251,8 @@
 
     <requestHandler name="/update" class="solr.UpdateRequestHandler"  />
 
+    <searchComponent name="fingerprint" class="org.alfresco.solr.component.FingerPrintComponent"/>
+
     <requestHandler name="/afts" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
         <lst name="defaults">
              <str name="defType">afts</str>
@@ -283,6 +285,7 @@
             <str>spellcheck</str>
             <str>spellcheckbackcompat</str>
             <str>setProcessedDenies</str>
+            <str>fingerprint</str>
         </arr>
         <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
     </requestHandler>

@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.query;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
@@ -34,6 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
@@ -66,11 +71,15 @@ import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
 import org.alfresco.solr.SolrInformationServer;
+import org.alfresco.solr.component.FingerPrintComponent;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.Pair;
 import org.alfresco.util.SearchLanguageConversion;
 import org.antlr.misc.OrderedHashSet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.solr.client.solrj.SolrRequest;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -110,15 +119,25 @@ import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.apache.solr.analysis.TokenizerChain;
+import org.apache.solr.client.solrj.impl.HttpClientUtil;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
+import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.handler.component.HttpShardHandlerFactory;
+import org.apache.solr.handler.component.ShardHandlerFactory;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.update.DocumentBuilder;
+import org.apache.solr.update.UpdateShardHandlerConfig;
 import org.jaxen.saxpath.SAXPathException;
 import org.jaxen.saxpath.base.XPathReader;
+import org.json.JSONObject;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -129,7 +148,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 {
 
     /**
-     * @param schema
      *            IndexSchema
      * @param matchVersion
      * @param f
@@ -144,11 +162,17 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         this.rerankPhase = rerankPhase;
         this.schema = req.getSchema();
         this.solrContentStore = getContentStore(req);
+        this.solrParams = req.getParams();
+        this.shardHandlerFactory = req.getCore().getCoreDescriptor().getCoreContainer().getShardHandlerFactory();
+        this.request = req;
         
     }
 
     private RerankPhase rerankPhase;
     private SolrContentStore solrContentStore;
+    private SolrParams solrParams;
+    private ShardHandlerFactory shardHandlerFactory;
+    private SolrQueryRequest request;
     /**
      * Extracts the contentStore from SolrQueryRequest.
      * @param req
@@ -660,7 +684,64 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 return createAncestorQuery(queryText);
             } else if (field.equals(FIELD_FINGERPRINT))
             {
-                return createFingerPrintQuery(field, queryText, analysisMode, luceneFunction);
+                String[] parts = queryText.split("_");
+                Collection values = null;
+                long nodeId = Long.parseLong(parts[0]);
+
+                JSONObject json = (JSONObject)request.getContext().get(AbstractQParser.ALFRESCO_JSON);
+                String fingerPrint = null;
+                if(json != null) {
+                    //Was the fingerprint passed in
+                    String fingerPrintKey = "fingerprint." + nodeId;
+                    if(json.has(fingerPrintKey)) {
+                        fingerPrint = (String) json.get("fingerprint." + nodeId);
+                        if (fingerPrint != null) {
+                            List l = new ArrayList();
+                            String[] hashes = fingerPrint.split(" ");
+                            for (String hash : hashes) {
+                                l.add(hash);
+                            }
+                            values = l;
+                        }
+                    }
+                } else {
+                    json = new JSONObject();
+                }
+
+                //Is the fingerprint in the local SolrContentStore
+                if(values == null) {
+                    SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), nodeId);
+                    if (solrDoc != null) {
+                        SolrInputField mh = solrDoc.getField("MINHASH");
+                        if (mh != null) {
+                            values = mh.getValues();
+                        }
+                    }
+                }
+
+                String shards = this.solrParams.get("shards");
+                if(values == null && shards != null)
+                {
+                    //we are in distributed mode
+                    //Fetch the fingerPrint from the shards.
+                    values = fetchFingerPrint(shards, nodeId);
+                }
+
+                //If we're in distributed mode then add the fingerprint to the json
+                if(values != null && shards != null && fingerPrint == null)
+                {
+                    ModifiableSolrParams newParams = new ModifiableSolrParams();
+                    newParams.add(solrParams);
+                    solrParams = newParams;
+                    json.put("fingerprint." + nodeId, join(values, " "));
+                    String jsonString = json.toString();
+                    newParams.add(AbstractQParser.ALFRESCO_JSON, jsonString);
+                    request.getContext().put(AbstractQParser.ALFRESCO_JSON, json);
+                    request.setParams(newParams);
+                }
+
+                return createFingerPrintQuery(field, queryText, values, analysisMode, luceneFunction);
+
             } else
             {
                 return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
@@ -676,6 +757,82 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
     }
 
+    private String join(Collection col, String delimiter){
+        StringBuilder builder = new StringBuilder();
+        for(Object o : col){
+            if(builder.length() > 0) {
+                builder.append(" ");
+            }
+            builder.append(o.toString());
+        }
+        return builder.toString();
+    }
+
+    private Collection fetchFingerPrint(String shards, long nodeId) {
+
+        List<String> urls = ((HttpShardHandlerFactory)shardHandlerFactory).makeURLList(shards);
+        ExecutorService executorService =  null;
+        List<Future> futures = new ArrayList();
+        Collection fingerPrint = null;
+        try {
+            executorService = Executors.newCachedThreadPool();
+            for (String url : urls) {
+                futures.add(executorService.submit(new FingerPrintFetchTask(url, Long.toString(nodeId))));
+            }
+
+            for (Future<Collection> future : futures) {
+                Collection col = future.get();
+                if(col != null) {
+                    fingerPrint = col;
+                }
+            }
+
+        }catch(Exception e) {
+            logger.error(e);
+        } finally {
+            executorService.shutdown();
+        }
+        return fingerPrint;
+    }
+
+
+    private class FingerPrintFetchTask implements Callable<Collection> {
+        private String url;
+        private String id;
+
+        public FingerPrintFetchTask(String url, String id) {
+            this.url = url;
+            this.id = id;
+        }
+
+        public Collection call() throws Exception {
+            HttpSolrClient solrClient = null;
+            CloseableHttpClient closeableHttpClient = null;
+            try {
+                ModifiableSolrParams params = new ModifiableSolrParams();
+                params.add(FingerPrintComponent.COMPONENT_NAME, "true");
+                params.add("id", id);
+                closeableHttpClient = HttpClientUtil.createClient(getClientParams());
+                solrClient = new HttpSolrClient.Builder(url).withHttpClient(closeableHttpClient).build();;
+                QueryRequest request = new QueryRequest(params, SolrRequest.METHOD.POST);
+                QueryResponse response = request.process(solrClient);
+                NamedList dataResponse = response.getResponse();
+                NamedList fingerprint = (NamedList) dataResponse.get("fingerprint");
+                return (Collection)fingerprint.get("MINHASH");
+            } finally {
+                closeableHttpClient.close();
+                solrClient.close();
+            }
+        }
+
+        protected ModifiableSolrParams getClientParams() {
+            ModifiableSolrParams clientParams = new ModifiableSolrParams();
+            clientParams.set(HttpClientUtil.PROP_SO_TIMEOUT, UpdateShardHandlerConfig.DEFAULT_DISTRIBUPDATESOTIMEOUT);
+            clientParams.set(HttpClientUtil.PROP_CONNECTION_TIMEOUT, UpdateShardHandlerConfig.DEFAULT_DISTRIBUPDATECONNTIMEOUT);
+            return clientParams;
+        }
+    }
+
     /**
      * @param field
      * @param queryText
@@ -686,7 +843,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
      * @throws IOException
      * @throws ParseException
      */
-    private Query createFingerPrintQuery(String field, String queryText, AnalysisMode analysisMode,
+    private Query createFingerPrintQuery(String field, String queryText, Collection values, AnalysisMode analysisMode,
             LuceneFunction luceneFunction) throws IOException, ParseException
     {
         String[] parts = queryText.split("_");
@@ -694,93 +851,80 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         {
             return createIsNodeQuery("T");
         }
-        
-        SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(
-                AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), Long.parseLong(parts[0]));
-        if (solrDoc != null)
-        {
 
-            SolrInputField mh = solrDoc.getField("MINHASH");
-            if (mh != null)
+        if (values != null)
+        {
+            int bandSize = 1;
+            float fraction = -1;
+            float truePositive = 1;
+            if (parts.length > 1)
             {
-                Collection values = mh.getValues();
-                int bandSize = 1;
-                float fraction = -1;
-                float truePositive = 1;
-                if (parts.length > 1)
+                fraction = Float.parseFloat(parts[1]);
+                if (fraction > 1)
                 {
-                    fraction = Float.parseFloat(parts[1]);
-                    if (fraction > 1)
+                    fraction /= 100;
+                }
+            }
+            if (parts.length > 2)
+            {
+                truePositive = Float.parseFloat(parts[2]);
+                if (truePositive > 1)
+                {
+                    truePositive /= 100;
+                }
+                bandSize = computeBandSize(values.size(), fraction, truePositive);
+            }
+            BooleanQuery.Builder builder = new BooleanQuery.Builder();
+            BooleanQuery.Builder childBuilder = new BooleanQuery.Builder();
+            int rowInBand = 0;
+            for (Object token : values)
+            {
+                TermQuery tq = new TermQuery(new Term("MINHASH", token.toString()));
+                if (bandSize == 1)
+                {
+                    builder.add(new ConstantScoreQuery(tq), Occur.SHOULD);
+                } else
+                {
+                    childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
+                    rowInBand++;
+                    if (rowInBand == bandSize)
                     {
-                        fraction /= 100;
+                        builder.add(new ConstantScoreQuery(childBuilder.setDisableCoord(true).build()),
+                                Occur.SHOULD);
+                        childBuilder = new BooleanQuery.Builder();
+                        rowInBand = 0;
                     }
                 }
-                if (parts.length > 2)
-                {
-                    truePositive = Float.parseFloat(parts[2]);
-                    if (truePositive > 1)
-                    {
-                        truePositive /= 100;
-                    }
-                    bandSize = computeBandSize(values.size(), fraction, truePositive);
-                }
-                BooleanQuery.Builder builder = new BooleanQuery.Builder();
-                BooleanQuery.Builder childBuilder = new BooleanQuery.Builder();
-                int rowInBand = 0;
+            }
+            // Avoid a dubious narrow band .... wrap around and pad with the
+            // start
+            if (childBuilder.build().clauses().size() > 0)
+            {
                 for (Object token : values)
                 {
                     TermQuery tq = new TermQuery(new Term("MINHASH", token.toString()));
-                    if (bandSize == 1)
+                    childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
+                    rowInBand++;
+                    if (rowInBand == bandSize)
                     {
-                        builder.add(new ConstantScoreQuery(tq), Occur.SHOULD);
-                    } else
-                    {
-                        childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
-                        rowInBand++;
-                        if (rowInBand == bandSize)
-                        {
-                            builder.add(new ConstantScoreQuery(childBuilder.setDisableCoord(true).build()),
-                                    Occur.SHOULD);
-                            childBuilder = new BooleanQuery.Builder();
-                            rowInBand = 0;
-                        }
+                        builder.add(new ConstantScoreQuery(childBuilder.setDisableCoord(true).build()),
+                                Occur.SHOULD);
+                        break;
                     }
                 }
-                // Avoid a dubious narrow band .... wrap around and pad with the
-                // start
-                if (childBuilder.build().clauses().size() > 0)
-                {
-                    for (Object token : values)
-                    {
-                        TermQuery tq = new TermQuery(new Term("MINHASH", token.toString()));
-                        childBuilder.add(new ConstantScoreQuery(tq), Occur.MUST);
-                        rowInBand++;
-                        if (rowInBand == bandSize)
-                        {
-                            builder.add(new ConstantScoreQuery(childBuilder.setDisableCoord(true).build()),
-                                    Occur.SHOULD);
-                            break;
-                        }
-                    }
-                }
-                builder.setDisableCoord(true);
-                if (parts.length == 2)
-                {
-                    builder.setMinimumNumberShouldMatch((int) (Math.ceil(values.size() * fraction)));
-                }
-                Query q = builder.build();
-                return q;
-            } else
-            {
-                return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
             }
-        }
-        else
+            builder.setDisableCoord(true);
+            if (parts.length == 2)
+            {
+                builder.setMinimumNumberShouldMatch((int) (Math.ceil(values.size() * fraction)));
+            }
+            Query q = builder.build();
+            return q;
+        } else
         {
             return getFieldQueryImpl(field, queryText, analysisMode, luceneFunction);
         }
     }
-
 
     private int computeBandSize(int numHash, double sim, double expectedTruePositive)
     {
