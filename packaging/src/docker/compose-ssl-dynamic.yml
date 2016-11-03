@@ -3,9 +3,7 @@ services:
   repo:
     image: docker-internal.alfresco.com/platform:latest
     environment:
-         JAVA_OPTS : "-Dsolr.useDynamicShardRegistration=false
-         -Dsolr.host=solr6  -Dsolr.port.ssl=8084 -Dsolr.secureComms=https
-         -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
+        JAVA_OPTS : "-Dsolr.secureComms=https -Dsolr.useDynamicShardRegistration=true"
     ports:
           - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
           - "5005:5005" #Java debugging
@@ -30,14 +28,11 @@ services:
       SOLR_SOLR_HOST: solr6
       SOLR_SOLR_PORT: 8084
 
-      #Create the default alfresco and archive cores
-      #SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive
-
       #SSL setup
-      #SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
-      #SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
-      #SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
-      #SOLR_SSL_TRUST_STORE_PASSWORD: kT9X6oe68t
+      SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
+      SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
+      SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
+      SOLR_SSL_TRUST_STORE_PASSWORD: kT9X6oe68t
 
     ports:
       - "8984:8084" #Browser port
@@ -45,7 +40,7 @@ services:
     volumes_from:
      - repo:ro
 
-#docker-compose -f compose-ssl.yml up
+#docker-compose -f compose-ssl-dynamic.yml up
 #Bash to Alfresco instance: docker exec -it [containerid] bash
 # cd /opt/alfresco/alf_data/keystore
 # chmod +x generate_keystores.sh
@@ -59,5 +54,8 @@ services:
 # cp /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore .
 # cp /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore .
 # edit solrhome/templates/rerank/conf/solrcore.properties and set alfresco.secureComms=https
-# Uncomment the SSL setup config (above) and uncomment the SOLR_CREATE_ALFRESCO_DEFAULTS
+# Uncomment the SSL setup config (above)
 # Stop and restart
+# Go to Index Server Sharding admin page
+# The index server is: https://solr6:8084/solr
+# Create the alfresco and archive cores using the buttons

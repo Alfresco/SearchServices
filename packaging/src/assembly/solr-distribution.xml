@@ -7,6 +7,11 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
+            <directory>${project.build.outputDirectory}</directory>
+            <outputDirectory>.</outputDirectory>
+            <filtered>true</filtered>
+        </fileSet>
+        <fileSet>
             <directory>target/solr-${solr.version}/bin</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
