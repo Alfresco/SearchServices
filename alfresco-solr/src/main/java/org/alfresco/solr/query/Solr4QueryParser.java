@@ -128,6 +128,7 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.HttpShardHandlerFactory;
 import org.apache.solr.handler.component.ShardHandlerFactory;
 import org.apache.solr.request.SolrQueryRequest;
@@ -163,9 +164,12 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         this.schema = req.getSchema();
         this.solrContentStore = getContentStore(req);
         this.solrParams = req.getParams();
-        this.shardHandlerFactory = req.getCore().getCoreDescriptor().getCoreContainer().getShardHandlerFactory();
+        SolrCore core = req.getCore();
+        if(core != null) {
+            this.shardHandlerFactory = core.getCoreDescriptor().getCoreContainer().getShardHandlerFactory();
+        }
         this.request = req;
-        
+
     }
 
     private RerankPhase rerankPhase;
@@ -769,7 +773,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     }
 
     private Collection fetchFingerPrint(String shards, long nodeId) {
-
+        shards = shards.replace(",", "|");
         List<String> urls = ((HttpShardHandlerFactory)shardHandlerFactory).makeURLList(shards);
         ExecutorService executorService =  null;
         List<Future> futures = new ArrayList();
@@ -812,6 +816,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 ModifiableSolrParams params = new ModifiableSolrParams();
                 params.add(FingerPrintComponent.COMPONENT_NAME, "true");
                 params.add("id", id);
+                params.add("qt","/fingerprint");
                 closeableHttpClient = HttpClientUtil.createClient(getClientParams());
                 solrClient = new HttpSolrClient.Builder(url).withHttpClient(closeableHttpClient).build();;
                 QueryRequest request = new QueryRequest(params, SolrRequest.METHOD.POST);
