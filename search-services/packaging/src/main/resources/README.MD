@@ -1,24 +1,10 @@
-## Alfresco Solr 6 implementation
-Alfresco Solr 6
-### Get the code
+## Alfresco Search Services
+Alfresco Search Services ${project.version} using Alfresco ${alfresco-solr.version} and Apache Solr ${solr.version}
 
-Git:
-
-	git clone https://gitlab.alfresco.com/search_discovery/solr.git
-
-### Use Maven
-1. Build
-
+### Install & Run
+To run, unzip then
 ```
-mvn clean install
-```
-
-### Docker
-To build the docker image, first run the maven build then
-```
-cd packaging/src/docker
-export bamboo_planRepository_1_branch=local
-./buildAndTest.sh
+solr/bin/solr start
 ```
 
 ### License
@@ -39,3 +25,5 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
+
+#### Build ${project.build.key} ${project.timestamp}

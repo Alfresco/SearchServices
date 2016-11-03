@@ -36,12 +36,10 @@ public class DocRouterFactory
                 return new ACLIDMurmurRouter();
             case MOD_ACL_ID:
                 return new ACLIDModRouter();
-            case DATE_MONTH:
-                return new DateMonthRouter();
+            case DATE:
+                return new DateMonthRouter(properties.getProperty("shard.date.grouping", "1"));
             case PROPERTY:
                 return new PropertyRouter(properties.getProperty("shard.regex", ""));
-    //        case DATE_YEAR:
-    //        case DATE:
             default:
                 return new DBIDRouter();
         }

@@ -254,15 +254,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 				
 				// rewrite field specific parameters .....
 				SchemaField schemaField = schema.getFieldOrNull(schemaFieldName);
-				ModifiableSolrParams fixedFieldParams =  new ModifiableSolrParams();
-                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_PRE, fieldName, schemaFieldName);
-                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_POST, fieldName, schemaFieldName);
-                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.FRAGSIZE, fieldName, schemaFieldName);
-                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS, fieldName, schemaFieldName);
-                rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SNIPPETS, fieldName, schemaFieldName);
-               
-                copyOtherQueryParams(fixedFieldParams, params);
-                req.setParams(fixedFieldParams);
+				rewriteRequestParameters(params, fieldName, schemaFieldName, req);
 				
 				Object fieldHighlights; // object type allows flexibility for
 										// subclassers
@@ -272,19 +264,19 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 					// TODO: highlighting numeric fields is broken (Lucene) - so
 					// we disable them until fixed (see LUCENE-3080)!
 					fieldHighlights = null;
-				} else if (useFastVectorHighlighter(fixedFieldParams, schemaField)) {
+				} else if (useFastVectorHighlighter(req.getParams(), schemaField)) {
 					if (fvhFieldQuery == null) {
 						fvh = new FastVectorHighlighter(
 						// FVH cannot process hl.usePhraseHighlighter parameter
 						// per-field basis
-								fixedFieldParams.getBool(
+								req.getParams().getBool(
 										HighlightParams.USE_PHRASE_HIGHLIGHTER,
 										true),
 								// FVH cannot process hl.requireFieldMatch
 								// parameter per-field basis
-								fixedFieldParams.getBool(HighlightParams.FIELD_MATCH,
+								req.getParams().getBool(HighlightParams.FIELD_MATCH,
 										false));
-						fvh.setPhraseLimit(fixedFieldParams.getInt(
+						fvh.setPhraseLimit(req.getParams().getInt(
 								HighlightParams.PHRASE_LIMIT,
 								SolrHighlighter.DEFAULT_PHRASE_LIMIT));
 						fvhFieldQuery = fvh.getFieldQuery(query, reader);
@@ -299,8 +291,21 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 				} else { // standard/default highlighter
 					fieldHighlights = doHighlightingByHighlighter(doc, docId,
 							schemaField, query, reader, req);
+					// Fall back to the best FTS field if highlight fails
+					if (fieldHighlights == null) {
+						schemaFieldName = AlfrescoSolrDataModel.getInstance().mapProperty(fieldName, FieldUse.HIGHLIGHT, req, 1);
+						if(schemaField != null)
+						{
+						    schemaField = schema.getFieldOrNull(schemaFieldName);
+						    rewriteRequestParameters(params, fieldName, schemaFieldName, req);
+						    fieldHighlights = doHighlightingByHighlighter(doc, docId,
+							    	schemaField, query, reader, req);
+						}
+					}
 				}
 
+				
+				
 				if (fieldHighlights == null) {
 					// no summaries made; copy text from alternate field
 					fieldHighlights = alternateField(doc, fieldName, req);
@@ -317,6 +322,18 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 			fragments.add(schema.printableUniqueKey(doc), docHighlights);
 		} // for each doc
 		return fragments;
+	}
+
+
+	private void rewriteRequestParameters(SolrParams params, String fieldName, String schemaFieldName, SolrQueryRequest req) {
+		ModifiableSolrParams fixedFieldParams =  new ModifiableSolrParams();
+		rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_PRE, fieldName, schemaFieldName);
+		rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SIMPLE_POST, fieldName, schemaFieldName);
+		rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.FRAGSIZE, fieldName, schemaFieldName);
+		rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS, fieldName, schemaFieldName);
+		rewriteHighlightFieldOptions(fixedFieldParams, params, HighlightParams.SNIPPETS, fieldName, schemaFieldName);
+		copyOtherQueryParams(fixedFieldParams, params);
+        req.setParams(fixedFieldParams);
 	}
 	
 	  /** Highlights and returns the highlight object for this field -- a String[] by default. Null if none. */

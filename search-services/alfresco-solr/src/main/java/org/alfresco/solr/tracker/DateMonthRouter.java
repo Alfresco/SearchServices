@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,9 @@ import org.alfresco.util.ISO8601DateFormat;
 import org.apache.solr.common.util.Hash;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Acl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -31,7 +34,23 @@ import java.util.GregorianCalendar;
 
 public class DateMonthRouter implements DocRouter
 {
+    protected final static Logger log = LoggerFactory.getLogger(DateMonthRouter.class);
+
     DBIDRouter dbidRouter = new DBIDRouter();
+    private final int grouping;
+
+    /**
+     * Creates a date month router
+     * @param groupparam - the number of months that should be grouped together on a shard before moving to use the next shard in sequence
+     */
+    public DateMonthRouter(String groupparam) {
+        try {
+            this.grouping = Integer.parseInt(groupparam);
+        } catch (NumberFormatException e) {
+            log.error("shard.date.grouping needs to be a valid integer.", e);
+            throw e;
+        }
+    }
 
     @Override
     public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
@@ -50,12 +69,12 @@ public class DateMonthRouter implements DocRouter
             return dbidRouter.routeNode(numShards, shardInstance, node);
         }
 
-        //TODO: we can parse the string to make this more efficient rather then creating a calendar.
         Date date = ISO8601DateFormat.parse(ISO8601Date);
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date);
         int month = cal.get(cal.MONTH);
         int year  = cal.get(cal.YEAR);
-        return (((year * 12) + month) % numShards) == shardInstance;
+        return ((((year * 12) + month)/grouping) % numShards) == shardInstance;
+
     }
 }

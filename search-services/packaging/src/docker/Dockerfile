@@ -3,7 +3,7 @@
 FROM openjdk:8
 MAINTAINER Gethin James, gethin.james@alfresco.com
 
-ENV SOLR_ZIP alfresco-solr-distribution-*.zip
+ENV SOLR_ZIP alfresco-search-services-*.zip
 ENV DIST_DIR /opt/alfresco-solr
 
 RUN groupadd -r solr && useradd -m -r -g solr -s /bin/bash solr
@@ -26,6 +26,8 @@ RUN echo '\n##Docker Setup' >> $DIST_DIR/solr.in.sh \
 #&& echo 'SOLR_HOME=$DIST_DIR/solrhome' >> $DIST_DIR/solr.in.sh \
 
 VOLUME /opt/alfresco-solr/data
+VOLUME /opt/alfresco-solr/solrhome
+
 EXPOSE 8983
 USER solr
 CMD [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f" ]

@@ -23,7 +23,9 @@ import static junit.framework.TestCase.assertTrue;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
@@ -513,10 +515,37 @@ public class AlfrescoSolrUtils
         
         if (ancestors != null)
         {
+        	
             for (NodeRef ancestor : ancestors)
             {
                 doc.addField(FIELD_ANCESTOR, ancestor.toString());
             }
+            
+            StringBuilder builder = new StringBuilder();
+            int i = 0;
+    		for(NodeRef ancestor : ancestors)
+    		{
+    			builder.append('/').append(ancestor.getId());
+    			doc.addField(FIELD_APATH, "" + i++ + builder.toString());
+    		}
+    		if(builder.length() > 0)
+    		{
+    			doc.addField(FIELD_APATH, "F" + builder.toString());
+    		}
+    		
+    		builder = new StringBuilder();
+    		for(int j = 0;  j < ancestors.length; j++)
+    		{
+    			NodeRef element = ancestors[ancestors.length - 1 - j];
+    			builder.insert(0, element.getId());
+    			builder.insert(0, '/');
+    			doc.addField(FIELD_ANAME, "" + j +  builder.toString());
+    		}
+    		if(builder.length() > 0)
+    		{
+    			doc.addField(FIELD_ANAME, "F" +  builder.toString());
+    		}
+
         }
         if (properties != null)
         {

@@ -7,12 +7,12 @@ set -e
 cd "$(dirname "$0")"
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="docker-internal.alfresco.com/alfresco-solr:${nicebranch}-latest"
+dockerImage="docker-internal.alfresco.com/search-services:${nicebranch}-latest"
 
 echo "Building $dockerImage..."
 
-rm -f src/docker/alfresco-solr-distribution-*.zip
-cp target/alfresco-solr-distribution-*.zip src/docker
+rm -f src/docker/alfresco-search-services-*.zip
+cp target/alfresco-search-services-*.zip src/docker
 docker build -t $dockerImage src/docker
 
 # running tests

@@ -69,6 +69,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         testSort();
         testCMIS();
         checkPaging();
+        checkAncestor();
 
         loadSecondDataSet();
 
@@ -91,6 +92,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         testSort();
         testCMIS();
         checkPaging();
+       
 
         loadEscapingTestData();
         testChildNameEscaping();
@@ -2000,6 +2002,89 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 6,
                 12,
                 new Integer[] { 13, 14, 15, 16 });
+    }
+    
+    
+    private void checkAncestor() throws Exception {
+
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:0*"), null),
+                 "*[count(//doc)=15]");	
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:0/"+rootNodeRef.getId()), null),
+                 "*[count(//doc)=15]");	
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:F/"+rootNodeRef.getId()), null),
+                 "*[count(//doc)=4]");	
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:0/"+rootNodeRef.getId()+"*"), null),
+                 "*[count(//doc)=15]");	
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:0/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=0]");	
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:1/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=11]");	
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:2/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=8]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:3/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=4]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:4/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=4]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:5/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=1]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:6/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=0]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:1/"+rootNodeRef.getId()+"/"+n01NodeRef.getId()), null),
+                 "*[count(//doc)=9]");	
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "APATH:1/"+rootNodeRef.getId()+"/"+n01NodeRef.getId()), null),
+                 "*[count(//doc)=9]");	
+    	 
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:0/"+rootNodeRef.getId()), null),
+                 "*[count(//doc)=4]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:F/"+rootNodeRef.getId()), null),
+                 "*[count(//doc)=4]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:1/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=5]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:2/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=4]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:3/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=1]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:4/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=3]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:5/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=1]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:5/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=1]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:6/"+rootNodeRef.getId()+"/*"), null),
+                 "*[count(//doc)=0]");
+
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:0/"+n01NodeRef.getId()), null),
+                 "*[count(//doc)=2]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:0/"+n02NodeRef.getId()), null),
+                 "*[count(//doc)=3]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:0/"+n03NodeRef.getId()), null),
+                 "*[count(//doc)=0]");
+    	 
+    	 assertQ(areq(params("rows", "20", "qt", "/afts", "q", "ANAME:1/"+rootNodeRef.getId()+"/"+n01NodeRef.getId()), null),
+                 "*[count(//doc)=2]");   
     }
 
     private void testChildNameEscaping() throws Exception {

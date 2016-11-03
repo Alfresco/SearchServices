@@ -65,7 +65,7 @@ public class PropertyRouter implements DocRouter
         }
         String shardBy = node.getShardPropertyValue();
 
-        if (pattern != null)
+        if (shardBy !=null && pattern != null)
         {
             try
             {
