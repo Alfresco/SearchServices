@@ -26,3 +26,4 @@ _DEFAULT_
 .recommenders/
 /packaging/src/docker/alfresco-solr-distribution*.zip
 /packaging/src/docker/alfresco-search-services*.zip
+/packaging/src/docker/banana/banana-dist/
