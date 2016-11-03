@@ -10,7 +10,12 @@
 				<folder id="f1" name="tas-folder1" createdBy="userSearchAspect">
 					<custom-model name="F:tas:folder" />
 					<aspects>
-						<aspect name="P:tas:tasFolderAspect" />
+						<aspect name="P:tas:tasFolderAspect">
+							<properties>
+								<property name="tas:TextPropertyAF" value="aspect folder text folder1" />
+								<property name="tas:IntPropertyAF" value="10" />
+							</properties>
+						</aspect>
 					</aspects>
 						<files>
 							<file id="d1" name="tas-sub-file1.txt" createdBy="userSearchAspect">
@@ -22,7 +27,12 @@
 									</properties> 
 								</custom-model>
 								<aspects>
-									<aspect name = "P:tas:tasContentAspect" />
+									<aspect name = "P:tas:tasContentAspect">
+										<properties>
+											<property name="tas:TextPropertyAC" value="aspect content text subfile-1" />
+											<property name="tas:IntPropertyAC" value="80" />
+										</properties>
+									</aspect>
 								</aspects>
 							</file> 
 							<file id="d2" name="tas-sub-file2.txt" createdBy="userSearchAspect">
@@ -34,18 +44,35 @@
 									</properties>
 								</custom-model>
 								<aspects>
-									<aspect name = "P:tas:tasContentAspect" />
+									<aspect name = "P:tas:tasContentAspect">
+									<properties>
+										<property name="tas:TextPropertyAC" value="aspect content text subfile-2" />
+										<property name="tas:IntPropertyAC" value="81" />
+									</properties>
+									</aspect>
 								</aspects>
 							</file>
 							<file id="d3" name="tas-sub-file3.txt" createdBy="userSearchAspect">
 								<content>content sub-file 3</content>
 								<custom-model name="D:tas:document"></custom-model>
 								<aspects>
-									<aspect name = "P:tas:tasContentAspect" />
+									<aspect name = "P:tas:tasContentAspect">
+										<properties>
+											<property name="tas:IntPropertyAC" value="82" />
+										</properties>
+									</aspect>
 								</aspects>
 							</file>
 							<file id="d4" name="standard-sub-file4.txt" createdBy="userSearchAspect">
 								<content>content sub-file 4</content>
+								<aspects>
+									<aspect name = "P:tas:tasContentAspect">
+										<properties>
+											<property name="tas:TextPropertyAC" value="aspect content text subfile-4" />
+											<property name="tas:IntPropertyAC" value="83" />
+										</properties>
+									</aspect>
+								</aspects>
 							</file>
 						</files>
 					<folders>
@@ -56,12 +83,22 @@
 								</properties>
 							</custom-model>
 							<aspects>
-								<aspect name="P:tas:tasFolderAspect" />
+								<aspect name="P:tas:tasFolderAspect">
+									<properties>
+										<property name="tas:TextPropertyAF" value="aspect folder text subfolder-1" />
+										<property name="tas:IntPropertyAF" value="11" />
+									</properties>
+								</aspect>
 							</aspects>
 						</folder>
 						<folder name="standard-sub-folder2" createdBy="userSearchAspect">
 							<aspects>
-								<aspect name="P:tas:tasFolderAspect" />
+								<aspect name="P:tas:tasFolderAspect">
+									<properties>
+										<property name="tas:TextPropertyAF" value="aspect folder text subfolder-2" />
+										<property name="tas:IntPropertyAF" value="12" />
+									</properties>
+								</aspect>
 							</aspects>
 						</folder>
 					</folders>
@@ -87,31 +124,79 @@
 						</properties>
 					</custom-model>
 					<aspects>
-						<aspect name = "P:tas:tasContentAspect" />
+						<aspect name = "P:tas:tasContentAspect" >
+							<properties>
+								<property name="tas:TextPropertyAC" value="aspect content text file-1" />
+								<property name="tas:IntPropertyAC" value="84" />
+
+								
+							</properties>
+						</aspect>
 					</aspects>
 					<content>file 1 content</content>
 				</file>
 				<file id="d6" name="standard-file2.txt" createdBy="userSearchAspect">
 					<content>file 2 content</content>
+					<aspects>
+						<aspect name = "P:tas:tasContentAspect">
+							<properties>
+								<property name="tas:TextPropertyAC" value="aspect content text file-2" />
+								<property name="tas:IntPropertyAC" value="85" />
+							</properties>
+						</aspect>
+					</aspects>
 				</file>
 			</files>
 		</site>
 	</sites>
 	
 	<queries>
-		<query value="SELECT * FROM tas:tasContentAspect" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC IS NOT NULL" expectedResults="5" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC IS NULL" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC='aspect content text subfile-1'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC LIKE 'aspect content text subfile-2'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC IN('aspect content text subfile-2', 'aspect content text file-1')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC &lt;&gt; 'aspect content text subfile-2'" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC NOT IN('aspect content text subfile-2', 'aspect content text file-1')" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC LIKE 'aspect content text%'" expectedResults="5" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC = '81'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC &lt;&gt; '82'" expectedResults="5" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC &lt; '82'" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC &lt;= '82'" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC &gt;= '82'" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC &gt; '82'" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC IN('80', '81', '83')" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where tas:IntPropertyAC NOT IN('80', '81', '83')" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF IS NOT NULL" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF IS NULL" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF='aspect folder text subfolder-2'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF LIKE 'aspect folder text subfolder-1'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF IN('aspect folder text subfolder-1', 'aspect folder text folder1', 'aspect content text file-1')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF &lt;&gt; 'aspect folder text subfolder-1'" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF NOT IN('aspect folder text subfolder-1', 'aspect folder text subfolder-2')" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF LIKE 'aspect folder text subfolder%'" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF = '11'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt;&gt; '10'" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt; '11'" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt;= '11'" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &gt;= '11'" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &gt; '11'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &gt; '12'" expectedResults="0" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF IN('11', '12', '13')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF NOT IN('11', '12', '83')" expectedResults="2" />	
+		<query value="SELECT * FROM tas:tasContentAspect" expectedResults="6" />
 		<query value="SELECT * FROM tas:tasFolderAspect" expectedResults="4" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]')" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy DESC" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy ASC" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]')" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:createdBy ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="4" />
 		<query value="SELECT * FROM cm:dublincore where IN_FOLDER('NODE_REF[f1]')" expectedResults="0" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[s1]')" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[s1]')" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]')" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC" expectedResults="2" />
@@ -122,8 +207,8 @@
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[s1]')" expectedResults="2" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[f1]')" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]')" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[f1]')" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]')" expectedResults="6" />
 		<query value="SELECT * FROM cm:dublincore where IN_TREE('NODE_REF[f1]')" expectedResults="0" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]')" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]')" expectedResults="4" />
@@ -139,9 +224,41 @@
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="4" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:createdBy ASC" expectedResults="4" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="4" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC" expectedResults="4" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="4" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:createdBy DESC" expectedResults="4" />
-		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC" expectedResults="6" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="6" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:createdBy DESC" expectedResults="6" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="6" />
+		<query value="SELECT D.*, O.* FROM cmis:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId" expectedResults="6" />
+		<query value="SELECT D.*, O.* FROM cmis:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAC ='aspect content text file-2'" 
+			expectedResults="1" />
+		<query value="SELECT D.*, O.* FROM cmis:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAC LIKE 'aspect content text%'" 
+			expectedResults="5" />
+		<query value="SELECT D.*, O.* FROM cmis:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAC IN('85', '84', '81', '83', '99') ORDER BY cmis:name ASC" 
+			expectedResults="4" />		
+		<query value="SELECT D.*, O.* FROM tas:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId" expectedResults="4" />
+		<query value="SELECT D.*, O.* FROM tas:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAC ='aspect content text subfile-2'" 
+			expectedResults="1" />
+		<query value="SELECT D.*, O.* FROM tas:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAC LIKE 'aspect content text%'" 
+			expectedResults="3" />
+		<query value="SELECT D.*, O.* FROM tas:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAC IN('85', '84', '82') ORDER BY cmis:name ASC" 
+			expectedResults="2" />
+		<query value="SELECT D.*, O.* FROM tas:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAC = '85' ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" 
+			expectedResults="0" />
+		<query value="SELECT F.*, O.* FROM cmis:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId" expectedResults="4" />
+		<query value="SELECT F.*, O.* FROM cmis:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAF ='aspect folder text subfolder-2'" 
+			expectedResults="1" />
+		<query value="SELECT F.*, O.* FROM cmis:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAF LIKE 'aspect folder text%'" 
+			expectedResults="3" />
+		<query value="SELECT F.*, O.* FROM cmis:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAF IN('10', '11', '12', '83', '99') ORDER BY cmis:name ASC" 
+			expectedResults="3" />		
+		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId" expectedResults="2" />
+		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAF ='aspect folder text subfolder-1'" 
+			expectedResults="1" />
+		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAF LIKE 'aspect folder%'"
+			expectedResults="2" />
+		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAF IN('10', '11', '12') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC"
+			expectedResults="2" />
+		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAF = '12' ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC"
+			expectedResults="0" />
 	</queries>
 </testData> 

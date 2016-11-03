@@ -1,6 +1,7 @@
 package org.alfresco.cmis.search;
 
 import org.alfresco.cmis.CmisTest;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestData;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
@@ -36,6 +37,8 @@ public class SolrSearchByIdTests extends CmisTest
         this.testData = testData;
         this.testData.createUsers(dataUser);
         this.testData.createSitesStructure(dataSite, dataContent, dataUser);
+        // wait for solr index
+        Utility.waitToLoopTime(10);
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchById")

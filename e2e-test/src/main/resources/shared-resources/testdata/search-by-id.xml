@@ -50,21 +50,13 @@
 					</folders>
 				</folder>
 				<folder name="tas-folder2" createdBy="userSearchId">
-					<custom-model name="F:tas:folder">
-						<properties>
-							<property name="tas:TextPropertyF" value="text folder-2" />
-						</properties>
-					</custom-model>
+					<custom-model name="F:tas:folder"></custom-model>
 				</folder>
 				<folder name="standard-folder3" createdBy="userSearchId"></folder>
 			</folders>
 			<files>
 				<file id="d5" name="tas-file1.txt" createdBy="userSearchId">
-					<custom-model name="D:tas:document">
-						<properties>
-							<property name="tas:TextPropertyC" value="text file-1" />
-						</properties>
-					</custom-model>
+					<custom-model name="D:tas:document"></custom-model>
 					<content>file 1 content</content>
 				</file>
 				<file id="d6" name="standard-file2.txt" createdBy="userSearchId">
@@ -120,5 +112,7 @@
 		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IS NULL" expectedResults="0" />
 		<query value="SELECT * FROM tas:document WHERE cmis:objectId IS NOT NULL" expectedResults="4" />
 		<query value="SELECT * FROM tas:document WHERE cmis:objectId IS NULL" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId IN ('cmis:document') AND tas:TextPropertyC IS NOT NULL" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder WHERE tas:TextPropertyF IS NOT NULL" expectedResults="1" />
 	</queries>
 </testData> 

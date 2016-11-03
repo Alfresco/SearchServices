@@ -11,13 +11,11 @@
         <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
     </imports>
 
-
     <namespaces>
         <namespace uri="tas.cmis.model" prefix="tas"/>
     </namespaces>
 
     <types>
-
         <type name="tas:document">
             <title>CMIS TAS Content</title>
             <parent>cm:content</parent>
@@ -95,28 +93,26 @@
                 </association>
             </associations>
         </type>
-
     </types>
 
     <aspects>
-
         <aspect name="tas:tasContentAspect">
-            <title>tas Content Aspect</title>
+            <title>TAS Content Aspect</title>
             <properties>
                 <property name="tas:TextPropertyAC">
-                    <title>Text</title>
+                    <title>Aspect Text</title>
                     <type>d:text</type>
                 </property>
                 <property name="tas:DatePropertyAC">
-                    <title>Datetime</title>
+                    <title>Aspect Datetime</title>
                     <type>d:datetime</type>
                 </property>
                 <property name="tas:IntPropertyAC">
-                    <title>Integer</title>
+                    <title>Aspect Integer</title>
                     <type>d:int</type>
                 </property>
                 <property name="tas:MultiplyStringAC">
-                    <title>Multiply String</title>
+                    <title>Aspect Multiply String</title>
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <multiple>true</multiple>
@@ -128,26 +124,24 @@
             <title>TAS Folder Aspect</title>
             <properties>
                 <property name="tas:TextPropertyAF">
-                    <title>Text</title>
+                    <title>Aspect Text</title>
                     <type>d:text</type>
                 </property>
                 <property name="tas:DatePropertyAF">
-                    <title>Datetime</title>
+                    <title>Aspect Datetime</title>
                     <type>d:datetime</type>
                 </property>
                 <property name="tas:IntPropertyAF">
-                    <title>Integer</title>
+                    <title>Aspect Integer</title>
                     <type>d:int</type>
                 </property>
                 <property name="tas:MultiplyStringAF">
-                    <title>Multiply String</title>
+                    <title>Aspect Multiply String</title>
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <multiple>true</multiple>
                 </property>
             </properties>
         </aspect>
-
     </aspects>
-
 </model>
