@@ -26,5 +26,4 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 
-#### Build ${maven.build.timestamp}
-${bamboo_planName} ${bamboo_fullBuildKey} ${bamboo_buildNumber}
+#### Build ${project.build.key} ${project.timestamp}
