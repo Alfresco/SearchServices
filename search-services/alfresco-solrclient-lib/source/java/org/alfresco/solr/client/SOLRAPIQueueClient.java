@@ -54,6 +54,8 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
     public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList());
     public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap());
     public static Map<Long, NodeMetaData> nodeMetaDataMap = Collections.synchronizedMap(new HashMap());
+    public static Map<Long, String> nodeContentMap =  Collections.synchronizedMap(new HashMap());
+
     private static boolean throwException;
 
     public SOLRAPIQueueClient(NamespaceDAO namespaceDAO)
@@ -310,7 +312,13 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         if(throwException) {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
+
         //Just put the nodeId innto the content so we query for this in tests.
+
+        if(nodeContentMap.containsKey(nodeId)) {
+            return new GetTextContentResponse(new DummyResponse(nodeContentMap.get(nodeId)));
+        }
+
         return new GetTextContentResponse(new DummyResponse("Hello world "+nodeId));
     }
 
