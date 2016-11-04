@@ -38,7 +38,7 @@ public class SolrSearchByIdTests extends CmisTest
         this.testData.createUsers(dataUser);
         this.testData.createSitesStructure(dataSite, dataContent, dataUser);
         // wait for solr index
-        Utility.waitToLoopTime(10);
+        Utility.waitToLoopTime(20);
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchById")

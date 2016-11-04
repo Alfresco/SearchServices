@@ -36,7 +36,7 @@ public class SolrSearchByPathTests extends CmisTest
         testData.createUsers(dataUser);
         testData.createSitesStructure(dataSite, dataContent, dataUser);
         // wait for solr index
-        Utility.waitToLoopTime(15);
+        Utility.waitToLoopTime(20);
     }
 
     @Test(dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")

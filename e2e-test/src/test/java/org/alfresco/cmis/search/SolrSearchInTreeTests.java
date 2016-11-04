@@ -56,7 +56,7 @@ public class SolrSearchInTreeTests extends CmisTest
                         .createFile(subFile6).assertThat().existsInRepo()
                         .createFolder(FolderModel.getRandomFolderModel()).assertThat().existsInRepo();
         // wait for solr index
-        Utility.waitToLoopTime(15);
+        Utility.waitToLoopTime(20);
     }
     
     @AfterClass(alwaysRun = true)
