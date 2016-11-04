@@ -13,7 +13,7 @@
 		<query value="SELECT * FROM cmis:document where IN_FOLDER('%s') ORDER BY cmis:createdBy DESC" expectedResults="5" />
 		<query value="SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name IS NOT NULL" expectedResults="5" />
 		<query value="SELECT * FROM cmis:folder where IN_FOLDER('%s') AND cmis:name IS NOT NULL" expectedResults="3" />
-		<query value="SELECT * FROM cmis:document where IN_FOLDER('%s') AND CONTAINS('fifthFile content')" expectedResults="1" />
+		<!--<query value="SELECT * FROM cmis:document where IN_FOLDER('%s') AND CONTAINS('fifthFile content')" expectedResults="1" />-->
 		<query value="SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name LIKE 'fourthFile'" expectedResults="1" />
 		<query value="SELECT * FROM cmis:folder where IN_FOLDER('%s') AND NOT(cmis:name NOT IN ('subFolder'))" expectedResults="1" />
 		<query value="SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name IN ('fourthFile', 'fifthFile.txt')" expectedResults="2" />

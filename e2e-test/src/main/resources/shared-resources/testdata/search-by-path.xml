@@ -75,9 +75,9 @@
 		<query
 			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name IS NOT NULL" 
 			expectedResults="2" />
-		<query
+		<!--<query
 			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND CONTAINS('file 1 content')" 
-			expectedResults="1" />
+			expectedResults="1" />-->
 		<query
 			value="SELECT * FROM cmis:document where CONTAINS('PATH:&quot;/app:company_home/st:sites/cm:testSiteSearch/cm:documentLibrary/*&quot;') AND cmis:name LIKE 'parent%'" 
 			expectedResults="1" />
