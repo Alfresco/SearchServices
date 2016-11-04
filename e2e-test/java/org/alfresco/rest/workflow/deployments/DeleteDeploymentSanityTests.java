@@ -38,12 +38,12 @@ public class DeleteDeploymentSanityTests extends RestWorkflowTest
         deploymentsApi.useRestClient(restClient);
     }
 
-    @Bug(id = "MNT-16996")
-    @Test(groups ={"extension-points"})
+    @Bug(id = "MNT-16996")    
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, 
             executionType = ExecutionType.SANITY, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
     public void adminDeletesDeploymentWithSuccess() throws JsonToModelConversionException, Exception
     {
+        dataContent.assertExtensionAmpExists("alfresco-workflow-extension");
         restClient.authenticateUser(adminUser);
         // The deployment with name "customWorkflowExtentionForRest.bpmn" is created by Workflow Extention Point
         deploymentsApi.getDeployments().assertThat()
