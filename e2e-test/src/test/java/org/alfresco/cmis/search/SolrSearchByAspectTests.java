@@ -43,7 +43,7 @@ public class SolrSearchByAspectTests extends CmisTest
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForAspectSearch")
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-aspect.xml")
-    public void executeSortedSearchByID(QueryModel query) throws Exception
+    public void executeSearchByAspect(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue())
             .applyNodeRefsFrom(testData).assertResultsCountIs(query.getResults());

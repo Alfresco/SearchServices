@@ -5,7 +5,7 @@
 	</users>
 
 	<sites>
-		<site id="s1" name="siteSearchByAspect" createdBy="u1" visibility="PUBLIC">
+		<site id="s1" name="siteSearchByAspect" createdBy="userSearchAspect" visibility="PUBLIC">
 			<folders>
 				<folder id="f1" name="tas-folder1" createdBy="userSearchAspect">
 					<custom-model name="F:tas:folder" />
