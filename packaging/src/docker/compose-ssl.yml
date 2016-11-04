@@ -33,7 +33,7 @@ services:
       #Create the default alfresco and archive cores
       #SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive
 
-      #SSL setup
+      #SOLR_OPTS: "$SOLR_OPTS -Djavax.net.debug=SSL,keymanager,trustmanager"
       #SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
       #SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
       #SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
