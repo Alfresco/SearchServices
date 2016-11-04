@@ -1820,6 +1820,12 @@
   </requestHandler>
 
 
+  <requestHandler name="/fingerprint" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
+      <arr name="components">
+            <str>fingerprint</str>
+      </arr>
+  </requestHandler>
+
   <requestHandler name="/afts" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
     <lst name="defaults">
      <str name="defType">afts</str>
@@ -1913,5 +1919,7 @@
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
   <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
   <searchComponent name="consistencyComponent"     class="org.alfresco.solr.component.ConsistencyComponent" />
+  <searchComponent name="fingerprint" class="org.alfresco.solr.component.FingerPrintComponent"/>
+
 
 </config>

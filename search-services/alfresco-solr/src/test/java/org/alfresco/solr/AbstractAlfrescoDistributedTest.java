@@ -109,7 +109,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
-        // Setup test directory
         testDir = new File(System.getProperty("user.dir") + "/target/jettys");
         r = new Random(random().nextLong());
 
@@ -664,6 +663,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             props.setProperty("solr.data.dir", dataDir);
         }
+
         if (explicitCoreNodeName)
         {
             props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
@@ -871,6 +871,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             params.remove("distrib");
             setDistributedParams(params);
             QueryResponse rsp = queryServer(json, params);
+            System.out.println("Cluster Response:"+rsp);
+            System.out.println("Control Response:"+controlRsp);
             compareResponses(rsp, controlRsp);
             return rsp;
         }
