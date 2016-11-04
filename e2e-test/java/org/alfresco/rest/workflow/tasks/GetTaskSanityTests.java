@@ -9,6 +9,7 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +98,8 @@ public class GetTaskSanityTests extends RestWorkflowTest
                 .and().field("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-        
+      
+    @Bug(id = "MNT-17051")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify involved user in a task without claim it gets the task with Rest API and response is successfull (200)")
     public void involvedUserWithoutClaimTaskGetsTask() throws Exception
     {

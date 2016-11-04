@@ -38,7 +38,7 @@ public class GetDeploymentSanityTests extends RestWorkflowTest
         
         deploymentsApi.useRestClient(restClient);
         restClient.authenticateUser(adminUser);
-        deployment = deploymentsApi.getDeployments().getOneRandomEntry();
+        deployment = deploymentsApi.getDeployments().getOneRandomEntry().onModel();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, 
