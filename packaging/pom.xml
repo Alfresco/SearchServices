@@ -161,7 +161,7 @@
                                 <replace token= "${alfresco.solr.ssl.token}" value="${alfresco.solr.ssl}${line.separator}  ${alfresco.solr.ssl.token}" dir="target/solr-${solr.version}">
                                     <include name="**/server/etc/jetty*.xml"/>
                                 </replace>
-                                <replace token= "needClientAuth" value="needclientauth" dir="target/solr-${solr.version}">
+                                <replace token= "${alfresco.solr.ssl.need.token}" value="${alfresco.solr.ssl.need}" dir="target/solr-${solr.version}">
                                     <include name="**/server/etc/jetty-ssl.xml"/>
                                 </replace>
                                 <replace token= "wantClientAuth" value="wantclientauth" dir="target/solr-${solr.version}">
