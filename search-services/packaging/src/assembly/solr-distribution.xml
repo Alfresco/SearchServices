@@ -32,7 +32,7 @@
         </fileSet>
         <!-- Solr config -->
         <fileSet>
-            <directory>target/alfresco-solr/solr/instance</directory>
+            <directory>target/alfresco-search/solr/instance</directory>
             <outputDirectory>solrhome</outputDirectory>
             <excludes>
                 <exclude>**/workspace-SpacesStore/**</exclude>
