@@ -18,7 +18,7 @@ public class SolrSearchByPathTests extends CmisTest
 
     @BeforeClass(alwaysRun = true)
     public void readTestDataFile()
-    {        
+    {
         cmisApi.authenticateUser(dataUser.getAdminUser());
     }
 
