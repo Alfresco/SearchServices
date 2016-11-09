@@ -6,47 +6,48 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
 public class RestApiDemoTests extends RestTest
 {
     @Autowired
     RestSitesApi sitesAPI;
-    
+
+    /*
+     * Test steps:
+     * 1. create a user
+     * 2. create a site
+     * 3. create a second user
+     * 4. add the second user to site with a user role
+     * 5. call rest api call " GET sites/{siteId}/members" with first user authenticated
+     * Expected: the response contains the user added as a member to the site
+     */
     @Test
     public void verifyGetSiteMembersRestApiCall() throws Exception
     {
         UserModel user = dataUser.createRandomTestUser();
-        UserModel member = dataUser.createRandomTestUser();
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
+        UserModel member = dataUser.createRandomTestUser();
         dataUser.usingUser(user).addUserToSite(member, site, UserRole.SiteCollaborator);
 
-        restClient.authenticateUser(user);
-        
-        sitesAPI.useRestClient(restClient);        
-        sitesAPI.getSiteMembers(site).assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("id", member.getUsername())
-            .and().entriesListContains("role", member.getUserRole().toString());
-        
-        sitesAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
-
     }
-    
+
+    /*
+     * Test steps:
+     * 1. create a user
+     * 2. create a site
+     * 3. create a second user
+     * 4. add the second user to site with a user role
+     * 5. call rest api call " GET sites/{siteId}/members/{personId}" with first user authenticated
+     * Expected: the response contains the user added as a member to the site
+     */
     @Test
     public void verifyGetASiteMemberApiCall() throws Exception
     {
         UserModel user = dataUser.createRandomTestUser();
-        UserModel member = dataUser.createRandomTestUser();
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
+        UserModel member = dataUser.createRandomTestUser();
         dataUser.usingUser(user).addUserToSite(member, site, UserRole.SiteCollaborator);
 
-        sitesAPI.useRestClient(restClient);
-        restClient.authenticateUser(user);
-        sitesAPI.getSiteMember(site, member)
-            .assertThat().field("id").is(member.getUsername())
-            .assertThat().field("role").is(member.getUserRole().toString());
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
