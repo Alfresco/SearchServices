@@ -29,6 +29,8 @@ public class RestApiDemoTests extends RestTest
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
         UserModel member = dataUser.createRandomTestUser();
         dataUser.usingUser(user).addUserToSite(member, site, UserRole.SiteCollaborator);
+        
+        //add here code for step 5 
 
     }
 
@@ -49,5 +51,6 @@ public class RestApiDemoTests extends RestTest
         UserModel member = dataUser.createRandomTestUser();
         dataUser.usingUser(user).addUserToSite(member, site, UserRole.SiteCollaborator);
 
+        //add here code for step 5
     }
 }
