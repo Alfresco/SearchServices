@@ -51,7 +51,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
     private static final Map<String,Integer> domainsCount = new HashMap<>();
 
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(3,getProperties());
+    public JettyServerRule jetty = new JettyServerRule(4,getProperties());
 
     @BeforeClass
     public static void setUpDomains()
@@ -121,6 +121,31 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
             //and doesn't effect the functionality.
             assertCountAndColocation(new TermQuery(new Term("text@s____@{http://www.alfresco.org/model/content/1.0}name", "peter.pan"+ "@"+ DOMAINS[i])), domainsCount.get(DOMAINS[i]));
         }
+
+        //Now test the fallback
+        nodes.clear();
+        nodeMetaDatas.clear();
+        deleteByQueryAllClients("*:*");
+
+        Transaction bigTxn1 = getTransaction(0, numNodes);
+
+        for (int i = 0; i < numNodes; i++) {
+            int aclIndex = i % numAcls;
+            Node node = getNode(bigTxn1, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            String domain = DOMAINS[ints.nextInt(DOMAINS.length)];
+            domainsCount.put(domain, domainsCount.get(domain)+1);
+            String emailAddress = "peter.pan"+ "@"+ domain;
+            //Don't add shared property so it falls back  //node.setShardPropertyValue(emailAddress);
+            nodes.add(node);
+            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn1, bulkAcls.get(aclIndex), "king", null, false);
+            nodeMetaData.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue(emailAddress));
+            nodeMetaDatas.add(nodeMetaData);
+        }
+
+        indexTransaction(bigTxn1, nodes, nodeMetaDatas);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
+        //There are 4 shards. We should expect roughly a quarter of the nodes on each shard
+        assertNodesPerShardGreaterThan((int)((numNodes)*.23));
 
     }
 

@@ -254,6 +254,32 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
+     * Delele by query on all Clients
+     * @param q
+     * @throws Exception
+     */
+    public void deleteByQueryAllClients(String q) throws Exception {
+
+        List<SolrClient> clients = getAllClients();
+
+        for (SolrClient client : clients) {
+            client.deleteByQuery(q);
+        }
+    }
+
+    /**
+     * Gets a list of all clients for that test
+     * @return list of SolrClient
+     */
+    public List<SolrClient> getAllClients()
+    {
+        List<SolrClient> clients = new ArrayList();
+        clients.addAll(jettyClients.values());
+        clients.addAll(clientShards);
+        return clients;
+    }
+
+    /**
      * Waits for the doc count on the first core available, then checks all the Shards match.
      * @param query
      * @param count
