@@ -76,7 +76,7 @@ public class DocValueDocTransformer extends DocTransformer
             {
                 if(schemaField.hasDocValues())
                 {
-                    SortedDocValues sortedDocValues = context.getSearcher().getLeafReader().getSortedDocValues(fieldName);
+                    SortedDocValues sortedDocValues = context.getSearcher().getSlowAtomicReader().getSortedDocValues(fieldName);
                     if(sortedDocValues != null)
                     {
                         int ordinal = sortedDocValues.getOrd(docid);
@@ -89,7 +89,7 @@ public class DocValueDocTransformer extends DocTransformer
                         }
                     }
                     
-                    SortedSetDocValues sortedSetDocValues = context.getSearcher().getLeafReader().getSortedSetDocValues(fieldName);
+                    SortedSetDocValues sortedSetDocValues = context.getSearcher().getSlowAtomicReader().getSortedSetDocValues(fieldName);
                     if(sortedSetDocValues != null)
                     {
                         ArrayList<Object> newValues = new ArrayList<Object>();
@@ -106,7 +106,7 @@ public class DocValueDocTransformer extends DocTransformer
                     }
                     
                     
-                    BinaryDocValues binaryDocValues = context.getSearcher().getLeafReader().getBinaryDocValues(fieldName);
+                    BinaryDocValues binaryDocValues = context.getSearcher().getSlowAtomicReader().getBinaryDocValues(fieldName);
                     if(binaryDocValues != null)
                     {
                         doc.removeFields(fieldName);
@@ -117,7 +117,7 @@ public class DocValueDocTransformer extends DocTransformer
                     
                     if(schemaField.getType().getNumericType() != null)
                     {
-                        NumericDocValues numericDocValues = context.getSearcher().getLeafReader().getNumericDocValues(fieldName);
+                        NumericDocValues numericDocValues = context.getSearcher().getSlowAtomicReader().getNumericDocValues(fieldName);
                         if(numericDocValues != null)
                         {
                             doc.removeFields(fieldName);
@@ -140,7 +140,7 @@ public class DocValueDocTransformer extends DocTransformer
                             }
                         }
                         
-                        SortedNumericDocValues sortedNumericDocValues = context.getSearcher().getLeafReader().getSortedNumericDocValues(fieldName);
+                        SortedNumericDocValues sortedNumericDocValues = context.getSearcher().getSlowAtomicReader().getSortedNumericDocValues(fieldName);
                         if(sortedNumericDocValues != null)
                         {
                             sortedNumericDocValues.setDocument(docid);
