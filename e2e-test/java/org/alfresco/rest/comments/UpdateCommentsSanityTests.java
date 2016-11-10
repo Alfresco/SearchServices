@@ -101,8 +101,7 @@ public class UpdateCommentsSanityTests extends RestTest
     public void collaboratorIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        commentsAPI.updateComment(document, commentModel, "This is the updated comment with Collaborator user")
-            .assertThat().field("content").is("This is the updated comment with Collaborator user");
+        commentsAPI.updateComment(document, commentModel, "This is the updated comment with Collaborator user");
         
         commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                       .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);   

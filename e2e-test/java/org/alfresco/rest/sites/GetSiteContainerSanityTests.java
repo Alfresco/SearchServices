@@ -108,11 +108,11 @@ public class GetSiteContainerSanityTests extends RestTest
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
         siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
