@@ -356,6 +356,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
+        StringBuilder error = new StringBuilder();
         for (SolrCore core : cores)
         {
             RefCounted<SolrIndexSearcher> refCounted = null;
@@ -366,13 +367,20 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 TopDocs topDocs = searcher.search(query, 10);
                 if(topDocs.totalHits < count)
                 {
-                    throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
+                    error.append(" "+core.getName()+": ");
+                    error.append("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
                 }
+                log.info(core.getName()+": Hits "+topDocs.totalHits);
             }
             finally
             {
                 refCounted.decref();
             }
+        }
+
+        if (error.length() > 0)
+        {
+            throw new Exception(error.toString());
         }
     }
 
