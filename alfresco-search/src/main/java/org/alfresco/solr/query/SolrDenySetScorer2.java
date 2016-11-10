@@ -68,7 +68,7 @@ public class SolrDenySetScorer2 extends AbstractSolrCachingScorer
             DocSet aclDocs = searcher.getDocSet(wrapped);
             
             HashSet<Long> aclsFound = new HashSet<Long>(aclDocs.size());
-            NumericDocValues aclDocValues = searcher.getLeafReader().getNumericDocValues(QueryConstants.FIELD_ACLID);
+            NumericDocValues aclDocValues = searcher.getSlowAtomicReader().getNumericDocValues(QueryConstants.FIELD_ACLID);
             
             for (DocIterator it = aclDocs.iterator(); it.hasNext(); /**/)
             {
@@ -80,7 +80,7 @@ public class SolrDenySetScorer2 extends AbstractSolrCachingScorer
          
             if(aclsFound.size() > 0)
             {
-                for(LeafReaderContext readerContext : searcher.getLeafReader().leaves() )
+                for(LeafReaderContext readerContext : searcher.getSlowAtomicReader().leaves() )
                 {
                     int maxDoc = readerContext.reader().maxDoc();
                     NumericDocValues fieldValues = DocValuesCache.getNumericDocValues(QueryConstants.FIELD_ACLID, readerContext.reader());
