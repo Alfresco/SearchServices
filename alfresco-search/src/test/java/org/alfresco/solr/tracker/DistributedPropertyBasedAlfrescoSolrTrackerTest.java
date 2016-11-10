@@ -51,7 +51,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
     private static final Map<String,Integer> domainsCount = new HashMap<>();
 
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(4,getProperties());
+    public JettyServerRule jetty = new JettyServerRule(this.getClass().getSimpleName(), 4, getProperties(), new String[]{DEFAULT_TEST_CORENAME});
 
     @BeforeClass
     public static void setUpDomains()
@@ -126,6 +126,8 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         nodes.clear();
         nodeMetaDatas.clear();
         deleteByQueryAllClients("*:*");
+        //Should now be nothing in the index
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 0, 100000);
 
         Transaction bigTxn1 = getTransaction(0, numNodes);
 
@@ -145,7 +147,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         indexTransaction(bigTxn1, nodes, nodeMetaDatas);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
         //There are 4 shards. We should expect roughly a quarter of the nodes on each shard
-        assertNodesPerShardGreaterThan((int)((numNodes)*.23));
+        assertNodesPerShardGreaterThan((int)((numNodes)*.21));
 
     }
 
