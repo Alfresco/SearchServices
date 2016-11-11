@@ -352,8 +352,14 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return jettyClients.get(DEFAULT_TEST_CORENAME);
     }
 
-    public void assertNodesPerShardGreaterThan(int count) throws Exception
+    public int assertNodesPerShardGreaterThan(int count) throws Exception
     {
+        return assertNodesPerShardGreaterThan(count, false);
+    }
+
+    public int assertNodesPerShardGreaterThan(int count, boolean ignoreZero) throws Exception
+    {
+        int shardHit = 0;
         List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
         StringBuilder error = new StringBuilder();
@@ -365,10 +371,21 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 refCounted = core.getSearcher();
                 SolrIndexSearcher searcher = refCounted.get();
                 TopDocs topDocs = searcher.search(query, 10);
+                if(topDocs.totalHits > 0)
+                {
+                    shardHit++;
+                }
                 if(topDocs.totalHits < count)
                 {
-                    error.append(" "+core.getName()+": ");
-                    error.append("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
+                    if (ignoreZero && topDocs.totalHits == 0)
+                    {
+                        log.info(core.getName()+": have zero hits ");
+                    }
+                    else
+                    {
+                        error.append(" "+core.getName()+": ");
+                        error.append("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
+                    }
                 }
                 log.info(core.getName()+": Hits "+topDocs.totalHits);
             }
@@ -382,6 +399,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             throw new Exception(error.toString());
         }
+        return shardHit;
     }
 
     public void assertCountAndColocation(Query query, int count) throws Exception
