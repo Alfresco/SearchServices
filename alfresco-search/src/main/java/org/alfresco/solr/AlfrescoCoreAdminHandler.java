@@ -546,7 +546,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         properties.store(new FileOutputStream(config), null);
         
-        SolrCore core = coreContainer.create(coreName, newCore.toPath(), new HashMap<String, String>());
+        SolrCore core = coreContainer.create(coreName, newCore.toPath(), new HashMap<String, String>(), false);
         rsp.add("core", core.getName());
     }
 

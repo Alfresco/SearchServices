@@ -254,6 +254,32 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
+     * Delele by query on all Clients
+     * @param q
+     * @throws Exception
+     */
+    public void deleteByQueryAllClients(String q) throws Exception {
+
+        List<SolrClient> clients = getAllClients();
+
+        for (SolrClient client : clients) {
+            client.deleteByQuery(q);
+        }
+    }
+
+    /**
+     * Gets a list of all clients for that test
+     * @return list of SolrClient
+     */
+    public List<SolrClient> getAllClients()
+    {
+        List<SolrClient> clients = new ArrayList();
+        clients.addAll(jettyClients.values());
+        clients.addAll(clientShards);
+        return clients;
+    }
+
+    /**
      * Waits for the doc count on the first core available, then checks all the Shards match.
      * @param query
      * @param count
@@ -326,10 +352,17 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return jettyClients.get(DEFAULT_TEST_CORENAME);
     }
 
-    public void assertNodesPerShardGreaterThan(int count) throws Exception
+    public int assertNodesPerShardGreaterThan(int count) throws Exception
     {
+        return assertNodesPerShardGreaterThan(count, false);
+    }
+
+    public int assertNodesPerShardGreaterThan(int count, boolean ignoreZero) throws Exception
+    {
+        int shardHit = 0;
         List<SolrCore> cores = getJettyCores(jettyShards);
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
+        StringBuilder error = new StringBuilder();
         for (SolrCore core : cores)
         {
             RefCounted<SolrIndexSearcher> refCounted = null;
@@ -338,16 +371,35 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 refCounted = core.getSearcher();
                 SolrIndexSearcher searcher = refCounted.get();
                 TopDocs topDocs = searcher.search(query, 10);
+                if(topDocs.totalHits > 0)
+                {
+                    shardHit++;
+                }
                 if(topDocs.totalHits < count)
                 {
-                    throw new Exception("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
+                    if (ignoreZero && topDocs.totalHits == 0)
+                    {
+                        log.info(core.getName()+": have zero hits ");
+                    }
+                    else
+                    {
+                        error.append(" "+core.getName()+": ");
+                        error.append("Expected nodes per shard greater than "+count+" found "+topDocs.totalHits+" : "+query.toString());
+                    }
                 }
+                log.info(core.getName()+": Hits "+topDocs.totalHits);
             }
             finally
             {
                 refCounted.decref();
             }
         }
+
+        if (error.length() > 0)
+        {
+            throw new Exception(error.toString());
+        }
+        return shardHit;
     }
 
     public void assertCountAndColocation(Query query, int count) throws Exception

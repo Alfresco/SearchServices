@@ -148,19 +148,17 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         SolrQueryResponse response = callHandler(coreAdminHandler, defaultCore, "SUMMARY");
         assertSummaryCorrect(response, defaultCore.getName());
 
-        assertEquals("3456", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalConnections"));
-        assertEquals("99", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalBagels"));
-
+        assertEquals("3456", defaultCore.getCoreDescriptor().getCoreProperty("alfresco.maxTotalConnections","notset"));
+        assertEquals("99", defaultCore.getCoreDescriptor().getCoreProperty("alfresco.maxTotalBagels", "notset"));
 
         //Test updating properties
-        updateCore(coreAdminHandler,coreName, "property.alfresco.maxTotalBagels", "101", "property.alfresco.maxTotalConnections", "55");
-        /**
-         * See: https://issues.apache.org/jira/browse/SOLR-9533, this needs to be fixed first
+        updateCore(coreAdminHandler,coreName, "property.alfresco.maxTotalBagels", "101",
+                                              "property.alfresco.maxTotalConnections", "55",
+                                              "property.solr.is.great", "true");
         defaultCore = getCore(coreContainer, coreName);
-        assertEquals("55", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalConnections"));
-        assertEquals("101", defaultCore.getCoreDescriptor().getSubstitutableProperties().getProperty("alfresco.maxTotalBagels"));
-         **/
-
+        assertEquals("55", defaultCore.getCoreDescriptor().getCoreProperty("alfresco.maxTotalConnections","notset"));
+        assertEquals("101", defaultCore.getCoreDescriptor().getCoreProperty("alfresco.maxTotalBagels", "notset"));
+        assertEquals("true", defaultCore.getCoreDescriptor().getCoreProperty("solr.is.great", "notset"));
     }
 
     @AfterClass

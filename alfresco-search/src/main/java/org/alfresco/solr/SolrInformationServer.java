@@ -3763,7 +3763,7 @@ public class SolrInformationServer implements InformationServer
             
             request = getLocalSolrQueryRequest();
             
-            NumericDocValues dbidDocValues = solrIndexSearcher.getLeafReader().getNumericDocValues(QueryConstants.FIELD_DBID);
+            NumericDocValues dbidDocValues = solrIndexSearcher.getSlowAtomicReader().getNumericDocValues(QueryConstants.FIELD_DBID);
             
             ArrayList<Node> batch = new ArrayList<Node>(200);
             DocList docList = cloud.getDocList(nativeRequestHandler, request, query.startsWith("{") ? query : "{!afts}"+query);

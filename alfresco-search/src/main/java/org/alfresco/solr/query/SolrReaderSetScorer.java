@@ -70,7 +70,7 @@ public class SolrReaderSetScorer extends AbstractSolrCachingScorer
             {
                 int docID = it.nextDoc();
                 // Obtain the ACL ID for this ACL doc.
-                long aclID = searcher.getLeafReader().getNumericDocValues(QueryConstants.FIELD_ACLID).get(docID);
+                long aclID = searcher.getSlowAtomicReader().getNumericDocValues(QueryConstants.FIELD_ACLID).get(docID);
                 SchemaField schemaField = searcher.getSchema().getField(QueryConstants.FIELD_ACLID);
                 Query query = schemaField.getType().getFieldQuery(null, schemaField, Long.toString(aclID));
                 aQuery.add(query,  Occur.SHOULD);
