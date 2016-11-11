@@ -18,56 +18,37 @@
  */
 package org.alfresco.solr.tracker;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.util.*;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.schema.TrieDateField;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.*;
+
+import static org.alfresco.solr.AlfrescoSolrUtils.*;
+
 /**
- * @author Joel
- *
- *
- *
- *
+ * Abstract sharding by date test
+ * @author Gethin James
  */
 
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
+public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(this.getClass().getSimpleName(), 5, getShardMethod(), new String[]{DEFAULT_TEST_CORENAME});
-
     @Test
     public void testDateMonth() throws Exception
     {
-        Thread.sleep(15000);
+        Thread.sleep(12000);
         putHandleDefaults();
 
         int numAcls = 25;
@@ -97,13 +78,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        Date[] dates = new Date[5];
-
-        Calendar cal = new GregorianCalendar();
-        for (int i = 0; i < dates.length; i++) {
-            cal.set(1980, i, 21);
-            dates[i] = cal.getTime();
-        }
+        Date[] dates = setupDates();
 
         int[] counts = new int[dates.length];
 
@@ -124,7 +99,6 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
-        waitForDocCountAllCores(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), numAcls, 100000);
 
         List<AlfrescoSolrDataModel.FieldInstance> fieldInstanceList = AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(MetadataTracker.getShardProperty("created")).getFields();
         AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
@@ -133,34 +107,22 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
         for (int i = 0; i < dates.length; i++) {
             LegacyNumericRangeQuery query = LegacyNumericRangeQuery.newLongRange(fieldName, dates[i].getTime(), dates[i].getTime() + 1, true, false);
             assertCountAndColocation(query, counts[i]);
-            assertShardSequence(i, query, counts[i]);
+            assertCorrect(numNodes);
         }
-
-        nodes.clear();
-        nodeMetaDatas.clear();
-
-        Transaction bigTxn1 = getTransaction(0, numNodes);
-
-        for (int i = 0; i < numNodes; i++) {
-            int aclIndex = i % numAcls;
-            Node node = getNode(bigTxn1, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
-            nodes.add(node);
-            NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn1, bulkAcls.get(aclIndex), "mike", null, false);
-            nodeMetaDatas.add(nodeMetaData);
-        }
-
-        indexTransaction(bigTxn1, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes*2, 100000);
-        //There are 5 shards. We should expect roughly 20% of the nodes on each shard
-        assertNodesPerShardGreaterThan((int)((numNodes*2)*.17));
     }
 
-    protected Properties getShardMethod()
-    {
-        Properties prop = new Properties();
-        prop.put("shard.method", ShardMethodEnum.DATE.toString());
-        prop.put("shard.date.grouping", "1");
-        return prop;
+    protected Date[] setupDates() {
+        Date[] dates = new Date[12];
+
+        Calendar cal = new GregorianCalendar();
+        for (int i = 0; i < dates.length; i++) {
+            cal.set(1980, i, 21);
+            dates[i] = cal.getTime();
+        }
+        return dates;
     }
+
+    protected abstract Properties getShardMethod();
+    protected abstract void assertCorrect(int numNodes) throws Exception;
 }
 
