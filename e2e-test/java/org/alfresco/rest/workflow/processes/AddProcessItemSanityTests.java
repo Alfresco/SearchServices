@@ -59,10 +59,10 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         processItem = processesApi.addProcessItem(processModel, document2);
         processItem.assertThat().field("createdAt").isNotEmpty()
                    .and().field("size").is(document2.getContent().length())
-                   .and().field("createdBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                   .and().field("createdBy").is(adminUser.getUsername())
                    .and().field("modifiedAt").isNotEmpty()
                    .and().field("name").is(document2.getName())
-                   .and().field("modifiedBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                   .and().field("modifiedBy").is(adminUser.getUsername())
                    .and().field("id").isNotEmpty()
                    .and().field("mimeType").is(document2.getFileType().mimeType);
         
@@ -82,10 +82,10 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         processItem = processesApi.addProcessItem(processModel, document3);
         processItem.assertThat().field("createdAt").isNotEmpty()
                 .and().field("size").is("19")
-                .and().field("createdBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                .and().field("createdBy").is(adminUser.getUsername())
                 .and().field("modifiedAt").isNotEmpty()
                 .and().field("name").is(document3.getName())
-                .and().field("modifiedBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                .and().field("modifiedBy").is(adminUser.getUsername())
                 .and().field("id").isNotEmpty()
                 .and().field("mimeType").is(document3.getFileType().mimeType);
 
