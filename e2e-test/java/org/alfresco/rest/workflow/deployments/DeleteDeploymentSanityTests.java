@@ -59,10 +59,10 @@ public class DeleteDeploymentSanityTests extends RestWorkflowTest
             executionType = ExecutionType.SANITY, description = "Verify admin user cannot delete an inexistent deployment using REST API and status code is successful (204)")
     public void adminCannotDeleteInexistentDeployment() throws JsonToModelConversionException, Exception
     {
-        deployment = new RestDeploymentModel();
-        deployment.setId(String.valueOf(1000));
-        
         restClient.authenticateUser(adminUser);
+        deployment = deploymentsApi.getDeployments().getOneRandomEntry();
+        deployment.onModel().setId(String.valueOf(1000));
+
         deploymentsApi.deleteDeployment(deployment);
         deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
