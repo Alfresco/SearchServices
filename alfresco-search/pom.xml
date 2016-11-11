@@ -235,6 +235,7 @@
                                 <exclude>solr/**/*</exclude>
                                 <exclude>org/**/*</exclude>
                                 <exclude>**/jetty-*.jar</exclude>
+                                <exclude>**/slf4j*.jar</exclude>
                                 <exclude>**/junit*.jar</exclude>
                                 <exclude>**/mock*.jar</exclude>
                                 <exclude>**/opencmis*.jar</exclude>
