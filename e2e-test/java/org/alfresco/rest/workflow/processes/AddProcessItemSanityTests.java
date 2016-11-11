@@ -83,18 +83,18 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processItem = processesApi.addProcessItem(processModel, document3);
         processItem.assertThat().field("createdAt").isNotEmpty()
-                   .and().field("size").is("19")
-                   .and().field("createdBy").is(restClient.getTestUser().getUsername().toLowerCase())
-                   .and().field("modifiedAt").isNotEmpty()
-                   .and().field("name").isNotEmpty()
-                   .and().field("modifiedBy").is(restClient.getTestUser().getUsername().toLowerCase())
-                   .and().field("id").is(processModel.getId())
-                   .and().field("mimeType").is(processItem.getMimeType());
-        
+                .and().field("size").is("19")
+                .and().field("createdBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                .and().field("modifiedAt").isNotEmpty()
+                .and().field("name").is(document3.getName())
+                .and().field("modifiedBy").is(restClient.getTestUser().getUsername().toLowerCase())
+                .and().field("id").isNotEmpty()
+                .and().field("mimeType").is(document3.getFileType().mimeType);
+
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
         processesApi.getProcessesItems(processModel)
-                   .assertThat().entriesListContains("id", processItem.getId()).and()
-                   .entriesListContains("name", document3.getName());
+                .assertThat().entriesListContains("id", processItem.getId()).and()
+                .entriesListContains("name", document3.getName());
         processItem = processesApi.addProcessItem(processModel, document3);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
