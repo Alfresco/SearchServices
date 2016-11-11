@@ -151,7 +151,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 			// It'd be nice to know if payloads are on the tokenStream but the
 			// presence of the attribute isn't a good
 			// indicator.
-			final Terms terms = request.getSearcher().getLeafReader().fields()
+			final Terms terms = request.getSearcher().getSlowAtomicReader().fields()
 					.terms(schemaFieldName);
 			if (terms != null) {
 				defaultPayloads = terms.hasPayloads();
@@ -237,7 +237,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 		FieldQuery fvhFieldQuery = null; // lazy
 
 		IndexReader reader = new TermVectorReusingLeafReader(req.getSearcher()
-				.getLeafReader()); // SOLR-5855
+				.getSlowAtomicReader()); // SOLR-5855
 
 		// Highlight each document
 		NamedList fragments = new SimpleOrderedMap();

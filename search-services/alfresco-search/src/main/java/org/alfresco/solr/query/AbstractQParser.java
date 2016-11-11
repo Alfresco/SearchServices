@@ -553,7 +553,7 @@ public abstract class AbstractQParser extends QParser implements QueryConstants
      * @see org.apache.solr.search.QParser#getSort(boolean)
      */
     @Override
-    public SortSpec getSort(boolean useGlobalParams) throws SyntaxError
+    public SortSpec getSortSpec(boolean useGlobalParams) throws SyntaxError
     {
         
         getQuery(); // ensure query is parsed first

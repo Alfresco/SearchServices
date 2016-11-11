@@ -372,7 +372,7 @@ public class AlfrescoLukeRequestHandler extends RequestHandlerBase {
 			fields = new TreeSet<>(Arrays.asList(fl.split("[,\\s]+")));
 		}
 
-		LeafReader reader = searcher.getLeafReader();
+		LeafReader reader = searcher.getSlowAtomicReader();
 		IndexSchema schema = searcher.getSchema();
 
 		// Don't be tempted to put this in the loop below, the whole point here
