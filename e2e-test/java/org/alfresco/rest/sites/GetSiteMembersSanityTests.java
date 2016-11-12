@@ -56,7 +56,7 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.getSiteMembers(siteModel).assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUsername())
             .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUserRole().toString());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -67,7 +67,7 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.getSiteMembers(siteModel).assertThat().entriesListIsNotEmpty().assertThat()
             .entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()).and()
             .entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUserRole().toString());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -78,7 +78,7 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.getSiteMembers(siteModel).assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteContributor).getUsername())
             .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteContributor).getUserRole().toString());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -89,7 +89,7 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.getSiteMembers(siteModel).assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer).getUsername())
             .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer).getUserRole().toString());
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -100,7 +100,7 @@ public class GetSiteMembersSanityTests extends RestTest
         siteAPI.getSiteMembers(siteModel).assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("id", adminUser.getUsername())
             .when().assertThat().entriesListContains("role", "SiteManager");
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id="MNT-16904")
@@ -113,6 +113,6 @@ public class GetSiteMembersSanityTests extends RestTest
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
         siteAPI.getSiteMembers(siteModel);
-        siteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

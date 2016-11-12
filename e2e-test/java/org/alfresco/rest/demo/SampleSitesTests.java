@@ -45,7 +45,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldGetSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSite(siteModel);
-        siteAPI.usingRestWrapper()
+        restClient()
             .assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -62,7 +62,7 @@ public class SampleSitesTests extends RestTest
     public void adminShouldRetrieveSites() throws JsonToModelConversionException, Exception
     {
         siteAPI.getSites();
-        siteAPI.usingRestWrapper()
+        restClient()
             .assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -81,7 +81,7 @@ public class SampleSitesTests extends RestTest
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         siteAPI.addPerson(siteModel, testUser);
-        siteAPI.usingRestWrapper()
+        restClient()
             .assertStatusCodeIs(HttpStatus.CREATED);
     }
 

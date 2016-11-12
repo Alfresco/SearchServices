@@ -4,7 +4,6 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestFavoritesApi;
-import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.ErrorModel;
@@ -28,9 +27,6 @@ public class GetFavoritesSanityTests extends RestTest
     @Autowired
     RestFavoritesApi favoritesAPI;
 
-    @Autowired
-    RestSitesApi sitesApi;
-
     private UserModel adminUserModel;
     private SiteModel firstSiteModel;
     private SiteModel secondSiteModel;
@@ -53,9 +49,9 @@ public class GetFavoritesSanityTests extends RestTest
         secondFileModel = dataContent.usingUser(adminUserModel).usingResource(firstFolderModel).createContent(DocumentType.TEXT_PLAIN);
 
         favoritesAPI.useRestClient(restClient);
-        sitesApi.useRestClient(restClient);
-        firstSiteModel.setGuid(sitesApi.getSite(firstSiteModel).getGuid());
-        secondSiteModel.setGuid(sitesApi.getSite(secondSiteModel).getGuid());
+  
+        firstSiteModel.setGuid(restClient.authenticateUser(adminUserModel).usingSite(firstSiteModel).getSite().getGuid());
+        secondSiteModel.setGuid(restClient.authenticateUser(adminUserModel).usingSite(secondSiteModel).getSite().getGuid());
 
         usersWithRoles = dataUser.addUsersWithRolesToSite(firstSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);

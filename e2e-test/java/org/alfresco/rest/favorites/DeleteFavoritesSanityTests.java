@@ -3,7 +3,6 @@ package org.alfresco.rest.favorites;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestFavoritesApi;
-import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.ErrorModel;
@@ -24,9 +23,6 @@ public class DeleteFavoritesSanityTests extends RestTest
     @Autowired
     RestFavoritesApi favoritesAPI;
 
-    @Autowired
-    RestSitesApi sitesApi;
-
     private UserModel adminUserModel;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
@@ -35,12 +31,12 @@ public class DeleteFavoritesSanityTests extends RestTest
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUserModel);
+        
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
 
         favoritesAPI.useRestClient(restClient);
-        sitesApi.useRestClient(restClient);
-        siteModel.setGuid(sitesApi.getSite(siteModel).getGuid());
+        
+        siteModel.setGuid(restClient.authenticateUser(adminUserModel).usingSite(siteModel).getSite().getGuid());
 
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
