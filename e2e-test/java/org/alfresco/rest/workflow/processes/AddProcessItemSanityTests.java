@@ -7,10 +7,7 @@ import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.requests.RestProcessesApi;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -56,17 +53,18 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
     public void addProcessItem() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser);
-        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
+        document2 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "file content");
+        dataContent.usingSite(siteModel).createContent(document2);
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processItem = processesApi.addProcessItem(processModel, document2);
-        processItem.assertThat().field("createdAt").is(processItem.getCreatedAt())
-                   .and().field("size").is(processItem.getSize())
-                   .and().field("createdBy").is(processItem.getCreatedBy())
-                   .and().field("modifiedAt").is(processItem.getModifiedAt())
-                   .and().field("name").is(processItem.getName())
-                   .and().field("modifiedBy").is(processItem.getModifiedBy())
-                   .and().field("id").is(processItem.getId())
-                   .and().field("mimeType").is(processItem.getMimeType());
+        processItem.assertThat().field("createdAt").isNotEmpty()
+                   .and().field("size").is(document2.getContent().length())
+                   .and().field("createdBy").is(adminUser.getUsername())
+                   .and().field("modifiedAt").isNotEmpty()
+                   .and().field("name").is(document2.getName())
+                   .and().field("modifiedBy").is(adminUser.getUsername())
+                   .and().field("id").isNotEmpty()
+                   .and().field("mimeType").is(document2.getFileType().mimeType);
         
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
         processesApi.getProcessesItems(processModel).assertThat().entriesListContains("id", processItem.getId()); 
@@ -83,18 +81,18 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         processModel = processesApi.getProcesses().getOneRandomEntry();
         processItem = processesApi.addProcessItem(processModel, document3);
         processItem.assertThat().field("createdAt").isNotEmpty()
-                   .and().field("size").is("19")
-                   .and().field("createdBy").is(restClient.getTestUser().getUsername().toLowerCase())
-                   .and().field("modifiedAt").isNotEmpty()
-                   .and().field("name").isNotEmpty()
-                   .and().field("modifiedBy").is(restClient.getTestUser().getUsername().toLowerCase())
-                   .and().field("id").is(processModel.getId())
-                   .and().field("mimeType").is(processItem.getMimeType());
-        
+                .and().field("size").is("19")
+                .and().field("createdBy").is(adminUser.getUsername())
+                .and().field("modifiedAt").isNotEmpty()
+                .and().field("name").is(document3.getName())
+                .and().field("modifiedBy").is(adminUser.getUsername())
+                .and().field("id").isNotEmpty()
+                .and().field("mimeType").is(document3.getFileType().mimeType);
+
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
         processesApi.getProcessesItems(processModel)
-                   .assertThat().entriesListContains("id", processItem.getId()).and()
-                   .entriesListContains("name", document3.getName());
+                .assertThat().entriesListContains("id", processItem.getId()).and()
+                .entriesListContains("name", document3.getName());
         processItem = processesApi.addProcessItem(processModel, document3);
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }

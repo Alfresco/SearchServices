@@ -26,7 +26,6 @@ public class DeleteRatingSanityTests extends RestTest
     @Autowired
     RestRatingsApi ratingsApi;
 
-    private UserModel userModel;
     private SiteModel siteModel;
     private UserModel adminUser;
     private FolderModel folderModel;
@@ -47,8 +46,8 @@ public class DeleteRatingSanityTests extends RestTest
     
     @BeforeMethod()
     public void setUp() throws DataPreparationException, Exception {
-        folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
-        document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 

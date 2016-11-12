@@ -53,10 +53,10 @@ public class RestDemoTests extends RestTest
     @Test
     public void adminRetrievesCorrectSiteDetails() throws JsonToModelConversionException, Exception
     {
-        sitesApi.getAllSites().assertThat()
+        restClient.getSites().assertThat()
             .entriesListContains("id", siteModel.getId());
         
-        sitesApi.getSite(siteModel)
+        restClient.usingSite(siteModel).getSite()
               .assertThat().field("id").isNotNull()
               .assertThat().field("description").is(siteModel.getDescription())
               .assertThat().field("title").is(siteModel.getTitle())            

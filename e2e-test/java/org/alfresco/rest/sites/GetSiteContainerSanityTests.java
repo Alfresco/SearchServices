@@ -50,7 +50,7 @@ public class GetSiteContainerSanityTests extends RestTest
         siteAPI.getSiteContainer(siteModel, siteContainerModel)
                 .assertThat().field("id").is(siteContainerModel.onModel().getId())
                 .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -62,7 +62,7 @@ public class GetSiteContainerSanityTests extends RestTest
         siteAPI.getSiteContainer(siteModel, siteContainerModel)
                .and().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -74,7 +74,7 @@ public class GetSiteContainerSanityTests extends RestTest
         siteAPI.getSiteContainer(siteModel, siteContainerModel)
                .assertThat().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -86,7 +86,7 @@ public class GetSiteContainerSanityTests extends RestTest
         siteAPI.getSiteContainer(siteModel, siteContainerModel)
                .assertThat().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -98,7 +98,7 @@ public class GetSiteContainerSanityTests extends RestTest
         siteAPI.getSiteContainer(siteModel, siteContainerModel)
                .assertThat().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     
@@ -108,12 +108,12 @@ public class GetSiteContainerSanityTests extends RestTest
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
-        siteContainerModel = siteAPI.getSiteContainers(siteModel).getOneRandomEntry();
         siteAPI.getSiteContainer(siteModel, siteContainerModel);
-        restClient().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

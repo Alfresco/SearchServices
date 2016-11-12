@@ -46,7 +46,7 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.addPerson(siteModel, testUser)
                .assertThat().field("id").is(testUser.getUsername())
                .and().field("role").is(testUser.getUserRole());
-        restClient().assertStatusCodeIs(HttpStatus.CREATED);       
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -57,8 +57,8 @@ public class AddSiteMemberSanityTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         siteAPI.addPerson(siteModel, testUser);
-        restClient().assertLastError().containsSummary("Permission was denied");
-        restClient().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
+        restClient.assertLastError().containsSummary("Permission was denied");
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -69,8 +69,8 @@ public class AddSiteMemberSanityTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         siteAPI.addPerson(siteModel, testUser);
-        restClient().assertLastError().containsSummary("Permission was denied");
-        restClient().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
+        restClient.assertLastError().containsSummary("Permission was denied");
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -81,8 +81,8 @@ public class AddSiteMemberSanityTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         siteAPI.addPerson(siteModel, testUser);
-        restClient().assertLastError().containsSummary("Permission was denied");
-        restClient().assertStatusCodeIs(HttpStatus.FORBIDDEN);       
+        restClient.assertLastError().containsSummary("Permission was denied");
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -95,7 +95,7 @@ public class AddSiteMemberSanityTests extends RestTest
         siteAPI.addPerson(siteModel, testUser)
                .and().field("id").is(testUser.getUsername())
                .and().field("role").is(testUser.getUserRole());
-        restClient().assertStatusCodeIs(HttpStatus.CREATED);       
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
     @Bug(id="MNT-16904")
@@ -107,6 +107,6 @@ public class AddSiteMemberSanityTests extends RestTest
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser);
         siteAPI.addPerson(siteModel, testUser);
-        restClient().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

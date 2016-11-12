@@ -56,7 +56,7 @@ public class GetSiteContainersSanityTests extends RestTest
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -68,7 +68,7 @@ public class GetSiteContainersSanityTests extends RestTest
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -80,7 +80,7 @@ public class GetSiteContainersSanityTests extends RestTest
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -92,7 +92,7 @@ public class GetSiteContainersSanityTests extends RestTest
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -104,7 +104,7 @@ public class GetSiteContainersSanityTests extends RestTest
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
-        restClient().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id="MNT-16904")
@@ -117,6 +117,6 @@ public class GetSiteContainersSanityTests extends RestTest
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
         siteAPI.getSiteContainers(siteModel);
-        restClient().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
