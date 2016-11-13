@@ -1,18 +1,13 @@
 package org.alfresco.rest.demo.workshop;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 public class RestApiDemoTests extends RestTest
-{
-    @Autowired
-    RestSitesApi sitesAPI;
-
+{    
     /*
      * Test steps:
      * 1. create a user

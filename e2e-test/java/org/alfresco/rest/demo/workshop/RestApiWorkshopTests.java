@@ -1,8 +1,6 @@
 package org.alfresco.rest.demo.workshop;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestSitesApi;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -11,10 +9,7 @@ import org.testng.annotations.Test;
  *
  */
 public class RestApiWorkshopTests extends RestTest
-{
-    @Autowired
-    RestSitesApi sitesAPI;
-    
+{    
     @Test
     public void verifyGetSitesRestApiCall() throws Exception
     {

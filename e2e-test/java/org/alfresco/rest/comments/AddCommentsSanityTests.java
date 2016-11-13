@@ -3,7 +3,6 @@ package org.alfresco.rest.comments;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
@@ -27,8 +26,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class AddCommentsSanityTests extends RestTest
 {
-    @Autowired RestCommentsApi commentsAPI;
-
     @Autowired DataUser dataUser;
 
     private UserModel adminUserModel;
@@ -43,7 +40,7 @@ public class AddCommentsSanityTests extends RestTest
         adminUserModel = dataUser.getAdminUser();
         restClient.authenticateUser(adminUserModel);
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        commentsAPI.useRestClient(restClient);
+        
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
@@ -59,60 +56,59 @@ public class AddCommentsSanityTests extends RestTest
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple comments with Rest API and status code is 201")
     public void adminIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(adminUserModel);
-        commentsAPI.addComments(document, comment1, comment2)
+        restClient.authenticateUser(adminUserModel)
+                  .usingNode(document).addComments(comment1, comment2)
                    .assertThat().entriesListIsNotEmpty()
                    .and().entriesListContains("content", comment1)
                    .and().entriesListContains("content", comment2);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds multiple comments with Rest API and status code is 201")
     public void managerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        commentsAPI.addComments(document, comment1, comment2)
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .usingNode(document).addComments(comment1, comment2)
                   .assertThat().entriesListIsNotEmpty()
                   .and().entriesListContains("content", comment1)
                   .and().entriesListContains("content", comment2);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple comments with Rest API and status code is 201")
     public void contributorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        commentsAPI.addComments(document, comment1, comment2)
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .usingNode(document).addComments(comment1, comment2)
                 .assertThat().entriesListIsNotEmpty()
                 .and().entriesListContains("content", comment1)
                 .and().entriesListContains("content", comment2);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple comments with Rest API and status code is 201")
     public void collaboratorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        commentsAPI.addComments(document, comment1, comment2)
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                   .usingNode(document).addComments(comment1, comment2)
                    .assertThat().paginationExist().and().entriesListIsNotEmpty()
                    .and().entriesListContains("content", comment1)
                    .and().entriesListContains("content", comment2);
                       
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user adds multiple comments with Rest API and status code is 201")
     public void consumerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        commentsAPI.addComments(document, comment1, comment2);
-        commentsAPI.usingRestWrapper()
-                .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .usingNode(document).addComments(comment1, comment2);
+        
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -120,8 +116,8 @@ public class AddCommentsSanityTests extends RestTest
     @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToAddComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(new UserModel("random user", "random password"));
-        commentsAPI.addComments(document, comment1, comment2);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.authenticateUser(new UserModel("random user", "random password"))
+                  .usingNode(document).addComments(comment1, comment2);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

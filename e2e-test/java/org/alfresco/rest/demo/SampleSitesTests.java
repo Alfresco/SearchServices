@@ -63,7 +63,7 @@ public class SampleSitesTests extends RestTest
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
-        siteAPI.addPerson(siteModel, testUser);
+        restClient.usingSite(siteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 

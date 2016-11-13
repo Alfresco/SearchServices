@@ -3,7 +3,6 @@ package org.alfresco.rest.comments;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestCommentsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
@@ -22,10 +21,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class AddCommentSanityTests extends RestTest
-{
-    @Autowired
-    RestCommentsApi commentsAPI;
-
+{    
     @Autowired
     DataUser dataUser;
 
@@ -39,8 +35,7 @@ public class AddCommentSanityTests extends RestTest
     {
         adminUserModel = dataUser.getAdminUser();
         restClient.authenticateUser(adminUserModel);
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        commentsAPI.useRestClient(restClient);
+        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();        
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
@@ -51,10 +46,10 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         String newContent = "This is a new comment added by " + adminUserModel.getUsername();
-        commentsAPI.addComment(document, newContent)
+        restClient.usingNode(document).addComment(newContent)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(newContent);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds comments with Rest API and status code is 201")
@@ -62,10 +57,10 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         String contentSiteManger = "This is a new comment added by user with role: " + UserRole.SiteManager;
-        commentsAPI.addComment(document, contentSiteManger)
+        restClient.usingNode(document).addComment(contentSiteManger)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(contentSiteManger);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds comments with Rest API and status code is 201")
@@ -73,10 +68,10 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         String contentSiteContributor = "This is a new comment added by user with role" + UserRole.SiteContributor;
-        commentsAPI.addComment(document, contentSiteContributor)
+        restClient.usingNode(document).addComment(contentSiteContributor)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(contentSiteContributor);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds comments with Rest API and status code is 201")
@@ -84,10 +79,10 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         String contentSiteCollaborator = "This is a new comment added by user with role: " + UserRole.SiteCollaborator;
-        commentsAPI.addComment(document, contentSiteCollaborator)
+        restClient.usingNode(document).addComment(contentSiteCollaborator)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(contentSiteCollaborator);
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't add comments with Rest API and status code is 403")
@@ -95,8 +90,8 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         String contentSiteConsumer = "This is a new comment added by user with role: " + UserRole.SiteConsumer;
-        commentsAPI.addComment(document, contentSiteConsumer);
-        commentsAPI.usingRestWrapper()
+        restClient.usingNode(document).addComment(contentSiteConsumer);
+        restClient
                    .assertStatusCodeIs(HttpStatus.FORBIDDEN)
                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -106,8 +101,8 @@ public class AddCommentSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToAddComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        commentsAPI.addComment(document, "This is a new comment");
-        commentsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingNode(document).addComment("This is a new comment");
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
 }

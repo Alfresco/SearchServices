@@ -2,7 +2,6 @@ package org.alfresco.rest.sites;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -12,7 +11,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -23,10 +21,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class GetSiteMemberSanityTests extends RestTest
 {
-
-    @Autowired
-    RestSitesApi restSitesApi;
-
     private UserModel adminUser;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
@@ -35,8 +29,7 @@ public class GetSiteMemberSanityTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
     {
-        adminUser = dataUser.getAdminUser();
-        restSitesApi.useRestClient(restClient);
+        adminUser = dataUser.getAdminUser();        
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
@@ -49,10 +42,10 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithManagerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restSitesApi.getSiteMember(siteModel, userModel)
+        restClient.usingSite(siteModel).getSiteMember(userModel)
                     .assertThat().field("id").is(userModel.getUsername())
                     .and().field("role").is(userModel.getUserRole());
-        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -60,10 +53,10 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restSitesApi.getSiteMember(siteModel, userModel)
+        restClient.usingSite(siteModel).getSiteMember(userModel)
                     .and().field("id").is(userModel.getUsername())
                     .and().field("role").is(userModel.getUserRole());
-        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -71,9 +64,10 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithContributorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        restSitesApi.getSiteMember(siteModel, userModel).and().field("id").is(userModel.getUsername())
-        .and().field("role").is(userModel.getUserRole());
-        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingSite(siteModel).getSiteMember(userModel)
+                  .and().field("id").is(userModel.getUsername())
+                  .and().field("role").is(userModel.getUserRole());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -81,10 +75,10 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restSitesApi.getSiteMember(siteModel, userModel)
+        restClient.usingSite(siteModel).getSiteMember(userModel)
                     .and().field("id").is(userModel.getUsername())
                     .and().field("role").is(userModel.getUserRole());
-        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -92,10 +86,10 @@ public class GetSiteMemberSanityTests extends RestTest
     public void getSiteMemberWithAdminUser() throws Exception
     {
         restClient.authenticateUser(adminUser);
-        restSitesApi.getSiteMember(siteModel, userModel)
+        restClient.usingSite(siteModel).getSiteMember(userModel)
                     .and().field("id").is(userModel.getUsername())
                     .and().field("role").is(userModel.getUserRole());
-        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
@@ -105,7 +99,7 @@ public class GetSiteMemberSanityTests extends RestTest
     {
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser);
-        restSitesApi.getSiteMember(siteModel, userModel);
-        restSitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingSite(siteModel).getSiteMember(userModel);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -3,7 +3,6 @@ package org.alfresco.rest.people;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.requests.RestPeopleApi;
-import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -28,9 +27,6 @@ public class DeleteSiteMemberSanityTests extends RestTest
     RestPeopleApi peopleApi;
     
     @Autowired
-    RestSitesApi sitesApi;
-
-    @Autowired
     DataUser dataUser;
 
     @Autowired
@@ -49,8 +45,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
                 UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
 
-        peopleApi.useRestClient(restClient);
-        sitesApi.useRestClient(restClient);
+        peopleApi.useRestClient(restClient);        
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -60,12 +55,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        sitesApi.addPerson(siteModel, newUser);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .usingSite(siteModel).addPerson(newUser);
         
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -75,12 +69,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, newUser);
+        restClient.authenticateUser(adminUser)  
+                  .usingSite(siteModel).addPerson(newUser);
         
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -91,12 +84,12 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, newUser);
+        restClient.authenticateUser(adminUser)  
+                  .usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
@@ -108,12 +101,12 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, newUser);
+        restClient.authenticateUser(adminUser)  
+                  .usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
@@ -125,12 +118,12 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser);
-        sitesApi.addPerson(siteModel, newUser);
+        restClient.authenticateUser(adminUser)  
+                  .usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         peopleApi.deleteSiteMember(newUser, siteModel);
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
@@ -142,6 +135,6 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
         peopleApi.deleteSiteMember(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer), siteModel);
-        sitesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

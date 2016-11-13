@@ -3,15 +3,12 @@ package org.alfresco.rest.demo;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestCommentsApi;
-import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Role;
 import org.springframework.social.alfresco.api.entities.Site.Visibility;
@@ -20,13 +17,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = { "demo" })
 public class RestDemoTests extends RestTest
-{
-    @Autowired
-    RestSitesApi sitesApi;
-
-    @Autowired
-    RestCommentsApi commentsAPI;
-
+{    
     private UserModel userModel;
     private SiteModel siteModel;
 
@@ -35,10 +26,7 @@ public class RestDemoTests extends RestTest
     {       
         userModel = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        restClient.authenticateUser(userModel);
-        
-        sitesApi.useRestClient(restClient);
-        commentsAPI.useRestClient(restClient);        
+        restClient.authenticateUser(userModel);               
     }
 
     /**
@@ -77,11 +65,10 @@ public class RestDemoTests extends RestTest
                                   .usingResource(FolderModel.getSharedFolderModel())        			       
                                   .createContent(DocumentType.TEXT_PLAIN);
         // add new comment
-        commentsAPI.addComment(fileModel, "This is a new comment");
-        commentsAPI.getNodeComments(fileModel)
+        restClient.usingNode(fileModel).addComment("This is a new comment");
+        restClient.usingNode(fileModel).getNodeComments()
             .assertThat().entriesListIsNotEmpty().and()
             .entriesListContains("content", "This is a new comment");
-
     }
 
     /**
@@ -100,21 +87,20 @@ public class RestDemoTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
 
         // add user as Consumer to site
-        sitesApi.addPerson(siteModel, testUser);
-        sitesApi.getSiteMembers(siteModel).assertThat().entriesListContains("id", testUser.getUsername())
+        restClient.usingSite(siteModel).addPerson(testUser);        
+        restClient.usingSite(siteModel).getSiteMembers().assertThat().entriesListContains("id", testUser.getUsername())
                 .when().getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteConsumer);
 
         // update site member to Manager
         testUser.setUserRole(UserRole.SiteCollaborator);
-        sitesApi.updateSiteMember(siteModel, testUser);
-        sitesApi.getSiteMembers(siteModel).and()
+        restClient.usingSite(siteModel).updateSiteMember(testUser);
+        restClient.usingSite(siteModel).getSiteMembers().and()
             .entriesListContains("id", testUser.getUsername())
             .when().getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteCollaborator);
 
-        sitesApi.deleteSiteMember(siteModel, testUser);
-        sitesApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingSite(siteModel).deleteSiteMember(testUser);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 }

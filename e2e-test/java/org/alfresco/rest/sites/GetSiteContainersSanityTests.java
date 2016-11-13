@@ -2,7 +2,6 @@ package org.alfresco.rest.sites;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestSitesApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -23,10 +22,7 @@ import org.testng.annotations.Test;
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class GetSiteContainersSanityTests extends RestTest
-{
-    @Autowired
-    RestSitesApi siteAPI;
-
+{  
     @Autowired
     DataUser dataUser;
 
@@ -41,8 +37,7 @@ public class GetSiteContainersSanityTests extends RestTest
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        siteAPI.useRestClient(restClient);
+        adminUserModel = dataUser.getAdminUser();        
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
@@ -52,7 +47,7 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteAPI.getSiteContainers(siteModel)
+        restClient.usingSite(siteModel).getSiteContainers()
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
@@ -64,7 +59,7 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        siteAPI.getSiteContainers(siteModel)
+        restClient.usingSite(siteModel).getSiteContainers()
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
@@ -76,7 +71,7 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithContributorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        siteAPI.getSiteContainers(siteModel)
+        restClient.usingSite(siteModel).getSiteContainers()
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
@@ -88,7 +83,7 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithConsumerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        siteAPI.getSiteContainers(siteModel)
+        restClient.usingSite(siteModel).getSiteContainers()
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
@@ -100,7 +95,7 @@ public class GetSiteContainersSanityTests extends RestTest
     public void getSiteContainersWithAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        siteAPI.getSiteContainers(siteModel)
+        restClient.usingSite(siteModel).getSiteContainers()
         	.assertThat().entriesListIsNotEmpty()
         	.assertThat().paginationExist()
         	.and().paginationField("count").isNot("0");
@@ -116,7 +111,7 @@ public class GetSiteContainersSanityTests extends RestTest
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
-        siteAPI.getSiteContainers(siteModel);
+        restClient.usingSite(siteModel).getSiteContainers();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
