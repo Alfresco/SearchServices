@@ -119,7 +119,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)
-                  .usingAuthUser().getFavoriteSite(siteModel1);
+                  .usingUser(userModel).getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     

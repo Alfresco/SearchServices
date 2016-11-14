@@ -106,7 +106,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(userAuth)
-                  .usingAuthUser().removeFavoriteSite(siteModel1);
+                  .usingUser(anotherUser).removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
