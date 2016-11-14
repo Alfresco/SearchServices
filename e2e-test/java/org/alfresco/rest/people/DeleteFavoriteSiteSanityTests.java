@@ -1,7 +1,6 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
@@ -9,7 +8,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -20,9 +18,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class DeleteFavoriteSiteSanityTests extends RestTest
 {
-    @Autowired
-    RestPeopleApi peopleApi;
-
     UserModel userModel;
     SiteModel siteModel1;
     SiteModel siteModel2;
@@ -34,8 +29,6 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         siteModel1 = dataSite.usingUser(userModel).createPublicRandomSite();
         siteModel2 = dataSite.usingUser(userModel).createPublicRandomSite();
-
-        peopleApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user removes a site from its favorite sites list with Rest API and response is successful (204)")
@@ -46,9 +39,10 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(managerUser);
-        peopleApi.removeFavoriteSite(managerUser, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.authenticateUser(managerUser)
+                  .usingAuthUser().removeFavoriteSite(siteModel1);
+
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user removes a site from its favorite sites list with Rest API and response is successful (204)")
@@ -59,9 +53,9 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(collaboratorUser);
-        peopleApi.removeFavoriteSite(collaboratorUser, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.authenticateUser(collaboratorUser)
+                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user removes a site from its favorite sites list with Rest API and response is successful (204)")
@@ -72,9 +66,9 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(contributorUser);
-        peopleApi.removeFavoriteSite(contributorUser, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.authenticateUser(contributorUser)
+                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user removes a site from its favorite sites list with Rest API and response is successful (204)")
@@ -85,9 +79,9 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(consumerUser);
-        peopleApi.removeFavoriteSite(consumerUser, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.authenticateUser(consumerUser)
+                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user removes a site from any user's favorite sites list with Rest API and response is successful (204)")
@@ -98,9 +92,9 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(anyUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(adminUser);
-        peopleApi.removeFavoriteSite(anyUser, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.authenticateUser(adminUser)
+                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a user removes a site from another user's favorite sites list with Rest API and response is permission denied (403)")
@@ -111,9 +105,9 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(anotherUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(userAuth);
-        peopleApi.removeFavoriteSite(anotherUser, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+        restClient.authenticateUser(userAuth)
+                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
@@ -126,8 +120,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
         managerUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser);
-        peopleApi.removeFavoriteSite(managerUser, siteModel1);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.authenticateUser(managerUser)
+                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

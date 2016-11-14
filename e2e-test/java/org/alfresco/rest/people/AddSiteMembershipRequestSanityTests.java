@@ -2,7 +2,6 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -21,10 +20,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class AddSiteMembershipRequestSanityTests extends RestTest
-{
-    @Autowired
-    RestPeopleApi peopleApi;
-
+{    
     @Autowired
     DataUser dataUser;
 
@@ -43,8 +39,6 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-
-        peopleApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -53,12 +47,11 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     public void siteManagerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel)
-            .assertThat().field("id").isNotEmpty()
-            .assertThat().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .usingUser(newMember).addSiteMembershipRequest(siteModel)
+                  .assertThat().field("id").isNotEmpty()
+                  .assertThat().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -67,12 +60,11 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     public void siteCollaboatorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel)
-            .assertThat().field("id").isNotEmpty()
-            .assertThat().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .usingUser(newMember).addSiteMembershipRequest(siteModel)
+                  .assertThat().field("id").isNotEmpty()
+                  .assertThat().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -81,12 +73,11 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     public void siteContributorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel)
-            .assertThat().field("id").isNotEmpty()
-            .assertThat().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                  .usingUser(newMember).addSiteMembershipRequest(siteModel)
+                  .assertThat().field("id").isNotEmpty()
+                  .assertThat().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -95,12 +86,11 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     public void siteConsumerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel)
-            .assertThat().field("id").isNotEmpty()
-            .assertThat().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .usingUser(newMember).addSiteMembershipRequest(siteModel)
+                  .assertThat().field("id").isNotEmpty()
+                  .assertThat().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
@@ -109,11 +99,11 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     public void adminUserIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(adminUser);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel)
-            .assertThat().field("id").isNotEmpty()
-            .assertThat().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.authenticateUser(adminUser)
+                  .usingUser(newMember).addSiteMembershipRequest(siteModel)
+                  .assertThat().field("id").isNotEmpty()
+                  .assertThat().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -122,11 +112,10 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(new UserModel("random user", "random password"));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel)
-            .assertThat().field("id").isNotEmpty()
-            .assertThat().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.authenticateUser(new UserModel("random user", "random password"))
+                  .usingUser(newMember).addSiteMembershipRequest(siteModel)
+                  .assertThat().field("id").isNotEmpty()
+                  .assertThat().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

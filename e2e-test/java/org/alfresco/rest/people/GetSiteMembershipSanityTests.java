@@ -2,7 +2,6 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -23,9 +22,6 @@ import org.testng.annotations.Test;
 public class GetSiteMembershipSanityTests extends RestTest
 {
     @Autowired
-    RestPeopleApi peopleApi;
-
-    @Autowired
     DataUser dataUser;
 
     @Autowired
@@ -42,9 +38,7 @@ public class GetSiteMembershipSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
-                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-
-        peopleApi.useRestClient(restClient);
+                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);        
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -52,64 +46,65 @@ public class GetSiteMembershipSanityTests extends RestTest
                 description = "Verify site manager is able to retrieve site membership information of another user")
     public void siteManagerCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.getSiteMembership(adminUser, siteModel)
-        	.assertThat().field("role").is(UserRole.SiteManager)
-        	.and().field("id").is(siteModel.getId())
-        	.and().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .usingUser(adminUser)
+                  .getSiteMembership(siteModel)
+                	.assertThat().field("role").is(UserRole.SiteManager)
+                	.and().field("id").is(siteModel.getId())
+                	.and().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to retrieve site membership information of another user")
     public void siteCollaboratorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.getSiteMembership(adminUser, siteModel).onSite()
-        	.assertThat().field("role").is(UserRole.SiteCollaborator)
-        	.and().field("id").is(siteModel.getId());
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .usingUser(adminUser)
+                  .getSiteMembership(siteModel)
+                  .onSite()
+                	.assertThat().field("role").is(UserRole.SiteCollaborator)
+                	.and().field("id").is(siteModel.getId());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site contributor is able to retrieve site membership information of another user")
     public void siteContributorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.getSiteMembership(adminUser, siteModel)
-        	.assertThat().field("role").is(UserRole.SiteManager)
-        	.and().field("id").is(siteModel.getId())
-        	.and().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))                  
+                  .usingUser(adminUser)
+                  .getSiteMembership(siteModel)
+                	.assertThat().field("role").is(UserRole.SiteManager)
+                	.and().field("id").is(siteModel.getId())
+                	.and().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site consumer is able to retrieve site membership information of another user")
     public void siteConsumerCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.getSiteMembership(adminUser, siteModel)
-    		.assertThat().field("role").is(UserRole.SiteManager)
-    		.and().field("id").is(siteModel.getId())
-    		.and().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-        .assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .usingUser(adminUser)
+                  .getSiteMembership(siteModel)
+              		.assertThat().field("role").is(UserRole.SiteManager)
+              		.and().field("id").is(siteModel.getId())
+              		.and().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to retrieve site membership information of another user")
     public void adminCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(adminUser);
-        peopleApi.getSiteMembership(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel)
-        	.assertThat().field("role").is(UserRole.SiteManager)
-        	.and().field("id").is(siteModel.getId())
-        	.and().field("site").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(adminUser)
+                  .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .getSiteMembership(siteModel)
+                	.assertThat().field("role").is(UserRole.SiteManager)
+                	.and().field("id").is(siteModel.getId())
+                	.and().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API,
@@ -117,10 +112,9 @@ public class GetSiteMembershipSanityTests extends RestTest
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserCannotRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(new UserModel("random user", "random password"));
-        peopleApi.getSiteMembership(usersWithRoles.getOneUserWithRole(UserRole.SiteManager), siteModel);
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
-    }
-    
+        restClient.authenticateUser(new UserModel("random user", "random password"))
+                  .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .getSiteMembership(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }    
 }

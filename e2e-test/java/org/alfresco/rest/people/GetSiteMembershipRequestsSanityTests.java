@@ -1,7 +1,6 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
@@ -10,7 +9,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
@@ -24,9 +22,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class GetSiteMembershipRequestsSanityTests extends RestTest
 {
-    @Autowired
-    RestPeopleApi peopleApi;
-
     UserModel userModel;
     SiteModel siteModel;
     UserModel newMember;
@@ -38,12 +33,12 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         String siteId = RandomData.getRandomName("site");
         siteModel = dataSite.usingUser(userModel).createSite(new SiteModel(Visibility.MODERATED, siteId, siteId, siteId, siteId));
         newMember = dataUser.createRandomTestUser();
-        peopleApi.useRestClient(restClient);
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+        
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser().addSiteMembershipRequest(siteModel);
 
-        peopleApi.useRestClient(restClient);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
     }
 
     @Bug(id = "MNT-16557")
@@ -53,9 +48,9 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         
-        restClient.authenticateUser(managerUser);
-        peopleApi.getSiteMembershipRequests(newMember).assertThat().entriesListIsNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(managerUser)
+                  .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id = "MNT-16557")
@@ -65,9 +60,9 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         
-        restClient.authenticateUser(collaboratorUser);
-        peopleApi.getSiteMembershipRequests(newMember);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.authenticateUser(collaboratorUser)
+                  .usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @Bug(id = "MNT-16557")
@@ -77,9 +72,9 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         
-        restClient.authenticateUser(contributorUser);
-        peopleApi.getSiteMembershipRequests(newMember);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.authenticateUser(contributorUser)
+                  .usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @Bug(id = "MNT-16557")
@@ -89,9 +84,9 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         
-        restClient.authenticateUser(consumerUser);
-        peopleApi.getSiteMembershipRequests(newMember);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.authenticateUser(consumerUser)
+                  .usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
     
     @Bug(id = "MNT-16557")
@@ -100,9 +95,9 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     {
         UserModel adminUser = dataUser.getAdminUser();
         
-        restClient.authenticateUser(adminUser);
-        peopleApi.getSiteMembershipRequests(newMember).assertThat().entriesListIsNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(adminUser)
+                  .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id = "MNT-16904")
@@ -113,16 +108,16 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         managerUser.setPassword("newpassword");
         
-        restClient.authenticateUser(managerUser);
-        peopleApi.getSiteMembershipRequests(newMember);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(managerUser)
+                  .usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a user gets all its own site membership requests with Rest API and response is successful (200)")
     public void oneUserGetsItsOwnSiteMembershipRequestsWithSuccess() throws Exception
     {
-        restClient.authenticateUser(newMember);
-        peopleApi.getSiteMembershipRequests(newMember).assertThat().entriesListIsNotEmpty();
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(newMember)
+                  .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

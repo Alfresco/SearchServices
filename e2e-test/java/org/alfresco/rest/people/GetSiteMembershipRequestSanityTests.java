@@ -2,7 +2,6 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -23,9 +22,6 @@ import org.testng.annotations.Test;
 public class GetSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
-    RestPeopleApi peopleApi;
-
-    @Autowired
     DataUser dataUser;
 
     @Autowired
@@ -43,8 +39,6 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-
-        peopleApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, 
@@ -53,12 +47,12 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteManagerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .usingUser(newMember)
+                  .addSiteMembershipRequest(siteModel);
         
-        peopleApi.getSiteMembershipRequest(newMember, siteModel);
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -67,12 +61,12 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteCollaboratorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .usingUser(newMember)
+                  .addSiteMembershipRequest(siteModel);
 
-        peopleApi.getSiteMembershipRequest(newMember, siteModel);
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -81,12 +75,12 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteContributorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
-
-        peopleApi.getSiteMembershipRequest(newMember, siteModel);
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                  .usingUser(newMember)
+                  .addSiteMembershipRequest(siteModel);
+        
+        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -95,12 +89,12 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void siteConsumerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .usingUser(newMember)
+                  .addSiteMembershipRequest(siteModel);
 
-        peopleApi.getSiteMembershipRequest(newMember, siteModel);
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -109,12 +103,12 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void adminIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(adminUser);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(adminUser)
+                  .usingUser(newMember)
+                  .addSiteMembershipRequest(siteModel);
 
-        peopleApi.getSiteMembershipRequest(newMember, siteModel);
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -123,12 +117,11 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(new UserModel("random user", "random password"));
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(new UserModel("random user", "random password"))
+                  .usingUser(newMember)
+                  .addSiteMembershipRequest(siteModel);
 
-        peopleApi.getSiteMembershipRequest(newMember, siteModel);
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
-    }
-    
+        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }    
 }

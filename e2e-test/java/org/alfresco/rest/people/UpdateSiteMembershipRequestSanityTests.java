@@ -2,7 +2,6 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -26,9 +25,6 @@ import org.testng.annotations.Test;
 public class UpdateSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
-    RestPeopleApi peopleApi;
-
-    @Autowired
     DataUser dataUser;
 
     @Autowired
@@ -47,8 +43,6 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUser).createSite(new SiteModel(Visibility.MODERATED, siteId, siteId, siteId, siteId));
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-
-        peopleApi.useRestClient(restClient);       
         updatedMessage = "Please review my request";
     }
 
@@ -58,15 +52,14 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
 
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
-        
-        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage)
-            .assertMembershipRequestMessageIs(updatedMessage)
-            .and().field("id").is(siteModel.getId())
-            .and().field("modifiedAt").isNotEmpty();
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser()
+                  .addSiteMembershipRequest(siteModel);
+        restClient.usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage)
+                  .assertMembershipRequestMessageIs(updatedMessage)
+                  .and().field("id").is(siteModel.getId())
+                  .and().field("modifiedAt").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -76,15 +69,15 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
 
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser()
+                  .addSiteMembershipRequest(siteModel);
 
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);            
 
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -94,15 +87,16 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
 
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser()
+                  .addSiteMembershipRequest(siteModel);
 
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .usingUser(newMember)
+                  .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -112,15 +106,14 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
 
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser().addSiteMembershipRequest(siteModel);
 
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);      
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                  .usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);      
 
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -130,15 +123,16 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
 
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser()
+                  .addSiteMembershipRequest(siteModel);
 
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .usingUser(newMember)
+                  .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -149,15 +143,16 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
         UserModel otherMember = dataUser.createRandomTestUser();
 
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser()
+                  .addSiteMembershipRequest(siteModel);
 
-        restClient.authenticateUser(otherMember);
-        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
+        restClient.authenticateUser(otherMember)
+                  .usingUser(newMember)
+                  .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -167,14 +162,15 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
 
-        restClient.authenticateUser(newMember);
-        peopleApi.addSiteMembershipRequest(newMember, siteModel);
+        restClient.authenticateUser(newMember)
+                  .usingAuthUser()
+                  .addSiteMembershipRequest(siteModel);
 
-        restClient.authenticateUser(adminUser);
-        peopleApi.updateSiteMembershipRequest(newMember, siteModel, updatedMessage);            
+        restClient.authenticateUser(adminUser)
+                   .usingUser(newMember)
+                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
-        peopleApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 }

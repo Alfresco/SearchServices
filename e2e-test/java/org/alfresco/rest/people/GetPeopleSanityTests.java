@@ -1,7 +1,6 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestPeopleApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
@@ -9,7 +8,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -17,9 +15,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class GetPeopleSanityTests extends RestTest
 {
-    @Autowired
-    RestPeopleApi peopleApi;
-
     UserModel userModel;
     SiteModel siteModel;
     UserModel searchedUser;
@@ -32,8 +27,6 @@ public class GetPeopleSanityTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         searchedUser = dataUser.createRandomTestUser();
-
-        peopleApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
@@ -42,13 +35,14 @@ public class GetPeopleSanityTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
-        restClient.authenticateUser(managerUser);
-        peopleApi.getPerson(searchedUser)
-        	.assertThat().field("id").is(searchedUser.getUsername())
-        	.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
-        	.and().field("email").is(searchedUser.getUsername()+ domain)
-        	.and().field("emailNotificationsEnabled").is("true");
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(managerUser)
+                  .usingUser(searchedUser)
+                  .getPerson()
+                	.assertThat().field("id").is(searchedUser.getUsername())
+                	.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+                	.and().field("email").is(searchedUser.getUsername()+ domain)
+                	.and().field("emailNotificationsEnabled").is("true");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets a person with Rest API and response is successful")
@@ -57,13 +51,14 @@ public class GetPeopleSanityTests extends RestTest
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
-        restClient.authenticateUser(collaboratorUser);
-        peopleApi.getPerson(searchedUser)
-        	.assertThat().field("id").is(searchedUser.getUsername())
-        	.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
-        	.and().field("email").is(searchedUser.getUsername()+ domain)
-        	.and().field("emailNotificationsEnabled").is("true");
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(collaboratorUser)
+                  .usingUser(searchedUser)
+                  .getPerson()
+                	.assertThat().field("id").is(searchedUser.getUsername())
+                	.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+                	.and().field("email").is(searchedUser.getUsername()+ domain)
+                	.and().field("emailNotificationsEnabled").is("true");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -73,13 +68,14 @@ public class GetPeopleSanityTests extends RestTest
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
-        restClient.authenticateUser(contributorUser);
-        peopleApi.getPerson(searchedUser)
-    		.assertThat().field("id").is(searchedUser.getUsername())
-    		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
-    		.and().field("email").is(searchedUser.getUsername()+ domain)
-    		.and().field("emailNotificationsEnabled").is("true");;
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(contributorUser)
+                  .usingUser(searchedUser)
+                  .getPerson()
+              		.assertThat().field("id").is(searchedUser.getUsername())
+              		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+              		.and().field("email").is(searchedUser.getUsername()+ domain)
+              		.and().field("emailNotificationsEnabled").is("true");;
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
    
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets a person with Rest API and response is successful")
@@ -88,13 +84,14 @@ public class GetPeopleSanityTests extends RestTest
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
-        restClient.authenticateUser(consumerUser);
-        peopleApi.getPerson(searchedUser)
-    		.assertThat().field("id").is(searchedUser.getUsername())
-    		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
-    		.and().field("email").is(searchedUser.getUsername()+ domain)
-    		.and().field("emailNotificationsEnabled").is("true");;
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(consumerUser)
+                  .usingUser(searchedUser)
+                  .getPerson()
+              		.assertThat().field("id").is(searchedUser.getUsername())
+              		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+              		.and().field("email").is(searchedUser.getUsername()+ domain)
+              		.and().field("emailNotificationsEnabled").is("true");;
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets a person with Rest API and response is successful")
@@ -102,13 +99,14 @@ public class GetPeopleSanityTests extends RestTest
     {
         UserModel adminUser = dataUser.getAdminUser();
 
-        restClient.authenticateUser(adminUser);
-        peopleApi.getPerson(searchedUser)
-    		.assertThat().field("id").is(searchedUser.getUsername())
-    		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
-    		.and().field("email").is(searchedUser.getUsername()+ domain)
-    		.and().field("emailNotificationsEnabled").is("true");;
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.authenticateUser(adminUser)
+                  .usingUser(searchedUser)
+                  .getPerson()
+              		.assertThat().field("id").is(searchedUser.getUsername())
+              		.assertThat().field("firstName").is(searchedUser.getUsername()+" FirstName")
+              		.and().field("email").is(searchedUser.getUsername()+ domain)
+              		.and().field("emailNotificationsEnabled").is("true");;
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a non existing person with Rest API and person is not found")
@@ -118,8 +116,9 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         UserModel searchedNonUser = new UserModel("nonexistinguser", DataUser.PASSWORD);
 
-        restClient.authenticateUser(managerUser);
-        peopleApi.getPerson(searchedNonUser);
-        peopleApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.authenticateUser(managerUser)
+                  .usingUser(searchedNonUser)
+                  .getPerson();        
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }
