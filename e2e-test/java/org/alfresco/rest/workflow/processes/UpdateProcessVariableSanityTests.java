@@ -1,5 +1,6 @@
 package org.alfresco.rest.workflow.processes;
 
+import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
@@ -54,7 +55,7 @@ public class UpdateProcessVariableSanityTests extends RestWorkflowTest
     {
         restClient.authenticateUser(adminUser);
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = processesApi.getProcesses().getOneRandomEntry();
+        processModel = processesApi.addProcess("activitiAdhoc", adminUser, false, CMISUtil.Priority.Normal);
         processesApi.updateProcessVariable(processModel, variableModel);
         processesApi.getProcessesVariables(processModel).assertThat().entriesListContains("name", variableModel.getName());
         processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
