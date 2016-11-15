@@ -3,7 +3,7 @@ package org.alfresco.rest.workflow.processes;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.RestProcessesApi;
+import org.alfresco.rest.requests.Processes;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -27,7 +27,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
     private DataUser dataUser;
 
     @Autowired
-    private RestProcessesApi processesApi;
+    private Processes processesApi;
 
     private FileModel document;
     private SiteModel siteModel;

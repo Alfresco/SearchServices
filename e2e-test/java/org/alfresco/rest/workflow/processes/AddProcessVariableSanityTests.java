@@ -5,7 +5,7 @@ import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
-import org.alfresco.rest.requests.RestProcessesApi;
+import org.alfresco.rest.requests.Processes;
 import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
@@ -30,7 +30,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     private DataUser dataUser;
 
     @Autowired
-    private RestProcessesApi processesApi;
+    private Processes processesApi;
     
     @Autowired
     RestTenantApi tenantApi;

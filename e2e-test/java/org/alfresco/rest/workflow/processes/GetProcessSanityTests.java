@@ -3,7 +3,7 @@ package org.alfresco.rest.workflow.processes;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.requests.RestProcessesApi;
+import org.alfresco.rest.requests.Processes;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -24,7 +24,7 @@ public class GetProcessSanityTests extends RestWorkflowTest
     private DataUser dataUser;
 
     @Autowired
-    private RestProcessesApi processesApi;
+    private Processes processesApi;
 
     private UserModel userWhoStartsProcess, assignee;
     private RestProcessModel addedProcess;
