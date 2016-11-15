@@ -35,7 +35,6 @@ public class AddRatingSanityTests extends RestTest
         userModel = dataUser.createUser(RandomStringUtils.randomAlphanumeric(20));
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        restClient.authenticateUser(adminUser);
 
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
