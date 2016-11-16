@@ -46,7 +46,7 @@ public class GetTagSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
       
-        RestTagModel returnedTag = restClient.getTag(tag);
+        RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
@@ -59,7 +59,7 @@ public class GetTagSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
-        RestTagModel returnedTag = restClient.getTag(tag);
+        RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
@@ -71,7 +71,7 @@ public class GetTagSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
-        RestTagModel returnedTag = restClient.getTag(tag);
+        RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
@@ -84,7 +84,7 @@ public class GetTagSanityTests extends RestTest
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        RestTagModel returnedTag = restClient.getTag(tag);
+        RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
@@ -98,7 +98,7 @@ public class GetTagSanityTests extends RestTest
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        RestTagModel returnedTag = restClient.getTag(tag);
+        RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
@@ -115,7 +115,7 @@ public class GetTagSanityTests extends RestTest
         
         managerUser.setPassword("wrongPassword");
         restClient.authenticateUser(managerUser);
-        restClient.getTag(tag);
+        restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }
     

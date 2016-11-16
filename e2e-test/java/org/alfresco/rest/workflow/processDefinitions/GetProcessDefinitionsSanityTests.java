@@ -30,13 +30,12 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
         restClient.authenticateUser(adminUserModel);
     }
 
-    // works on docker
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY, description = "Verify Admin user gets process definitions for non-network deployments using REST API and status code is OK (200)")
     public void nonNetworkAdminGetsProcessDefinitions() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        restClient.getAllProcessDefinitions().assertThat().entriesListIsNotEmpty();
+        restClient.withWorkflowAPI().getAllProcessDefinitions().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -49,7 +48,7 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
     {
         restClient.usingTenant().createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
-        restClient.getAllProcessDefinitions().assertThat().entriesListIsNotEmpty();
+        restClient.withWorkflowAPI().getAllProcessDefinitions().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

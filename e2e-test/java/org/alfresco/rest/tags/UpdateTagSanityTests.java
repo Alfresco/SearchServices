@@ -56,7 +56,7 @@ public class UpdateTagSanityTests extends RestTest
     public void adminIsAbleToUpdateTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        RestTagModel returnedModel = restClient.usingTag(oldTag).update(randomTag);
+        RestTagModel returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(randomTag);
     }
@@ -66,7 +66,7 @@ public class UpdateTagSanityTests extends RestTest
     public void managerIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.usingTag(oldTag).update(randomTag);
+        restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
@@ -75,7 +75,7 @@ public class UpdateTagSanityTests extends RestTest
     public void collaboratorIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.usingTag(oldTag).update(randomTag);
+        restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
@@ -84,7 +84,7 @@ public class UpdateTagSanityTests extends RestTest
     public void contributorIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        restClient.usingTag(oldTag).update(randomTag);
+        restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
@@ -93,7 +93,7 @@ public class UpdateTagSanityTests extends RestTest
     public void consumerIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restClient.usingTag(oldTag).update(randomTag);
+        restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
@@ -105,7 +105,7 @@ public class UpdateTagSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
-        restClient.usingTag(oldTag).update(randomTag);
+        restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }
 }
