@@ -2,7 +2,7 @@ package org.alfresco.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestRatingsApi;
+import org.alfresco.rest.model.RestRatingModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -14,7 +14,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -23,22 +22,19 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
 public class DeleteRatingSanityTests extends RestTest
 {
-    @Autowired
-    RestRatingsApi ratingsApi;
 
     private SiteModel siteModel;
     private UserModel adminUser;
     private FolderModel folderModel;
     private FileModel document;
     private ListUserWithRoles usersWithRoles;
+    private RestRatingModelsCollection returnedRatingModelCollection;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        
-        ratingsApi.useRestClient(restClient);
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
                 UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);                
@@ -55,26 +51,18 @@ public class DeleteRatingSanityTests extends RestTest
     public void managerIsAbleToDeleteItsOwnRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-
-        ratingsApi.likeDocument(document)
-        	.assertThat().field("myRating").is("true")
-        	.and().field("id").is("likes")
-        	.and().field("aggregate").isNotEmpty();
-        ratingsApi.rateStarsToDocument(document, 5)
-        	.assertThat().field("myRating").is("5")
-        	.and().field("id").is("fiveStar")
-        	.and().field("aggregate").isNotEmpty();
+        restClient.usingNode(document).likeDocument();
+        restClient.usingNode(document).rateStarsToDocument(5);
         
-        ratingsApi.deleteLikeRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.deleteFiveStarRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.getRatings(document)
-            .assertNodeIsNotLiked()
+        returnedRatingModelCollection = restClient.usingNode(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
             .and().entriesListIsNotEmpty()
             .and().paginationExist();        
@@ -86,25 +74,18 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
-        ratingsApi.likeDocument(document)
-    		.assertThat().field("myRating").is("true")
-    		.and().field("id").is("likes")
-    		.and().field("aggregate").isNotEmpty();
-        ratingsApi.rateStarsToDocument(document, 5)
-    		.assertThat().field("myRating").is("5")
-    		.and().field("id").is("fiveStar")
-    		.and().field("aggregate").isNotEmpty();
+        restClient.usingNode(document).likeDocument();
+        restClient.usingNode(document).rateStarsToDocument(5);
         
-        ratingsApi.deleteLikeRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.deleteFiveStarRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.getRatings(document)
-            .assertNodeIsNotLiked()
+        returnedRatingModelCollection = restClient.usingNode(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
             .and().entriesListIsNotEmpty()
             .and().paginationExist();        
@@ -116,25 +97,18 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
-        ratingsApi.likeDocument(document)
-        	.assertThat().field("myRating").is("true")
-        	.and().field("id").is("likes")
-        	.and().field("aggregate").isNotEmpty();
-        ratingsApi.rateStarsToDocument(document, 5)
-			.assertThat().field("myRating").is("5")
-			.and().field("id").is("fiveStar")
-			.and().field("aggregate").isNotEmpty();
+        restClient.usingNode(document).likeDocument();
+        restClient.usingNode(document).rateStarsToDocument(5);
         
-        ratingsApi.deleteLikeRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.deleteFiveStarRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.getRatings(document)
-            .assertNodeIsNotLiked()
+        returnedRatingModelCollection = restClient.usingNode(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
             .and().entriesListIsNotEmpty()
             .and().paginationExist();        
@@ -146,25 +120,18 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
-        ratingsApi.likeDocument(document)
-    		.assertThat().field("myRating").is("true")
-    		.and().field("id").is("likes")
-    		.and().field("aggregate").isNotEmpty();
-        ratingsApi.rateStarsToDocument(document, 5)
-			.assertThat().field("myRating").is("5")
-			.and().field("id").is("fiveStar")
-			.and().field("aggregate").isNotEmpty();
+        restClient.usingNode(document).likeDocument();
+        restClient.usingNode(document).rateStarsToDocument(5);
         
-        ratingsApi.deleteLikeRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.deleteFiveStarRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.getRatings(document)
-            .assertNodeIsNotLiked()
+        returnedRatingModelCollection = restClient.usingNode(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
             .and().entriesListIsNotEmpty()
             .and().paginationExist();        
@@ -178,25 +145,18 @@ public class DeleteRatingSanityTests extends RestTest
 
         restClient.authenticateUser(adminUser);
 
-        ratingsApi.likeDocument(document)
-			.assertThat().field("myRating").is("true")
-			.and().field("id").is("likes")
-			.and().field("aggregate").isNotEmpty();
-        ratingsApi.rateStarsToDocument(document, 5)
-			.assertThat().field("myRating").is("5")
-			.and().field("id").is("fiveStar")
-			.and().field("aggregate").isNotEmpty();
+        restClient.usingNode(document).likeDocument();
+        restClient.usingNode(document).rateStarsToDocument(5);
         
-        ratingsApi.deleteLikeRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.deleteFiveStarRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.usingNode(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        ratingsApi.getRatings(document)
-            .assertNodeIsNotLiked()
+        returnedRatingModelCollection = restClient.usingNode(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
             .and().entriesListIsNotEmpty()
             .and().paginationExist();        
@@ -209,24 +169,16 @@ public class DeleteRatingSanityTests extends RestTest
     	document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser);
         
-        ratingsApi.likeDocument(document)
-			.assertThat().field("myRating").is("true")
-			.and().field("id").is("likes")
-			.and().field("aggregate").isNotEmpty();
-        ratingsApi.rateStarsToDocument(document, 5)
-			.assertThat().field("myRating").is("5")
-			.and().field("id").is("fiveStar")
-			.and().field("aggregate").isNotEmpty();
+        restClient.usingNode(document).likeDocument();
+        restClient.usingNode(document).rateStarsToDocument(5);
         
         restClient.authenticateUser(new UserModel("random user", "random password"));
         
-        ratingsApi.deleteLikeRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingNode(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
         
-        ratingsApi.deleteFiveStarRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingNode(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }  
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -239,17 +191,15 @@ public class DeleteRatingSanityTests extends RestTest
         
         restClient.authenticateUser(userA);
         
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        restClient.usingNode(document).likeDocument();
+        restClient.usingNode(document).rateStarsToDocument(5);
         
         restClient.authenticateUser(userB);
         
-        ratingsApi.deleteLikeRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.authenticateUser(userB).usingNode(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
         
-        ratingsApi.deleteFiveStarRating(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingNode(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }  
 }
