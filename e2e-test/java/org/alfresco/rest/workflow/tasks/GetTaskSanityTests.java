@@ -2,7 +2,7 @@ package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestWorkflowTest;
-import org.alfresco.rest.requests.RestTasksApi;
+import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.GroupModel;
 import org.alfresco.utility.model.SiteModel;
@@ -12,7 +12,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -20,15 +19,13 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class GetTaskSanityTests extends RestWorkflowTest
 {
-    @Autowired
-    RestTasksApi tasksApi;
-
     UserModel userModel;
     SiteModel siteModel;
     UserModel candidateUser;
     FileModel fileModel;
     UserModel assigneeUser;
     TaskModel taskModel;
+    RestTaskModel restTaskModel;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -38,39 +35,36 @@ public class GetTaskSanityTests extends RestWorkflowTest
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         assigneeUser = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
-
-        tasksApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify admin user gets any existing task with Rest API and response is successfull (200)")
     public void adminUserGetsAnyTaskWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUser);
-        tasksApi.getTask(taskModel)
-                .assertThat().field("id").is(taskModel.getId())
+        
+        restTaskModel = restClient.authenticateUser(adminUser).withWorkflowAPI().usingTask(taskModel).getTask();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId())
                 .and().field("message").is(taskModel.getMessage());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify assignee user gets its assigned task with Rest API and response is successfull (200)")
     public void assigneeUserGetsItsTaskWithSuccess() throws Exception
     {
-        restClient.authenticateUser(assigneeUser);
-        tasksApi.getTask(taskModel)
-                .assertThat().field("id").is(taskModel.getId())
+        restTaskModel = restClient.authenticateUser(assigneeUser).withWorkflowAPI().usingTask(taskModel).getTask();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId())
                 .and().field("message").is(taskModel.getMessage());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify user that started the task gets the started task with Rest API and response is successfull (200)")
     public void starterUserGetsItsTaskWithSuccess() throws Exception
     {
-        restClient.authenticateUser(userModel);
-        tasksApi.getTask(taskModel)
-                .assertThat().field("id").is(taskModel.getId())
+        restTaskModel = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTask();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId())
                 .and().field("message").is(taskModel.getMessage());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify any user with no relation to task id forbidden to get other task with Rest API (403)")
@@ -78,9 +72,8 @@ public class GetTaskSanityTests extends RestWorkflowTest
     {
         UserModel anyUser= dataUser.createRandomTestUser();
         
-        restClient.authenticateUser(anyUser);
-        tasksApi.getTask(taskModel);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
+        restTaskModel = restClient.authenticateUser(anyUser).withWorkflowAPI().usingTask(taskModel).getTask();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user gets its specific task and no other user claimed the task with Rest API and response is successfull (200)")
@@ -92,11 +85,11 @@ public class GetTaskSanityTests extends RestWorkflowTest
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         
-        restClient.authenticateUser(userModel1);
-        tasksApi.getTask(taskModel)
-                .assertThat().field("id").is(taskModel.getId())
+        restTaskModel = restClient.authenticateUser(userModel1).withWorkflowAPI().usingTask(taskModel).getTask();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId())
                 .and().field("message").is(taskModel.getMessage());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        
     }
       
     @Bug(id = "MNT-17051")
@@ -110,10 +103,9 @@ public class GetTaskSanityTests extends RestWorkflowTest
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         dataWorkflow.usingUser(userModel1).claimTask(taskModel);
         
-        restClient.authenticateUser(userModel2);
-        tasksApi.getTask(taskModel)
-                .assertThat().field("id").is(taskModel.getId())
+        restTaskModel = restClient.authenticateUser(userModel2).withWorkflowAPI().usingTask(taskModel).getTask();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId())
                 .and().field("message").is(taskModel.getMessage());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
