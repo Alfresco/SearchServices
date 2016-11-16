@@ -1,14 +1,11 @@
 package org.alfresco.rest.networks;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestNetworksApi;
-import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -16,12 +13,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
 public class RestGetNetworksForPersonSanityTests extends RestTest
 {
-    @Autowired
-    RestTenantApi tenantApi;
-
-    @Autowired
-    RestNetworksApi networkApi;
-
     private UserModel adminUserModel;
     UserModel adminTenantUser;
     UserModel tenantUser;
@@ -32,11 +23,8 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
         adminUserModel = dataUser.getAdminUser();
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUserModel);
-        tenantApi.useRestClient(restClient);
-        tenantApi.createTenant(adminTenantUser);
-
+        restClient.usingTenant().createTenant(adminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        networkApi.useRestClient(restClient);
     }
     
     @Bug(id = "MNT-16904")
@@ -48,8 +36,8 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
         UserModel tenantUser = new UserModel("nonexisting", "password");
         tenantUser.setDomain(adminTenantUser.getDomain());
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetworksForUser(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingUser(tenantUser).getNetworks(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -58,8 +46,8 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
     public void adminTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetworksForUser(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingUser(adminTenantUser).getNetworks();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Test(groups = TestGroup.COMMENTS)
@@ -68,8 +56,8 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
     public void tenantUserIsNotAuthorizedToCheckNetworkOfAdminUser() throws Exception
     { 
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetworksForUser(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.usingUser(tenantUser).getNetworks(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
     
     @Test(groups = TestGroup.COMMENTS)
@@ -78,10 +66,10 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
     public void adminTenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
     {
         UserModel secondAdminTenantUser = UserModel.getAdminTenantUser();
-        tenantApi.createTenant(secondAdminTenantUser);
+        restClient.usingTenant().createTenant(secondAdminTenantUser);
         UserModel secondTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
         restClient.authenticateUser(secondAdminTenantUser);
-        networkApi.getNetworksForUser(secondTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.usingUser(secondAdminTenantUser).getNetworks(secondTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }
