@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.requests.RestTasksApi;
@@ -20,7 +20,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class AddTaskItemSanityTests extends RestWorkflowTest
+public class AddTaskItemSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
@@ -48,7 +48,7 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
         tasksApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task item")
     public void createTaskItem() throws Exception
     {
@@ -56,7 +56,7 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document2);
-        
+
         taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt())
             .assertThat().field("size").is(taskItem.getSize())
             .assertThat().field("createdBy").is(taskItem.getCreatedBy())
@@ -67,9 +67,9 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
             .assertThat().field("mimeType").is(taskItem.getMimeType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
+
     @Bug(id = "MNT-16966")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that in case task item exists request ")
     public void createTaskItemThatAlreadyExists() throws Exception
     {
@@ -88,27 +88,27 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
         taskItem = tasksApi.addTaskItem(taskModel, document3);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
-    
+
     @Test(groups = { TestGroup.NETWORKS })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add task item using admin user from same network")
     public void addTaskItemByAdminSameNetwork() throws JsonToModelConversionException, Exception
     {
         UserModel adminuser = dataUser.getAdminUser();
         restClient.authenticateUser(adminuser);
-        
+
         adminTenantUser = UserModel.getAdminTenantUser();
         tenantApi.useRestClient(restClient);
         tenantApi.createTenant(adminTenantUser);
-        
+
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
+
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
-        
+
         document4 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document4);        
+        taskItem = tasksApi.addTaskItem(taskModel, document4);
         taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt())
                 .and().field("size").is(taskItem.getSize())
                 .and().field("createdBy").is(taskItem.getCreatedBy())
@@ -116,7 +116,7 @@ public class AddTaskItemSanityTests extends RestWorkflowTest
                 .and().field("name").is(taskItem.getName())
                 .and().field("modifiedBy").is(taskItem.getModifiedBy())
                 .and().field("id").is(taskItem.getId())
-                .and().field("mimeType").is(taskItem.getMimeType());                
+                .and().field("mimeType").is(taskItem.getMimeType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 }

@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
  * Created by Claudia Agache on 10/11/2016.
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-public class GetProcessesSanityTests extends RestWorkflowTest
+public class GetProcessesSanityTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;

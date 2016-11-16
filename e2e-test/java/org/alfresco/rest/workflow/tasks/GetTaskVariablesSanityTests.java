@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class GetTaskVariablesSanityTests extends RestWorkflowTest
+public class GetTaskVariablesSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
@@ -42,7 +42,7 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
         tasksApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task variables")
     public void getTaskVariablesByUserWhoStartedProcess() throws Exception
     {
@@ -50,8 +50,8 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
         tasksApi.getTaskVariables(taskModel).assertThat().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that is involved in the process gets task variables")
     public void getTaskVariablesByUserInvolvedInProcess() throws Exception
     {
@@ -59,24 +59,24 @@ public class GetTaskVariablesSanityTests extends RestWorkflowTest
         tasksApi.getTaskVariables(taskModel).assertThat().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that is not involved in the process gets task variables")
     public void getTaskVariablesUsingAnyUser() throws Exception
     {
         UserModel randomUser = dataUser.createRandomTestUser();
-        
+
         restClient.authenticateUser(randomUser);
         tasksApi.getTaskVariables(taskModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that admin gets task variables")
     public void getTaskVariablesUsingAdmin() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
-        
+
         restClient.authenticateUser(adminUser);
         tasksApi.getTaskVariables(taskModel).assertThat().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);

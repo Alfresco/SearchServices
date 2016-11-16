@@ -3,10 +3,7 @@ package org.alfresco.rest;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.TasProperties;
-import org.alfresco.utility.data.DataContent;
-import org.alfresco.utility.data.DataGroup;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.*;
 import org.alfresco.utility.network.ServerHealth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,6 +36,9 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     
     @Autowired
     protected DataGroup dataGroup;
+
+    @Autowired
+    protected DataWorkflow dataWorkflow;
 
     @BeforeClass(alwaysRun = true)
     public void checkServerHealth() throws Exception

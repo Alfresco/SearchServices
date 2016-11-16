@@ -1,6 +1,6 @@
 package org.alfresco.rest.workflow.processDefinitions;
 
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.TestGroup;
@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
  * Created by Claudia Agache on 10/13/2016.
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
-public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
+public class GetProcessDefinitionImageSanityTests extends RestTest
 {
     @Autowired
     private DataUser dataUser;
