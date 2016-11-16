@@ -2,10 +2,11 @@ package org.alfresco.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestRatingsApi;
+import org.alfresco.rest.model.RestRatingModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -14,7 +15,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -23,22 +23,18 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
 public class GetRatingsSanityTests extends RestTest
 {
-    @Autowired
-    RestRatingsApi ratingsApi;
-
     private SiteModel siteModel;
     private UserModel adminUser;
     private FolderModel folderModel;
     private FileModel document;   
     private ListUserWithRoles usersWithRoles;
+    private RestRatingModelsCollection restRatingModelsCollection;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        
-        ratingsApi.useRestClient(restClient);
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
                 UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);                
@@ -56,14 +52,12 @@ public class GetRatingsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        restClient.usingResource(document).likeDocument();
+        restClient.usingResource(document).rateStarsToDocument(5);
         
-        ratingsApi.getRatings(document)
-            .assertNodeHasFiveStarRating()
-            .assertNodeIsLiked();
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection = restClient.usingResource(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
     }   
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -72,14 +66,12 @@ public class GetRatingsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        restClient.usingResource(document).likeDocument();
+        restClient.usingResource(document).rateStarsToDocument(5);
         
-        ratingsApi.getRatings(document)
-            .assertNodeHasFiveStarRating()
-            .assertNodeIsLiked();
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection = restClient.usingResource(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
     }   
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -88,14 +80,12 @@ public class GetRatingsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        restClient.usingResource(document).likeDocument();
+        restClient.usingResource(document).rateStarsToDocument(5);
         
-        ratingsApi.getRatings(document)
-            .assertNodeHasFiveStarRating()
-            .assertNodeIsLiked();
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection = restClient.usingResource(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
     }   
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -104,14 +94,12 @@ public class GetRatingsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        restClient.usingResource(document).likeDocument();
+        restClient.usingResource(document).rateStarsToDocument(5);
         
-        ratingsApi.getRatings(document)
-            .assertNodeHasFiveStarRating()
-            .assertNodeIsLiked();
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection = restClient.usingResource(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
     }   
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -122,14 +110,12 @@ public class GetRatingsSanityTests extends RestTest
                 .usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(adminUser);
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        restClient.usingResource(document).likeDocument();
+        restClient.usingResource(document).rateStarsToDocument(5);
 
-        ratingsApi.getRatings(document)
-            .assertNodeHasFiveStarRating()
-            .assertNodeIsLiked();
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection = restClient.usingResource(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
     }   
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
@@ -138,13 +124,12 @@ public class GetRatingsSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToRetrieveRatings() throws Exception
     {
         restClient.authenticateUser(adminUser);
-        ratingsApi.likeDocument(document);
-        ratingsApi.rateStarsToDocument(document, 5);
+        restClient.usingResource(document).likeDocument();
+        restClient.usingResource(document).rateStarsToDocument(5);
 
         restClient.authenticateUser(new UserModel("random user", "random password"));
         
-        ratingsApi.getRatings(document);
-        ratingsApi.usingRestWrapper()
-            .assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingResource(document).getRatings();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }   
 }
