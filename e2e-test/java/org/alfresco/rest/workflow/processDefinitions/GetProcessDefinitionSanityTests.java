@@ -2,7 +2,6 @@ package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
-import org.alfresco.rest.requests.RestProcessDefinitionsApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -21,9 +20,6 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
 {
     @Autowired
     private DataUser dataUser;
-    @Autowired
-    private RestProcessDefinitionsApi processDefinitionsApi;
-
     private UserModel testUser;
     private RestProcessDefinitionModel randomProcessDefinition;
 
@@ -31,9 +27,8 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
     public void dataPreparation() throws Exception
     {
         testUser = dataUser.createRandomTestUser();
-        processDefinitionsApi.useRestClient(restClient);
         restClient.authenticateUser(dataUser.getAdminUser());
-        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
+        randomProcessDefinition = restClient.getAllProcessDefinitions().getOneRandomEntry();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
@@ -41,12 +36,11 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
             description = "Verify Admin user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
     public void adminGetsProcessDefinition() throws Exception
     {
-
-        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).
+        restClient.usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().
                           assertThat().field("name").is(randomProcessDefinition.onModel().getName());
-
-        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).assertThat().field("name").is(randomProcessDefinition.onModel().getName());
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().assertThat().field("name")
+                .is(randomProcessDefinition.onModel().getName());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
@@ -55,7 +49,8 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
     public void anyUserGetsProcessDefinition() throws Exception
     {
         restClient.authenticateUser(testUser);
-        processDefinitionsApi.getProcessDefinition(randomProcessDefinition).assertThat().field("name").is(randomProcessDefinition.onModel().getName());
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().assertThat().field("name")
+                .is(randomProcessDefinition.onModel().getName());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
