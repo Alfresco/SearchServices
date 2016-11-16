@@ -40,111 +40,135 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
                                                           UserRole.SiteContributor);        
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify one user is able to delete his one site memebership request")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify one user is able to delete his one site memebership request")
     public void userCanDeleteHisOwnSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
+                  .onCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .onCoreAPI()
                   .usingUser(siteMember).deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @Bug(id="MNT-16916")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify site manager is able to delete site membership request")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify site manager is able to delete site membership request")
     public void siteManagerCanDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
+                  .onCoreAPI()
                   .usingUser(siteMember).addSiteMembershipRequest(siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .onCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @Bug(id="MNT-16916")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify admin user is able to delete site memebership request")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify admin user is able to delete site memebership request")
     public void adminUserCanDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember) 
+                  .onCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         restClient.authenticateUser(dataUser.getAdminUser())
+                  .onCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @Bug(id="MNT-16916")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify collaborator user is not able to delete site memebership request")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify collaborator user is not able to delete site memebership request")
     public void collaboratorCannotDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
+                  .onCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .onCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @Bug(id="MNT-16916")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify contributor user is not able to delete site memebership request")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify contributor user is not able to delete site memebership request")
     public void contributorCannotDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
+                  .onCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                  .onCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @Bug(id="MNT-16916")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify consumer user is not able to delete site memebership request")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify consumer user is not able to delete site memebership request")
     public void consumerCannotDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
+                  .onCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .onCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @Bug(id="MNT-16916")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify random user is not able to delete site memebership request")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify random user is not able to delete site memebership request")
     public void randomUserCanDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {     
         restClient.authenticateUser(dataUser.createRandomTestUser())
+                  .onCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(dataUser.createRandomTestUser())
+                  .onCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get site member call returns status code 401")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Failed authentication get site member call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMmebershipRequest() throws JsonToModelConversionException, Exception
     {        
         restClient.authenticateUser(dataUser.createRandomTestUser())
+                  .onCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser)
+                  .onCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

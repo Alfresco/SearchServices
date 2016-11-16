@@ -37,7 +37,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes started by him using REST API and status code is OK (200)")
     public void getProcessesByUserWhoStartedProcess() throws Exception
     {
-        allProcesses = restClient.authenticateUser(userWhoStartsTask).getProcesses();
+        allProcesses = restClient.authenticateUser(userWhoStartsTask).onWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         allProcesses.assertThat().entriesListContains("id", task.getNodeRef());
     }
@@ -46,7 +46,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User gets all processes assigned to him using REST API and status code is OK (200)")
     public void getProcessesByAssignedUser() throws Exception
     {
-        allProcesses = restClient.authenticateUser(assignee).getProcesses();
+        allProcesses = restClient.authenticateUser(assignee).onWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         allProcesses.assertThat().entriesListContains("id", task.getNodeRef());
     }
@@ -55,7 +55,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process can not get that process using REST API and status code is OK (200)")
     public void getProcessesByAnotherUser() throws Exception
     {
-        allProcesses = restClient.authenticateUser(anotherUser).getProcesses();
+        allProcesses = restClient.authenticateUser(anotherUser).onWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         allProcesses.assertThat().entriesListDoesNotContain("id", task.getNodeRef());
     }
@@ -64,7 +64,7 @@ public class GetProcessesSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify Admin gets all processes, even if he isn't involved in a process, using REST API and status code is OK (200)")
     public void getProcessesByAdmin() throws Exception
     {
-        allProcesses = restClient.authenticateUser(dataUser.getAdminUser()).getProcesses();
+        allProcesses = restClient.authenticateUser(dataUser.getAdminUser()).onWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         allProcesses.assertThat().entriesListContains("id", task.getNodeRef());
     }

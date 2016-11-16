@@ -41,10 +41,10 @@ public class RestDemoTests extends RestTest
     @Test
     public void adminRetrievesCorrectSiteDetails() throws JsonToModelConversionException, Exception
     {
-        restClient.getSites().assertThat()
+        restClient.onCoreAPI().getSites().assertThat()
             .entriesListContains("id", siteModel.getId());
         
-        restClient.usingSite(siteModel).getSite()
+        restClient.onCoreAPI().usingSite(siteModel).getSite()
               .assertThat().field("id").isNotNull()
               .assertThat().field("description").is(siteModel.getDescription())
               .assertThat().field("title").is(siteModel.getTitle())            
@@ -65,8 +65,8 @@ public class RestDemoTests extends RestTest
                                   .usingResource(FolderModel.getSharedFolderModel())        			       
                                   .createContent(DocumentType.TEXT_PLAIN);
         // add new comment
-        restClient.usingResource(fileModel).addComment("This is a new comment");
-        restClient.usingResource(fileModel).getNodeComments()
+        restClient.onCoreAPI().usingResource(fileModel).addComment("This is a new comment");
+        restClient.onCoreAPI().usingResource(fileModel).getNodeComments()
             .assertThat().entriesListIsNotEmpty().and()
             .entriesListContains("content", "This is a new comment");
     }
@@ -87,20 +87,20 @@ public class RestDemoTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
 
         // add user as Consumer to site
-        restClient.usingSite(siteModel).addPerson(testUser);        
-        restClient.usingSite(siteModel).getSiteMembers().assertThat().entriesListContains("id", testUser.getUsername())
+        restClient.onCoreAPI().usingSite(siteModel).addPerson(testUser);        
+        restClient.onCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListContains("id", testUser.getUsername())
                 .when().getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteConsumer);
 
         // update site member to Manager
         testUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.usingSite(siteModel).updateSiteMember(testUser);
-        restClient.usingSite(siteModel).getSiteMembers().and()
+        restClient.onCoreAPI().usingSite(siteModel).updateSiteMember(testUser);
+        restClient.onCoreAPI().usingSite(siteModel).getSiteMembers().and()
             .entriesListContains("id", testUser.getUsername())
             .when().getSiteMember(testUser.getUsername())
             .assertSiteMemberHasRole(Role.SiteCollaborator);
 
-        restClient.usingSite(siteModel).deleteSiteMember(testUser);
+        restClient.onCoreAPI().usingSite(siteModel).deleteSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 }

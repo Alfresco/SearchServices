@@ -40,8 +40,8 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithManagerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteContainerModel = restClient.usingSite(siteModel).getSiteContainers().getOneRandomEntry();
-        restClient.usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
+        siteContainerModel = restClient.onCoreAPI().usingSite(siteModel).getSiteContainers().getOneRandomEntry();
+        restClient.onCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
                 .assertThat().field("id").is(siteContainerModel.onModel().getId())
                 .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -52,8 +52,8 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        siteContainerModel = restClient.usingSite(siteModel).getSiteContainers().getOneRandomEntry();
-        restClient.usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
+        siteContainerModel = restClient.onCoreAPI().usingSite(siteModel).getSiteContainers().getOneRandomEntry();
+        restClient.onCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
                .and().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -64,8 +64,8 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithContributorRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        siteContainerModel = restClient.usingSite(siteModel).getSiteContainers().getOneRandomEntry();
-        restClient.usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
+        siteContainerModel = restClient.onCoreAPI().usingSite(siteModel).getSiteContainers().getOneRandomEntry();
+        restClient.onCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
                .assertThat().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -76,8 +76,8 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        siteContainerModel = restClient.usingSite(siteModel).getSiteContainers().getOneRandomEntry();
-        restClient.usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
+        siteContainerModel = restClient.onCoreAPI().usingSite(siteModel).getSiteContainers().getOneRandomEntry();
+        restClient.onCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
                .assertThat().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -88,8 +88,8 @@ public class GetSiteContainerSanityTests extends RestTest
     public void getSiteContainerWithAdminUser() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        siteContainerModel = restClient.usingSite(siteModel).getSiteContainers().getOneRandomEntry();
-        restClient.usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
+        siteContainerModel = restClient.onCoreAPI().usingSite(siteModel).getSiteContainers().getOneRandomEntry();
+        restClient.onCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel())
                .assertThat().field("id").is(siteContainerModel.onModel().getId())
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -102,12 +102,12 @@ public class GetSiteContainerSanityTests extends RestTest
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        siteContainerModel = restClient.usingSite(siteModel).getSiteContainers().getOneRandomEntry();
+        siteContainerModel = restClient.onCoreAPI().usingSite(siteModel).getSiteContainers().getOneRandomEntry();
         userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel)
-                  .usingSite(siteModel).getSiteContainer(siteContainerModel.onModel());
+                  .onCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel());
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

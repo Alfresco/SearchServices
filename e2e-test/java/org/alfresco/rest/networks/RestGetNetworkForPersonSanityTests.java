@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
 public class RestGetNetworkForPersonSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -29,47 +28,51 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
 
     @Bug(id = "MNT-16904")
     @Test(groups = TestGroup.COMMENTS)
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NETWORKS }, executionType = ExecutionType.SANITY, description = "Verify non existing user gets another exisiting network with Rest API and checks the forbidden status")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify non existing user gets another exisiting network with Rest API and checks the forbidden status")
     public void nonExistingTenantUserIsNotAuthorizedToRequest() throws Exception
     {
         UserModel tenantUser = new UserModel("nonexisting", "password");
         tenantUser.setDomain(adminTenantUser.getDomain());
         restClient.authenticateUser(tenantUser);
-        restClient.usingUser(tenantUser).getNetwork(adminTenantUser);
+        restClient.onCoreAPI().usingUser(tenantUser).getNetwork(adminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
     @Test(groups = TestGroup.COMMENTS)
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NETWORKS }, executionType = ExecutionType.SANITY, description = "Verify tenant admin user gets specific network with Rest API and response is not empty")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify tenant admin user gets specific network with Rest API and response is not empty")
     public void adminTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        restClient.usingUser(adminTenantUser).getNetwork();
+        restClient.onCoreAPI().usingUser(adminTenantUser).getNetwork();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Test(groups = TestGroup.COMMENTS)
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NETWORKS }, executionType = ExecutionType.SANITY, description = "Verify tenant user is not authorized to check network of admin user with Rest API and checks the forbidden status")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify tenant user is not authorized to check network of admin user with Rest API and checks the forbidden status")
     public void tenantUserIsNotAuthorizedToCheckNetworkOfAdminUser() throws Exception
     { 
         restClient.authenticateUser(tenantUser);
-        restClient.usingUser(tenantUser).getNetwork(adminTenantUser);
+        restClient.onCoreAPI().usingUser(tenantUser).getNetwork(adminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
     
     @Test(groups = TestGroup.COMMENTS)
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NETWORKS }, executionType = ExecutionType.SANITY, description = "Verify admin tenant user is not authorized to check network of another user with Rest API and checks the forbidden status")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify admin tenant user is not authorized to check network of another user with Rest API and checks the forbidden status")
     public void adminTenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
     {
         UserModel secondAdminTenantUser = UserModel.getAdminTenantUser();
         restClient.usingTenant().createTenant(secondAdminTenantUser);
         UserModel secondTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
         restClient.authenticateUser(adminTenantUser);
-        restClient.usingUser(adminTenantUser).getNetwork(secondTenantUser);
+        restClient.onCoreAPI().usingUser(adminTenantUser).getNetwork(secondTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }

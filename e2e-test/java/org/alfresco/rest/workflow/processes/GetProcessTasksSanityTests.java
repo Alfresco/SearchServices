@@ -41,7 +41,7 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user who started the process gets all tasks of started process with Rest API and response is successfull (200)")
     public void userWhoStartedProcessCanGetProcessTasks() throws JsonToModelConversionException, Exception
     {
-        processTasks = restClient.authenticateUser(userModel).usingProcess(process).getProcessTasks();
+        processTasks = restClient.authenticateUser(userModel).onWorkflowAPI().usingProcess(process).getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processTasks.assertThat()
             .entriesListIsNotEmpty().and()
@@ -53,7 +53,7 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
     public void assigneeUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
     {
-        processTasks = restClient.authenticateUser(assignee1).usingProcess(process).getProcessTasks();
+        processTasks = restClient.authenticateUser(assignee1).onWorkflowAPI().usingProcess(process).getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processTasks.assertThat()
             .entriesListContains("assignee", assignee1.getUsername()).and()
@@ -68,7 +68,7 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
                 .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
         dataWorkflow.usingUser(assignee1).approveTask(process);
 
-        processTasks = restClient.authenticateUser(assignee2).usingProcess(process).getProcessTasks();
+        processTasks = restClient.authenticateUser(assignee2).onWorkflowAPI().usingProcess(process).getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processTasks.assertThat()
             .entriesListIsNotEmpty().assertThat()

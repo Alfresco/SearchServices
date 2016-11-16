@@ -27,7 +27,9 @@ public class GetFavoriteSitesSanityTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get an user favorite sites with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify manager user fails to get an user favorite sites with Rest API (403)")
     public void managerUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -36,12 +38,14 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)                
+                  .onCoreAPI()
                   .usingUser(anotherUser).getFavoriteSites();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get an user favorite sites with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify collaborator user fails to get an user favorite sites with Rest API (403)")
     public void collaboratorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -51,12 +55,14 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser)
+                  .onCoreAPI()
                   .usingUser(contributorUser).getFavoriteSites();        
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user fails to get an user favorite sites with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify contributor user fails to get an user favorite sites with Rest API (403)")
     public void contributorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -66,12 +72,14 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(contributorUser2).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser)
+                  .onCoreAPI()
                   .usingUser(contributorUser2).getFavoriteSites();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get an user favorite sites with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify consumer user fails to get an user favorite sites with Rest API (403)")
     public void consumerUserFailsToGetAnUserFavoriteSites() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -81,12 +89,14 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser)
+                  .onCoreAPI()
                   .usingUser(collaboratorUser).getFavoriteSites();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets its favorite sites with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify admin user gets its favorite sites with Rest API and response is successful (200)")
     public void adminUserGetsFavoriteSitesWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
@@ -94,6 +104,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser)
+                  .onCoreAPI()
                   .usingUser(anotherUser).getFavoriteSites()
                   .assertThat().entriesListIsNotEmpty()
                   .and().paginationExist()
@@ -101,13 +112,16 @@ public class GetFavoriteSitesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify any user gets its own user favorite sites with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify any user gets its own user favorite sites with Rest API and response is successful (200)")
     public void anyUserGetsItsUserFavoriteSites() throws Exception
     {
         UserModel anyUser = dataUser.usingAdmin().createRandomTestUser();   
         dataSite.usingUser(anyUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(anyUser)
+                  .onCoreAPI()
                   .usingAuthUser().getFavoriteSites()
                   .assertThat().entriesListIsNotEmpty()
                   .and().entriesListContains("id", siteModel.getId())
@@ -116,7 +130,9 @@ public class GetFavoriteSitesSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify any user is NOT Authorized to get its favorite sites with Rest API when authentication fails (401)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify any user is NOT Authorized to get its favorite sites with Rest API when authentication fails (401)")
     public void anyUserNotAuthenticatedIsNotAuthorizedToGetFavoriteSites() throws Exception
     {
         UserModel anyUser = dataUser.usingAdmin().createRandomTestUser();   
@@ -124,6 +140,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         anyUser.setPassword("newpassword");
 
         restClient.authenticateUser(anyUser)
+                  .onCoreAPI()
                   .usingAuthUser().getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

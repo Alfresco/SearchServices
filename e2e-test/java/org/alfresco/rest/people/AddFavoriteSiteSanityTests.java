@@ -33,12 +33,13 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
         restClient.authenticateUser(managerUser)
+                  .onCoreAPI()                  
                   .usingUser(managerUser)
                   .addFavoriteSite(siteModel)
                   .assertThat().field("id").is(siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
-        restClient.usingUser(managerUser).addFavoriteSite(siteModel);
+        restClient.onCoreAPI().usingUser(managerUser).addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT);        
         restClient.assertLastError().containsSummary(String.format("%s is already a favourite site", siteModel.getId()));        
     }
@@ -50,6 +51,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorUser)
+                  .onCoreAPI()
                   .usingAuthUser()
                   .addFavoriteSite(siteModel)
                   .assertThat().field("id").is(siteModel.getId());
@@ -63,6 +65,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorUser)
+                  .onCoreAPI()
                   .usingAuthUser()
                   .addFavoriteSite(siteModel)
                   .assertThat().field("id").is(siteModel.getId());
@@ -76,6 +79,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerUser)
+                  .onCoreAPI()
                   .usingAuthUser()
                   .addFavoriteSite(siteModel)
                   .assertThat().field("id").is(siteModel.getId());
@@ -88,6 +92,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser)
+                  .onCoreAPI()
                   .usingAuthUser()
                   .addFavoriteSite(siteModel)
                   .assertThat().field("id").is(siteModel.getId());
@@ -103,6 +108,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser)
+                  .onCoreAPI()
                   .usingAuthUser()
                   .addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);

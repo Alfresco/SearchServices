@@ -48,10 +48,11 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .onCoreAPI()
                   .usingUser(newMember)
                   .addSiteMembershipRequest(siteModel);
         
-        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.onCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -62,10 +63,11 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .onCoreAPI()
                   .usingUser(newMember)
                   .addSiteMembershipRequest(siteModel);
 
-        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.onCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -76,10 +78,11 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                  .onCoreAPI()          
                   .usingUser(newMember)
                   .addSiteMembershipRequest(siteModel);
         
-        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.onCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -90,10 +93,11 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .onCoreAPI()
                   .usingUser(newMember)
                   .addSiteMembershipRequest(siteModel);
 
-        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.onCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -104,10 +108,11 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(adminUser)
+                  .onCoreAPI()
                   .usingUser(newMember)
                   .addSiteMembershipRequest(siteModel);
 
-        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.onCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -118,10 +123,11 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(new UserModel("random user", "random password"))
+                  .onCoreAPI()
                   .usingUser(newMember)
                   .addSiteMembershipRequest(siteModel);
 
-        restClient.usingUser(newMember).getSiteMembershipRequest(siteModel);
+        restClient.onCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }    
 }

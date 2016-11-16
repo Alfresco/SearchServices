@@ -40,7 +40,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)
-                  .usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+                  .onCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                 	.assertThat().field("id").is( PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                 	.and().field("value").is("true");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -54,7 +54,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser)
-                  .usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+                  .onCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                 	.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                 	.and().field("value").is("true");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -68,7 +68,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser)
-                  .usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+                  .onCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                 	.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                 	.and().field("value").is("true");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -82,7 +82,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser)
-                  .usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+                  .onCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                   .assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                   .and().field("value").is("true");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -95,7 +95,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(adminUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser)
-                  .usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+                  .onCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                   .assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
                   .and().field("value").is("true");  
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -111,7 +111,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser)
-                  .usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                  .onCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

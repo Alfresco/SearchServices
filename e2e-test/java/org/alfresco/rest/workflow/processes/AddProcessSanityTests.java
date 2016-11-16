@@ -9,7 +9,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
@@ -31,12 +30,12 @@ public class AddProcessSanityTests extends RestWorkflowTest
         userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
 
-        addedProcess = restClient.authenticateUser(userWhoStartsProcess).addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+        addedProcess = restClient.authenticateUser(userWhoStartsProcess).onWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         addedProcess.assertThat().field("id").is(addedProcess.getId())
                     .and().field("startUserId").is(addedProcess.getStartUserId());
 
-        processes = restClient.getProcesses();
+        processes = restClient.onWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().entriesListContains("id", addedProcess.getId());
     }
@@ -52,12 +51,12 @@ public class AddProcessSanityTests extends RestWorkflowTest
         tenantUserWhoStartsProcess = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("u2Tenant");
 
-        addedProcess = restClient.authenticateUser(tenantUserWhoStartsProcess).addProcess("activitiAdhoc", tenantAssignee, false, Priority.Normal);
+        addedProcess = restClient.authenticateUser(tenantUserWhoStartsProcess).onWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, Priority.Normal);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         addedProcess.assertThat().field("id").is(addedProcess.getId())
                     .and().field("startUserId").is(addedProcess.getStartUserId());
 
-        processes = restClient.getProcesses();
+        processes = restClient.onWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().entriesListContains("id", addedProcess.getId());
     }

@@ -31,11 +31,12 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-                executionType = ExecutionType.SANITY, 
-                description = "Verify site manager is able to retrieve sites membership information of another user")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify site manager is able to retrieve sites membership information of another user")
     public void siteManagerIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .onCoreAPI()
                   .usingUser(adminUser)
                   .getSitesMembershipInformation()
                 	.assertThat().entriesListIsNotEmpty()
@@ -45,11 +46,12 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, 
-            description = "Verify site collaborator is able to retrieve sites membership information of another user")
+             executionType = ExecutionType.SANITY, 
+             description = "Verify site collaborator is able to retrieve sites membership information of another user")
     public void siteCollaboratorIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .onCoreAPI()
                   .usingUser(adminUser)
                   .getSitesMembershipInformation()
               		.assertThat().entriesListIsNotEmpty()
@@ -59,11 +61,12 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, 
-            description = "Verify site contributor is able to retrieve sites membership information of another user")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify site contributor is able to retrieve sites membership information of another user")
     public void siteContributorIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                  .onCoreAPI()
                   .usingUser(adminUser)
                   .getSitesMembershipInformation()
             			.assertThat().entriesListIsNotEmpty()
@@ -73,11 +76,12 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, 
-            description = "Verify site consumer is able to retrieve sites membership information of another user")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify site consumer is able to retrieve sites membership information of another user")
     public void siteConsumerIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .onCoreAPI()
                   .usingUser(adminUser)
                   .getSitesMembershipInformation()
             			.assertThat().entriesListIsNotEmpty()
@@ -87,11 +91,12 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, 
-            description = "Verify admin is able to retrieve sites membership information of another user")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify admin is able to retrieve sites membership information of another user")
     public void siteAdminIsAbleToRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser)
+                  .onCoreAPI()
                   .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                   .getSitesMembershipInformation()        
             			.assertThat().entriesListIsNotEmpty()
@@ -101,13 +106,14 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, 
-            description = "Verify that unauthenticated user is not able to retrieve sites membership information")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify that unauthenticated user is not able to retrieve sites membership information")
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserCannotRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         UserModel inexistentUser = new UserModel("inexistent user", "wrong password");
         restClient.authenticateUser(inexistentUser)
+                  .onCoreAPI()
                   .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                   .getSitesMembershipInformation();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);

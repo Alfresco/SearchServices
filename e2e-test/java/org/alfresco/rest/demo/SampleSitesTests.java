@@ -30,7 +30,7 @@ public class SampleSitesTests extends RestTest
             description = "Verify admin user gets site details with Rest API and response is not empty")
     public void adminShouldGetSiteDetails() throws JsonToModelConversionException, Exception
     {
-        restClient.usingSite(siteModel).getSite()
+        restClient.onCoreAPI().usingSite(siteModel).getSite()
             .assertThat().field("id").isNotNull();
     }
 
@@ -38,7 +38,7 @@ public class SampleSitesTests extends RestTest
             description = "Verify admin user gets site information and gets status code OK (200)")
     public void adminShouldGetSites() throws JsonToModelConversionException, Exception
     {
-        restClient.usingSite(siteModel).getSite();
+        restClient.onCoreAPI().usingSite(siteModel).getSite();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -46,7 +46,7 @@ public class SampleSitesTests extends RestTest
             description = "Verify admin user gets sites with Rest API and the response is not empty")
     public void adminShouldAccessSites() throws JsonToModelConversionException, Exception
     {
-        restClient.getSites().assertThat().entriesListIsNotEmpty();
+        restClient.onCoreAPI().getSites().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -54,7 +54,7 @@ public class SampleSitesTests extends RestTest
             description = "Verify admin user gets sites with Rest API and status code is 200")
     public void adminShouldAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
-        restClient.getSites().assertThat().paginationExist();
+        restClient.onCoreAPI().getSites().assertThat().paginationExist();
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
@@ -63,7 +63,7 @@ public class SampleSitesTests extends RestTest
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
-        restClient.usingSite(siteModel).addPerson(testUser);
+        restClient.onCoreAPI().usingSite(siteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -71,14 +71,14 @@ public class SampleSitesTests extends RestTest
             description = "Verify that site exists from get all sites request")
     public void adminShouldGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
-        restClient.getSites().assertThat().entriesListContains("id", siteModel.getId());    
+        restClient.onCoreAPI().getSites().assertThat().entriesListContains("id", siteModel.getId());    
     }
 
     @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
             description = "Verify site details: response not empty, description, title, visibility")
     public void adminShouldAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
-      restClient.usingSite(siteModel).getSite()
+      restClient.onCoreAPI().usingSite(siteModel).getSite()
             .assertThat().field("id").isNotNull()
             .and().field("description").is(siteModel.getDescription())
             .and().field("title").is(siteModel.getTitle())

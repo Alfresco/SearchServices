@@ -32,7 +32,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its preferences with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify manager user gets its preferences with Rest API and response is successful (200)")
     public void managerUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -40,6 +42,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)
+                  .onCoreAPI()
                   .usingAuthUser()
                   .getPersonPreferences().assertThat().entriesListIsNotEmpty()
                   .assertThat().paginationExist()
@@ -47,7 +50,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its preferences with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify collaborator user gets its preferences with Rest API and response is successful (200)")
     public void collaboratorUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -55,13 +60,16 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser)
+                  .onCoreAPI()
                   .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
-                	.assertThat().paginationExist()
-                	.and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                  .assertThat().paginationExist()
+                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its preferences with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify contributor user gets its preferences with Rest API and response is successful (200)")
     public void contributorUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -69,13 +77,16 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser)
+                  .onCoreAPI()
                   .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
-              		.assertThat().paginationExist()
-              		.and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+              	  .assertThat().paginationExist()
+              	  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its preferences with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify consumer user gets its preferences with Rest API and response is successful (200)")
     public void consumerUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -83,13 +94,16 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser)
+                  .onCoreAPI()
                   .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
                   .assertThat().paginationExist()
                   .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user preferences with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify admin user gets another user preferences with Rest API and response is successful (200)")
     public void adminUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -98,14 +112,17 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser)
-                  .usingUser(managerUser).getPersonPreferences().assertThat().entriesListIsNotEmpty()
+                  .onCoreAPI()
+ .usingUser(managerUser).getPersonPreferences().assertThat().entriesListIsNotEmpty()
                   .assertThat().paginationExist()
                   .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets its preferences with Rest API when authentication fails(401)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify manager user is NOT Authorized to gets its preferences with Rest API when authentication fails(401)")
     public void managerUserGetsPeoplePreferencesIsNotAUthorized() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -114,6 +131,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser)
+                  .onCoreAPI()
                   .usingAuthUser()
                   .getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);

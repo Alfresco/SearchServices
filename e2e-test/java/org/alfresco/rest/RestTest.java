@@ -13,8 +13,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeClass;
 
-import com.jayway.restassured.RestAssured;
-
 @ContextConfiguration("classpath:alfresco-restapi-context.xml")
 public abstract class RestTest extends AbstractTestNGSpringContextTests
 {
@@ -46,9 +44,5 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     public void checkServerHealth() throws Exception
     {
         serverHealth.assertServerIsOnline();
-
-        RestAssured.baseURI = restProperties.envProperty().getTestServerUrl();
-        RestAssured.port = restProperties.envProperty().getPort();
-        RestAssured.basePath = restProperties.getRestBasePath();
     }
 }

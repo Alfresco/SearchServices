@@ -29,13 +29,16 @@ public class GetPeopleSanityTests extends RestTest
         searchedUser = dataUser.createRandomTestUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify manager user gets a person with Rest API and response is successful")
     public void managerUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
         restClient.authenticateUser(managerUser)
+                  .onCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
                 	.assertThat().field("id").is(searchedUser.getUsername())
@@ -45,13 +48,16 @@ public class GetPeopleSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets a person with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify collaborator user gets a person with Rest API and response is successful")
     public void collaboratorUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorUser)
+                  .onCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
                 	.assertThat().field("id").is(searchedUser.getUsername())
@@ -62,13 +68,16 @@ public class GetPeopleSanityTests extends RestTest
     }
 
     @Test(groups = TestGroup.COMMENTS)
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets a person with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify contributor user gets a person with Rest API and response is successful")
     public void contributorUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorUser)
+                  .onCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
               		.assertThat().field("id").is(searchedUser.getUsername())
@@ -78,13 +87,16 @@ public class GetPeopleSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets a person with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify consumer user gets a person with Rest API and response is successful")
     public void consumerUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerUser)
+                  .onCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
               		.assertThat().field("id").is(searchedUser.getUsername())
@@ -94,12 +106,15 @@ public class GetPeopleSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets a person with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify admin user gets a person with Rest API and response is successful")
     public void adminUserChecksIfPersonIsPresent() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser)
+                  .onCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
               		.assertThat().field("id").is(searchedUser.getUsername())
@@ -109,7 +124,9 @@ public class GetPeopleSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a non existing person with Rest API and person is not found")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
+              executionType = ExecutionType.SANITY, 
+              description = "Verify manager user gets a non existing person with Rest API and person is not found")
     public void managerUserChecksIfNonExistingPersonIsPresent() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -117,6 +134,7 @@ public class GetPeopleSanityTests extends RestTest
         UserModel searchedNonUser = new UserModel("nonexistinguser", DataUser.PASSWORD);
 
         restClient.authenticateUser(managerUser)
+                  .onCoreAPI()
                   .usingUser(searchedNonUser)
                   .getPerson();        
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);

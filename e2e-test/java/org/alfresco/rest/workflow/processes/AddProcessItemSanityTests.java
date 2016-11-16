@@ -5,7 +5,11 @@ import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -43,8 +47,8 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         document2 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "file content");
         dataContent.usingSite(siteModel).createContent(document2);
         
-        processModel = restClient.authenticateUser(adminUser).getProcesses().getOneRandomEntry().onModel();
-        processItem = restClient.usingProcess(processModel).addProcessItem(document2);
+        processModel = restClient.authenticateUser(adminUser).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItem = restClient.onWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processItem.assertThat().field("createdAt").isNotEmpty()
                    .and().field("size").is(document2.getContent().length())
@@ -55,7 +59,7 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
                    .and().field("id").isNotEmpty()
                    .and().field("mimeType").is(document2.getFileType().mimeType);
 
-        restClient.usingProcess(processModel).getProcessItems()
+        restClient.onWorkflowAPI().usingProcess(processModel).getProcessItems()
                 .assertThat().entriesListContains("id", processItem.getId());
     }
 
@@ -66,8 +70,8 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
     {
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
 
-        processModel = restClient.authenticateUser(adminUser).getProcesses().getOneRandomEntry().onModel();
-        processItem = restClient.usingProcess(processModel).addProcessItem(document2);
+        processModel = restClient.authenticateUser(adminUser).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItem = restClient.onWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processItem.assertThat().field("createdAt").isNotEmpty()
                 .and().field("size").is("19")
@@ -78,10 +82,10 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
                 .and().field("id").isNotEmpty()
                 .and().field("mimeType").is(document2.getFileType().mimeType);
 
-        restClient.usingProcess(processModel).getProcessItems()
+        restClient.onWorkflowAPI().usingProcess(processModel).getProcessItems()
                 .assertThat().entriesListContains("id", processItem.getId())
                 .and().entriesListContains("name", document2.getName());
-        restClient.usingProcess(processModel).addProcessItem(document2);
+        restClient.onWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 }

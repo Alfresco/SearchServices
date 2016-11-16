@@ -42,12 +42,13 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-                executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")    
+                  executionType = ExecutionType.SANITY, description = "Verify site manager is able to create new site membership request")    
     @Bug(id="MNT-16557")    
     public void siteManagerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+                  .onCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -55,12 +56,14 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-                executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to create new site membership request")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify site collaborator is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void siteCollaboatorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                  .onCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -68,12 +71,14 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-                executionType = ExecutionType.SANITY, description = "Verify site contributor is able to create new site membership request")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify site contributor is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void siteContributorIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                  .onCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -81,25 +86,29 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, description = "Verify site consumer is able to create new site membership request")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify site consumer is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void siteConsumerIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+                  .onCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
-            description = "Verify admin user is able to create new site membership request")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },   
+              executionType = ExecutionType.SANITY, 
+              description = "Verify admin user is able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void adminUserIsAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(adminUser)
+                  .onCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -107,12 +116,14 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to create new site membership request")
+              executionType = ExecutionType.SANITY, 
+              description = "Verify unauthenticated user is not able to create new site membership request")
     @Bug(id = "MNT-16557")
     public void unauthenticatedUserIsNotAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(new UserModel("random user", "random password"))
+                  .onCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
