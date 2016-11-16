@@ -3,8 +3,7 @@ package org.alfresco.rest.workflow.tasks;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestItemModel;
-import org.alfresco.rest.requests.RestTasksApi;
-import org.alfresco.rest.requests.RestTenantApi;
+import org.alfresco.rest.model.RestItemModelsCollection;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -13,7 +12,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -21,17 +19,12 @@ import org.testng.annotations.Test;
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class GetTaskItemsSanityTests extends RestTest
 {
-    @Autowired
-    RestTasksApi tasksApi;
-
-    @Autowired
-    RestTenantApi tenantApi;
-
     private UserModel userModel, userWhoStartsTask, assignee, adminTenantUser, tenantUser, tenantUserAssignee;
     private SiteModel siteModel;
     private FileModel fileModel, document1;
     private TaskModel taskModel;
     private RestItemModel taskItem;
+    private RestItemModelsCollection itemModels;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -42,7 +35,6 @@ public class GetTaskItemsSanityTests extends RestTest
         userWhoStartsTask = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assignee);
-        tasksApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
@@ -51,14 +43,15 @@ public class GetTaskItemsSanityTests extends RestTest
     {
         restClient.authenticateUser(userWhoStartsTask);
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document1);
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document1);
         Utility.checkObjectIsInitialized(taskItem, "taskItem");
-        tasksApi.getTaskItems(taskModel).assertThat()
-        .entriesListIsNotEmpty().and()
-        .entriesListContains("id", taskItem.getId()).and()
-        .entriesListContains("name", document1.getName());
-
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        
+        itemModels = restClient.withWorkflowAPI().usingTask(taskModel).getTaskItems();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        itemModels.assertThat()
+            .entriesListIsNotEmpty().and()
+            .entriesListContains("id", taskItem.getId()).and()
+            .entriesListContains("name", document1.getName());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
@@ -67,12 +60,15 @@ public class GetTaskItemsSanityTests extends RestTest
     {
         restClient.authenticateUser(assignee);
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document1);
-        tasksApi.getTaskItems(taskModel).assertThat()
-        .entriesListIsNotEmpty().and()
-        .entriesListContains("id", taskItem.getId()).and()
-        .entriesListContains("name", document1.getName());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document1);
+        
+        itemModels = restClient.withWorkflowAPI().usingTask(taskModel).getTaskItems();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        itemModels.assertThat()
+            .entriesListIsNotEmpty().and()
+            .entriesListContains("id", taskItem.getId()).and()
+            .entriesListContains("name", document1.getName());
+        
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
@@ -84,8 +80,7 @@ public class GetTaskItemsSanityTests extends RestTest
         restClient.authenticateUser(adminuser);
 
         adminTenantUser = UserModel.getAdminTenantUser();
-        tenantApi.useRestClient(restClient);
-        tenantApi.createTenant(adminTenantUser);
+        restClient.usingTenant().createTenant(adminTenantUser);
 
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
@@ -94,11 +89,13 @@ public class GetTaskItemsSanityTests extends RestTest
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
 
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document1);
-        tasksApi.getTaskItems(taskModel).assertThat()
-        .entriesListIsNotEmpty().and()
-        .entriesListContains("id", taskItem.getId()).and()
-        .entriesListContains("name", document1.getName());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document1);
+        
+        itemModels = restClient.withWorkflowAPI().usingTask(taskModel).getTaskItems();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        itemModels.assertThat()
+            .entriesListIsNotEmpty().and()
+            .entriesListContains("id", taskItem.getId()).and()
+            .entriesListContains("name", document1.getName());
     }
 }
