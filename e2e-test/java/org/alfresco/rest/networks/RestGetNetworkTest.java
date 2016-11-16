@@ -1,8 +1,6 @@
 package org.alfresco.rest.networks;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.requests.RestNetworksApi;
-import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -10,7 +8,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -21,12 +18,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS })
 public class RestGetNetworkTest extends RestTest
 {
-    @Autowired
-    RestNetworksApi networkApi;
-
-    @Autowired
-    RestTenantApi tenantApi;
-
     UserModel adminTenantUser;
     UserModel adminAnotherTenantUser;
     SiteModel site;
@@ -38,15 +29,12 @@ public class RestGetNetworkTest extends RestTest
         UserModel adminuser = dataUser.getAdminUser();
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminuser);
-        tenantApi.useRestClient(restClient);
-        tenantApi.createTenant(adminTenantUser);
+        restClient.usingTenant().createTenant(adminTenantUser);
         adminAnotherTenantUser = UserModel.getAdminTenantUser();
-        tenantApi.createTenant(adminAnotherTenantUser);
+        restClient.usingTenant().createTenant(adminAnotherTenantUser);
 
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         site = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-
-        networkApi.useRestClient(restClient);
     }
 
     @Bug(id = "MNT-16904")
@@ -58,8 +46,8 @@ public class RestGetNetworkTest extends RestTest
         UserModel tenantUser = new UserModel("nonexisting", "password");
         tenantUser.setDomain(adminTenantUser.getDomain());
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetwork(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingNetworks().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -68,8 +56,8 @@ public class RestGetNetworkTest extends RestTest
     public void adminTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetwork(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingNetworks().getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -77,7 +65,7 @@ public class RestGetNetworkTest extends RestTest
     public void adminTenantChecksNetworkParamsAreCorrect() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetwork(adminTenantUser).assertNetworkHasName(adminTenantUser).assertNetworkIsEnabled();
+        restClient.usingNetworks().getNetwork().assertNetworkHasName(adminTenantUser).assertNetworkIsEnabled();
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -85,8 +73,8 @@ public class RestGetNetworkTest extends RestTest
     public void adminTenantChecksIfNonExistingNetworkIsNotFound() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetwork(UserModel.getRandomTenantUser());
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.usingNetworks().getNetwork(UserModel.getRandomTenantUser());
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -94,16 +82,16 @@ public class RestGetNetworkTest extends RestTest
     public void adminTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        networkApi.getNetwork(adminAnotherTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.usingNetworks().getNetwork(adminAnotherTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, description = "Verify any tenant user gets its network with Rest API and response is not empty")
     public void userTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetwork(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingNetworks().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -111,7 +99,7 @@ public class RestGetNetworkTest extends RestTest
     public void userTenantChecksNetworkParamsAreCorrect() throws Exception
     {
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetwork(adminTenantUser).assertNetworkHasName(adminTenantUser).assertNetworkIsEnabled();
+        restClient.usingNetworks().getNetwork(adminTenantUser).assertNetworkHasName(adminTenantUser).assertNetworkIsEnabled();
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -119,8 +107,8 @@ public class RestGetNetworkTest extends RestTest
     public void userTenantChecksIfNonExistingNetworkIsNotFound() throws Exception
     {
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetwork(UserModel.getRandomTenantUser());
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.usingNetworks().getNetwork(UserModel.getRandomTenantUser());
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -129,8 +117,8 @@ public class RestGetNetworkTest extends RestTest
     public void userTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
     {
         restClient.authenticateUser(tenantUser);
-        networkApi.getNetwork(adminAnotherTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.usingNetworks().getNetwork(adminAnotherTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -142,8 +130,8 @@ public class RestGetNetworkTest extends RestTest
         dataUser.usingUser(adminTenantUser).addUserToSite(managerTenantUser, site, UserRole.SiteManager);
 
         restClient.authenticateUser(managerTenantUser);
-        networkApi.getNetwork(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingNetworks().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -155,8 +143,8 @@ public class RestGetNetworkTest extends RestTest
         dataUser.usingUser(adminTenantUser).addUserToSite(collaboratorTenantUser, site, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorTenantUser);
-        networkApi.getNetwork(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingNetworks().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -168,8 +156,8 @@ public class RestGetNetworkTest extends RestTest
         dataUser.usingUser(adminTenantUser).addUserToSite(consumerTenantUser, site, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerTenantUser);
-        networkApi.getNetwork(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingNetworks().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = TestGroup.COMMENTS)
@@ -181,7 +169,7 @@ public class RestGetNetworkTest extends RestTest
         dataUser.usingUser(adminTenantUser).addUserToSite(contributorTenantUser, site, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorTenantUser);
-        networkApi.getNetwork(adminTenantUser);
-        networkApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.usingNetworks().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

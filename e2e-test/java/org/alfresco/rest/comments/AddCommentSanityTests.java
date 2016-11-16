@@ -46,7 +46,7 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         String newContent = "This is a new comment added by " + adminUserModel.getUsername();
-        restClient.usingNode(document).addComment(newContent)
+        restClient.usingResource(document).addComment(newContent)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(newContent);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -57,7 +57,7 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         String contentSiteManger = "This is a new comment added by user with role: " + UserRole.SiteManager;
-        restClient.usingNode(document).addComment(contentSiteManger)
+        restClient.usingResource(document).addComment(contentSiteManger)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(contentSiteManger);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -68,7 +68,7 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         String contentSiteContributor = "This is a new comment added by user with role" + UserRole.SiteContributor;
-        restClient.usingNode(document).addComment(contentSiteContributor)
+        restClient.usingResource(document).addComment(contentSiteContributor)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(contentSiteContributor);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -79,7 +79,7 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         String contentSiteCollaborator = "This is a new comment added by user with role: " + UserRole.SiteCollaborator;
-        restClient.usingNode(document).addComment(contentSiteCollaborator)
+        restClient.usingResource(document).addComment(contentSiteCollaborator)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(contentSiteCollaborator);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -90,7 +90,7 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         String contentSiteConsumer = "This is a new comment added by user with role: " + UserRole.SiteConsumer;
-        restClient.usingNode(document).addComment(contentSiteConsumer);
+        restClient.usingResource(document).addComment(contentSiteConsumer);
         restClient
                    .assertStatusCodeIs(HttpStatus.FORBIDDEN)
                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
@@ -101,7 +101,7 @@ public class AddCommentSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToAddComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        restClient.usingNode(document).addComment("This is a new comment");
+        restClient.usingResource(document).addComment("This is a new comment");
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 

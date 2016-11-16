@@ -52,7 +52,7 @@ public class DeleteCommentsSanityTests extends RestTest
     public void addCommentToDocument() throws Exception
     {
         restClient.authenticateUser(adminUserModel);        
-        comment = restClient.usingNode(document).addComment("This is a new comment");
+        comment = restClient.usingResource(document).addComment("This is a new comment");
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -60,7 +60,7 @@ public class DeleteCommentsSanityTests extends RestTest
     public void adminIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        restClient.usingNode(document).deleteComment(comment);        
+        restClient.usingResource(document).deleteComment(comment);        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
@@ -69,7 +69,7 @@ public class DeleteCommentsSanityTests extends RestTest
     public void managerIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.usingNode(document).deleteComment(comment);
+        restClient.usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
@@ -78,7 +78,7 @@ public class DeleteCommentsSanityTests extends RestTest
     public void collaboratorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.usingNode(document).deleteComment(comment);
+        restClient.usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -88,7 +88,7 @@ public class DeleteCommentsSanityTests extends RestTest
     public void contributorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        restClient.usingNode(document).deleteComment(comment);
+        restClient.usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -98,7 +98,7 @@ public class DeleteCommentsSanityTests extends RestTest
     public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restClient.usingNode(document).deleteComment(comment);
+        restClient.usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -109,7 +109,7 @@ public class DeleteCommentsSanityTests extends RestTest
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel);
-        restClient.usingNode(document).deleteComment(comment);
+        restClient.usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

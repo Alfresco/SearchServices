@@ -57,7 +57,7 @@ public class AddCommentsSanityTests extends RestTest
     public void adminIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
-                  .usingNode(document).addComments(comment1, comment2)
+                  .usingResource(document).addComments(comment1, comment2)
                    .assertThat().entriesListIsNotEmpty()
                    .and().entriesListContains("content", comment1)
                    .and().entriesListContains("content", comment2);
@@ -69,7 +69,7 @@ public class AddCommentsSanityTests extends RestTest
     public void managerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .usingNode(document).addComments(comment1, comment2)
+                  .usingResource(document).addComments(comment1, comment2)
                   .assertThat().entriesListIsNotEmpty()
                   .and().entriesListContains("content", comment1)
                   .and().entriesListContains("content", comment2);
@@ -81,7 +81,7 @@ public class AddCommentsSanityTests extends RestTest
     public void contributorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                .usingNode(document).addComments(comment1, comment2)
+                .usingResource(document).addComments(comment1, comment2)
                 .assertThat().entriesListIsNotEmpty()
                 .and().entriesListContains("content", comment1)
                 .and().entriesListContains("content", comment2);
@@ -93,7 +93,7 @@ public class AddCommentsSanityTests extends RestTest
     public void collaboratorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                   .usingNode(document).addComments(comment1, comment2)
+                   .usingResource(document).addComments(comment1, comment2)
                    .assertThat().paginationExist().and().entriesListIsNotEmpty()
                    .and().entriesListContains("content", comment1)
                    .and().entriesListContains("content", comment2);
@@ -106,7 +106,7 @@ public class AddCommentsSanityTests extends RestTest
     public void consumerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .usingNode(document).addComments(comment1, comment2);
+                  .usingResource(document).addComments(comment1, comment2);
         
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -117,7 +117,7 @@ public class AddCommentsSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"))
-                  .usingNode(document).addComments(comment1, comment2);
+                  .usingResource(document).addComments(comment1, comment2);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

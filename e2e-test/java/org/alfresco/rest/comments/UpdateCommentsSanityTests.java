@@ -45,7 +45,7 @@ public class UpdateCommentsSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        commentModel = restClient.usingNode(document).addComment("This is a new comment");
+        commentModel = restClient.usingResource(document).addComment("This is a new comment");
 
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
@@ -56,7 +56,7 @@ public class UpdateCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel);
         String updatedContent = "This is the updated comment with admin user";
-        restClient.usingNode(document).updateComment(commentModel, updatedContent)      
+        restClient.usingResource(document).updateComment(commentModel, updatedContent)      
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(updatedContent);
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -67,7 +67,7 @@ public class UpdateCommentsSanityTests extends RestTest
     public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.usingNode(document).updateComment(commentModel, "This is the updated comment with Manager user")
+        restClient.usingResource(document).updateComment(commentModel, "This is the updated comment with Manager user")
                 .and().field("content").is("This is the updated comment with Manager user")
                 .and().field("canEdit").is(true)
                 .and().field("canDelete").is(true);
@@ -80,7 +80,7 @@ public class UpdateCommentsSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         String updatedContent = "This is the updated comment with Contributor user";
-        restClient.usingNode(document).updateComment(commentModel, updatedContent);
+        restClient.usingResource(document).updateComment(commentModel, updatedContent);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                       .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -90,7 +90,7 @@ public class UpdateCommentsSanityTests extends RestTest
     public void consumerIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restClient.usingNode(document).updateComment(commentModel, "This is the updated comment with Consumer user");
+        restClient.usingResource(document).updateComment(commentModel, "This is the updated comment with Consumer user");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                       .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -101,7 +101,7 @@ public class UpdateCommentsSanityTests extends RestTest
     public void collaboratorIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.usingNode(document).updateComment(commentModel, "This is the updated comment with Collaborator user");        
+        restClient.usingResource(document).updateComment(commentModel, "This is the updated comment with Collaborator user");        
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                       .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);   
     }
@@ -113,7 +113,7 @@ public class UpdateCommentsSanityTests extends RestTest
     {
         UserModel incorrectUserModel = new UserModel("userName", "password");
         restClient.authenticateUser(incorrectUserModel)
-                  .usingNode(document).getNodeComments();        
+                  .usingResource(document).getNodeComments();        
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
@@ -124,7 +124,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
         FolderModel content = FolderModel.getRandomFolderModel();
         content.setNodeRef("node ref that does not exist");
-        restClient.usingNode(content).updateComment(commentModel, "This is the updated comment.");                
+        restClient.usingResource(content).updateComment(commentModel, "This is the updated comment.");                
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                                       .assertLastError().containsSummary("node ref that does not exist was not found");
     }
@@ -137,7 +137,7 @@ public class UpdateCommentsSanityTests extends RestTest
         RestCommentModel comment = new RestCommentModel();
         String id = "comment id that does not exist";
         comment.setId(id);
-        restClient.usingNode(document).updateComment(comment, "This is the updated comment."); 
+        restClient.usingResource(document).updateComment(comment, "This is the updated comment."); 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                                        .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, id));
     }

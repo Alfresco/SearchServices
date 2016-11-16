@@ -65,8 +65,8 @@ public class RestDemoTests extends RestTest
                                   .usingResource(FolderModel.getSharedFolderModel())        			       
                                   .createContent(DocumentType.TEXT_PLAIN);
         // add new comment
-        restClient.usingNode(fileModel).addComment("This is a new comment");
-        restClient.usingNode(fileModel).getNodeComments()
+        restClient.usingResource(fileModel).addComment("This is a new comment");
+        restClient.usingResource(fileModel).getNodeComments()
             .assertThat().entriesListIsNotEmpty().and()
             .entriesListContains("content", "This is a new comment");
     }

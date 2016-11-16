@@ -3,35 +3,27 @@ package org.alfresco.rest.workflow.processes;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.requests.Processes;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.ProcessModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.rest.model.RestTaskModelsCollection;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
  * Tests for GET "/processes/{processId}/tasks" REST API call
- * 
+ *
  * @author Cristina Axinte
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessTasksSanityTests extends RestWorkflowTest
 {
-    @Autowired
-    private Processes processesApi;
-
-    private UserModel userModel;
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel assignee1, assignee2, assignee3;
+    private UserModel userModel, assignee1, assignee2, assignee3;
     private ProcessModel process;
+    private RestTaskModelsCollection processTasks;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -44,44 +36,42 @@ public class GetProcessTasksSanityTests extends RestWorkflowTest
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         process = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(document)
                 .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
-        processesApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user who started the process gets all tasks of started process with Rest API and response is successfull (200)")
     public void userWhoStartedProcessCanGetProcessTasks() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(userModel);
-        processesApi.getProcessTasks(process).assertThat()
+        processTasks = restClient.authenticateUser(userModel).usingProcess(process).getProcessTasks();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        processTasks.assertThat()
             .entriesListIsNotEmpty().and()
             .entriesListContains("assignee", assignee1.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername());
-        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
     public void assigneeUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(assignee1);
-        processesApi.getProcessTasks(process).assertThat()
-            .entriesListIsNotEmpty().and()
+        processTasks = restClient.authenticateUser(assignee1).usingProcess(process).getProcessTasks();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        processTasks.assertThat()
             .entriesListContains("assignee", assignee1.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername());
-        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify any assignee user of the process gets all tasks of the process with Rest API and response is successfull (200)")
     public void involvedUserCanGetAllProcessTasks() throws JsonToModelConversionException, Exception
     {
         ProcessModel process = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(document)
                 .createMoreReviewersWorkflowAndAssignTo(assignee1, assignee2, assignee3);
         dataWorkflow.usingUser(assignee1).approveTask(process);
-        
-        restClient.authenticateUser(assignee2);
-        processesApi.getProcessTasks(process).assertThat()
+
+        processTasks = restClient.authenticateUser(assignee2).usingProcess(process).getProcessTasks();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        processTasks.assertThat()
             .entriesListIsNotEmpty().assertThat()
             .entriesListContains("assignee", userModel.getUsername());
-        processesApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
 }
