@@ -2,8 +2,6 @@ package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
-import org.alfresco.rest.requests.RestProcessDefinitionsApi;
-import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -21,11 +19,7 @@ import org.testng.annotations.Test;
 public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowTest
 {
     @Autowired
-    RestTenantApi tenantApi;
-    @Autowired
     private DataUser dataUser;
-    @Autowired
-    private RestProcessDefinitionsApi processDefinitionsApi;
 
     private UserModel adminUserModel, adminTenantUser;
     private RestProcessDefinitionModel randomProcessDefinition;
@@ -35,7 +29,6 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
     {
         adminUserModel = dataUser.getAdminUser();
         adminTenantUser = UserModel.getAdminTenantUser();
-        processDefinitionsApi.useRestClient(restClient);
         restClient.authenticateUser(adminUserModel);
     }
 
@@ -44,9 +37,9 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
             description = "Verify Admin gets a model of the start form type definition for non-network deployments using REST API and status code is OK (200)")
     public void nonNetworkAdminGetsStartFormModel() throws Exception
     {
-        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
-        processDefinitionsApi.getProcessDefinitionStartFormModel(randomProcessDefinition).assertThat().entriesListIsNotEmpty();
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        randomProcessDefinition = restClient.getAllProcessDefinitions().getOneRandomEntry();
+        restClient.usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
@@ -55,11 +48,10 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
     @Test(groups = { TestGroup.NETWORKS })
     public void networkAdminGetsStartFormModel() throws Exception
     {
-        tenantApi.useRestClient(restClient);
-        tenantApi.createTenant(adminTenantUser);
+        restClient.usingTenant().createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
-        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
-        processDefinitionsApi.getProcessDefinitionStartFormModel(randomProcessDefinition).assertThat().entriesListIsNotEmpty();
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        randomProcessDefinition = restClient.getAllProcessDefinitions().getOneRandomEntry();
+        restClient.usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
