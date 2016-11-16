@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.*;
@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-public class DeleteProcessVariableSanityTests extends RestWorkflowTest
+public class DeleteProcessVariableSanityTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;

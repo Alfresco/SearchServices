@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
@@ -20,14 +20,14 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class RemoveTaskItemSanityTests extends RestWorkflowTest
+public class RemoveTaskItemSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
-        
-    
+
+
     private UserModel adminUser, userModel, userWhoStartsTask, assigneeUser;
-    private SiteModel siteModel; 
+    private SiteModel siteModel;
     private FileModel fileModel, document2;
     private TaskModel taskModel;
 
@@ -47,7 +47,7 @@ public class RemoveTaskItemSanityTests extends RestWorkflowTest
         tasksApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Delete existing task item")
     public void deleteTaskItem() throws Exception
     {
@@ -60,8 +60,8 @@ public class RemoveTaskItemSanityTests extends RestWorkflowTest
         	.assertThat().entriesListDoesNotContain("id", taskItem.getId()).and()
         	.entriesListDoesNotContain("name", document2.getName());
     }
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Try to Delete existing task item using invalid taskId")
     public void deleteTaskItemUsingInvalidTaskId() throws Exception
     {
@@ -72,8 +72,8 @@ public class RemoveTaskItemSanityTests extends RestWorkflowTest
         tasksApi.deleteTaskItem(taskModel, taskItem);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Try to Delete existing task item using invalid itemId")
     public void deleteTaskItemUsingInvalidItemId() throws Exception
     {

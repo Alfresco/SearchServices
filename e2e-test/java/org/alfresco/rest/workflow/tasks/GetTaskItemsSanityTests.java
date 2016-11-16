@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.rest.requests.RestTenantApi;
@@ -19,14 +19,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class GetTaskItemsSanityTests extends RestWorkflowTest
+public class GetTaskItemsSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
 
     @Autowired
     RestTenantApi tenantApi;
-    
+
     private UserModel userModel, userWhoStartsTask, assignee, adminTenantUser, tenantUser, tenantUserAssignee;
     private SiteModel siteModel;
     private FileModel fileModel, document1;
@@ -45,7 +45,7 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         tasksApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task items")
     public void getTaskItemsByUserWhoStartedProcess() throws Exception
     {
@@ -60,8 +60,8 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
 
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that involved user in process gets task items")
     public void getTaskItemsByUserInvolvedInProcess() throws Exception
     {
@@ -74,8 +74,8 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         .entriesListContains("name", document1.getName());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task items")
     @Test(groups = { TestGroup.NETWORKS })
     public void getTaskItemsByAdminInSameNetwork() throws Exception
@@ -86,13 +86,13 @@ public class GetTaskItemsSanityTests extends RestWorkflowTest
         adminTenantUser = UserModel.getAdminTenantUser();
         tenantApi.useRestClient(restClient);
         tenantApi.createTenant(adminTenantUser);
-        
+
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();   
+
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
-        
+
         document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = tasksApi.addTaskItem(taskModel, document1);
         tasksApi.getTaskItems(taskModel).assertThat()

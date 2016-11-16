@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.GroupModel;
@@ -18,7 +18,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class GetTasksSanityTests extends RestWorkflowTest
+public class GetTasksSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
@@ -49,7 +49,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
         tasksApi.getTasks().assertThat().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify asignee user gets its existing tasks with Rest API and response is successfull (200)")
     public void asigneeUserGetsItsTasks() throws Exception
     {
@@ -57,10 +57,10 @@ public class GetTasksSanityTests extends RestWorkflowTest
         tasksApi.getTasks().assertThat().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
-    @Bug(id = "MNT-16967")    
+    @Bug(id = "MNT-16967")
     public void candidateUserGetsItsTasks() throws Exception
     {
         UserModel userModel1 = dataUser.createRandomTestUser();
@@ -68,12 +68,12 @@ public class GetTasksSanityTests extends RestWorkflowTest
         GroupModel group = dataGroup.createRandomGroup();
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
         dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
-        
+
         restClient.authenticateUser(userModel1);
         tasksApi.getTasks().assertThat().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
     public void candidateUserThatClaimsTaskGetsItsTasks() throws Exception
     {
@@ -83,12 +83,12 @@ public class GetTasksSanityTests extends RestWorkflowTest
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         dataWorkflow.usingUser(userModel1).claimTask(taskModel);
-        
+
         restClient.authenticateUser(userModel1);
         tasksApi.getTasks().assertThat().entriesListIsNotEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user without claim gets no tasks with Rest API and response is successfull (200)")
     public void candidateUserWithoutClaimTaskGetsNoTasks() throws Exception
     {
@@ -98,7 +98,7 @@ public class GetTasksSanityTests extends RestWorkflowTest
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         dataWorkflow.usingUser(userModel1).claimTask(taskModel);
-        
+
         restClient.authenticateUser(userModel2);
         tasksApi.getTasks().assertThat().entriesListIsEmpty();
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);

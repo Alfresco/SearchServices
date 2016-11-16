@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
  * Created by Claudia Agache on 10/19/2016.
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-public class GetProcessSanityTests extends RestWorkflowTest
+public class GetProcessSanityTests extends RestTest
 {
     private UserModel userWhoStartsProcess, assignee;
     private RestProcessModel addedProcess, process;

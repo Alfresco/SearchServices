@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.GroupModel;
@@ -18,7 +18,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class GetTaskSanityTests extends RestWorkflowTest
+public class GetTaskSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
@@ -52,7 +52,7 @@ public class GetTaskSanityTests extends RestWorkflowTest
                 .and().field("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify assignee user gets its assigned task with Rest API and response is successfull (200)")
     public void assigneeUserGetsItsTaskWithSuccess() throws Exception
     {
@@ -62,7 +62,7 @@ public class GetTaskSanityTests extends RestWorkflowTest
                 .and().field("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify user that started the task gets the started task with Rest API and response is successfull (200)")
     public void starterUserGetsItsTaskWithSuccess() throws Exception
     {
@@ -72,17 +72,17 @@ public class GetTaskSanityTests extends RestWorkflowTest
                 .and().field("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify any user with no relation to task id forbidden to get other task with Rest API (403)")
     public void anyUserIsForbiddenToGetOtherTask() throws Exception
     {
         UserModel anyUser= dataUser.createRandomTestUser();
-        
+
         restClient.authenticateUser(anyUser);
         tasksApi.getTask(taskModel);
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user gets its specific task and no other user claimed the task with Rest API and response is successfull (200)")
     public void candidateUserGetsItsTasks() throws Exception
     {
@@ -91,14 +91,14 @@ public class GetTaskSanityTests extends RestWorkflowTest
         GroupModel group = dataGroup.createRandomGroup();
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
-        
+
         restClient.authenticateUser(userModel1);
         tasksApi.getTask(taskModel)
                 .assertThat().field("id").is(taskModel.getId())
                 .and().field("message").is(taskModel.getMessage());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
     }
-      
+
     @Bug(id = "MNT-17051")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify involved user in a task without claim it gets the task with Rest API and response is successfull (200)")
     public void involvedUserWithoutClaimTaskGetsTask() throws Exception
@@ -109,7 +109,7 @@ public class GetTaskSanityTests extends RestWorkflowTest
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
         TaskModel taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
         dataWorkflow.usingUser(userModel1).claimTask(taskModel);
-        
+
         restClient.authenticateUser(userModel2);
         tasksApi.getTask(taskModel)
                 .assertThat().field("id").is(taskModel.getId())

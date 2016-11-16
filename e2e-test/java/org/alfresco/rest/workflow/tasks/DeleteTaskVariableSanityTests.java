@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
@@ -20,13 +20,13 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class DeleteTaskVariableSanityTests extends RestWorkflowTest
+public class DeleteTaskVariableSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
-        
+
     private UserModel userModel, adminUser;
-    private SiteModel siteModel; 
+    private SiteModel siteModel;
     private FileModel fileModel;
     private UserModel assigneeUser;
     private TaskModel taskModel;
@@ -44,7 +44,7 @@ public class DeleteTaskVariableSanityTests extends RestWorkflowTest
         tasksApi.useRestClient(restClient);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Delete existing task variable")
     public void deleteTaskVariable() throws Exception
     {
@@ -55,8 +55,8 @@ public class DeleteTaskVariableSanityTests extends RestWorkflowTest
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
         tasksApi.getTaskVariables(taskModel).assertThat().entriesListDoesNotContain("name", variableModel.getName());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Try to delete existing task variable using invalid task id")
     public void tryToDeleteTaskVariableUsingInvalidTaskId() throws Exception
     {
