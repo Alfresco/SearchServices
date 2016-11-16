@@ -44,7 +44,7 @@ public class GetCommentsSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();        
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         content = "This is a new comment";
-        restClient.usingNode(document).addComment(content);
+        restClient.usingResource(document).addComment(content);
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
@@ -54,7 +54,7 @@ public class GetCommentsSanityTests extends RestTest
     public void adminIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        restClient.usingNode(document).getNodeComments();
+        restClient.usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -63,7 +63,7 @@ public class GetCommentsSanityTests extends RestTest
     public void managerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.usingNode(document).getNodeComments()
+        restClient.usingResource(document).getNodeComments()
                    .assertThat().entriesListContains("content", content);
                    
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -74,7 +74,7 @@ public class GetCommentsSanityTests extends RestTest
     public void contributorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        restClient.usingNode(document).getNodeComments()
+        restClient.usingResource(document).getNodeComments()
                    .assertThat().entriesListContains("content", content);
                    
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -85,7 +85,7 @@ public class GetCommentsSanityTests extends RestTest
     public void collaboratorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.usingNode(document).getNodeComments()
+        restClient.usingResource(document).getNodeComments()
                 .assertThat().entriesListContains("content", content);                
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -95,7 +95,7 @@ public class GetCommentsSanityTests extends RestTest
     public void consumerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restClient.usingNode(document).getNodeComments()
+        restClient.usingResource(document).getNodeComments()
                    .assertThat().entriesListContains("content", content);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -107,7 +107,7 @@ public class GetCommentsSanityTests extends RestTest
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel);
-        restClient.usingNode(document).getNodeComments();
+        restClient.usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
     
@@ -118,10 +118,10 @@ public class GetCommentsSanityTests extends RestTest
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(userModel);
         String contentManager = "This is a new comment added by " + userModel.getUsername();
-        restClient.usingNode(document).addComment(contentManager);
+        restClient.usingResource(document).addComment(contentManager);
         restClient.assertStatusCodeIs(HttpStatus.CREATED); 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.usingNode(document).getNodeComments()
+        restClient.usingResource(document).getNodeComments()
                    .assertThat().entriesListContains("content", contentManager);
                    
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -134,10 +134,10 @@ public class GetCommentsSanityTests extends RestTest
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(userModel);
         String contentCollaborator = "This is a new comment added by " + userModel.getUsername();
-        restClient.usingNode(document).addComment(contentCollaborator);
+        restClient.usingResource(document).addComment(contentCollaborator);
         restClient.assertStatusCodeIs(HttpStatus.CREATED); 
         restClient.authenticateUser(adminUserModel);
-        restClient.usingNode(document).getNodeComments()
+        restClient.usingResource(document).getNodeComments()
                   .assertThat().entriesListContains("content", contentCollaborator);
                   
         restClient.assertStatusCodeIs(HttpStatus.OK);

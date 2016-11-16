@@ -54,7 +54,7 @@ public class AddRatingSanityTests extends RestTest
     public void managerIsAbleToLikeDocument() throws Exception
     {
         returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                                                        .usingNode(document).likeDocument();
+                                                        .usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         returnedRatingModel.assertThat().field("myRating").is("true")
@@ -67,7 +67,7 @@ public class AddRatingSanityTests extends RestTest
     public void collaboratorIsAbleToLikeDocument() throws Exception
     {
         returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                                                       .usingNode(document).likeDocument();
+                                                       .usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         returnedRatingModel.assertThat().field("myRating").is("true")
@@ -79,7 +79,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post like rating to a document")
     public void contributorIsAbleToLikeDocument() throws Exception
     {
-         returnedRatingModel =restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingNode(document).likeDocument();
+         returnedRatingModel =restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(document).likeDocument();
          restClient.assertStatusCodeIs(HttpStatus.CREATED);
          
          returnedRatingModel.assertThat().field("myRating").is("true")
@@ -91,7 +91,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post like rating to a document")
     public void consumerIsAbleToLikeDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).usingNode(document).likeDocument();
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         returnedRatingModel.assertThat().field("myRating").is("true")
@@ -103,7 +103,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post like rating to a document")
     public void adminIsAbleToLikeDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(adminUser).usingNode(document).likeDocument();
+        returnedRatingModel = restClient.authenticateUser(adminUser).usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         returnedRatingModel.assertThat().field("myRating").is("true")
@@ -116,7 +116,7 @@ public class AddRatingSanityTests extends RestTest
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
-        restClient.authenticateUser(new UserModel("random user", "random password")).usingNode(document).likeDocument();
+        restClient.authenticateUser(new UserModel("random user", "random password")).usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
@@ -124,7 +124,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to post stars rating to a document")
     public void managerIsAbleToAddStarsToDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingNode(document).rateStarsToDocument(5);
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(document).rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is("5")
                       		 .and().field("id").is("fiveStar")
@@ -135,7 +135,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to post stars rating to a document")
     public void collaboratorIsAbleToAddStarsToDocument() throws Exception
     {
-       returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingNode(document).rateStarsToDocument(5);
+       returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingResource(document).rateStarsToDocument(5);
        restClient.assertStatusCodeIs(HttpStatus.CREATED);
        returnedRatingModel.assertThat().field("myRating").is("5")
                           .and().field("id").is("fiveStar")
@@ -147,7 +147,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post stars rating to a document")
     public void contributorIsAbleToAddStarsToDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingNode(document).rateStarsToDocument(5);
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(document).rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is("5")
                            .and().field("id").is("fiveStar")
@@ -158,7 +158,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post stars rating to a document")
     public void consumerIsAbleToAddStarsToDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).usingNode(document).rateStarsToDocument(5);
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).usingResource(document).rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is("5")
                            .and().field("id").is("fiveStar")
@@ -169,7 +169,7 @@ public class AddRatingSanityTests extends RestTest
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post stars rating to a document")
     public void adminIsAbleToAddStarsToDocument() throws Exception
     {    	
-        returnedRatingModel = restClient.authenticateUser(adminUser).usingNode(document).rateStarsToDocument(3);
+        returnedRatingModel = restClient.authenticateUser(adminUser).usingResource(document).rateStarsToDocument(3);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is(String.valueOf(3))
                       		 .and().field("id").is("fiveStar")
@@ -181,7 +181,7 @@ public class AddRatingSanityTests extends RestTest
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {
-        restClient.authenticateUser(new UserModel("random user", "random password")).usingNode(document).rateStarsToDocument(5);
+        restClient.authenticateUser(new UserModel("random user", "random password")).usingResource(document).rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

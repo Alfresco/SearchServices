@@ -36,7 +36,7 @@ public class SampleCommentsTests extends RestTest
             description= "Verify admin user adds comments with Rest API and status code is 200")
     public void admiShouldAddComment() throws JsonToModelConversionException, Exception
     {
-        restClient.usingNode(document).addComment("This is a new comment");
+        restClient.usingResource(document).addComment("This is a new comment");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
@@ -44,7 +44,7 @@ public class SampleCommentsTests extends RestTest
             description= "Verify admin user gets comments with Rest API and status code is 200")
     public void admiShouldRetrieveComments() throws Exception
     {
-        restClient.usingNode(document).getNodeComments();
+        restClient.usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -52,9 +52,9 @@ public class SampleCommentsTests extends RestTest
             description= "Verify admin user updates comments with Rest API")
     public void adminShouldUpdateComment() throws JsonToModelConversionException, Exception
     {
-        RestCommentModel commentModel = restClient.usingNode(document).addComment("This is a new comment");
+        RestCommentModel commentModel = restClient.usingResource(document).addComment("This is a new comment");
 
-        restClient.usingNode(document).updateComment(commentModel, "This is the updated comment with Collaborator user")
+        restClient.usingResource(document).updateComment(commentModel, "This is the updated comment with Collaborator user")
                     .assertThat().field("content").is("This is the updated comment with Collaborator user");
     }
 
