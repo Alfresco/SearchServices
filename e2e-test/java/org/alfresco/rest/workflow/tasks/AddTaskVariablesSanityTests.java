@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
@@ -20,13 +20,13 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class AddTaskVariablesSanityTests extends RestWorkflowTest
+public class AddTaskVariablesSanityTests extends RestTest
 {
     @Autowired
     RestTasksApi tasksApi;
-        
+
     private UserModel userModel, userWhoStartsTask;
-    private SiteModel siteModel; 
+    private SiteModel siteModel;
     private FileModel fileModel;
     private UserModel assigneeUser;
     private TaskModel taskModel;
@@ -44,7 +44,7 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
         tasksApi.useRestClient(restClient);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with admin")
     public void createTaskVariableWithAdmin() throws Exception
     {
@@ -59,8 +59,8 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
              .and().field("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with user involved in the process")
     public void createTaskVariableWithInvolvedUser() throws Exception
     {
@@ -71,11 +71,11 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
              .and().field("name").is(variableModel.getName())
              .and().field("value").is(variableModel.getValue())
              .and().field("type").is(variableModel.getType());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);        
+        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
         tasksApi.getTaskVariables(taskModel).assertThat().entriesListContains("name", variableModel.getName());
     }
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with task owner")
     public void createTaskVariableWithTaskOwner() throws Exception
     {
@@ -88,8 +88,8 @@ public class AddTaskVariablesSanityTests extends RestWorkflowTest
              .and().field("type").is(variableModel.getType());
         tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with any user")
     public void createTaskVariableWithRandomUser() throws Exception
     {

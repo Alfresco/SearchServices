@@ -2,7 +2,7 @@ package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.data.RandomData;
@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-public class AddProcessVariableSanityTests extends RestWorkflowTest
+public class AddProcessVariableSanityTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
