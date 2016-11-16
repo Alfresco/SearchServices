@@ -4,11 +4,10 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestTagModel;
-import org.alfresco.rest.requests.RestTagsApi;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -16,7 +15,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -24,13 +22,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class GetTagSanityTests extends RestTest
 {
-
-    @Autowired
-    private DataUser dataUser;
-
-    @Autowired
-    private RestTagsApi tagsAPI;
-
     private UserModel adminUserModel;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
@@ -45,7 +36,6 @@ public class GetTagSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN); 
-        tagsAPI.useRestClient(restClient);
     }
     
     
@@ -54,10 +44,11 @@ public class GetTagSanityTests extends RestTest
     {
         String tagValue = RandomData.getRandomName("tag");
         restClient.authenticateUser(adminUserModel);
-        RestTagModel tag = tagsAPI.addTag(document, tagValue);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
       
-        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        RestTagModel returnedTag = restClient.getTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
     
     
@@ -66,10 +57,11 @@ public class GetTagSanityTests extends RestTest
     {
         String tagValue = RandomData.getRandomName("tag");
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        RestTagModel tag = tagsAPI.addTag(document, tagValue);
-       
-        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
+        
+        RestTagModel returnedTag = restClient.getTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role gets tag using REST API and status code is OK (200)")
@@ -77,10 +69,11 @@ public class GetTagSanityTests extends RestTest
     {
         String tagValue = RandomData.getRandomName("tag");
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        RestTagModel tag = tagsAPI.addTag(document, tagValue);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
-        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        RestTagModel returnedTag = restClient.getTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role gets tag using REST API and status code is OK (200)")
@@ -88,11 +81,12 @@ public class GetTagSanityTests extends RestTest
     {
         String tagValue = RandomData.getRandomName("tag");
         restClient.authenticateUser(adminUserModel);
-        RestTagModel tag = tagsAPI.addTag(document, tagValue);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        RestTagModel returnedTag = restClient.getTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
     
     
@@ -101,11 +95,12 @@ public class GetTagSanityTests extends RestTest
     {
         String tagValue = RandomData.getRandomName("tag");
         restClient.authenticateUser(adminUserModel);
-        RestTagModel tag = tagsAPI.addTag(document, tagValue);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.getTag(tag).assertThat().field("tag").is(tagValue.toLowerCase());
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        RestTagModel returnedTag = restClient.getTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
@@ -116,12 +111,12 @@ public class GetTagSanityTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(managerUser);
-        RestTagModel tag = tagsAPI.addTag(document, tagValue);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         
         managerUser.setPassword("wrongPassword");
         restClient.authenticateUser(managerUser);
-        tagsAPI.getTag(tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.getTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }
     
 }

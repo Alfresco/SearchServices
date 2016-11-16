@@ -4,16 +4,16 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestTagModel;
-import org.alfresco.rest.requests.RestTagsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -24,12 +24,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class DeleteTagSanityTests extends RestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
-    @Autowired
-    private RestTagsApi tagsAPI;
-
     private UserModel adminUserModel, userModel;
     private SiteModel siteModel;
     private DataUser.ListUserWithRoles usersWithRoles;
@@ -43,7 +37,6 @@ public class DeleteTagSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-        tagsAPI.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -51,10 +44,10 @@ public class DeleteTagSanityTests extends RestTest
     public void adminIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tag = tagsAPI.addTag(document, "testtag");
-
-        tagsAPI.deleteTag(document, tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
+        restClient.withCoreAPI().usingResource(document).deleteTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -62,11 +55,11 @@ public class DeleteTagSanityTests extends RestTest
     public void managerIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tag = tagsAPI.addTag(document, "testtag");
-
+        tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        tagsAPI.deleteTag(document, tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingResource(document).deleteTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -74,11 +67,11 @@ public class DeleteTagSanityTests extends RestTest
     public void collaboratorIsAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tag = tagsAPI.addTag(document, "testtag");
+        tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        tagsAPI.deleteTag(document, tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingResource(document).deleteTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
@@ -86,11 +79,11 @@ public class DeleteTagSanityTests extends RestTest
     public void contributorIsNotAbleToDeleteTagsForAnotherUserContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tag = tagsAPI.addTag(document, "testtag");
+        tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.deleteTag(document, tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.withCoreAPI().usingResource(document).deleteTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -100,9 +93,10 @@ public class DeleteTagSanityTests extends RestTest
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(userModel);
         contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);;
-        tag = tagsAPI.addTag(contributorDoc, "contributortag");
-        tagsAPI.deleteTag(document, tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        tag = restClient.withCoreAPI().usingResource(contributorDoc).addTag(RandomData.getRandomName("tag"));
+        
+        restClient.withCoreAPI().usingResource(document).deleteTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -110,11 +104,11 @@ public class DeleteTagSanityTests extends RestTest
     public void consumerIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tag = tagsAPI.addTag(document, "testtag");
+        tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.deleteTag(document, tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.withCoreAPI().usingResource(document).deleteTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -122,12 +116,12 @@ public class DeleteTagSanityTests extends RestTest
     public void managerIsNotAbleToDeleteTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tag = tagsAPI.addTag(document, "testtag");
+        tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
 
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
-        tagsAPI.deleteTag(document, tag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.withCoreAPI().usingResource(document).deleteTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }
 }

@@ -4,10 +4,10 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestTagModel;
-import org.alfresco.rest.requests.RestTagsApi;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -15,7 +15,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -27,9 +26,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class UpdateTagSanityTests extends RestTest
 {
-    @Autowired RestTagsApi tagsAPI;
-
-    @Autowired DataUser dataUser;
 
     private UserModel adminUserModel;
     private FileModel document;
@@ -51,8 +47,7 @@ public class UpdateTagSanityTests extends RestTest
     public void addTagToDocument() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tagsAPI.useRestClient(restClient);
-        oldTag = tagsAPI.addTag(document, RandomData.getRandomName("old"));
+        oldTag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("old"));
         randomTag = RandomData.getRandomName("tag");
     }
 
@@ -61,8 +56,9 @@ public class UpdateTagSanityTests extends RestTest
     public void adminIsAbleToUpdateTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        tagsAPI.updateTag(oldTag, randomTag).assertThat().field("tag").is(randomTag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        RestTagModel returnedModel = restClient.usingTag(oldTag).update(randomTag);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedModel.assertThat().field("tag").is(randomTag);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -70,8 +66,8 @@ public class UpdateTagSanityTests extends RestTest
     public void managerIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        tagsAPI.updateTag(oldTag, randomTag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.usingTag(oldTag).update(randomTag);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -79,8 +75,8 @@ public class UpdateTagSanityTests extends RestTest
     public void collaboratorIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        tagsAPI.updateTag(oldTag, randomTag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.usingTag(oldTag).update(randomTag);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -88,8 +84,8 @@ public class UpdateTagSanityTests extends RestTest
     public void contributorIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        tagsAPI.updateTag(oldTag, randomTag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.usingTag(oldTag).update(randomTag);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -97,8 +93,8 @@ public class UpdateTagSanityTests extends RestTest
     public void consumerIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        tagsAPI.updateTag(oldTag, randomTag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.usingTag(oldTag).update(randomTag);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -109,7 +105,7 @@ public class UpdateTagSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
-        tagsAPI.updateTag(oldTag, randomTag);
-        tagsAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.usingTag(oldTag).update(randomTag);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }
 }
