@@ -1,8 +1,6 @@
 package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestWorkflowTest;
-import org.alfresco.rest.requests.RestProcessDefinitionsApi;
-import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -20,11 +18,7 @@ import org.testng.annotations.Test;
 public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
 {
     @Autowired
-    RestTenantApi tenantApi;
-    @Autowired
     private DataUser dataUser;
-    @Autowired
-    private RestProcessDefinitionsApi processDefinitionsApi;
 
     private UserModel adminUserModel, adminTenantUser;
 
@@ -34,7 +28,6 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
         adminUserModel = dataUser.getAdminUser();
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUserModel);
-        processDefinitionsApi.useRestClient(restClient);
     }
 
     // works on docker
@@ -43,8 +36,8 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
     public void nonNetworkAdminGetsProcessDefinitions() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        processDefinitionsApi.getProcessDefinitions().assertThat().entriesListIsNotEmpty();
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.getAllProcessDefinitions().assertThat().entriesListIsNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     // works on alfresco.server=172.29.100.215
@@ -54,10 +47,9 @@ public class GetProcessDefinitionsSanityTests extends RestWorkflowTest
     @Test(groups = { TestGroup.NETWORKS })
     public void networkAdminGetsProcessDefinitions() throws Exception
     {
-        tenantApi.useRestClient(restClient);
-        tenantApi.createTenant(adminTenantUser);
+        restClient.usingTenant().createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
-        processDefinitionsApi.getProcessDefinitions().assertThat().entriesListIsNotEmpty();
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.getAllProcessDefinitions().assertThat().entriesListIsNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
