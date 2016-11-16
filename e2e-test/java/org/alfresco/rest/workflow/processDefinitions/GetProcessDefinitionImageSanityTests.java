@@ -2,7 +2,6 @@ package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestWorkflowTest;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
-import org.alfresco.rest.requests.RestProcessDefinitionsApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -21,8 +20,6 @@ public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
 {
     @Autowired
     private DataUser dataUser;
-    @Autowired
-    private RestProcessDefinitionsApi processDefinitionsApi;
 
     private UserModel testUser;
     private RestProcessDefinitionModel randomProcessDefinition;
@@ -31,25 +28,24 @@ public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
     public void dataPreparation() throws Exception
     {
         testUser = dataUser.createRandomTestUser();
-        processDefinitionsApi.useRestClient(restClient);
         restClient.authenticateUser(dataUser.getAdminUser());
-        randomProcessDefinition = processDefinitionsApi.getProcessDefinitions().getOneRandomEntry();
+        randomProcessDefinition = restClient.getAllProcessDefinitions().getOneRandomEntry();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Any user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
     public void anyUserGetsProcessDefinitionImage() throws Exception
     {
         restClient.authenticateUser(testUser);
-        processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition)
+        restClient.usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
             .assertResponseContainsImage();
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
     public void adminGetsProcessDefinitionImage() throws Exception
     {
-        processDefinitionsApi.getProcessDefinitionImage(randomProcessDefinition)
+        restClient.usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
             .assertResponseContainsImage();
-        processDefinitionsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
