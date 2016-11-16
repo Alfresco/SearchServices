@@ -49,9 +49,9 @@ public class RemoveSiteMemberSanityTests extends RestTest
             description = "Verify that site manager can delete site member and gets status code 204, 'No Content'")
     public void siteManagerIsAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.onCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);        
+        restClient.withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.onCoreAPI().getSites().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
+        restClient.withCoreAPI().getSites().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -60,10 +60,10 @@ public class RemoveSiteMemberSanityTests extends RestTest
             description = "Verify that site collaborator cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.onCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
+        restClient.withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
         
-        restClient.onCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
+        restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -72,10 +72,10 @@ public class RemoveSiteMemberSanityTests extends RestTest
             description = "Verify that site contributor cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteContributorIsNotAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));        
-        restClient.onCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);        
+        restClient.withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);        
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
         
-        restClient.onCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
+        restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -84,10 +84,10 @@ public class RemoveSiteMemberSanityTests extends RestTest
             description = "Verify that site consumer cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteConsumerIsNotAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
+                  .withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
         
-        restClient.onCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
+        restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -95,10 +95,10 @@ public class RemoveSiteMemberSanityTests extends RestTest
             description = "Verify that admin user can delete site member and gets status code 204, 'No Content'")
     public void adminUserIsAbleToDeleteSiteMember() throws Exception{
         restClient.authenticateUser(adminUserModel)
-                  .onCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
+                  .withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        restClient.onCoreAPI().getSites().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
+        restClient.withCoreAPI().getSites().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -107,7 +107,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMember() throws Exception{
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser)
-                  .onCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
+                  .withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
         
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

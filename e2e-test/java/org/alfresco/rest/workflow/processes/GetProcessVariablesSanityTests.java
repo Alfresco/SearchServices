@@ -41,8 +41,8 @@ public class GetProcessVariablesSanityTests extends RestWorkflowTest
             description = "Verify that user that started the process gets all process variables")
     public void getProcessVariablesUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsTask).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        variables = restClient.onWorkflowAPI().usingProcess(processModel).getProcessVariables();
+        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        variables = restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         variables.assertThat().entriesListIsNotEmpty();
     }
@@ -51,8 +51,8 @@ public class GetProcessVariablesSanityTests extends RestWorkflowTest
             description = "Verify get all process variables call using a user that is involved in the process")
     public void getProcessVariablesUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {
-        processModel = restClient.authenticateUser(assignee).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        variables = restClient.onWorkflowAPI().usingProcess(processModel).getProcessVariables();
+        processModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        variables = restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         variables.assertThat().entriesListIsNotEmpty();
     }

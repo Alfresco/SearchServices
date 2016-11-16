@@ -42,8 +42,8 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
             description = "Verify that user that started the process gets all process items")
     public void getProcessItemsUsingTheUserWhoStartedProcess() throws Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsTask).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        items = restClient.onWorkflowAPI().usingProcess(processModel).getProcessItems();
+        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         items.assertThat().entriesListIsNotEmpty();
     }
@@ -52,8 +52,8 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
             description = "Verify that user that is involved in the process gets all process items")
     public void getProcessItemsUsingUserInvolvedInProcess() throws Exception
     {
-        processModel = restClient.authenticateUser(assignee).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        items = restClient.onWorkflowAPI().usingProcess(processModel).getProcessItems();
+        processModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         items.assertThat().entriesListIsNotEmpty();
     }
@@ -67,10 +67,10 @@ public class GetProcessItemsSanityTests extends RestWorkflowTest
         restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        restClient.authenticateUser(tenantUser).onWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
+        restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
 
-        processModel = restClient.authenticateUser(adminTenantUser).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        items = restClient.onWorkflowAPI().usingProcess(processModel).getProcessItems();
+        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         items.assertThat().entriesListIsNotEmpty();
     }

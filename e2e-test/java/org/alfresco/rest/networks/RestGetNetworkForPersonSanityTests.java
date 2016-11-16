@@ -36,7 +36,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         UserModel tenantUser = new UserModel("nonexisting", "password");
         tenantUser.setDomain(adminTenantUser.getDomain());
         restClient.authenticateUser(tenantUser);
-        restClient.onCoreAPI().usingUser(tenantUser).getNetwork(adminTenantUser);
+        restClient.withCoreAPI().usingUser(tenantUser).getNetwork(adminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
@@ -47,7 +47,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
     public void adminTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        restClient.onCoreAPI().usingUser(adminTenantUser).getNetwork();
+        restClient.withCoreAPI().usingUser(adminTenantUser).getNetwork();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -58,7 +58,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
     public void tenantUserIsNotAuthorizedToCheckNetworkOfAdminUser() throws Exception
     { 
         restClient.authenticateUser(tenantUser);
-        restClient.onCoreAPI().usingUser(tenantUser).getNetwork(adminTenantUser);
+        restClient.withCoreAPI().usingUser(tenantUser).getNetwork(adminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
     
@@ -72,7 +72,7 @@ public class RestGetNetworkForPersonSanityTests extends RestTest
         restClient.usingTenant().createTenant(secondAdminTenantUser);
         UserModel secondTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
         restClient.authenticateUser(adminTenantUser);
-        restClient.onCoreAPI().usingUser(adminTenantUser).getNetwork(secondTenantUser);
+        restClient.withCoreAPI().usingUser(adminTenantUser).getNetwork(secondTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }

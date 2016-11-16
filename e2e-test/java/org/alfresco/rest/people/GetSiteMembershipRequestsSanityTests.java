@@ -35,7 +35,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         newMember = dataUser.createRandomTestUser();
         
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -52,7 +52,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -67,7 +67,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         
         restClient.authenticateUser(collaboratorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
@@ -82,7 +82,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         
         restClient.authenticateUser(contributorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
@@ -97,7 +97,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         
         restClient.authenticateUser(consumerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
@@ -111,7 +111,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
         
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -127,7 +127,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         managerUser.setPassword("newpassword");
         
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -138,7 +138,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     public void oneUserGetsItsOwnSiteMembershipRequestsWithSuccess() throws Exception
     {
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                  .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }

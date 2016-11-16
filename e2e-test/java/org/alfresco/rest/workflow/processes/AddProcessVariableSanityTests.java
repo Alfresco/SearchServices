@@ -44,15 +44,15 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     public void addProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsTask).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
 
-        processVariable = restClient.onWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("name").is(variableModel.getName())
                        .and().field("type").is(variableModel.getType())
                        .and().field("value").is(variableModel.getValue());
 
-        restClient.onWorkflowAPI().usingProcess(processModel).getProcessVariables()
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
                 .assertThat().entriesListContains("name", processVariable.getName());
     }
 
@@ -61,8 +61,8 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     public void updateExistingProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsTask).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processVariable = restClient.onWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("name").is(variableModel.getName())
                         .and().field("type").is(variableModel.getType())
@@ -70,7 +70,7 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
 
         String newValue = RandomData.getRandomName("value");
         variableModel.setValue(newValue);
-        processVariable = restClient.onWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("value").is(newValue);
     }
@@ -85,10 +85,10 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
 
-        restClient.authenticateUser(tenantUser).onWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
+        restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(adminTenantUser).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processVariable = restClient.onWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("name").is(variableModel.getName())
                         .and().field("type").is(variableModel.getType())
@@ -100,8 +100,8 @@ public class AddProcessVariableSanityTests extends RestWorkflowTest
     public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("incorrect type");
-        processModel = restClient.authenticateUser(adminUser).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        restClient.onWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError().containsSummary("Unsupported type of variable: 'incorrect type'.");
     }

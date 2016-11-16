@@ -48,7 +48,7 @@ public class GetSiteMembersSanityTests extends RestTest
     public void getSiteMembersWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
+                  .withCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
                   .and().entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUsername())
                   .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -59,7 +59,7 @@ public class GetSiteMembersSanityTests extends RestTest
     public void getSiteMembersWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty().assertThat()
+                  .withCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty().assertThat()
                   .entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()).and()
                   .entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -70,7 +70,7 @@ public class GetSiteMembersSanityTests extends RestTest
     public void getSiteMembersWithContributorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-            .onCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
+            .withCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteContributor).getUsername())
             .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteContributor).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -81,7 +81,7 @@ public class GetSiteMembersSanityTests extends RestTest
     public void getSiteMembersWithConsumerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-            .onCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
+            .withCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("id", usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer).getUsername())
             .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -92,7 +92,7 @@ public class GetSiteMembersSanityTests extends RestTest
     public void getSiteMembersWithAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
+                  .withCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListIsNotEmpty()
                   .and().entriesListContains("id", adminUser.getUsername())
                   .when().assertThat().entriesListContains("role", "SiteManager");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -107,7 +107,7 @@ public class GetSiteMembersSanityTests extends RestTest
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel)
-                  .onCoreAPI().usingSite(siteModel).getSiteMembers();
+                  .withCoreAPI().usingSite(siteModel).getSiteMembers();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -46,7 +46,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)  
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSite(siteModel1)
                   .assertThat().field("id").is(siteModel1.getId())
                   .and().field("title").isNotNull();
@@ -64,7 +64,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSite(siteModel1)
                 	.assertThat().field("id").is(siteModel1.getId())
                 	.and().field("title").isNotNull();
@@ -82,7 +82,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSite(siteModel1)
                 	.assertThat().field("id").is(siteModel1.getId())
                 	.and().field("title").isNotNull();
@@ -100,7 +100,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSite(siteModel1)
                 	.assertThat().field("id").is(siteModel1.getId())
                 	.and().field("title").isNotNull();
@@ -118,7 +118,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(adminUset)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSite(siteModel1)
                 	.assertThat().field("id").is(siteModel1.getId())
                 	.and().field("title").isNotNull();
@@ -136,7 +136,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(userModel).getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -154,7 +154,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

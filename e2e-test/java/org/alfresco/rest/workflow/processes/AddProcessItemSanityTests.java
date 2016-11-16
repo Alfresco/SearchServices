@@ -47,8 +47,8 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
         document2 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "file content");
         dataContent.usingSite(siteModel).createContent(document2);
         
-        processModel = restClient.authenticateUser(adminUser).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processItem = restClient.onWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processItem.assertThat().field("createdAt").isNotEmpty()
                    .and().field("size").is(document2.getContent().length())
@@ -59,7 +59,7 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
                    .and().field("id").isNotEmpty()
                    .and().field("mimeType").is(document2.getFileType().mimeType);
 
-        restClient.onWorkflowAPI().usingProcess(processModel).getProcessItems()
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems()
                 .assertThat().entriesListContains("id", processItem.getId());
     }
 
@@ -70,8 +70,8 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
     {
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
 
-        processModel = restClient.authenticateUser(adminUser).onWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processItem = restClient.onWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processItem.assertThat().field("createdAt").isNotEmpty()
                 .and().field("size").is("19")
@@ -82,10 +82,10 @@ public class AddProcessItemSanityTests extends RestWorkflowTest
                 .and().field("id").isNotEmpty()
                 .and().field("mimeType").is(document2.getFileType().mimeType);
 
-        restClient.onWorkflowAPI().usingProcess(processModel).getProcessItems()
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems()
                 .assertThat().entriesListContains("id", processItem.getId())
                 .and().entriesListContains("name", document2.getName());
-        restClient.onWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 }

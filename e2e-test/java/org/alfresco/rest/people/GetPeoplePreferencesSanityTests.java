@@ -42,7 +42,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .getPersonPreferences().assertThat().entriesListIsNotEmpty()
                   .assertThat().paginationExist()
@@ -60,7 +60,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
                   .assertThat().paginationExist()
                   .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
@@ -77,7 +77,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
               	  .assertThat().paginationExist()
               	  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
@@ -94,7 +94,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
                   .assertThat().paginationExist()
                   .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
@@ -112,7 +112,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
  .usingUser(managerUser).getPersonPreferences().assertThat().entriesListIsNotEmpty()
                   .assertThat().paginationExist()
                   .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
@@ -131,7 +131,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);

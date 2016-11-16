@@ -50,7 +50,7 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI().usingSite(siteModel)
+                  .withCoreAPI().usingSite(siteModel)
                   .getSite()
                   .and().field("id").is(siteModel.getId())
                   .and().field("title").is(siteModel.getTitle());
@@ -63,7 +63,7 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI().usingSite(siteModel)
+                  .withCoreAPI().usingSite(siteModel)
                   .getSite()
                   .and().field("id").is(siteModel.getId())
                   .and().field("title").is(siteModel.getTitle());
@@ -75,7 +75,7 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithContributorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .onCoreAPI().usingSite(siteModel)
+                  .withCoreAPI().usingSite(siteModel)
                   .getSite()
                   .and().field("id").is(siteModel.getId())
                   .and().field("title").is(siteModel.getTitle());
@@ -87,7 +87,7 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithConsumerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI().usingSite(siteModel)
+                  .withCoreAPI().usingSite(siteModel)
                   .getSite()
                   .and().field("id").is(siteModel.getId())
                   .and().field("title").is(siteModel.getTitle());
@@ -99,7 +99,7 @@ public class GetSiteSanityTests extends RestTest
     public void getSiteWithAdminRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
-                  .onCoreAPI().usingSite(siteModel)
+                  .withCoreAPI().usingSite(siteModel)
                   .getSite()
                   .and().field("id").is(siteModel.getId())
                   .and().field("title").is(siteModel.getTitle());
@@ -115,7 +115,7 @@ public class GetSiteSanityTests extends RestTest
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel).withParams("maxItems=10000")
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .getSites();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

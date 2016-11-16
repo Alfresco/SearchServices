@@ -31,7 +31,7 @@ public class AddFavoritesSanityTests extends RestTest
     {
         adminUserModel = dataUser.getAdminUser();        
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();        
-        siteModel.setGuid(restClient.authenticateUser(adminUserModel).onCoreAPI().usingSite(siteModel).getSite().getGuid());
+        siteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).getSite().getGuid());
 
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
@@ -42,7 +42,7 @@ public class AddFavoritesSanityTests extends RestTest
               description = "Verify Admin user add site to favorites with Rest API and status code is 201")
     public void adminIsAbleToAddToFavorites() throws Exception
     {
-        restClient.onCoreAPI().usingAuthUser()
+        restClient.withCoreAPI().usingAuthUser()
                   .addSiteToFavorites(siteModel)
                   .assertThat().field("targetGuid").is(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -54,7 +54,7 @@ public class AddFavoritesSanityTests extends RestTest
     public void managerIsAbleToAddToFavorites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI().usingAuthUser()
+                  .withCoreAPI().usingAuthUser()
                   .addSiteToFavorites(siteModel)
                   .assertThat().field("targetGuid").is(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -66,7 +66,7 @@ public class AddFavoritesSanityTests extends RestTest
     public void collaboratorIsAbleToAddToFavorites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI().usingAuthUser()
+                  .withCoreAPI().usingAuthUser()
                   .addSiteToFavorites(siteModel).and().field("targetGuid").is(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -77,7 +77,7 @@ public class AddFavoritesSanityTests extends RestTest
     public void contributorIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .onCoreAPI().usingAuthUser()
+                  .withCoreAPI().usingAuthUser()
                   .addSiteToFavorites(siteModel).and().field("targetGuid").is(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -88,7 +88,7 @@ public class AddFavoritesSanityTests extends RestTest
     public void consumerIsAbleToAddToFavorites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI().usingAuthUser()
+                  .withCoreAPI().usingAuthUser()
                   .addSiteToFavorites(siteModel).and().field("targetGuid").is(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
@@ -102,7 +102,7 @@ public class AddFavoritesSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager)
-                  .onCoreAPI().usingAuthUser()
+                  .withCoreAPI().usingAuthUser()
                   .addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

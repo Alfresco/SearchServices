@@ -44,7 +44,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getPersonActivities()
                   .assertThat().entriesListIsNotEmpty()
                   .and().entriesListContains("siteId", siteModel.getId())
@@ -62,7 +62,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataContent.usingUser(collaboratorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(collaboratorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getPersonActivities()
                 	.assertThat().entriesListIsNotEmpty()
                 	.and().entriesListContains("siteId", siteModel.getId())
@@ -80,7 +80,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataContent.usingUser(contributorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(contributorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getPersonActivities()
                 	.assertThat().entriesListIsNotEmpty()
                 	.and().entriesListContains("siteId", siteModel.getId())
@@ -97,7 +97,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         
         restClient.authenticateUser(consumerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getPersonActivities()
                 	.assertThat().entriesListIsNotEmpty()
                 	.and().entriesListContains("siteId", siteModel.getId())
@@ -111,7 +111,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
     public void adminUserShouldGetPeopleActivitiesList() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser())
-                  .onCoreAPI()
+                  .withCoreAPI()
  .usingUser(userModel).getPersonActivities()
                 	.assertThat().entriesListIsNotEmpty()
                 	.and().entriesListContains("siteId", siteModel.getId())
@@ -130,7 +130,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser)    
-                  .onCoreAPI()
+                  .withCoreAPI()
  .usingUser(userModel).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

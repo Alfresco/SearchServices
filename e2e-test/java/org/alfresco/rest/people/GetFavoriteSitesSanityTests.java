@@ -38,7 +38,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)                
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(anotherUser).getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -55,7 +55,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(contributorUser).getFavoriteSites();        
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -72,7 +72,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(contributorUser2).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(contributorUser2).getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -89,7 +89,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(collaboratorUser).getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -104,7 +104,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(anotherUser).getFavoriteSites()
                   .assertThat().entriesListIsNotEmpty()
                   .and().paginationExist()
@@ -121,7 +121,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel).addSiteToFavorites();
 
         restClient.authenticateUser(anyUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSites()
                   .assertThat().entriesListIsNotEmpty()
                   .and().entriesListContains("id", siteModel.getId())
@@ -140,7 +140,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         anyUser.setPassword("newpassword");
 
         restClient.authenticateUser(anyUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

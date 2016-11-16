@@ -37,8 +37,8 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
             description = "Verify Admin gets a model of the start form type definition for non-network deployments using REST API and status code is OK (200)")
     public void nonNetworkAdminGetsStartFormModel() throws Exception
     {
-        randomProcessDefinition = restClient.onWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
-        restClient.onWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
+        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
+        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -50,8 +50,8 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestWorkflowT
     {
         restClient.usingTenant().createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
-        randomProcessDefinition = restClient.onWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
-        restClient.onWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
+        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
+        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

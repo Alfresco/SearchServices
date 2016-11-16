@@ -38,7 +38,7 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
                 	.assertThat().field("id").is(searchedUser.getUsername())
@@ -57,7 +57,7 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
         restClient.authenticateUser(collaboratorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
                 	.assertThat().field("id").is(searchedUser.getUsername())
@@ -77,7 +77,7 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
         restClient.authenticateUser(contributorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
               		.assertThat().field("id").is(searchedUser.getUsername())
@@ -96,7 +96,7 @@ public class GetPeopleSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
         restClient.authenticateUser(consumerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
               		.assertThat().field("id").is(searchedUser.getUsername())
@@ -114,7 +114,7 @@ public class GetPeopleSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
 
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(searchedUser)
                   .getPerson()
               		.assertThat().field("id").is(searchedUser.getUsername())
@@ -134,7 +134,7 @@ public class GetPeopleSanityTests extends RestTest
         UserModel searchedNonUser = new UserModel("nonexistinguser", DataUser.PASSWORD);
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(searchedNonUser)
                   .getPerson();        
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);

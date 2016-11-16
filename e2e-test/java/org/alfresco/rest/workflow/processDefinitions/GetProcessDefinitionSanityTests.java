@@ -28,7 +28,7 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
     {
         testUser = dataUser.createRandomTestUser();
         restClient.authenticateUser(dataUser.getAdminUser());
-        randomProcessDefinition = restClient.onWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
+        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
@@ -36,9 +36,9 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
             description = "Verify Admin user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
     public void adminGetsProcessDefinition() throws Exception
     {
-        restClient.onWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().
+        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().
                           assertThat().field("name").is(randomProcessDefinition.onModel().getName());
-        restClient.onWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().assertThat().field("name")
+        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().assertThat().field("name")
                 .is(randomProcessDefinition.onModel().getName());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -49,7 +49,7 @@ public class GetProcessDefinitionSanityTests extends RestWorkflowTest
     public void anyUserGetsProcessDefinition() throws Exception
     {
         restClient.authenticateUser(testUser);
-        restClient.onWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().assertThat().field("name")
+        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition().assertThat().field("name")
                 .is(randomProcessDefinition.onModel().getName());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }

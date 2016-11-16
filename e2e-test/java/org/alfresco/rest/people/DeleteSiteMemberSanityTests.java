@@ -44,10 +44,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingSite(siteModel).addPerson(newUser);
         
-        restClient.onCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
+        restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
@@ -59,10 +59,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingSite(siteModel).addPerson(newUser);
         
-        restClient.onCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
+        restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
@@ -75,11 +75,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
-        restClient.onCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
+        restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -93,11 +93,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
-        restClient.onCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
+        restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -111,11 +111,11 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
-        restClient.onCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
+        restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -127,7 +127,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
-        restClient.onCoreAPI().usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(siteModel);
+        restClient.withCoreAPI().usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -53,14 +53,14 @@ public class GetRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getLikeRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("likes").and().field("myRating").is("true");
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getFiveStarRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }   
@@ -71,14 +71,14 @@ public class GetRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getLikeRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("likes").and().field("myRating").is("true");
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getFiveStarRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }   
@@ -89,14 +89,14 @@ public class GetRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getLikeRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("likes").and().field("myRating").is("true");
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getFiveStarRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }   
@@ -107,14 +107,14 @@ public class GetRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getLikeRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("likes").and().field("myRating").is("true");
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getFiveStarRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }   
@@ -126,14 +126,14 @@ public class GetRatingSanityTests extends RestTest
         document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(adminUser);
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
 
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getLikeRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("likes").and().field("myRating").is("true");
         
-        restRatingModel = restClient.onCoreAPI().usingResource(document).getFiveStarRating();
+        restRatingModel = restClient.withCoreAPI().usingResource(document).getFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModel.assertThat().field("id").is("fiveStar").and().field("myRating").is("5");
     }   
@@ -144,15 +144,15 @@ public class GetRatingSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToRetrieveRating() throws Exception
     {
         restClient.authenticateUser(adminUser);
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
 
         restClient.authenticateUser(new UserModel("random user", "random password"));
         
-        restClient.onCoreAPI().usingResource(document).getLikeRating();
+        restClient.withCoreAPI().usingResource(document).getLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
         
-        restClient.onCoreAPI().usingResource(document).getFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).getFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }   
 }

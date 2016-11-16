@@ -53,10 +53,10 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .addSiteMembershipRequest(siteModel);
-        restClient.onCoreAPI().usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage)
+        restClient.withCoreAPI().usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage)
                   .assertMembershipRequestMessageIs(updatedMessage)
                   .and().field("id").is(siteModel.getId())
                   .and().field("modifiedAt").isNotEmpty();
@@ -71,12 +71,12 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);            
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
@@ -91,12 +91,12 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember)
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
@@ -112,11 +112,11 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .onCoreAPI()
+                  .withCoreAPI()
                    .usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);      
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
@@ -131,12 +131,12 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI()
+                  .withCoreAPI()
                    .usingUser(newMember)
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
@@ -153,12 +153,12 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel otherMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(otherMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                    .usingUser(newMember)
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
@@ -174,12 +174,12 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser()
                   .addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember)
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 

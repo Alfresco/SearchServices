@@ -43,8 +43,8 @@ public class GetFavoritesSanityTests extends RestTest
         secondFileModel = dataContent.usingUser(adminUserModel).usingResource(firstFolderModel).createContent(DocumentType.TEXT_PLAIN);
 
   
-        firstSiteModel.setGuid(restClient.authenticateUser(adminUserModel).onCoreAPI().usingSite(firstSiteModel).getSite().getGuidWithoutVersion());
-        secondSiteModel.setGuid(restClient.authenticateUser(adminUserModel).onCoreAPI().usingSite(secondSiteModel).getSite().getGuidWithoutVersion());
+        firstSiteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(firstSiteModel).getSite().getGuidWithoutVersion());
+        secondSiteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(secondSiteModel).getSite().getGuidWithoutVersion());
 
         usersWithRoles = dataUser.addUsersWithRolesToSite(firstSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
@@ -54,9 +54,9 @@ public class GetFavoritesSanityTests extends RestTest
             TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorites sites with Rest API and status code is 200")
     public void adminIsAbleToRetrieveFavoritesSites() throws JsonToModelConversionException, Exception
     {
-        restClient.onCoreAPI().usingUser(adminUserModel).addSiteToFavorites(firstSiteModel);
-        restClient.onCoreAPI().usingUser(adminUserModel).addSiteToFavorites(secondSiteModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(firstSiteModel);
+        restClient.withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(secondSiteModel);
+        restClient.withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites()
                   .assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
                   .and().entriesListContains("targetGuid", secondSiteModel.getGuid());
@@ -67,9 +67,9 @@ public class GetFavoritesSanityTests extends RestTest
             TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorites folders with Rest API and status code is 200")
     public void adminIsAbleToRetrieveFavoritesFolders() throws JsonToModelConversionException, Exception
     {
-        restClient.onCoreAPI().usingUser(adminUserModel).addFolderToFavorites(firstFolderModel);
-        restClient.onCoreAPI().usingUser(adminUserModel).addFolderToFavorites(secondFolderModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI().usingUser(adminUserModel).addFolderToFavorites(firstFolderModel);
+        restClient.withCoreAPI().usingUser(adminUserModel).addFolderToFavorites(secondFolderModel);
+        restClient.withCoreAPI()
                   .usingAuthUser().where().targetFolderExist().getFavorites()
                   .assertThat().entriesListContains("targetGuid", firstFolderModel.getNodeRef())
                   .and().entriesListContains("targetGuid", secondFolderModel.getNodeRef());
@@ -80,9 +80,9 @@ public class GetFavoritesSanityTests extends RestTest
             TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorites files with Rest API and status code is 200")
     public void adminIsAbleToRetrieveFavoritesFiles() throws JsonToModelConversionException, Exception
     {        
-        restClient.onCoreAPI().usingUser(adminUserModel).addFileToFavorites(firstFileModel);
-        restClient.onCoreAPI().usingUser(adminUserModel).addFileToFavorites(secondFileModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI().usingUser(adminUserModel).addFileToFavorites(firstFileModel);
+        restClient.withCoreAPI().usingUser(adminUserModel).addFileToFavorites(secondFileModel);
+        restClient.withCoreAPI()
                 .usingAuthUser().where().targetFileExist().getFavorites()
                 .assertThat().entriesListContains("targetGuid", firstFileModel.getNodeRefWithoutVersion())
                 .and().entriesListContains("targetGuid", secondFileModel.getNodeRefWithoutVersion());
@@ -94,10 +94,10 @@ public class GetFavoritesSanityTests extends RestTest
     public void managerIsAbleToRetrieveFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.onCoreAPI()
+        restClient.withCoreAPI()
                   .usingAuthUser().addSiteToFavorites(firstSiteModel);
-        restClient.onCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
+        restClient.withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites()
                   .assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
                   .assertThat().entriesListContains("targetGuid", secondSiteModel.getGuid());
@@ -109,11 +109,11 @@ public class GetFavoritesSanityTests extends RestTest
     public void collaboratorIsAbleToRetrieveFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteToFavorites(firstSiteModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI()
                   .usingAuthUser().addSiteToFavorites(secondSiteModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites()
                   .assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
                   .and().entriesListContains("targetGuid", secondSiteModel.getGuid());
@@ -125,10 +125,10 @@ public class GetFavoritesSanityTests extends RestTest
     public void contributorIsAbleToRetrieveFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteToFavorites(firstSiteModel);
-        restClient.onCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
+        restClient.withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites()
                   .assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid()).and()
                   .entriesListContains("targetGuid", secondSiteModel.getGuid());
@@ -140,10 +140,10 @@ public class GetFavoritesSanityTests extends RestTest
     public void consumerIsAbleToRetrieveFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteToFavorites(firstSiteModel);
-        restClient.onCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
-        restClient.onCoreAPI()
+        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
+        restClient.withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites()
                   .assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
                   .assertThat().entriesListContains("targetGuid", secondSiteModel.getGuid());
@@ -155,7 +155,7 @@ public class GetFavoritesSanityTests extends RestTest
     public void userIsNotAbleToRetrieveFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
@@ -166,7 +166,7 @@ public class GetFavoritesSanityTests extends RestTest
     public void userIsNotAbleToRetrieveFavoritesOfAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, adminUserModel.getUsername()));
@@ -177,7 +177,7 @@ public class GetFavoritesSanityTests extends RestTest
     public void adminIsNotAbleToRetrieveFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().where().targetSiteExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
@@ -191,9 +191,9 @@ public class GetFavoritesSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteToFavorites(firstSiteModel);
-        restClient.onCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
+        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }

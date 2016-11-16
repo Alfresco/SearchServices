@@ -51,16 +51,16 @@ public class DeleteRatingSanityTests extends RestTest
     public void managerIsAbleToDeleteItsOwnRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restClient.onCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        restClient.onCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        returnedRatingModelCollection = restClient.onCoreAPI().usingResource(document).getRatings();
+        returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
@@ -74,16 +74,16 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restClient.onCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        restClient.onCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        returnedRatingModelCollection = restClient.onCoreAPI().usingResource(document).getRatings();
+        returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
@@ -97,16 +97,16 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restClient.onCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        restClient.onCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        returnedRatingModelCollection = restClient.onCoreAPI().usingResource(document).getRatings();
+        returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
@@ -120,16 +120,16 @@ public class DeleteRatingSanityTests extends RestTest
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restClient.onCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        restClient.onCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        returnedRatingModelCollection = restClient.onCoreAPI().usingResource(document).getRatings();
+        returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
@@ -145,16 +145,16 @@ public class DeleteRatingSanityTests extends RestTest
 
         restClient.authenticateUser(adminUser);
 
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
-        restClient.onCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        restClient.onCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        returnedRatingModelCollection = restClient.onCoreAPI().usingResource(document).getRatings();
+        returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedRatingModelCollection.assertNodeIsNotLiked()
             .assertNodeHasNoFiveStarRating()
@@ -169,15 +169,15 @@ public class DeleteRatingSanityTests extends RestTest
     	document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser);
         
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
         restClient.authenticateUser(new UserModel("random user", "random password"));
         
-        restClient.onCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
         
-        restClient.onCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }  
     
@@ -191,15 +191,15 @@ public class DeleteRatingSanityTests extends RestTest
         
         restClient.authenticateUser(userA);
         
-        restClient.onCoreAPI().usingResource(document).likeDocument();
-        restClient.onCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
         
         restClient.authenticateUser(userB);
         
-        restClient.authenticateUser(userB).onCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.authenticateUser(userB).withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
         
-        restClient.onCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }  
 }

@@ -32,35 +32,35 @@ public class DeleteProcessSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process started by him using REST API and status code is OK (204)")
     public void deleteProcessByUserWhoStartedProcess() throws Exception
     {
-        process = restClient.authenticateUser(userWhoAddsProcess).onWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+        process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
-        restClient.onWorkflowAPI().usingProcess(process).deleteProcess();
+        restClient.withWorkflowAPI().usingProcess(process).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.onWorkflowAPI().getProcesses().assertThat().entriesListDoesNotContain("id", process.getId());
+        restClient.withWorkflowAPI().getProcesses().assertThat().entriesListDoesNotContain("id", process.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User is able to delete process assigned to him using REST API and status code is OK (204)")
     public void deleteProcessByAssignedUser() throws Exception
     {
-        process = restClient.authenticateUser(userWhoAddsProcess).onWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+        process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
-        restClient.authenticateUser(assignee).onWorkflowAPI().usingProcess(process).deleteProcess();
+        restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(process).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.onWorkflowAPI().getProcesses().assertThat().entriesListDoesNotContain("id", process.getId());
+        restClient.withWorkflowAPI().getProcesses().assertThat().entriesListDoesNotContain("id", process.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify User that is not involved in a process is not authorized to delete it using REST API and status code is 403")
     public void deleteProcessByAnotherUser() throws Exception
     {
-        process = restClient.authenticateUser(userWhoAddsProcess).onWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+        process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
-        restClient.authenticateUser(anotherUser).onWorkflowAPI().usingProcess(process).deleteProcess();
+        restClient.authenticateUser(anotherUser).withWorkflowAPI().usingProcess(process).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("user is not allowed to access information about process");
     }
 }

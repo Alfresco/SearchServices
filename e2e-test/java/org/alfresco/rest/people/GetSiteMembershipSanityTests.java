@@ -38,7 +38,7 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteManagerCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(adminUser)
                   .getSiteMembership(siteModel)
                 	.assertThat().field("role").is(UserRole.SiteManager)
@@ -53,7 +53,7 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteCollaboratorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(adminUser)
                   .getSiteMembership(siteModel)
                   .onSite()
@@ -68,7 +68,7 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteContributorCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)) 
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(adminUser)
                   .getSiteMembership(siteModel)
                 	.assertThat().field("role").is(UserRole.SiteManager)
@@ -81,7 +81,7 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void siteConsumerCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI()                  
+                  .withCoreAPI()                  
                   .usingUser(adminUser)
                   .getSiteMembership(siteModel)
               		.assertThat().field("role").is(UserRole.SiteManager)
@@ -96,7 +96,7 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void adminCanRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                   .getSiteMembership(siteModel)
                 	.assertThat().field("role").is(UserRole.SiteManager)
@@ -112,7 +112,7 @@ public class GetSiteMembershipSanityTests extends RestTest
     public void unauthenticatedUserCannotRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"))
-                  .onCoreAPI()  
+                  .withCoreAPI()  
                   .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                   .getSiteMembership(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);

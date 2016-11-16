@@ -42,7 +42,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().removeFavoriteSite(siteModel1);
 
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -59,7 +59,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(collaboratorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -75,7 +75,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(contributorUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -91,7 +91,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(consumerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -107,7 +107,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -123,7 +123,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel2).addSiteToFavorites();
 
         restClient.authenticateUser(userAuth)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(anotherUser).removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
@@ -141,7 +141,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

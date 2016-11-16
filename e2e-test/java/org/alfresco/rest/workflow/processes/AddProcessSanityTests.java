@@ -30,12 +30,12 @@ public class AddProcessSanityTests extends RestWorkflowTest
         userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
 
-        addedProcess = restClient.authenticateUser(userWhoStartsProcess).onWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+        addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         addedProcess.assertThat().field("id").is(addedProcess.getId())
                     .and().field("startUserId").is(addedProcess.getStartUserId());
 
-        processes = restClient.onWorkflowAPI().getProcesses();
+        processes = restClient.withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().entriesListContains("id", addedProcess.getId());
     }
@@ -51,12 +51,12 @@ public class AddProcessSanityTests extends RestWorkflowTest
         tenantUserWhoStartsProcess = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("u2Tenant");
 
-        addedProcess = restClient.authenticateUser(tenantUserWhoStartsProcess).onWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, Priority.Normal);
+        addedProcess = restClient.authenticateUser(tenantUserWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, Priority.Normal);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         addedProcess.assertThat().field("id").is(addedProcess.getId())
                     .and().field("startUserId").is(addedProcess.getStartUserId());
 
-        processes = restClient.onWorkflowAPI().getProcesses();
+        processes = restClient.withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().entriesListContains("id", addedProcess.getId());
     }

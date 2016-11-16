@@ -47,11 +47,11 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(siteMember).deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -64,10 +64,10 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(siteMember).addSiteMembershipRequest(siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -80,12 +80,12 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember) 
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         restClient.authenticateUser(dataUser.getAdminUser())
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
@@ -98,10 +98,10 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
@@ -114,11 +114,11 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
@@ -132,10 +132,10 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     {
         siteMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(siteMember)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
@@ -148,11 +148,11 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     public void randomUserCanDeleteSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {     
         restClient.authenticateUser(dataUser.createRandomTestUser())
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
 
         restClient.authenticateUser(dataUser.createRandomTestUser())
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
@@ -164,11 +164,11 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
     public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMmebershipRequest() throws JsonToModelConversionException, Exception
     {        
         restClient.authenticateUser(dataUser.createRandomTestUser())
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

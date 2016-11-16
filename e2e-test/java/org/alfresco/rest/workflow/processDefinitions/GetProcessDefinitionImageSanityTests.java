@@ -29,14 +29,14 @@ public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
     {
         testUser = dataUser.createRandomTestUser();
         restClient.authenticateUser(dataUser.getAdminUser());
-        randomProcessDefinition = restClient.onWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
+        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Any user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
     public void anyUserGetsProcessDefinitionImage() throws Exception
     {
         restClient.authenticateUser(testUser);
-        restClient.onWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
+        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
             .assertResponseContainsImage();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -44,7 +44,7 @@ public class GetProcessDefinitionImageSanityTests extends RestWorkflowTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets a specific process definition image for non-network deployments using REST API and status code is OK (200)")
     public void adminGetsProcessDefinitionImage() throws Exception
     {
-        restClient.onWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
+        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
             .assertResponseContainsImage();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }

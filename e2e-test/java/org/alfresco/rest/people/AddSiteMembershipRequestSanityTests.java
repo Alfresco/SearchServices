@@ -48,7 +48,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -63,7 +63,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -78,7 +78,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -93,7 +93,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -108,7 +108,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(adminUser)
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();
@@ -123,7 +123,7 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(new UserModel("random user", "random password"))
-                  .onCoreAPI()
+                  .withCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel)
                   .assertThat().field("id").isNotEmpty()
                   .assertThat().field("site").isNotEmpty();

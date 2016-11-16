@@ -48,7 +48,7 @@ public class GetSitesSanityTests extends RestTest
     {
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .onCoreAPI().getSites()             
+                  .withCoreAPI().getSites()             
                 	.assertThat().entriesListIsNotEmpty()
                 	.assertThat().entriesListContains("id", siteModel.getId())
                 	.and().paginationExist();
@@ -60,7 +60,7 @@ public class GetSitesSanityTests extends RestTest
     public void collaboratorIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .onCoreAPI().getSites().assertThat().entriesListIsNotEmpty()
+                  .withCoreAPI().getSites().assertThat().entriesListIsNotEmpty()
                   .assertThat().entriesListContains("id", siteModel.getId())
                   .and().paginationExist();
                   
@@ -73,7 +73,7 @@ public class GetSitesSanityTests extends RestTest
     {
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .onCoreAPI().getSites()	
+                  .withCoreAPI().getSites()	
                 	.assertThat().entriesListIsNotEmpty()
                 	.assertThat().entriesListContains("id", siteModel.getId())
                 	.and().paginationExist();
@@ -86,7 +86,7 @@ public class GetSitesSanityTests extends RestTest
     {
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .onCoreAPI().getSites()
+                  .withCoreAPI().getSites()
                   .assertThat().entriesListIsNotEmpty()
               	  .assertThat().entriesListContains("id", siteModel.getId())
               	  .and().paginationExist();
@@ -98,7 +98,7 @@ public class GetSitesSanityTests extends RestTest
     public void adminUserIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
-                  .onCoreAPI().getSites()
+                  .withCoreAPI().getSites()
                 	.assertThat().entriesListIsNotEmpty()
                 	.assertThat().entriesListContains("id", siteModel.getId())
                 	.and().paginationExist();
@@ -115,7 +115,7 @@ public class GetSitesSanityTests extends RestTest
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel)
-                  .onCoreAPI().getSites();
+                  .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
