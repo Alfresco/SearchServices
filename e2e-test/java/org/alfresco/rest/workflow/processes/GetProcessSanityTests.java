@@ -25,14 +25,14 @@ public class GetProcessSanityTests extends RestWorkflowTest
     {
         userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
-        addedProcess = restClient.authenticateUser(userWhoStartsProcess).addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
+        addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user is able to get the process started by him using REST API and status code is OK (200)")
     public void getProcessByOwner() throws Exception
     {
-        process = restClient.authenticateUser(userWhoStartsProcess).usingProcess(addedProcess).getProcess();
+        process = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(addedProcess).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat().field("id").is(addedProcess.getId())
                .and().field("startUserId").is(addedProcess.getStartUserId());
@@ -42,7 +42,7 @@ public class GetProcessSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user is able to get the process assigned to him using REST API and status code is OK (200)")
     public void getProcessByAssignee() throws Exception
     {
-        process = restClient.authenticateUser(assignee).usingProcess(addedProcess).getProcess();
+        process = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(addedProcess).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat().field("id").is(addedProcess.getId())
                 .and().field("startUserId").is(addedProcess.getStartUserId());
@@ -52,7 +52,7 @@ public class GetProcessSanityTests extends RestWorkflowTest
             TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify admin is able to get any process using REST API and status code is OK (200)")
     public void getProcessByAdmin() throws Exception
     {
-        process = restClient.authenticateUser(dataUser.getAdminUser()).usingProcess(addedProcess).getProcess();
+        process = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().usingProcess(addedProcess).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat().field("id").is(addedProcess.getId())
                 .and().field("startUserId").is(addedProcess.getStartUserId());
