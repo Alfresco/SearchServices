@@ -1,6 +1,7 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestPreferenceModelsCollection;
 import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
@@ -24,6 +25,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
 {
     UserModel userModel;
     SiteModel siteModel;
+    private RestPreferenceModelsCollection restPreferenceModelsCollection; 
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -41,13 +43,10 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingAuthUser()
-                  .getPersonPreferences().assertThat().entriesListIsNotEmpty()
-                  .assertThat().paginationExist()
-                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModelsCollection = restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist()
+                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
@@ -59,12 +58,10 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
-        restClient.authenticateUser(collaboratorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
-                  .assertThat().paginationExist()
-                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModelsCollection = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist()
+                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
@@ -76,12 +73,10 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
-        restClient.authenticateUser(contributorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
-              	  .assertThat().paginationExist()
-              	  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModelsCollection = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist()
+              	  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
@@ -93,12 +88,10 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
-        restClient.authenticateUser(consumerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getPersonPreferences().assertThat().entriesListIsNotEmpty()
-                  .assertThat().paginationExist()
-                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModelsCollection = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist()
+                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
@@ -111,12 +104,10 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
         UserModel adminUser = dataUser.getAdminUser();
 
-        restClient.authenticateUser(adminUser)
-                  .withCoreAPI()
- .usingUser(managerUser).getPersonPreferences().assertThat().entriesListIsNotEmpty()
-                  .assertThat().paginationExist()
-                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModelsCollection = restClient.authenticateUser(adminUser).withCoreAPI().usingUser(managerUser).getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist()
+                  .and().entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
     }
     
     @Bug(id = "MNT-16904")
@@ -130,10 +121,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
         managerUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingAuthUser()
-                  .getPersonPreferences();
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
