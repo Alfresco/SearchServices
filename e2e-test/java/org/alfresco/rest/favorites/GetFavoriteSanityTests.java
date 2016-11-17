@@ -3,7 +3,6 @@ package org.alfresco.rest.favorites;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestPersonFavoritesModel;
 import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.utility.constants.UserRole;
