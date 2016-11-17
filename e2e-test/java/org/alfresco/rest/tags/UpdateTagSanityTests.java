@@ -10,6 +10,7 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -32,7 +33,8 @@ public class UpdateTagSanityTests extends RestTest
     private SiteModel siteModel;
     private RestTagModel oldTag;
     private DataUser.ListUserWithRoles usersWithRoles;
-    String randomTag = "";
+    private String randomTag = "";
+    private RestTagModel returnedModel;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -56,7 +58,7 @@ public class UpdateTagSanityTests extends RestTest
     public void adminIsAbleToUpdateTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        RestTagModel returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
+        returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(randomTag);
     }
@@ -98,14 +100,14 @@ public class UpdateTagSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Bug(id="MNT-16904")
-    public void managerIsNotAbleToUpdateTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    public void userIsNotAbleToUpdateTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }
