@@ -10,6 +10,7 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -112,8 +113,8 @@ public class DeleteTagSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
-    public void managerIsNotAbleToDeleteTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
+    public void userIsNotAbleToDeleteTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
         tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -122,6 +123,6 @@ public class DeleteTagSanityTests extends RestTest
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }
