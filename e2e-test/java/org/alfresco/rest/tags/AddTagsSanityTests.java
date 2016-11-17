@@ -10,6 +10,7 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -31,6 +32,7 @@ public class AddTagsSanityTests extends RestTest
     private SiteModel siteModel;
     private DataUser.ListUserWithRoles usersWithRoles;
     private String tag1, tag2;
+    private RestTagModelsCollection returnedCollection;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -54,11 +56,10 @@ public class AddTagsSanityTests extends RestTest
     public void adminIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
+        returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedCollection.assertThat().entriesListContains("tag", tag1)
             .and().entriesListContains("tag", tag2);
-
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -66,7 +67,7 @@ public class AddTagsSanityTests extends RestTest
     public void managerIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
+        returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedCollection.assertThat().entriesListContains("tag", tag1)
             .and().entriesListContains("tag", tag2);
@@ -77,7 +78,7 @@ public class AddTagsSanityTests extends RestTest
     public void collaboratorIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
+        returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedCollection.assertThat().entriesListContains("tag", tag1)
             .and().entriesListContains("tag", tag2);
@@ -99,7 +100,7 @@ public class AddTagsSanityTests extends RestTest
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(userModel);
         contributorDoc = dataContent.usingSite(siteModel).usingUser(userModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().usingResource(contributorDoc).addTags(tag1, tag2);
+        returnedCollection = restClient.withCoreAPI().usingResource(contributorDoc).addTags(tag1, tag2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedCollection.assertThat().entriesListContains("tag", tag1)
             .and().entriesListContains("tag", tag2);
@@ -114,14 +115,13 @@ public class AddTagsSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
+            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Bug(id="MNT-16904")
-    public void managerIsNotAbleToAddTagsIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    public void userIsNotAbleToAddTagsIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager).withCoreAPI().usingResource(document).addTags(tag1, tag2);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }
-
