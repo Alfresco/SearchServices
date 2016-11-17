@@ -7,6 +7,7 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -44,8 +45,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .withCoreAPI()
-                  .usingSite(siteModel).addPerson(newUser);
+                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
         
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -59,8 +59,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .withCoreAPI()
-                  .usingSite(siteModel).addPerson(newUser);
+                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
         
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -75,8 +74,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .withCoreAPI()
-                  .usingSite(siteModel).addPerson(newUser);
+                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
@@ -93,8 +91,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .withCoreAPI()
-                  .usingSite(siteModel).addPerson(newUser);
+                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
@@ -111,8 +108,7 @@ public class DeleteSiteMemberSanityTests extends RestTest
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUser)  
-                  .withCoreAPI()
-                  .usingSite(siteModel).addPerson(newUser);
+                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
@@ -128,6 +124,6 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
         restClient.withCoreAPI().usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }
