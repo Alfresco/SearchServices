@@ -4,12 +4,13 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestTagModelsCollection;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -45,6 +46,8 @@ public class GetTagsSanityTests extends RestTest
         
         tagValue2 = RandomData.getRandomName("tag");
         restClient.withCoreAPI().usingResource(document).addTag(tagValue2);
+        
+        Utility.waitToLoopTime(5);
     }
     
     
@@ -54,7 +57,7 @@ public class GetTagsSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListIsEmpty()
+        returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
             .and().entriesListContains("tag", tagValue2.toLowerCase());    
     }
@@ -65,7 +68,7 @@ public class GetTagsSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListIsEmpty()
+        returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
             .and().entriesListContains("tag", tagValue2.toLowerCase());
     }
@@ -76,7 +79,7 @@ public class GetTagsSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListIsEmpty()
+        returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
             .and().entriesListContains("tag", tagValue2.toLowerCase());    
     }
@@ -87,7 +90,7 @@ public class GetTagsSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListIsEmpty()
+        returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
             .and().entriesListContains("tag", tagValue2.toLowerCase());    
     }
@@ -98,7 +101,7 @@ public class GetTagsSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListIsEmpty()
+        returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
             .and().entriesListContains("tag", tagValue2.toLowerCase());    
     }
@@ -113,6 +116,6 @@ public class GetTagsSanityTests extends RestTest
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel);
         restClient.withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }
