@@ -41,10 +41,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().removeFavoriteSite(siteModel1);
-
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
@@ -58,9 +55,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(collaboratorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
@@ -74,9 +69,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(contributorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
@@ -90,9 +83,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(consumerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
@@ -106,9 +97,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(anyUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(adminUser)
-                  .withCoreAPI()
-                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingUser(anyUser).removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
@@ -122,11 +111,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anotherUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(anotherUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(userAuth)
-                  .withCoreAPI()
-                  .usingUser(anotherUser).removeFavoriteSite(siteModel1);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.authenticateUser(userAuth).withCoreAPI().usingUser(anotherUser).removeFavoriteSite(siteModel1);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -140,9 +126,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
         managerUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().removeFavoriteSite(siteModel1);
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
