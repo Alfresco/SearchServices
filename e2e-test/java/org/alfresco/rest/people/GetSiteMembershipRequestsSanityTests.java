@@ -39,7 +39,6 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
                   .usingAuthUser().addSiteMembershipRequest(siteModel);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
     }
 
     @Bug(id = "MNT-16557")

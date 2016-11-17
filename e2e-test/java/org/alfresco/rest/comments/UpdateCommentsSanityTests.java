@@ -116,7 +116,7 @@ public class UpdateCommentsSanityTests extends RestTest
         content.setNodeRef("node ref that does not exist");
         restClient.withCoreAPI().usingResource(content).updateComment(commentModel, "This is the updated comment.");                
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                                      .assertLastError().containsSummary("node ref that does not exist was not found");
+                  .assertLastError().containsSummary("node ref that does not exist was not found");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SANITY }, executionType = ExecutionType.SANITY, description = "Verify if commentId is not set the status code is 404")
@@ -129,7 +129,7 @@ public class UpdateCommentsSanityTests extends RestTest
         comment.setId(id);
         restClient.withCoreAPI().usingResource(document).updateComment(comment, "This is the updated comment."); 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                                       .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, id));
+                  .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, id));
     }
 
 }
