@@ -2,6 +2,7 @@ package org.alfresco.rest.people;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestActivityModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -25,6 +26,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
     UserModel userModel;
     SiteModel siteModel;
     UserModel searchedUser;
+    private RestActivityModelsCollection restActivityModelsCollection;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -43,13 +45,10 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getPersonActivities()
-                  .assertThat().entriesListIsNotEmpty()
-                  .and().entriesListContains("siteId", siteModel.getId())
-                  .and().paginationExist();
+        restActivityModelsCollection = restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
+                  .and().paginationExist();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
@@ -61,13 +60,10 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         dataContent.usingUser(collaboratorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restClient.authenticateUser(collaboratorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getPersonActivities()
-                	.assertThat().entriesListIsNotEmpty()
-                	.and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
+                	.and().paginationExist();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
@@ -79,13 +75,10 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         dataContent.usingUser(contributorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restClient.authenticateUser(contributorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getPersonActivities()
-                	.assertThat().entriesListIsNotEmpty()
-                	.and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
+                	.and().paginationExist();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
@@ -96,13 +89,10 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         
-        restClient.authenticateUser(consumerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getPersonActivities()
-                	.assertThat().entriesListIsNotEmpty()
-                	.and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
+                	.and().paginationExist();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
@@ -110,13 +100,10 @@ public class GetPeopleActivitiesSanityTests extends RestTest
               description = "Verify admin user gets another user activities with Rest API and response is successful")
     public void adminUserShouldGetPeopleActivitiesList() throws Exception
     {
-        restClient.authenticateUser(dataUser.getAdminUser())
-                  .withCoreAPI()
- .usingUser(userModel).getPersonActivities()
-                	.assertThat().entriesListIsNotEmpty()
-                	.and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(userModel).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
+                	.and().paginationExist();
     }
     
     @Bug(id = "MNT-16904")
@@ -129,9 +116,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         managerUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser)    
-                  .withCoreAPI()
- .usingUser(userModel).getPersonActivities();
+        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userModel).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
