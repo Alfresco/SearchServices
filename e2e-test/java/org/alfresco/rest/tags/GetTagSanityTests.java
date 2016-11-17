@@ -7,9 +7,9 @@ import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -116,7 +116,7 @@ public class GetTagSanityTests extends RestTest
         managerUser.setPassword("wrongPassword");
         restClient.authenticateUser(managerUser);
         restClient.withCoreAPI().getTag(tag);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
     
 }
