@@ -3,7 +3,6 @@ package org.alfresco.rest.workflow.tasks;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestFormModelsCollection;
-import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
@@ -11,7 +10,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -22,13 +20,12 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class GetTaskFormModelSanityTests extends RestTest
 {
-    @Autowired RestTasksApi tasksApi;
-
     UserModel userModel;
     SiteModel siteModel;
     FileModel fileModel;
     TaskModel taskModel;
-
+    RestFormModelsCollection returnedCollection;
+    
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
@@ -36,8 +33,6 @@ public class GetTaskFormModelSanityTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
-
-        tasksApi.useRestClient(restClient);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
@@ -45,9 +40,8 @@ public class GetTaskFormModelSanityTests extends RestTest
     public void adminGetsTaskFormModels() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser());
-        RestFormModelsCollection returnedCollection = tasksApi.getTaskFormModel(taskModel);
-
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection = restClient.withWorkflowAPI().usingTask(taskModel).getTaskFormModel();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty();
 
         String[] qualifiedNames = {
@@ -68,7 +62,7 @@ public class GetTaskFormModelSanityTests extends RestTest
           returnedCollection.assertThat().entriesListContains("qualifiedName", formQualifiedName);
         }
 
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
@@ -76,10 +70,8 @@ public class GetTaskFormModelSanityTests extends RestTest
     public void involvedUserGetsTaskFormModels() throws Exception
     {
         restClient.authenticateUser(userModel);
-        RestFormModelsCollection returnedCollection = tasksApi.getTaskFormModel(taskModel);
-
-        returnedCollection.assertThat().entriesListIsNotEmpty();
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection = restClient.withWorkflowAPI().usingTask(taskModel).getTaskFormModel();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty();
     }
 }
