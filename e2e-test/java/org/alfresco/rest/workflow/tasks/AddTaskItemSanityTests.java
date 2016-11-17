@@ -4,8 +4,6 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestItemModel;
-import org.alfresco.rest.requests.RestTasksApi;
-import org.alfresco.rest.requests.RestTenantApi;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
@@ -14,7 +12,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -22,12 +19,6 @@ import org.testng.annotations.Test;
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class AddTaskItemSanityTests extends RestTest
 {
-    @Autowired
-    RestTasksApi tasksApi;
-        
-    @Autowired
-    RestTenantApi tenantApi;
-    
     private UserModel userModel, userWhoStartsTask, assigneeUser, adminTenantUser, tenantUser, tenantUserAssignee;;
     private SiteModel siteModel; 
     private FileModel fileModel, document2, document3, document4;
@@ -44,8 +35,6 @@ public class AddTaskItemSanityTests extends RestTest
         userWhoStartsTask = dataUser.createRandomTestUser();
         assigneeUser = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
-
-        tasksApi.useRestClient(restClient);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
@@ -55,7 +44,9 @@ public class AddTaskItemSanityTests extends RestTest
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document2);
+        
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt())
             .assertThat().field("size").is(taskItem.getSize())
@@ -65,18 +56,20 @@ public class AddTaskItemSanityTests extends RestTest
             .assertThat().field("modifiedBy").is(taskItem.getModifiedBy())
             .assertThat().field("id").is(taskItem.getId())
             .assertThat().field("mimeType").is(taskItem.getMimeType());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @Bug(id = "MNT-16966")
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
-            description = "Verify that in case task item exists request ")
+            description = "Verify that in case task item exists the request fails")
     public void createTaskItemThatAlreadyExists() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
         document3 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document3);
+        
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document3);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
         taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt())
             .assertThat().field("size").is(taskItem.getSize())
             .and().field("createdBy").is(taskItem.getCreatedBy())
@@ -85,8 +78,9 @@ public class AddTaskItemSanityTests extends RestTest
             .and().field("modifiedBy").is(taskItem.getModifiedBy())
             .and().field("id").is(taskItem.getId())
             .and().field("mimeType").is(taskItem.getMimeType());
-        taskItem = tasksApi.addTaskItem(taskModel, document3);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document3);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
     @Test(groups = { TestGroup.NETWORKS })
@@ -98,8 +92,7 @@ public class AddTaskItemSanityTests extends RestTest
         restClient.authenticateUser(adminuser);
 
         adminTenantUser = UserModel.getAdminTenantUser();
-        tenantApi.useRestClient(restClient);
-        tenantApi.createTenant(adminTenantUser);
+        restClient.usingTenant().createTenant(adminTenantUser);
 
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
@@ -108,7 +101,9 @@ public class AddTaskItemSanityTests extends RestTest
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
 
         document4 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document4);
+        
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document4);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt())
                 .and().field("size").is(taskItem.getSize())
                 .and().field("createdBy").is(taskItem.getCreatedBy())
@@ -117,6 +112,5 @@ public class AddTaskItemSanityTests extends RestTest
                 .and().field("modifiedBy").is(taskItem.getModifiedBy())
                 .and().field("id").is(taskItem.getId())
                 .and().field("mimeType").is(taskItem.getMimeType());
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
     }
 }
