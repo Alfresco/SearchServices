@@ -1,65 +1,56 @@
 package org.alfresco.rest.workflow.deployments;
 
-import org.alfresco.rest.RestWorkflowTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestDeploymentModel;
-import org.alfresco.rest.requests.RestDeploymentsApi;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
  * Tests for REST API call GET "/deployments/{deploymentId}"
- * 
+ *
  * @author Cristina Axinte
  *
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY })
-public class GetDeploymentSanityTests extends RestWorkflowTest
+public class GetDeploymentSanityTests extends RestTest
 {
-    @Autowired
-    private RestDeploymentsApi deploymentsApi;
-
     private UserModel adminUser;
     private UserModel anotherUser;
-    private RestDeploymentModel deployment;
+    private RestDeploymentModel expectedDeployment, actualDeployment;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUser = dataUser.getAdminUser();
         anotherUser = dataUser.createRandomTestUser();
-        
-        deploymentsApi.useRestClient(restClient);
-        restClient.authenticateUser(adminUser);
-        deployment = deploymentsApi.getDeployments().getOneRandomEntry().onModel();
+
+        expectedDeployment = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify admin user gets a non-network deployment using REST API and status code is OK (200)")
     public void adminGetsNonNetworkDeploymentWithSuccess() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(adminUser);
-        deploymentsApi.getDeployment(deployment)
-        	.assertThat().field("deployedAt").isNotEmpty()
-        	.and().field("name").is(deployment.getName())
-        	.and().field("id").equals(deployment.getId());
-        deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.OK);
+        actualDeployment = restClient.authenticateUser(adminUser).withWorkflowAPI().usingDeployment(expectedDeployment).getDeployment();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        actualDeployment.assertThat().field("deployedAt").isNotEmpty()
+        	.and().field("name").is(expectedDeployment.getName())
+        	.and().field("id").equals(expectedDeployment.getId());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify non admin user is forbidden to get a non-network deployment using REST API (403)")
     public void nonAdminIsForbiddenToGetNonNetworkDeployment() throws JsonToModelConversionException, Exception
-    {        
-        restClient.authenticateUser(anotherUser);
-        deploymentsApi.getDeployment(deployment);
-        deploymentsApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.FORBIDDEN)
+    {
+        restClient.authenticateUser(anotherUser).withWorkflowAPI().usingDeployment(expectedDeployment).getDeployment();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
         	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 }
