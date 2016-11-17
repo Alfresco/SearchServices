@@ -1,6 +1,7 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestFavoriteSiteModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -18,6 +19,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
     UserModel userModel;
     SiteModel siteModel;
     UserModel searchedUser;
+    private RestFavoriteSiteModel restFavoriteSiteModel;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -32,12 +34,9 @@ public class AddFavoriteSiteSanityTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()                  
-                  .usingUser(managerUser)
-                  .addFavoriteSite(siteModel)
-                  .assertThat().field("id").is(siteModel.getId());
+        restFavoriteSiteModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(managerUser).addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
         
         restClient.withCoreAPI().usingUser(managerUser).addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT);        
@@ -50,12 +49,9 @@ public class AddFavoriteSiteSanityTests extends RestTest
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
 
-        restClient.authenticateUser(collaboratorUser)
-                  .withCoreAPI()
-                  .usingAuthUser()
-                  .addFavoriteSite(siteModel)
-                  .assertThat().field("id").is(siteModel.getId());
+        restFavoriteSiteModel = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user add a favorite site with Rest API and response is successful (201)")
@@ -64,12 +60,9 @@ public class AddFavoriteSiteSanityTests extends RestTest
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
-        restClient.authenticateUser(contributorUser)
-                  .withCoreAPI()
-                  .usingAuthUser()
-                  .addFavoriteSite(siteModel)
-                  .assertThat().field("id").is(siteModel.getId());
+        restFavoriteSiteModel = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);          
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user add a favorite site with Rest API and response is successful (201)")
@@ -78,12 +71,9 @@ public class AddFavoriteSiteSanityTests extends RestTest
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
 
-        restClient.authenticateUser(consumerUser)
-                  .withCoreAPI()
-                  .usingAuthUser()
-                  .addFavoriteSite(siteModel)
-                  .assertThat().field("id").is(siteModel.getId());
+        restFavoriteSiteModel = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user add a favorite site with Rest API and response is successful (201)")
@@ -91,12 +81,9 @@ public class AddFavoriteSiteSanityTests extends RestTest
     {
         UserModel adminUser = dataUser.getAdminUser();
 
-        restClient.authenticateUser(adminUser)
-                  .withCoreAPI()
-                  .usingAuthUser()
-                  .addFavoriteSite(siteModel)
-                  .assertThat().field("id").is(siteModel.getId());
+        restFavoriteSiteModel = restClient.authenticateUser(adminUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
     @Bug(id = "MNT-16904")
@@ -107,10 +94,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         managerUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingAuthUser()
-                  .addFavoriteSite(siteModel);
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
