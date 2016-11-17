@@ -3,7 +3,6 @@ package org.alfresco.rest.workflow.tasks;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestItemModel;
-import org.alfresco.rest.requests.RestTasksApi;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
@@ -11,7 +10,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -22,10 +20,6 @@ import org.testng.annotations.Test;
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class RemoveTaskItemSanityTests extends RestTest
 {
-    @Autowired
-    RestTasksApi tasksApi;
-
-
     private UserModel adminUser, userModel, userWhoStartsTask, assigneeUser;
     private SiteModel siteModel;
     private FileModel fileModel, document2;
@@ -43,8 +37,6 @@ public class RemoveTaskItemSanityTests extends RestTest
         userWhoStartsTask = dataUser.createRandomTestUser();
         assigneeUser = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
-
-        tasksApi.useRestClient(restClient);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
@@ -53,10 +45,11 @@ public class RemoveTaskItemSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document2);
-        tasksApi.deleteTaskItem(taskModel, taskItem);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        tasksApi.getTaskItems(taskModel)
+        
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
+        restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withWorkflowAPI().usingTask(taskModel).getTaskItems()
         	.assertThat().entriesListDoesNotContain("id", taskItem.getId()).and()
         	.entriesListDoesNotContain("name", document2.getName());
     }
@@ -67,10 +60,11 @@ public class RemoveTaskItemSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document2);
+        
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
         taskModel.setId("invalidTaskId");
-        tasksApi.deleteTaskItem(taskModel, taskItem);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
@@ -79,9 +73,9 @@ public class RemoveTaskItemSanityTests extends RestTest
     {
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = tasksApi.addTaskItem(taskModel, document2);
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
         taskItem.setId("incorrectItemId");
-        tasksApi.deleteTaskItem(taskModel, taskItem);
-        tasksApi.usingRestWrapper().assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }
