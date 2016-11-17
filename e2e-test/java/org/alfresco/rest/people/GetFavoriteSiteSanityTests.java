@@ -1,6 +1,7 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
@@ -26,6 +27,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
     SiteModel siteModel1;
     SiteModel siteModel2;
     UserModel searchedUser;
+    private RestSiteModel restSiteModel;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -45,12 +47,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(managerUser)  
-                  .withCoreAPI()
-                  .usingAuthUser().getFavoriteSite(siteModel1)
-                  .assertThat().field("id").is(siteModel1.getId())
-                  .and().field("title").isNotNull();
+        restSiteModel = restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -63,12 +62,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(collaboratorUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(collaboratorUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(collaboratorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getFavoriteSite(siteModel1)
-                	.assertThat().field("id").is(siteModel1.getId())
-                	.and().field("title").isNotNull();
+        restSiteModel = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -81,12 +77,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(contributorUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(contributorUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(contributorUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getFavoriteSite(siteModel1)
-                	.assertThat().field("id").is(siteModel1.getId())
-                	.and().field("title").isNotNull();
+        restSiteModel = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -99,12 +92,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(consumerUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(consumerUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(consumerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getFavoriteSite(siteModel1)
-                	.assertThat().field("id").is(siteModel1.getId())
-                	.and().field("title").isNotNull();
+        restSiteModel = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -117,12 +107,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(anyUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(anyUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(adminUset)
-                  .withCoreAPI()
-                  .usingAuthUser().getFavoriteSite(siteModel1)
-                	.assertThat().field("id").is(siteModel1.getId())
-                	.and().field("title").isNotNull();
+        restSiteModel = restClient.authenticateUser(adminUset).withCoreAPI().usingUser(anyUser).getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -135,9 +122,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel1).addSiteToFavorites();
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingUser(userModel).getFavoriteSite(siteModel1);
+        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userModel).getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
     
@@ -153,9 +138,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel2).addSiteToFavorites();
         managerUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingAuthUser().getFavoriteSite(siteModel1);
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 }
