@@ -44,17 +44,17 @@ public class SolrSearchInTreeTests extends CmisTest
         testSite = dataSite.usingUser(testUser).createPublicRandomSite();
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(parentFolder)
             .then().usingResource(parentFolder)
-                .createFile(subFile5).and().assertThat().existsInRepo().and().assertThat().contentIs("fifthFile content")
-                .createFolder(subFolder1).and().assertThat().existsInRepo()
-                .createFolder(subFolder2).and().assertThat().existsInRepo()
-                .createFolder(subFolder3).and().assertThat().existsInRepo()
-                .createFile(subFile1).and().assertThat().existsInRepo()
-                .createFile(subFile2).and().assertThat().existsInRepo()
-                .createFile(subFile3).and().assertThat().existsInRepo()
-                .createFile(subFile4).and().assertThat().existsInRepo()
+                .createFile(subFile5).assertThat().contentIs("fifthFile content")
+                .createFolder(subFolder1)
+                .createFolder(subFolder2)
+                .createFolder(subFolder3)
+                .createFile(subFile1)
+                .createFile(subFile2)
+                .createFile(subFile3)
+                .createFile(subFile4)
                     .then().usingResource(subFolder1)
-                        .createFile(subFile6).assertThat().existsInRepo()
-                        .createFolder(FolderModel.getRandomFolderModel()).assertThat().existsInRepo();
+                        .createFile(subFile6)
+                        .createFolder(FolderModel.getRandomFolderModel());
         // wait for solr index
         Utility.waitToLoopTime(25);
     }
