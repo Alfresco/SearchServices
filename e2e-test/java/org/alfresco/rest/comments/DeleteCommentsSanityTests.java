@@ -6,7 +6,6 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -15,7 +14,6 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
@@ -38,59 +36,44 @@ public class DeleteCommentsSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
-    @BeforeMethod(alwaysRun=true)
-    public void addCommentToDocument() throws Exception
-    {
-        restClient.authenticateUser(adminUserModel);        
-        comment = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
-    }
-
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user delete comments with Rest API and status code is 204")
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user deletes comments with Rest API and status code is 204")
     public void adminIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
+        comment = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user delete comments created by admin user with Rest API and status code is 204")
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user deletes own comments and status code is 204")
     public void managerIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        comment = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Manager");
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can't delete comments created by admin user with Rest API and status code is 403")
-    public void collaboratorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user deletes own comments and status code is 204")
+    public void collaboratorIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        comment = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Collaborator");
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete comments created by admin user with Rest API and status code is 403")
-    public void contributorIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user deletes own comments and status code is 204")
+    public void contributorIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        comment = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Contributor");
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
-    }
-
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't delete comments created by admin user with Rest API and status code is 403")
-    public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
-    {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restClient.withCoreAPI().usingResource(document).deleteComment(comment);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -99,6 +82,7 @@ public class DeleteCommentsSanityTests extends RestTest
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel);
+        comment = restClient.withCoreAPI().usingResource(document).addComment("New comment addded by Manager");
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
