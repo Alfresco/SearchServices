@@ -36,8 +36,6 @@ public class UpdateCommentsSanityTests extends RestTest
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
-
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
@@ -46,6 +44,7 @@ public class UpdateCommentsSanityTests extends RestTest
     public void adminIsAbleToUpdateComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
         String updatedContent = "This is the updated comment with admin user";
         restClient.withCoreAPI().usingResource(document).updateComment(commentModel, updatedContent)      
                    .assertThat().field("content").isNotEmpty()
@@ -58,6 +57,7 @@ public class UpdateCommentsSanityTests extends RestTest
     public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by manager");
         restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Manager user")
                 .and().field("content").is("This is the updated comment with Manager user")
                 .and().field("canEdit").is(true)
@@ -66,20 +66,22 @@ public class UpdateCommentsSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can not update comments created by admin user and status code is 403")
-    public void contributorIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can update his own comment and status code is 200")
+    public void contributorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by contributor");
         String updatedContent = "This is the updated comment with Contributor user";
         restClient.withCoreAPI().usingResource(document).updateComment(commentModel, updatedContent);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                                      .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can not update comments created by admin user and status code is 403")
     public void consumerIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Consumer user");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
@@ -87,13 +89,14 @@ public class UpdateCommentsSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can not update comment created by admin user and status code is 403")
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can update his own comment and status code is 200")
     @Bug(id="REPO-1011")
-    public void collaboratorIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    public void collaboratorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
         restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Collaborator user");        
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);   
+        restClient.assertStatusCodeIs(HttpStatus.OK);   
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -114,6 +117,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
         FolderModel content = FolderModel.getRandomFolderModel();
         content.setNodeRef("node ref that does not exist");
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
         restClient.withCoreAPI().usingResource(content).updateComment(commentModel, "This is the updated comment.");                
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError().containsSummary("node ref that does not exist was not found");
