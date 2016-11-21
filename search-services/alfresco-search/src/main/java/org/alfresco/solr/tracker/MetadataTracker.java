@@ -658,6 +658,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                         trackerStats.addElapsedNodeTime(docCount, endElapsed - startElapsed);
                         startElapsed = endElapsed;
                         docCount = 0;
+
+                        //Release the write lock allowing the commit tracker to run.
+                        this.getWriteLock().release();
+                        //Re-acquire the write lock and keep indexing.
+                        this.getWriteLock().acquire();
                     }
                     checkShutdown();
                 }

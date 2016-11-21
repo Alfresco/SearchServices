@@ -102,8 +102,9 @@ public class SolrCoreLoadRegistration {
             }
 
             List<Tracker> trackers = createTrackers(coreName, trackerRegistry, props, scheduler, repositoryClient, srv);
+            List<Tracker> lockBeforeCommit = getLockBeforeCommit(trackers);
 
-            CommitTracker commitTracker = new CommitTracker(props, repositoryClient, coreName, srv, trackers);
+            CommitTracker commitTracker = new CommitTracker(props, repositoryClient, coreName, srv, lockBeforeCommit);
             trackerRegistry.register(coreName, commitTracker);
             scheduler.schedule(commitTracker, coreName, props);
             log.info("The Trackers are now scheduled to run");
@@ -162,6 +163,18 @@ public class SolrCoreLoadRegistration {
         trackers.add(metaTrkr);
         trackers.add(aclTracker);
         return trackers;
+    }
+
+    private static List<Tracker> getLockBeforeCommit(List<Tracker> trackers) {
+        List<Tracker> lockBeforeCommit = new ArrayList();
+        for(Tracker tracker : trackers) {
+            if(tracker instanceof MetadataTracker) {
+                lockBeforeCommit.add(tracker);
+            }else if(tracker instanceof AclTracker) {
+                lockBeforeCommit.add(tracker);
+            }
+        }
+        return lockBeforeCommit;
     }
 
     /**
