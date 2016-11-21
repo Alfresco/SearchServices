@@ -48,7 +48,7 @@ public class GetCommentsCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withParams("maxItems=0")
                 .withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(ErrorModel.INVALID_ARGUMENT);
+                .assertLastError().containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
