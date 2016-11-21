@@ -3,12 +3,10 @@ package org.alfresco.rest.comments;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -25,17 +23,17 @@ public class GetCommentsSanityTests extends RestTest
     private SiteModel siteModel;
     private UserModel userModel;
     private ListUserWithRoles usersWithRoles;
-    private String content;
+    private String content = "This is a new comment";
+    private RestCommentModelsCollection comments;
 	
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUserModel);
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();        
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        content = "This is a new comment";
-        restClient.withCoreAPI().usingResource(document).addComment(content);
+        restClient.authenticateUser(adminUserModel).withCoreAPI()
+                .usingResource(document).addComment(content);
         
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
@@ -44,51 +42,50 @@ public class GetCommentsSanityTests extends RestTest
             description= "Verify Admin user gets comments with Rest API and status code is 200")
     public void adminIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(adminUserModel);
-        restClient.withCoreAPI().usingResource(document).getNodeComments();
+        comments = restClient.authenticateUser(adminUserModel).withCoreAPI()
+                    .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", content);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Manager user gets comments created by admin user with Rest API and status code is 200")
     public void managerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.withCoreAPI().usingResource(document).getNodeComments()
-                   .assertThat().entriesListContains("content", content);
-                   
+        comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI()
+                    .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", content);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Contributor user gets comments created by admin user with Rest API and status code is 200")
     public void contributorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        restClient.withCoreAPI().usingResource(document).getNodeComments()
-                   .assertThat().entriesListContains("content", content);
-                   
+        comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI()
+                    .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", content);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Collaborator user gets comments created by admin user with Rest API and status code is 200")
     public void collaboratorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.withCoreAPI().usingResource(document).getNodeComments()
-                .assertThat().entriesListContains("content", content);                
+        comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI()
+                    .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", content);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Consumer user gets comments created by admin user with Rest API and status code is 200")
     public void consumerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        restClient.withCoreAPI().usingResource(document).getNodeComments()
-                   .assertThat().entriesListContains("content", content);
+        comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI()
+                .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", content);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
@@ -97,9 +94,10 @@ public class GetCommentsSanityTests extends RestTest
     public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
-        restClient.authenticateUser(nonexistentModel);
-        restClient.withCoreAPI().usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.authenticateUser(nonexistentModel).withCoreAPI()
+                .usingResource(document).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+                .assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
@@ -107,15 +105,15 @@ public class GetCommentsSanityTests extends RestTest
     public void managerIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(userModel);
         String contentManager = "This is a new comment added by " + userModel.getUsername();
-        restClient.withCoreAPI().usingResource(document).addComment(contentManager);
+        restClient.authenticateUser(userModel).withCoreAPI()
+                .usingResource(document).addComment(contentManager);
         restClient.assertStatusCodeIs(HttpStatus.CREATED); 
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.withCoreAPI().usingResource(document).getNodeComments()
-                   .assertThat().entriesListContains("content", contentManager);
-                   
+        comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI()
+                .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", contentManager)
+                .and().entriesListContains("content", content);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
@@ -123,14 +121,14 @@ public class GetCommentsSanityTests extends RestTest
     public void adminIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(userModel);
         String contentCollaborator = "This is a new comment added by " + userModel.getUsername();
-        restClient.withCoreAPI().usingResource(document).addComment(contentCollaborator);
+        restClient.authenticateUser(userModel).withCoreAPI()
+                .usingResource(document).addComment(contentCollaborator);
         restClient.assertStatusCodeIs(HttpStatus.CREATED); 
-        restClient.authenticateUser(adminUserModel);
-        restClient.withCoreAPI().usingResource(document).getNodeComments()
-                  .assertThat().entriesListContains("content", contentCollaborator);
-                  
+        comments = restClient.authenticateUser(adminUserModel).withCoreAPI()
+                .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", contentCollaborator)
+                .and().entriesListContains("content", content);
     }
 }
