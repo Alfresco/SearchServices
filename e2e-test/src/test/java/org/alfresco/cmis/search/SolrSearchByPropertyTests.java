@@ -12,7 +12,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
 public class SolrSearchByPropertyTests extends CmisTest
 {
     XMLTestData testData;
@@ -41,7 +40,8 @@ public class SolrSearchByPropertyTests extends CmisTest
         Utility.waitToLoopTime(15);
     }
 
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchWithProperty")
+    @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
+            dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchWithProperty")
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-property.xml")
     public void executeSortedSearchByID(QueryModel query) throws Exception
     {

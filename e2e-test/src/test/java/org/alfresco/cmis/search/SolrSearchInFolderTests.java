@@ -16,7 +16,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
 public class SolrSearchInFolderTests extends CmisTest
 {
     UserModel testUser;
@@ -61,7 +60,8 @@ public class SolrSearchInFolderTests extends CmisTest
         dataContent.deleteSite(testSite);
     }
     
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
+            dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-in-folder.xml")
     public void executeCMISQuery(QueryModel query)
     {

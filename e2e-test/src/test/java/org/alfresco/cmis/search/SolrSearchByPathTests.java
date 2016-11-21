@@ -11,7 +11,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.CMIS, TestGroup.QUERIES })
 public class SolrSearchByPathTests extends CmisTest
 {
     XMLTestData testData;
@@ -39,7 +38,8 @@ public class SolrSearchByPathTests extends CmisTest
         Utility.waitToLoopTime(20);
     }
 
-    @Test(dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
+            dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-path.xml")
     public void executeSearchByPathQueries(QueryModel query) throws Exception
     {
