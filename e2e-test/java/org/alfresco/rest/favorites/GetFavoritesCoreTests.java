@@ -6,6 +6,7 @@ import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -228,15 +229,16 @@ public class GetFavoritesCoreTests extends RestTest
                 .and().paginationField("totalItems").is("2");
     }
 
+    @Bug(id="MNT-17146")
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify request using personId that does not exist returns status 404")
     public void checkFavoritesWhenPersonIdDoesNotExist() throws Exception
     {
-        UserModel someUser = new UserModel("someUser", "somePass");
+        UserModel someUser = new UserModel("someUser", DataUser.PASSWORD);
 
         restClient.authenticateUser(adminUserModel).withCoreAPI()
                 .usingUser(someUser).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "personId is null."));
+                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "someUser"));
     }
 }
