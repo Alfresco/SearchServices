@@ -71,7 +71,7 @@ public class GetSitesCoreTests extends RestTest
             description= "Verify User gets sites ordered by name ascendant and status code is 200")
     public void getSitesOrderedByNameASC() throws Exception
     {
-        sites = restClient.authenticateUser(privateSiteManager).withParams("orderBy=name ASC")
+        sites = restClient.authenticateUser(privateSiteManager).withParams("orderBy=title ASC")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListIsNotEmpty();
