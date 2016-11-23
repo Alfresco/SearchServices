@@ -54,7 +54,7 @@ public class GetSitesCoreTests extends RestTest
         restClient.authenticateUser(userModel).withParams("maxItems=0")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
+                .assertLastError().containsSummary("Only positive values supported for maxItems");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
@@ -64,7 +64,7 @@ public class GetSitesCoreTests extends RestTest
         restClient.authenticateUser(userModel).withParams("skipCount=A")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
+                .assertLastError().containsSummary("Invalid paging parameter skipCount:A");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
