@@ -28,7 +28,7 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
     }
     
     @Bug(id = "MNT-16904")
-    @Test(groups = TestGroup.COMMENTS)
+    @Test(groups = {TestGroup.COMMENTS, TestGroup.NETWORKS})
     @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify non existing user gets another exisiting network with Rest API and checks the forbidden status")
@@ -41,7 +41,7 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = TestGroup.COMMENTS)
+    @Test(groups = {TestGroup.COMMENTS, TestGroup.NETWORKS})
     @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify tenant admin user gets specific network with Rest API and response is not empty")
@@ -52,7 +52,7 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @Test(groups = TestGroup.COMMENTS)
+    @Test(groups = {TestGroup.COMMENTS, TestGroup.NETWORKS})
     @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify tenant user is not authorized to check network of admin user with Rest API and checks the forbidden status")
@@ -63,8 +63,8 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
     
-    @Test(groups = TestGroup.COMMENTS)
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, 
+    @Test(groups = {TestGroup.COMMENTS, TestGroup.NETWORKS})
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify admin tenant user is not authorized to check network of another user with Rest API and checks the forbidden status")
     public void adminTenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
