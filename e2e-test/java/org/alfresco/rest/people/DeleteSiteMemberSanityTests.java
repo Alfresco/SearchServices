@@ -115,7 +115,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
-    
+
+    @Bug(id="MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify unauthenticated user is not able to delete another member of the site")
