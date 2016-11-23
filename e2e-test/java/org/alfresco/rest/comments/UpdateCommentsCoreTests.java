@@ -82,7 +82,8 @@ public class UpdateCommentsCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);   
         comments.assertThat().entriesListContains("content", "This is the updated comment with Collaborator user");
     }
-    
+
+    @Bug(id="")
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can update comments of another user and status code is 200")
     public void collaboratorIsAbleToUpdateCommentOfAnotherUser() throws JsonToModelConversionException, Exception
