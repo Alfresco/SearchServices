@@ -853,6 +853,12 @@ public class AclTracker extends AbstractTracker
             }
         }
         
+        @Override
+        protected void onFail()
+        {
+        	setRollback(true);
+        }
+        
         private List<Acl> filterAcls(List<Acl> acls)
         {
             ArrayList<Acl> filteredList = new ArrayList(acls.size());
