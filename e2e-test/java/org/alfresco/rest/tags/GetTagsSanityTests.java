@@ -8,11 +8,7 @@ import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.StatusModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -42,12 +38,10 @@ public class GetTagsSanityTests extends RestTest
         document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         tagValue = RandomData.getRandomName("tag");
-        restClient.withCoreAPI().usingResource(document).addTag(tagValue);
-        
         tagValue2 = RandomData.getRandomName("tag");
-        restClient.withCoreAPI().usingResource(document).addTag(tagValue2);
+        restClient.withCoreAPI().usingResource(document).addTags(tagValue, tagValue2);
         
-        Utility.waitToLoopTime(5);
+        Utility.waitToLoopTime(60);
     }
     
     
@@ -55,7 +49,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -66,7 +60,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -77,7 +71,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithContributorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -88,7 +82,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithConsumerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -99,7 +93,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        RestTagModelsCollection returnedCollection = restClient.withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
