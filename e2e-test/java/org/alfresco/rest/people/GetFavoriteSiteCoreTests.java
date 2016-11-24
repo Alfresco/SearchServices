@@ -42,7 +42,6 @@ public class GetFavoriteSiteCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "someUser"));
     }
 
-    @Bug(id="MNT-17146")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
             executionType = ExecutionType.REGRESSION,
             description = "Verify invalid request returns status 404 when siteId does not exist")
