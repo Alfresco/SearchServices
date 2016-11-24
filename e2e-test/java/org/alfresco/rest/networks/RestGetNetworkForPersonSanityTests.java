@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+@Test(groups = TestGroup.NETWORKS)
 public class RestGetNetworkForPersonSanityTests extends RestTest
 {
     private UserModel adminUserModel;
