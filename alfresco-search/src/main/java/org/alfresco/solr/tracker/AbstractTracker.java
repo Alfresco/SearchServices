@@ -68,7 +68,7 @@ public abstract class AbstractTracker implements Tracker
     protected String shardMethod;
     protected boolean transformContent;
     protected String shardTemplate;
-    protected boolean rollback;
+    protected volatile boolean rollback;
 
     
     /*
