@@ -42,26 +42,19 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify inexistent user is not able to remove a site from favorites and response is 404")
-    public void inexistentUserIsNotAbleToRemoveFavoriteSite() throws Exception
+    public void userIsNotAbleToRemoveFavoriteSiteOfInexistentUser() throws Exception
     {
-        restClient.authenticateUser(adminUserModel);
-        dataSite.usingUser(adminUserModel).usingSite(siteModel).addSiteToFavorites();
-
         UserModel inexistentUser = new UserModel("inexistenUser", "password");
-        restClient.withCoreAPI().usingUser(inexistentUser).removeFavoriteSite(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "inexistenUser"));
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(inexistentUser).removeFavoriteSite(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "inexistenUser"));
     }
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify user is not able to remove from favorites a site with inexistent id and response is 404")
     public void userIsNotAbleToRemoveFavoriteSiteWithInexistentId() throws Exception
     {
-        restClient.authenticateUser(adminUserModel);
-        dataSite.usingUser(adminUserModel).usingSite(siteModel).addSiteToFavorites();
-
         SiteModel inexistentSite = new SiteModel("inexistentSite");
-        restClient.withCoreAPI().usingUser(adminUserModel).removeFavoriteSite(inexistentSite);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).removeFavoriteSite(inexistentSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, adminUserModel.getUsername(), inexistentSite.getTitle()));
     }
