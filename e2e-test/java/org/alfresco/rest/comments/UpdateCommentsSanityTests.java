@@ -41,7 +41,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments and status code is 200")
-    public void adminIsAbleToUpdateComments() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
@@ -54,7 +54,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user updates comments created by admin user and status code is 200")
-    public void managerIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    public void managerIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by manager");
@@ -67,7 +67,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can update his own comment and status code is 200")
-    public void contributorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    public void contributorIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by contributor");
@@ -91,7 +91,7 @@ public class UpdateCommentsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can update his own comment and status code is 200")
     @Bug(id="REPO-1011")
-    public void collaboratorIsAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    public void collaboratorIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
@@ -104,9 +104,11 @@ public class UpdateCommentsSanityTests extends RestTest
     @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("To be updated by unauthenticated user.");
         UserModel incorrectUserModel = new UserModel("userName", "password");
         restClient.authenticateUser(incorrectUserModel)
-                  .withCoreAPI().usingResource(document).getNodeComments();        
+                  .withCoreAPI().usingResource(document).updateComment(commentModel, "try to update");
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 

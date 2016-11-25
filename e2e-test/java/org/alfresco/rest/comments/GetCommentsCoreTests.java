@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
 public class GetCommentsCoreTests extends RestTest
 {
-    private UserModel adminUserModel, userModel;
+    private UserModel adminUserModel, userModel, networkUserModel;
     private FileModel document;
     private SiteModel siteModel;
     private String comment = "This is a new comment";
@@ -30,6 +30,7 @@ public class GetCommentsCoreTests extends RestTest
     {
         adminUserModel = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
+        networkUserModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(adminUserModel).createPrivateRandomSite();
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUserModel).withCoreAPI()
@@ -48,7 +49,7 @@ public class GetCommentsCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withParams("maxItems=0")
                 .withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
+                .assertLastError().containsSummary("Only positive values supported for maxItems");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -105,7 +106,7 @@ public class GetCommentsCoreTests extends RestTest
     @Bug(id = "MNT-16904")
     public void getCommentsWithInvalidNetwork() throws Exception
     {
-        userModel.setDomain("invalidNetwork");
+        networkUserModel.setDomain("invalidNetwork");
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
@@ -115,7 +116,7 @@ public class GetCommentsCoreTests extends RestTest
     @Bug(id = "MNT-16904")
     public void getCommentsWithEmptyNetwork() throws Exception
     {
-        userModel.setDomain("");
+        networkUserModel.setDomain("");
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }

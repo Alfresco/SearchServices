@@ -54,7 +54,7 @@ public class GetSitesCoreTests extends RestTest
         restClient.authenticateUser(userModel).withParams("maxItems=0")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
+                .assertLastError().containsSummary("Only positive values supported for maxItems");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
@@ -64,14 +64,14 @@ public class GetSitesCoreTests extends RestTest
         restClient.authenticateUser(userModel).withParams("skipCount=A")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
+                .assertLastError().containsSummary("Invalid paging parameter skipCount:A");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify User gets sites ordered by name ascendant and status code is 200")
     public void getSitesOrderedByNameASC() throws Exception
     {
-        sites = restClient.authenticateUser(privateSiteManager).withParams("orderBy=name ASC")
+        sites = restClient.authenticateUser(privateSiteManager).withParams("orderBy=title ASC")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListIsNotEmpty();

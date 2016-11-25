@@ -68,7 +68,6 @@ public class DeleteSiteMemberSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify site collaborator does not have permission to delete another member of the site")    
-    @Bug(id="ACE-5444")
     public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
@@ -78,14 +77,12 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify site contributor does not have permission to delete another member of the site")
-    @Bug(id="ACE-5444")
     public void siteContributorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
@@ -95,14 +92,12 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify site consumer does not have permission to delete another member of the site")
-    @Bug(id="ACE-5444")
     public void siteConsumerIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
@@ -112,10 +107,10 @@ public class DeleteSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                                    .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
-    
+
+    @Bug(id="MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify unauthenticated user is not able to delete another member of the site")

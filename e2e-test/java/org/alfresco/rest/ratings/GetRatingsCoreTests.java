@@ -44,7 +44,7 @@ public class GetRatingsCoreTests extends RestTest {
 		restClient.authenticateUser(adminUserModel).withParams("maxItems=0").withCoreAPI().usingResource(document)
 				.getLikeRating();
 		restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-				.containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
+				.containsSummary("Only positive values supported for maxItems");
 	}
 
 	@TestRail(section = { TestGroup.REST_API,
@@ -54,7 +54,7 @@ public class GetRatingsCoreTests extends RestTest {
 		restClient.authenticateUser(adminUserModel).withParams("skipCount=AB").withCoreAPI().usingResource(document)
 				.getLikeRating();
 		restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-				.containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "argument"));
+				.containsSummary("Invalid paging parameter skipCount:AB");
 	}
 
 	@TestRail(section = { TestGroup.REST_API,

@@ -6,10 +6,8 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -76,14 +74,16 @@ public class DeleteCommentsSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
+    @Bug(id="MNT-16904")
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
-    public void managerIsNotAbleToDeleteCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify User gets status code 401 if authentication call fails")
+    public void userIsNotAbleToDeleteCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        comment = restClient.withCoreAPI().usingResource(document).addComment("New comment addded by admin");
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel);
-        comment = restClient.withCoreAPI().usingResource(document).addComment("New comment addded by Manager");
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }
