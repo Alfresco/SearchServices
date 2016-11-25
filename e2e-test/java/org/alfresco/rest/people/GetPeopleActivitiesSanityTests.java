@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
 public class GetPeopleActivitiesSanityTests extends RestTest
 {
-    UserModel userModel;
+    UserModel userModel, unauthenticatedUser;
     SiteModel siteModel;
     private DataUser.ListUserWithRoles usersWithRoles;
     private RestActivityModelsCollection restActivityModelsCollection;
@@ -34,6 +34,8 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        unauthenticatedUser = dataUser.usingAdmin().createRandomTestUser();
+        unauthenticatedUser.setPassword("newpassword");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
@@ -104,14 +106,10 @@ public class GetPeopleActivitiesSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
               executionType = ExecutionType.SANITY, 
-              description = "Verify manager user is NOT Authorized to gets another user activities with Rest API")
-    public void managerUserShouldGetPeopleActivitiesListIsNotAuthorized() throws Exception
+              description = "Verify unauthenticated user is NOT Authorized to gets another user activities with Rest API")
+    public void unauthenticatedUserShouldNotGetPeopleActivitiesList() throws Exception
     {
-        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
-        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        managerUser.setPassword("newpassword");
-
-        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userModel).getPersonActivities();
+        restClient.authenticateUser(unauthenticatedUser).withCoreAPI().usingUser(userModel).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }
 }
