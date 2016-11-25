@@ -120,7 +120,6 @@ public class GetRatingsSanityTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
             description = "Verify unauthenticated user is not able to retrieve document ratings")
-    @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToRetrieveRatings() throws Exception
     {
         restClient.authenticateUser(adminUser);

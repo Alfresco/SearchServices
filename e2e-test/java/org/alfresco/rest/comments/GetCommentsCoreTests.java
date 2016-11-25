@@ -103,22 +103,20 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with invalid network id returns status code 401")
-    @Bug(id = "MNT-16904")
     public void getCommentsWithInvalidNetwork() throws Exception
     {
         networkUserModel.setDomain("invalidNetwork");
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with empty network id returns status code 401")
-    @Bug(id = "MNT-16904")
     public void getCommentsWithEmptyNetwork() throws Exception
     {
         networkUserModel.setDomain("");
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
 }
