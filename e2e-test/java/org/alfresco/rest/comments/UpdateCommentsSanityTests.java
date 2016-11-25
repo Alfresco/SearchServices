@@ -6,12 +6,7 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.ErrorModel;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -109,7 +104,7 @@ public class UpdateCommentsSanityTests extends RestTest
         UserModel incorrectUserModel = new UserModel("userName", "password");
         restClient.authenticateUser(incorrectUserModel)
                   .withCoreAPI().usingResource(document).updateComment(commentModel, "try to update");
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SANITY }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")

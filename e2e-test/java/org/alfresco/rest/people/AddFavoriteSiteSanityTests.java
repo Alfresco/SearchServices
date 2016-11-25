@@ -4,6 +4,7 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestFavoriteSiteModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -95,6 +96,6 @@ public class AddFavoriteSiteSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }

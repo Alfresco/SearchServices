@@ -6,6 +6,7 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -100,6 +101,6 @@ public class GetSiteMemberSanityTests extends RestTest
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser);
         restClient.withCoreAPI().usingSite(siteModel).getSiteMember(userModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }

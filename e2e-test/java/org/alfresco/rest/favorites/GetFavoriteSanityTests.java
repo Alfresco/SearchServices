@@ -7,12 +7,7 @@ import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.ErrorModel;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -172,7 +167,7 @@ public class GetFavoriteSanityTests extends RestTest
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager).withCoreAPI()
                   .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).getFavorite(siteModel.getGuid());        
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 
 }

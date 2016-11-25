@@ -6,10 +6,7 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.ErrorModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -157,7 +154,8 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                                     .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
-    
+
+    @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, 
               executionType = ExecutionType.SANITY, 
               description = "Failed authentication get site member call returns status code 401")
@@ -170,6 +168,6 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         restClient.authenticateUser(inexistentUser)
                   .withCoreAPI()
                   .usingAuthUser().deleteSiteMembershipRequest(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }

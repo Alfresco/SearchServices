@@ -6,11 +6,7 @@ import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -117,7 +113,7 @@ public class AddRatingSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -173,7 +169,7 @@ public class AddRatingSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is(String.valueOf(3))
                       		 .and().field("id").is("fiveStar")
-                      		 .and().field("aggregate").isNotEmpty();;        
+                      		 .and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -182,6 +178,6 @@ public class AddRatingSanityTests extends RestTest
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }

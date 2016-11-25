@@ -2,10 +2,8 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.model.ErrorModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -115,6 +113,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
     }
 
+    @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify manager user is NOT Authorized to remove a site from its favorite sites list with Rest API when authentication fails (401)")
@@ -127,6 +126,6 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel1);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }
