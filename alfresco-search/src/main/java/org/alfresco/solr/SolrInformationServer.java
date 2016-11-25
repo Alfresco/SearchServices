@@ -331,9 +331,14 @@ public class SolrInformationServer implements InformationServer
         
         // build base URL - host and port have to come from configuration.
         Properties props = AlfrescoSolrDataModel.getCommonConfig();
-
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
-        String portNumber = ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
+
+        String portNumber =  ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
+        if (portNumber == null || portNumber.isEmpty())
+        {
+            portNumber = System.getProperty("jetty.port");
+            log.debug("Using jetty.port "+portNumber);
+        }
         if(portNumber != null)
         {
             try 
