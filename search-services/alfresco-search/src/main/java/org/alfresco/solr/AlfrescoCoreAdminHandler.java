@@ -81,8 +81,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public AlfrescoCoreAdminHandler(CoreContainer coreContainer)
     {
         super(coreContainer);
-        initResourceBasedLogging("log4j.properties");
-        initResourceBasedLogging("log4j-solr.properties");
         startup(coreContainer);
     }
 
