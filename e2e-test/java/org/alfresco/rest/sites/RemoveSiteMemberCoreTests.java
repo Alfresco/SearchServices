@@ -73,7 +73,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
             .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, testUserModel.getUsername(), invalidSite.getId()));
     }
     
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can delete a site member with manager role")
     public void siteManagerIsAbleToDeleteSiteMemberWithManagerRole() throws Exception
     {
