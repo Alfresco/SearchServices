@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0-EA</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <dependencies>
@@ -152,11 +152,11 @@
                                 <replace token="\bin\solr.in.cmd" value="\..\solr.in.cmd" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token= "SOLR_SSL_OPTS=%SOLR_SSL_OPTS%" value="SOLR_SSL_OPTS=!SOLR_SSL_OPTS!" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.cmd"/>
+                                <replace token="SOLR_SSL_OPTS=%SOLR_SSL_OPTS%" value="SOLR_SSL_OPTS=!SOLR_SSL_OPTS!" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.cmd" />
                                 </replace>
                                 <replace token="#SOLR_LOGS_DIR=logs" value="SOLR_LOGS_DIR=../../logs" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh"/>
+                                    <include name="**/bin/solr.in.sh" />
                                 </replace>
                                 <replace token="REM set SOLR_LOGS_DIR=logs" value="set SOLR_LOGS_DIR=..\..\logs" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.cmd" />
