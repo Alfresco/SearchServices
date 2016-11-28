@@ -60,12 +60,12 @@ public class ConfigUtil {
         try {
             Context c = new InitialContext();
             propertyValue = (String) c.lookup(jndiKey);
-            log.info("Using JNDI key: "+jndiKey+": "+propertyValue );
+            log.debug("Using JNDI key: "+jndiKey+": "+propertyValue );
             return propertyValue;
         } catch (NoInitialContextException e) {
-            log.info("JNDI not configured (NoInitialContextEx)");
+            log.debug("JNDI not configured (NoInitialContextEx)");
         } catch (NamingException e) {
-            log.info("No "+jndiKey+" in JNDI");
+            log.debug("No "+jndiKey+" in JNDI");
         } catch( RuntimeException ex ) {
             log.warn("Odd RuntimeException while testing for JNDI: " + ex.getMessage());
         }
@@ -73,26 +73,26 @@ public class ConfigUtil {
         // Now try system property
         propertyValue = System.getProperty(propertyKey);
         if( propertyValue != null ) {
-            log.info("Using system property "+propertyKey+": " + propertyValue );
+            log.debug("Using system property "+propertyKey+": " + propertyValue );
             return propertyValue;
         }
 
         //try system property again with a solr. prefix
         propertyValue = System.getProperty("solr."+propertyKey);
         if( propertyValue != null ) {
-            log.info("Using system property "+"solr."+propertyKey+": " + propertyValue );
+            log.debug("Using system property "+"solr."+propertyKey+": " + propertyValue );
             return propertyValue;
         }
 
         // Now try an environment variable
         propertyValue = System.getenv(envVar);
         if( propertyValue != null ) {
-            log.info("Using environment variable "+envVar+": " + propertyValue );
+            log.debug("Using environment variable "+envVar+": " + propertyValue );
             return propertyValue;
         }
 
         //if all else fails then return the default
-        log.info("Using default value for variable "+propertyName+": " + defaultValue );
+        log.debug("Using default value for variable "+propertyName+": " + defaultValue );
         return defaultValue;
     }
 
