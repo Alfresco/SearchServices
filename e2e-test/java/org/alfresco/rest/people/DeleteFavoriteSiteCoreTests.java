@@ -7,6 +7,7 @@ import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,8 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         restClient.withCoreAPI().usingMe().removeFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
-    
+
+    @Bug(id="REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify inexistent user is not able to remove a site from favorites and response is 404")
     public void inexistentUserIsNotAbleToRemoveFavoriteSite() throws Exception

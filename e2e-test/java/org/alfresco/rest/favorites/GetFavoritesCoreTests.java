@@ -229,6 +229,7 @@ public class GetFavoritesCoreTests extends RestTest
                 .and().paginationField("totalItems").is("2");
     }
 
+    @Bug(id="REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify request using personId that does not exist returns status 404")
     public void checkFavoritesWhenPersonIdDoesNotExist() throws Exception
