@@ -6,7 +6,6 @@ import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -37,7 +36,7 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @Bug(id="MNT-16904")
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
               executionType = ExecutionType.REGRESSION, 
               description = "Verify contributor user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
@@ -52,7 +51,6 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
     
-    @Bug(id="MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.REGRESSION, 
             description = "Verify collaborator user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
@@ -67,7 +65,6 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
     
-    @Bug(id="MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
             executionType = ExecutionType.REGRESSION, 
             description = "Verify consumer user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
@@ -152,8 +149,7 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, privateUser.getUsername(), privateSite.getId()));
     }
-    
-    @Bug(id = "MNT-17183", description = "reproduced only on 5.1.N")
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
             executionType = ExecutionType.REGRESSION, 
             description = "Verify site manager can't get site membership requests  for inexistent site and response is not found (404)")
@@ -164,6 +160,6 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
             .withCoreAPI()
             .usingMe().getSiteMembershipRequest(inexistentSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), inexistentSite.getId()));
+            .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, userModel.getUsername(), inexistentSite.getId()));
     }
 }
