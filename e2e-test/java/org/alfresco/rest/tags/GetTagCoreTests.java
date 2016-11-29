@@ -34,7 +34,7 @@ public class GetTagCoreTests extends RestTest
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
     }
     
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         tagValue = RandomData.getRandomName("tag");
         restClient.authenticateUser(adminUserModel);
@@ -54,7 +54,7 @@ public class GetTagCoreTests extends RestTest
             description = "Retrieve and validate the id of a tag added to a file")
     public void validateTagIdTest() throws JsonToModelConversionException, Exception
     {
-        RestTagModel returnedTag = restClient.authenticateUser(adminUserModel).withCoreAPI().getTag(tag);
+        RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedTag.assertThat().field("id").is(tag.getId());
     }
@@ -63,7 +63,7 @@ public class GetTagCoreTests extends RestTest
             description = "Retrieve and validate the name of a tag added to a file")
     public void validateTagNameTest() throws JsonToModelConversionException, Exception
     {
-        RestTagModel returnedTag = restClient.authenticateUser(adminUserModel).withCoreAPI().getTag(tag);
+        RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedTag.assertThat().field("tag").is(tagValue.toLowerCase());
     }
