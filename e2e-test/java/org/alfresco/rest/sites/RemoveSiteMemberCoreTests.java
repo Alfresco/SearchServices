@@ -197,11 +197,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
         restClient.withCoreAPI().usingSite(siteModel).getSiteMembers()
             .assertThat().entriesListDoesNotContain("id", contributorForDelete.getUsername());
     }
-    
-//    delete collaborator user by consumer user(2.0) 
-//    delete collaborator user by contributor user(0.5) 
-//    delete collaborator user by collaborator user(0.5) 
-//    delete collaborator user by manager user(2.0)
+
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site collaborator cannot delete a site member with Collaborator role and gets status code 422")
     public void siteCollaboratorIsNotAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
