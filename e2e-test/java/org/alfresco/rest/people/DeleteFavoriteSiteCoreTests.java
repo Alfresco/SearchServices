@@ -30,8 +30,8 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         adminUserModel = dataUser.getAdminUser();
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify user removes a site from favorites using '-me-' in place of personId with Rest API and response is successful (204)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify user removes a site from favorites using '-me-' in place of personId with Rest API and response is successful (204)")
     public void removeFavoriteSiteWithSuccessUsingMeAsPersonId() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -46,30 +46,23 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
             TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify inexistent user is not able to remove a site from favorites and response is 404")
     public void inexistentUserIsNotAbleToRemoveFavoriteSite() throws Exception
     {
-        restClient.authenticateUser(adminUserModel);
-        dataSite.usingUser(adminUserModel).usingSite(siteModel).addSiteToFavorites();
-
         UserModel inexistentUser = new UserModel("inexistenUser", "password");
-        restClient.withCoreAPI().usingUser(inexistentUser).removeFavoriteSite(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "inexistenUser"));
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(inexistentUser).removeFavoriteSite(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "inexistenUser"));
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify user is not able to remove from favorites a site with inexistent id and response is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify user is not able to remove from favorites a site with inexistent id and response is 404")
     public void userIsNotAbleToRemoveFavoriteSiteWithInexistentId() throws Exception
     {
-        restClient.authenticateUser(adminUserModel);
-        dataSite.usingUser(adminUserModel).usingSite(siteModel).addSiteToFavorites();
-
         SiteModel inexistentSite = new SiteModel("inexistentSite");
-        restClient.withCoreAPI().usingUser(adminUserModel).removeFavoriteSite(inexistentSite);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).removeFavoriteSite(inexistentSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, adminUserModel.getUsername(), inexistentSite.getTitle()));
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user removes a site from its favorites abd add it again and response is successful (204)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify manager user removes a site from its favorites and adds it again and response is successful (204)")
     public void managerUserRemovesFavoriteSiteAndAddItAgain() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -82,8 +75,8 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user removes a site from its favorite sites list with Rest API and response is successful (204)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify manager user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void managerUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -95,7 +88,7 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("id", siteModel.getId());
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.PEOPLE}, executionType= ExecutionType.REGRESSION,
             description= "Verify uninvited user can delete favorite public site and response is 204")
     public void uninvitedUserCanDeleteFavoritePublicSite() throws Exception
     {        
@@ -107,7 +100,7 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListDoesNotContain("id", publicSiteModel.getId());
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.PEOPLE}, executionType= ExecutionType.REGRESSION,
             description= "Verify uninvited user can delete favorite moderated site and response is 204")
     public void uninvitedUserCanDeleteFavoriteModeratedSite() throws Exception
     {        
@@ -119,7 +112,7 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListDoesNotContain("id", moderatedSiteModel.getId());
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.PEOPLE}, executionType= ExecutionType.REGRESSION,
             description= "Verify user can delete favorite private site and response is 204")
     public void userCanDeleteFavoritePrivateSite() throws Exception
     {
