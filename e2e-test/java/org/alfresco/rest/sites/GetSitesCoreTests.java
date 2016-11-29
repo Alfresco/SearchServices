@@ -68,7 +68,7 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if User gets sites ordered by title ascendant and status code is 200")
+            description= "Verify if User gets sites ordered by title ascending and status code is 200")
     public void getSitesOrderedByNameASC() throws Exception
     {
         sites = restClient.authenticateUser(privateSiteManager).withParams("orderBy=title ASC")
