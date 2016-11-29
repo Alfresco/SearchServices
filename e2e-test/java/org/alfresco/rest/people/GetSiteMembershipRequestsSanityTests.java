@@ -3,6 +3,7 @@ package org.alfresco.rest.people;
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -124,11 +125,10 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         managerUser.setPassword("newpassword");
-        
         restClient.authenticateUser(managerUser)
                   .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
