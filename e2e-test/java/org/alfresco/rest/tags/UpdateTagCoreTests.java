@@ -39,56 +39,15 @@ public class UpdateTagCoreTests extends RestTest
         siteModel = dataSite.usingUser(managerUser).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).usingUser(managerUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-        
-        restClient.authenticateUser(managerUser);
-        oldTag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("old"));
+
+        oldTag = restClient.authenticateUser(managerUser).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("old"));
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets status code 401 if authentication call fails")
-    @Bug(id="MNT-16904", description = "Reproduced only on 5.1.N")
-    public void contributorIsNotAbleToUpdateTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
-    {
-        UserModel siteContributor = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
-        siteContributor.setPassword("wrongPassword");
-        restClient.authenticateUser(siteContributor);
-        restClient.withCoreAPI().usingTag(oldTag).update(RandomData.getRandomName("tag"));
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-            .assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
-    }
-    
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets status code 401 if authentication call fails")
-    @Bug(id="MNT-16904", description = "Reproduced only on 5.1.N")
-    public void collaboratorIsNotAbleToUpdateTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
-    {
-        UserModel siteCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
-        siteCollaborator.setPassword("wrongPassword");
-        restClient.authenticateUser(siteCollaborator);
-        restClient.withCoreAPI().usingTag(oldTag).update(RandomData.getRandomName("tag"));
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-            .assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
-    }
-    
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets status code 401 if authentication call fails")
-    @Bug(id="MNT-16904", description = "Reproduced only on 5.1.N")
-    public void consumerIsNotAbleToUpdateTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
-    {
-        UserModel siteConsumer = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
-        siteConsumer.setPassword("wrongPassword");
-        restClient.authenticateUser(siteConsumer);
-        restClient.withCoreAPI().usingTag(oldTag).update(RandomData.getRandomName("tag"));
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-            .assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
-    }
-    
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update tag with invalid id")
     public void managerIsNotAbleToUpdateTagWithInvalidId() throws JsonToModelConversionException, Exception
     {
         String invalidTagId = "invalid-id";
-        restClient.authenticateUser(managerUser);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
         tag.setId(invalidTagId);
         restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag"));
@@ -100,18 +59,17 @@ public class UpdateTagCoreTests extends RestTest
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update tag with empty id")
     public void managerIsNotAbleToUpdateTagWithEmptyId() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(managerUser);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
         tag.setId("");
         restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag"));
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED);
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
+                .assertLastError().containsSummary(ErrorModel.PUT_EMPTY_ARGUMENT);
     }
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update tag with invalid body")
     public void managerIsNotAbleToUpdateTagWithEmptyBody() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(managerUser);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
         restClient.withCoreAPI().usingTag(tag).update("");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
@@ -125,7 +83,6 @@ public class UpdateTagCoreTests extends RestTest
     public void managerIsNotAbleToUpdateTagWithInvalidBodyScenario1() throws JsonToModelConversionException, Exception
     {
         String invalidTagBody = "|.\"/<>*";
-        restClient.authenticateUser(managerUser);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
         Utility.waitToLoopTime(20);
         restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
@@ -140,7 +97,6 @@ public class UpdateTagCoreTests extends RestTest
     public void managerIsNotAbleToUpdateTagWithInvalidBodyScenario2() throws JsonToModelConversionException, Exception
     {
         String invalidTagBody = ".\"/<>*";
-        restClient.authenticateUser(managerUser);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
         Utility.waitToLoopTime(20);
         restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
