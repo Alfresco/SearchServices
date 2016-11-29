@@ -10,7 +10,6 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -27,7 +26,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class UpdateTagSanityTests extends RestTest
 {
-
     private UserModel adminUserModel;
     private FileModel document;
     private SiteModel siteModel;
@@ -108,6 +106,7 @@ public class UpdateTagSanityTests extends RestTest
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+            .assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
     }
 }
