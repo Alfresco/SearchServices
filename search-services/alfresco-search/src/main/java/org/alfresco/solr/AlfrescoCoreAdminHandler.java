@@ -122,6 +122,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     protected void setupNewDefaultCores(String createDefaultCores)
     {
+        final String VERSION_STORE_PROTOCOL = "versionStore";
+        final String VERSION_STORE_ID = "version2Store";
 
         SolrQueryResponse response = new SolrQueryResponse();
         try
@@ -138,8 +140,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     case "alfresco":
                         newDefaultCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
                         break;
+                    case "version":
+                        newDefaultCore("version", new StoreRef(VERSION_STORE_PROTOCOL, VERSION_STORE_ID), DEFAULT_TEMPLATE, null, response);
+                        break;
                     default:
-                        log.error("Invalid '"+ALFRESCO_DEFAULTS+"' permitted values are alfresco,archive");
+                        log.error("Invalid '"+ALFRESCO_DEFAULTS+"' permitted values are alfresco,archive,version");
                 }
             }
         }
