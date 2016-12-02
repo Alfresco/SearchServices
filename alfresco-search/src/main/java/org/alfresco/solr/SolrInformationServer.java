@@ -75,21 +75,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -258,6 +245,7 @@ public class SolrInformationServer implements InformationServer
     private int contentStreamLimit;
     private boolean minHash;
     public static final String FINGERPRINT_FIELD = "MINHASH";
+    private long cleanContentLastPurged = 0;
 
     // Metadata pulling control
     private boolean skipDescendantDocsForSpecificTypes;
@@ -710,13 +698,49 @@ public class SolrInformationServer implements InformationServer
     @Override
     public List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
     {
-        //System.out.println("############### getDocsWithUncleanContent ################");
         RefCounted<SolrIndexSearcher> refCounted = null;
         try
         {
             List<TenantAclIdDbId> docIds = new ArrayList<>();
             refCounted = this.core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
+
+
+            /*
+            *  Below is the code for purging the cleanContentCache.
+            *  The cleanContentCache is an in-memory LRU cache of the transactions that have already
+            *  had their content fetched. This is needed because the ContentTracker does not have an up-to-date
+            *  snapshot of the index to determine which nodes are marked as dirty/new. The cleanContentCache is used
+            *  to filter out nodes that belong to transactions that have already been processed, which stops them from
+            *  being re-processed.
+            *
+            *  The cleanContentCache needs to be purged periodically to support retrying of failed content fetches.
+            *  This is because fetches for individual nodes within the transaction may have failed, but the transaction will still be in the
+            *  cleanContentCache, which prevents it from being retried.
+            *
+            *  Once a transaction is purged from the cleanContentCache it will be retried automatically if it is marked dirty/new
+            *  in current snapshot of the index.
+            *
+            *  The code below runs every two minutes and purges transactions from the
+            *  cleanContentCache that is more then 20 minutes old.
+            *
+            */
+
+            long purgeTime = System.currentTimeMillis();
+            if(purgeTime - cleanContentLastPurged > 120000)
+            {
+                Iterator<Entry> entries = cleanContentCache.entrySet().iterator();
+                while (entries.hasNext())
+                {
+                    Entry<Long, Long> entry = entries.next();
+                    long txnTime = entry.getValue();
+                    if (purgeTime - txnTime > 1200000) {
+                        //Purge the clean content cache of records more then 20 minutes old.
+                        entries.remove();
+                    }
+                }
+                cleanContentLastPurged = purgeTime;
+            }
 
             long txnFloor = -1;
 
@@ -741,7 +765,7 @@ public class SolrInformationServer implements InformationServer
                     false,
                     false);
 
-            DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); // Ensure that we only consider docs that have a transaction ID.
+            DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
             searcher.search(orQuery, delegatingCollector);
             //System.out.println("############### Transaction floor query ################:" + orQuery.toString() + " = " + collector.getTotalHits());
@@ -784,7 +808,6 @@ public class SolrInformationServer implements InformationServer
             leaves = searcher.getTopReaderContext().leaves();
             FieldType fieldType = searcher.getSchema().getField(FIELD_INTXID).getType();
             builder = new BooleanQuery.Builder();
-            BooleanQuery txnFilterQuery = null;
 
             for (ScoreDoc scoreDoc : docs.scoreDocs)
             {
@@ -796,8 +819,10 @@ public class SolrInformationServer implements InformationServer
                 //Build up the query for the filter of transactions we need to pull the dirty content for.
                 TermQuery txnIDQuery = new TermQuery(new Term(FIELD_INTXID, fieldType.readableToIndexed(Long.toString(txnID))));
                 builder.add(new BooleanClause(txnIDQuery, BooleanClause.Occur.SHOULD));
-                txnFilterQuery = builder.build();
             }
+
+            BooleanQuery txnFilterQuery = builder.build();
+
 
             //Get the docs with dirty content for the transactions gathered above.
 
@@ -847,9 +872,12 @@ public class SolrInformationServer implements InformationServer
                 }
             }
 
+            long txnTime = System.currentTimeMillis();
+
             for(Long l : processedTxns)
             {
-                cleanContentCache.put(l, null);
+                //Save the indexVersion so we know when we can clean out this entry
+                cleanContentCache.put(l, txnTime);
             }
 
             return docIds;
