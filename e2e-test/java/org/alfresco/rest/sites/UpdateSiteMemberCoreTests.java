@@ -3,11 +3,11 @@ package org.alfresco.rest.sites;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteMemberModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -54,7 +54,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI()
                 .usingSite(deletedSite).updateSiteMember(regularUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, deletedSite.getId()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, deletedSite.getId()));
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
@@ -77,7 +77,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(nonexistentUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, nonexistentUser.getUsername()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nonexistentUser.getUsername()));
     }
 
     @Bug(id="REPO-1660")
@@ -103,7 +103,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI()
                 .usingSite("").updateSiteMember(regularUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, ""));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
@@ -115,7 +115,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI()
                 .usingSite(publicSite).updateSiteMember(emptyUser);
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
-                .assertLastError().containsSummary(ErrorModel.PUT_EMPTY_ARGUMENT);
+                .assertLastError().containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
@@ -128,7 +128,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, json, "sites/{siteId}/members/{personId}", publicSite.getId(), siteConsumer.getUsername());
         restClient.processModel(RestSiteMemberModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(ErrorModel.UNKNOWN_ROLE, "invalidRole"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.UNKNOWN_ROLE, "invalidRole"));
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,

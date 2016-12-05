@@ -1,10 +1,10 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteEntry;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -67,7 +67,7 @@ public class GetSiteMembershipCoreTests extends RestTest
 
         restClient.authenticateUser(regularUser).withCoreAPI().usingUser(someUser).getSiteMembership(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "someUser"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "someUser"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
@@ -79,7 +79,7 @@ public class GetSiteMembershipCoreTests extends RestTest
 
         restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().getSiteMembership(someSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, regularUser.getUsername(), "someSite"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, regularUser.getUsername(), "someSite"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
@@ -90,7 +90,7 @@ public class GetSiteMembershipCoreTests extends RestTest
         restClient.authenticateUser(publicSiteManager).withCoreAPI()
                 .usingUser(regularUser).getSiteMembership(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, regularUser.getUsername(), publicSite.getTitle()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, regularUser.getUsername(), publicSite.getTitle()));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
@@ -101,7 +101,7 @@ public class GetSiteMembershipCoreTests extends RestTest
         restClient.authenticateUser(regularUser).withCoreAPI()
                 .usingUser(privateSiteManager).getSiteMembership(privateSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, privateSiteManager.getUsername(), privateSite.getTitle()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, privateSiteManager.getUsername(), privateSite.getTitle()));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
@@ -154,6 +154,6 @@ public class GetSiteMembershipCoreTests extends RestTest
         restClient.authenticateUser(publicSiteManager).withCoreAPI()
                 .usingUser(publicSiteConsumer).getSiteMembership(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, publicSiteConsumer.getUsername(), publicSite.getTitle()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, publicSiteConsumer.getUsername(), publicSite.getTitle()));
     }
 }

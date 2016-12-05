@@ -3,12 +3,12 @@ package org.alfresco.rest.tags;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -54,7 +54,7 @@ public class GetTagsCoreTests extends RestTest
     public void maxItemsInvalidValueTest() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=abc").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(ErrorModel.INVALID_MAXITEMS, "abc"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "abc"));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
@@ -62,7 +62,7 @@ public class GetTagsCoreTests extends RestTest
     public void skipCountInvalidValueTest() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("skipCount=abc").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(ErrorModel.INVALID_SKIPCOUNT, "abc"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 

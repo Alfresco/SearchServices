@@ -3,6 +3,7 @@ package org.alfresco.rest.comments;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.*;
@@ -84,7 +85,7 @@ public class AddCommentSanityTests extends RestTest
         restClient.withCoreAPI().usingResource(document).addComment(contentSiteConsumer);
         restClient
                    .assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                   .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post comments call")

@@ -3,12 +3,12 @@ package org.alfresco.rest.ratings;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCommentModel;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.LinkModel;
@@ -58,7 +58,7 @@ public class AddRatingCoreTests extends RestTest
     public void unknownRatingSchemeReturnsBadRequest() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"invalidRate\"}");
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(ErrorModel.INVALID_RATING, "invalidRate"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalidRate"));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
@@ -67,7 +67,7 @@ public class AddRatingCoreTests extends RestTest
     {
         document.setNodeRef(RandomStringUtils.randomAlphanumeric(10));
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
@@ -162,7 +162,7 @@ public class AddRatingCoreTests extends RestTest
     public void addRateUsingEmptyRatingObject() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("");
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(ErrorModel.NO_CONTENT,
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT,
                 "No content to map to Object due to end of input"));       
     }
     
@@ -171,7 +171,7 @@ public class AddRatingCoreTests extends RestTest
     public void addRateUsingEmptyValueForId() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"\"}");
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(ErrorModel.NO_CONTENT,
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT,
                 "N/A (through reference chain: org.alfresco.rest.api.model.NodeRating[\"id\"])")); 
     }
     
@@ -180,10 +180,10 @@ public class AddRatingCoreTests extends RestTest
     public void addRateUsingEmptyValueForMyRating() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"likes\", \"myRating\":\"\"}");
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(ErrorModel.NULL_LIKE_RATING));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.NULL_LIKE_RATING));
         
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"fiveStar\", \"myRating\":\"\"}");
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(ErrorModel.NULL_FIVESTAR_RATING));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.NULL_FIVESTAR_RATING));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
@@ -194,10 +194,10 @@ public class AddRatingCoreTests extends RestTest
         document.setNodeRef(comment.getId());
         
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(ErrorModel.CANNOT_RATE));
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(RestErrorModel.CANNOT_RATE));
         
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(ErrorModel.CANNOT_RATE));
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(RestErrorModel.CANNOT_RATE));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
@@ -208,10 +208,10 @@ public class AddRatingCoreTests extends RestTest
         document.setNodeRef(tag.getId());
         
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(ErrorModel.CANNOT_RATE));
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(RestErrorModel.CANNOT_RATE));
         
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(ErrorModel.CANNOT_RATE));
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(RestErrorModel.CANNOT_RATE));
     }
     
 }

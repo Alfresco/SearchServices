@@ -3,12 +3,12 @@ package org.alfresco.rest.tags;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -52,7 +52,7 @@ public class UpdateTagCoreTests extends RestTest
         tag.setId(invalidTagId);
         restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag"));
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, invalidTagId));
+            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, invalidTagId));
     }
     
     @TestRail(section = { TestGroup.REST_API,
@@ -63,7 +63,7 @@ public class UpdateTagCoreTests extends RestTest
         tag.setId("");
         restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag"));
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
-                .assertLastError().containsSummary(ErrorModel.PUT_EMPTY_ARGUMENT);
+                .assertLastError().containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT);
     }
     
     @TestRail(section = { TestGroup.REST_API,
@@ -73,7 +73,7 @@ public class UpdateTagCoreTests extends RestTest
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
         restClient.withCoreAPI().usingTag(tag).update("");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(ErrorModel.EMPTY_TAG);
+            .assertLastError().containsSummary(RestErrorModel.EMPTY_TAG);
     }
     
     @Bug(id="ACE-5629")
@@ -87,7 +87,7 @@ public class UpdateTagCoreTests extends RestTest
         Utility.waitToLoopTime(20);
         restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(String.format(ErrorModel.INVALID_TAG, invalidTagBody));
+            .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
     }
     
     @Bug(id="ACE-5629")
@@ -101,6 +101,6 @@ public class UpdateTagCoreTests extends RestTest
         Utility.waitToLoopTime(20);
         restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(String.format(ErrorModel.INVALID_TAG, invalidTagBody));
+            .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
     }
 }
