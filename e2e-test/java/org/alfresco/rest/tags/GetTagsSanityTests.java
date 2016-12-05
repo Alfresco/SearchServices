@@ -102,7 +102,7 @@ public class GetTagsSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
     @Bug(id = "MNT-16904")
-    public void getTagsWithManagerRoleFailedAuth() throws JsonToModelConversionException, Exception
+    public void failedAuthenticationReturnsUnauthorizedStatus() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         userModel = dataUser.createRandomTestUser();
