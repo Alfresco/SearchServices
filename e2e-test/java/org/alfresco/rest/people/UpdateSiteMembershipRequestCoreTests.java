@@ -126,7 +126,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
         restClient.authenticateUser(newMember)
             .withCoreAPI()
             .usingAuthUser()
-            .addSiteMembershipRequest(siteModel, updatedMessage);
+            .addSiteMembershipRequest(updatedMessage, siteModel, "Accept me");
         returnedResponse = restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedResponse.assertMembershipRequestMessageIs(updatedMessage)
@@ -142,7 +142,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
         restClient.authenticateUser(newMember)
             .withCoreAPI()
             .usingAuthUser()
-            .addSiteMembershipRequest(siteModel, "");
+            .addSiteMembershipRequest("", siteModel, "Accept me");
         returnedResponse = restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedResponse.assertMembershipRequestMessageIs(updatedMessage)
