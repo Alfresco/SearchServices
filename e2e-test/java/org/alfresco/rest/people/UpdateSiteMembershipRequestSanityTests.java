@@ -2,13 +2,13 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -80,7 +80,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                   .usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);            
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                  .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -101,7 +101,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                  .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -120,7 +120,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                    .usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);      
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                  .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -141,7 +141,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                  .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -163,7 +163,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                  .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -184,6 +184,6 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                   .updateSiteMembershipRequest(siteModel, updatedMessage);            
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                   .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                   .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 }

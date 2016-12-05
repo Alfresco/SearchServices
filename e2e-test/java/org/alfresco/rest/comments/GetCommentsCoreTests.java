@@ -3,6 +3,7 @@ package org.alfresco.rest.comments;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCommentModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -61,7 +62,7 @@ public class GetCommentsCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI()
                 .usingResource(nonexistentFile).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, nonexistentFile.getNodeRef()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nonexistentFile.getNodeRef()));
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -75,7 +76,7 @@ public class GetCommentsCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI()
                 .usingResource(fileWithNodeRefFromLink).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(ErrorModel.UNABLE_TO_LOCATE);
+                .assertLastError().containsSummary(RestErrorModel.UNABLE_TO_LOCATE);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -85,7 +86,7 @@ public class GetCommentsCoreTests extends RestTest
         restClient.authenticateUser(userModel).withCoreAPI()
                 .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                .assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+                .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -107,7 +108,7 @@ public class GetCommentsCoreTests extends RestTest
     {
         networkUserModel.setDomain("invalidNetwork");
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -116,7 +117,7 @@ public class GetCommentsCoreTests extends RestTest
     {
         networkUserModel.setDomain("");
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
 }

@@ -2,6 +2,7 @@ package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.*;
@@ -59,6 +60,6 @@ public class DeleteProcessVariableSanityTests extends RestTest
         processModel.setId("incorrectProcessId");
         restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "incorrectProcessId"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "incorrectProcessId"));
     }
 }

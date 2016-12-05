@@ -1,8 +1,8 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -59,7 +59,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(userModel);
 
         restClient.authenticateUser(user).withCoreAPI().usingUser(userModel).deleteSiteMember(publicSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -68,7 +68,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
     {           
         UserModel inexistentUser = new UserModel("inexistenUser", "password");
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(inexistentUser).deleteSiteMember(publicSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, inexistentUser.getUsername()));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentUser.getUsername()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -77,7 +77,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
     {
         SiteModel inexistentSite = new SiteModel("inexistentSite");
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(userModel).deleteSiteMember(inexistentSite);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, userModel.getUsername(), inexistentSite.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, userModel.getUsername(), inexistentSite.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -86,7 +86,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
     {
         SiteModel inexistentSite = new SiteModel("");
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(userModel).deleteSiteMember(inexistentSite);
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(ErrorModel.DELETE_EMPTY_ARGUMENT);
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(RestErrorModel.DELETE_EMPTY_ARGUMENT);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -96,7 +96,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(secondUserModel);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(userModel);
         restClient.authenticateUser(secondUserModel).withCoreAPI().usingUser(userModel).deleteSiteMember(publicSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -106,7 +106,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(secondUserModel);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(userModel);
         restClient.authenticateUser(secondUserModel).withCoreAPI().usingUser(userModel).deleteSiteMember(moderatedSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -116,7 +116,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(userModel);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(secondUserModel);
         restClient.authenticateUser(secondUserModel).withCoreAPI().usingUser(userModel).deleteSiteMember(privateSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -153,7 +153,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(managerModel);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(userModel);
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(adminUserModel).deleteSiteMember(publicSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -163,7 +163,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(managerModel);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(userModel);
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(adminUserModel).deleteSiteMember(moderatedSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -173,7 +173,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(managerModel);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(userModel);
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(adminUserModel).deleteSiteMember(privateSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -222,7 +222,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).addPerson(userModel);
         restClient.withCoreAPI().usingSite(publicSiteModel).addPerson(managerModel);
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(managerModel).deleteSiteMember(publicSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -235,7 +235,7 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).addPerson(userModel);
         restClient.withCoreAPI().usingSite(moderatedSiteModel).addPerson(managerModel);
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(managerModel).deleteSiteMember(moderatedSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
@@ -248,6 +248,6 @@ public class DeleteSiteMemberCoreTests extends RestTest
         restClient.withCoreAPI().usingSite(privateSiteModel).addPerson(userModel);
         restClient.withCoreAPI().usingSite(privateSiteModel).addPerson(managerModel);
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(managerModel).deleteSiteMember(privateSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(ErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
     }
 }
