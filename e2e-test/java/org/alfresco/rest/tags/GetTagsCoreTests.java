@@ -6,8 +6,6 @@ import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;

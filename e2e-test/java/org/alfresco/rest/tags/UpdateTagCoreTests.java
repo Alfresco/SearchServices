@@ -29,7 +29,9 @@ public class UpdateTagCoreTests extends RestTest
     private UserModel managerUser;
     private FileModel document;
     private SiteModel siteModel;
+    @SuppressWarnings("unused")
     private DataUser.ListUserWithRoles usersWithRoles;
+    @SuppressWarnings("unused")
     private RestTagModel oldTag;
     
     @BeforeClass(alwaysRun=true)
