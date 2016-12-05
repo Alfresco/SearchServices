@@ -122,7 +122,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     protected void setupNewDefaultCores(String createDefaultCores)
     {
-        final String VERSION_STORE_PROTOCOL = "versionStore";
+        final String VERSION_STORE_PROTOCOL = "workspace";
         final String VERSION_STORE_ID = "version2Store";
 
         SolrQueryResponse response = new SolrQueryResponse();
