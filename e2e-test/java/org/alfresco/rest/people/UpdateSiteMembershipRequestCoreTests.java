@@ -1,16 +1,14 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestSiteMembershipRequestModel;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -19,15 +17,10 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
 public class UpdateSiteMembershipRequestCoreTests extends RestTest
 {
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
     private SiteModel siteModel;
     private UserModel managerUser;
     private String updatedMessage;
+    private RestSiteMembershipRequestModel returnedResponse;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws DataPreparationException
@@ -50,7 +43,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
         restClient.withCoreAPI()
             .usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-            .assertLastError().containsSummary(ErrorModel.AUTHENTICATION_FAILED);
+            .assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -62,11 +55,11 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
             .withCoreAPI()
             .usingAuthUser()
             .addSiteMembershipRequest(siteModel);
-        restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage)
-            .assertMembershipRequestMessageIs(updatedMessage)
+        returnedResponse = restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedResponse.assertMembershipRequestMessageIs(updatedMessage)
             .and().field("id").is(siteModel.getId())
             .and().field("modifiedAt").isNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -78,7 +71,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
             .withCoreAPI().usingUser(inexistentUser)
             .updateSiteMembershipRequest(siteModel, updatedMessage);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, inexistentUser.getUsername()));
+            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentUser.getUsername()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -91,7 +84,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
             .usingMe()
             .updateSiteMembershipRequest(randomSite, updatedMessage);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), randomSite.getId()));
+            .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), randomSite.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -106,7 +99,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
             .addSiteMembershipRequest(publicSite);
         restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(publicSite, updatedMessage);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), publicSite.getId()));
+            .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), publicSite.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -122,7 +115,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
         restClient.withCoreAPI().usingMe()
             .updateSiteMembershipRequest(privateSite, updatedMessage);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(ErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getId()));
+            .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getId()));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -134,11 +127,11 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
             .withCoreAPI()
             .usingAuthUser()
             .addSiteMembershipRequest(siteModel, updatedMessage);
-        restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage)
-            .assertMembershipRequestMessageIs(updatedMessage)
+        returnedResponse = restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedResponse.assertMembershipRequestMessageIs(updatedMessage)
             .and().field("id").is(siteModel.getId())
             .and().field("modifiedAt").isNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
@@ -150,11 +143,11 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
             .withCoreAPI()
             .usingAuthUser()
             .addSiteMembershipRequest(siteModel, "");
-        restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage)
-            .assertMembershipRequestMessageIs(updatedMessage)
+        returnedResponse = restClient.withCoreAPI().usingMe().updateSiteMembershipRequest(siteModel, updatedMessage);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedResponse.assertMembershipRequestMessageIs(updatedMessage)
             .and().field("id").is(siteModel.getId())
             .and().field("modifiedAt").isNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
