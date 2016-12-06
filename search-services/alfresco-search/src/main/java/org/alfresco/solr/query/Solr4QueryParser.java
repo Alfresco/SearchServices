@@ -707,21 +707,22 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
 
                 //Is the fingerprint in the local SolrContentStore
-                if(values == null) {
-                    long dbid = -1;
-                    //Do we have a UUID or DBID
-                    if(nodeId.contains("-")) {
-                        //It's a UUID. We need the DBID.
-                        dbid = fetchDBID(nodeId);
-                    } else {
+                if(values == null)
+                {
+                    long dbid = fetchDBID(nodeId);
+                    if(dbid == -1 && isNumber(nodeId))
+                    {
                         dbid = Long.parseLong(nodeId);
                     }
 
-                    if(dbid > -1) {
+                    if(dbid > -1)
+                    {
                         SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), dbid);
-                        if (solrDoc != null) {
+                        if (solrDoc != null)
+                        {
                             SolrInputField mh = solrDoc.getField("MINHASH");
-                            if (mh != null) {
+                            if (mh != null)
+                            {
                                 values = mh.getValues();
                             }
                         }
@@ -733,7 +734,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 {
                     //we are in distributed mode
                     //Fetch the fingerPrint from the shards.
-                    //The UUID and DBID will work both work for method call.
+                    //The UUID and DBID will both work for method call.
                     values = fetchFingerPrint(shards, nodeId);
                 }
 
@@ -767,6 +768,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
     }
 
+    private boolean isNumber(String s) {
+        for(int i=0; i<s.length(); i++) {
+            if(!Character.isDigit(s.charAt(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private String join(Collection col, String delimiter){
         StringBuilder builder = new StringBuilder();
         for(Object o : col){
@@ -795,7 +806,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
         return -1;
     }
-
 
     private Collection fetchFingerPrint(String shards, String nodeId) {
         shards = shards.replace(",", "|");
