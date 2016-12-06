@@ -72,18 +72,14 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
         NamedList response = responseBuilder.rsp.getValues();
         String id = responseBuilder.req.getParams().get("id");
 
-        if(id.contains("-")) {
-            long dbid = fetchDBID(id, responseBuilder.req.getSearcher());
-            if(dbid > -1) {
-                id = Long.toString(dbid);
-            } else {
-                id = null;
-            }
+        long dbid = fetchDBID(id, responseBuilder.req.getSearcher());
+        if(dbid == -1 && isNumber(id) ) {
+            dbid = Long.parseLong(id);
         }
 
         NamedList fingerPrint = new NamedList();
-        if(id != null) {
-            SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), Long.parseLong(id));
+        if(dbid > -1) {
+            SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), dbid);
             if (solrDoc != null) {
                 SolrInputField mh = solrDoc.getField("MINHASH");
                 if (mh != null) {
@@ -112,6 +108,16 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
         }
 
         return -1;
+    }
+
+    private boolean isNumber(String s) {
+        for(int i=0; i<s.length(); i++) {
+            if(!Character.isDigit(s.charAt(i))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 
