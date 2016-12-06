@@ -20,17 +20,20 @@
 package org.alfresco.solr.component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.content.SolrContentStore;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.util.NamedList;
@@ -38,6 +41,7 @@ import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.*;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.plugin.SolrCoreAware;
 
 /**
@@ -67,21 +71,49 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
 
         NamedList response = responseBuilder.rsp.getValues();
         String id = responseBuilder.req.getParams().get("id");
-        NamedList fingerPrint = new NamedList();
-        SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), Long.parseLong(id));
 
-        if(solrDoc != null) {
-            SolrInputField mh = solrDoc.getField("MINHASH");
-            if(mh != null) {
-                Collection col = mh.getValues();
-                List l = new ArrayList();
-                l.addAll(col);
-                fingerPrint.add("MINHASH", l);
+        if(id.contains("-")) {
+            long dbid = fetchDBID(id, responseBuilder.req.getSearcher());
+            if(dbid > -1) {
+                id = Long.toString(dbid);
+            } else {
+                id = null;
+            }
+        }
+
+        NamedList fingerPrint = new NamedList();
+        if(id != null) {
+            SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), Long.parseLong(id));
+            if (solrDoc != null) {
+                SolrInputField mh = solrDoc.getField("MINHASH");
+                if (mh != null) {
+                    Collection col = mh.getValues();
+                    List l = new ArrayList();
+                    l.addAll(col);
+                    fingerPrint.add("MINHASH", l);
+                }
             }
         }
 
         response.add("fingerprint", fingerPrint);
     }
+
+    private long fetchDBID(String UUID, SolrIndexSearcher searcher) throws IOException {
+        String query = "workspace://SpacesStore/"+UUID;
+        TermQuery q = new TermQuery(new Term(QueryConstants.FIELD_LID, query));
+        TopDocs docs = searcher.search(q, 1);
+        Set<String> fields = new HashSet();
+        fields.add(QueryConstants.FIELD_DBID);
+        if(docs.totalHits == 1) {
+            ScoreDoc scoreDoc = docs.scoreDocs[0];
+            Document doc = searcher.doc(scoreDoc.doc, fields);
+            IndexableField dbidField = doc.getField(QueryConstants.FIELD_DBID);
+            return dbidField.numericValue().longValue();
+        }
+
+        return -1;
+    }
+
 
     private SolrContentStore getContentStore(SolrQueryRequest req)
     {
