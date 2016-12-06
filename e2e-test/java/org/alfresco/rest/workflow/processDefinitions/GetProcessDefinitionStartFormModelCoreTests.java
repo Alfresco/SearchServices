@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
 {
     private UserModel adminUser, adminTenantUser;
-    private RestProcessDefinitionModel randomProcessDefinition, returnedProcessDefinition;
+    private RestProcessDefinitionModel randomProcessDefinition;
     private RestProcessDefinitionModelsCollection allProcessDefinitions;
 
     @BeforeClass(alwaysRun = true)
