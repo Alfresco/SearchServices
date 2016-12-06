@@ -43,6 +43,7 @@ public class AddSiteMembershipRequestCoreTests extends RestTest
                 .usingMe()
                 .addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertLastError().containsSummary(String.format("%s is already a member of site %s", newMember.getUsername(), siteModel.getId()));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -53,6 +54,7 @@ public class AddSiteMembershipRequestCoreTests extends RestTest
                 .withCoreAPI()
                 .usingUser(new UserModel("invalidUser", "password")).addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertLastError().containsSummary("The entity with id: invalidUser was not found");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -63,6 +65,8 @@ public class AddSiteMembershipRequestCoreTests extends RestTest
                 .withCoreAPI()
                 .usingMe().addSiteMembershipRequest(new SiteModel("invalidSiteID"));
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertLastError().containsSummary(String.format("The relationship resource was not found for" +
+                " the entity with id: %s and a relationship id of invalidSiteID", newMember.getUsername()));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,

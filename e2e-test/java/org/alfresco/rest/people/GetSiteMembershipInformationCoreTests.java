@@ -56,6 +56,7 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertLastError().containsSummary("The entity with id: invalidPersonId was not found");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -69,6 +70,37 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Only positive values supported for maxItems");
+
+        restClient.withParams("maxItems=-1")
+                .withCoreAPI()
+                .usingAuthUser()
+                .getSitesMembershipInformation()
+                .assertThat().entriesListIsEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Only positive values supported for maxItems");
+
+        restClient.withParams("maxItems=test")
+                .withCoreAPI()
+                .usingAuthUser()
+                .getSitesMembershipInformation()
+                .assertThat().entriesListIsEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Invalid paging parameter maxItems:test");
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site membership information request returns status code 200 for valid maxItems parameter")
+    public void getSiteMembershipInformationRequestReturns200ForValidMaxItemsParameter() throws Exception
+    {
+        restClient.authenticateUser(userModel)
+                .withParams("maxItems=5")
+                .withCoreAPI()
+                .usingAuthUser()
+                .getSitesMembershipInformation()
+                .assertThat().entriesListIsNotEmpty()
+                .getPagination().assertThat().field("maxItems").is("5");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -82,6 +114,29 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Negative values not supported for skipCount");
+
+        restClient.withParams("skipCount=test")
+                .withCoreAPI()
+                .usingAuthUser()
+                .getSitesMembershipInformation()
+                .assertThat().entriesListIsEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Invalid paging parameter skipCount:test");
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site membership information request returns status code 200 for valid skipCount parameter")
+    public void getSiteMembershipInformationRequestReturns200ForValidSkipCountParameter() throws Exception
+    {
+        restClient.authenticateUser(userModel)
+                .withParams("skipCount=1")
+                .withCoreAPI()
+                .usingAuthUser()
+                .getSitesMembershipInformation()
+                .assertThat().entriesListIsNotEmpty()
+                .getPagination().assertThat().field("skipCount").is("1");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
