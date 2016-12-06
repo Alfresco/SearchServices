@@ -1,6 +1,7 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
@@ -56,7 +57,7 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
-        restClient.assertLastError().containsSummary("The entity with id: invalidPersonId was not found");
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidPersonId"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -70,7 +71,7 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-        restClient.assertLastError().containsSummary("Only positive values supported for maxItems");
+        restClient.assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
 
         restClient.withParams("maxItems=-1")
                 .withCoreAPI()
@@ -78,7 +79,7 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-        restClient.assertLastError().containsSummary("Only positive values supported for maxItems");
+        restClient.assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
 
         restClient.withParams("maxItems=test")
                 .withCoreAPI()
@@ -86,7 +87,7 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-        restClient.assertLastError().containsSummary("Invalid paging parameter maxItems:test");
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "test"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -114,7 +115,7 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-        restClient.assertLastError().containsSummary("Negative values not supported for skipCount");
+        restClient.assertLastError().containsSummary(RestErrorModel.NEGATIVE_VALUES_SKIPCOUNT);
 
         restClient.withParams("skipCount=test")
                 .withCoreAPI()
@@ -122,7 +123,7 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
                 .getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-        restClient.assertLastError().containsSummary("Invalid paging parameter skipCount:test");
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "test"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
