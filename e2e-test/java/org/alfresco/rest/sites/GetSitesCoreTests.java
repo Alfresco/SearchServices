@@ -50,7 +50,7 @@ public class GetSitesCoreTests extends RestTest
             description= "Verify if get sites request returns status code 400 when invalid maxItems parameter is used")
     public void getSitesWithInvalidMaxItems() throws Exception
     {
-        restClient.authenticateUser(regularUser).withParams("maxItems=0")
+        restClient.authenticateUser(regularUser).withParams("maxItems=0=09")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError().containsSummary("Only positive values supported for maxItems");

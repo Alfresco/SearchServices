@@ -50,6 +50,9 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
 
     @Autowired
     protected DataLink dataLink;
+    
+    @Autowired
+    protected DataDiscussion dataDiscussion;
 
     @BeforeClass(alwaysRun = true)
     public void checkServerHealth() throws Exception
