@@ -8,7 +8,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessModelsCollection;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.SiteModel;
