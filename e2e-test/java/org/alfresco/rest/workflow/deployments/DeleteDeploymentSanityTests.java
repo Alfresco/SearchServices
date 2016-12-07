@@ -3,7 +3,7 @@ package org.alfresco.rest.workflow.deployments;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;
-import org.alfresco.utility.model.ErrorModel;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -58,6 +58,6 @@ public class DeleteDeploymentSanityTests extends RestTest
 
         restClient.withWorkflowAPI().usingDeployment(deployment).deleteDeployment();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "1000"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "1000"));
     }
 }

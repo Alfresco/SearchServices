@@ -2,6 +2,7 @@ package org.alfresco.rest.favorites;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
@@ -198,7 +199,7 @@ public class GetFavoritesCoreTests extends RestTest
         userFavorites = restClient.withCoreAPI().usingAuthUser()
                 .where().or().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(ErrorModel.INVALID_ARGUMENT, "WHERE query"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -229,6 +230,7 @@ public class GetFavoritesCoreTests extends RestTest
                 .and().paginationField("totalItems").is("2");
     }
 
+    @Bug(id="REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify request using personId that does not exist returns status 404")
     public void checkFavoritesWhenPersonIdDoesNotExist() throws Exception
@@ -238,6 +240,6 @@ public class GetFavoritesCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI()
                 .usingUser(someUser).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, "someUser"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "someUser"));
     }
 }

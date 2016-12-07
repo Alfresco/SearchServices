@@ -3,7 +3,7 @@ package org.alfresco.rest.workflow.deployments;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestDeploymentModel;
-import org.alfresco.utility.model.ErrorModel;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -51,6 +51,6 @@ public class GetDeploymentSanityTests extends RestTest
     {
         restClient.authenticateUser(anotherUser).withWorkflowAPI().usingDeployment(expectedDeployment).getDeployment();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-        	.assertLastError().containsSummary(ErrorModel.PERMISSION_WAS_DENIED);
+        	.assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 }

@@ -2,9 +2,9 @@ package org.alfresco.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -66,7 +66,7 @@ public class GetRatingsCoreTests extends RestTest {
 				.likeDocument();
 
 		restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-				.containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
+				.containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
 	}
 
 	@TestRail(section = { TestGroup.REST_API,

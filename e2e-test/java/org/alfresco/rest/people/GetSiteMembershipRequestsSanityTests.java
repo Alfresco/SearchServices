@@ -124,11 +124,10 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         managerUser.setPassword("newpassword");
-        
         restClient.authenticateUser(managerUser)
                   .withCoreAPI()
                   .usingUser(newMember).getSiteMembershipRequests();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 

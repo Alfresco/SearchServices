@@ -1,0 +1,140 @@
+package org.alfresco.rest.ratings;
+
+import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestRatingModel;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataUser.ListUserWithRoles;
+import org.alfresco.utility.exception.DataPreparationException;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+@Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
+public class DeleteRatingCoreTests extends RestTest
+{
+
+    private SiteModel siteModel;
+    private UserModel adminUser;
+    private FolderModel folderModel;
+    private FileModel document;
+    private ListUserWithRoles usersWithRoles;
+    private RestRatingModel returnedRatingModel;
+
+    @BeforeClass(alwaysRun=true)
+    public void dataPreparation() throws DataPreparationException
+    {
+        adminUser = dataUser.getAdminUser();
+        siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
+        
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
+                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);                
+    }
+    
+    @BeforeMethod()
+    public void setUp() throws DataPreparationException, Exception {
+        folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+    }
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that if ratingId provided is unknown status code returned is 400")
+    public void deleteInvalidRating() throws Exception
+    {
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteInvalidRating("random_rating");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "random_rating"));
+    }  
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that if nodeId does not exist status code returned is 404")
+    public void deleteRatingUsingInvalidDocument() throws Exception
+    {
+        document.setNodeRef("random_value");
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_value"));
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Delete rating stars for a document that was not rated")
+    @Bug(id = "MNT-17181")
+    public void deleteStarsForANotRatedDocument() throws Exception
+    {
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Delete like rating for a document that was not liked")
+    @Bug(id = "MNT-17181")
+    public void deleteLikeForANotLikedDocument() throws Exception
+    {
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    } 
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Delete like for a file then add it again")
+    public void likeDocumentAfterLikeRatingIsDeleted() throws Exception
+    {
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
+        returnedRatingModel = restClient.withCoreAPI().usingResource(document).likeDocument();
+        
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        returnedRatingModel.assertThat().field("myRating").is("true")
+                                 .and().field("id").is("likes")
+                                 .and().field("aggregate").isNotEmpty();     
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Delete stars for a file then add them again")
+    public void addStarsToDocumentAfterRatingIsDeleted() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        returnedRatingModel = restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
+        
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        returnedRatingModel.assertThat().field("myRating").is("5")
+                                 .and().field("id").is("fiveStar")
+                                 .and().field("aggregate").isNotEmpty();     
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Delete rating of a document using site manager")
+    public void deleteDocumentRatingUsingManager() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).likeDocument();
+
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document).deleteFiveStarRating();
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        restClient.withCoreAPI().usingResource(document).getRatings().assertNodeIsLiked().assertNodeHasFiveStarRating();   
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
+            description = "One user is not able to delete like of another user")
+    public void deleteLikeOfAnotherUser() throws Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingResource(document).likeDocument();
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingResource(document).getRatings().assertNodeIsLiked();   
+    }
+}

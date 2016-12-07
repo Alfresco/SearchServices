@@ -18,9 +18,6 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
 public class GetProcessDefinitionStartFormModelSanityTests extends RestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     private UserModel adminUserModel, adminTenantUser;
     private RestProcessDefinitionModel randomProcessDefinition;
 

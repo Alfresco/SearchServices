@@ -9,6 +9,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -121,11 +122,9 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     @Bug(id = "MNT-16557")
     public void unauthenticatedUserIsNotAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
-        requestModel = restClient.authenticateUser(new UserModel("random user", "random password"))
+        restClient.authenticateUser(new UserModel("random user", "random password"))
                   .withCoreAPI()
                   .usingUser(newMember).addSiteMembershipRequest(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
-        requestModel.assertThat().field("id").isNotEmpty()
-                  .assertThat().field("site").isNotEmpty();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }

@@ -5,6 +5,7 @@ import org.alfresco.rest.model.RestPreferenceModelsCollection;
 import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -114,7 +115,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, 
               executionType = ExecutionType.SANITY, 
               description = "Verify manager user is NOT Authorized to gets its preferences with Rest API when authentication fails(401)")
-    public void managerUserGetsPeoplePreferencesIsNotAUthorized() throws Exception
+    public void managerUserGetsPeoplePreferencesIsNotAuthorized() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
@@ -122,6 +123,6 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getPersonPreferences();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }

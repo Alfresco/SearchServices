@@ -1,11 +1,12 @@
 package org.alfresco.rest.sites;
 
+import java.util.List;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -17,15 +18,13 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.List;
-
 /**
  * Created by Claudia Agache on 11/22/2016.
  */
 @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class GetSitesCoreTests extends RestTest
 {
-    private UserModel userModel, privateSiteManager, privateSiteConsumer;
+    private UserModel regularUser, privateSiteManager, privateSiteConsumer;
     private SiteModel publicSite, privateSite, moderatedSite, deletedSite;
     private RestSiteModelsCollection sites;
     private SiteModel siteModel;
@@ -33,7 +32,7 @@ public class GetSitesCoreTests extends RestTest
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
-        userModel = dataUser.createRandomTestUser();
+        regularUser = dataUser.createRandomTestUser();
         privateSiteManager = dataUser.createRandomTestUser();
         privateSiteConsumer = dataUser.createRandomTestUser();
         siteModel = new SiteModel(RandomData.getRandomName("0-PublicSite"));
@@ -48,27 +47,27 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify invalid request returns status code 400 for invalid maxItems")
-    public void checkStatusCodeForInvalidMaxItems() throws Exception
+            description= "Verify if get sites request returns status code 400 when invalid maxItems parameter is used")
+    public void getSitesWithInvalidMaxItems() throws Exception
     {
-        restClient.authenticateUser(userModel).withParams("maxItems=0")
+        restClient.authenticateUser(regularUser).withParams("maxItems=0=09")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError().containsSummary("Only positive values supported for maxItems");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify invalid request returns status code 400 for invalid skipCount")
-    public void checkStatusCodeForInvalidSkipCount() throws Exception
+            description= "Verify if get sites request returns status code 400 when invalid skipCount parameter is used")
+    public void getSitesWithInvalidSkipCount() throws Exception
     {
-        restClient.authenticateUser(userModel).withParams("skipCount=A")
+        restClient.authenticateUser(regularUser).withParams("skipCount=A")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError().containsSummary("Invalid paging parameter skipCount:A");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify User gets sites ordered by name ascendant and status code is 200")
+            description= "Verify if User gets sites ordered by title ascending and status code is 200")
     public void getSitesOrderedByNameASC() throws Exception
     {
         sites = restClient.authenticateUser(privateSiteManager).withParams("orderBy=title ASC")
@@ -82,10 +81,10 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets all public and moderated sites and status code is 200")
-    public void userGetsOnlyPublicAndModeratedSites() throws Exception
+            description= "Verify if a regular user gets all public and moderated sites and status code is 200")
+    public void regularUserGetsOnlyPublicAndModeratedSites() throws Exception
     {
-        sites = restClient.authenticateUser(userModel).withParams("maxItems=5000")
+        sites = restClient.authenticateUser(regularUser).withParams("maxItems=5000")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListContains("title", publicSite.getTitle())
@@ -95,7 +94,7 @@ public class GetSitesCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if a member of a private site gets the private site, all public sites and all moderated sites. Verify if status code is 200")
-    public void userGetsSitesVisibleForHim() throws Exception
+    public void privateSiteMemberGetsSitesVisibleForHim() throws Exception
     {
         sites = restClient.authenticateUser(privateSiteConsumer).withParams("maxItems=5000")
                 .withCoreAPI().getSites();
@@ -109,7 +108,7 @@ public class GetSitesCoreTests extends RestTest
             description= "Verify if a site is not retrieved anymore after deletion and status code is 200")
     public void checkDeletedSiteIsNotRetrieved() throws Exception
     {
-        sites = restClient.authenticateUser(userModel).withParams("maxItems=5000").withCoreAPI().getSites();
+        sites = restClient.authenticateUser(regularUser).withParams("maxItems=5000").withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListContains("title", deletedSite.getTitle());
 
