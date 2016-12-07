@@ -109,7 +109,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 200 when valid skipCount parameter is used")
-    public void getSitesWithValidSkipCount() throws Exception
+    public void getSiteContainerWithValidSkipCount() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteManager)).withParams("skipCount=1")
                 .withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
@@ -134,7 +134,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 400 when invalid skipCount parameter is used")
-    public void getSitesWithSkipCountCharacter() throws Exception
+    public void getSiteContainerWithSkipCountCharacter() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=abc")
                 .withCoreAPI().usingSite(publicSiteModel).getSiteContainers();
@@ -144,7 +144,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 200 when skipCount parameter starts with multiple zero")
-    public void getSitesWithSkipCountMultipleZero() throws Exception
+    public void getSiteContainerWithSkipCountMultipleZero() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=00002")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
@@ -154,7 +154,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 400 when invalid skipCount parameter is used")            
+            description= "Verify if get site container request returns status code 400 when site doesn't exist")            
     public void getSiteContainerWithNonExistentSite() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator))
