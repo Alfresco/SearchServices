@@ -1,12 +1,11 @@
 package org.alfresco.rest.ratings;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -17,7 +16,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -42,7 +40,7 @@ public class GetRatingCoreTests extends RestTest
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws DataPreparationException, Exception
     {
-        document = dataContent.usingSite(siteModel).usingAdmin().createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        document = dataContent.usingSite(siteModel).usingAdmin().createContent(DocumentType.TEXT_PLAIN);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -52,7 +50,7 @@ public class GetRatingCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI();
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings/{ratingId}", document.getNodeRef(), "invalid ratingId");
         restClient.processModel(RestRatingModel.class, request);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("invalid ratingId");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalid ratingId"));
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -63,7 +61,7 @@ public class GetRatingCoreTests extends RestTest
         returnedRatingModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getFiveStarRating();
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(ErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
+                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
     }
 
     @TestRail(section = { TestGroup.REST_API,
