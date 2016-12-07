@@ -89,7 +89,7 @@ public class AddProcessCoreTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"variables\":{\"bpm_sendEMailNotifications\":false}}", "processes");
         restClient.processModel(RestProcessModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(String.format("Either processDefinitionId or processDefinitionKey is required"));
+            .assertLastError().containsSummary("Either processDefinitionId or processDefinitionKey is required");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
@@ -103,7 +103,7 @@ public class AddProcessCoreTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"variables\":{\"bpm_assignee\":\"admin\"}}", "processes");
         restClient.processModel(RestProcessModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(String.format("Either processDefinitionId or processDefinitionKey is required"));
+            .assertLastError().containsSummary("Either processDefinitionId or processDefinitionKey is required");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
@@ -117,6 +117,6 @@ public class AddProcessCoreTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"variables\":{\"bpm_workflowPriority\":2}}", "processes");
         restClient.processModel(RestProcessModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(String.format("Either processDefinitionId or processDefinitionKey is required"));
+            .assertLastError().containsSummary("Either processDefinitionId or processDefinitionKey is required");
     }
 }
