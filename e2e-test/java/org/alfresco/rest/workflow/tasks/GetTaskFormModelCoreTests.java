@@ -84,7 +84,7 @@ public class GetTaskFormModelCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
             executionType = ExecutionType.REGRESSION, 
-                description = "Verify user involved in task cannot get completed task form models")
+                description = "Verify user involved in task can get completed task form models")
     public void getTaskFormModelsForCompletedTask() throws Exception
     {
         UserModel assignedUser = dataUser.createRandomTestUser();
