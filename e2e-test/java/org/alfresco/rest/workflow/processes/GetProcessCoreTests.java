@@ -28,7 +28,7 @@ public class GetProcessCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that using invalid process ID returns status code 404")
-    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE})
     public void invalidProcessIdTest() throws Exception
     {
         RestProcessModel newProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
