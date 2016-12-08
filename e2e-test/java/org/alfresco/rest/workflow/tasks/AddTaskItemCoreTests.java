@@ -24,7 +24,7 @@ public class AddTaskItemCoreTests extends RestTest
 {
     private UserModel userModel, assigneeUser;
     private SiteModel siteModel;
-    private FileModel fileModel, document2, document3, document4, document5;
+    private FileModel fileModel, document;
     private TaskModel taskModel;
     private RestItemModel taskItem;
 
@@ -34,40 +34,38 @@ public class AddTaskItemCoreTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
+        adminUser = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         assigneeUser = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
 
-        adminUser = dataUser.getAdminUser();
         taskId = taskModel.getId();
+        restClient.authenticateUser(userModel);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Add task item using admin user from same network")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Add task item using random user.")
     public void addTaskItemByRandomUser() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(userModel);
-        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
+        document = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
 
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt()).assertThat().field("size").is(taskItem.getSize()).and().field("createdBy")
                 .is(taskItem.getCreatedBy()).and().field("modifiedAt").is(taskItem.getModifiedAt()).and().field("name").is(taskItem.getName()).and()
                 .field("modifiedBy").is(taskItem.getModifiedBy()).and().field("id").is(taskItem.getId()).and().field("mimeType").is(taskItem.getMimeType());
 
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item, is falling in case invalid itemBody is provided")
     public void failedAddingTaskItemIfInvalidItemBodyIsProvided() throws Exception
     {
-        restClient.authenticateUser(adminUser);
-        document3 = dataContent.usingSite(siteModel).createContent(DocumentType.HTML);
-        document3.setNodeRef("invalidNodeRef");
+        // document3 = dataContent.usingSite(siteModel).createContent(DocumentType.HTML);
+        document.setNodeRef("invalidNodeRef");
 
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document3);
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary("The entity with id: item with id workspace://SpacesStore/invalidNodeRef not found was not found");
@@ -78,11 +76,11 @@ public class AddTaskItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case empty item body is provided")
     public void failedAddingTaskItemIfEmptyItemBodyIsProvided() throws Exception
     {
-        restClient.authenticateUser(adminUser);
-        document4 = dataContent.usingSite(siteModel).createContent(DocumentType.PDF);
-        document4.setNodeRef("");
 
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document4);
+        // document4 = dataContent.usingSite(siteModel).createContent(DocumentType.PDF);
+        document.setNodeRef("");
+
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
 
@@ -91,11 +89,11 @@ public class AddTaskItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case invalid task id is provided")
     public void failedAddingTaskItemIfInvalidTaskIdIsProvided() throws Exception
     {
-        restClient.authenticateUser(adminUser);
-        document5 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        // restClient.authenticateUser(adminUser);
+        // document5 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         taskModel.setId("invalidTaskId");
 
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document5);
+        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary("The entity with id: invalidTaskId was not found");
     }
@@ -104,7 +102,7 @@ public class AddTaskItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case incomplete body type is provided")
     public void failedAddingTaskVariableIfIncompleteBodyIsProvided() throws Exception
     {
-        restClient.authenticateUser(adminUser);
+        // restClient.authenticateUser(adminUser);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{}", "tasks/{taskId}/items", taskId);
         restClient.processModel(RestVariableModel.class, request);
 
