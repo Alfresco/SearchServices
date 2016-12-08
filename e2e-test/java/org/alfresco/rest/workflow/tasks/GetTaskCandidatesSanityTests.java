@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
  *
  */
 @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-public class GetTaskCandidatesTests extends  RestTest
+public class GetTaskCandidatesSanityTests extends  RestTest
 {
     private UserModel userModel, user, userModel1, userModel2;
     private SiteModel siteModel;
