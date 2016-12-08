@@ -53,7 +53,7 @@ public class GetSitesCoreTests extends RestTest
         restClient.authenticateUser(regularUser).withParams("maxItems=0=09")
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary("Only positive values supported for maxItems");
+                .assertLastError().containsSummary("Invalid paging parameter maxItems:0=09");
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
