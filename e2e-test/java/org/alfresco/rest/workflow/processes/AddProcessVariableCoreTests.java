@@ -31,41 +31,40 @@ public class AddProcessVariableCoreTests extends RestTest
     public void dataPreparation() throws Exception
     {
         adminUser = dataUser.getAdminUser();
+        anotherUser = dataUser.createRandomTestUser();
         userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
-        anotherUser = dataUser.createRandomTestUser();
-
-        adminUser = dataUser.getAdminUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Add process variable using by the user who started the process.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process variable using by the user who started the process.")
     public void addProcessVariableByUserThatStartedTheProcess() throws Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
 
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processVariable.assertThat().field("name").is(variableModel.getName()).and().field("type").is(variableModel.getType()).and().field("value")
-                .is(variableModel.getValue());
+        processVariable.assertThat().field("name").is(processVariable.getName()).and().field("type").is(processVariable.getType()).and().field("value")
+                .is(processVariable.getValue());
+
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Add process variable using by a random user.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process variable using by a random user.")
     public void addProcessVariableByAnyUser() throws Exception
     {
-        processModel = restClient.authenticateUser(anotherUser).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(anotherUser).withWorkflowAPI().addProcess("activitiAdhoc", anotherUser, false, Priority.Normal);
 
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processVariable.assertThat().field("name").is(variableModel.getName()).and().field("type").is(variableModel.getType()).and().field("value")
-                .is(variableModel.getValue());
+        processVariable.assertThat().field("name").is(processVariable.getName()).and().field("type").is(processVariable.getType()).and().field("value")
+                .is(processVariable.getValue());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Add process variable using by admin in other network.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process variable using by admin in other network.")
     public void addProcessVariableByAdminInOtherNetwork() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
