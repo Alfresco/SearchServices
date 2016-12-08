@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.utility.model.FileModel;
@@ -22,13 +23,12 @@ import org.testng.annotations.Test;
 @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
 public class AddTaskItemCoreTests extends RestTest
 {
-    private UserModel userModel, assigneeUser;
+    private UserModel userModel, assigneeUser, adminUser;
     private SiteModel siteModel;
     private FileModel fileModel, document;
     private TaskModel taskModel;
     private RestItemModel taskItem;
 
-    private UserModel adminUser;
     private String taskId;
 
     @BeforeClass(alwaysRun = true)
@@ -53,22 +53,20 @@ public class AddTaskItemCoreTests extends RestTest
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
-        taskItem.assertThat().field("createdAt").is(taskItem.getCreatedAt()).assertThat().field("size").is(taskItem.getSize()).and().field("createdBy")
-                .is(taskItem.getCreatedBy()).and().field("modifiedAt").is(taskItem.getModifiedAt()).and().field("name").is(taskItem.getName()).and()
-                .field("modifiedBy").is(taskItem.getModifiedBy()).and().field("id").is(taskItem.getId()).and().field("mimeType").is(taskItem.getMimeType());
+        taskItem.assertThat().field("createdAt").isNotEmpty().and().field("size").isNotEmpty().and().field("createdBy").is(adminUser.getUsername()).and()
+                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(userModel.getUsername()).and()
+                .field("id").is(document.getNodeRefWithoutVersion()).and().field("mimeType").is(document.getFileType().mimeType);
 
     }
 
+    @Bug(id = "ACE-5683")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item, is falling in case invalid itemBody is provided")
     public void failedAddingTaskItemIfInvalidItemBodyIsProvided() throws Exception
     {
-        // document3 = dataContent.usingSite(siteModel).createContent(DocumentType.HTML);
         document.setNodeRef("invalidNodeRef");
-
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
 
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary("The entity with id: item with id workspace://SpacesStore/invalidNodeRef not found was not found");
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidNodeRef"));
 
     }
 
@@ -76,37 +74,33 @@ public class AddTaskItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case empty item body is provided")
     public void failedAddingTaskItemIfEmptyItemBodyIsProvided() throws Exception
     {
-
-        // document4 = dataContent.usingSite(siteModel).createContent(DocumentType.PDF);
         document.setNodeRef("");
-
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
 
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-
+        // TODO - expected error message to be added
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("");
+        ;
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case invalid task id is provided")
     public void failedAddingTaskItemIfInvalidTaskIdIsProvided() throws Exception
     {
-        // restClient.authenticateUser(adminUser);
-        // document5 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         taskModel.setId("invalidTaskId");
-
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
 
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary("The entity with id: invalidTaskId was not found");
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"));
     }
 
     @Bug(id = "ACE-5675")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case incomplete body type is provided")
     public void failedAddingTaskVariableIfIncompleteBodyIsProvided() throws Exception
     {
-        // restClient.authenticateUser(adminUser);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{}", "tasks/{taskId}/items", taskId);
         restClient.processModel(RestVariableModel.class, request);
 
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        // TODO - expected error message to be added
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("");
+        ;
     }
 
 }
