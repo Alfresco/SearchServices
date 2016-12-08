@@ -148,7 +148,7 @@ public class UpdateTaskVariableCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Update task variable by non assigned user")
+            description = "Update task variable by inexistent user")
     public void updateTaskVariableByInexistentser() throws Exception
     {
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
