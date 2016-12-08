@@ -12,24 +12,23 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class GetSiteContainerCoreTests extends RestTest{
 
     private UserModel adminUserModel, testUserModel;
-    private SiteModel publicSiteWithContainers;
-    private SiteModel moderatedSiteModel, privateSiteModel;
+    private SiteModel publicSiteModel, moderatedSiteModel, privateSiteModel;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
         testUserModel = dataUser.createRandomTestUser();
-        publicSiteWithContainers = dataSite.usingAdmin().createPublicRandomSite();
+        publicSiteModel = dataSite.usingAdmin().createPublicRandomSite();
         moderatedSiteModel = dataSite.usingAdmin().createModeratedRandomSite();
         privateSiteModel = dataSite.usingAdmin().createPrivateRandomSite();
         
-        dataLink.usingAdmin().usingSite(publicSiteWithContainers).createRandomLink();
-        dataDiscussion.usingAdmin().usingSite(publicSiteWithContainers).createRandomDiscussion();
+        dataLink.usingAdmin().usingSite(publicSiteModel).createRandomLink();
+        dataDiscussion.usingAdmin().usingSite(publicSiteModel).createRandomDiscussion();
 
         dataLink.usingAdmin().usingSite(moderatedSiteModel).createRandomLink();
         dataDiscussion.usingAdmin().usingSite(moderatedSiteModel).createRandomDiscussion();
@@ -54,9 +53,9 @@ public class GetSiteContainerCoreTests extends RestTest{
     public void getContainerWithNonExistentItem() throws Exception
     {
         restClient.authenticateUser(testUserModel)
-                .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainer("NonExistentFolder");
+                .withCoreAPI().usingSite(publicSiteModel).getSiteContainer("NonExistentFolder");
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, publicSiteWithContainers.getId(), "NonExistentFolder"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, publicSiteModel.getId(), "NonExistentFolder"));
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
@@ -64,12 +63,12 @@ public class GetSiteContainerCoreTests extends RestTest{
     public void getContainerForPublicSite() throws Exception
     {
         restClient.authenticateUser(testUserModel)
-                .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainer(ContainerName.discussions.toString())
+                .withCoreAPI().usingSite(publicSiteModel).getSiteContainer(ContainerName.discussions.toString())
                 .assertThat().field("folderId").is(ContainerName.discussions.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
         
         restClient.authenticateUser(testUserModel)
-	        .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainer(ContainerName.links.toString())
+	        .withCoreAPI().usingSite(publicSiteModel).getSiteContainer(ContainerName.links.toString())
 	        .assertThat().field("folderId").is(ContainerName.links.toString()); 
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
