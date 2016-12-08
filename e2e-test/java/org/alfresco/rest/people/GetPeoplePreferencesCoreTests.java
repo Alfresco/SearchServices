@@ -43,7 +43,7 @@ public class GetPeoplePreferencesCoreTests  extends RestTest
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel("invalidPersonID", "password"))
                 .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
-        restClient.assertLastError().containsSummary("The entity with id: personId is null. was not found");
+        restClient.assertLastError().containsSummary("The entity with id: invalidPersonID was not found");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION,
