@@ -19,7 +19,6 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class RemoveSiteMemberCoreTests extends RestTest
 {    
     private SiteModel siteModel;
@@ -37,6 +36,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can NOT delete site member for an inexistent user and gets status code 404, 'Not Found'")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void managerIsNotAbleToDeleteInexistentSiteMember() throws Exception
     {
         UserModel inexistentUser = new UserModel("inexistentUser", "password");
@@ -49,6 +49,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can NOT delete site member for a non site member and gets status code 400, 'Bad Request'")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void managerIsNotAbleToDeleteNotSiteMember() throws Exception
     {
         UserModel nonMember = dataUser.createRandomTestUser();
@@ -61,6 +62,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can NOT delete site member for an invalid site and gets status code 404, 'Not Found'")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void managerIsNotAbleToDeleteSiteMemberOfInvalidSite() throws Exception
     {
         SiteModel invalidSite = new SiteModel("invalidSite");
@@ -75,6 +77,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can delete a site member with manager role")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteManagerIsAbleToDeleteSiteMemberWithManagerRole() throws Exception
     {
         UserModel anothermanager = dataUser.createRandomTestUser();
@@ -90,6 +93,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can delete site member using \"-me-\" in place of personId")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void managerIsAbleToDeleteSiteMemberUsingMe() throws Exception
     {
         UserModel manager = dataUser.createRandomTestUser();
@@ -106,6 +110,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
          
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site collaborator cannot delete a site member with Manager role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteCollaboratorIsNotAbleToDeleteSiteMemberWithManagerRole() throws Exception
     {
         UserModel managerForDelete = dataUser.createRandomTestUser();
@@ -120,6 +125,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site contributor cannot delete site member with Manager role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteContributorIsNotAbleToDeleteSiteMemberWithManagerRole() throws Exception
     {
         UserModel managerForDelete = dataUser.createRandomTestUser();
@@ -133,6 +139,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site consumer cannot delete site member with Manager role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteConsumerIsNotAbleToDeleteSiteMemberWithManagerRole() throws Exception
     {
         UserModel managerForDelete = dataUser.createRandomTestUser();
@@ -146,6 +153,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site collaborator cannot delete a site member with Contributor role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteCollaboratorIsNotAbleToDeleteSiteMemberWithContributorRole() throws Exception
     {
         UserModel contributorForDelete = dataUser.createRandomTestUser();
@@ -159,6 +167,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site contributor cannot delete site member with Contributor role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteContributorIsNotAbleToDeleteSiteMemberWithContributorRole() throws Exception
     {
         UserModel contributorForDelete = dataUser.createRandomTestUser();
@@ -172,6 +181,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
       
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site consumer cannot delete site member with Contributor role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteConsumerIsNotAbleToDeleteSiteMemberWithContributorRole() throws Exception
     {
         UserModel contributorForDelete = dataUser.createRandomTestUser();
@@ -185,6 +195,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can delete a site member with Contributor role")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteManagerIsAbleToDeleteSiteMemberWithContributorRole() throws Exception
     {
         UserModel contributorForDelete = dataUser.createRandomTestUser();
@@ -200,6 +211,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site collaborator cannot delete a site member with Collaborator role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteCollaboratorIsNotAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
     {
         UserModel collaboratorForDelete = dataUser.createRandomTestUser();
@@ -213,6 +225,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site contributor cannot delete site member with Collaborator role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteContributorIsNotAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
     {
         UserModel collaboratorForDelete = dataUser.createRandomTestUser();
@@ -226,6 +239,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
       
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that site consumer cannot delete site member with Collaborator role and gets status code 422")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteConsumerIsNotAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
     {
         UserModel collaboratorForDelete = dataUser.createRandomTestUser();
@@ -239,6 +253,7 @@ public class RemoveSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can delete a site member with Collaborator role")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     public void siteManagerIsAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
     {
         UserModel collaboratorForDelete = dataUser.createRandomTestUser();
