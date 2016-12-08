@@ -7,6 +7,7 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteMemberModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
+import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -15,18 +16,21 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class AddSiteMemberCoreTests extends RestTest
 {
     private UserModel adminUserModel;
+    private UserModel testUser;
     private SiteModel publicSiteModel;
     private SiteModel moderatedSiteModel;
     private SiteModel privateSiteModel;
-    private ListUserWithRoles usersWithRolesToMoedratedSite;
+    private ListUserWithRoles usersWithRolesToModeratedSite;
     private ListUserWithRoles usersWithRolesToPrivateSite;
     private String addMembersJson;
+    private RestSiteMemberModel memberModel;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -35,57 +39,57 @@ public class AddSiteMemberCoreTests extends RestTest
         publicSiteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         moderatedSiteModel = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
         privateSiteModel = dataSite.usingUser(adminUserModel).createPrivateRandomSite();
-        usersWithRolesToMoedratedSite = dataUser.addUsersWithRolesToSite(moderatedSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, 
+        usersWithRolesToModeratedSite = dataUser.addUsersWithRolesToSite(moderatedSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, 
                                                           UserRole.SiteConsumer,UserRole.SiteContributor);
         usersWithRolesToPrivateSite = dataUser.addUsersWithRolesToSite(privateSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, 
                                                           UserRole.SiteConsumer,UserRole.SiteContributor);
         addMembersJson = "{\"role\":\"%s\",\"id\":\"%s\"}, {\"role\":\"%s\",\"id\":\"%s\"}";
-
+    }
+    
+    @BeforeMethod
+    public void setUp() throws DataPreparationException {
+        testUser = dataUser.createRandomTestUser("testUser");
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can add another user as manager to a public site and gets status code CREATED (201)")
     public void addManagerToPublicSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(testUser)
-               .assertThat().field("id").is(testUser.getUsername())
+        memberModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        memberModel.assertThat().field("id").is(testUser.getUsername())
                .and().field("role").is(testUser.getUserRole());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can add another user as manager to a moderated site and gets status code CREATED (201)")
     public void addManagerToModeratedSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser)
-               .assertThat().field("id").is(testUser.getUsername())
+        memberModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);     
+        memberModel.assertThat().field("id").is(testUser.getUsername())
                .and().field("role").is(testUser.getUserRole());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can add another user as manager to a private site and gets status code CREATED (201)")
     public void addManagerToPrivateSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(testUser)
-               .assertThat().field("id").is(testUser.getUsername())
+        memberModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(testUser);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);      
+        memberModel.assertThat().field("id").is(testUser.getUsername())
                .and().field("role").is(testUser.getUserRole());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);       
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that consumer role is not able to add another user to a moderated site and gets status code 403")
     public void addUserByConsumerToModeratedSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
-        restClient.authenticateUser(usersWithRolesToMoedratedSite.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
+        restClient.authenticateUser(usersWithRolesToModeratedSite.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
     }
     
@@ -93,7 +97,6 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that consumer role is not able to add another user to a private site and gets status code 403")
     public void addUserByConsumerToPrivateSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRolesToPrivateSite.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingSite(privateSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
@@ -103,9 +106,8 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that collaborator role is not able to add another user to a moderated site and gets status code 403")
     public void addUserByCollaboratorToModeratedSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
-        restClient.authenticateUser(usersWithRolesToMoedratedSite.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
+        restClient.authenticateUser(usersWithRolesToModeratedSite.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
     }
     
@@ -113,7 +115,6 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that collaborator role is not able to add another user to a private site and gets status code 403")
     public void addUserByCollaboratorToPrivateSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRolesToPrivateSite.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingSite(privateSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
@@ -123,9 +124,8 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that contributor role is not able to add another user to a moderated site and gets status code 403")
     public void addUserByContributorToModeratedSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
-        restClient.authenticateUser(usersWithRolesToMoedratedSite.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
+        restClient.authenticateUser(usersWithRolesToModeratedSite.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
     }
     
@@ -133,7 +133,6 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that contributor role is not able to add another user to a private site and gets status code 403")
     public void addUserByContributorToPrivateSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(usersWithRolesToPrivateSite.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingSite(privateSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
@@ -143,9 +142,8 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that a user without specified role can not be added to a site and gets status code 400")
     public void canNotAddUserWithoutSpecifyingRoleToSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");   
         restClient.authenticateUser(adminUserModel).withCoreAPI();
-        String json = JsonBodyGenerator.keyValueJson("id",testUser.getUsername());
+        String json = JsonBodyGenerator.keyValueJson("id", testUser.getUsername());
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, json, "sites/{siteId}/members?{parameters}", publicSiteModel.getId(), restClient.getParameters());
         restClient.processModel(RestSiteMemberModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.MUST_PROVIDE_ROLE);       
@@ -155,7 +153,6 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that a user with inexistent role can not be added to a site and gets status code 400")
     public void canNotAddUserWithInexistentRoleToSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");   
         restClient.authenticateUser(adminUserModel).withCoreAPI();
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, String.format("{\"role\":\"inexistentRole\",\"id\":\"%s\"}", testUser.getUsername()), "sites/{siteId}/members?{parameters}", publicSiteModel.getId(), restClient.getParameters());
         restClient.processModel(RestSiteMemberModel.class, request);
@@ -164,9 +161,8 @@ public class AddSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that user can not add himself as a manager to a public site and gets status code 403")
-    public void userAddHimselfToPublicSite() throws Exception
+    public void userAddHimselfAsManagerToPublicSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
         restClient.authenticateUser(testUser).withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
@@ -174,9 +170,8 @@ public class AddSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that user can not add himself as a manager to a moderated site and gets status code 403")
-    public void userAddHimselfToModeratedSite() throws Exception
+    public void userAddHimselfAsManagerToModeratedSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
         restClient.authenticateUser(testUser).withCoreAPI().usingSite(moderatedSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);       
@@ -184,9 +179,8 @@ public class AddSiteMemberCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that user can not add himself as a manager to a private site and gets status code 404")
-    public void userAddHimselfToPrivateSite() throws Exception
+    public void userAddHimselfAsManagerToPrivateSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
         restClient.authenticateUser(testUser).withCoreAPI().usingSite(privateSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, privateSiteModel.getId()));       
@@ -196,7 +190,6 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that user can not be added to an inexistent site and gets status code 404")
     public void userIsNotAbleToAddUserToAnInexistentSite() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
         SiteModel inexistentSite = new SiteModel("inexistentSite");
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(inexistentSite).addPerson(testUser);
@@ -204,10 +197,9 @@ public class AddSiteMemberCoreTests extends RestTest
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify that user can not be added to an empty site id and gets status code 404")
-    public void userIsNotAbleToAddUserToEmptySiteId() throws Exception
+            description = "Verify that user can not be added to a site if an empty site id is provided and gets status code 404")
+    public void userIsNotAbleToAddAnotherUserUsingEmptySiteId() throws Exception
     {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
         SiteModel inexistentSite = new SiteModel("");
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(inexistentSite).addPerson(testUser);
@@ -225,7 +217,7 @@ public class AddSiteMemberCoreTests extends RestTest
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify that inexistet user can not be added to site and gets status code 400")
+            description = "Verify that empty username can not be added to site and gets status code 400")
     public void userIsNotAbleToAddEmptyUserIdToSite() throws Exception
     {
         UserModel testUser = new UserModel("", "password");
@@ -238,7 +230,7 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that user can not add another user that is already a memeber and gets status code 409")
     public void userIsNotAbleToAddUserThatIsAlreadyAMember() throws Exception
     {
-        UserModel collaborator = usersWithRolesToMoedratedSite.getOneUserWithRole(UserRole.SiteCollaborator);
+        UserModel collaborator = usersWithRolesToModeratedSite.getOneUserWithRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(collaborator);
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT).assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, collaborator.getUsername(), moderatedSiteModel.getId()));       
     }
@@ -277,8 +269,8 @@ public class AddSiteMemberCoreTests extends RestTest
             description = "Verify that several users that are already added to the site can not be added once in a row and gets status code 400")
     public void addSeveralUsersThatAreAlreadyAddedToASite() throws Exception
     {
-        UserModel collaborator = usersWithRolesToMoedratedSite.getOneUserWithRole(UserRole.SiteCollaborator);
-        UserModel consumer = usersWithRolesToMoedratedSite.getOneUserWithRole(UserRole.SiteConsumer);
+        UserModel collaborator = usersWithRolesToModeratedSite.getOneUserWithRole(UserRole.SiteCollaborator);
+        UserModel consumer = usersWithRolesToModeratedSite.getOneUserWithRole(UserRole.SiteConsumer);
         restClient.authenticateUser(adminUserModel).withCoreAPI();
         String json = String.format(addMembersJson, collaborator.getUserRole(), collaborator.getUsername(), consumer.getUserRole(), consumer.getUsername());
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, json, "sites/{siteId}/members?{parameters}", moderatedSiteModel.getId(), restClient.getParameters());

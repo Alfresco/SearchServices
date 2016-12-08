@@ -4,10 +4,10 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.*;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -90,14 +90,13 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Manager user gets status code 401 if authentication call fails")
-    @Bug(id="MNT-16904")
     public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel).withCoreAPI()
                 .usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-                .assertLastException().hasName(StatusModel.UNAUTHORIZED);
+                .assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,

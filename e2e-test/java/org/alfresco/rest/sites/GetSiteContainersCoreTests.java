@@ -108,8 +108,8 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 200 when valid skipCount parameter is used")
-    public void getSitesWithValidSkipCount() throws Exception
+            description= "Verify if get site containers request returns status code 200 when valid skipCount parameter is used")
+    public void getSiteContainersWithValidSkipCount() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteManager)).withParams("skipCount=1")
                 .withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
@@ -133,8 +133,8 @@ public class GetSiteContainersCoreTests  extends RestTest
         }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 400 when invalid skipCount parameter is used")
-    public void getSitesWithSkipCountCharacter() throws Exception
+            description= "Verify if get site containers request returns status code 400 when invalid skipCount parameter is used")
+    public void getSiteContainersWithSkipCountCharacter() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=abc")
                 .withCoreAPI().usingSite(publicSiteModel).getSiteContainers();
@@ -143,8 +143,8 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 200 when skipCount parameter starts with multiple zero")
-    public void getSitesWithSkipCountMultipleZero() throws Exception
+            description= "Verify if get site containers request returns status code 200 when skipCount parameter starts with multiple zero")
+    public void getSiteContainersWithSkipCountMultipleZero() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=00002")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
@@ -154,8 +154,8 @@ public class GetSiteContainersCoreTests  extends RestTest
     
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 400 when invalid skipCount parameter is used")            
-    public void getSiteContainerWithNonExistentSite() throws Exception
+            description= "Verify if get site containers request returns status code 400 when site doesn't exist")
+    public void getSiteContainersWithNonExistentSite() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withCoreAPI().usingSite("NonExistentSiteId").getSiteContainers();
@@ -164,8 +164,8 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site container request returns status 200 for private site")
-    public void getSiteContainerForPrivateSite() throws Exception
+            description= "Verify get site containers request returns status 200 for private site")
+    public void getSiteContainersForPrivateSite() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingSite(privateSiteModel).getSiteContainers()
@@ -174,8 +174,8 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site container request returns status 200 for moderated site")
-    public void getSiteContainerForModeratedSite() throws Exception
+            description= "Verify get site containers request returns status 200 for moderated site")
+    public void getSiteContainersForModeratedSite() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingSite(moderatedSiteModel).getSiteContainers()
@@ -184,8 +184,8 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site container request returns status 200 for several containers")
-    public void getSiteContainerForSeveralItems() throws Exception
+            description= "Verify get site containers request returns status 200 for several containers")
+    public void getSiteContainersForSeveralItems() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
             .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
@@ -197,8 +197,8 @@ public class GetSiteContainersCoreTests  extends RestTest
     }  
     
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site container request returns status 200 for one container")
-    public void getSiteContainerWithOneItem() throws Exception
+            description= "Verify get site containers request returns status 200 for one container")
+    public void getSiteContainersWithOneItem() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
             .withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
