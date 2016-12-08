@@ -1,6 +1,7 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
@@ -43,6 +44,7 @@ public class AddSiteMembershipRequestCoreTests extends RestTest
                 .usingMe()
                 .addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, newMember.getUsername(), siteModel.getId()));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -53,6 +55,7 @@ public class AddSiteMembershipRequestCoreTests extends RestTest
                 .withCoreAPI()
                 .usingUser(new UserModel("invalidUser", "password")).addSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidUser"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
@@ -63,6 +66,7 @@ public class AddSiteMembershipRequestCoreTests extends RestTest
                 .withCoreAPI()
                 .usingMe().addSiteMembershipRequest(new SiteModel("invalidSiteID"));
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), "invalidSiteID"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
