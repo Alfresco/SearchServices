@@ -5,6 +5,7 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -45,6 +46,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
             executionType = ExecutionType.REGRESSION,
             description = "Verify network admin is able to get a process definition image using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.NETWORKS })
+    @Bug(id = "MNT-17243")
     public void networkAdminGetProcessDefinitionImage() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -61,6 +63,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
             executionType = ExecutionType.REGRESSION,
             description = "Verify network user is able to get a process definition image using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.NETWORKS })
+    @Bug(id = "MNT-17243")
     public void networkUserGetProcessDefinitionImage() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -76,5 +79,4 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
                 .assertResponseContainsImage();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-
 }
