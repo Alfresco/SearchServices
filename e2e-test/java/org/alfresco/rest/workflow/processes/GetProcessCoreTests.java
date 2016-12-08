@@ -28,7 +28,7 @@ public class GetProcessCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that using invalid process ID returns status code 404")
-    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE })
+    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE, TestGroup.NETWORKS })
     public void invalidProcessIdTest() throws Exception
     {
         RestProcessModel newProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
@@ -41,7 +41,7 @@ public class GetProcessCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS}, executionType = ExecutionType.REGRESSION, 
             description = "Verify that tenant user cannot get process from another network")
-    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE })
+    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE, TestGroup.NETWORKS })
     @Bug(id = "MNT-17238")
     public void tenantUserCannotGetProcessFromAnotherNetwork() throws Exception
     {
@@ -60,9 +60,9 @@ public class GetProcessCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS}, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that tenant user can get process from the same network")
-    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE })
+    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE, TestGroup.NETWORKS })
     public void tenantUserCanGetProcessFromTheSameNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -79,7 +79,7 @@ public class GetProcessCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS}, executionType = ExecutionType.REGRESSION, 
             description = "Verify that non network user cannot get process from a network")
-    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE })
+    @Test(groups = { TestGroup.WORKFLOW, TestGroup.CORE, TestGroup.NETWORKS })
     @Bug(id = "MNT-17238")
     public void nonNetworkUserCannotAccessNetworkprocess() throws Exception
     {
