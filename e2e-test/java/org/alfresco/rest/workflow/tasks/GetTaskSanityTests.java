@@ -46,7 +46,7 @@ public class GetTaskSanityTests extends RestTest
 
         restTaskModel = restClient.authenticateUser(adminUser).withWorkflowAPI().usingTask(taskModel).getTask();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("message").is(taskModel.getMessage());
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("description").is(taskModel.getMessage());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
@@ -55,7 +55,7 @@ public class GetTaskSanityTests extends RestTest
     {
         restTaskModel = restClient.authenticateUser(assigneeUser).withWorkflowAPI().usingTask(taskModel).getTask();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("message").is(taskModel.getMessage()).and().field("assignee")
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("description").is(taskModel.getMessage()).and().field("assignee")
                 .is(assigneeUser.getUsername());
 
     }
@@ -66,7 +66,7 @@ public class GetTaskSanityTests extends RestTest
     {
         restTaskModel = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTask();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("message").is(taskModel.getMessage());
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("description").is(taskModel.getMessage());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
@@ -91,7 +91,7 @@ public class GetTaskSanityTests extends RestTest
 
         restTaskModel = restClient.authenticateUser(userModel1).withWorkflowAPI().usingTask(taskModel).getTask();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("message").is(taskModel.getMessage());
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("description").is(taskModel.getMessage());
 
     }
 
@@ -109,6 +109,6 @@ public class GetTaskSanityTests extends RestTest
 
         restTaskModel = restClient.authenticateUser(userModel2).withWorkflowAPI().usingTask(taskModel).getTask();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("message").is(taskModel.getMessage());
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("description").is(taskModel.getMessage());
     }
 }
