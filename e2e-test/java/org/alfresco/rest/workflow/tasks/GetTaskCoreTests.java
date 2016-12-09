@@ -29,6 +29,7 @@ public class GetTaskCoreTests extends RestTest
     FileModel fileModel;
     TaskModel taskModel;
     RestTaskModel restTaskModel, tenantTask;
+    RestTaskModelsCollection taskModels;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -53,14 +54,15 @@ public class GetTaskCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify if using empty taskId status code 404 is returned.")
+            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify if using empty taskId status code 200 is returned.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void emptyTaskId() throws Exception
     {
         restClient.authenticateUser(userModel).withWorkflowAPI();
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}", "");
-        restClient.processModels(RestTaskModelsCollection.class, request);
+        taskModels = restClient.processModels(RestTaskModelsCollection.class, request);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        taskModels.assertThat().entriesListIsNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
