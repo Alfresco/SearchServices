@@ -1,6 +1,7 @@
 package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -26,7 +27,6 @@ public class AddProcessItemCoreTests extends RestTest
     private RestProcessModel processModel;
     private RestItemModel processItem;
 
-
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -43,7 +43,6 @@ public class AddProcessItemCoreTests extends RestTest
     public void addProcessItemByUserThatStartedTheProcess() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        // document = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -67,12 +66,11 @@ public class AddProcessItemCoreTests extends RestTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, description = "Add process item using by the admin in same network.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process item using by the admin in same network.")
     public void addProcessItemByAdminSameNetwork() throws Exception
     {
         restClient.authenticateUser(adminUser);
-
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.usingTenant().createTenant(adminTenantUser);
 
@@ -82,18 +80,18 @@ public class AddProcessItemCoreTests extends RestTest
         siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
         dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
 
-        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processItem.assertThat().field("createdAt").isNotEmpty().and().field("size").is("19").and().field("createdBy").is(adminTenantUser.getUsername()).and()
-                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(adminTenantUser.getUsername()).and()
+        processItem.assertThat().field("createdAt").isNotEmpty().and().field("size").is("19").and().field("createdBy").is(adminUser.getUsername()).and()
+                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(adminUser.getUsername()).and()
                 .field("id").isNotEmpty().and().field("mimeType").is(document.getFileType().mimeType);
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY, description = "Add process item using by admin in other network.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Add process item using by admin in other network.")
     public void addProcessItemByAdminInOtherNetwork() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -103,7 +101,7 @@ public class AddProcessItemCoreTests extends RestTest
         adminTenantUser2 = UserModel.getAdminTenantUser();
         restClient.usingTenant().createTenant(adminTenantUser2);
 
-        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
         restClient.authenticateUser(adminTenantUser2);
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
@@ -141,7 +139,7 @@ public class AddProcessItemCoreTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"id\":\"\"}", "processes/{processId}/items", processModel.getId());
         restClient.processModel(RestItemModel.class, request);
 
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("itemId is required to add an attached item");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.REQUIRED_TO_ADD, "itemId"));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
@@ -153,7 +151,7 @@ public class AddProcessItemCoreTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{}", "processes/{processId}/items", processModel.getId());
         restClient.processModel(RestItemModel.class, request);
 
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("itemId is required to add an attached item");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.REQUIRED_TO_ADD, "itemId"));
     }
 
 }
