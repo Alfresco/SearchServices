@@ -2,6 +2,7 @@ package org.alfresco.rest;
 
 import java.lang.reflect.Method;
 
+import org.alfresco.dataprep.WorkflowService;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.LogFactory;
@@ -53,6 +54,8 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     
     @Autowired
     protected DataDiscussion dataDiscussion;
+    @Autowired
+    protected WorkflowService workflow;
 
     @BeforeClass(alwaysRun = true)
     public void checkServerHealth() throws Exception
