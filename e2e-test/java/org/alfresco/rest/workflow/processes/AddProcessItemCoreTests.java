@@ -124,9 +124,8 @@ public class AddProcessItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process item is falling in case of invalid body item is provided")
     public void failedAddingProcessItemIfInvalidItemBodyIsProvided() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"id\":\"invalidId\"}", "processes/{processId}/items", processModel.getId());
-        restClient.processModel(RestItemModel.class, request);
+        document.setNodeRef("invalidNodeRef");
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidId"));
     }
@@ -135,9 +134,8 @@ public class AddProcessItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process item is falling in case of empty body item value is provided")
     public void failedAddingProcessItemIfEmptyItemBodyIsProvided() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"id\":\"\"}", "processes/{processId}/items", processModel.getId());
-        restClient.processModel(RestItemModel.class, request);
+        document.setNodeRef("");
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.REQUIRED_TO_ADD, "itemId"));
     }
