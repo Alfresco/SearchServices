@@ -57,11 +57,10 @@ public class GetTaskCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void emptyTaskId() throws Exception
     {
-        restClient.authenticateUser(userModel).withCoreAPI();
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}?{parameters}", "", restClient.getParameters());
+        restClient.authenticateUser(userModel).withWorkflowAPI();
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}", "");
         restClient.processModels(RestTaskModelsCollection.class, request);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(RestErrorModel.UNABLE_TO_LOCATE, taskModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
