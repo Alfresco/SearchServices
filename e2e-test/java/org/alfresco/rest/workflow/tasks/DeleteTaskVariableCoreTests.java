@@ -18,7 +18,6 @@ import org.testng.annotations.Test;
 /**
  * @author bogdan.bocancea
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
 public class DeleteTaskVariableCoreTests extends RestTest
 {
     private UserModel userModel;
@@ -37,6 +36,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable with any user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void deleteTaskVarialbleByAnyUser() throws Exception
     {
         restClient.authenticateUser(userModel);
@@ -51,6 +51,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable with invalid type")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void deleteTaskVariableInvalidType() throws Exception
     {
         restClient.authenticateUser(userModel);
@@ -65,6 +66,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable with invalid name")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void deleteTaskVariableInvalidName() throws Exception
     {
         restClient.authenticateUser(userModel);
@@ -75,6 +77,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create, update, delete task variable with any user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void createUpdateDeleteTaskVarialbleByAnyUser() throws Exception
     {
         restClient.authenticateUser(userModel);
@@ -92,6 +95,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable by non assigned user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void deleteTaskVarialbleByNonAssignedUser() throws Exception
     {
         UserModel nonAssigned = dataUser.createRandomTestUser();
@@ -105,6 +109,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable by inexistent user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void deleteTaskVarialbleByInexistentUser() throws Exception
     {
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");

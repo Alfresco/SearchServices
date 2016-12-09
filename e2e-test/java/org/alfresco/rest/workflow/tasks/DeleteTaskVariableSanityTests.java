@@ -17,7 +17,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class DeleteTaskVariableSanityTests extends RestTest
 {
     private UserModel userModel, adminUser;
@@ -39,6 +38,7 @@ public class DeleteTaskVariableSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Delete existing task variable")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void deleteTaskVariable() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -53,6 +53,7 @@ public class DeleteTaskVariableSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Try to delete existing task variable using invalid task id")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void tryToDeleteTaskVariableUsingInvalidTaskId() throws Exception
     {
         restClient.authenticateUser(adminUser);

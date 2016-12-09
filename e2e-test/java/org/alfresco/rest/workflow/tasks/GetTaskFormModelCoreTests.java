@@ -20,7 +20,6 @@ import org.testng.annotations.Test;
  * @author bogdan.bocancea
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
 public class GetTaskFormModelCoreTests extends RestTest
 {
     UserModel userModel;
@@ -40,6 +39,7 @@ public class GetTaskFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
             executionType = ExecutionType.REGRESSION, 
                 description = "Verify that non involved user in task cannot get form models with Rest API and response is FORBIDDEN (403)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void nonInvolvedUserCannotGetTaskFormModels() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel)
@@ -55,6 +55,7 @@ public class GetTaskFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
             executionType = ExecutionType.REGRESSION, 
                 description = "Verify user involved in task cannot get task form models with invalid task id")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void getTaskFormModelsInvalidTaskId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel)
@@ -70,6 +71,7 @@ public class GetTaskFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
             executionType = ExecutionType.REGRESSION, 
                 description = "Verify user involved in task cannot get task form models with invalid task id")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void getTaskFormModelsEmptyTaskId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userModel)
@@ -85,6 +87,7 @@ public class GetTaskFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
             executionType = ExecutionType.REGRESSION, 
                 description = "Verify user involved in task can get completed task form models")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void getTaskFormModelsForCompletedTask() throws Exception
     {
         UserModel assignedUser = dataUser.createRandomTestUser();

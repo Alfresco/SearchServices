@@ -2,6 +2,7 @@ package org.alfresco.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -17,7 +18,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class RemoveTaskItemSanityTests extends RestTest
 {
     private UserModel adminUser, userModel, userWhoStartsTask, assigneeUser;
@@ -41,6 +41,7 @@ public class RemoveTaskItemSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Delete existing task item")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void deleteTaskItem() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -56,6 +57,7 @@ public class RemoveTaskItemSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Try to Delete existing task item using invalid taskId")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void deleteTaskItemUsingInvalidTaskId() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -64,11 +66,13 @@ public class RemoveTaskItemSanityTests extends RestTest
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
         taskModel.setId("invalidTaskId");
         restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"));
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Try to Delete existing task item using invalid itemId")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void deleteTaskItemUsingInvalidItemId() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -76,6 +80,7 @@ public class RemoveTaskItemSanityTests extends RestTest
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
         taskItem.setId("incorrectItemId");
         restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+            .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_ENTITY_NOT_FOUND, "incorrectItemId"));
     }
 }

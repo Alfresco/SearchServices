@@ -17,7 +17,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
 public class UpdateTaskVariableSanityTests extends RestTest
 {
     private UserModel userModel;
@@ -45,6 +44,7 @@ public class UpdateTaskVariableSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void createTaskVariable() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -60,6 +60,7 @@ public class UpdateTaskVariableSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Update existing task variable")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void updateExistingTaskVariable() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -78,9 +79,10 @@ public class UpdateTaskVariableSanityTests extends RestTest
         taskVariable.assertThat().field("value").is("updatedValue");
     }
 
-    @Test(groups = {TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY, TestGroup.NETWORKS})
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Update existing task variable by admin in the same network")
+    
     public void updateTaskVariableByAdminInSameNetwork() throws Exception
     {
         restClient.authenticateUser(adminUser);
