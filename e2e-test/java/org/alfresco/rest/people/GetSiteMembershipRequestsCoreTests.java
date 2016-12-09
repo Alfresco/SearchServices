@@ -2,6 +2,7 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestSiteMembershipRequestModelsCollection;
+import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.model.ErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -122,11 +123,8 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
-        //TODO approve request
-       /* newMember.setUserRole(UserRole.SiteConsumer);
-        restClient.authenticateUser(siteManager).withCoreAPI().usingSite(siteModel).addPerson(newMember).assertThat().field("id").is(newMember.getUsername())
-                .and().field("role").is(newMember.getUserRole());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);*/
+        RestTaskModel taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
+        workflow.approveSiteMembershipRequest(siteManager.getUsername(), siteManager.getPassword(), taskModel.getId(), true, "Approve");
 
         returnedCollection = restClient.authenticateUser(newMember).withCoreAPI().usingMe().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
