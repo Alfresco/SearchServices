@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.FileModel;
@@ -18,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
 public class AddProcessVariableCoreTests extends RestTest
 {
     private FileModel document;
@@ -39,6 +39,7 @@ public class AddProcessVariableCoreTests extends RestTest
         dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process variable using by the user who started the process.")
     public void addProcessVariableByUserThatStartedTheProcess() throws Exception
     {
@@ -49,9 +50,9 @@ public class AddProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processVariable.assertThat().field("name").is(processVariable.getName()).and().field("type").is(processVariable.getType()).and().field("value")
                 .is(processVariable.getValue());
-
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process variable using by a random user.")
     public void addProcessVariableByAnyUser() throws Exception
     {
@@ -64,7 +65,8 @@ public class AddProcessVariableCoreTests extends RestTest
                 .is(processVariable.getValue());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process variable using by admin in other network.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, description = "Add process variable using by admin in other network.")
     public void addProcessVariableByAdminInOtherNetwork() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -82,6 +84,7 @@ public class AddProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Process is running in another tenant");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process variable is falling in case invalid type is provided")
     public void failedAddingProcessVariableIfInvalidTypeIsProvided() throws Exception
     {
@@ -93,6 +96,7 @@ public class AddProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Unsupported type of variable: 'd:textarea'.");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @Bug(id = "ACE-5674")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process variable is falling in case invalid type prefix is provided")
     public void failedAddingProcessVariableIfInvalidTypePrefixIsProvided() throws Exception
@@ -105,6 +109,7 @@ public class AddProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Namespace prefix ddt is not mapped to a namespace URI");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process variable is falling in case invalid value is provided")
     public void failedAddingProcessVariableIfInvalidValueIsProvided() throws Exception
     {
@@ -117,6 +122,7 @@ public class AddProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("For input string: \"invalidValue\"");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process variable is falling in case missing required variable body (name) is provided")
     public void failedAddingProcessVariableIfMissingRequiredVariableBodyIsProvided() throws Exception
     {
@@ -129,6 +135,7 @@ public class AddProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Variable name is required.");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process variable is falling in case invalid variableBody (adding extra parameter in body) is provided")
     public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws Exception
     {
@@ -142,6 +149,7 @@ public class AddProcessVariableCoreTests extends RestTest
                 .containsSummary("Could not read content from HTTP request body: Unrecognized field \"scope\"");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process variable is falling in case empty name is provided")
     public void failedAddingProcessVariableIfEmptyNameIsProvided() throws Exception
     {
@@ -152,7 +160,7 @@ public class AddProcessVariableCoreTests extends RestTest
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
 
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary("PUT is executed against the instance URL");
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT);
     }
 
 }
