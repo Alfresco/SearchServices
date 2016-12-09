@@ -134,8 +134,8 @@ public class GetProcessTasksCoreTests extends RestTest
         RestTaskModel restTaskModel = restClient.authenticateUser(userModel2).withWorkflowAPI()
                 .usingProcess(processModel).getProcessTasks().assertThat().entriesListIsNotEmpty().getOneRandomEntry().onModel();
         restTaskModel = restClient.withParams("select=state").withWorkflowAPI().usingTask(restTaskModel).updateTask("completed");
+        restTaskModel.assertThat().field("id").is(restTaskModel.getId()).and().field("state").is("completed");
         restClient.withWorkflowAPI().getTasks().assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(restTaskModel.getId()).and().field("state").is("completed");
     }
 }
