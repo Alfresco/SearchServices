@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 
 public class AddTaskItemCoreTests extends RestTest
 {
-    private UserModel userModel, assigneeUser, adminUser;
+    private UserModel userModel, assigneeUser, adminUser, anotherUser;
     private SiteModel siteModel;
     private FileModel fileModel, document;
     private TaskModel taskModel;
@@ -40,21 +40,25 @@ public class AddTaskItemCoreTests extends RestTest
         assigneeUser = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
 
-        taskId = taskModel.getId();
-        restClient.authenticateUser(userModel);
+        taskId = taskModel.getId();        
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Add task item using random user.")
     public void addTaskItemByRandomUser() throws JsonToModelConversionException, Exception
     {
+        anotherUser = dataUser.createRandomTestUser();
+        restClient.authenticateUser(anotherUser);
+        
+        siteModel = dataSite.usingUser(anotherUser).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-
+        taskModel = dataWorkflow.usingUser(anotherUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(anotherUser);
+       
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         taskItem.assertThat().field("createdAt").isNotEmpty().and().field("size").isNotEmpty().and().field("createdBy").is(adminUser.getUsername()).and()
-                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(userModel.getUsername()).and()
+                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(anotherUser.getUsername()).and()
                 .field("id").is(document.getNodeRefWithoutVersion()).and().field("mimeType").is(document.getFileType().mimeType);
     }
 
@@ -63,8 +67,8 @@ public class AddTaskItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item, is falling in case invalid itemBody is provided")
     public void failedAddingTaskItemIfInvalidItemBodyIsProvided() throws Exception
     {
-        document.setNodeRef("invalidNodeRef");
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
+        fileModel.setNodeRef("invalidNodeRef");
+        taskItem = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidNodeRef"));
     }
@@ -73,9 +77,9 @@ public class AddTaskItemCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case empty item body is provided")
     public void failedAddingTaskItemIfEmptyItemBodyIsProvided() throws Exception
-    {
-        document.setNodeRef("");
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
+    {     
+        fileModel.setNodeRef("");
+        taskItem = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 
         // TODO - expected error message to be added
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("");
@@ -86,7 +90,7 @@ public class AddTaskItemCoreTests extends RestTest
     public void failedAddingTaskItemIfInvalidTaskIdIsProvided() throws Exception
     {
         taskModel.setId("invalidTaskId");
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
+        taskItem = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"));
     }

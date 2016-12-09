@@ -21,9 +21,9 @@ import org.testng.annotations.Test;
 
 public class AddProcessItemCoreTests extends RestTest
 {
-    private FileModel document;
+    private FileModel document, document2;
     private SiteModel siteModel;
-    private UserModel userWhoStartsProcess, assignee, adminUser, adminTenantUser, tenantUserAssignee, adminTenantUser2, tenantUser;
+    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser, adminTenantUser, tenantUserAssignee, adminTenantUser2, tenantUser;
     private RestProcessModel processModel;
     private RestItemModel processItem;
 
@@ -56,13 +56,16 @@ public class AddProcessItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Add process item by a random user.")
     public void addProcessItemByAnyUser() throws Exception
     {
-        processModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        anotherUser = dataUser.createRandomTestUser();
+        siteModel = dataSite.usingUser(anotherUser).createPublicRandomSite();
+        processModel = restClient.authenticateUser(anotherUser).withWorkflowAPI().addProcess("activitiAdhoc", anotherUser, false, Priority.Normal);
+        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processItem.assertThat().field("createdAt").isNotEmpty().and().field("size").is("19").and().field("createdBy").is(adminUser.getUsername()).and()
-                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(assignee.getUsername()).and()
-                .field("id").isNotEmpty().and().field("mimeType").is(document.getFileType().mimeType);
+                .field("modifiedAt").isNotEmpty().and().field("name").is(document2.getName()).and().field("modifiedBy").is(anotherUser.getUsername()).and()
+                .field("id").is(document2.getNodeRefWithoutVersion()).and().field("mimeType").is(document2.getFileType().mimeType);
 
     }
 
