@@ -53,9 +53,8 @@ public class GetTasksSanityTests extends RestTest
     {
         taskModels = restClient.authenticateUser(assigneeUser).withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty();
+        taskModels.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee", assigneeUser.getUsername());
     }
-    
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
     @Bug(id = "MNT-16967")    
