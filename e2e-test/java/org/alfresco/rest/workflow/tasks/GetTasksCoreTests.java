@@ -1,8 +1,14 @@
 package org.alfresco.rest.workflow.tasks;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestSiteModel;
+import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestTaskModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -11,15 +17,18 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import com.google.common.collect.Ordering;
 
 public class GetTasksCoreTests extends RestTest
 {
     UserModel userModel, userNotInvolved, candidateUser, assigneeUser, adminUser;
     UserModel adminTenantUser, tenantUser, tenantUserAssignee;
-    SiteModel siteModel, tenantSiteModel;
-    FileModel fileModel, tenantFileModel;
+    SiteModel siteModel;
+    FileModel fileModel;
     RestTaskModelsCollection taskModels, tenantTask;
 
     @BeforeClass(alwaysRun = true)
@@ -36,16 +45,6 @@ public class GetTasksCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify the request is valid for auth user which is asignee.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    public void validRequestAuthUser() throws Exception
-    {
-        taskModels = restClient.authenticateUser(assigneeUser).withWorkflowAPI().getTasks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee", assigneeUser.getUsername());
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
             TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify the request in case of any user which is not involved.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void requestWithUserNotInvolved() throws Exception
@@ -56,13 +55,31 @@ public class GetTasksCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied and use several filters.")
+            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void orderByParameterApplied() throws Exception
     {
-        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=processId").withWorkflowAPI().getTasks();
+        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         taskModels.assertThat().entriesListIsNotEmpty();
+        List<RestTaskModel> tasksList = taskModels.getEntries();
+        List<String> taskIds = new ArrayList<String>();
+        for(RestTaskModel task: tasksList)
+        {
+            taskIds.add(task.onModel().getId());   
+        }      
+        boolean sorted = Ordering.natural().isOrdered(taskIds);
+        Assert.assertTrue(sorted, "Tasks list should be ordered ascendent after id");     
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
+            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied and supports only one parameter.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    public void orderByParameterSupportsOnlyOneParameter() throws Exception
+    {
+        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id,processDefinitionId").withWorkflowAPI().getTasks();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Only one order by parameter is supported");
+        taskModels.assertThat().entriesListIsEmpty();   
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
@@ -81,9 +98,8 @@ public class GetTasksCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void invalidOrderByParameterApplied() throws Exception
     {
-        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=invalidParameter").withWorkflowAPI().getTasks();
+        restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=invalidParameter").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("invalidParameter is not supported");
-        taskModels.assertThat().entriesListIsEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
@@ -103,6 +119,8 @@ public class GetTasksCoreTests extends RestTest
 
         tenantTask = restClient.authenticateUser(tenantUserAssignee).withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        tenantTask.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee", tenantUserAssignee.getUsername());
+        tenantTask.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee",
+                String.format("userTenantAssignee@%s", tenantUserAssignee.getDomain().toLowerCase()));
+
     }
 }
