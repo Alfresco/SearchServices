@@ -44,7 +44,7 @@ public class UpdateTaskSanityTests extends RestTest
         restTaskModel = restClient.authenticateUser(adminUser).withWorkflowAPI().usingTask(taskModel).updateTask("completed");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("id").is(taskModel.getId())
-                .and().field("message").is(taskModel.getMessage());
+                .and().field("description").is(taskModel.getMessage());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify assignee user updates its assigned task with Rest API and response is successfull (200)")
@@ -53,7 +53,7 @@ public class UpdateTaskSanityTests extends RestTest
         restTaskModel = restClient.authenticateUser(assigneeUser).withWorkflowAPI().usingTask(taskModel).updateTask("completed");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("id").is(taskModel.getId())
-                .and().field("message").is(taskModel.getMessage());
+                .and().field("description").is(taskModel.getMessage());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify user that started the task updates the started task with Rest API and response is successfull (200)")
@@ -84,6 +84,6 @@ public class UpdateTaskSanityTests extends RestTest
         restTaskModel = restClient.authenticateUser(userModel1).withWorkflowAPI().usingTask(taskModel).updateTask("completed");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("id").is(taskModel.getId())
-                .and().field("message").is(taskModel.getMessage());
+                .and().field("description").is(taskModel.getMessage());
     }
 }
