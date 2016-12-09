@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 
 public class GetSiteMembershipRequestsCoreTests extends RestTest
 {
-    UserModel newMember, adminUser;
+    UserModel newMember, newMember1, meUser, adminUser;
     SiteModel moderatedSite, publicSite;
     RestSiteMembershipRequestModelsCollection returnedCollection;
 
@@ -74,7 +74,9 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void replacePersonIdWithMeRequest() throws Exception
     {
-        returnedCollection = restClient.authenticateUser(newMember).withCoreAPI().usingMe().getSiteMembershipRequests();
+        meUser = dataUser.createRandomTestUser();
+        restClient.authenticateUser(meUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
+        returnedCollection = restClient.authenticateUser(meUser).withCoreAPI().usingMe().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListContains("id", moderatedSite.getId());
     }
@@ -108,7 +110,9 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void getRequestsToModeratedSite() throws Exception
     {
-        returnedCollection = restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
+        newMember1 = dataUser.createRandomTestUser();
+        restClient.authenticateUser(newMember1).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
+        returnedCollection = restClient.authenticateUser(newMember1).withCoreAPI().usingUser(newMember1).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListContains("id", moderatedSite.getId());
     }
