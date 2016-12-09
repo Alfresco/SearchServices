@@ -133,7 +133,7 @@ public class GetProcessTasksCoreTests extends RestTest
                 .createMoreReviewersWorkflowAndAssignTo(userModel2);
         RestTaskModel restTaskModel = restClient.authenticateUser(userModel2).withWorkflowAPI()
                 .usingProcess(processModel).getProcessTasks().assertThat().entriesListIsNotEmpty().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingTask(restTaskModel).updateTask();
+        restClient.withWorkflowAPI().usingTask(restTaskModel).updateTask("completed");
         restClient.withWorkflowAPI().getTasks().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
