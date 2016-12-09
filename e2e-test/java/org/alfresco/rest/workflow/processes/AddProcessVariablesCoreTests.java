@@ -15,8 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-public class AddProcessVariableCoreTests extends RestTest
+public class AddProcessVariablesCoreTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
@@ -37,7 +36,7 @@ public class AddProcessVariableCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by admin in other network with REST API and status code is FORBIDDEN (403)")
-    @Test(groups = { TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
     public void addProcessVariableByAdminInOtherNetworkIsForbidden() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -58,6 +57,7 @@ public class AddProcessVariableCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user with REST API and status code is CREATED (201)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void addProcessVariableByAnyUser() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -75,6 +75,7 @@ public class AddProcessVariableCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for invalid processID with REST API and status code is NOT_FOUND (404)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void addProcessVariableForInvalidProcessIdIsNotFound() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -88,6 +89,7 @@ public class AddProcessVariableCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for empty processID with REST API and status code is NOT_FOUND (404)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void addProcessVariableForInvalidProcessIdIsEmpty() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
