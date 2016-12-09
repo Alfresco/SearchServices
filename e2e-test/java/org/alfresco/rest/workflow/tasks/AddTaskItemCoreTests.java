@@ -40,7 +40,7 @@ public class AddTaskItemCoreTests extends RestTest
         assigneeUser = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
 
-        taskId = taskModel.getId();        
+        taskId = taskModel.getId();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
@@ -48,18 +48,9 @@ public class AddTaskItemCoreTests extends RestTest
     public void addTaskItemByRandomUser() throws JsonToModelConversionException, Exception
     {
         anotherUser = dataUser.createRandomTestUser();
-        restClient.authenticateUser(anotherUser);
-        
-        siteModel = dataSite.usingUser(anotherUser).createPublicRandomSite();
-        document = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskModel = dataWorkflow.usingUser(anotherUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(anotherUser);
-       
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        taskItem = restClient.authenticateUser(anotherUser).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 
-        taskItem.assertThat().field("createdAt").isNotEmpty().and().field("size").isNotEmpty().and().field("createdBy").is(adminUser.getUsername()).and()
-                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(anotherUser.getUsername()).and()
-                .field("id").is(document.getNodeRefWithoutVersion()).and().field("mimeType").is(document.getFileType().mimeType);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
     @Bug(id = "ACE-5683")
@@ -77,7 +68,7 @@ public class AddTaskItemCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case empty item body is provided")
     public void failedAddingTaskItemIfEmptyItemBodyIsProvided() throws Exception
-    {     
+    {
         fileModel.setNodeRef("");
         taskItem = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 

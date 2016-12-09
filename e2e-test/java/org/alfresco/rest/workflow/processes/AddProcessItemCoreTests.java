@@ -57,16 +57,13 @@ public class AddProcessItemCoreTests extends RestTest
     public void addProcessItemByAnyUser() throws Exception
     {
         anotherUser = dataUser.createRandomTestUser();
-        siteModel = dataSite.usingUser(anotherUser).createPublicRandomSite();
-        processModel = restClient.authenticateUser(anotherUser).withWorkflowAPI().addProcess("activitiAdhoc", anotherUser, false, Priority.Normal);
+
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItem = restClient.authenticateUser(anotherUser).withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
 
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processItem.assertThat().field("createdAt").isNotEmpty().and().field("size").is("19").and().field("createdBy").is(adminUser.getUsername()).and()
-                .field("modifiedAt").isNotEmpty().and().field("name").is(document2.getName()).and().field("modifiedBy").is(anotherUser.getUsername()).and()
-                .field("id").is(document2.getNodeRefWithoutVersion()).and().field("mimeType").is(document2.getFileType().mimeType);
-
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+                .containsSummary(String.format(RestErrorModel.ACCESS_INFORMATION_NOT_ALLOWED, processModel.getId()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
