@@ -7,6 +7,7 @@ import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -119,6 +120,7 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Approve request then get requests.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Bug(id="TODO", description="TODO @arusu please fix this NPE automated issue") //TODO @arusu please fix this NPE automated issue
     public void approveRequestThenGetRequests() throws Exception
     {
         UserModel siteManager = dataUser.createRandomTestUser();

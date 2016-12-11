@@ -3,13 +3,14 @@ package org.alfresco.rest.people;
 import org.alfresco.dataprep.WorkflowService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,6 +126,7 @@ public class DeleteSiteMembershipRequestCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify manager is not able to remove a site memebership request if it was already approved and response is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Bug(id="TODO", description="TODO @cjalba please fix this NPE automated issue") //TODO @cjalba please fix this NPE automated issue
     public void managerUserIsNotAbleToDeleteASiteMembershipRequestIfItWasAlreadyApproved() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         secondSiteMember.setUserRole(UserRole.SiteCollaborator);
