@@ -59,7 +59,7 @@ public class AddProcessItemCoreTests extends RestTest
         anotherUser = dataUser.createRandomTestUser();
 
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(adminUser).withParams("maxItems=1").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processItem = restClient.authenticateUser(anotherUser).withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
@@ -111,7 +111,7 @@ public class AddProcessItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, description = "Adding process item is falling in case of invalid process id is provided")
     public void failedAddingProcessItemIfInvalidProcessIdIsProvided() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(adminUser).withParams("maxItems=1").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processModel.setId("invalidProcessId");
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
 

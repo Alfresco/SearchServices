@@ -77,10 +77,10 @@ public class GetProcessVariablesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessVariablesUsingInvalidProcessId() throws JsonToModelConversionException, Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         String id = RandomStringUtils.randomAlphanumeric(10);
         processModel.setId(id);
-        variables = restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables();
+        variables = restClient.withParams("maxItems=2").withWorkflowAPI().usingProcess(processModel).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, id));
     }
 
@@ -89,7 +89,7 @@ public class GetProcessVariablesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessVariablesUsingEmptyProcessId() throws JsonToModelConversionException, Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processModel.setId(" ");
         variables = restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, " "));
@@ -100,11 +100,11 @@ public class GetProcessVariablesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessVariablesForADeletedProcess() throws JsonToModelConversionException, Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).getProcess();
+        restClient.authenticateUser(admin).withParams("maxItems=2").withWorkflowAPI().usingProcess(processModel).getProcess();
 
         variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);

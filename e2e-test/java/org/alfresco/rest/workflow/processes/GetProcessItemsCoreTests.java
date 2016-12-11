@@ -37,7 +37,7 @@ public class GetProcessItemsCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessItemsAsAdminReturnsAnything() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(adminUser).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
