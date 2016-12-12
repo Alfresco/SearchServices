@@ -1,6 +1,6 @@
 package org.alfresco.rest.workflow.tasks;
 
-import java.util.HashMap;
+import javax.json.JsonObject;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
@@ -134,14 +134,12 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
             description = "Verify task can be update using multiple select values successfully (200)")
     public void taskCanBeUpdatedWithMultipleSelectValues() throws Exception
     {             
-        restClient.authenticateUser(assigneeUser)
-                .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel);
-        HashMap<String, String> body = new HashMap<String, String>();
-        body.put("state", "resolved");
-        body.put("assignee", "admin");
-        String postBody = JsonBodyGenerator.keyValueJson(body);
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                                .add("state", "resolved")
+                                .add("assignee", "admin").build();
+        
+        restTaskModel = restClient.authenticateUser(assigneeUser)
+            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("id").is(taskModel.getId())
             .and().field("state").is("resolved");   
@@ -190,11 +188,18 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
             description = "Verify task owner cannot complete task with invalid name - (200))")
     public void taskOwnerCannotCompleteTaskWithInvalidName() throws Exception
     {              
-        restClient.authenticateUser(owner)
-            .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel);
-        String postBody = "{\"state\" : \"completed\", \"variables\" : [{\"name\" : \"bpmx_priorityx\",\"type\" : \"d:int\",\"value\" : 1,\"scope\" : \"global\"}]}";
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "completed")
+                .add("variables", JsonBodyGenerator.defineJSONArray()
+                                    .add(JsonBodyGenerator.defineJSON()
+                                            .add("name", "bpmx_priorityx")
+                                            .add("type", "d:int")
+                                            .add("value", 1)
+                                            .add("scope", "global").build())
+                                    ).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+            .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
             .assertLastError().containsSummary(String.format(RestErrorModel.UNSUPPORTED_TYPE,"bpm_priorityx"));
     }
@@ -204,12 +209,19 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify task owner cannot complete task with invalid Type - Bad Request(400))")
     public void taskOwnerCannotCompleteTaskWithInvalidType() throws Exception
-    {              
-        restClient.authenticateUser(owner)
-            .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel);
-        String postBody = "{\"state\" : \"completed\", \"variables\" : [{\"name\" : \"bpm_priority\",\"type\" : \"d_int\",\"value\" : 1,\"scope\" : \"global\"}]}";
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+    {      
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "completed")
+                .add("variables", JsonBodyGenerator.defineJSONArray()
+                                    .add(JsonBodyGenerator.defineJSON()
+                                            .add("name", "bpmx_priority")
+                                            .add("type", "d_int")
+                                            .add("value", 1)
+                                            .add("scope", "global").build())
+                                    ).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+                .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
             .assertLastError().containsSummary(String.format(RestErrorModel.UNSUPPORTED_TYPE,"d_int"));
     }
@@ -219,12 +231,19 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify task owner cannot complete task with invalid value - Bad Request(400))")
     public void taskOwnerCannotCompleteTaskWithInvalidValue() throws Exception
-    {              
-        restClient.authenticateUser(owner)
-            .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel);
-        String postBody = "{\"state\" : \"completed\", \"variables\" : [{\"name\" : \"bpm_priority\",\"type\" : \"d:int\",\"value\" : \"text\",\"scope\" : \"global\"}]}";
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+    {      
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "completed")
+                .add("variables", JsonBodyGenerator.defineJSONArray()
+                                    .add(JsonBodyGenerator.defineJSON()
+                                            .add("name", "bpmx_priority")
+                                            .add("type", "d:int")
+                                            .add("value", "text")
+                                            .add("scope", "global").build())
+                                    ).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+            .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
             .assertLastError().containsSummary(String.format(RestErrorModel.UNSUPPORTED_TYPE, "text"));
     }
@@ -233,12 +252,19 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify task owner cannot complete task with invalid scope - Bad Request(400))")
     public void taskOwnerCannotCompleteTaskWithInvalidScope() throws Exception
-    {              
-        restClient.authenticateUser(owner)
-            .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel);
-        String postBody = "{\"state\" : \"completed\", \"variables\" : [{\"name\" : \"bpm_priority\",\"type\" : \"d:int\",\"value\" : 1,\"scope\" : \"globalscope\"}]}";
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+    {         
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "completed")
+                .add("variables", JsonBodyGenerator.defineJSONArray()
+                                    .add(JsonBodyGenerator.defineJSON()
+                                            .add("name", "bpmx_priority")
+                                            .add("type", "d:int")
+                                            .add("value", 1)
+                                            .add("scope", "globalscope").build())
+                                    ).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+            .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
             .assertLastError().containsSummary(String.format(RestErrorModel.ILLEGAL_SCOPE, "globalscope"));
     }
@@ -273,15 +299,13 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     public void taskAssigneeCanDelegateTask() throws Exception
     {        
         UserModel delagateToUser = dataUser.createRandomTestUser();
+
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "delegated")
+                .add("assignee", delagateToUser.getUsername()).build();
         
-        restClient.authenticateUser(assigneeUser)
-            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel);
-        HashMap<String, String> body = new HashMap<String, String>();
-        body.put("state", "delegated");
-        body.put("assignee", delagateToUser.getUsername());
-        String postBody = JsonBodyGenerator.keyValueJson(body);
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+        restTaskModel = restClient.authenticateUser(assigneeUser)
+                .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("id").is(taskModel.getId())
             .and().field("state").is("delegated")
@@ -292,15 +316,13 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify task owner can delegate task to same assignee successfully (200)")
     public void taskOwnerCanDelegateTaskToSameAssignee() throws Exception
-    {              
-        restClient.authenticateUser(owner)
-            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel);
-        HashMap<String, String> body = new HashMap<String, String>();
-        body.put("state", "delegated");
-        body.put("assignee", assigneeUser.getUsername());
-        String postBody = JsonBodyGenerator.keyValueJson(body);
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+    {             
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "delegated")
+                .add("assignee", assigneeUser.getUsername()).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("id").is(taskModel.getId())
             .and().field("state").is("delegated")
@@ -313,15 +335,13 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
             description = "Verify task assignee cannot delegate task to task owner -  (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void taskAssigneeCannotDelegateTaskToTaskOwner() throws Exception
-    {              
-        restClient.authenticateUser(owner)
-            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel);
-        HashMap<String, String> body = new HashMap<String, String>();
-        body.put("state", "delegated");
-        body.put("assignee", owner.getUsername());
-        String postBody = JsonBodyGenerator.keyValueJson(body);
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+    {        
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "delegated")
+                .add("assignee", owner.getUsername()).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
@@ -333,14 +353,12 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     {         
         UserModel invalidAssignee = new UserModel("invalidAssignee", "password");
         
-        restClient.authenticateUser(owner)
-            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel);
-        HashMap<String, String> body = new HashMap<String, String>();
-        body.put("state", "delegated");
-        body.put("assignee", invalidAssignee.getUsername());
-        String postBody = JsonBodyGenerator.keyValueJson(body);
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
-        restTaskModel =restClient.processModel(RestTaskModel.class, request);
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "delegated")
+                .add("assignee", invalidAssignee.getUsername()).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+            .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 }

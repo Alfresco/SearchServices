@@ -22,10 +22,11 @@ import org.testng.annotations.Test;
 
 public class AddTaskItemCoreTests extends RestTest
 {
-    private UserModel userModel, assigneeUser, adminUser, anotherUser;
+    private UserModel userModel, assigneeUser, anotherUser;
     private SiteModel siteModel;
-    private FileModel fileModel, document;
+    private FileModel fileModel;
     private TaskModel taskModel;
+    @SuppressWarnings("unused")
     private RestItemModel taskItem;
 
     private String taskId;
@@ -33,7 +34,6 @@ public class AddTaskItemCoreTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUser = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
