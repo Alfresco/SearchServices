@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class GetTaskCandidatesSanityTests extends  RestTest
 {
     private UserModel userModel, user, userModel1, userModel2;
@@ -44,6 +44,7 @@ public class GetTaskCandidatesSanityTests extends  RestTest
         taskModel = dataWorkflow.usingUser(user).usingSite(siteModel).usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that admin gets task candidates")
     public void getTaskCandidatesByAdmin() throws Exception
@@ -54,6 +55,7 @@ public class GetTaskCandidatesSanityTests extends  RestTest
             .and().entriesListContains("candidateId", String.format("GROUP_%s", group.getGroupIdentifier()));
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task candidates")
     public void getTaskCandidatesByUserWhoStartedProcess() throws Exception
@@ -64,6 +66,7 @@ public class GetTaskCandidatesSanityTests extends  RestTest
             .and().entriesListContains("candidateId", String.format("GROUP_%s", group.getGroupIdentifier()));
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user from the assighed group to the process gets task candidates")
     public void getTaskCandidatesByCandidateUser() throws Exception

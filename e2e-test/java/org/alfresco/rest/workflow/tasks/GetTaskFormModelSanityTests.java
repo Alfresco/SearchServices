@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/20/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class GetTaskFormModelSanityTests extends RestTest
 {
     UserModel userModel;
@@ -35,6 +35,7 @@ public class GetTaskFormModelSanityTests extends RestTest
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
             executionType = ExecutionType.SANITY, description = "Verify admin user gets all task form models with Rest API and response is successful (200)")
     public void adminGetsTaskFormModels() throws Exception
@@ -65,6 +66,7 @@ public class GetTaskFormModelSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
             executionType = ExecutionType.SANITY, description = "Verify user involved in task gets all the task form models with Rest API and response is successful (200)")
     public void involvedUserGetsTaskFormModels() throws Exception

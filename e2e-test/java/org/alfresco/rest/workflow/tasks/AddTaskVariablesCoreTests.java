@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+
 public class AddTaskVariablesCoreTests extends RestTest
 {
     private UserModel userWhoStartsTask, adminUser;
@@ -43,6 +43,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.authenticateUser(adminUser);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid variableBody is provided")
     public void failedAddingTaskVariableIfInvalidBodyIsProvided() throws Exception
     {
@@ -53,6 +54,7 @@ public class AddTaskVariablesCoreTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case empty body type is provided")
     public void failedAddingTaskVariableIfEmptyBodyIsProvided() throws Exception
     {
@@ -64,6 +66,7 @@ public class AddTaskVariablesCoreTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case incomplete body type is provided")
     public void failedAddingTaskVariableIfIncompleteBodyIsProvided() throws Exception
     {
@@ -87,6 +90,7 @@ public class AddTaskVariablesCoreTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid type is provided")
     public void failedAddingTaskVariableIfInvalidTypeIsProvided() throws Exception
     {
@@ -110,6 +114,7 @@ public class AddTaskVariablesCoreTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid scope is provided")
     public void failedAddingTaskVariableIfInvalidScopeIsProvided() throws Exception
     {
@@ -121,6 +126,7 @@ public class AddTaskVariablesCoreTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid task id is provided")
     public void failedAddingTaskVariableIfInvalidTaskIdIsProvided() throws Exception
     {
@@ -133,6 +139,7 @@ public class AddTaskVariablesCoreTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid task id is provided")
     public void failedAddingTaskVariableIfInvalidValueIsProvided() throws Exception
     {
