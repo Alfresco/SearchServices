@@ -23,12 +23,8 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
 public class AddFavoritesCoreTests extends RestTest
 {
-    @Autowired
-    DataUser dataUser;
-
     private UserModel adminUserModel;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
@@ -38,7 +34,6 @@ public class AddFavoritesCoreTests extends RestTest
     FolderModel folder;
 
     private RestCommentModel comment;
-
     private RestTagModel returnedModel;
 
     @BeforeClass(alwaysRun = true)
@@ -56,6 +51,7 @@ public class AddFavoritesCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
               description = "Check that if target guid does not describe a site, file, or folder status code is 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteUsingInvalidGuid() throws Exception
     {
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
@@ -65,18 +61,20 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(site);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, site.getGuid().split("/")[3]));
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Check that if personId does not exist, status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteUsingInexistentUser() throws Exception
     {
         restClient.withCoreAPI().usingUser(new UserModel("random_user", "random_password")).addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_user"));
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Check that if target guid does not exist, status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteUsingInexistentGuid() throws Exception
     {
         SiteModel site = dataSite.usingUser(adminUserModel).createPublicRandomSite();
@@ -86,10 +84,11 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_guid"));
     }
-    
+
+    @Bug(id = "MNT-17157")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Check that if a favorite already exists with the specified id status code is 404")
-    @Bug(id = "MNT-17157")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteTwice() throws Exception
     {
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
@@ -97,9 +96,10 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Check that if user provides file in target but guid is of a folder status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFileToFavoritesUsingFolderGuid() throws Exception
     {
         String nodeRef = document.getNodeRef();
@@ -111,9 +111,10 @@ public class AddFavoritesCoreTests extends RestTest
         
         document.setNodeRef(nodeRef);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Add to favorites a file for a Manager, check it was added")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void managerIsAbleToAddFileToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -124,6 +125,7 @@ public class AddFavoritesCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify add favorite, perform getFavorites call, check value is updated")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void verifyGetFavoritesAfterFavoritingSite() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(adminUserModel)
@@ -135,6 +137,7 @@ public class AddFavoritesCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Add to favorites a folder for a Manager, check it was added")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void managerIsAbleToAddFolderToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -142,9 +145,10 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.assertThat().field("targetGuid").is(folder.getNodeRefWithoutVersion());
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Add to favorites a site for a Manager, check it was added")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void managerIsAbleToAddSiteToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -152,9 +156,10 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.assertThat().field("targetGuid").is(siteModel.getGuid());
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify add favorite specifying -me- string in place of <personid> for request")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void userIsAbleToAddFavoriteWhenUsingMeAsUsername() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(adminUserModel)
@@ -164,10 +169,11 @@ public class AddFavoritesCoreTests extends RestTest
         
         restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
     }
-    
+
+    @Bug(id = "MNT-17158")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify add file favorite with comment id returns status code 404")
-    @Bug(id = "MNT-17158")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFileFavoriteUsingCommentId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -177,9 +183,10 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addFileToFavorites(file);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify add file favorite with tag id returns status code 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFileFavoriteUsingTagId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -190,9 +197,10 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND,
                 adminUserModel.getUsername(), returnedModel.getId()));
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Check that if user provides site in target but id is of a file status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addSiteToFavoritesUsingFileId() throws Exception
     {
         String guid = siteModel.getGuid();
@@ -203,9 +211,10 @@ public class AddFavoritesCoreTests extends RestTest
         
         siteModel.setGuid(guid);    
      }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Check that if user provides folder in target but guid is of a file status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFolderToFavoritesUsingFileGuid() throws Exception
     {
         String nodeRef = folder.getNodeRef();
