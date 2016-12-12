@@ -15,7 +15,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
 public class DeleteRatingSanityTests extends RestTest
 {
 
@@ -26,177 +25,172 @@ public class DeleteRatingSanityTests extends RestTest
     private ListUserWithRoles usersWithRoles;
     private RestRatingModelsCollection returnedRatingModelCollection;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
-                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);                
+
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
+                UserRole.SiteContributor);
     }
-    
+
     @BeforeMethod()
-    public void setUp() throws DataPreparationException, Exception {
+    public void setUp() throws DataPreparationException, Exception
+    {
         folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
         document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify user with Manager role is able to remove its own rating of a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to remove its own rating of a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void managerIsAbleToDeleteItsOwnRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedRatingModelCollection.assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating()
-            .and().entriesListIsNotEmpty()
-            .and().paginationExist();        
-    }   
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify user with Collaborator role is able to remove its own rating of a document")
+        returnedRatingModelCollection.assertNodeIsNotLiked().assertNodeHasNoFiveStarRating().and().entriesListIsNotEmpty().and().paginationExist();
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to remove its own rating of a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void collaboratorIsAbleToDeleteItsOwnRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedRatingModelCollection.assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating()
-            .and().entriesListIsNotEmpty()
-            .and().paginationExist();        
-    }  
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify user with Contributor role is able to remove its own rating of a document")
+        returnedRatingModelCollection.assertNodeIsNotLiked().assertNodeHasNoFiveStarRating().and().entriesListIsNotEmpty().and().paginationExist();
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to remove its own rating of a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void contributorIsAbleToDeleteItsOwnRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedRatingModelCollection.assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating()
-            .and().entriesListIsNotEmpty()
-            .and().paginationExist();        
-    }  
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify user with Consumer role is able to remove its own rating of a document")
+        returnedRatingModelCollection.assertNodeIsNotLiked().assertNodeHasNoFiveStarRating().and().entriesListIsNotEmpty().and().paginationExist();
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to remove its own rating of a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void consumerIsAbleToDeleteItsOwnRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedRatingModelCollection.assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating()
-            .and().entriesListIsNotEmpty()
-            .and().paginationExist();        
-    }  
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify admin user is able to remove its own rating of a document")
+        returnedRatingModelCollection.assertNodeIsNotLiked().assertNodeHasNoFiveStarRating().and().entriesListIsNotEmpty().and().paginationExist();
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to remove its own rating of a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void adminIsAbleToDeleteItsOwnRatings() throws Exception
     {
-    	document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel)
+                .createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(adminUser);
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         returnedRatingModelCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedRatingModelCollection.assertNodeIsNotLiked()
-            .assertNodeHasNoFiveStarRating()
-            .and().entriesListIsNotEmpty()
-            .and().paginationExist();        
+        returnedRatingModelCollection.assertNodeIsNotLiked().assertNodeHasNoFiveStarRating().and().entriesListIsNotEmpty().and().paginationExist();
     }
 
     @Bug(id = "MNT-16904")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify unauthenticated user is not able to remove its own rating of a document")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to remove its own rating of a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void unauthenticatedUserIsNotAbleToDeleteRatings() throws Exception
     {
-    	document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel)
+                .createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser);
-        
+
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        
+
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
-    }  
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify one user is not able to remove rating added by another user")
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify one user is not able to remove rating added by another user")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     @Bug(id = "ACE-5459")
     public void oneUserIsNotAbleToDeleteRatingsOfAnotherUser() throws Exception
     {
         UserModel userA = dataUser.createRandomTestUser();
         UserModel userB = dataUser.createRandomTestUser();
-        
+
         restClient.authenticateUser(userA);
-        
+
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restClient.authenticateUser(userB);
-        
+
         restClient.authenticateUser(userB).withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
-        
+
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
-    }  
+    }
 }

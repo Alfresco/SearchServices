@@ -19,94 +19,99 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
 public class GetRatingsSanityTests extends RestTest
 {
     private SiteModel siteModel;
     private UserModel adminUser;
     private FolderModel folderModel;
-    private FileModel document;   
+    private FileModel document;
     private ListUserWithRoles usersWithRoles;
     private RestRatingModelsCollection restRatingModelsCollection;
-    
-    @BeforeClass(alwaysRun=true)
+
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
-                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);                
+
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
+                UserRole.SiteContributor);
     }
-    
+
     @BeforeMethod()
-    public void setUp() throws DataPreparationException, Exception {
+    public void setUp() throws DataPreparationException, Exception
+    {
         folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
         document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Manager is able to retrieve document ratings")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Manager is able to retrieve document ratings")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void managerIsAbleToRetrieveDocumentRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restRatingModelsCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
-    }   
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Collaborator is able to retrieve document ratings")
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Collaborator is able to retrieve document ratings")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void collaboratorIsAbleToRetrieveDocumentRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restRatingModelsCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
-    }   
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Contributor is able to retrieve document ratings")
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Contributor is able to retrieve document ratings")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void contributorIsAbleToRetrieveDocumentRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restRatingModelsCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
-    }   
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Consumer is able to retrieve document ratings")
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Consumer is able to retrieve document ratings")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void consumerIsAbleToRetrieveDocumentRatings() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        
+
         restRatingModelsCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
-    }   
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Admin user is able to retrieve document ratings")
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Admin user is able to retrieve document ratings")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void adminIsAbleToRetrieveDocumentRatings() throws Exception
     {
-        document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                .usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(folderModel)
+                .createContent(DocumentType.TEXT_PLAIN);
 
         restClient.authenticateUser(adminUser);
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -115,10 +120,11 @@ public class GetRatingsSanityTests extends RestTest
         restRatingModelsCollection = restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restRatingModelsCollection.assertNodeHasFiveStarRating().assertNodeIsLiked();
-    }   
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.SANITY, 
-            description = "Verify unauthenticated user is not able to retrieve document ratings")
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve document ratings")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void unauthenticatedUserIsNotAbleToRetrieveRatings() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -126,8 +132,8 @@ public class GetRatingsSanityTests extends RestTest
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
 
         restClient.authenticateUser(new UserModel("random user", "random password"));
-        
+
         restClient.withCoreAPI().usingResource(document).getRatings();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
-    }   
+    }
 }
