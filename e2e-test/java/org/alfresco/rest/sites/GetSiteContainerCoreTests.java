@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class GetSiteContainerCoreTests extends RestTest{
 
     private UserModel adminUserModel, testUserModel;
@@ -37,7 +36,7 @@ public class GetSiteContainerCoreTests extends RestTest{
         dataDiscussion.usingAdmin().usingSite(privateSiteModel).createRandomDiscussion();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get container request returns status code 400 when site doesn't exist")            
     public void getContainerWithNonExistentSite() throws Exception
@@ -48,7 +47,7 @@ public class GetSiteContainerCoreTests extends RestTest{
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, "NonExistentSiteId", ContainerName.discussions.toString()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get container request returns status code 400 when container item doesn't exist")            
     public void getContainerWithNonExistentItem() throws Exception
@@ -59,7 +58,7 @@ public class GetSiteContainerCoreTests extends RestTest{
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, publicSiteModel.getId(), "NonExistentFolder"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for public site")
     public void getContainerForPublicSite() throws Exception
@@ -75,7 +74,7 @@ public class GetSiteContainerCoreTests extends RestTest{
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for private site")
     public void getContainerForPrivateSite() throws Exception
@@ -90,7 +89,7 @@ public class GetSiteContainerCoreTests extends RestTest{
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for moderated site")
     public void getContainerForModeratedSite() throws Exception
