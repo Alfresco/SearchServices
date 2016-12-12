@@ -21,15 +21,8 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class GetSiteContainersSanityTests extends RestTest
-{  
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
+{
     private UserModel adminUserModel;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
@@ -43,6 +36,7 @@ public class GetSiteContainersSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithManagerRole() throws JsonToModelConversionException, Exception
@@ -54,7 +48,8 @@ public class GetSiteContainersSanityTests extends RestTest
         	.and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithCollaboratorRole() throws JsonToModelConversionException, Exception
@@ -66,7 +61,8 @@ public class GetSiteContainersSanityTests extends RestTest
                 	.and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithContributorRole() throws JsonToModelConversionException, Exception
@@ -78,7 +74,8 @@ public class GetSiteContainersSanityTests extends RestTest
                 	.and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithConsumerRole() throws JsonToModelConversionException, Exception
@@ -90,7 +87,8 @@ public class GetSiteContainersSanityTests extends RestTest
                 	.and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Admin user gets site containers information and gets status code OK (200)")
     public void getSiteContainersWithAdminUser() throws JsonToModelConversionException, Exception
@@ -104,6 +102,7 @@ public class GetSiteContainersSanityTests extends RestTest
     }
     
     @Bug(id="MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site containers call returns status code 401 with Manager role")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainers() throws JsonToModelConversionException, Exception

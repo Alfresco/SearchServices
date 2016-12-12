@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class GetSiteContainersCoreTests  extends RestTest
 {
     private UserModel adminUserModel;
@@ -48,8 +47,9 @@ public class GetSiteContainersCoreTests  extends RestTest
 
         dataLink.usingAdmin().usingSite(privateSiteModel).createRandomLink();
         dataDiscussion.usingAdmin().usingSite(privateSiteModel).createRandomDiscussion();
-}
+    }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 200 with valid maxItems parameter")
     public void getContainersWithValidMaxItems() throws Exception
@@ -73,7 +73,8 @@ public class GetSiteContainersCoreTests  extends RestTest
             .and().entriesListContains("folderId", ContainerName.documentLibrary.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
     public void getContainersWithMaxItemsZero () throws Exception
@@ -84,7 +85,8 @@ public class GetSiteContainersCoreTests  extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError().containsSummary("Only positive values supported for maxItems");
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
     public void getContainersWithMaxItemsCharacter () throws Exception
@@ -95,7 +97,8 @@ public class GetSiteContainersCoreTests  extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "test"));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 200 when maxItems parameter starts with multiple zero")
     public void getContainersWithMaxItemsMultipleZero () throws Exception
@@ -106,7 +109,8 @@ public class GetSiteContainersCoreTests  extends RestTest
                 .assertThat().entriesListCountIs(3);
         restClient.assertStatusCodeIs(HttpStatus.OK);    
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 200 when valid skipCount parameter is used")
     public void getSiteContainersWithValidSkipCount() throws Exception
@@ -131,7 +135,8 @@ public class GetSiteContainersCoreTests  extends RestTest
             .assertThat().entriesListCountIs(3);
             restClient.assertStatusCodeIs(HttpStatus.OK);
         }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 400 when invalid skipCount parameter is used")
     public void getSiteContainersWithSkipCountCharacter() throws Exception
@@ -141,7 +146,8 @@ public class GetSiteContainersCoreTests  extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 200 when skipCount parameter starts with multiple zero")
     public void getSiteContainersWithSkipCountMultipleZero() throws Exception
@@ -151,8 +157,8 @@ public class GetSiteContainersCoreTests  extends RestTest
                 .assertThat().entriesListCountIs(1);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 400 when site doesn't exist")
     public void getSiteContainersWithNonExistentSite() throws Exception
@@ -162,7 +168,8 @@ public class GetSiteContainersCoreTests  extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "NonExistentSiteId"));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for private site")
     public void getSiteContainersForPrivateSite() throws Exception
@@ -172,7 +179,8 @@ public class GetSiteContainersCoreTests  extends RestTest
                 .assertThat().entriesListCountIs(3);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for moderated site")
     public void getSiteContainersForModeratedSite() throws Exception
@@ -182,7 +190,8 @@ public class GetSiteContainersCoreTests  extends RestTest
                 .assertThat().entriesListCountIs(3);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for several containers")
     public void getSiteContainersForSeveralItems() throws Exception
@@ -194,8 +203,9 @@ public class GetSiteContainersCoreTests  extends RestTest
             .and().entriesListContains("folderId", ContainerName.links.toString())
             .and().entriesListContains("folderId", ContainerName.discussions.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-    }  
-    
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for one container")
     public void getSiteContainersWithOneItem() throws Exception

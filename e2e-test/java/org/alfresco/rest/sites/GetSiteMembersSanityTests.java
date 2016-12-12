@@ -22,15 +22,8 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class GetSiteMembersSanityTests extends RestTest
 {
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
     private SiteModel siteModel;
     private UserModel adminUser;
     private ListUserWithRoles usersWithRoles;
@@ -44,6 +37,7 @@ public class GetSiteMembersSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site members and gets status code OK (200)")
     public void getSiteMembersWithManagerRole() throws JsonToModelConversionException, Exception
@@ -54,7 +48,8 @@ public class GetSiteMembersSanityTests extends RestTest
                   .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site members and gets status code OK (200)")
     public void getSiteMembersWithCollaboratorRole() throws JsonToModelConversionException, Exception
@@ -65,7 +60,8 @@ public class GetSiteMembersSanityTests extends RestTest
                   .entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site members and gets status code OK (200)")
     public void getSiteMembersWithContributorRole() throws JsonToModelConversionException, Exception
@@ -76,7 +72,8 @@ public class GetSiteMembersSanityTests extends RestTest
             .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteContributor).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site members and gets status code OK (200)")
     public void getSiteMembersWithConsumerRole() throws JsonToModelConversionException, Exception
@@ -87,7 +84,8 @@ public class GetSiteMembersSanityTests extends RestTest
             .and().entriesListContains("role", usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer).getUserRole().toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with admin usere gets site members and gets status code OK (200)")
     public void getSiteMembersWithAdminUser() throws JsonToModelConversionException, Exception
@@ -100,6 +98,7 @@ public class GetSiteMembersSanityTests extends RestTest
     }
     
     @Bug(id="MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site members call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteMembers() throws JsonToModelConversionException, Exception

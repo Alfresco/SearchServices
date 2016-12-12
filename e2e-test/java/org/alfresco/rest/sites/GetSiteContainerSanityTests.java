@@ -36,6 +36,7 @@ public class GetSiteContainerSanityTests extends RestTest
                 UserRole.SiteContributor);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site container and gets status code OK (200)")
     public void getSiteContainerWithManagerRole() throws Exception
@@ -48,6 +49,7 @@ public class GetSiteContainerSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site container and gets status code OK (200)")
     public void getSiteContainerWithCollaboratorRole() throws Exception
@@ -60,6 +62,7 @@ public class GetSiteContainerSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site container and gets status code OK (200)")
     public void getSiteContainerWithContributorRole() throws Exception
@@ -71,7 +74,8 @@ public class GetSiteContainerSanityTests extends RestTest
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site container and gets status code OK (200)")
     public void getSiteContainerWithConsumerRole() throws Exception
@@ -83,7 +87,8 @@ public class GetSiteContainerSanityTests extends RestTest
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with admin user gets site container and gets status code OK (200)")
     public void getSiteContainerWithAdminUser() throws Exception
@@ -95,8 +100,8 @@ public class GetSiteContainerSanityTests extends RestTest
                .and().field("folderId").is(siteContainerModel.onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site container call returns status code 401")
     @Bug(id="MNT-16904")

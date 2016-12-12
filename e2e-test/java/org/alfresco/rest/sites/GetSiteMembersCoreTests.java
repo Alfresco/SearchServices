@@ -16,7 +16,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 11/23/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class GetSiteMembersCoreTests extends RestTest
 {
     private UserModel userModel, publicSiteContributor, privateSiteConsumer, moderatedSiteManager, admin;
@@ -40,6 +39,7 @@ public class GetSiteMembersCoreTests extends RestTest
         dataUser.addUserToSite(privateSiteConsumer, privateSite, UserRole.SiteConsumer);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site members call returns status code 404 if siteId does not exist")
     public void checkStatusCodeForNonExistentSiteId() throws Exception
@@ -50,6 +50,7 @@ public class GetSiteMembersCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "NonExistentSiteId"));
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site members call returns status code 400 for invalid maxItems")
     public void checkStatusCodeForInvalidMaxItems() throws Exception
@@ -57,9 +58,15 @@ public class GetSiteMembersCoreTests extends RestTest
         restClient.authenticateUser(publicSiteContributor).withParams("maxItems=0")
                 .withCoreAPI().usingSite(publicSite).getSiteMembers();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary("Only positive values supported for maxItems");
+                .assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
+
+        restClient.authenticateUser(publicSiteContributor).withParams("maxItems=A")
+                .withCoreAPI().usingSite(publicSite).getSiteMembers();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "A"));
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site members call returns status code 400 for invalid skipCount ")
     public void checkStatusCodeForInvalidSkipCount() throws Exception
@@ -67,9 +74,15 @@ public class GetSiteMembersCoreTests extends RestTest
         restClient.authenticateUser(publicSiteContributor).withParams("skipCount=A")
                 .withCoreAPI().usingSite(publicSite).getSiteMembers();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary("Invalid paging parameter skipCount:A");
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "A"));
+
+        restClient.authenticateUser(publicSiteContributor).withParams("skipCount=-1")
+                .withCoreAPI().usingSite(publicSite).getSiteMembers();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError().containsSummary(RestErrorModel.NEGATIVE_VALUES_SKIPCOUNT);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets public site members and status code is 200")
     public void getPublicSiteMembers() throws Exception
@@ -82,6 +95,7 @@ public class GetSiteMembersCoreTests extends RestTest
             .and().paginationField("count").is("2");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets moderated site members and status code is 200")
     public void getModeratedSiteMembers() throws Exception
@@ -94,6 +108,7 @@ public class GetSiteMembersCoreTests extends RestTest
             .and().paginationField("count").is("2");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if user gets private site members if he is a member of that site and status code is 200")
     public void getPrivateSiteMembersByASiteMember() throws Exception
@@ -106,6 +121,7 @@ public class GetSiteMembersCoreTests extends RestTest
                 .and().paginationField("count").is("2");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if user doesn't get private site members if he is not a member of that site and status code is 404")
     public void getPrivateSiteMembersByNotASiteMember() throws Exception
@@ -116,6 +132,7 @@ public class GetSiteMembersCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, privateSite.getTitle()));
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if user gets moderated site members after the adding of a new member and status code is 200")
     public void getSiteMembersAfterAddingNewMember() throws Exception

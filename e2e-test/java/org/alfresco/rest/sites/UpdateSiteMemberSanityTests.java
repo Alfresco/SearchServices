@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class UpdateSiteMemberSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -33,6 +32,7 @@ public class UpdateSiteMemberSanityTests extends RestTest
         dataUser.addUserToSite(testUserModel, siteModel, UserRole.SiteConsumer);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that manager is able to update site member and gets status code OK (200)")
     public void managerIsAbleToUpdateSiteMember() throws Exception
@@ -46,6 +46,7 @@ public class UpdateSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that collaborator is not able to update site member and gets status code FORBIDDEN (403)")
     public void collaboratorIsNotAbleToUpdateSiteMember() throws Exception
@@ -59,6 +60,7 @@ public class UpdateSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that contributor is not able to update site member and gets status code FORBIDDEN (403)")
     public void contributorIsNotAbleToUpdateSiteMember() throws Exception
@@ -72,6 +74,7 @@ public class UpdateSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that consumer is not able to update site member and gets status code FORBIDDEN (403)")
     public void consumerIsNotAbleToUpdateSiteMember() throws Exception
@@ -83,7 +86,8 @@ public class UpdateSiteMemberSanityTests extends RestTest
         .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that admin is able to update site member and gets status code OK (200)")
     public void adminIsAbleToUpdateSiteMember() throws Exception
@@ -97,6 +101,7 @@ public class UpdateSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to update site member")
     public void unauthenticatedUserIsNotAuthorizedToUpdateSiteMmeber() throws Exception{

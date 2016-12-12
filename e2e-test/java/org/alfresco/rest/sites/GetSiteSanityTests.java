@@ -23,15 +23,8 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class GetSiteSanityTests extends RestTest
 {
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
     private UserModel adminUserModel;
     private ListUserWithRoles usersWithRoles;
     private UserModel userModel;
@@ -46,6 +39,7 @@ public class GetSiteSanityTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site information and gets status code OK (200)")
     public void getSiteWithManagerRole() throws JsonToModelConversionException, Exception
@@ -58,7 +52,8 @@ public class GetSiteSanityTests extends RestTest
         
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site information and gets status code OK (200)")
     public void getSiteWithCollaboratorRole() throws JsonToModelConversionException, Exception
@@ -70,7 +65,8 @@ public class GetSiteSanityTests extends RestTest
                   .and().field("title").is(siteModel.getTitle());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site information and gets status code OK (200)")
     public void getSiteWithContributorRole() throws JsonToModelConversionException, Exception
@@ -82,7 +78,8 @@ public class GetSiteSanityTests extends RestTest
                   .and().field("title").is(siteModel.getTitle());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site information and gets status code OK (200)")
     public void getSiteWithConsumerRole() throws JsonToModelConversionException, Exception
@@ -94,7 +91,8 @@ public class GetSiteSanityTests extends RestTest
                   .and().field("title").is(siteModel.getTitle());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with admin role gets site information and gets status code OK (200)")
     public void getSiteWithAdminRole() throws JsonToModelConversionException, Exception
@@ -108,6 +106,7 @@ public class GetSiteSanityTests extends RestTest
     }
     
     @Bug(id="MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSite() throws JsonToModelConversionException, Exception

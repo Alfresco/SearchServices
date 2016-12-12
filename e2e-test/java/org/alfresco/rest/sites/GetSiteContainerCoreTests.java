@@ -36,8 +36,8 @@ public class GetSiteContainerCoreTests extends RestTest{
         dataLink.usingAdmin().usingSite(privateSiteModel).createRandomLink();
         dataDiscussion.usingAdmin().usingSite(privateSiteModel).createRandomDiscussion();
     }
-    
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get container request returns status code 400 when site doesn't exist")            
     public void getContainerWithNonExistentSite() throws Exception
@@ -47,7 +47,8 @@ public class GetSiteContainerCoreTests extends RestTest{
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, "NonExistentSiteId", ContainerName.discussions.toString()));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get container request returns status code 400 when container item doesn't exist")            
     public void getContainerWithNonExistentItem() throws Exception
@@ -57,7 +58,8 @@ public class GetSiteContainerCoreTests extends RestTest{
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, publicSiteModel.getId(), "NonExistentFolder"));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for public site")
     public void getContainerForPublicSite() throws Exception
@@ -72,8 +74,8 @@ public class GetSiteContainerCoreTests extends RestTest{
 	        .assertThat().field("folderId").is(ContainerName.links.toString()); 
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for private site")
     public void getContainerForPrivateSite() throws Exception
@@ -87,7 +89,8 @@ public class GetSiteContainerCoreTests extends RestTest{
         	.assertThat().field("folderId").is(ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for moderated site")
     public void getContainerForModeratedSite() throws Exception

@@ -19,7 +19,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
 public class RemoveSiteMemberSanityTests extends RestTest
 {    
     private SiteModel siteModel;
@@ -41,6 +40,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
         dataUser.addUserToSite(testUserModel, siteModel, UserRole.SiteConsumer);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site manager can delete site member and gets status code 204, 'No Content'")
     public void siteManagerIsAbleToDeleteSiteMemberWithConsumerRole() throws Exception{
@@ -52,6 +52,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site collaborator cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteCollaboratorIsNotAbleToDeleteSiteMemberWithConsumerRole() throws Exception{
@@ -64,6 +65,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site contributor cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteContributorIsNotAbleToDeleteSiteMemberWithConsumerRole() throws Exception{
@@ -76,6 +78,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="ACE-5444")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site consumer cannot delete site member and gets status code 403, 'Forbidden'")
     public void siteConsumerIsNotAbleToDeleteSiteMemberWithConsumerRole() throws Exception{
@@ -86,7 +89,8 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that admin user can delete site member and gets status code 204, 'No Content'")
     public void adminUserIsAbleToDeleteSiteMember() throws Exception{
@@ -99,6 +103,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     }
 
     @Bug(id="MNT-16904")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to delete site member")
     public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMember() throws Exception{

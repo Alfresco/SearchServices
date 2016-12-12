@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class AddSiteMemberSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -34,6 +33,7 @@ public class AddSiteMemberSanityTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that manager is able to add site member and gets status code CREATED (201)")
     public void managerIsAbleToAddSiteMember() throws Exception
@@ -46,7 +46,8 @@ public class AddSiteMemberSanityTests extends RestTest
                .and().field("role").is(testUser.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);       
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site collaborator is not able to add site member and gets status code FORBIDDEN (403)")
     public void collaboratorIsNotAbleToAddSiteMember() throws Exception
@@ -59,7 +60,8 @@ public class AddSiteMemberSanityTests extends RestTest
         restClient.assertLastError().containsSummary("Permission was denied");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site contributor is not able to add site member and gets status code FORBIDDEN (403)")
     public void contributorIsNotAbleToAddSiteMember() throws Exception
@@ -71,7 +73,8 @@ public class AddSiteMemberSanityTests extends RestTest
         restClient.assertLastError().containsSummary("Permission was denied");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site consumer is not able to add site member and gets status code FORBIDDEN (403)")
     public void consumerIsNotAbleToAddSiteMember() throws Exception
@@ -83,7 +86,8 @@ public class AddSiteMemberSanityTests extends RestTest
         restClient.assertLastError().containsSummary("Permission was denied");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that admin user is able to add site member and gets status code CREATED (201)")
     public void adminIsAbleToAddSiteMember() throws Exception
@@ -98,6 +102,7 @@ public class AddSiteMemberSanityTests extends RestTest
     }
     
     @Bug(id="MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to add site member")
     public void unauthenticatedUserIsNotAuthorizedToAddSiteMmeber() throws Exception{

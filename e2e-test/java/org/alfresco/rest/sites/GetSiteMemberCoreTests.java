@@ -19,7 +19,6 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
 public class GetSiteMemberCoreTests extends RestTest
 {
     private UserModel adminUser;
@@ -42,6 +41,7 @@ public class GetSiteMemberCoreTests extends RestTest
         contributor = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Manager role doesn't get a site member of inexistent site and status code is Not Found (404)")
     public void getSiteMemberOfInexistentSite() throws Exception
@@ -53,7 +53,8 @@ public class GetSiteMemberCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, consumer.getUsername(), invalidSite.getId()));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Manager role doesn't get non site member of inexistent site and status code is Not Found (404)")
     public void getSiteMemberForNonSiteMember() throws Exception
@@ -65,7 +66,8 @@ public class GetSiteMemberCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, nonMember.getUsername(), siteModel.getId()));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Manager role doesn't get not existing site member and status code is Not Found (404)")
     public void getSiteMemberForInexistentSiteMember() throws Exception
@@ -77,7 +79,8 @@ public class GetSiteMemberCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentUser.getUsername()));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Manager role can get site member using \"-me-\" in place of personId")
     public void getSiteMemberUsingMeForPersonId() throws Exception
@@ -92,7 +95,8 @@ public class GetSiteMemberCoreTests extends RestTest
             .and().field("role").is(manager.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Manager role can get site member for empty siteId")
     public void getSiteMemberForEmptySiteId() throws Exception
@@ -104,7 +108,8 @@ public class GetSiteMemberCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, consumer.getUsername(), emptySite.getId()));
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Manager role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithManagerRole() throws Exception
@@ -119,6 +124,7 @@ public class GetSiteMemberCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Collaborator role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithCollaboratorRole() throws Exception
@@ -130,6 +136,7 @@ public class GetSiteMemberCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Consumer role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithConsumerRole() throws Exception
@@ -141,6 +148,7 @@ public class GetSiteMemberCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Contributor role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithContributorRole() throws Exception
@@ -151,7 +159,8 @@ public class GetSiteMemberCoreTests extends RestTest
                     .and().field("role").is(manager.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user with Contributor role gets admin site member and status code is OK (200)")
     public void getSiteAdminManagerMember() throws Exception

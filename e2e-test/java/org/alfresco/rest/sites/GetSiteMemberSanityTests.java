@@ -19,7 +19,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
 public class GetSiteMemberSanityTests extends RestTest
 {
     private UserModel adminUser;
@@ -38,6 +37,7 @@ public class GetSiteMemberSanityTests extends RestTest
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteConsumer);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Manager role gets site member and status code is OK (200)")
     public void getSiteMemberWithManagerRole() throws Exception
@@ -48,7 +48,8 @@ public class GetSiteMemberSanityTests extends RestTest
                     .and().field("role").is(userModel.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Collaborator role gets site member and gets status code OK (200)")
     public void getSiteMemberWithCollaboratorRole() throws Exception
@@ -59,7 +60,8 @@ public class GetSiteMemberSanityTests extends RestTest
                     .and().field("role").is(userModel.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Contributor role gets site member and gets status code OK (200)")
     public void getSiteMemberWithContributorRole() throws Exception
@@ -70,7 +72,8 @@ public class GetSiteMemberSanityTests extends RestTest
                   .and().field("role").is(userModel.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with Consumer role gets site member and gets status code OK (200)")
     public void getSiteMemberWithConsumerRole() throws Exception
@@ -81,7 +84,8 @@ public class GetSiteMemberSanityTests extends RestTest
                     .and().field("role").is(userModel.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify user with admin user gets site member and gets status code OK (200)")
     public void getSiteMemberWithAdminUser() throws Exception
@@ -92,7 +96,8 @@ public class GetSiteMemberSanityTests extends RestTest
                     .and().field("role").is(userModel.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site member call returns status code 401")
     @Bug(id = "MNT-16904")
