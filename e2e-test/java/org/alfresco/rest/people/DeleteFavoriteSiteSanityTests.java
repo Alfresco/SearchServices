@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 /**
  * @author Cristina Axinte
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+
 public class DeleteFavoriteSiteSanityTests extends RestTest
 {
     UserModel userModel;
@@ -30,9 +30,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         siteModel2 = dataSite.usingUser(userModel).createPublicRandomSite();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user removes a site from its favorite sites list with Rest API and response is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void managerUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -44,9 +43,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify collaborator user removes a site from its favorite sites list with Rest API and response is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void collaboratorUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -58,9 +56,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify contributor user removes a site from its favorite sites list with Rest API and response is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void contributorUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -72,9 +69,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify consumer user removes a site from its favorite sites list with Rest API and response is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user removes a site from its favorite sites list with Rest API and response is successful (204)")
     public void consumerUserRemovesFavoriteSiteWithSuccess() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -86,9 +82,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify admin user removes a site from any user's favorite sites list with Rest API and response is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user removes a site from any user's favorite sites list with Rest API and response is successful (204)")
     public void adminUserRemovesAnyFavoriteSiteWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
@@ -100,9 +95,8 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify a user removes a site from another user's favorite sites list with Rest API and response is permission denied (403)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a user removes a site from another user's favorite sites list with Rest API and response is permission denied (403)")
     public void userUserRemovesAnotherUserFavoriteSiteWithSuccess() throws Exception
     {
         UserModel userAuth = dataUser.usingAdmin().createRandomTestUser();
@@ -114,10 +108,9 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user is NOT Authorized to remove a site from its favorite sites list with Rest API when authentication fails (401)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to remove a site from its favorite sites list with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToRemoveFavoriteSite() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();

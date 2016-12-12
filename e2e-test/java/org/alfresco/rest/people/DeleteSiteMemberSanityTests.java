@@ -17,103 +17,91 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class DeleteSiteMemberSanityTests extends RestTest
-{    
+{
     private SiteModel siteModel;
     private UserModel adminUser;
     private ListUserWithRoles usersWithRoles;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,
-                                                          UserRole.SiteManager, 
-                                                          UserRole.SiteCollaborator, 
-                                                          UserRole.SiteConsumer, 
-                                                          UserRole.SiteContributor);    
+
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
+                UserRole.SiteContributor);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-                  executionType = ExecutionType.SANITY, 
-                  description = "Verify site manager is able to delete another member of the site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site manager is able to delete another member of the site")
     public void siteManagerCanDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
-        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingSite(siteModel).addPerson(newUser);
+
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify admin user is able to delete another member of the site")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to delete another member of the site")
     public void adminIsAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser)  
-                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
-        
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(siteModel).addPerson(newUser);
+
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify site collaborator does not have permission to delete another member of the site")    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site collaborator does not have permission to delete another member of the site")
     public void siteCollaboratorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser)  
-                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
+                .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify site contributor does not have permission to delete another member of the site")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site contributor does not have permission to delete another member of the site")
     public void siteContributorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser)  
-                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
+                .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify site consumer does not have permission to delete another member of the site")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site consumer does not have permission to delete another member of the site")
     public void siteConsumerIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
         newUser.setUserRole(UserRole.SiteCollaborator);
-        restClient.authenticateUser(adminUser)  
-                  .withCoreAPI().usingSite(siteModel).addPerson(newUser);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(siteModel).addPerson(newUser);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         restClient.withCoreAPI().usingUser(newUser).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
+                .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
 
-    @Bug(id="MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify unauthenticated user is not able to delete another member of the site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Bug(id = "MNT-16904")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to delete another member of the site")
     public void unauthenticatedUserIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));

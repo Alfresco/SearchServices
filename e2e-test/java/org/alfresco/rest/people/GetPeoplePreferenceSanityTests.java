@@ -19,22 +19,22 @@ import org.testng.annotations.Test;
  * Tests for Get a Peference (/people/{personId}/preferences/{preferenceName}) RestAPI call
  * 
  * @author Cristina Axinte
- *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
+
 public class GetPeoplePreferenceSanityTests extends RestTest
 {
     UserModel userModel;
     SiteModel siteModel;
     private RestPreferenceModel restPreferenceModel;
-  
-    @BeforeClass(alwaysRun=true)
+
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a specific preference with Rest API and response is successful (200)")
     public void managerUserGetsAPreferenceWithSuccess() throws Exception
     {
@@ -42,13 +42,13 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
-        restPreferenceModel = restClient.authenticateUser(managerUser)
-                  .withCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModel = restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser()
+                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is( PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
-                	.and().field("value").is("true");  
+        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId()).and().field("value").is("true");
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets a specific preference with Rest API and response is successful (200)")
     public void collaboratorUserGetsAPreferenceWithSuccess() throws Exception
     {
@@ -56,13 +56,13 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
         dataSite.usingUser(collaboratorUser).usingSite(siteModel).addSiteToFavorites();
 
-        restPreferenceModel = restClient.authenticateUser(collaboratorUser)
-                  .withCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModel = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser()
+                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
-                	.and().field("value").is("true"); 
+        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId()).and().field("value").is("true");
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets a specific preference with Rest API and response is successful (200)")
     public void contributorUserGetsAPreferenceWithSuccess() throws Exception
     {
@@ -70,13 +70,13 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         dataSite.usingUser(contributorUser).usingSite(siteModel).addSiteToFavorites();
 
-        restPreferenceModel = restClient.authenticateUser(contributorUser)
-                  .withCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModel = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser()
+                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
-                	.and().field("value").is("true");
+        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId()).and().field("value").is("true");
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets a specific preference with Rest API and response is successful (200)")
     public void consumerUserGetsAPreferenceWithSuccess() throws Exception
     {
@@ -84,26 +84,26 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
         dataSite.usingUser(consumerUser).usingSite(siteModel).addSiteToFavorites();
 
-        restPreferenceModel = restClient.authenticateUser(consumerUser)
-                  .withCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModel = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser()
+                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
-                  .and().field("value").is("true");
+        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId()).and().field("value").is("true");
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify admin user gets a specific preference with Rest API and response is successful (200)")
     public void adminUserGetsAPreferenceWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
         dataSite.usingUser(adminUser).usingSite(siteModel).addSiteToFavorites();
 
-        restPreferenceModel = restClient.authenticateUser(adminUser)
-                  .withCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restPreferenceModel = restClient.authenticateUser(adminUser).withCoreAPI().usingAuthUser()
+                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
-                  .and().field("value").is("true");  
+        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId()).and().field("value").is("true");
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
     @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to get a specific preference with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToGetsAPreference() throws Exception
@@ -113,8 +113,8 @@ public class GetPeoplePreferenceSanityTests extends RestTest
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
         managerUser.setPassword("newpassword");
 
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI().usingAuthUser().getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser()
+                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
 }

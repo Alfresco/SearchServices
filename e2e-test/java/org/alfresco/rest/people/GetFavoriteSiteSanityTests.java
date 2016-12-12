@@ -14,11 +14,10 @@ import org.testng.annotations.Test;
 
 /**
  * Tests for Get Favorite Sites (/people/{personId}/preferences) RestAPI call
- *  
+ * 
  * @author Cristina Axinte
- *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+
 public class GetFavoriteSiteSanityTests extends RestTest
 {
     UserModel userModel;
@@ -27,17 +26,16 @@ public class GetFavoriteSiteSanityTests extends RestTest
     UserModel searchedUser;
     private RestSiteModel restSiteModel;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        userModel   = dataUser.createRandomTestUser();
-        siteModel1  = dataSite.usingUser(userModel).createPublicRandomSite();
-        siteModel2  = dataSite.usingUser(userModel).createPublicRandomSite();
+        userModel = dataUser.createRandomTestUser();
+        siteModel1 = dataSite.usingUser(userModel).createPublicRandomSite();
+        siteModel2 = dataSite.usingUser(userModel).createPublicRandomSite();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user gets its specific favorite site with Rest API and response is successful (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its specific favorite site with Rest API and response is successful (200)")
     public void managerUserGetsFavoriteSiteWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -49,10 +47,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify collaborator user gets its specific favorite site with Rest API and response is successful (200)")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its specific favorite site with Rest API and response is successful (200)")
     public void collaboratorUserGetsFavoriteSiteWithSuccess() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -64,10 +61,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify contributor user gets its specific favorite site with Rest API and response is successful (200)")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its specific favorite site with Rest API and response is successful (200)")
     public void contributorUserGetsFavoriteSiteWithSuccess() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -79,10 +75,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify consumer user gets its specific favorite site with Rest API and response is successful (200)")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its specific favorite site with Rest API and response is successful (200)")
     public void consumerUserGetsFavoriteSiteWithSuccess() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -94,10 +89,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify admin user gets specific favorite site of any user with Rest API and response is successful (200)")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets specific favorite site of any user with Rest API and response is successful (200)")
     public void adminUserGetsAnyFavoriteSiteWithSuccess() throws Exception
     {
         UserModel adminUset = dataUser.getAdminUser();
@@ -109,10 +103,9 @@ public class GetFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user fails to get specific favorite site of another user with Rest API and response is successful (403)")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get specific favorite site of another user with Rest API and response is successful (403)")
     public void managerUserFailsToGetFavoriteSiteOfAnotherUser() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -123,11 +116,10 @@ public class GetFavoriteSiteSanityTests extends RestTest
         restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userModel).getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user is NOT Authorized gets its specific favorite site with Rest API when authentication fails (401)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized gets its specific favorite site with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToGetFavoriteSite() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
