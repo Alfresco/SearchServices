@@ -128,12 +128,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexCommit;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.ReaderUtil;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
@@ -2361,7 +2356,7 @@ public class SolrInformationServer implements InformationServer
                         {
                             log.debug(".. deleting node " + node.getId());
                         }
-                        deleteNode(processor, request, node);
+                        deleteErrorNode(processor, request, node);
 
                         SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_NODE);
                         addToNewDocAndCache(nodeMetaData, doc);
@@ -2771,12 +2766,18 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
+    private void deleteErrorNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
         String errorDocId = PREFIX_ERROR + node.getId();
         DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
         delErrorDocCmd.setId(errorDocId);
         processor.processDelete(delErrorDocCmd);
+    }
+
+
+    private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
+    {
+        deleteErrorNode(processor, request, node);
         // MNT-13767 fix, remove by node DBID.
         deleteNode(processor, request, node.getId());
     }
@@ -2787,7 +2788,7 @@ public class SolrInformationServer implements InformationServer
         delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
         processor.processDelete(delDocCmd);
     }
-    
+
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
     {
         boolean isContentIndexed = true;
