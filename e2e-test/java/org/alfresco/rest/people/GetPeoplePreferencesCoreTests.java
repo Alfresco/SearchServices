@@ -11,13 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-public class GetPeoplePreferencesCoreTests  extends RestTest
+public class GetPeoplePreferencesCoreTests extends RestTest
 {
     UserModel userModel;
     SiteModel siteModel;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         userModel = dataUser.createRandomTestUser();
@@ -25,8 +24,8 @@ public class GetPeoplePreferencesCoreTests  extends RestTest
         dataSite.usingUser(userModel).usingSite(siteModel).addSiteToFavorites();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify user is Forbidden to get a specific preference for another user with Rest API and response is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user is Forbidden to get a specific preference for another user with Rest API and response is 403")
     public void userDoesNotHaveAccessToFavoriteSitesOfAnotherUser() throws Exception
     {
         UserModel secondUser = dataUser.createRandomTestUser();
@@ -36,8 +35,8 @@ public class GetPeoplePreferencesCoreTests  extends RestTest
         restClient.assertLastError().containsSummary("Permission was denied");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify manager fails to get a specific preference for an invalid user with Rest API and response is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for an invalid user with Rest API and response is 404")
     public void statusNotFoundIsReturnedForAPersonIDThatDoesNotExist() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel("invalidPersonID", "password"))
@@ -46,19 +45,19 @@ public class GetPeoplePreferencesCoreTests  extends RestTest
         restClient.assertLastError().containsSummary("The entity with id: invalidPersonID was not found");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify manager fails to get a specific preference for an invalid preference with Rest API and response is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for an invalid preference with Rest API and response is 404")
     public void statusNotFoundIsReturnedForAPreferenceNameThatDoesNotExist() throws Exception
     {
-        restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser()
-                .getPersonPreferenceInformation("invalidPreferenceName");
+        restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getPersonPreferenceInformation("invalidPreferenceName");
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
-        restClient.assertLastError().containsSummary(String.format("The relationship resource was not found for the" +
-                        " entity with id: %s and a relationship id of invalidPreferenceName", userModel.getUsername()));
+        restClient.assertLastError().containsSummary(
+                String.format("The relationship resource was not found for the" + " entity with id: %s and a relationship id of invalidPreferenceName",
+                        userModel.getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify manager fails to get a specific preference for an removed preference with Rest API and response is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for an removed preference with Rest API and response is 404")
     public void statusNotFoundIsReturnedForAPreferenceNameThatHasBeenRemoved() throws Exception
     {
         SiteModel preferenceSite = dataSite.usingUser(userModel).createPublicRandomSite();
@@ -67,8 +66,8 @@ public class GetPeoplePreferencesCoreTests  extends RestTest
         restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser()
                 .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + preferenceSite.getId());
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
-        restClient.assertLastError().containsSummary(String.format("The relationship resource was not found for the" +
-                " entity with id: %s and a relationship id of %s", userModel.getUsername(),
-                PreferenceName.SITES_FAVORITES_PREFIX + preferenceSite.getId()));
+        restClient.assertLastError().containsSummary(
+                String.format("The relationship resource was not found for the" + " entity with id: %s and a relationship id of %s", userModel.getUsername(),
+                        PreferenceName.SITES_FAVORITES_PREFIX + preferenceSite.getId()));
     }
 }

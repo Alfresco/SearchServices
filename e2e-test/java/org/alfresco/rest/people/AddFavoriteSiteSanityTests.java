@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class AddFavoriteSiteSanityTests extends RestTest
 {
     UserModel userModel;
@@ -26,9 +25,10 @@ public class AddFavoriteSiteSanityTests extends RestTest
     public void dataPreparation() throws Exception
     {
         userModel = dataUser.createRandomTestUser();
-        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();        
+        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user add a favorite site with Rest API and response is successful (201)")
     public void managerUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -38,12 +38,13 @@ public class AddFavoriteSiteSanityTests extends RestTest
         restFavoriteSiteModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(managerUser).addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
-        
+
         restClient.withCoreAPI().usingUser(managerUser).addFavoriteSite(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.CONFLICT);        
-        restClient.assertLastError().containsSummary(String.format("%s is already a favourite site", siteModel.getId()));        
+        restClient.assertStatusCodeIs(HttpStatus.CONFLICT);
+        restClient.assertLastError().containsSummary(String.format("%s is already a favourite site", siteModel.getId()));
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user add a favorite site with Rest API and response is successful (201)")
     public void collaboratorUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -55,17 +56,19 @@ public class AddFavoriteSiteSanityTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user add a favorite site with Rest API and response is successful (201)")
     public void contributorUserAddFavoriteSiteWithSuccess() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
 
-        restFavoriteSiteModel = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);          
+        restFavoriteSiteModel = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user add a favorite site with Rest API and response is successful (201)")
     public void consumerUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -77,6 +80,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user add a favorite site with Rest API and response is successful (201)")
     public void adminUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -87,6 +91,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a manager user is NOT Authorized to add a favorite site with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToAddFavoriteSite() throws Exception

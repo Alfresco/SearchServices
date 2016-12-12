@@ -7,7 +7,6 @@ import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,7 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that for invalid maxItems parameter status code returned is 400.")
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that for invalid maxItems parameter status code returned is 400.")            
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void checkInvalidMaxItemsStatusCode() throws Exception
     {

@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
 public class GetSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
@@ -34,101 +33,88 @@ public class GetSiteMembershipRequestSanityTests extends RestTest
 
     private UserModel adminUser;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
     {
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
+                UserRole.SiteContributor);
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, 
-                executionType = ExecutionType.SANITY, description = "Verify site manager is able to retrieve site membership request")    
-    @Bug(id="MNT-16557")  
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site manager is able to retrieve site membership request")
+    @Bug(id = "MNT-16557")
     public void siteManagerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                  .withCoreAPI()
-                  .usingUser(newMember)
-                  .addSiteMembershipRequest(siteModel);
-        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingUser(newMember)
+                .addSiteMembershipRequest(siteModel);
+
         restClient.withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-                executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to retrieve site membership request")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site collaborator is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void siteCollaboratorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .withCoreAPI()
-                  .usingUser(newMember)
-                  .addSiteMembershipRequest(siteModel);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingUser(newMember)
+                .addSiteMembershipRequest(siteModel);
 
         restClient.withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-                executionType = ExecutionType.SANITY, description = "Verify site contributor is able to retrieve site membership request")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site contributor is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void siteContributorIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .withCoreAPI()          
-                  .usingUser(newMember)
-                  .addSiteMembershipRequest(siteModel);
-        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingUser(newMember)
+                .addSiteMembershipRequest(siteModel);
+
         restClient.withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, description = "Verify site consumer is able to retrieve site membership request")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site consumer is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void siteConsumerIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .withCoreAPI()
-                  .usingUser(newMember)
-                  .addSiteMembershipRequest(siteModel);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingUser(newMember)
+                .addSiteMembershipRequest(siteModel);
 
         restClient.withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, description = "Verify admin user is able to retrieve site membership request")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void adminIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(adminUser)
-                  .withCoreAPI()
-                  .usingUser(newMember)
-                  .addSiteMembershipRequest(siteModel);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingUser(newMember).addSiteMembershipRequest(siteModel);
 
         restClient.withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-            executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve site membership request")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve site membership request")
     @Bug(id = "MNT-16557")
     public void unauthenticatedUserIsNotAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(new UserModel("random user", "random password"))
-                  .withCoreAPI()
-                  .usingUser(newMember)
-                  .addSiteMembershipRequest(siteModel);
+        restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingUser(newMember).addSiteMembershipRequest(siteModel);
 
         restClient.withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
-    }    
+    }
 }

@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
  * 
  * @author Cristina Axinte
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+
 public class GetSiteMembershipRequestsSanityTests extends RestTest
 {
     UserModel userModel;
@@ -33,111 +33,88 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
         String siteId = RandomData.getRandomName("site");
         siteModel = dataSite.usingUser(userModel).createSite(new SiteModel(Visibility.MODERATED, siteId, siteId, siteId, siteId));
         newMember = dataUser.createRandomTestUser();
-        
-        restClient.authenticateUser(newMember)
-                  .withCoreAPI()
-                  .usingAuthUser().addSiteMembershipRequest(siteModel);
+
+        restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(siteModel);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16557")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user gets all site membership requests of a specific person with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets all site membership requests of a specific person with Rest API and response is successful (200)")
     public void managerUserGetsSiteMembershipRequestsWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
+
+        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16557")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify collaborator user fails to get all site membership requests of another user with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get all site membership requests of another user with Rest API (403)")
     public void collaboratorUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(collaboratorUser, siteModel, UserRole.SiteCollaborator);
-        
-        restClient.authenticateUser(collaboratorUser)
-                  .withCoreAPI()
-                  .usingUser(newMember).getSiteMembershipRequests();
+
+        restClient.authenticateUser(collaboratorUser).withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16557")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify contributor user fails to get all site membership requests of another user with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user fails to get all site membership requests of another user with Rest API (403)")
     public void contributorUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
-        
-        restClient.authenticateUser(contributorUser)
-                  .withCoreAPI()
-                  .usingUser(newMember).getSiteMembershipRequests();
+
+        restClient.authenticateUser(contributorUser).withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16557")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify consumer user fails to get all site membership requests of another user with Rest API (403)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get all site membership requests of another user with Rest API (403)")
     public void consumerUserFailsToGetSiteMembershipRequestsOfAnotherUser() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
-        
-        restClient.authenticateUser(consumerUser)
-                  .withCoreAPI()
-                  .usingUser(newMember).getSiteMembershipRequests();
+
+        restClient.authenticateUser(consumerUser).withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16557")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify admin user gets all site membership requests of a specific person with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin user gets all site membership requests of a specific person with Rest API and response is successful (200)")
     public void adminUserGetsSiteMembershipRequestsWithSuccess() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
-        
-        restClient.authenticateUser(adminUser)
-                  .withCoreAPI()
-                  .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
+
+        restClient.authenticateUser(adminUser).withCoreAPI().usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
     public void managerUserNotAuthorizedFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         managerUser.setPassword("newpassword");
-        restClient.authenticateUser(managerUser)
-                  .withCoreAPI()
-                  .usingUser(newMember).getSiteMembershipRequests();
+        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify a user gets all its own site membership requests with Rest API and response is successful (200)")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a user gets all its own site membership requests with Rest API and response is successful (200)")
     public void oneUserGetsItsOwnSiteMembershipRequestsWithSuccess() throws Exception
     {
-        restClient.authenticateUser(newMember)
-                  .withCoreAPI()
-                 .usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
+        restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).getSiteMembershipRequests().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

@@ -15,13 +15,13 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 11/22/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+
 public class GetFavoriteSiteCoreTests extends RestTest
 {
     UserModel userModel;
     SiteModel site1;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         userModel = dataUser.createRandomTestUser();
@@ -29,37 +29,32 @@ public class GetFavoriteSiteCoreTests extends RestTest
         dataSite.usingUser(userModel).usingSite(site1).addSiteToFavorites();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify invalid request returns status 404 when personId does not exist")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify invalid request returns status 404 when personId does not exist")
     public void getFavoriteSiteWithNonExistentPersonId() throws Exception
     {
         UserModel someUser = new UserModel("someUser", DataUser.PASSWORD);
 
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(someUser).getFavoriteSite(site1);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "someUser"));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "someUser"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify invalid request returns status 404 when siteId does not exist")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify invalid request returns status 404 when siteId does not exist")
     public void getFavoriteSiteWithNonExistentSiteId() throws Exception
     {
         SiteModel nonExistentSite = new SiteModel("nonExistentSite");
 
         restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getFavoriteSite(nonExistentSite);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, userModel.getUsername(), nonExistentSite.getId()));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, userModel.getUsername(), nonExistentSite.getId()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify User fails to get specific favorite site of admin with Rest API and response is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify User fails to get specific favorite site of admin with Rest API and response is 403")
     public void userFailsToGetFavoriteSiteOfAdmin() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(dataUser.getAdminUser()).getFavoriteSite(site1);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 }

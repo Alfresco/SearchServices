@@ -17,11 +17,9 @@ import org.testng.annotations.Test;
 
 /**
  * @author Cristina Axinte
- * 
- * Tests for getActivities (/people/{personId}/activities) RestAPI call
- * 
+ *         Tests for getActivities (/people/{personId}/activities) RestAPI call
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
+
 public class GetPeopleActivitiesSanityTests extends RestTest
 {
     UserModel userModel, unauthenticatedUser;
@@ -35,14 +33,14 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
+                UserRole.SiteContributor);
         unauthenticatedUser = dataUser.usingAdmin().createRandomTestUser();
         unauthenticatedUser.setPassword("newpassword");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify manager user gets its activities with Rest API and response is successful")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its activities with Rest API and response is successful")
     public void managerUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel managerUser = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
@@ -50,13 +48,11 @@ public class GetPeopleActivitiesSanityTests extends RestTest
 
         restActivityModelsCollection = restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
-                  .and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify collaborator user gets its activities with Rest API and response is successful")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its activities with Rest API and response is successful")
     public void collaboratorUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel collaboratorUser = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
@@ -64,13 +60,11 @@ public class GetPeopleActivitiesSanityTests extends RestTest
 
         restActivityModelsCollection = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify contributor user gets its activities with Rest API and response is successful")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its activities with Rest API and response is successful")
     public void contributorUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel contributorUser = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
@@ -78,37 +72,31 @@ public class GetPeopleActivitiesSanityTests extends RestTest
 
         restActivityModelsCollection = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify consumer user gets its activities with Rest API and response is successful")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its activities with Rest API and response is successful")
     public void consumerUserShouldGetPeopleActivitiesList() throws Exception
     {
         UserModel consumerUser = usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer);
-        
+
         restActivityModelsCollection = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify admin user gets another user activities with Rest API and response is successful")
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user activities with Rest API and response is successful")
     public void adminUserShouldGetPeopleActivitiesList() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(userModel).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId())
-                	.and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, 
-              executionType = ExecutionType.SANITY, 
-              description = "Verify unauthenticated user is NOT Authorized to gets another user activities with Rest API")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is NOT Authorized to gets another user activities with Rest API")
     public void unauthenticatedUserShouldNotGetPeopleActivitiesList() throws Exception
     {
         restClient.authenticateUser(unauthenticatedUser).withCoreAPI().usingUser(userModel).getPersonActivities();
