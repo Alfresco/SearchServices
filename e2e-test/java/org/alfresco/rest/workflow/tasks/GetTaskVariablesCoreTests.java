@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 12/7/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+
 public class GetTaskVariablesCoreTests extends RestTest
 {
     private UserModel userWhoStartsTask, assignee;
@@ -34,6 +34,7 @@ public class GetTaskVariablesCoreTests extends RestTest
         fileModel = dataContent.usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 404 when invalid taskId is used")
     public void getTaskVariablesUsingInvalidTaskId() throws Exception
@@ -46,6 +47,7 @@ public class GetTaskVariablesCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidId"));
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 404 when empty taskId is used")
     public void getTaskVariablesUsingEmptyTaskId() throws Exception
@@ -58,6 +60,7 @@ public class GetTaskVariablesCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 200 after the task is finished.")
     public void getTaskVariablesAfterFinishingTask() throws Exception
@@ -70,6 +73,7 @@ public class GetTaskVariablesCoreTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty();
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify if get task variables request returns status code 200 after the process is deleted (Task state is now completed.)")
     public void getTaskVariablesAfterDeletingProcess() throws Exception
@@ -85,6 +89,7 @@ public class GetTaskVariablesCoreTests extends RestTest
     }
 
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets task variables that matches a where clause.")
     public void getTaskVariablesWithWhereClauseAsParameter() throws Exception

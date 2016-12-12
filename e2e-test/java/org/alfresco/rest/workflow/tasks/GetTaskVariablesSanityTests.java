@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class GetTaskVariablesSanityTests extends RestTest
 {
     private UserModel userModel, userWhoStartsTask, assignee;
@@ -38,6 +38,7 @@ public class GetTaskVariablesSanityTests extends RestTest
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assignee);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task variables")
     public void getTaskVariablesByUserWhoStartedProcess() throws Exception
@@ -48,6 +49,7 @@ public class GetTaskVariablesSanityTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty();
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that is involved in the process gets task variables")
     public void getTaskVariablesByUserInvolvedInProcess() throws Exception
@@ -58,6 +60,7 @@ public class GetTaskVariablesSanityTests extends RestTest
         variableModels.assertThat().entriesListIsNotEmpty();
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that is not involved in the process gets task variables")
     public void getTaskVariablesUsingAnyUser() throws Exception
@@ -69,6 +72,7 @@ public class GetTaskVariablesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that admin is able to  task variables")
     public void getTaskVariablesUsingAdmin() throws Exception

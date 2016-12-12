@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class GetTaskItemsSanityTests extends RestTest
 {
     private UserModel userModel, userWhoStartsTask, assignee, adminTenantUser, tenantUser, tenantUserAssignee;
@@ -37,6 +37,7 @@ public class GetTaskItemsSanityTests extends RestTest
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assignee);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task items")
     public void getTaskItemsByUserWhoStartedProcess() throws Exception
@@ -54,6 +55,7 @@ public class GetTaskItemsSanityTests extends RestTest
             .entriesListContains("name", document1.getName());
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that involved user in process gets task items")
     public void getTaskItemsByUserInvolvedInProcess() throws Exception
@@ -73,7 +75,7 @@ public class GetTaskItemsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets task items")
-    @Test(groups = { TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
     public void getTaskItemsByAdminInSameNetwork() throws Exception
     {
         UserModel adminuser = dataUser.getAdminUser();

@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class GetTasksSanityTests extends RestTest
 {
     UserModel userModel;
@@ -38,6 +38,7 @@ public class GetTasksSanityTests extends RestTest
         dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify admin user gets all existing tasks with Rest API and response is successfull (200)")
     public void adminUserGetsAllTasks() throws Exception
     {
@@ -48,6 +49,7 @@ public class GetTasksSanityTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty();
     }
     
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify asignee user gets its existing tasks with Rest API and response is successfull (200)")
     public void asigneeUserGetsItsTasks() throws Exception
     {
@@ -56,6 +58,7 @@ public class GetTasksSanityTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee", assigneeUser.getUsername());
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
     @Bug(id = "MNT-16967")    
     public void candidateUserGetsItsTasks() throws Exception
@@ -72,6 +75,7 @@ public class GetTasksSanityTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty();
     }
     
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user that claims the task gets its existing tasks with Rest API and response is successfull (200)")
     public void candidateUserThatClaimsTaskGetsItsTasks() throws Exception
     {
@@ -87,6 +91,7 @@ public class GetTasksSanityTests extends RestTest
         taskModels.assertThat().entriesListIsNotEmpty();
     }
     
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user without claim gets no tasks with Rest API and response is successfull (200)")
     public void candidateUserWithoutClaimTaskGetsNoTasks() throws Exception
     {

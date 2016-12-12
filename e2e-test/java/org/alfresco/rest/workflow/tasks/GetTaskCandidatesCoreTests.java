@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
  * @author bogdan.bocancea
  *
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+
 public class GetTaskCandidatesCoreTests extends  RestTest
 {
     private UserModel userModel, userModel1, userModel2;
@@ -41,6 +41,7 @@ public class GetTaskCandidatesCoreTests extends  RestTest
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates with invalid task id")
     public void getTaskCandidatesWithInvalidTaskId() throws Exception
@@ -54,6 +55,7 @@ public class GetTaskCandidatesCoreTests extends  RestTest
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalid-id"));
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates with empty task id")
     public void getTaskCandidatesWithEmptyTaskId() throws Exception
@@ -67,6 +69,7 @@ public class GetTaskCandidatesCoreTests extends  RestTest
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
     
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates for completed task")
     public void getTaskCandidatesForCompletedTask() throws Exception
@@ -89,6 +92,7 @@ public class GetTaskCandidatesCoreTests extends  RestTest
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, taskModel.getId()));
     }
     
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify get task candidates by non candidate user")
     public void getTaskCandidatesByNonCandidateUser() throws Exception

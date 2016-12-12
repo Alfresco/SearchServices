@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class AddTaskItemSanityTests extends RestTest
 {
     private UserModel userModel, userWhoStartsTask, assigneeUser, adminTenantUser, tenantUser, tenantUserAssignee;;
@@ -37,6 +37,7 @@ public class AddTaskItemSanityTests extends RestTest
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task item")
     public void createTaskItem() throws Exception
@@ -56,8 +57,10 @@ public class AddTaskItemSanityTests extends RestTest
             .assertThat().field("modifiedBy").is(taskItem.getModifiedBy())
             .assertThat().field("id").is(taskItem.getId())
             .assertThat().field("mimeType").is(taskItem.getMimeType());
-    }
+    
+   }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @Bug(id = "MNT-16966")
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Verify that in case task item exists the request fails")
@@ -83,7 +86,7 @@ public class AddTaskItemSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @Test(groups = { TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add task item using admin user from same network")
     public void addTaskItemByAdminSameNetwork() throws JsonToModelConversionException, Exception

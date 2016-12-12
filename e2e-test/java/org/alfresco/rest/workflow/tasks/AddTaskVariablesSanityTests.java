@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class AddTaskVariablesSanityTests extends RestTest
 {
     private UserModel userModel, userWhoStartsTask;
@@ -38,6 +38,7 @@ public class AddTaskVariablesSanityTests extends RestTest
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with admin")
     public void createTaskVariableWithAdmin() throws Exception
@@ -55,6 +56,7 @@ public class AddTaskVariablesSanityTests extends RestTest
              .and().field("type").is(variableModel.getType());
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with user involved in the process")
     public void createTaskVariableWithInvolvedUser() throws Exception
@@ -72,6 +74,7 @@ public class AddTaskVariablesSanityTests extends RestTest
         restClient.withWorkflowAPI().usingTask(taskModel).getTaskVariables().assertThat().entriesListContains("name", variableModel.getName());
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with task owner")
     public void createTaskVariableWithTaskOwner() throws Exception
@@ -87,6 +90,7 @@ public class AddTaskVariablesSanityTests extends RestTest
              .and().field("type").is(variableModel.getType());
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Create non-existing task variable with any user")
     public void createTaskVariableWithRandomUser() throws Exception

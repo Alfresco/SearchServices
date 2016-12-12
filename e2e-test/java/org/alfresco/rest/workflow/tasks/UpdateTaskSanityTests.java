@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+
 public class UpdateTaskSanityTests extends RestTest
 {
     UserModel userModel;
@@ -36,6 +36,7 @@ public class UpdateTaskSanityTests extends RestTest
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify admin user updates task with Rest API and response is successfull (200)")
     public void adminUserUpdatesAnyTaskWithSuccess() throws Exception
     {
@@ -47,6 +48,7 @@ public class UpdateTaskSanityTests extends RestTest
                 .and().field("description").is(taskModel.getMessage());
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify assignee user updates its assigned task with Rest API and response is successfull (200)")
     public void assigneeUserUpdatesItsTaskWithSuccess() throws Exception
     {
@@ -56,6 +58,7 @@ public class UpdateTaskSanityTests extends RestTest
                 .and().field("description").is(taskModel.getMessage());
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify user that started the task updates the started task with Rest API and response is successfull (200)")
     public void starterUserUpdatesItsTaskWithSuccess() throws Exception
     {
@@ -63,6 +66,7 @@ public class UpdateTaskSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify any user with no relation to task is forbidden to update other task with Rest API (403)")
     public void anyUserIsForbiddenToUpdateOtherTask() throws Exception
     {
@@ -72,6 +76,7 @@ public class UpdateTaskSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY, description = "Verify candidate user updates its specific task and no other user claimed the task with Rest API and response is successfull (200)")
     public void candidateUserUpdatesItsTasks() throws Exception
     {
