@@ -14,7 +14,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/13/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
 public class GetProcessDefinitionsSanityTests extends RestTest
 {
     @Autowired
@@ -32,6 +31,7 @@ public class GetProcessDefinitionsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY, description = "Verify Admin user gets process definitions for non-network deployments using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
     public void nonNetworkAdminGetsProcessDefinitions() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -39,11 +39,9 @@ public class GetProcessDefinitionsSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    // works on alfresco.server=172.29.100.215
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets process definitions for network deployments using REST API and status code is OK (200)")
-
-    @Test(groups = { TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY, TestGroup.NETWORKS})
     public void networkAdminGetsProcessDefinitions() throws Exception
     {
         restClient.usingTenant().createTenant(adminTenantUser);

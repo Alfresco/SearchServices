@@ -18,7 +18,6 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY })
 public class GetDeploymentSanityTests extends RestTest
 {
     private UserModel adminUser;
@@ -36,6 +35,7 @@ public class GetDeploymentSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify admin user gets a non-network deployment using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY })
     public void adminGetsNonNetworkDeploymentWithSuccess() throws JsonToModelConversionException, Exception
     {
         actualDeployment = restClient.authenticateUser(adminUser).withWorkflowAPI().usingDeployment(expectedDeployment).getDeployment();
@@ -47,6 +47,7 @@ public class GetDeploymentSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify non admin user is forbidden to get a non-network deployment using REST API (403)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY })
     public void nonAdminIsForbiddenToGetNonNetworkDeployment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(anotherUser).withWorkflowAPI().usingDeployment(expectedDeployment).getDeployment();

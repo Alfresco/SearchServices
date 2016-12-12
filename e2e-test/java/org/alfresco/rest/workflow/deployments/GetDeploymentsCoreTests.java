@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * Created by Claudia Agache on 12/7/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE})
 public class GetDeploymentsCoreTests extends RestTest
 {
     private UserModel adminUser, adminTenantUser;
@@ -31,7 +30,9 @@ public class GetDeploymentsCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify non admin user is not able to get non-network deployments using REST API and status code is Forbidden")
+            executionType = ExecutionType.REGRESSION, 
+            description = "Verify non admin user is not able to get non-network deployments using REST API and status code is Forbidden")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE})
     public void nonAdminUserCanNotGetNonNetworkDeployments() throws Exception
     {
         UserModel userModel = dataUser.createRandomTestUser();
@@ -41,8 +42,9 @@ public class GetDeploymentsCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify non admin user is not able to get network deployments using REST API and status code is Forbidden")
-    @Test(groups = { TestGroup.NETWORKS })
+            executionType = ExecutionType.REGRESSION, 
+            description = "Verify non admin user is not able to get network deployments using REST API and status code is Forbidden")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS})
     public void nonAdminUserCanNotGetNetworkDeployments() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -57,21 +59,20 @@ public class GetDeploymentsCoreTests extends RestTest
 
     @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify get deployments returns an empty list after deleting all network deployments.")
-    @Test(groups = { TestGroup.NETWORKS })
+            executionType = ExecutionType.REGRESSION, 
+            description = "Verify get deployments returns an empty list after deleting all network deployments.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS})
     public void getNetworkDeploymentsAfterDeletingAllNetworkDeployments() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUser)
                 .usingTenant().createTenant(adminTenantUser);
-
         List<RestDeploymentModel> networkDeployments = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getDeployments().getEntries();
         for (RestDeploymentModel networkDeployment: networkDeployments)
         {
             restClient.withWorkflowAPI().usingDeployment(networkDeployment.onModel()).deleteDeployment();
             restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         }
-
         deployments = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         deployments.assertThat().entriesListIsEmpty();

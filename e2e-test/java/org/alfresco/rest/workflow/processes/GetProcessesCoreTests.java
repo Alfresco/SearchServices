@@ -25,7 +25,6 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
 public class GetProcessesCoreTests extends RestTest
 {
     private FileModel document;
@@ -46,10 +45,10 @@ public class GetProcessesCoreTests extends RestTest
         task2 = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(adminUser);
         process3 = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createSingleReviewerTaskAndAssignTo(assignee);
     }
- 
-    @Test(groups = { TestGroup.NETWORKS })
+    
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets all processes from same network")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
     public void getProcessFromSameNetworkUsingAdmin() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -63,9 +62,10 @@ public class GetProcessesCoreTests extends RestTest
         
         tenantProcesses.assertThat().entriesListContains("id", process.getId());
     }
-     
+    
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user gets all processes started by him ordered descending by id")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessesOrderedByIdDESC() throws Exception
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("orderBy=id DESC")
@@ -80,6 +80,7 @@ public class GetProcessesCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify user gets processes that matches a where clause")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessesWithWhereClauseAsParameter() throws JsonToModelConversionException, Exception
     {       
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).where("processDefinitionKey='activitiReview'")

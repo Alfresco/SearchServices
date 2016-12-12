@@ -20,8 +20,6 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-
-@Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.WORKFLOW }, priority = 100)
 public class DeleteDeploymentSanityTests extends RestTest
 {
     private UserModel adminUser;
@@ -36,6 +34,7 @@ public class DeleteDeploymentSanityTests extends RestTest
     @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.WORKFLOW }, priority = 100)
     public void adminDeletesDeploymentWithSuccess() throws Exception
     {
         dataContent.assertExtensionAmpExists("alfresco-workflow-extension");
@@ -51,6 +50,7 @@ public class DeleteDeploymentSanityTests extends RestTest
     @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify admin user cannot delete an inexistent deployment using REST API and status code is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.WORKFLOW }, priority = 100)
     public void adminCannotDeleteInexistentDeployment() throws Exception
     {
         deployment = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();

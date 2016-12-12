@@ -17,7 +17,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class DeleteProcessItemSanityTests extends RestTest
 {
     private FileModel document, document2;
@@ -39,6 +38,7 @@ public class DeleteProcessItemSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Delete existing process item")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void deleteProcessItem() throws Exception
     {
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -53,6 +53,7 @@ public class DeleteProcessItemSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Try to delete existing process item using invalid processId")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void deleteProcessItemUsingInvalidProcessId() throws Exception
     {
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();

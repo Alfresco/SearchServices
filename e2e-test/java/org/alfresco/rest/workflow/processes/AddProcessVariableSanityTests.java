@@ -19,7 +19,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class AddProcessVariableSanityTests extends RestTest
 {
     private FileModel document;
@@ -41,6 +40,7 @@ public class AddProcessVariableSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Create non-existing variable")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void addProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -58,6 +58,7 @@ public class AddProcessVariableSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Update existing variable")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void updateExistingProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -75,9 +76,9 @@ public class AddProcessVariableSanityTests extends RestTest
         processVariable.assertThat().field("value").is(newValue);
     }
 
-    @Test(groups = { TestGroup.NETWORKS })
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add process variable using admin user from same network")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
     public void addProcessVariableByAdmin() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -97,6 +98,7 @@ public class AddProcessVariableSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Adding process variable is falling in case invalid variableBody is provided")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("incorrect type");
