@@ -18,8 +18,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessItemsSanityTests extends RestTest
 {
     private FileModel document;
@@ -40,6 +38,7 @@ public class GetProcessItemsSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets all process items")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void getProcessItemsUsingTheUserWhoStartedProcess() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -50,6 +49,7 @@ public class GetProcessItemsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Verify that user that is involved in the process gets all process items")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void getProcessItemsUsingUserInvolvedInProcess() throws Exception
     {
         processModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -58,9 +58,9 @@ public class GetProcessItemsSanityTests extends RestTest
         items.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.NETWORKS })
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Get process items using admin from same network")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
     public void getProcessItemsUsingAdminUserFromSameNetwork() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();

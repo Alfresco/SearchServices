@@ -21,7 +21,6 @@ import org.testng.annotations.Test;
  * @author bogdan.bocancea
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
 public class DeleteProcessVariableCoreTests extends RestTest
 {
     private FileModel document;
@@ -44,6 +43,7 @@ public class DeleteProcessVariableCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete invalid process variable")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void deleteInvalidProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("x:InvalidVar");
@@ -56,6 +56,7 @@ public class DeleteProcessVariableCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete empty process variable")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void deleteEmptyProcessVariable() throws Exception
     {
         variableModel = new RestProcessVariableModel("","", "d:text");
@@ -68,6 +69,7 @@ public class DeleteProcessVariableCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete process variable twice")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void deleteProcessVariableTwice() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");

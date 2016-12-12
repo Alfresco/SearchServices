@@ -16,7 +16,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 12/6/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
 public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
 {
     private UserModel adminUser, adminTenantUser;
@@ -33,10 +32,10 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify any user gets a model of the start form type definition for non-network deployments using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void nonNetworkUserGetsStartFormModel() throws Exception
     {
         UserModel nonNetworkUser = dataUser.createRandomTestUser();
-
         randomProcessDefinition = allProcessDefinitions.getOneRandomEntry();
         restClient.authenticateUser(nonNetworkUser).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel()
@@ -48,6 +47,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get request returns status code 404 when invalid processDefinitionId is used")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void getStartFormModelUsingInvalidProcessDefinitionId() throws Exception
     {
         randomProcessDefinition = allProcessDefinitions.getOneRandomEntry();
@@ -63,6 +63,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get request returns status code 404 when empty processDefinitionId is used")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void getStartFormModelUsingEmptyProcessDefinitionId() throws Exception
     {
         randomProcessDefinition = allProcessDefinitions.getOneRandomEntry();
@@ -77,15 +78,13 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Tenant User gets a model of the start form type definition for network deployments using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE, TestGroup.NETWORKS })
     public void networkUserGetsStartFormModel() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUser)
                 .usingTenant().createTenant(adminTenantUser);
-
         UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
         randomProcessDefinition = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
                 .getAllProcessDefinitions().getOneRandomEntry();
         restClient.authenticateUser(tenantUser).withWorkflowAPI()

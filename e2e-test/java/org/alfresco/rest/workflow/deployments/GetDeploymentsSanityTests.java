@@ -14,7 +14,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/4/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY})
 public class GetDeploymentsSanityTests extends RestTest
 {
     private UserModel adminUserModel, adminTenantUser;
@@ -29,7 +28,9 @@ public class GetDeploymentsSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets non-network deployments using REST API and status code is OK (200)")
+        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
+        description = "Verify Admin user gets non-network deployments using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY})
     public void getNonNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
     {
         deployments = restClient.authenticateUser(adminUserModel).withWorkflowAPI().getDeployments();
@@ -38,8 +39,9 @@ public class GetDeploymentsSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.NETWORKS })
+        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
+        description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.NETWORKS})
     public void getNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
     {
         restClient.usingTenant().createTenant(adminTenantUser);

@@ -14,7 +14,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/19/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessSanityTests extends RestTest
 {
     private UserModel userWhoStartsProcess, assignee;
@@ -28,8 +27,9 @@ public class GetProcessSanityTests extends RestTest
         addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user is able to get the process started by him using REST API and status code is OK (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+            description = "Verify user is able to get the process started by him using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void getProcessByOwner() throws Exception
     {
         process = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(addedProcess).getProcess();
@@ -38,8 +38,9 @@ public class GetProcessSanityTests extends RestTest
                .and().field("startUserId").is(addedProcess.getStartUserId());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify user is able to get the process assigned to him using REST API and status code is OK (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
+            description = "Verify user is able to get the process assigned to him using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void getProcessByAssignee() throws Exception
     {
         process = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(addedProcess).getProcess();
@@ -48,8 +49,9 @@ public class GetProcessSanityTests extends RestTest
                 .and().field("startUserId").is(addedProcess.getStartUserId());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify admin is able to get any process using REST API and status code is OK (200)")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+            description = "Verify admin is able to get any process using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void getProcessByAdmin() throws Exception
     {
         process = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().usingProcess(addedProcess).getProcess();

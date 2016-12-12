@@ -20,7 +20,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
 public class AddProcessItemSanityTests extends RestTest
 {
     private FileModel document, document2;
@@ -42,6 +41,7 @@ public class AddProcessItemSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Create non-existing process item")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
     public void addProcessItem() throws JsonToModelConversionException, Exception
     {
         document2 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "file content");
@@ -66,6 +66,7 @@ public class AddProcessItemSanityTests extends RestTest
     @Bug(id= "MNT-16966")
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add process item that already exists")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
     public void addProcessItemThatAlreadyExists() throws JsonToModelConversionException, Exception
     {
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);

@@ -21,7 +21,6 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
 public class AddProcessCoreTests extends RestTest
 {
     private UserModel assignee, adminUser;
@@ -30,6 +29,7 @@ public class AddProcessCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify non network admin is able to start new process using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void nonNetworkAdminUserStartsNewProcess() throws JsonToModelConversionException, Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -52,6 +52,7 @@ public class AddProcessCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify start new process with empty request body using REST API returns status code is Bad Request (400)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void startNewProcessWithEmptyProcessBody() throws JsonToModelConversionException, Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -67,6 +68,7 @@ public class AddProcessCoreTests extends RestTest
     @Bug(id = "ACE-5671")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify start new process with invalid request body using REST API returns status code is Bad Request (400)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void startNewProcessWithInvalidProcessDefInProcessBody() throws JsonToModelConversionException, Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -80,6 +82,7 @@ public class AddProcessCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify start new process with invalid request body using REST API returns status code is Bad Request (400)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void startNewProcessWithInvalidVariablesInProcessBody1() throws JsonToModelConversionException, Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -94,6 +97,7 @@ public class AddProcessCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify start new process with invalid request body using REST API returns status code is Bad Request (400)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void startNewProcessWithInvalidVariablesInProcessBody2() throws JsonToModelConversionException, Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -108,6 +112,7 @@ public class AddProcessCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify start new process with invalid request body using REST API returns status code is Bad Request (400)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void startNewProcessWithInvalidVariablesInProcessBody3() throws JsonToModelConversionException, Exception
     {
         adminUser = dataUser.getAdminUser();

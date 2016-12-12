@@ -15,7 +15,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/18/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class AddProcessSanityTests extends RestTest
 {
     private UserModel userWhoStartsProcess, assignee;
@@ -24,7 +23,9 @@ public class AddProcessSanityTests extends RestTest
     private RestProcessModelsCollection processes;
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify non network user is able to start new process using REST API and status code is OK (200)")
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
+            description = "Verify non network user is able to start new process using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void nonNetworkUserStartsNewProcess() throws JsonToModelConversionException, Exception
     {
         userWhoStartsProcess = dataUser.createRandomTestUser();
@@ -41,8 +42,9 @@ public class AddProcessSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, description = "Verify network user is able to start new process using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.NETWORKS })
+            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
+            description = "Verify network user is able to start new process using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
     public void networkUserStartsNewProcess() throws JsonToModelConversionException, Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();

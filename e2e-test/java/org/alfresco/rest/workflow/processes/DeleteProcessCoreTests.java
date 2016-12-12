@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
 public class DeleteProcessCoreTests extends RestTest
 {
     private UserModel userWhoAddsProcess, assignee;
@@ -28,6 +27,7 @@ public class DeleteProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify admin user is able to delete a process started by another user.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void deleteProcessByAdminUser() throws Exception
     {
         process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
@@ -42,6 +42,7 @@ public class DeleteProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify User is not able to delete process with invalid id")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void deleteProcessWithInvalidId() throws Exception
     {
         process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
@@ -55,6 +56,7 @@ public class DeleteProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify User is not able to delete process with empty id")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void deleteProcessWithEmptyId() throws Exception
     {
         process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);

@@ -18,7 +18,6 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
 public class GetProcessVariablesSanityTests extends RestTest
 {
     private FileModel document;
@@ -39,6 +38,7 @@ public class GetProcessVariablesSanityTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Verify that user that started the process gets all process variables")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void getProcessVariablesUsingTheUserWhoStartedProcess() throws JsonToModelConversionException, Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -49,6 +49,7 @@ public class GetProcessVariablesSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Verify get all process variables call using a user that is involved in the process")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void getProcessVariablesUsingUserInvolvedInProcess() throws JsonToModelConversionException, Exception
     {
         processModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();

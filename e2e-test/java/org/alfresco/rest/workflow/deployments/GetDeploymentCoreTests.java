@@ -14,7 +14,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 12/7/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE })
 public class GetDeploymentCoreTests extends RestTest
 {
     private UserModel adminUser, adminTenantUser;
@@ -27,7 +26,9 @@ public class GetDeploymentCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify if get deployment request returns status code 404 when invalid deploymentId is used.")
+            executionType = ExecutionType.REGRESSION, 
+            description = "Verify if get deployment request returns status code 404 when invalid deploymentId is used.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE })
     public void getNonNetworkDeploymentUsingInvalidDeploymentId() throws Exception
     {
         expectedDeployment = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();
@@ -39,8 +40,9 @@ public class GetDeploymentCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify if network admin user gets a network deployment using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.NETWORKS })
+            executionType = ExecutionType.REGRESSION, 
+            description = "Verify if network admin user gets a network deployment using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS})
     public void adminGetsNetworkDeploymentWithSuccess() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -56,8 +58,9 @@ public class GetDeploymentCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify non admin user is forbidden to get a network deployment using REST API (403)")
-    @Test(groups = { TestGroup.NETWORKS })
+            executionType = ExecutionType.REGRESSION, 
+            description = "Verify non admin user is forbidden to get a network deployment using REST API (403)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS })
     public void nonAdminUserIsForbiddenToGetNetworkDeployment() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
