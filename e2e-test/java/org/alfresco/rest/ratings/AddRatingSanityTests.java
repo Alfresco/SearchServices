@@ -16,7 +16,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
 public class AddRatingSanityTests extends RestTest
 {
     private UserModel userModel;
@@ -25,7 +24,7 @@ public class AddRatingSanityTests extends RestTest
     private FolderModel folderModel;
     private FileModel document;
     private ListUserWithRoles usersWithRoles;
-    private RestRatingModel returnedRatingModel; //placeholder for returned model
+    private RestRatingModel returnedRatingModel; // placeholder for returned model
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
@@ -47,68 +46,66 @@ public class AddRatingSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to post like rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void managerIsAbleToLikeDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-                                                        .withCoreAPI().usingResource(document).likeDocument();
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document)
+                .likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        returnedRatingModel.assertThat().field("myRating").is("true")
-        	                 .and().field("id").is("likes")
-        	                 .and().field("aggregate").isNotEmpty();        
+
+        returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to post like rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void collaboratorIsAbleToLikeDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                                                       .withCoreAPI().usingResource(document).likeDocument();
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document)
+                .likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        returnedRatingModel.assertThat().field("myRating").is("true")
-                      		 .and().field("id").is("likes")
-                      		 .and().field("aggregate").isNotEmpty();        
+
+        returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post like rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void contributorIsAbleToLikeDocument() throws Exception
     {
-         returnedRatingModel =restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingResource(document).likeDocument();
-         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-         
-         returnedRatingModel.assertThat().field("myRating").is("true")
-                            .and().field("id").is("likes")
-                            .and().field("aggregate").isNotEmpty(); 
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingResource(document)
+                .likeDocument();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post like rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void consumerIsAbleToLikeDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingResource(document).likeDocument();
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingResource(document)
+                .likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        returnedRatingModel.assertThat().field("myRating").is("true")
-                           .and().field("id").is("likes")
-                           .and().field("aggregate").isNotEmpty(); 
+
+        returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post like rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void adminIsAbleToLikeDocument() throws Exception
     {
         returnedRatingModel = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        returnedRatingModel.assertThat().field("myRating").is("true")
-                           .and().field("id").is("likes")
-                           .and().field("aggregate").isNotEmpty(); 
+
+        returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post like rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
@@ -118,62 +115,62 @@ public class AddRatingSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to post stars rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void managerIsAbleToAddStarsToDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document)
+                .rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        returnedRatingModel.assertThat().field("myRating").is("5")
-                      		 .and().field("id").is("fiveStar")
-                      		 .and().field("aggregate").isNotEmpty();        
+        returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role is able to post stars rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void collaboratorIsAbleToAddStarsToDocument() throws Exception
     {
-       returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
-       restClient.assertStatusCodeIs(HttpStatus.CREATED);
-       returnedRatingModel.assertThat().field("myRating").is("5")
-                          .and().field("id").is("fiveStar")
-                          .and().field("aggregate").isNotEmpty();
-       
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document)
+                .rateStarsToDocument(5);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
+
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role is able to post stars rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void contributorIsAbleToAddStarsToDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingResource(document)
+                .rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        returnedRatingModel.assertThat().field("myRating").is("5")
-                           .and().field("id").is("fiveStar")
-                           .and().field("aggregate").isNotEmpty();
+        returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role is able to post stars rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void consumerIsAbleToAddStarsToDocument() throws Exception
     {
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingResource(document)
+                .rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        returnedRatingModel.assertThat().field("myRating").is("5")
-                           .and().field("id").is("fiveStar")
-                           .and().field("aggregate").isNotEmpty();
+        returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify admin user is able to post stars rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void adminIsAbleToAddStarsToDocument() throws Exception
-    {    	
+    {
         returnedRatingModel = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).rateStarsToDocument(3);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        returnedRatingModel.assertThat().field("myRating").is(String.valueOf(3))
-                      		 .and().field("id").is("fiveStar")
-                      		 .and().field("aggregate").isNotEmpty();
+        returnedRatingModel.assertThat().field("myRating").is(String.valueOf(3)).and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post stars rating to a document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     @Bug(id = "MNT-16904")
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {

@@ -20,7 +20,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
 public class GetRatingCoreTests extends RestTest
 {
     private SiteModel siteModel;
@@ -45,16 +44,19 @@ public class GetRatingCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Check that using invalid ratingId for get rating call returns status code 400.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void checkInvalidRatingIdStatusCode() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI();
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings/{ratingId}", document.getNodeRef(), "invalid ratingId");
         restClient.processModel(RestRatingModel.class, request);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalid ratingId"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+                .containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalid ratingId"));
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Check that using invalid node ID for get rating call returns status code 404.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getRatingUsingInvalidNodeId() throws Exception
     {
         document.setNodeRef(RandomStringUtils.randomAlphanumeric(20));
@@ -66,6 +68,7 @@ public class GetRatingCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has only likes.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getRatingOfFileThatHasOnlyLikes() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).likeDocument();
@@ -82,6 +85,7 @@ public class GetRatingCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has only stars.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getRatingOfFileThatHasOnlyStars() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).rateStarsToDocument(5);
@@ -98,6 +102,7 @@ public class GetRatingCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has likes and stars.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getRatingOfFileThatHasLikesAndStars() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).likeDocument();
@@ -116,6 +121,7 @@ public class GetRatingCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Get rating of a folder that has only likes.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getRatingOfFolderThatHasOnlyLikes() throws Exception
     {
         firstFolderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -129,6 +135,7 @@ public class GetRatingCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Get rating of a file that has no ratings.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getRatingOfFileThatHasNoRatings() throws Exception
     {
         returnedRatingModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getLikeRating();
