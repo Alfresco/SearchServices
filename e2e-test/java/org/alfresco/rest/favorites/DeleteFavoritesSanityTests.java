@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
 public class DeleteFavoritesSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -34,8 +33,9 @@ public class DeleteFavoritesSanityTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user deletes site from favorites with Rest API and status code is 204")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Admin user deletes site from favorites with Rest API and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void adminIsAbleToDeleteFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(siteModel);
@@ -44,8 +44,9 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-        TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Manager user deletes site from favorites with Rest API and status code is 204")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Manager user deletes site from favorites with Rest API and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void managerIsAbleToDeleteFavorites() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
@@ -55,8 +56,9 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-        TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user deletes site from favorites with Rest API and status code is 204")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Collaborator user deletes site from favorites with Rest API and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void collaboratorIsAbleToDeleteFavorites() throws JsonToModelConversionException, Exception
     {
         UserModel siteCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
@@ -66,8 +68,9 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-        TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Contributor user deletes site from favorites with Rest API and status code is 204")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Contributor user deletes site from favorites with Rest API and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void contributorIsAbleToDeleteFavorites() throws JsonToModelConversionException, Exception
     {
         UserModel siteContributor = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
@@ -77,8 +80,9 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-        TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Consumer user delets site from favorites with Rest API and status code is 204")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Consumer user delets site from favorites with Rest API and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void consumerIsAbleToDeleteFavorites() throws JsonToModelConversionException, Exception
     {
         UserModel siteConsumer = usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer);
@@ -88,9 +92,10 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-        TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
     @Bug(id="MNT-16557")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void userIsNotAbleToDeleteFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         UserModel siteCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
@@ -100,8 +105,10 @@ public class DeleteFavoritesSanityTests extends RestTest
                   .assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify user doesn't have permission to delete favorites of admin user with Rest API and status code is 404")
     @Bug(id="MNT-16557")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify user doesn't have permission to delete favorites of admin user with Rest API and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void userIsNotAbleToDeleteFavoritesOfAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
@@ -111,8 +118,10 @@ public class DeleteFavoritesSanityTests extends RestTest
                   .assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify admin user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
     @Bug(id="MNT-16557")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify admin user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void adminIsNotAbleToDeleteFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -123,8 +132,10 @@ public class DeleteFavoritesSanityTests extends RestTest
                   .assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Bug(id = "MNT-16904")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify user gets status code 401 if authentication call fails")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void userIsNotAbleToDeleteFavoritesIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);

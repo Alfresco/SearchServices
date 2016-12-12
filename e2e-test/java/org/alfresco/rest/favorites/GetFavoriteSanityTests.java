@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
 public class GetFavoriteSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -43,8 +42,9 @@ public class GetFavoriteSanityTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorite site with Rest API and status code is 200")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Admin user gets favorite site with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void adminIsAbleToRetrieveFavoritesSite() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(siteModel);
@@ -54,8 +54,9 @@ public class GetFavoriteSanityTests extends RestTest
         restSiteModelsCollection.and().entriesListContains("guid",siteModel.getGuid());    
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorite folder with Rest API and status code is 200")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Admin user gets favorite folder with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void adminIsAbleToRetrieveFavoritesFolder() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().usingUser(adminUserModel).addFolderToFavorites(folderModel);
@@ -66,8 +67,9 @@ public class GetFavoriteSanityTests extends RestTest
         
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Admin user gets favorite file with Rest API and status code is 200")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Admin user gets favorite file with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void adminIsAbleToRetrieveFavoritesFile() throws JsonToModelConversionException, Exception
     {        
         restClient.withCoreAPI().usingUser(adminUserModel).addFileToFavorites(fileModel);
@@ -77,8 +79,9 @@ public class GetFavoriteSanityTests extends RestTest
         restPersonFavoritesModelsCollection.and().entriesListContains("targetGuid", fileModel.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets favorite site with Rest API and status code is 200")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Manager user gets favorite site with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void managerIsAbleToRetrieveFavorite() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -89,8 +92,9 @@ public class GetFavoriteSanityTests extends RestTest
         restSiteModelsCollection.and().entriesListContains("guid",siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user gets favorite site with Rest API and status code is 200")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Collaborator user gets favorite site with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void collaboratorIsAbleToRetrieveFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -101,8 +105,9 @@ public class GetFavoriteSanityTests extends RestTest
         restSiteModelsCollection.and().entriesListContains("guid",siteModel.getGuid());      
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Contributor user gets favorite site with Rest API and status code is 200")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Contributor user gets favorite site with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void contributorIsAbleToRetrieveFavorite() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -113,8 +118,9 @@ public class GetFavoriteSanityTests extends RestTest
         restSiteModelsCollection.and().entriesListContains("guid",siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify Consumer user gets favorite site with Rest API and status code is 200")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify Consumer user gets favorite site with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void consumerIsAbleToRetrieveFavorites() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -125,8 +131,9 @@ public class GetFavoriteSanityTests extends RestTest
         restSiteModelsCollection.and().entriesListContains("guid",siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify user doesn't get favorite site of another user with Rest API and status code is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify user doesn't get favorite site of another user with Rest API and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void userIsNotAbleToRetrieveFavoriteSiteOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -137,8 +144,9 @@ public class GetFavoriteSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify user doesn't get favorite site of admin user with Rest API and status code is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify user doesn't get favorite site of admin user with Rest API and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void userIsNotAbleToRetrieveFavoritesOfAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -148,8 +156,9 @@ public class GetFavoriteSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, adminUserModel.getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify admin user doesn't get favorite site of another user with Rest API and status code is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify admin user doesn't get favorite site of another user with Rest API and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void adminIsNotAbleToRetrieveFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI()
@@ -159,9 +168,10 @@ public class GetFavoriteSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Bug(id="MNT-16904")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+            description = "Verify user gets status code 401 if authentication call fails")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void userIsNotAbleToRetrieveFavoritesIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
@@ -170,5 +180,4 @@ public class GetFavoriteSanityTests extends RestTest
                   .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).getFavorite(siteModel.getGuid());        
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
     }
-
 }
