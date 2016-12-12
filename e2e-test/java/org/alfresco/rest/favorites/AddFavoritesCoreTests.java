@@ -7,7 +7,6 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -18,7 +17,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -184,6 +182,7 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
+    @Bug(id="MNT-16917")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify add file favorite with tag id returns status code 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
