@@ -21,7 +21,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
 public class AddTagCoreTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -53,6 +52,7 @@ public class AddTagCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that adding empty tag returns status code 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void emptyTagTest() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -62,6 +62,7 @@ public class AddTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that adding tag with user that has no permissions returns status code 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void addTagWithUserThatDoesNotHavePermissions() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(testUser);
@@ -71,6 +72,7 @@ public class AddTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that adding tag to a node that does not exist returns status code 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void addTagToInexistentNode() throws JsonToModelConversionException, Exception
     {
         FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -85,6 +87,7 @@ public class AddTagCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that adding tag to a node that does not accepts tags returns status code 405")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void addTagToANodeThatDoesNotAcceptsTags() throws JsonToModelConversionException, Exception
     {
         FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -98,6 +101,7 @@ public class AddTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager is able to tag a file")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void managerIsAbleToTagAFile() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -108,6 +112,7 @@ public class AddTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager is able to tag a folder")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void managerIsAbleToTagAFolder() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -118,6 +123,7 @@ public class AddTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that tagged file can be tagged again")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void addTagToATaggedFile() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -141,6 +147,7 @@ public class AddTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that user cannot add invalid tag")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void addInvalidTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);

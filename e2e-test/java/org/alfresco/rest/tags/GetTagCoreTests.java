@@ -17,7 +17,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
 public class GetTagCoreTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -43,6 +42,7 @@ public class GetTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if tag id is invalid status code returned is 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void invalidTagIdTest() throws JsonToModelConversionException, Exception
     {
         tag.setId("random_tag_value");
@@ -52,6 +52,7 @@ public class GetTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Retrieve and validate the id of a tag added to a file")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void validateTagIdTest() throws JsonToModelConversionException, Exception
     {
         RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);
@@ -61,6 +62,7 @@ public class GetTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Retrieve and validate the name of a tag added to a file")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void validateTagNameTest() throws JsonToModelConversionException, Exception
     {
         RestTagModel returnedTag = restClient.withCoreAPI().getTag(tag);

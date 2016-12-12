@@ -23,7 +23,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Bogdan Bocancea
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
 public class UpdateTagCoreTests extends RestTest
 {
     private UserModel managerUser;
@@ -47,6 +46,7 @@ public class UpdateTagCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update tag with invalid id")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void managerIsNotAbleToUpdateTagWithInvalidId() throws JsonToModelConversionException, Exception
     {
         String invalidTagId = "invalid-id";
@@ -59,6 +59,7 @@ public class UpdateTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update tag with empty id")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void managerIsNotAbleToUpdateTagWithEmptyId() throws JsonToModelConversionException, Exception
     {
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -70,6 +71,7 @@ public class UpdateTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update tag with invalid body")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void managerIsNotAbleToUpdateTagWithEmptyBody() throws JsonToModelConversionException, Exception
     {
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -82,6 +84,7 @@ public class UpdateTagCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, 
             description = "Verify site manager is not able to update tag with invalid body containing '|' symbol")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void managerIsNotAbleToUpdateTagWithInvalidBodyScenario1() throws JsonToModelConversionException, Exception
     {
         String invalidTagBody = "|.\"/<>*";
@@ -96,6 +99,7 @@ public class UpdateTagCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, 
             description = "Verify site manager is not able to update tag with invalid body without '|' symbol")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void managerIsNotAbleToUpdateTagWithInvalidBodyScenario2() throws JsonToModelConversionException, Exception
     {
         String invalidTagBody = ".\"/<>*";

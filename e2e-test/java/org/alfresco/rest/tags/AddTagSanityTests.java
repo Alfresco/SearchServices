@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/3/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class AddTagSanityTests extends RestTest
 {
     private UserModel adminUserModel, userModel;
@@ -52,6 +51,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify admin user adds tags with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void adminIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -63,6 +63,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds tags with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void managerIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -74,6 +75,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds tags with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void collaboratorIsAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -85,6 +87,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user doesn't have permission to add tags with Rest API and status code is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void contributorIsNotAbleToAddTagToAnotherContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -94,6 +97,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds tags to his content with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void contributorIsAbleToAddTagToHisContent() throws JsonToModelConversionException, Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
@@ -107,6 +111,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user doesn't have permission to add tags with Rest API and status code is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void consumerIsNotAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -117,6 +122,7 @@ public class AddTagSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Bug(id="MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void userIsNotAbleToAddTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);

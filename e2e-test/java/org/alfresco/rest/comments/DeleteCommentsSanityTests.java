@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class DeleteCommentsSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -36,6 +35,7 @@ public class DeleteCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user deletes comments with Rest API and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void adminIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -46,6 +46,7 @@ public class DeleteCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user deletes own comments and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void managerIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -56,6 +57,7 @@ public class DeleteCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user deletes own comments and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void collaboratorIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -66,6 +68,7 @@ public class DeleteCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user deletes own comments and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void contributorIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -77,6 +80,7 @@ public class DeleteCommentsSanityTests extends RestTest
     @Bug(id="MNT-16904")
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify User gets status code 401 if authentication call fails")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void userIsNotAbleToDeleteCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);

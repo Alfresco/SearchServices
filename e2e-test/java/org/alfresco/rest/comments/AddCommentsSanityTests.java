@@ -21,7 +21,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/10/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class AddCommentsSanityTests extends RestTest
 {     
     private UserModel adminUserModel;
@@ -50,6 +49,7 @@ public class AddCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple comments with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void adminIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
@@ -62,6 +62,7 @@ public class AddCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds multiple comments with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void managerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -74,6 +75,7 @@ public class AddCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple comments with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void contributorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
@@ -86,6 +88,7 @@ public class AddCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple comments with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void collaboratorIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -99,6 +102,7 @@ public class AddCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user adds multiple comments with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void consumerIsAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -109,6 +113,7 @@ public class AddCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post multiple comments call")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void unauthenticatedUserIsNotAbleToAddComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"))

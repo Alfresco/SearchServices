@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/7/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class AddTagsSanityTests extends RestTest
 {
     private UserModel adminUserModel, userModel;
@@ -53,6 +52,7 @@ public class AddTagsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify admin user adds multiple tags with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void adminIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -64,6 +64,7 @@ public class AddTagsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds multiple tags with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void managerIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -75,6 +76,7 @@ public class AddTagsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple tags with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void collaboratorIsAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -86,6 +88,7 @@ public class AddTagsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user doesn't have permission to add multiple tags with Rest API and status code is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void contributorIsNotAbleToAddTagsToAnotherContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -95,6 +98,7 @@ public class AddTagsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds multiple tags to his content with Rest API and status code is 201")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void contributorIsAbleToAddTagsToHisContent() throws JsonToModelConversionException, Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
@@ -108,6 +112,7 @@ public class AddTagsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user doesn't have permission to add multiple tags with Rest API and status code is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void consumerIsNotAbleToAddTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingResource(document).addTags(tag1, tag2);
@@ -117,6 +122,7 @@ public class AddTagsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Bug(id="MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void userIsNotAbleToAddTagsIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);

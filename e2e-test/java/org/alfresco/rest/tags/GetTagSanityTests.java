@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class GetTagSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -40,6 +39,7 @@ public class GetTagSanityTests extends RestTest
     
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify admin user gets tag using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void userWithAdminIsAbletoGetTag() throws JsonToModelConversionException, Exception
     {
         String tagValue = RandomData.getRandomName("tag");
@@ -53,6 +53,7 @@ public class GetTagSanityTests extends RestTest
     
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tag using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void userWithManagerRoleIsAbletoGetTag() throws JsonToModelConversionException, Exception
     {
         String tagValue = RandomData.getRandomName("tag");
@@ -65,6 +66,7 @@ public class GetTagSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Collaborator role gets tag using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void userWithCollaboratorRoleIsAbletoGetTag() throws JsonToModelConversionException, Exception
     {
         String tagValue = RandomData.getRandomName("tag");
@@ -77,6 +79,7 @@ public class GetTagSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Contributor role gets tag using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void userWithContributorRoleIsAbletoGetTag() throws JsonToModelConversionException, Exception
     {
         String tagValue = RandomData.getRandomName("tag");
@@ -91,6 +94,7 @@ public class GetTagSanityTests extends RestTest
     
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Consumer role gets tag using REST API and status code is OK (200)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void userWithConsumerRoleIsAbletoGetTag() throws JsonToModelConversionException, Exception
     {
         String tagValue = RandomData.getRandomName("tag");
@@ -105,6 +109,7 @@ public class GetTagSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
     @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void managerIsNotAbleToGetTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         String tagValue = RandomData.getRandomName("tag");

@@ -20,7 +20,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
 public class AddCommentCoreTests extends RestTest
 {     
     private UserModel adminUserModel;
@@ -49,6 +48,7 @@ public class AddCommentCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that invalid request returns status code 404 for nodeId that does not exist")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentUsingInvalidNodeId() throws JsonToModelConversionException, Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -62,6 +62,7 @@ public class AddCommentCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that request using nodeId that is neither document or folder returns 405")
     @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentUsingResourceThatIsNotFileOrFolder() throws JsonToModelConversionException, Exception
     {
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
@@ -76,6 +77,7 @@ public class AddCommentCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that adding comment using empty content returns 400 status code")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentUsingEmptyContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
@@ -85,6 +87,7 @@ public class AddCommentCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify adding comment with the same content as one existing comment")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentTwice() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
@@ -100,6 +103,7 @@ public class AddCommentCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that comment can be retrieved after it is added")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentThenRetrieveComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel)
@@ -115,6 +119,7 @@ public class AddCommentCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify comment cannot be added if user is not member of private site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentWithNonMemberOfPrivateSite() throws JsonToModelConversionException, Exception
     {
         UserModel member = dataUser.createRandomTestUser();
@@ -129,6 +134,7 @@ public class AddCommentCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify comment cannot be added if empty network ID is provided")
     @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentUsingEmptyNetworkId() throws JsonToModelConversionException, Exception
     {
         UserModel member = dataUser.createRandomTestUser();
@@ -141,6 +147,7 @@ public class AddCommentCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that comment cannot be added to another comment")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentToAComment() throws JsonToModelConversionException, Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -156,6 +163,7 @@ public class AddCommentCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that comment cannot be added to a tag")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentToATag() throws JsonToModelConversionException, Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);

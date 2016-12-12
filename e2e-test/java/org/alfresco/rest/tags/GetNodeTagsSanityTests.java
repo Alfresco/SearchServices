@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 public class GetNodeTagsSanityTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -46,6 +45,7 @@ public class GetNodeTagsSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
                 executionType = ExecutionType.SANITY, description = "Verify site Manager is able to get node tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void siteManagerIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -60,6 +60,7 @@ public class GetNodeTagsSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify site Collaborator is able to get node tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void siteCollaboratorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -73,6 +74,7 @@ public class GetNodeTagsSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify site Contributor is able to get node tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void siteContributorIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -86,6 +88,7 @@ public class GetNodeTagsSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify site Consumer is able to get node tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void siteConsumerIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -99,6 +102,7 @@ public class GetNodeTagsSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify admin is able to get node tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void adminIsAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -111,6 +115,7 @@ public class GetNodeTagsSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to get node tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void unauthenticatedUserIsNotAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));

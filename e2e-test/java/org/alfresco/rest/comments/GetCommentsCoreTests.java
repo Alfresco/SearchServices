@@ -15,7 +15,6 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 11/18/2016.
  */
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
 public class GetCommentsCoreTests extends RestTest
 {
     private UserModel adminUserModel, userModel, networkUserModel;
@@ -45,6 +44,7 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify invalid request returns status code 400 for invalid maxItems or skipCount")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void checkStatusCodeForInvalidMaxItems() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=0")
@@ -55,6 +55,7 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't get comments for node with ID that does not exist and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userCanNotGetCommentsOnNonexistentFile() throws Exception
     {
         FileModel nonexistentFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -67,6 +68,7 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't get comments for node that exists but is not a document or a folder and status code is 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     @Bug(id = "MNT-16904")
     public void userCanNotGetCommentsOnLink() throws Exception
     {
@@ -81,6 +83,7 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify request returns status 403 if the user does not have permission read comments on the node")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void uninvitedUserCanNotGetCommentsFromPrivateSite() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI()
@@ -91,6 +94,7 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify user gets comments without the first 2 and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void skipFirst2Comments() throws Exception
     {
         comments = restClient.authenticateUser(adminUserModel).withParams("skipCount=2")
@@ -104,6 +108,7 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with invalid network id returns status code 401")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void getCommentsWithInvalidNetwork() throws Exception
     {
         networkUserModel.setDomain("invalidNetwork");
@@ -113,6 +118,7 @@ public class GetCommentsCoreTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with empty network id returns status code 401")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void getCommentsWithEmptyNetwork() throws Exception
     {
         networkUserModel.setDomain("");

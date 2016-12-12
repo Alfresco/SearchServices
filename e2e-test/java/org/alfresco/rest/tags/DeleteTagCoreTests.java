@@ -18,7 +18,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
 public class DeleteTagCoreTests extends RestTest
 {
     private UserModel adminUserModel, userModel;
@@ -45,6 +44,7 @@ public class DeleteTagCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if user has no permission to remove tag returned status code is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagWithUserWithoutPermission() throws Exception
     {
         restClient.authenticateUser(userModel);
@@ -54,6 +54,7 @@ public class DeleteTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if node does not exist returned status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagForAnInexistentNode() throws Exception
     {
         FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -65,6 +66,7 @@ public class DeleteTagCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if tag does not exist returned status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagThatDoesNotExist() throws Exception
     {
         tag.setId("abc");
@@ -74,6 +76,7 @@ public class DeleteTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if tag id is empty returned status code is 405")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagWithEmptyId() throws Exception
     {
         tag.setId("");
@@ -83,6 +86,7 @@ public class DeleteTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that file tag can be deleted")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteFileTag() throws Exception
     {
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
@@ -93,6 +97,7 @@ public class DeleteTagCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that folder tag can be deleted")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteFolderTag() throws Exception
     {
         tag = restClient.withCoreAPI().usingResource(folderModel).addTag(RandomData.getRandomName("tag")); 

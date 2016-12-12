@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
 public class GetNodeTagsCoreTests extends RestTest
 {
     private UserModel adminUserModel, userModel;
@@ -45,6 +44,7 @@ public class GetNodeTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that using invalid value for skipCount parameter returns status code 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void invalidSkipCountTest() throws JsonToModelConversionException, Exception
     {        
         restClient.withParams("skipCount=abc").withCoreAPI().usingResource(document).getNodeTags();
@@ -56,6 +56,7 @@ public class GetNodeTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that using invalid value for maxItems parameter returns status code 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void invalidMaxItemsTest() throws JsonToModelConversionException, Exception
     {        
         restClient.withParams("maxItems=abc").withCoreAPI().usingResource(document).getNodeTags();
@@ -67,6 +68,7 @@ public class GetNodeTagsCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that user without permissions returns status code 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void userWithoutPermissionsTest() throws JsonToModelConversionException, Exception
     {        
         SiteModel site = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
@@ -80,6 +82,7 @@ public class GetNodeTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if node does not exist returns status code 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void inexistentNodeTest() throws JsonToModelConversionException, Exception
     {        
         FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -92,6 +95,7 @@ public class GetNodeTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if node id is empty returns status code 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void emptyNodeIdTest() throws JsonToModelConversionException, Exception
     {        
         FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -103,6 +107,7 @@ public class GetNodeTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify file tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void fileTagsTest() throws JsonToModelConversionException, Exception
     {        
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getNodeTags()
@@ -113,6 +118,7 @@ public class GetNodeTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify folder tags")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void folderTagsTest() throws JsonToModelConversionException, Exception
     {        
         FolderModel folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();

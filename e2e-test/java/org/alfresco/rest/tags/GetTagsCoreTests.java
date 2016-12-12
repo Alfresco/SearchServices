@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
 public class GetTagsCoreTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -49,6 +48,7 @@ public class GetTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if maxItems is invalid status code returned is 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void maxItemsInvalidValueTest() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=abc").withCoreAPI().getTags();
@@ -57,6 +57,7 @@ public class GetTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if skipCount is invalid status code returned is 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void skipCountInvalidValueTest() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("skipCount=abc").withCoreAPI().getTags();
@@ -65,6 +66,7 @@ public class GetTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that file tag is retrieved")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void fileTagIsRetrieved() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -76,6 +78,7 @@ public class GetTagsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that folder tag is retrieved")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void folderTagIsRetrieved() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);

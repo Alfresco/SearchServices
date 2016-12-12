@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
 public class GetCommentsSanityTests extends RestTest
 {
    private UserModel adminUserModel;
@@ -40,6 +39,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Admin user gets comments with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void adminIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI()
@@ -50,6 +50,7 @@ public class GetCommentsSanityTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Manager user gets comments created by admin user with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void managerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI()
@@ -60,6 +61,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Contributor user gets comments created by admin user with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void contributorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI()
@@ -70,6 +72,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Collaborator user gets comments created by admin user with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void collaboratorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI()
@@ -80,6 +83,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Consumer user gets comments created by admin user with Rest API and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void consumerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI()
@@ -90,6 +94,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Manager user gets status code 401 if authentication call fails")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
@@ -101,6 +106,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify Manager user gets comments created by another user and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void managerIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
@@ -117,6 +123,7 @@ public class GetCommentsSanityTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.SANITY}, executionType= ExecutionType.SANITY,
             description= "Verify admin user gets comments created by another user and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void adminIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);

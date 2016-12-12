@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
 public class DeleteCommentsCoreTests extends RestTest
 {
     private UserModel adminUserModel;
@@ -51,6 +50,7 @@ public class DeleteCommentsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Manager user deletes comments created by admin and status code is 204")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void managerIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);        
@@ -62,6 +62,7 @@ public class DeleteCommentsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user can't delete comments with inexistent ID and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userIsNotAbleToDeleteInexistentComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -73,6 +74,7 @@ public class DeleteCommentsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user can't delete comments with inexistend NodeId and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userIsNotAbleToDeleteCommentWithInexistentNodeId() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -85,6 +87,7 @@ public class DeleteCommentsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user can't delete deleted comments and status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userIsNotAbleToDeleteDeletedComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
