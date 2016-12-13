@@ -933,18 +933,41 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    public void commit(boolean openSearcher) throws IOException
+    public boolean commit(boolean openSearcher) throws IOException
     {
         canUpdate();
         SolrQueryRequest request = null;
         UpdateRequestProcessor processor = null;
+        boolean searcherOpened = false;
         try
         {
             request = getLocalSolrQueryRequest();
             processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
             CommitUpdateCommand command = new CommitUpdateCommand(request, false);
-            command.openSearcher = openSearcher;
-            command.waitSearcher = false;
+            if(openSearcher)
+            {
+                RefCounted<SolrIndexSearcher> active = null;
+                RefCounted<SolrIndexSearcher> newest = null;
+                try
+                {
+                    active = core.getSearcher();
+                    newest = core.getNewestSearcher(false);
+                    if(active.get() == newest.get())
+                    {
+                        searcherOpened = command.openSearcher = true;
+                        command.waitSearcher = false;
+                    }
+                    else
+                    {
+                        searcherOpened = command.openSearcher = false;
+                    }
+                }
+                finally
+                {
+                    active.decref();
+                    newest.decref();
+                }
+            }
             processor.processCommit(command);
         }
         finally
@@ -952,6 +975,8 @@ public class SolrInformationServer implements InformationServer
             if(processor != null) {processor.finish();}
             if(request != null) {request.close();}
         }
+
+        return searcherOpened;
     }
 
 

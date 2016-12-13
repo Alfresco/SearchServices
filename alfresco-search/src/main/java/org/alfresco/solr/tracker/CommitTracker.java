@@ -143,12 +143,11 @@ public class CommitTracker extends AbstractTracker
 
             //Do the commit opening the searcher if needed. This will commit all the work done by indexing trackers.
             //This will return immediately and not wait for searchers to warm
-            // TODO: put safegaurd in to avoid overlapping warming searchers.
             //System.out.println("################### Commit:"+openSearcherNeeded);
-            infoSrv.commit(openSearcherNeeded);
+            boolean searcherOpened = infoSrv.commit(openSearcherNeeded);
 
             lastCommit = currentTime;
-            if(openSearcherNeeded) {
+            if(searcherOpened) {
                 lastSearcherOpened = currentTime;
             }
         }
