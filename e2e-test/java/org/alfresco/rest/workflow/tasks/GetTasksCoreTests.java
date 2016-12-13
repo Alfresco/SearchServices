@@ -6,8 +6,6 @@ import java.util.List;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestTaskModelsCollection;
 import org.alfresco.utility.model.FileModel;

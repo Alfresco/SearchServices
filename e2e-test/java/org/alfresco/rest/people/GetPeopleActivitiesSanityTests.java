@@ -3,10 +3,10 @@ package org.alfresco.rest.people;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActivityModelsCollection;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -100,6 +100,6 @@ public class GetPeopleActivitiesSanityTests extends RestTest
     public void unauthenticatedUserShouldNotGetPeopleActivitiesList() throws Exception
     {
         restClient.authenticateUser(unauthenticatedUser).withCoreAPI().usingUser(userModel).getPersonActivities();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

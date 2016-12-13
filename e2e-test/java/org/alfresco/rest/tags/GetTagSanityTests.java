@@ -12,7 +12,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -108,7 +107,6 @@ public class GetTagSanityTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
-    @Bug(id = "MNT-16904")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void managerIsNotAbleToGetTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
@@ -121,7 +119,7 @@ public class GetTagSanityTests extends RestTest
         managerUser.setPassword("wrongPassword");
         restClient.authenticateUser(managerUser);
         restClient.withCoreAPI().getTag(tag);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
     
 }

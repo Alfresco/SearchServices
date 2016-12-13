@@ -134,6 +134,6 @@ public class GetRatingsSanityTests extends RestTest
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
         restClient.withCoreAPI().usingResource(document).getRatings();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

@@ -8,7 +8,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -102,8 +101,7 @@ public class GetSiteContainerSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
-            description = "Failed authentication get site container call returns status code 401")
-    @Bug(id="MNT-16904")
+            description = "Failed authentication get site container call returns status code 401")    
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainer() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -113,6 +111,6 @@ public class GetSiteContainerSanityTests extends RestTest
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel)
                   .withCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel());
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

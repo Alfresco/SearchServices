@@ -10,7 +10,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -99,14 +98,13 @@ public class DeleteSiteMemberSanityTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })    
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to delete another member of the site")
     public void unauthenticatedUserIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
         restClient.withCoreAPI().usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

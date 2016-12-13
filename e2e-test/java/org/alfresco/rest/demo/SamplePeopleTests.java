@@ -3,8 +3,6 @@ package org.alfresco.rest.demo;
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;

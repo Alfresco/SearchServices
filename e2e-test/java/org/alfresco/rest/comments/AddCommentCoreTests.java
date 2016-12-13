@@ -10,7 +10,13 @@ import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.LinkModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -142,7 +148,7 @@ public class AddCommentCoreTests extends RestTest
         
         restClient.authenticateUser(member)
                   .withCoreAPI().usingResource(document).addComment(comment);                  
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 

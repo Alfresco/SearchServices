@@ -5,6 +5,7 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteMembershipRequestModel;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -37,7 +38,7 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
         restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(siteModel);
         newMember.setPassword("fakePass");
         restClient.withCoreAPI().usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })

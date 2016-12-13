@@ -20,7 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
+@Test(groups="DEV")
 public class AddSiteMembershipRequestSanityTests extends RestTest
 {
     @Autowired
@@ -107,11 +107,10 @@ public class AddSiteMembershipRequestSanityTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to create new site membership request")
-    @Bug(id = "MNT-16557")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to create new site membership request")    
     public void unauthenticatedUserIsNotAbleToCreateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingUser(newMember).addSiteMembershipRequest(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

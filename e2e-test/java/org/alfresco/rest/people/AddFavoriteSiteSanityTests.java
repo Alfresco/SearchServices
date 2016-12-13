@@ -7,7 +7,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -91,8 +90,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })    
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a manager user is NOT Authorized to add a favorite site with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToAddFavoriteSite() throws Exception
     {
@@ -101,6 +99,6 @@ public class AddFavoriteSiteSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

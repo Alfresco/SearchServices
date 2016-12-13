@@ -100,7 +100,6 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @Bug(id="MNT-16904")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to update site member")
@@ -109,6 +108,6 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(inexistentUser);
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

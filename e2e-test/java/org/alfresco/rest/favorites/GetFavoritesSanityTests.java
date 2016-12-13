@@ -7,8 +7,12 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.model.*;
-import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -181,7 +185,6 @@ public class GetFavoritesSanityTests extends RestTest
                   .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
     }
 
-    @Bug(id="MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
             description = "Verify user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
@@ -190,6 +193,6 @@ public class GetFavoritesSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager).withCoreAPI().usingAuthUser().getFavorites();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

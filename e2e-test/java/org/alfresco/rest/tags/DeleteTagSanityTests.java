@@ -13,7 +13,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -117,8 +116,7 @@ public class DeleteTagSanityTests extends RestTest
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
-
-    @Bug(id="MNT-16904")
+    
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
@@ -131,6 +129,6 @@ public class DeleteTagSanityTests extends RestTest
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

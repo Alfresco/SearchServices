@@ -3,12 +3,15 @@ package org.alfresco.rest.tags;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -120,6 +123,6 @@ public class GetNodeTagsSanityTests extends RestTest
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
         restClient.withCoreAPI().usingResource(document).getNodeTags();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

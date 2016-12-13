@@ -2,12 +2,17 @@ package org.alfresco.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
-import org.alfresco.utility.model.*;
-import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.StatusModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -16,6 +21,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@Test(groups="DEV")
 public class AddRatingSanityTests extends RestTest
 {
     private UserModel userModel;
@@ -105,12 +111,11 @@ public class AddRatingSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post like rating to a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })    
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -165,16 +170,15 @@ public class AddRatingSanityTests extends RestTest
     {
         returnedRatingModel = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).rateStarsToDocument(3);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        returnedRatingModel.assertThat().field("myRating").is(String.valueOf(3)).and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
+        returnedRatingModel.assertThat().field("myRating").is("3").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post stars rating to a document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })    
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

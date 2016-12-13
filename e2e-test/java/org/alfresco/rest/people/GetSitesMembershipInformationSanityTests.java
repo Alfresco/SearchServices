@@ -9,7 +9,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -78,12 +77,11 @@ public class GetSitesMembershipInformationSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify that unauthenticated user is not able to retrieve sites membership information")
-    @Bug(id = "MNT-16904")
     public void unauthenticatedUserCannotRetrieveSitesMembershipInformation() throws JsonToModelConversionException, Exception
     {
         UserModel inexistentUser = new UserModel("inexistent user", "wrong password");
         restClient.authenticateUser(inexistentUser).withCoreAPI().usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .getSitesMembershipInformation();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

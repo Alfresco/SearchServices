@@ -102,7 +102,6 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Bug(id="MNT-16904")
     @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to delete site member")
@@ -111,6 +110,6 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(inexistentUser)
                   .withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
         
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }

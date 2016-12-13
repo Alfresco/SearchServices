@@ -101,13 +101,12 @@ public class AddCommentSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on post comments call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })    
     public void unauthenticatedUserIsNotAbleToAddComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
         restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 
 }

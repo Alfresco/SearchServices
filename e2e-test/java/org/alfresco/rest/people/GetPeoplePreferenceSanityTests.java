@@ -8,7 +8,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -104,7 +103,6 @@ public class GetPeoplePreferenceSanityTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to get a specific preference with Rest API when authentication fails (401)")
     public void managerUserNotAuthorizedFailsToGetsAPreference() throws Exception
     {
@@ -115,6 +113,6 @@ public class GetPeoplePreferenceSanityTests extends RestTest
 
         restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser()
                 .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastException().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
     }
 }
