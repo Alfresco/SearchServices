@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Cristina Axinte on 9/26/2016.
  */
-public class RestGetNetworkTest extends RestTest
+public class RestGetNetworkSanityTests extends RestTest
 {
     UserModel adminTenantUser;
     UserModel adminAnotherTenantUser;
@@ -39,7 +39,7 @@ public class RestGetNetworkTest extends RestTest
     @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify non existing user gets another exisiting network with Rest API and checks the forbidden status")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS})
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.SANITY})
     public void nonExistingTenantUserIsNotAuthorizedToRequest() throws Exception
     {
         UserModel tenantUser = new UserModel("nonexisting", "password");
@@ -51,7 +51,7 @@ public class RestGetNetworkTest extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify tenant admin user gets specific network with Rest API and response is not empty")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.SANITY })
     public void adminTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
@@ -59,18 +59,18 @@ public class RestGetNetworkTest extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify tenant admin user gets specific network with Rest API and checks response parameters are correct")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
     public void adminTenantChecksNetworkParamsAreCorrect() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
         restClient.withCoreAPI().usingNetworks().getNetwork().assertNetworkHasName(adminTenantUser).assertNetworkIsEnabled();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify tenant admin user gets non existing network with Rest API and checks the not found status")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
     public void adminTenantChecksIfNonExistingNetworkIsNotFound() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
@@ -78,9 +78,9 @@ public class RestGetNetworkTest extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify tenant admin user gets another existing network with Rest API and checks the forbidden status")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
     public void adminTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
@@ -88,9 +88,9 @@ public class RestGetNetworkTest extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify any tenant user gets its network with Rest API and response is not empty")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
     public void userTenantChecksIfNetworkIsPresent() throws Exception
     {
         restClient.authenticateUser(tenantUser);
@@ -98,18 +98,18 @@ public class RestGetNetworkTest extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify any tenant user gets specific network with Rest API and checks response parameters are correct")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
     public void userTenantChecksNetworkParamsAreCorrect() throws Exception
     {
         restClient.authenticateUser(tenantUser);
         restClient.withCoreAPI().usingNetworks().getNetwork(adminTenantUser).assertNetworkHasName(adminTenantUser).assertNetworkIsEnabled();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify any tenant user gets non existing network with Rest API and checks the not found status")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
     public void userTenantChecksIfNonExistingNetworkIsNotFound() throws Exception
     {
         restClient.authenticateUser(tenantUser);
@@ -117,9 +117,9 @@ public class RestGetNetworkTest extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify any tenant user gets another existing network with Rest API and checks the forbidden status")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.SANITY })
     public void userTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
     {
         restClient.authenticateUser(tenantUser);
@@ -129,7 +129,7 @@ public class RestGetNetworkTest extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify manager tenant user gets its network with Rest API and response is not empty")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.SANITY })
     public void tenantManagerUserChecksIfNetworkIsPresent() throws Exception
     {
         UserModel managerTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("manTenant");
@@ -142,7 +142,7 @@ public class RestGetNetworkTest extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify collaborator tenant user gets its network with Rest API and response is not empty")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.SANITY })
     public void tenantCollaboratorUserChecksIfNetworkIsPresent() throws Exception
     {
         UserModel collaboratorTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("colTenant");
@@ -155,7 +155,7 @@ public class RestGetNetworkTest extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify consumer tenant user gets its network with Rest API and response is not empty")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.SANITY })
     public void tenantConsumerUserChecksIfNetworkIsPresent() throws Exception
     {
         UserModel consumerTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("consTenant");
@@ -168,7 +168,7 @@ public class RestGetNetworkTest extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify contributor tenant user gets its network with Rest API and response is not empty")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.SANITY })
     public void tenantContributorUserChecksIfItsNetworkIsPresent() throws Exception
     {
         UserModel contributorTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("contTenant");

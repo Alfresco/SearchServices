@@ -32,24 +32,21 @@ public class SampleCommentsTests extends RestTest
         document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
-            description= "Verify admin user adds comments with Rest API and status code is 200")
+    @Test
     public void admiShouldAddComment() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
-            description= "Verify admin user gets comments with Rest API and status code is 200")
+    @Test
     public void admiShouldRetrieveComments() throws Exception
     {
         restClient.withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
-            description= "Verify admin user updates comments with Rest API")
+    @Test
     public void adminShouldUpdateComment() throws JsonToModelConversionException, Exception
     {
         RestCommentModel commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");

@@ -24,8 +24,7 @@ public class SamplePeopleTests extends RestTest
         restClient.authenticateUser(adminUser);
     }
 
-    @TestRail(section={"demo", "sample-section"}, executionType= ExecutionType.SANITY,
-            description = "Verify admin user gets person with Rest API and response is not empty")
+    @Test
     public void adminShouldRetrievePerson() throws Exception
     {
         restClient.withCoreAPI().usingUser(userModel).getPerson().assertThat().field("id").isNotEmpty();
