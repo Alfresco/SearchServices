@@ -16,16 +16,12 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class DeleteRatingSanityTests extends RestTest
 {
-
     private SiteModel siteModel;
     private UserModel adminUser;
-    private FolderModel folderModel;
-    private FileModel document;
     private ListUserWithRoles usersWithRoles;
     private RestRatingModelsCollection returnedRatingModelCollection;
 
@@ -39,18 +35,15 @@ public class DeleteRatingSanityTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @BeforeMethod()
-    public void setUp() throws DataPreparationException, Exception
-    {
-        folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
-        document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
-    }
-
+ 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role is able to remove its own rating of a document")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void managerIsAbleToDeleteItsOwnRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);
@@ -71,6 +64,9 @@ public class DeleteRatingSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void collaboratorIsAbleToDeleteItsOwnRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -92,6 +88,9 @@ public class DeleteRatingSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void contributorIsAbleToDeleteItsOwnRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -113,6 +112,9 @@ public class DeleteRatingSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void consumerIsAbleToDeleteItsOwnRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -134,6 +136,9 @@ public class DeleteRatingSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void adminIsAbleToDeleteItsOwnRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel)
                 .createContent(DocumentType.TEXT_PLAIN);
 
@@ -158,6 +163,9 @@ public class DeleteRatingSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void unauthenticatedUserIsNotAbleToDeleteRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingResource(folderModel)
                 .createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser);
@@ -178,6 +186,8 @@ public class DeleteRatingSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })    
     public void oneUserIsNotAbleToDeleteRatingsOfAnotherUser() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);        
         UserModel userA = dataUser.createRandomTestUser();
         UserModel userB = dataUser.createRandomTestUser();
 

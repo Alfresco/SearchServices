@@ -21,16 +21,13 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class AddRatingCoreTests extends RestTest
 {
     private UserModel userModel;
     private SiteModel siteModel;
-    private UserModel adminUser;
-    private FolderModel folderModel;
-    private FileModel document;
+    private UserModel adminUser;    
     private ListUserWithRoles usersWithRoles;
     private RestRatingModel returnedRatingModel; // placeholder for returned model
 
@@ -45,18 +42,13 @@ public class AddRatingCoreTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @BeforeMethod
-    public void setUp() throws Exception
-    {
-        folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
-        document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
-    }
-
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Verify that if unknown rating scheme is provided status code is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void unknownRatingSchemeReturnsBadRequest() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"invalidRate\"}");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalidRate"));
     }
@@ -66,6 +58,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void invalidNodeIdReturnsNotFound() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         document.setNodeRef(RandomStringUtils.randomAlphanumeric(10));
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
@@ -78,6 +73,9 @@ public class AddRatingCoreTests extends RestTest
     @Bug(id = "MNT-16904")
     public void likeResourceThatCannotBeRated() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
         document.setNodeRef(link.getNodeRef());
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
@@ -89,6 +87,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void managerIsAbleToLikeAFile() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document)
                 .likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -101,6 +102,8 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void managerIsAbleToLikeAFolder() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        
         returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(folderModel)
                 .likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -113,6 +116,7 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void managerIsAbleToRateAFolder() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();        
         returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(folderModel)
                 .rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -125,6 +129,8 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void managerIsAbleToRateAFile() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document)
                 .rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -137,6 +143,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void fileCanBeLikedTwice() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
@@ -150,6 +159,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void fileCanBeRatedTwice() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).rateStarsToDocument(5);
@@ -163,6 +175,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void addRateUsingEmptyRatingObject() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                 .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"));
@@ -173,6 +188,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void addRateUsingEmptyValueForId() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"\"}");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                 .containsSummary(String.format(RestErrorModel.NO_CONTENT, "N/A (through reference chain: org.alfresco.rest.api.model.NodeRating[\"id\"])"));
@@ -183,6 +201,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void addRateUsingEmptyValueForMyRating() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"likes\", \"myRating\":\"\"}");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.NULL_LIKE_RATING));
 
@@ -195,6 +216,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void addRatingToAComment() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         RestCommentModel comment = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addComment("This is a comment");
         document.setNodeRef(comment.getId());
 
@@ -210,6 +234,9 @@ public class AddRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void addRatingToATag() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         RestTagModel tag = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addTag("randomTag");
         document.setNodeRef(tag.getId());
 
