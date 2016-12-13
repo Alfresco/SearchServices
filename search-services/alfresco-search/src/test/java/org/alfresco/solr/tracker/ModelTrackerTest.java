@@ -99,7 +99,7 @@ public class ModelTrackerTest
     public void setUp() throws Exception
     {
         when(props.getProperty("alfresco.stores", "workspace://SpacesStore")).thenReturn("workspace://SpacesStore");
-        when(props.getProperty("alfresco.batch.count", "1000")).thenReturn("1000");
+        when(props.getProperty("alfresco.batch.count", "5000")).thenReturn("5000");
         when(props.getProperty("alfresco.maxLiveSearchers", "2")).thenReturn("2");
         when(props.getProperty("enable.slave", "false")).thenReturn("false");
         when(props.getProperty("enable.master", "true")).thenReturn("true");
@@ -107,7 +107,6 @@ public class ModelTrackerTest
         when(props.getProperty("shard.instance", "0")).thenReturn("0");
         when(this.srv.getTrackerStats()).thenReturn(trackerStats);
         System.setProperty("solr.model.dir", alfrescoModelDir.getAbsolutePath());
-
         this.modelTracker = new ModelTracker(null, props, repositoryClient, coreName, srv);
     }
 
