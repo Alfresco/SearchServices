@@ -42,7 +42,7 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @Bug(id = "REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify inexistent user is not able to remove a site from favorites and response is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify inexistent user is not able to remove a site from favorites and response is 404")
     public void inexistentUserIsNotAbleToRemoveFavoriteSite() throws Exception
     {
         UserModel inexistentUser = new UserModel("inexistenUser", "password");

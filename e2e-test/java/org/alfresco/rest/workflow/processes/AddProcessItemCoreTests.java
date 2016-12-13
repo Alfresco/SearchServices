@@ -91,7 +91,7 @@ public class AddProcessItemCoreTests extends RestTest
                 .field("id").isNotEmpty().and().field("mimeType").is(document.getFileType().mimeType);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Add process item using by admin in other network.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
     public void addProcessItemByAdminInOtherNetwork() throws Exception

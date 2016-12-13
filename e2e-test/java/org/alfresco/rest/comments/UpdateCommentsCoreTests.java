@@ -41,7 +41,7 @@ public class UpdateCommentsCoreTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SANITY }, executionType = ExecutionType.SANITY, description = "Verify can not update comment if NodeId is neither document or folder and returns status code 405")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SANITY }, executionType = ExecutionType.REGRESSION, description = "Verify can not update comment if NodeId is neither document or folder and returns status code 405")
     @Bug(id="MNT-16904")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void canNotUpdateCommentIfNodeIdIsNeitherDocumentOrFolder() throws JsonToModelConversionException, Exception
@@ -61,7 +61,7 @@ public class UpdateCommentsCoreTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user is not able to update with empty comment body and status code is 400")
+            TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user is not able to update with empty comment body and status code is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void adminIsNotAbleToUpdateWithEmptyCommentBody() throws JsonToModelConversionException, Exception
     {
@@ -73,7 +73,7 @@ public class UpdateCommentsCoreTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify updated comment by Manager is listed when calling getComments and status code is 200")
+            TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify updated comment by Manager is listed when calling getComments and status code is 200")
     @Bug(id="REPO-1011")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void updatedCommentByManagerIsListed() throws JsonToModelConversionException, Exception
@@ -87,7 +87,7 @@ public class UpdateCommentsCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can not update comments of another user and status code is 200")
+            TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can not update comments of another user and status code is 200")
     @Bug(id="MNT-2502",description="seems it's one old issue: also logged as MNT-2502, MNT-2346")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void collaboratorIsNotAbleToUpdateCommentOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -100,7 +100,7 @@ public class UpdateCommentsCoreTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify entry content in response")
+            TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify entry content in response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void checkEntryContentInResponse() throws JsonToModelConversionException, Exception
     {
