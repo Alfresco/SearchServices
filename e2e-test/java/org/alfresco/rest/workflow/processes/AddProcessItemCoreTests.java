@@ -7,6 +7,7 @@ import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -114,7 +115,9 @@ public class AddProcessItemCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void failedAddingProcessItemIfInvalidProcessIdIsProvided() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withParams("maxItems=1").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        RestProcessModelsCollection processes = restClient.authenticateUser(adminUser).withParams("maxItems=1").withWorkflowAPI().getProcesses();
+        processModel= processes.assertThat().entriesListIsNotEmpty().when().getOneRandomEntry().onModel();        
+        
         processModel.setId("invalidProcessId");
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()

@@ -50,6 +50,7 @@ public class AddSiteMemberCoreTests extends RestTest
     public void addManagerToPublicSite() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
+        testUser.setUserRole(UserRole.SiteManager);
         memberModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         memberModel.assertThat().field("id").is(testUser.getUsername())

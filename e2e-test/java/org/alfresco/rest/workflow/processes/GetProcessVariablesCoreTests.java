@@ -6,6 +6,7 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.rest.model.RestProcessVariableCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -77,8 +78,10 @@ public class GetProcessVariablesCoreTests extends RestTest
             description = "Get process variables using invalid process ID")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessVariablesUsingInvalidProcessId() throws JsonToModelConversionException, Exception
-    {
-        processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+    {        
+        RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses();
+        processModel  = processes.assertThat().entriesListIsNotEmpty().when().getOneRandomEntry().onModel();
+        
         String id = RandomStringUtils.randomAlphanumeric(10);
         processModel.setId(id);
         variables = restClient.withParams("maxItems=2").withWorkflowAPI().usingProcess(processModel).getProcessVariables();
