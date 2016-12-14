@@ -2,6 +2,7 @@ package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
@@ -79,6 +80,7 @@ public class GetProcessVariablesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessVariablesUsingInvalidProcessId() throws JsonToModelConversionException, Exception
     {        
+        restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses();
         processModel  = processes.assertThat().entriesListIsNotEmpty().when().getOneRandomEntry().onModel();
         
