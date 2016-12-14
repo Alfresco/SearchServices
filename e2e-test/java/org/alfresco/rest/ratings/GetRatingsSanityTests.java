@@ -12,19 +12,17 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class GetRatingsSanityTests extends RestTest
 {
     private SiteModel siteModel;
-    private UserModel adminUser;
-    private FolderModel folderModel;
-    private FileModel document;
+    private UserModel adminUser;    
     private ListUserWithRoles usersWithRoles;
     private RestRatingModelsCollection restRatingModelsCollection;
 
@@ -38,18 +36,14 @@ public class GetRatingsSanityTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @BeforeMethod()
-    public void setUp() throws DataPreparationException, Exception
-    {
-        folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
-        document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
-    }
-
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Manager is able to retrieve document ratings")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void managerIsAbleToRetrieveDocumentRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -65,6 +59,9 @@ public class GetRatingsSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void collaboratorIsAbleToRetrieveDocumentRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -80,6 +77,9 @@ public class GetRatingsSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void contributorIsAbleToRetrieveDocumentRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -95,6 +95,9 @@ public class GetRatingsSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void consumerIsAbleToRetrieveDocumentRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
 
         restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -110,6 +113,9 @@ public class GetRatingsSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
     public void adminIsAbleToRetrieveDocumentRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         document = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingResource(folderModel)
                 .createContent(DocumentType.TEXT_PLAIN);
 
@@ -125,8 +131,12 @@ public class GetRatingsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve document ratings")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
+    @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToRetrieveRatings() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(adminUser);
         restClient.withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).rateStarsToDocument(5);

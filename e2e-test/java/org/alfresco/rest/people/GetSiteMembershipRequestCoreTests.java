@@ -36,8 +36,9 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify contributor user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
-    @Bug(id="16904")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify contributor user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @Bug(id = "16904")
     public void unauthorizedContributorUserFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel contributor = dataUser.usingAdmin().createRandomTestUser();
@@ -48,7 +49,9 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify collaborator user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify collaborator user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @Bug(id="MNT-16904")
     public void unauthorizedCollaboratorUserFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel collaborator = dataUser.usingAdmin().createRandomTestUser();
@@ -59,7 +62,9 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify consumer user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify consumer user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @Bug(id = "MNT-16904")
     public void unauthorizedConsumerUserFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel consumer = dataUser.usingAdmin().createRandomTestUser();
@@ -70,7 +75,8 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify a user gets all its own site membership requests using '-me-' with Rest API and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify a user gets all its own site membership requests using '-me-' with Rest API and response is successful (200)")
     public void usingMeGetSiteMembershipRequestsWithSuccess() throws Exception
     {
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().getSiteMembershipRequest(siteModel).assertThat().field("id").is(siteModel.getId());
@@ -78,7 +84,8 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests for inexistent user and response is not found (404)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests for inexistent user and response is not found (404)")
     public void siteManagerCantGetSiteMembershipRequestsInexistentUser() throws Exception
     {
         restClient.authenticateUser(newMember).withCoreAPI().usingUser(UserModel.getRandomUserModel()).getSiteMembershipRequest(siteModel);
@@ -86,7 +93,8 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user can get site membership requests on site with no requests and response is successful (200)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user can get site membership requests on site with no requests and response is successful (200)")
     public void userCantGetSiteMembershipRequestsWithNoRequests() throws Exception
     {
         UserModel noRequestUser = dataUser.createRandomTestUser();
@@ -96,7 +104,8 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests on public site and response is not found (404)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests on public site and response is not found (404)")
     public void siteManagerCantGetPublicSiteMembershipRequests() throws Exception
     {
         UserModel publicUser = dataUser.createRandomTestUser();
@@ -108,7 +117,8 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests on private site and response is not found (404)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests on private site and response is not found (404)")
     public void siteManagerCantGetPrivateSiteMembershipRequests() throws Exception
     {
         UserModel privateUser = dataUser.createRandomTestUser();
@@ -120,7 +130,8 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests  for inexistent site and response is not found (404)")
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager can't get site membership requests  for inexistent site and response is not found (404)")
     public void siteManagerCantGetSiteMembershipRequestsForInexistentSite() throws Exception
     {
         SiteModel inexistentSite = SiteModel.getRandomSiteModel();

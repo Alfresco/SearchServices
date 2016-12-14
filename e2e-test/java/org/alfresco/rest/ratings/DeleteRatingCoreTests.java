@@ -17,7 +17,6 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class DeleteRatingCoreTests extends RestTest
@@ -25,8 +24,7 @@ public class DeleteRatingCoreTests extends RestTest
 
     private SiteModel siteModel;
     private UserModel adminUser;
-    private FolderModel folderModel;
-    private FileModel document;
+    
     private ListUserWithRoles usersWithRoles;
     private RestRatingModel returnedRatingModel;
 
@@ -40,18 +38,13 @@ public class DeleteRatingCoreTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @BeforeMethod()
-    public void setUp() throws DataPreparationException, Exception
-    {
-        folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
-        document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
-    }
-
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Verify that if ratingId provided is unknown status code returned is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void deleteInvalidRating() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteInvalidRating("random_rating");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "random_rating"));
     }
@@ -61,6 +54,8 @@ public class DeleteRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void deleteRatingUsingInvalidDocument() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         document.setNodeRef("random_value");
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_value"));
@@ -72,6 +67,8 @@ public class DeleteRatingCoreTests extends RestTest
     @Bug(id = "MNT-17181")
     public void deleteStarsForANotRatedDocument() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
@@ -82,6 +79,8 @@ public class DeleteRatingCoreTests extends RestTest
     @Bug(id = "MNT-17181")
     public void deleteLikeForANotLikedDocument() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
@@ -91,6 +90,8 @@ public class DeleteRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void likeDocumentAfterLikeRatingIsDeleted() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
         returnedRatingModel = restClient.withCoreAPI().usingResource(document).likeDocument();
@@ -105,6 +106,9 @@ public class DeleteRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void addStarsToDocumentAfterRatingIsDeleted() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -121,6 +125,9 @@ public class DeleteRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void deleteDocumentRatingUsingManager() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).likeDocument();
 
@@ -136,6 +143,9 @@ public class DeleteRatingCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void deleteLikeOfAnotherUser() throws Exception
     {
+        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
+        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingResource(document).likeDocument();
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).deleteLikeRating();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);

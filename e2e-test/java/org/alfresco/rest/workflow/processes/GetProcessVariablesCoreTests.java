@@ -11,6 +11,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang.RandomStringUtils;
@@ -87,10 +88,11 @@ public class GetProcessVariablesCoreTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process variables using empty process ID")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Bug(id="AUTOMATION", description="Please fix this automated test")
     public void getProcessVariablesUsingEmptyProcessId() throws JsonToModelConversionException, Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processModel.setId(" ");
+        processModel.setId(" /");
         variables = restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, " "));
     }

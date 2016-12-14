@@ -15,14 +15,13 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class DeleteTagCoreTests extends RestTest
 {
-    private UserModel adminUserModel, userModel;
-    private SiteModel siteModel;
-    private RestTagModel tag;
+    private UserModel adminUserModel;
+    private UserModel userModel;
+    private SiteModel siteModel;    
     private FileModel document;
     private FolderModel folderModel;
 
@@ -36,17 +35,14 @@ public class DeleteTagCoreTests extends RestTest
         folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
     }
     
-    @BeforeMethod
-    public void setUp() throws Exception {
-        restClient.authenticateUser(adminUserModel);
-        tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag")); 
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that if user has no permission to remove tag returned status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagWithUserWithoutPermission() throws Exception
     {
+        restClient.authenticateUser(adminUserModel);        
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
         restClient.authenticateUser(userModel);
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
@@ -57,6 +53,9 @@ public class DeleteTagCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagForAnInexistentNode() throws Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
         FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         String nodeRef = RandomStringUtils.randomAlphanumeric(10);
         document.setNodeRef(nodeRef);
@@ -69,6 +68,9 @@ public class DeleteTagCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagThatDoesNotExist() throws Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
         tag.setId("abc");
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "abc"));
@@ -79,6 +81,9 @@ public class DeleteTagCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteTagWithEmptyId() throws Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
         tag.setId("");
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(RestErrorModel.DELETE_EMPTY_ARGUMENT);
@@ -89,6 +94,9 @@ public class DeleteTagCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteFileTag() throws Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withCoreAPI().usingResource(document).getNodeTags()
@@ -100,6 +108,9 @@ public class DeleteTagCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
     public void deleteFolderTag() throws Exception
     {
+        restClient.authenticateUser(adminUserModel);
+        RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        
         tag = restClient.withCoreAPI().usingResource(folderModel).addTag(RandomData.getRandomName("tag")); 
         restClient.withCoreAPI().usingResource(folderModel).deleteTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
