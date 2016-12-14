@@ -5,9 +5,9 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -110,6 +110,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })    
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify any user is NOT Authorized to get its favorite sites with Rest API when authentication fails (401)")
+    @Bug(id = "MNT-16904")
     public void anyUserNotAuthenticatedIsNotAuthorizedToGetFavoriteSites() throws Exception
     {
         UserModel anyUser = dataUser.usingAdmin().createRandomTestUser();
@@ -117,6 +118,6 @@ public class GetFavoriteSitesSanityTests extends RestTest
         anyUser.setPassword("newpassword");
 
         restClient.authenticateUser(anyUser).withCoreAPI().usingAuthUser().getFavoriteSites();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
 }

@@ -10,7 +10,6 @@ import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -107,6 +106,7 @@ public class UpdateCommentsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on update comment call")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -114,7 +114,7 @@ public class UpdateCommentsSanityTests extends RestTest
         UserModel incorrectUserModel = new UserModel("userName", "password");
         restClient.authenticateUser(incorrectUserModel)
                   .withCoreAPI().usingResource(document).updateComment(commentModel, "try to update");
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SANITY }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")

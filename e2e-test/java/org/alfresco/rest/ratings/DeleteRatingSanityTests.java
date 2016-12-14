@@ -9,9 +9,9 @@ import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -161,6 +161,7 @@ public class DeleteRatingSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to remove its own rating of a document")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
+    @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAbleToDeleteRatings() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -176,14 +177,15 @@ public class DeleteRatingSanityTests extends RestTest
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
 
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify one user is not able to remove rating added by another user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })    
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
+    @Bug(id = "ACE-5459")
     public void oneUserIsNotAbleToDeleteRatingsOfAnotherUser() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
@@ -199,9 +201,9 @@ public class DeleteRatingSanityTests extends RestTest
         restClient.authenticateUser(userB);
 
         restClient.authenticateUser(userB).withCoreAPI().usingResource(document).deleteLikeRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
 
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
 }

@@ -6,6 +6,7 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -36,13 +37,14 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify contributor user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
+    @Bug(id="16904")
     public void unauthorizedContributorUserFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel contributor = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributor, siteModel, UserRole.SiteContributor);
         contributor.setPassword("newpassword");
         restClient.authenticateUser(contributor).withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })

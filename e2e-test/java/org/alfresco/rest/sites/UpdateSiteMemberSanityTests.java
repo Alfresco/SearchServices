@@ -4,7 +4,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -103,11 +102,12 @@ public class UpdateSiteMemberSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that unauthenticated user is not able to update site member")
+    @Bug(id="MNT-16904")
     public void unauthenticatedUserIsNotAuthorizedToUpdateSiteMmeber() throws Exception{
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser);
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastStatus().hasName(StatusModel.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
 }
