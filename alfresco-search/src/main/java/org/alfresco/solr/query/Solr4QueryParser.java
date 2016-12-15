@@ -78,6 +78,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.SearchLanguageConversion;
 import org.antlr.misc.OrderedHashSet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.lucene.search.*;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.commons.logging.Log;
@@ -99,17 +100,8 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.RegexpQuery;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper.TopTermsSpanBooleanQueryRewrite;
 import org.apache.lucene.search.spans.SpanNearQuery;
@@ -134,6 +126,7 @@ import org.apache.solr.handler.component.ShardHandlerFactory;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
+import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.DocumentBuilder;
 import org.apache.solr.update.UpdateShardHandlerConfig;
 import org.jaxen.saxpath.SAXPathException;
@@ -690,7 +683,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             {
                 String[] parts = queryText.split("_");
                 Collection values = null;
-                long nodeId = Long.parseLong(parts[0]);
+                String nodeId = parts[0];
 
                 JSONObject json = (JSONObject)request.getContext().get(AbstractQParser.ALFRESCO_JSON);
                 String fingerPrint = null;
@@ -712,13 +705,26 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     json = new JSONObject();
                 }
 
+
                 //Is the fingerprint in the local SolrContentStore
-                if(values == null) {
-                    SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), nodeId);
-                    if (solrDoc != null) {
-                        SolrInputField mh = solrDoc.getField("MINHASH");
-                        if (mh != null) {
-                            values = mh.getValues();
+                if(values == null)
+                {
+                    long dbid = fetchDBID(nodeId);
+                    if(dbid == -1 && isNumber(nodeId))
+                    {
+                        dbid = Long.parseLong(nodeId);
+                    }
+
+                    if(dbid > -1)
+                    {
+                        SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), dbid);
+                        if (solrDoc != null)
+                        {
+                            SolrInputField mh = solrDoc.getField("MINHASH");
+                            if (mh != null)
+                            {
+                                values = mh.getValues();
+                            }
                         }
                     }
                 }
@@ -728,6 +734,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 {
                     //we are in distributed mode
                     //Fetch the fingerPrint from the shards.
+                    //The UUID and DBID will both work for method call.
                     values = fetchFingerPrint(shards, nodeId);
                 }
 
@@ -761,6 +768,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
     }
 
+    private boolean isNumber(String s) {
+        for(int i=0; i<s.length(); i++) {
+            if(!Character.isDigit(s.charAt(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private String join(Collection col, String delimiter){
         StringBuilder builder = new StringBuilder();
         for(Object o : col){
@@ -772,7 +789,25 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         return builder.toString();
     }
 
-    private Collection fetchFingerPrint(String shards, long nodeId) {
+
+    private long fetchDBID(String UUID) throws IOException {
+        SolrIndexSearcher searcher = request.getSearcher();
+        String query = UUID.startsWith("workspace") ? UUID : "workspace://SpacesStore/"+UUID;
+        TermQuery q = new TermQuery(new Term(FIELD_LID, query));
+        TopDocs docs = searcher.search(q, 1);
+        Set<String> fields = new HashSet();
+        fields.add(FIELD_DBID);
+        if(docs.totalHits == 1) {
+            ScoreDoc scoreDoc = docs.scoreDocs[0];
+            Document doc = searcher.doc(scoreDoc.doc, fields);
+            IndexableField dbidField = doc.getField(FIELD_DBID);
+            return dbidField.numericValue().longValue();
+        }
+
+        return -1;
+    }
+
+    private Collection fetchFingerPrint(String shards, String nodeId) {
         shards = shards.replace(",", "|");
         List<String> urls = ((HttpShardHandlerFactory)shardHandlerFactory).makeURLList(shards);
         ExecutorService executorService =  null;
@@ -781,7 +816,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         try {
             executorService = Executors.newCachedThreadPool();
             for (String url : urls) {
-                futures.add(executorService.submit(new FingerPrintFetchTask(url, Long.toString(nodeId))));
+                futures.add(executorService.submit(new FingerPrintFetchTask(url, nodeId)));
             }
 
             for (Future<Collection> future : futures) {
@@ -798,6 +833,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         }
         return fingerPrint;
     }
+
+
 
 
     private class FingerPrintFetchTask implements Callable<Collection> {

@@ -232,5 +232,72 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
                 "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
                 "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
                 "//result/doc[4]/long[@name='DBID'][.='"+node1.getId()+"']");
+
+        //Test nodeRef
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId());  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
+        params.add("qt", "/afts");
+        params.add("fl", "DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)=4]",
+                "//result/doc[1]/long[@name='DBID'][.='" + node1.getId() + "']",
+                "//result/doc[2]/long[@name='DBID'][.='" + node3.getId() + "']",
+                "//result/doc[3]/long[@name='DBID'][.='" + node2.getId() + "']",
+                "//result/doc[4]/long[@name='DBID'][.='" + node4.getId() + "']");
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId() + "_70");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
+        params.add("qt", "/afts");
+        params.add("fl","DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 2]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']");
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId()+"_45");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
+        params.add("qt", "/afts");
+        params.add("fl","DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 3]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']");
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId()+"_30");
+        params.add("qt", "/afts");
+        params.add("fl","DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+
+
+        params = new ModifiableSolrParams();
+        params.add("q", "FINGERPRINT:" + nodeMetaData4.getNodeRef().getId());
+        params.add("qt", "/afts");
+        params.add("fl","DBID,score");
+        params.add("start", "0");
+        params.add("rows", "6");
+        req = areq(params, null);
+        assertQ(req, "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node4.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node1.getId()+"']");
+
     }
 }

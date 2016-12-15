@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
@@ -35,11 +36,14 @@ import org.slf4j.LoggerFactory;
 
 public class CommitTracker extends AbstractTracker
 {
-    private List<Tracker> trackers;
     private long lastCommit;
     private long lastSearcherOpened;
     private long commitInterval;
     private long newSearcherInterval;
+    private MetadataTracker metadataTracker;
+    private AclTracker aclTracker;
+    private ContentTracker contentTracker;
+    private CascadeTracker cascadeTracker;
     private AtomicInteger rollbackCount = new AtomicInteger(0);
 
     protected final static Logger log = LoggerFactory.getLogger(CommitTracker.class);
@@ -59,7 +63,20 @@ public class CommitTracker extends AbstractTracker
                          List<Tracker> trackers)
     {
         super(p, client, coreName, informationServer);
-        this.trackers = trackers;
+
+        //Set the trackers
+        for(Tracker tracker : trackers) {
+            if(tracker instanceof MetadataTracker) {
+                this.metadataTracker = (MetadataTracker) tracker;
+            } else if(tracker instanceof AclTracker) {
+                this.aclTracker = (AclTracker)tracker;
+            } else if(tracker instanceof ContentTracker) {
+                this.contentTracker = (ContentTracker)tracker;
+            } else if(tracker instanceof CascadeTracker) {
+                this.cascadeTracker = (CascadeTracker)tracker;
+            }
+        }
+
         commitInterval = Long.parseLong(p.getProperty("alfresco.commitInterval", "60000")); // Default: commit once per minute
         newSearcherInterval = Integer.parseInt(p.getProperty("alfresco.newSearcherInterval", "120000")); // Default: Open searchers every two minutes
         lastSearcherOpened = lastCommit = System.currentTimeMillis();
@@ -67,15 +84,7 @@ public class CommitTracker extends AbstractTracker
 
     public boolean hasMaintenance()
     {
-        for(Tracker tracker : trackers)
-        {
-            if(tracker.hasMaintenance())
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return (metadataTracker.hasMaintenance() || aclTracker.hasMaintenance());
     }
 
     public int getRollbackCount() {
@@ -84,10 +93,8 @@ public class CommitTracker extends AbstractTracker
 
     public void maintenance() throws Exception
     {
-        for(Tracker tracker : trackers)
-        {
-            tracker.maintenance();
-        }
+        metadataTracker.maintenance();
+        aclTracker.maintenance();
     }
 
     @Override
@@ -98,7 +105,6 @@ public class CommitTracker extends AbstractTracker
         boolean openSearcherNeeded = false;
         boolean hasMaintenance = hasMaintenance();
         //System.out.println("############# Commit Tracker doTrack()");
-
 
         if((currentTime - lastCommit) > commitInterval || hasMaintenance)
         {
@@ -119,18 +125,16 @@ public class CommitTracker extends AbstractTracker
 
         try
         {
-            for(Tracker tracker : trackers)
-            {
-                tracker.getWriteLock().acquire();
-            }
+            metadataTracker.getWriteLock().acquire();
+            assert(metadataTracker.getWriteLock().availablePermits() == 0);
 
-            //We've acquired all the tracker locks causing all indexing trackers to pause. Now we can do the work below in isolation.
+            aclTracker.getWriteLock().acquire();
+            assert(aclTracker.getWriteLock().availablePermits() == 0);
 
-            for(Tracker tracker : trackers) {
-                if(tracker.getRollback()) {
-                    doRollback();
-                    return;
-                }
+            //See if we need a rollback
+            if(metadataTracker.getRollback() || aclTracker.getRollback()) {
+                doRollback();
+                return;
             }
 
             if(hasMaintenance) {
@@ -139,24 +143,22 @@ public class CommitTracker extends AbstractTracker
 
             //Do the commit opening the searcher if needed. This will commit all the work done by indexing trackers.
             //This will return immediately and not wait for searchers to warm
-            // TODO: put safegaurd in to avoid overlapping warming searchers.
             //System.out.println("################### Commit:"+openSearcherNeeded);
-            infoSrv.commit(openSearcherNeeded);
+            boolean searcherOpened = infoSrv.commit(openSearcherNeeded);
 
             lastCommit = currentTime;
-            if(openSearcherNeeded) {
+            if(searcherOpened) {
                 lastSearcherOpened = currentTime;
             }
         }
         finally
         {
-            for(Tracker tracker : trackers)
-            {
-                assert(tracker.getWriteLock().availablePermits() == 0);
-                tracker.getWriteLock().release();
-            }
-            //System.out.println("######## Commit Tracker Releasing Write Locks ########");
+            //Release the lock on the metadata Tracker
+            metadataTracker.getWriteLock().release();
 
+            //Release the lock on the aclTracker
+            aclTracker.getWriteLock().release();
+            //System.out.println("######## Commit Tracker Releasing Write Locks ########");
         }
     }
 
@@ -164,6 +166,13 @@ public class CommitTracker extends AbstractTracker
     {
         try
         {
+            //Acquire the locks for the content tracker and cascade tracker
+            contentTracker.getWriteLock().acquire();
+            assert(contentTracker.getWriteLock().availablePermits() == 0);
+
+            cascadeTracker.getWriteLock().acquire();
+            assert(cascadeTracker.getWriteLock().availablePermits() == 0);
+
             infoSrv.rollback();
         }
         catch (Exception e)
@@ -172,12 +181,26 @@ public class CommitTracker extends AbstractTracker
         }
         finally
         {
-            //We did the rollback. Even it fails we set rollback to false so we don't continue to rollback over and over again.
-            for(Tracker tracker : trackers)
-            {
-                tracker.setRollback(false);
-                tracker.invalidateState();
-            }
+            //Reset acl Tracker
+            aclTracker.setRollback(false);
+            aclTracker.invalidateState();
+
+            //Reset metadataTracker
+            metadataTracker.setRollback(false);
+            metadataTracker.invalidateState();
+
+            //Reset contentTracker
+            contentTracker.setRollback(false);
+            contentTracker.invalidateState();
+
+            //Reset cascadeTracker
+            cascadeTracker.setRollback(false);
+            cascadeTracker.invalidateState();
+
+            //Release the locks
+            contentTracker.getWriteLock().release();
+            cascadeTracker.getWriteLock().release();
+
             rollbackCount.incrementAndGet();
         }
     }

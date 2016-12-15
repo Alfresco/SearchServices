@@ -821,6 +821,12 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             }
         }
         
+        @Override
+        protected void onFail()
+        {
+        	setRollback(true);
+        }
+        
         private List<Node> filterNodes(List<Node> nodes)
         {
             ArrayList<Node> filteredList = new ArrayList<Node>(nodes.size());

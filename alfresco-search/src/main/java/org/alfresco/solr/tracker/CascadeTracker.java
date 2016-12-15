@@ -116,6 +116,12 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         {
             this.infoServer.cascadeNodes(nodes, true);
         }
+        
+        @Override
+        protected void onFail()
+        {
+        	setRollback(true);
+        }
     }
 
     public void invalidateState() {

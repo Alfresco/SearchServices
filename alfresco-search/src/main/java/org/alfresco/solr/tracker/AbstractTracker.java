@@ -68,7 +68,7 @@ public abstract class AbstractTracker implements Tracker
     protected String shardMethod;
     protected boolean transformContent;
     protected String shardTemplate;
-    protected boolean rollback;
+    protected volatile boolean rollback;
 
     
     /*
@@ -94,7 +94,7 @@ public abstract class AbstractTracker implements Tracker
         this.infoSrv = informationServer;
 
         storeRef = new StoreRef(p.getProperty("alfresco.stores", "workspace://SpacesStore"));
-        batchCount = Integer.parseInt(p.getProperty("alfresco.batch.count", "1000"));
+        batchCount = Integer.parseInt(p.getProperty("alfresco.batch.count", "5000"));
         maxLiveSearchers =  Integer.parseInt(p.getProperty("alfresco.maxLiveSearchers", "2"));
         isSlave =  Boolean.parseBoolean(p.getProperty("enable.slave", "false"));
         isMaster =  Boolean.parseBoolean(p.getProperty("enable.master", "true"));
