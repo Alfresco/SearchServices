@@ -156,5 +156,11 @@ public class ContentTracker extends AbstractTracker implements Tracker
             //System.out.println("################ Update doc:"+doc.dbId);
             this.infoServer.updateContentToIndexAndCache(doc.dbId, doc.tenant);
         }
+        
+        @Override
+        protected void onFail()
+        {
+        	// Will redo if not persisted
+        }
     }
 }

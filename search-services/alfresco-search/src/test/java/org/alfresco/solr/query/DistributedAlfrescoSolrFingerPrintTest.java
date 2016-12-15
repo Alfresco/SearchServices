@@ -243,6 +243,77 @@ public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDist
         doc2 = docs.get(2);
         dbid2 = (long)doc2.getFieldValue("DBID");
         assertTrue(dbid2 == node2.getId());
+
+
+        response = query(getDefaultTestClient(), true,
+                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+                params("q", "FINGERPRINT:"+nodeMetaData1.getNodeRef().getId(),
+                        "qt", "/afts",
+                        "shards.qt", "/afts",
+                        "start", "0",
+                        "fl","DBID,score",
+                        "rows", "100"));
+
+        docs = response.getResults();
+        assertTrue(docs.getNumFound() == 4);
+        doc0 = docs.get(0);
+        dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == node1.getId());
+
+        doc1 = docs.get(1);
+        dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == node3.getId());
+
+        doc2 = docs.get(2);
+        dbid2 = (long)doc2.getFieldValue("DBID");
+        assertTrue(dbid2 == node2.getId());
+
+        doc3 = docs.get(3);
+        dbid3 = (long)doc3.getFieldValue("DBID");
+        assertTrue(dbid3 == node4.getId());
+
+        response = query(getDefaultTestClient(), true,
+                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+                params("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId() +"_70",
+                        "qt", "/afts",
+                        "shards.qt", "/afts",
+                        "start", "0",
+                        "fl", "DBID,score",
+                        "rows", "100"));
+
+        docs = response.getResults();
+        assertTrue(docs.getNumFound() == 2);
+        doc0 = docs.get(0);
+        dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == node1.getId());
+
+        doc1 = docs.get(1);
+        dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == node3.getId());
+
+        response = query(getDefaultTestClient(), true,
+                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+                params("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId() +"_45",
+                        "qt", "/afts",
+                        "shards.qt", "/afts",
+                        "start", "0",
+                        "fl", "DBID,score",
+                        "rows", "100"));
+
+        docs = response.getResults();
+        assertTrue(docs.getNumFound() == 3);
+        doc0 = docs.get(0);
+        dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == node1.getId());
+
+        doc1 = docs.get(1);
+        dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == node3.getId());
+
+        doc2 = docs.get(2);
+        dbid2 = (long)doc2.getFieldValue("DBID");
+        assertTrue(dbid2 == node2.getId());
+        
     }
 }
 

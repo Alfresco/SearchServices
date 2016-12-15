@@ -75,21 +75,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,12 +128,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexCommit;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.ReaderUtil;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
@@ -258,6 +240,7 @@ public class SolrInformationServer implements InformationServer
     private int contentStreamLimit;
     private boolean minHash;
     public static final String FINGERPRINT_FIELD = "MINHASH";
+    private long cleanContentLastPurged = 0;
 
     // Metadata pulling control
     private boolean skipDescendantDocsForSpecificTypes;
@@ -331,9 +314,14 @@ public class SolrInformationServer implements InformationServer
         
         // build base URL - host and port have to come from configuration.
         Properties props = AlfrescoSolrDataModel.getCommonConfig();
-
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
-        String portNumber = ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
+
+        String portNumber =  ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
+        if (portNumber == null || portNumber.isEmpty())
+        {
+            portNumber = System.getProperty("jetty.port");
+            log.debug("Using jetty.port "+portNumber);
+        }
         if(portNumber != null)
         {
             try 
@@ -705,13 +693,49 @@ public class SolrInformationServer implements InformationServer
     @Override
     public List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
     {
-        //System.out.println("############### getDocsWithUncleanContent ################");
         RefCounted<SolrIndexSearcher> refCounted = null;
         try
         {
             List<TenantAclIdDbId> docIds = new ArrayList<>();
             refCounted = this.core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
+
+
+            /*
+            *  Below is the code for purging the cleanContentCache.
+            *  The cleanContentCache is an in-memory LRU cache of the transactions that have already
+            *  had their content fetched. This is needed because the ContentTracker does not have an up-to-date
+            *  snapshot of the index to determine which nodes are marked as dirty/new. The cleanContentCache is used
+            *  to filter out nodes that belong to transactions that have already been processed, which stops them from
+            *  being re-processed.
+            *
+            *  The cleanContentCache needs to be purged periodically to support retrying of failed content fetches.
+            *  This is because fetches for individual nodes within the transaction may have failed, but the transaction will still be in the
+            *  cleanContentCache, which prevents it from being retried.
+            *
+            *  Once a transaction is purged from the cleanContentCache it will be retried automatically if it is marked dirty/new
+            *  in current snapshot of the index.
+            *
+            *  The code below runs every two minutes and purges transactions from the
+            *  cleanContentCache that is more then 20 minutes old.
+            *
+            */
+
+            long purgeTime = System.currentTimeMillis();
+            if(purgeTime - cleanContentLastPurged > 120000)
+            {
+                Iterator<Entry> entries = cleanContentCache.entrySet().iterator();
+                while (entries.hasNext())
+                {
+                    Entry<Long, Long> entry = entries.next();
+                    long txnTime = entry.getValue();
+                    if (purgeTime - txnTime > 1200000) {
+                        //Purge the clean content cache of records more then 20 minutes old.
+                        entries.remove();
+                    }
+                }
+                cleanContentLastPurged = purgeTime;
+            }
 
             long txnFloor = -1;
 
@@ -736,7 +760,7 @@ public class SolrInformationServer implements InformationServer
                     false,
                     false);
 
-            DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); // Ensure that we only consider docs that have a transaction ID.
+            DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
             searcher.search(orQuery, delegatingCollector);
             //System.out.println("############### Transaction floor query ################:" + orQuery.toString() + " = " + collector.getTotalHits());
@@ -779,7 +803,6 @@ public class SolrInformationServer implements InformationServer
             leaves = searcher.getTopReaderContext().leaves();
             FieldType fieldType = searcher.getSchema().getField(FIELD_INTXID).getType();
             builder = new BooleanQuery.Builder();
-            BooleanQuery txnFilterQuery = null;
 
             for (ScoreDoc scoreDoc : docs.scoreDocs)
             {
@@ -791,8 +814,10 @@ public class SolrInformationServer implements InformationServer
                 //Build up the query for the filter of transactions we need to pull the dirty content for.
                 TermQuery txnIDQuery = new TermQuery(new Term(FIELD_INTXID, fieldType.readableToIndexed(Long.toString(txnID))));
                 builder.add(new BooleanClause(txnIDQuery, BooleanClause.Occur.SHOULD));
-                txnFilterQuery = builder.build();
             }
+
+            BooleanQuery txnFilterQuery = builder.build();
+
 
             //Get the docs with dirty content for the transactions gathered above.
 
@@ -842,9 +867,12 @@ public class SolrInformationServer implements InformationServer
                 }
             }
 
+            long txnTime = System.currentTimeMillis();
+
             for(Long l : processedTxns)
             {
-                cleanContentCache.put(l, null);
+                //Save the indexVersion so we know when we can clean out this entry
+                cleanContentCache.put(l, txnTime);
             }
 
             return docIds;
@@ -910,18 +938,41 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    public void commit(boolean openSearcher) throws IOException
+    public boolean commit(boolean openSearcher) throws IOException
     {
         canUpdate();
         SolrQueryRequest request = null;
         UpdateRequestProcessor processor = null;
+        boolean searcherOpened = false;
         try
         {
             request = getLocalSolrQueryRequest();
             processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
             CommitUpdateCommand command = new CommitUpdateCommand(request, false);
-            command.openSearcher = openSearcher;
-            command.waitSearcher = false;
+            if(openSearcher)
+            {
+                RefCounted<SolrIndexSearcher> active = null;
+                RefCounted<SolrIndexSearcher> newest = null;
+                try
+                {
+                    active = core.getSearcher();
+                    newest = core.getNewestSearcher(false);
+                    if(active.get() == newest.get())
+                    {
+                        searcherOpened = command.openSearcher = true;
+                        command.waitSearcher = false;
+                    }
+                    else
+                    {
+                        searcherOpened = command.openSearcher = false;
+                    }
+                }
+                finally
+                {
+                    active.decref();
+                    newest.decref();
+                }
+            }
             processor.processCommit(command);
         }
         finally
@@ -929,6 +980,8 @@ public class SolrInformationServer implements InformationServer
             if(processor != null) {processor.finish();}
             if(request != null) {request.close();}
         }
+
+        return searcherOpened;
     }
 
 
@@ -2328,7 +2381,7 @@ public class SolrInformationServer implements InformationServer
                         {
                             log.debug(".. deleting node " + node.getId());
                         }
-                        deleteNode(processor, request, node);
+                        deleteErrorNode(processor, request, node);
 
                         SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_NODE);
                         addToNewDocAndCache(nodeMetaData, doc);
@@ -2738,12 +2791,18 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
+    private void deleteErrorNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
         String errorDocId = PREFIX_ERROR + node.getId();
         DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
         delErrorDocCmd.setId(errorDocId);
         processor.processDelete(delErrorDocCmd);
+    }
+
+
+    private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
+    {
+        deleteErrorNode(processor, request, node);
         // MNT-13767 fix, remove by node DBID.
         deleteNode(processor, request, node.getId());
     }
@@ -2754,7 +2813,7 @@ public class SolrInformationServer implements InformationServer
         delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
         processor.processDelete(delDocCmd);
     }
-    
+
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
     {
         boolean isContentIndexed = true;

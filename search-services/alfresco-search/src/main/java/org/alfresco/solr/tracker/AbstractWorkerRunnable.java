@@ -18,9 +18,13 @@
  */
 package org.alfresco.solr.tracker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract class AbstractWorkerRunnable implements Runnable
 {
+	protected final static Logger log = LoggerFactory.getLogger(AbstractWorkerRunnable.class);
+	
     QueueHandler queueHandler;
     
     public AbstractWorkerRunnable(QueueHandler qh)
@@ -35,20 +39,28 @@ abstract class AbstractWorkerRunnable implements Runnable
     @Override
     public void run()
     {
+    	boolean failed = true;
         try
         {
             doWork();
+            failed = false;
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+        	log.warn("Index tracking batch hit an unrecoverable error ", e);
         }
         finally
         {
             // Triple check that we get the queue state right
             queueHandler.removeFromQueueAndProdHead(this);
+            if(failed)
+            {
+            	onFail();
+            }
         }
     }
     
     abstract protected void doWork() throws Exception;
+    
+    abstract protected void onFail();
 }

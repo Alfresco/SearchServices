@@ -25,6 +25,7 @@
             <outputDirectory>solr</outputDirectory>
             <excludes>
                 <exclude>**/server/solr/**</exclude>
+                <exclude>**/server/resources/log4j.properties</exclude>
                 <exclude>**/example/**</exclude>
                 <exclude>**/bin/solr.in.sh</exclude>
                 <exclude>**/bin/solr.in.cmd</exclude>

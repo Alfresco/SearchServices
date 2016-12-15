@@ -29,13 +29,13 @@ services:
       SOLR_SOLR_PORT: 8084
 
       #SSL setup
-      SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
-      SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
-      SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
-      SOLR_SSL_TRUST_STORE_PASSWORD: kT9X6oe68t
+      #SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
+      #SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
+      #SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
+      #SOLR_SSL_TRUST_STORE_PASSWORD: kT9X6oe68t
 
     ports:
-      - "8984:8084" #Browser port
+      - "8084:8084" #Browser port
       - "1044:1044" #Java debugging
     volumes_from:
      - repo:ro

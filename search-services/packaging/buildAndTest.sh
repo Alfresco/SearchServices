@@ -21,7 +21,9 @@ docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/data/content ] || (echo "
 docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/data/alfrescoModels ] || (echo "alfrescoModels dir does not exist" && exit 1)
 docker run --rm "$dockerImage" [ -e /opt/alfresco-solr/solr.in.sh ] || (echo "solr.in.sh does not exist" && exit 1)
 docker run --rm "$dockerImage" grep -q Alfresco /opt/alfresco-solr/solr.in.sh || (echo "solr.in.sh does not contain Alfresco config" && exit 1)
-docker run --rm "$dockerImage" grep -q Alfresco /opt/alfresco-solr/solr.in.cmd || (echo "solr.in.cmd does not contain Alfresco config" && exit 1)
+docker run --rm "$dockerImage" grep -q Alfresco /opt/alfresco-solr/solr.in.cmd || (echo "solr.in.cmd does not containAlfresco config" && exit 1)
+docker run --rm "$dockerImage" grep -q LOG4J_PROPS /opt/alfresco-solr/solr.in.sh || (echo "solr.in.sh does not contain LOG4J_PROPS" && exit 1)
+docker run --rm "$dockerImage" grep -q LOG4J_PROPS /opt/alfresco-solr/solr.in.cmd || (echo "solr.in.cmd does not contain LOG4J_PROPS" && exit 1)
 docker run --rm "$dockerImage" [ -e /opt/alfresco-solr/solrhome/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
 docker run --rm "$dockerImage" /opt/alfresco-solr/solr/bin/solr start
 
