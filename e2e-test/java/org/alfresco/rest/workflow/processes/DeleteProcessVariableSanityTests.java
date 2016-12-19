@@ -5,6 +5,7 @@ import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -45,7 +46,9 @@ public class DeleteProcessVariableSanityTests extends RestTest
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", adminUser, false, Priority.Normal);
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        RestProcessModelsCollection pmColl = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses();                
+        processModel = pmColl.assertThat().entriesListIsNotEmpty().when().getOneRandomEntry().onModel();
+        
         restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessVariable(variableModel);
