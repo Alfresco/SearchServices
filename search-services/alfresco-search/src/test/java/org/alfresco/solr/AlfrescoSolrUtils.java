@@ -240,6 +240,17 @@ public class AlfrescoSolrUtils
         Acl acl = new Acl(aclChangeSet.getId(), generateId());
         return acl;
     }
+
+    /**
+     *
+     * @param aclChangeSet
+     * @return
+     */
+    public static Acl getAcl(AclChangeSet aclChangeSet, long aclId)
+    {
+        Acl acl = new Acl(aclChangeSet.getId(), aclId);
+        return acl;
+    }
     /**
      * Get an AclChangeSet
      * @param aclCount
