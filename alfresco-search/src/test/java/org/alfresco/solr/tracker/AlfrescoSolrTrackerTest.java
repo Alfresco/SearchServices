@@ -102,7 +102,7 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
         Acl acl = getAcl(aclChangeSet);
-        Acl acl2 = getAcl(aclChangeSet);
+        Acl acl2 = getAcl(aclChangeSet, Long.MAX_VALUE-10); // Test with long value
 
 
         AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
@@ -408,6 +408,5 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         //And the error node should be present
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(errorNode.getId()))), 1, MAX_WAIT_TIME);
         logger.info("#################### Passed Nineteenth Test ##############################");
-        //assert(false);
     }
 }
