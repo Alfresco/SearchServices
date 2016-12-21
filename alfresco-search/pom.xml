@@ -180,7 +180,8 @@
                                 <replaceregexp byline="true">
                                     <regexp pattern="alfresco.version=.*$" />
                                     <substitution expression="alfresco.version=${alfresco-solr.version}" />
-                                    <fileset dir="${project.build.outputDirectory}" includes="solr/instance/**/solrcore.properties" />
+                                    <fileset dir="${project.build.outputDirectory}"
+                                             includes="solr/instance/**/solrcore.properties" />
                                 </replaceregexp>
                             </target>
                         </configuration>
@@ -199,6 +200,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.outputDirectory}/libs</outputDirectory>
+                            <includeScope>compile</includeScope>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
@@ -232,6 +234,7 @@
                                 <exclude>org/**/*</exclude>
                                 <exclude>**/jetty-*.jar</exclude>
                                 <exclude>**/slf4j*.jar</exclude>
+                                <exclude>**/log4j*.jar</exclude>
                                 <exclude>**/junit*.jar</exclude>
                                 <exclude>**/mock*.jar</exclude>
                                 <exclude>**/opencmis*.jar</exclude>
