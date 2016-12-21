@@ -107,6 +107,7 @@ public class SolrCoreLoadRegistration {
             trackerRegistry.register(coreName, commitTracker);
             scheduler.schedule(commitTracker, coreName, props);
             log.info("The Trackers are now scheduled to run");
+            trackers.add(commitTracker); //Add the commitTracker to the list of scheduled trackers that can be shutdown
 
             core.addCloseHook(new CloseHook() {
                 @Override
