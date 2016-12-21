@@ -286,9 +286,6 @@ public abstract class AbstractTracker implements Tracker
         {
             threadHandler.shutDownThreadPool();
         }
-
-        client.close();
-
     }
 
     public Semaphore getWriteLock() {
