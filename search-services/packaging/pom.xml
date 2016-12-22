@@ -158,8 +158,8 @@
                                 <replace token= "#SOLR_LOGS_DIR=logs" value="${alfresco.search.logs}" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.sh"/>
                                 </replace>
-                                <replace token="#SOLR_LOGS_DIR=logs" value="SOLR_LOGS_DIR=../../logs" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh" />
+                                <replace token= "REM set SOLR_LOGS_DIR=logs" value="${alfresco.search.logs.win}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd"/>
                                 </replace>
                                 <replace token= "GC logging" value="GC logging${line.separator}${alfresco.gc.logs}" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.sh"/>
