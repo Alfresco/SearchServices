@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class GetPeoplePreferencesCoreTests extends RestTest
+public class GetPeoplePreferenceCoreTests extends RestTest
 {
     UserModel userModel;
     SiteModel siteModel;
