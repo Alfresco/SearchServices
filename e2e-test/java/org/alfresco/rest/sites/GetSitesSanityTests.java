@@ -36,7 +36,7 @@ public class GetSitesSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets sites information and gets status code OK (200)")
     public void managerIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withParams("maxItems=1000")
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withParams("maxItems=10000")
                   .withCoreAPI().getSites()             
                 	.assertThat().entriesListIsNotEmpty()
                 	.assertThat().entriesListContains("id", siteModel.getId())
@@ -49,7 +49,7 @@ public class GetSitesSanityTests extends RestTest
             description = "Verify user with Collaborator role gets sites information and gets status code OK (200)")
     public void collaboratorIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("maxItems=1000")
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("maxItems=10000")
                   .withCoreAPI().getSites().assertThat().entriesListIsNotEmpty()
                   .assertThat().entriesListContains("id", siteModel.getId())
                   .and().paginationExist();
@@ -63,7 +63,7 @@ public class GetSitesSanityTests extends RestTest
     public void contributorIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
 
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withParams("maxItems=1000")
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withParams("maxItems=10000")
                   .withCoreAPI().getSites()	
                 	.assertThat().entriesListIsNotEmpty()
                 	.assertThat().entriesListContains("id", siteModel.getId())
@@ -77,7 +77,7 @@ public class GetSitesSanityTests extends RestTest
     public void consumerIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
 
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withParams("maxItems=1000")
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withParams("maxItems=10000")
                   .withCoreAPI().getSites()
                   .assertThat().entriesListIsNotEmpty()
               	  .assertThat().entriesListContains("id", siteModel.getId())
@@ -90,7 +90,7 @@ public class GetSitesSanityTests extends RestTest
             description = "Verify user with Admin user gets sites information and gets status code OK (200)")
     public void adminUserIsAbleToRetrieveSites() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(adminUserModel).withParams("maxItems=1000")
+        restClient.authenticateUser(adminUserModel).withParams("maxItems=10000")
                   .withCoreAPI().getSites()
                 	.assertThat().entriesListIsNotEmpty()
                 	.assertThat().entriesListContains("id", siteModel.getId())
@@ -108,7 +108,7 @@ public class GetSitesSanityTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
-        restClient.authenticateUser(userModel).withParams("maxItems=1000")
+        restClient.authenticateUser(userModel).withParams("maxItems=1")
                   .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
