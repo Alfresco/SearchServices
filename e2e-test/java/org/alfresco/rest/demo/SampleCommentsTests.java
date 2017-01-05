@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "demo" })
+
 public class SampleCommentsTests extends RestTest
 {    
     private UserModel userModel;
@@ -30,21 +30,21 @@ public class SampleCommentsTests extends RestTest
         document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void admiShouldAddComment() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void admiShouldRetrieveComments() throws Exception
     {
         restClient.withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldUpdateComment() throws JsonToModelConversionException, Exception
     {
         RestCommentModel commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");

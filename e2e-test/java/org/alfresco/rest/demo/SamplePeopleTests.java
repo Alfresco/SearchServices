@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "demo" })
+
 public class SamplePeopleTests extends RestTest
 {
     private UserModel userModel;
@@ -22,7 +22,7 @@ public class SamplePeopleTests extends RestTest
         restClient.authenticateUser(adminUser);
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldRetrievePerson() throws Exception
     {
         restClient.withCoreAPI().usingUser(userModel).getPerson().assertThat().field("id").isNotEmpty();

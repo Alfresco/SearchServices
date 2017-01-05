@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "demo" })
+
 public class SampleSitesTests extends RestTest
 {  
     private UserModel userModel;
@@ -24,34 +24,34 @@ public class SampleSitesTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();        
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldGetSiteDetails() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().usingSite(siteModel).getSite()
             .assertThat().field("id").isNotNull();
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldGetSites() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().usingSite(siteModel).getSite();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldAccessSites() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().getSites().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldAccessResponsePagination() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().getSites().assertThat().paginationExist();
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldAddNewSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
@@ -60,13 +60,13 @@ public class SampleSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldGetSiteFromSitesList() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", siteModel.getId());    
     }
 
-    @Test
+    @Test(groups = { "demo" })
     public void adminShouldAccessSiteDetails() throws JsonToModelConversionException, Exception
     {
       restClient.withCoreAPI().usingSite(siteModel).getSite()

@@ -15,7 +15,7 @@ import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = { "demo" })
+
 public class RestDemoTests extends RestTest
 {    
     private UserModel userModel;
@@ -38,7 +38,7 @@ public class RestDemoTests extends RestTest
      * @throws JsonToModelConversionException
      * @throws Exception
      */
-    @Test
+    @Test(groups = { "demo" })
     public void adminRetrievesCorrectSiteDetails() throws JsonToModelConversionException, Exception
     {
         restClient.withCoreAPI().getSites().assertThat()
@@ -58,7 +58,7 @@ public class RestDemoTests extends RestTest
      * Update existing comment using PUT call, check that comment content is updated <br/>
      * @throws Exception 
      */
-    @Test  
+    @Test(groups = { "demo" }) 
     public void adminCanPostAndUpdateComments() throws Exception
     {       
         FileModel fileModel = dataContent.usingUser(userModel)
@@ -80,7 +80,7 @@ public class RestDemoTests extends RestTest
      * @throws DataPreparationException
      * @throws JsonToModelConversionException
      */
-    @Test
+    @Test(groups = { "demo" })
     public void adminCanAddAndUpdateSiteMemberDetails() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");

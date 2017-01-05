@@ -67,7 +67,7 @@ public class GetTaskCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
             TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify that in a network only tasks inside network are returned.")
-    @Test(groups = { TestGroup.NETWORKS })
+    @Test(groups = {TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE  })
     public void tasksInsideNetworkReturned() throws Exception
     {
         restClient.authenticateUser(adminUser);
