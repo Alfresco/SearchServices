@@ -20,7 +20,7 @@ public class AuthTests extends RestTest
         ticketBody.setUserId("admin");
         ticketBody.setPassword("admin");
 
-        RestTicketModel ticketReturned = restClient.withAuthAPI().createTicket(ticketBody);
+        RestTicketModel ticketReturned = restClient.authenticateUser(dataContent.getAdminUser()).withAuthAPI().createTicket(ticketBody);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         ticketReturned.assertThat().field("id").contains("TICKET_");
