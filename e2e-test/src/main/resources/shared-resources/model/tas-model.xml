@@ -32,6 +32,10 @@
                     <title>Integer</title>
                     <type>d:int</type>
                 </property>
+				<property name="tas:LongPropertyC">
+                    <title>Long</title>
+                    <type>d:long</type>
+                </property>
                 <property name="tas:MultiplyStringC">
                     <title>Multiply String</title>
                     <type>d:text</type>

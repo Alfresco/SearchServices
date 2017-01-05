@@ -109,9 +109,9 @@
 		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="1" />
 		<query value="SELECT * FROM cmis:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="2" />
 		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IS NOT NULL" expectedResults="3" />
-		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IS NULL" expectedResults="0" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId = ''" expectedResults="0" />
 		<query value="SELECT * FROM tas:document WHERE cmis:objectId IS NOT NULL" expectedResults="4" />
-		<query value="SELECT * FROM tas:document WHERE cmis:objectId IS NULL" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId = ''" expectedResults="0" />
 		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId IN ('cmis:document') AND tas:TextPropertyC IS NOT NULL" expectedResults="3" />
 		<query value="SELECT * FROM tas:folder WHERE tas:TextPropertyF IS NOT NULL" expectedResults="1" />
 	</queries>
