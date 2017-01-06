@@ -1,5 +1,7 @@
 package org.alfresco.rest.workflow.deployments;
 
+import java.util.List;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;
@@ -12,8 +14,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.List;
 
 /**
  * Created by Claudia Agache on 12/7/2016.
@@ -29,7 +29,7 @@ public class GetDeploymentsCoreTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.DEPLOYMENTS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION, 
             description = "Verify non admin user is not able to get non-network deployments using REST API and status code is Forbidden")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE})
@@ -41,7 +41,7 @@ public class GetDeploymentsCoreTests extends RestTest
                   .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.DEPLOYMENTS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION, 
             description = "Verify non admin user is not able to get network deployments using REST API and status code is Forbidden")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS})
@@ -58,7 +58,7 @@ public class GetDeploymentsCoreTests extends RestTest
     }
 
     @Bug(id = "MNT-16996")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.DEPLOYMENTS },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION, 
             description = "Verify get deployments returns an empty list after deleting all network deployments.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS})
