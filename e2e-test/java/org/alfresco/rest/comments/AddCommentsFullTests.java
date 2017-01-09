@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Andrei Rusu
  */
-public class AddCommentsCoreTests extends RestTest
+public class AddCommentsFullTests extends RestTest
 {
     private UserModel adminUserModel;
     private FileModel document;
@@ -39,14 +39,13 @@ public class AddCommentsCoreTests extends RestTest
     {
         adminUserModel = dataUser.getAdminUser();
         restClient.authenticateUser(adminUserModel);
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        
+        siteModel = dataSite.usingUser(adminUserModel).createPrivateRandomSite();        
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can provide a large string for one comment")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addLongCommentWithManagerAndCheckThatCommentIsReturned() throws Exception
     {
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -63,15 +62,15 @@ public class AddCommentsCoreTests extends RestTest
         comments.assertThat().paginationField("count").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
-            description= "Using Contributor user verify that you can provide a short string for one comment")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void addShortCommentWithContributorAndCheckThatCommentIsReturned() throws Exception
+    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+            description= "Using Manager user verify that you can provide a short string for one comment")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void addShortCommentWithManagerAndCheckThatCommentIsReturned() throws Exception
     {
-        document = dataContent.usingSite(siteModel).usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String shortString = RandomStringUtils.randomAlphanumeric(2);
         
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
         .withCoreAPI().usingResource(document).addComment(shortString);                  
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
@@ -82,12 +81,12 @@ public class AddCommentsCoreTests extends RestTest
         comments.assertThat().paginationField("count").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Collaborator user verify that you can provide a string with special characters for one comment")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithSpecialCharsWithCollaboratorCheckCommentIsReturned() throws Exception
     {
-        document = dataContent.usingSite(siteModel).usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String specialCharsString = "!@#$%^&*()_+♂µΓyádo«√<╡┌6£";
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -101,12 +100,12 @@ public class AddCommentsCoreTests extends RestTest
         comments.assertThat().paginationField("count").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can not provide an empty string for one comment")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addEmptyStringCommentWithManagerCheckCommentIsReturned() throws Exception
     {
-        document = dataContent.usingSite(siteModel).usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String emptyString = "";
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -114,12 +113,12 @@ public class AddCommentsCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.NON_NULL_COMMENT);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Collaborator user verify that you can provide several comments in one request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addSeveralCommentsWithCollaboratorCheckCommentsAreReturned() throws Exception
     {
-        document = dataContent.usingSite(siteModel).usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String charString = RandomStringUtils.randomAlphanumeric(10);
         String charString1 = RandomStringUtils.randomAlphanumeric(10);
         String charString2 = RandomStringUtils.randomAlphanumeric(10);
@@ -135,10 +134,10 @@ public class AddCommentsCoreTests extends RestTest
         comments.assertThat().paginationField("count").is("5");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Provide invalid request body parameter and check default error model schema")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void invalidRequestBodyParamenerCheckErrorModelSchema() throws Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void invalidRequestBodyParameterCheckErrorModelSchema() throws Exception
     {
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         
