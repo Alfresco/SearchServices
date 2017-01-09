@@ -87,7 +87,10 @@ public class GetPeopleFullTests extends RestTest
 
         personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userSpecialChars).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, userSpecialChars.getUsername()));
+            .assertLastError().containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, userSpecialChars.getUsername()))
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -101,9 +104,9 @@ public class GetPeopleFullTests extends RestTest
         persons.assertThat().entriesListIsNotEmpty();
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
-    public void managerUserChecksIfPersonIsPresent() throws Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets admin user with Rest API and response is successful")
+    public void managerUserGetAdminPerson() throws Exception
     {
         personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(adminUser).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.OK);
