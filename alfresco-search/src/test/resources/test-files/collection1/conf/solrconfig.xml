@@ -188,6 +188,8 @@
     <queryResponseWriter name="xml" default="true"
                          class="solr.XMLResponseWriter" />
 
+    <queryResponseWriter name="csv" class="org.apache.solr.handler.component.AlfrescoCSVResponseWriter"/>
+
     <requestHandler name="/replication" class="solr.ReplicationHandler" startup="lazy" />
 
     <!-- An alternate set representation that uses an integer hash to store filters (sets of docids).
