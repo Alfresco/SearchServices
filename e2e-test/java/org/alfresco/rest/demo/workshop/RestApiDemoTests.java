@@ -17,7 +17,7 @@ public class RestApiDemoTests extends RestTest
      * 5. call rest api call " GET sites/{siteId}/members" with first user authenticated
      * Expected: the response contains the user added as a member to the site
      */
-    @Test
+    @Test(groups = { "demo" })
     public void verifyGetSiteMembersRestApiCall() throws Exception
     {
         UserModel user = dataUser.createRandomTestUser();
@@ -38,7 +38,8 @@ public class RestApiDemoTests extends RestTest
      * 5. call rest api call " GET sites/{siteId}/members/{personId}" with first user authenticated
      * Expected: the response contains the user added as a member to the site
      */
-    @Test
+
+    @Test(groups = { "demo" })
     public void verifyGetASiteMemberApiCall() throws Exception
     {
         UserModel user = dataUser.createRandomTestUser();

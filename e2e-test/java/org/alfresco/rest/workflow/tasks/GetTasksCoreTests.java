@@ -102,7 +102,7 @@ public class GetTasksCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
             TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that for network enabled only that network tasks are returned.")
-    @Test(groups = { TestGroup.NETWORKS })
+    @Test(groups = {  TestGroup.REST_API, TestGroup.NETWORKS,  TestGroup.CORE })
     public void networkEnabledTasksReturned() throws Exception
     {
         restClient.authenticateUser(adminUser);

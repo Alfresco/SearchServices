@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
  */
 public class RestApiWorkshopTests extends RestTest
 {    
-    @Test
+    @Test(groups = { "demo" })
     public void verifyGetSitesRestApiCall() throws Exception
     {
         // creating a random user in repository
@@ -23,7 +23,7 @@ public class RestApiWorkshopTests extends RestTest
 
     }
     
-    @Test
+    @Test(groups = { "demo" })
     public void verifyGetASiteRestApiCall() throws Exception
     {
         // creating a random user in repository

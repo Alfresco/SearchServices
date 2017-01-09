@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 
 public class AuthTests extends RestTest
 {
-    @TestRail(section = { TestGroup.REST_API }, executionType = ExecutionType.SANITY, description = "Verify TICKET is returned on admin user")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.AUTH }, executionType = ExecutionType.SANITY, description = "Verify TICKET is returned on admin user")
     @Test(groups = { TestGroup.REST_API, TestGroup.SANITY })
     public void adminShouldGetTicketBody() throws JsonToModelConversionException, Exception
     {
@@ -20,7 +20,7 @@ public class AuthTests extends RestTest
         ticketBody.setUserId("admin");
         ticketBody.setPassword("admin");
 
-        RestTicketModel ticketReturned = restClient.withAuthAPI().createTicket(ticketBody);
+        RestTicketModel ticketReturned = restClient.authenticateUser(dataContent.getAdminUser()).withAuthAPI().createTicket(ticketBody);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         ticketReturned.assertThat().field("id").contains("TICKET_");
