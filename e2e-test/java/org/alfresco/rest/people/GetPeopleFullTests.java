@@ -1,16 +1,18 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonModel;
+import org.alfresco.rest.model.RestPersonModelsCollection;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -19,7 +21,7 @@ public class GetPeopleFullTests extends RestTest
 {
     UserModel userModel;
     SiteModel siteModel;
-    UserModel searchedUser;
+    UserModel searchedUser, managerUser;
     UserModel adminUser;
     private RestPersonModel personModel;
     private String domain = "@tas-automation.org";
@@ -31,15 +33,14 @@ public class GetPeopleFullTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         searchedUser = dataUser.createRandomTestUser();
+        managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets person using '-me-' instead of personId with Rest API and response is successful")
     public void checkGetPersonIsSuccessfulForMe() throws Exception
     {
-        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
-        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-
         personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingMe().getPerson();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         personModel.assertThat().field("id").is(managerUser.getUsername())
@@ -77,12 +78,9 @@ public class GetPeopleFullTests extends RestTest
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user get a person with special chars in username with Rest API and response is not found")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets a person with special chars in username with Rest API and response is not found")
     public void userChecksIfPersonWithSpecilCharsInUsernameIsNotFound() throws Exception
-    {
-        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
-        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
-        
+    {     
         UserModel userSpecialChars = dataUser.usingAdmin().createUser(RandomStringUtils.randomAlphabetic(2) + "~!@#$%^&*()_+[]{}|\\;':\",./<>", "password");
         //setting the encoded text for username
         userSpecialChars.setUsername(RandomStringUtils.randomAlphabetic(2) + "~!%40%23%24%25%5E%26*()_%2B%5B%5D%7B%7D%7C%5C%3B%27%3A%22%2C.%2F%3C%3E");
@@ -90,5 +88,29 @@ public class GetPeopleFullTests extends RestTest
         personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userSpecialChars).getPerson();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, userSpecialChars.getUsername()));
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets a person with empty personId with Rest API and response is successful")
+    public void userGetPersonWithEmptyPersonId() throws Exception
+    {
+        restClient.authenticateUser(managerUser).withCoreAPI();
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}?{parameters}", "", restClient.getParameters());
+        RestPersonModelsCollection persons = restClient.processModels(RestPersonModelsCollection.class, request);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        persons.assertThat().entriesListIsNotEmpty();
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a person with Rest API and response is successful")
+    public void managerUserChecksIfPersonIsPresent() throws Exception
+    {
+        personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(adminUser).getPerson();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        personModel.assertThat().field("id").is(adminUser.getUsername())
+                    .and().field("firstName").is("Administrator")
+                    .and().field("email").is("admin@alfresco.com")
+                    .and().field("emailNotificationsEnabled").is("true")
+                    .and().field("enabled").is("true");
     }
 }
