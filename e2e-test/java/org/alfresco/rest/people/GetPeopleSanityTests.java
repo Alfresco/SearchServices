@@ -69,7 +69,6 @@ public class GetPeopleSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         personModel.assertThat().field("id").is(searchedUser.getUsername()).assertThat().field("firstName").is(searchedUser.getUsername() + " FirstName").and()
                 .field("email").is(searchedUser.getUsername() + domain).and().field("emailNotificationsEnabled").is("true");
-        ;
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })

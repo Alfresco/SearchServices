@@ -57,9 +57,12 @@ public class GetTasksCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void orderByParameterApplied() throws Exception
     {
-        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id").withWorkflowAPI().getTasks();
+        
+        
+        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id DESC").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty();
+        taskModels.assertThat().entriesListIsNotEmpty().
+            and().entriesListIsSortedAscBy("id");
         List<RestTaskModel> tasksList = taskModels.getEntries();
         List<String> taskIds = new ArrayList<String>();
         for(RestTaskModel task: tasksList)
