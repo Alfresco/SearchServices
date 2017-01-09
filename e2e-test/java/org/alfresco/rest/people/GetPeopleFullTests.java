@@ -43,6 +43,33 @@ public class GetPeopleFullTests extends RestTest
                     .and().field("firstName").is(managerUser.getUsername() + " FirstName")
                     .and().field("email").is(managerUser.getUsername() + domain)
                     .and().field("emailNotificationsEnabled").is("true");
+    }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify entry details for get person response with Rest API")
+    public void checkResponseSchemaForGetPerson() throws Exception
+    {
+        RestPersonModel newUser = RestPersonModel.getRandomPersonModel("aspectNames", "avatarId", "statusUpdatedAt");
+        newUser = restClient.authenticateUser(adminUser).withCoreAPI().usingAuthUser().createPerson(newUser);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        personModel = restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel(newUser.getId(), newUser.getPassword())).getPerson();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        personModel.assertThat().field("id").is(newUser.getId())
+            .and().field("firstName").is(newUser.getFirstName())
+            .and().field("lastName").is(newUser.getLastName())
+            .and().field("description").is(newUser.getDescription())
+            .and().field("email").is(newUser.getEmail())
+            .and().field("skypeId").is(newUser.getSkypeId())
+            .and().field("googleId").is(newUser.getGoogleId())
+            .and().field("instantMessageId").is(newUser.getInstantMessageId())
+            .and().field("jobTitle").is(newUser.getJobTitle())
+            .and().field("location").is(newUser.getLocation())
+            .and().field("mobile").is(newUser.getMobile())
+            .and().field("telephone").is(newUser.getTelephone())
+            .and().field("userStatus").is(newUser.getUserStatus())
+            .and().field("enabled").is(newUser.getEnabled())
+            .and().field("emailNotificationsEnabled").is(newUser.getEmailNotificationsEnabled());
     }
 }
