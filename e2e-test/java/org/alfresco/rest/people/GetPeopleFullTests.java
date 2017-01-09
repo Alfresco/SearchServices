@@ -1,13 +1,16 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonModel;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -71,5 +74,21 @@ public class GetPeopleFullTests extends RestTest
             .and().field("userStatus").is(newUser.getUserStatus())
             .and().field("enabled").is(newUser.getEnabled())
             .and().field("emailNotificationsEnabled").is(newUser.getEmailNotificationsEnabled());
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user get a person with special chars in username with Rest API and response is not found")
+    public void userChecksIfPersonWithSpecilCharsInUsernameIsNotFound() throws Exception
+    {
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
+        dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
+        
+        UserModel userSpecialChars = dataUser.usingAdmin().createUser(RandomStringUtils.randomAlphabetic(2) + "~!@#$%^&*()_+[]{}|\\;':\",./<>", "password");
+        //setting the encoded text for username
+        userSpecialChars.setUsername(RandomStringUtils.randomAlphabetic(2) + "~!%40%23%24%25%5E%26*()_%2B%5B%5D%7B%7D%7C%5C%3B%27%3A%22%2C.%2F%3C%3E");
+
+        personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userSpecialChars).getPerson();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, userSpecialChars.getUsername()));
     }
 }
