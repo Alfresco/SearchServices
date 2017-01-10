@@ -218,7 +218,7 @@ public class DeleteFavoriteFullTests extends RestTest
               
         restClient.withCoreAPI().usingAuthUser().getFavorites()
                   .assertThat()
-                  .entriesListDoesNotContain("targetGuid", fileModel.getNodeRefWithoutVersion());
+                  .entriesListDoesNotContain("targetGuid", siteModel.getGuidWithoutVersion());
     }  
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
@@ -240,7 +240,7 @@ public class DeleteFavoriteFullTests extends RestTest
         
         restClient.withCoreAPI().usingAuthUser().getFavorites()
         .assertThat()
-        .entriesListDoesNotContain("targetGuid", fileModel.getNodeRefWithoutVersion());
+        .entriesListDoesNotContain("targetGuid", siteModel.getGuidWithoutVersion());
     }             
   
 }
