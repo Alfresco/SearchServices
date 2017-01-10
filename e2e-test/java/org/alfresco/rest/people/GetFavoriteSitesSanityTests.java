@@ -18,7 +18,6 @@ public class GetFavoriteSitesSanityTests extends RestTest
 {
     UserModel userModel;
     SiteModel siteModel;
-    UserModel searchedUser;
     private RestSiteModelsCollection restSiteModelsCollection;
 
     @BeforeClass(alwaysRun = true)
