@@ -2,7 +2,6 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestPersonModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
