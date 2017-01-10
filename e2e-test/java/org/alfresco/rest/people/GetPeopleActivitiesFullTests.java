@@ -146,11 +146,55 @@ public class GetPeopleActivitiesFullTests extends RestTest
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for another user with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for another user with Rest API and response is permission denied")
     public void userGetPeopleActivitiesForAnotherUser() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(managerUser).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
         restClient.assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with properties parameter applied with Rest API and response is successful")
+    public void userGetPeopleActivitiesUsingPropertiesParameter() throws Exception
+    {
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("properties=postPersonId").getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("4");
+        restActivityModelsCollection.assertThat().entriesListContains("postPersonId", userModel.getUsername().toLowerCase())
+                .and().entriesListContains("postPersonId", adminUser.getUsername().toLowerCase())
+                .and().entriesListContains("postPersonId", managerUser.getUsername().toLowerCase())
+                .and().entriesListDoesNotContain("postedAt")
+                .and().entriesListDoesNotContain("feedPersonId")
+                .and().entriesListDoesNotContain("siteId")
+                .and().entriesListDoesNotContain("activitySummary")
+                .and().entriesListDoesNotContain("id")
+                .and().entriesListDoesNotContain("activityType");
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with skipCount parameter applied with Rest API and response is successful")
+    public void userGetPeopleActivitiesUsingSkipCountParameter() throws Exception
+    {
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("skipCount=2").getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("2");
+        restActivityModelsCollection.getEntries().get(0).onModel().assertThat().field("postPersonId").is(userModel.getUsername().toLowerCase())
+                .and().field("activityType").is(ActivityType.FOLDER_ADDED.toString());
+        restActivityModelsCollection.getEntries().get(1).onModel().assertThat().field("postPersonId").is(userModel.getUsername().toLowerCase())
+                .and().field("activityType").is(ActivityType.FILE_ADDED.toString());
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with maxItems parameter applied with Rest API and response is successful")
+    public void userGetPeopleActivitiesUsingMaxItemsParameter() throws Exception
+    {
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("maxItems=2").getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("2");
+        restActivityModelsCollection.getEntries().get(0).onModel().assertThat().field("postPersonId").is(managerUser.getUsername().toLowerCase())
+                .and().field("activityType").is(ActivityType.USER_JOINED.toString());
+        restActivityModelsCollection.getEntries().get(1).onModel().assertThat().field("postPersonId").is(adminUser.getUsername().toLowerCase())
+                .and().field("activityType").is(ActivityType.FILE_ADDED.toString());
     }
 }
