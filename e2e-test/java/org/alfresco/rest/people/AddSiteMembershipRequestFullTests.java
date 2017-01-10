@@ -142,7 +142,15 @@ public class AddSiteMembershipRequestFullTests extends RestTest
         siteMembershipRequest = restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         siteMembershipRequest.assertThat().field("id").is(moderatedSite.getId())
+                .assertThat().field("message").is("Please accept me")
                 .assertThat().field("site").isNotEmpty();
+        siteMembershipRequest.getSite()
+                .assertThat().field("visibility").is(moderatedSite.getVisibility())
+                .assertThat().field("guid").is(moderatedSite.getGuid())
+                .assertThat().field("description").is(moderatedSite.getDescription())
+                .assertThat().field("id").is(moderatedSite.getId())
+                .assertThat().field("title").is(moderatedSite.getTitle());
+
         siteMembershipRequests = restClient.withCoreAPI().usingAuthUser().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         siteMembershipRequests.assertThat().entriesListContains("id", moderatedSite.getId())
@@ -265,6 +273,23 @@ public class AddSiteMembershipRequestFullTests extends RestTest
         restClient.authenticateUser(adminTenantUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, adminTenantUser.getUsername().toLowerCase(), publicSite.getId()));
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL, TestGroup.NETWORKS })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+            description = "Verify create site membership request returns status code 200 with tenant.")
+    public void addSiteMembershipRequestWithTenant() throws Exception
+    {
+        UserModel adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUser)
+                .usingTenant().createTenant(adminTenantUser);
+        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+
+        SiteModel tenantPublicSite = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        siteMembershipRequest = restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(tenantPublicSite);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        siteMembershipRequest.assertThat().field("id").is(tenantPublicSite.getId())
+                .assertThat().field("site").isNotEmpty();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
