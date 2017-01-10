@@ -38,8 +38,7 @@ public class AddFavoritesCoreTests extends RestTest
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();        
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();        
-        siteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).getSite().getGuid());
+        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
         

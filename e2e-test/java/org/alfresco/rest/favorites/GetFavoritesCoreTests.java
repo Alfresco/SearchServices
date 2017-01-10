@@ -37,10 +37,6 @@ public class GetFavoritesCoreTests extends RestTest
         secondFolderModel = dataContent.usingUser(adminUserModel).usingSite(firstSiteModel).createFolder();
         firstFileModel = dataContent.usingUser(adminUserModel).usingResource(firstFolderModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         secondFileModel = dataContent.usingUser(adminUserModel).usingResource(firstFolderModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-
-        firstSiteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(firstSiteModel).getSite().getGuid());
-        secondSiteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(secondSiteModel).getSite().getGuid());
-
         usersWithRoles = dataUser.addUsersWithRolesToSite(firstSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
     }

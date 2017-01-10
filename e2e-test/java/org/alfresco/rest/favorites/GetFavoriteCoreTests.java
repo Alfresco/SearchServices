@@ -36,9 +36,6 @@ public class GetFavoriteCoreTests extends RestTest {
 		fileModel = dataContent.usingUser(adminUserModel).usingResource(folderModel)
 				.createContent(DocumentType.TEXT_PLAIN);
 
-		siteModel.setGuid(
-				restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).getSite().getGuid());
-
 		usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator,
 				UserRole.SiteConsumer, UserRole.SiteContributor);
 	}

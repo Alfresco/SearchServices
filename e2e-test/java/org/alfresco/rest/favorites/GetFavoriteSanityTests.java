@@ -38,9 +38,6 @@ public class GetFavoriteSanityTests extends RestTest
 
         folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
         fileModel = dataContent.usingUser(adminUserModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
-        
-        siteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).getSite().getGuid());
-
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
     }
@@ -285,14 +282,15 @@ public class GetFavoriteSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
             description = "Verify user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
+    @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
     public void userIsNotAbleToRetrieveFavoritesIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager).withCoreAPI()
                   .usingUser(siteManager).getFavorite(siteModel.getGuid());        
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+                .assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
     
 }
