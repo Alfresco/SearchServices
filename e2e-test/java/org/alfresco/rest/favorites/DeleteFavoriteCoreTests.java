@@ -55,6 +55,7 @@ public class DeleteFavoriteCoreTests extends RestTest
                   .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "inexistent"));
     }
     
+    @Bug(id="ACE-2413")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that status code is 404 if PersonID is empty - favorite file.")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE})
