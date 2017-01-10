@@ -56,6 +56,18 @@ public class DeleteFavoriteCoreTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+            description = "Verify that status code is 404 if PersonID is empty - favorite file.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE})
+    public void deleteFavoriteIfPersonIdIsEmpty() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(siteModel);        
+        restClient.withCoreAPI().usingAuthUser().addFileToFavorites(fileModel);
+       
+        restClient.withCoreAPI().usingUser(new UserModel ("", ""))
+                  .deleteFileFromFavorites(fileModel).assertStatusCodeIs(HttpStatus.BAD_REQUEST);
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that status code is 404 if FavoriteID is incorrect - favorite file.")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE})
     public void deleteFavoriteFileIfFavoriteIdIsIncorrect() throws JsonToModelConversionException, Exception
