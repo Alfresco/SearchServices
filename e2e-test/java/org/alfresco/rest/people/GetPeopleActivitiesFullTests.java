@@ -16,6 +16,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,11 @@ public class GetPeopleActivitiesFullTests extends RestTest
         
         managerUser = dataUser.createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel2, UserRole.SiteManager);
+        
+        // only once the activity list is checked with retry in order not to wait the entire list in each test
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivitiesWithRetry();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("4");
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
@@ -72,6 +78,24 @@ public class GetPeopleActivitiesFullTests extends RestTest
         restActivityModelsCollection.assertThat().entriesListContains("activityType", ActivityType.USER_JOINED.toString());
     }
     
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify activity summary from user gets activities response with Rest API")
+    public void userGetPeopleActivitiesWithActivitySummaryCheck() throws Exception
+    {
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("4");
+        RestActivitySummaryModel summary = restActivityModelsCollection.getEntries().get(0).onModel().getActivitySummary();
+                summary.assertThat().field("firstName").is(managerUser.getUsername() + " FirstName")
+                .and().field("lastName").is("LN-" + managerUser.getUsername())
+                .and().field("memberFirstName").is(managerUser.getUsername() + " FirstName")
+                .and().field("role").is(managerUser.getUserRole())
+                .and().field("memberLastName").is("LN-" + managerUser.getUsername())
+                .and().field("title").is(String.format("%s FirstName LN-%s (%s)", managerUser.getUsername(), managerUser.getUsername(), managerUser.getUsername()))
+                .and().field("memberPersonId").is(managerUser.getUsername());
+    }
+    
+    @Bug(id = "ACE-5460")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for empty user with Rest API and response is 404")
     public void userCannotGetPeopleActivitiesForEmptyPersonId() throws Exception
