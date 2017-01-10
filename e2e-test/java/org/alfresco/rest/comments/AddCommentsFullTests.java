@@ -46,70 +46,77 @@ public class AddCommentsFullTests extends RestTest
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can provide a large string for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void addLongCommentWithManagerAndCheckThatCommentIsReturned() throws Exception
+    public void addLongCommentsWithManagerAndCheckThatCommentIsReturned() throws Exception
     {
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String longString = RandomStringUtils.randomAlphanumeric(10000);
+        String longString1 = RandomStringUtils.randomAlphanumeric(90000);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-        .withCoreAPI().usingResource(document).addComment(longString);                  
+        .withCoreAPI().usingResource(document).addComments(longString, longString1);                  
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         comments.assertThat().entriesListContains("content", longString);
-        comments.assertThat().paginationField("totalItems").is("1");
-        comments.assertThat().paginationField("count").is("1");
+        comments.assertThat().entriesListContains("content", longString1);
+        comments.assertThat().paginationField("totalItems").is("2");
+        comments.assertThat().paginationField("count").is("2");
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can provide a short string for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void addShortCommentWithManagerAndCheckThatCommentIsReturned() throws Exception
+    public void addShortCommentsWithManagerAndCheckThatCommentIsReturned() throws Exception
     {
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String shortString = RandomStringUtils.randomAlphanumeric(2);
+        String shortString1 = RandomStringUtils.randomAlphanumeric(1);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-        .withCoreAPI().usingResource(document).addComment(shortString);                  
+        .withCoreAPI().usingResource(document).addComments(shortString, shortString1);                  
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         comments.assertThat().entriesListContains("content", shortString);
-        comments.assertThat().paginationField("totalItems").is("1");
-        comments.assertThat().paginationField("count").is("1");
+        comments.assertThat().entriesListContains("content", shortString1);
+        comments.assertThat().paginationField("totalItems").is("2");
+        comments.assertThat().paginationField("count").is("2");
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Collaborator user verify that you can provide a string with special characters for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void addCommentWithSpecialCharsWithCollaboratorCheckCommentIsReturned() throws Exception
+    public void addCommentsWithSpecialCharsWithCollaboratorCheckCommentIsReturned() throws Exception
     {
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String specialCharsString = "!@#$%^&*()_+♂µΓyádo«√<╡┌6£";
+        String shortString = RandomStringUtils.randomAlphanumeric(2);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-        .withCoreAPI().usingResource(document).addComment(specialCharsString);                  
+        .withCoreAPI().usingResource(document).addComments(specialCharsString, shortString);                  
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        comments.assertThat().entriesListContains("content", specialCharsString);
-        comments.assertThat().paginationField("totalItems").is("1");
-        comments.assertThat().paginationField("count").is("1");
+        comments.assertThat().entriesListContains("content", specialCharsString);  
+        comments.assertThat().entriesListContains("content", shortString);
+        comments.assertThat().paginationField("totalItems").is("2");
+        comments.assertThat().paginationField("count").is("2");
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can not provide an empty string for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void addEmptyStringCommentWithManagerCheckCommentIsReturned() throws Exception
+    public void addEmptyStringCommentsWithManagerCheckCommentIsReturned() throws Exception
     {
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String emptyString = "";
+        String spaceString = " ";
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-        .withCoreAPI().usingResource(document).addComment(emptyString);                  
+        .withCoreAPI().usingResource(document).addComments(emptyString, spaceString);                  
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.NON_NULL_COMMENT);
     }
     
