@@ -133,4 +133,24 @@ public class GetPeopleActivitiesFullTests extends RestTest
             }
         }
     }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for siteId that user doesn't have access to with Rest API and response is not found")
+    public void userGetPeopleActivitiesForASiteWithNoAccess() throws Exception
+    {
+        SiteModel siteNoAccess = dataSite.usingUser(managerUser).createPrivateRandomSite();
+        
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).usingParams(String.format("siteId=%s", siteNoAccess.getId())).getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, siteNoAccess.getId()));
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for another user with Rest API and response is successful")
+    public void userGetPeopleActivitiesForAnotherUser() throws Exception
+    {
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(managerUser).getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
 }
