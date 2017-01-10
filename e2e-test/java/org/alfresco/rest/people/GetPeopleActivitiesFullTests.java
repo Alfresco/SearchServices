@@ -1,8 +1,13 @@
 package org.alfresco.rest.people;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestActivityModel;
 import org.alfresco.rest.model.RestActivityModelsCollection;
+import org.alfresco.rest.model.RestActivitySummaryModel;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.ActivityType;
 import org.alfresco.utility.constants.UserRole;
@@ -14,6 +19,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -53,11 +59,17 @@ public class GetPeopleActivitiesFullTests extends RestTest
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("4");
-        restActivityModelsCollection.assertThat().entriesListContains("title", fileInSite1.getName())
-                .and().entriesListContains("title", folderInSite2.getName())
-                .and().entriesListContains("title", fileInSite2.getName())
-                .and().entriesListContains("title", fileInSite2.getName())
-                .and().entriesListContains("activityType", ActivityType.USER_JOINED.toString());
+             
+        List<RestActivitySummaryModel> allActivitySummary = new ArrayList<RestActivitySummaryModel>();
+        for (RestActivityModel activityModel: restActivityModelsCollection.getEntries())
+        {
+            allActivitySummary.add(activityModel.onModel().getActivitySummary());
+        }
+       
+        assertActivitySummaryTitleIsPresent(allActivitySummary, fileInSite1.getName());
+        assertActivitySummaryTitleIsPresent(allActivitySummary, folderInSite2.getName());
+        assertActivitySummaryTitleIsPresent(allActivitySummary, fileInSite2.getName());
+        restActivityModelsCollection.assertThat().entriesListContains("activityType", ActivityType.USER_JOINED.toString());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
@@ -95,5 +107,30 @@ public class GetPeopleActivitiesFullTests extends RestTest
         restActivityModelsCollection.assertThat().paginationField("count").is("1");
         restActivityModelsCollection.assertThat().entriesListContains("siteId", siteModel1.getId())
                 .and().entriesListDoesNotContain("siteId", siteModel2.getId());
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities for user with no activities with Rest API and response is successful")
+    public void userGetPeopleActivitiesForUserWithNoActivities() throws Exception
+    {
+        UserModel userNoActivities = dataUser.createRandomTestUser();
+        dataSite.usingUser(userNoActivities).createPublicRandomSite();
+        
+        restActivityModelsCollection = restClient.authenticateUser(adminUser).withCoreAPI().usingUser(userNoActivities).getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("0");
+        restActivityModelsCollection.assertThat().entriesListIsEmpty();
+    }
+    
+    private void assertActivitySummaryTitleIsPresent(List<RestActivitySummaryModel> allActivitySummary, String title)
+    {
+        for (RestActivitySummaryModel activitySummary: allActivitySummary)
+        {
+            if (activitySummary.getTitle().equals(title))
+            {
+                Assert.assertEquals(activitySummary.getTitle(), title, String.format("%s title was not found in Activity Summary", title));
+                break;
+            }
+        }
     }
 }
