@@ -53,7 +53,13 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.authenticateUser(siteManager).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         
         restClient.withCoreAPI().usingAuthUser().deleteSiteFromFavorites(siteModel).assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                  .assertThat()
+                  .entriesListDoesNotContain("targetGuid", siteModel.getGuid())
+                  .and().entriesListDoesNotContain("id", siteModel.getId())
+                  .and().entriesListDoesNotContain("description", siteModel.getDescription())
+                  .and().entriesListDoesNotContain("visibility", siteModel.getVisibility().toString())
+                  .and().entriesListDoesNotContain("title", siteModel.getTitle());                
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -65,7 +71,13 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.authenticateUser(siteCollaborator).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         
         restClient.withCoreAPI().usingAuthUser().deleteSiteFromFavorites(siteModel).assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                  .assertThat()
+                  .entriesListDoesNotContain("targetGuid", siteModel.getGuid())
+                  .and().entriesListDoesNotContain("id", siteModel.getId())
+                  .and().entriesListDoesNotContain("description", siteModel.getDescription())
+                  .and().entriesListDoesNotContain("visibility", siteModel.getVisibility().toString())
+                  .and().entriesListDoesNotContain("title", siteModel.getTitle());                
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -77,7 +89,13 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.authenticateUser(siteContributor).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         
         restClient.withCoreAPI().usingAuthUser().deleteSiteFromFavorites(siteModel).assertStatusCodeIs(HttpStatus.NO_CONTENT); 
-        restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                  .assertThat()
+                  .entriesListDoesNotContain("targetGuid", siteModel.getGuid())
+                  .and().entriesListDoesNotContain("id", siteModel.getId())
+                  .and().entriesListDoesNotContain("description", siteModel.getDescription())
+                  .and().entriesListDoesNotContain("visibility", siteModel.getVisibility().toString())
+                  .and().entriesListDoesNotContain("title", siteModel.getTitle());                
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -89,7 +107,13 @@ public class DeleteFavoritesSanityTests extends RestTest
         restClient.authenticateUser(siteConsumer).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         
         restClient.withCoreAPI().usingAuthUser().deleteSiteFromFavorites(siteModel).assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                  .assertThat()
+                  .entriesListDoesNotContain("targetGuid", siteModel.getGuid())
+                  .and().entriesListDoesNotContain("id", siteModel.getId())
+                  .and().entriesListDoesNotContain("description", siteModel.getDescription())
+                  .and().entriesListDoesNotContain("visibility", siteModel.getVisibility().toString())
+                  .and().entriesListDoesNotContain("title", siteModel.getTitle());                
     }
 
     @Bug(id="MNT-16557")
@@ -100,6 +124,7 @@ public class DeleteFavoritesSanityTests extends RestTest
     {
         UserModel siteCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(siteCollaborator).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI()
                   .usingAuthUser().deleteSiteFromFavorites(siteModel)
                   .assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
