@@ -112,8 +112,8 @@ public class GetCommentsCoreTests extends RestTest
     public void getCommentsWithInvalidNetwork() throws Exception
     {
         networkUserModel.setDomain("invalidNetwork");
-        restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.authenticateUser(networkUserModel).withCoreAPI().usingResource(document).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -122,8 +122,8 @@ public class GetCommentsCoreTests extends RestTest
     public void getCommentsWithEmptyNetwork() throws Exception
     {
         networkUserModel.setDomain("");
-        restClient.authenticateUser(userModel).withCoreAPI().usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.authenticateUser(networkUserModel).withCoreAPI().usingResource(document).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
 }
