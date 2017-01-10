@@ -97,13 +97,13 @@ public class GetPeopleActivitiesFullTests extends RestTest
     
     @Bug(id = "ACE-5460")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for empty user with Rest API and response is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for empty user with Rest API and response is 400")
     public void userCannotGetPeopleActivitiesForEmptyPersonId() throws Exception
     {
         UserModel emptyUserName = new UserModel("", "password");
         
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(emptyUserName).getPersonActivities();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
             .assertLastError().containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                                 .containsSummary(RestErrorModel.LOCAL_NAME_CONSISTANCE)
                                 .stackTraceIs(RestErrorModel.STACKTRACE)
@@ -111,7 +111,7 @@ public class GetPeopleActivitiesFullTests extends RestTest
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities successfully using parameter 'who' with 'me'vale with Rest API")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities successfully using parameter 'who' with 'me' value with Rest API")
     public void userGetsPeopleActivitiesUsingMeForWhoParameter() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).usingParams("who=me").getPersonActivities();
