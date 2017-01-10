@@ -266,4 +266,23 @@ public class AddSiteMembershipRequestFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, adminTenantUser.getUsername().toLowerCase(), publicSite.getId()));
     }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+            description = "Verify site membership request is automatically rejected when a site is switched from moderated to private")
+    public void siteMembershipRequestIsRejectedWhenSiteIsSwitchedFromModeratedToPrivate() throws Exception
+    {
+        regularUser = dataUser.createRandomTestUser();
+        SiteModel moderatedThenPrivateSite = dataSite.usingUser(adminUser).createModeratedRandomSite();
+        siteMembershipRequest = restClient.authenticateUser(regularUser).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedThenPrivateSite);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        siteMembershipRequest.assertThat().field("id").is(moderatedThenPrivateSite.getId())
+                .assertThat().field("site").isNotEmpty();
+
+        dataSite.usingUser(adminUser).updateSiteVisibility(moderatedThenPrivateSite, Site.Visibility.PRIVATE);
+
+        siteMembershipRequests = restClient.withCoreAPI().usingAuthUser().getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        siteMembershipRequests.assertThat().entriesListIsEmpty();
+    }
 }
