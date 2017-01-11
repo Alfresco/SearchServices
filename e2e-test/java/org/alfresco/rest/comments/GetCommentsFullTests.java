@@ -1,14 +1,12 @@
 package org.alfresco.rest.comments;
 
-import java.util.List;
-
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -18,6 +16,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class GetCommentsFullTests extends RestTest
@@ -28,6 +27,7 @@ public class GetCommentsFullTests extends RestTest
     private String comment2 = "This is the second comment";
     private RestCommentModelsCollection comments;
     private DataUser.ListUserWithRoles usersWithRoles;
+    private FileModel file;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -37,23 +37,25 @@ public class GetCommentsFullTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, 
                 UserRole.SiteContributor, UserRole.SiteConsumer);
     }
+    
+    @BeforeMethod(alwaysRun=true)
+    public void setUp() throws DataPreparationException, Exception {
+        file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
+    }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that if manager adds one comment, it will be returned in getComments response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithManagerAndCheckThatCommentIsReturned() throws Exception
     {
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-        .withCoreAPI().usingResource(file).addComment(comment);                  
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(file).addComment(comment);                  
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        comments.assertThat().entriesListContains("content", comment);
-        comments.assertThat().paginationField("totalItems").is("1");
-        comments.assertThat().paginationField("count").is("1");
+        comments.assertThat().entriesListContains("content", comment)
+            .getPagination().assertThat().field("totalItems").is("1")
+            .assertThat().field("count").is("1");
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -61,17 +63,15 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithCollaboratorAndCheckThatCommentIsReturned() throws Exception
     {
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-        .withCoreAPI().usingResource(file).addComment(comment);
+            .withCoreAPI().usingResource(file).addComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        comments.assertThat().entriesListContains("content", comment);
-        comments.assertThat().paginationField("totalItems").is("1");
-        comments.assertThat().paginationField("count").is("1");
+        comments.assertThat().entriesListContains("content", comment)
+            .getPagination().assertThat().field("totalItems").is("1")
+            .assertThat().field("count").is("1");
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -80,17 +80,15 @@ public class GetCommentsFullTests extends RestTest
     @Bug(id = "ACE-4614")
     public void addCommentWithContributorAndCheckThatCommentIsReturned() throws Exception
     {
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-        .withCoreAPI().usingResource(file).addComment(comment);
+            .withCoreAPI().usingResource(file).addComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        comments.assertThat().entriesListContains("content", comment);
-        comments.assertThat().paginationField("totalItems").is("1");
-        comments.assertThat().paginationField("count").is("1");
+        comments.assertThat().entriesListContains("content", comment)
+            .getPagination().assertThat().field("totalItems").is("1")
+            .assertThat().field("count").is("1");
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -98,10 +96,8 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithConsumerAndCheckThatCommentIsNotReturned() throws Exception
     {
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-        .withCoreAPI().usingResource(file).addComment(comment);                  
+            .withCoreAPI().usingResource(file).addComment(comment);                  
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
@@ -115,19 +111,13 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithManagerCheckReturnedPersonIsTheRightOne() throws Exception
     {
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         UserModel user1 = dataUser.createRandomTestUser();
         dataUser.addUserToSite(user1, siteModel, UserRole.SiteManager);
         
         restClient.authenticateUser(user1).withCoreAPI().usingResource(file).addComment(comment);    
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        comments.assertThat().entriesListIsNotEmpty();
-        List<RestCommentModel> commentsList = comments.getEntries();
-        commentsList.get(0).onModel().getCreatedBy().assertThat().field("firstName").is(user1.getUsername() + " FirstName")
-        .assertThat().field("lastName").is("LN-" + user1.getUsername());        
+        comments.getOneRandomEntry().onModel().getCreatedBy().assertThat().field("firstName").is(user1.getUsername() + " FirstName")
+            .assertThat().field("lastName").is("LN-" + user1.getUsername());        
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
@@ -135,16 +125,11 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithCollaboratorCheckReturnedCompanyDetails() throws Exception
     {
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(file).addComment(comment);    
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        comments.assertThat().entriesListIsNotEmpty();
-        List<RestCommentModel> commentsList = comments.getEntries();
-        commentsList.get(0).onModel().getCreatedBy().getCompany()
+        comments.getOneRandomEntry().onModel().getCreatedBy().getCompany()
                 .assertThat().field("organization").isNull()
                 .assertThat().field("address1").isNull()
                 .assertThat().field("address2").isNull()
@@ -160,12 +145,8 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithManagerCollaboratorVerifySkipCountParamIsApplied() throws Exception
     {   
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-    
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(file).addComment(comment);    
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(file).addComment(comment2);    
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withParams("skipCount=1")
                 .withCoreAPI().usingResource(file).getNodeComments();
@@ -181,12 +162,8 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithAdminCollaboratorVerifyMaxItemsParamIsApplied() throws Exception
     {   
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-    
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addComment(comment);    
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(file).addComment(comment2);    
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withParams("maxItems=1")
                 .withCoreAPI().usingResource(file).getNodeComments();
@@ -201,27 +178,20 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithAdminManagerVerifyPropertiesParamIsApplied() throws Exception
     {   
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addComment(comment);    
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(file).addComment(comment2);    
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         comments = restClient.authenticateUser(adminUserModel).withParams("properties=createdBy,modifiedBy")
                 .withCoreAPI().usingResource(file).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
         comments.assertThat().entriesListIsNotEmpty()
                 .and().paginationField("count").is("2");
         comments.assertThat().paginationField("totalItems").is("2");
         
-        List<RestCommentModel> commentsList = comments.getEntries();
-        
-        commentsList.get(0).onModel().getCreatedBy()
+        comments.getEntries().get(0).onModel().getCreatedBy()
             .assertThat().field("firstName").is(usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUsername() + " FirstName")
             .assertThat().field("lastName").is("LN-" + usersWithRoles.getOneUserWithRole(UserRole.SiteManager).getUsername());     
         
-        commentsList.get(1).onModel().getCreatedBy()
+        comments.getEntries().get(1).onModel().getCreatedBy()
             .assertThat().field("firstName").is("Administrator")
             .assertThat().field("id").is("admin");
     }
@@ -231,10 +201,8 @@ public class GetCommentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithManagerCheckDefaultErrorModelSchema() throws Exception
     {   
-        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-        .withCoreAPI().usingResource(file).addComments(comment, comment2);                  
+            .withCoreAPI().usingResource(file).addComments(comment, comment2);                  
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).usingParams("maxItems=0").getNodeComments();
