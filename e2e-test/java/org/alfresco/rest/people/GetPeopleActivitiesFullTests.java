@@ -53,7 +53,7 @@ public class GetPeopleActivitiesFullTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel2, UserRole.SiteManager);
         
         // only once the activity list is checked with retry in order not to wait the entire list in each test
-        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivitiesWithRetry();
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivitiesUntilEntriesCountIs(4);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("4");
     }
