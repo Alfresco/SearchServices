@@ -41,7 +41,7 @@ import java.io.Writer;
 import java.util.*;
 
 /**
- *
+ * Taken from Solr source.  Look at the history of this file for changes.
  */
 
 public class CSVResponseWriter implements QueryResponseWriter {
@@ -264,7 +264,7 @@ class CSVWriter extends TextResponseWriter {
       } else {
         fields.remove("score");
       }
-      returnOnlyStored = true;
+//      returnOnlyStored = true;
     }
 
     CSVSharedBufPrinter csvPrinterMV = new CSVSharedBufPrinter(mvWriter, mvStrategy);
