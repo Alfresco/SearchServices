@@ -163,6 +163,7 @@ public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
         System.out.println(response);
         data = new CSVParser(new StringReader(response)).getAllValues();
         assertTrue("There should be 4 rows, 1 header and 3 rows of data", data.length == 4);
+        headers = Arrays.asList(data[0]);
         assertFalse(headers.contains("DBID"));
         assertTrue(headers.contains("id"));
         assertFalse(headers.contains("OWNER"));
