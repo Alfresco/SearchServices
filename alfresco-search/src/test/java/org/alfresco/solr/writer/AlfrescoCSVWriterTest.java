@@ -154,15 +154,20 @@ public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
         assertTrue(headers.contains("id"));
         assertFalse(headers.contains("OWNER"));
         assertTrue(headers.contains("ACLID"));
-/**
+
         req = areq(params( "q", "OWNER:"+testUser, "qt", "/afts",
-                "wt", "csv", "fl", "id,content@s__size@{http://www.alfresco.org/model/content/1.0}content"),
+                "wt", "csv", "fl", "id,content@s__size@{http://www.alfresco.org/model/content/1.0}content,cm:name"),
                 "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
 
         response = queryRequest(req);
+        System.out.println(response);
         data = new CSVParser(new StringReader(response)).getAllValues();
         assertTrue("There should be 4 rows, 1 header and 3 rows of data", data.length == 4);
- **/
+        assertFalse(headers.contains("DBID"));
+        assertTrue(headers.contains("id"));
+        assertFalse(headers.contains("OWNER"));
+        assertTrue(headers.contains("cm:name"));
+
 
 
     }

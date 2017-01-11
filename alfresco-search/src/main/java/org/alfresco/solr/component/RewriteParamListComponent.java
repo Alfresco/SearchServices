@@ -62,7 +62,7 @@ public class RewriteParamListComponent extends SearchComponent implements SolrCo
     public static final String DEFAULT_SEPERATOR = ",";
     public static final List<String> DEFAULT_WRITERS = Arrays.asList("csv");
     public static final List<String> DEFAULT_EXCLUDED_FIELDS = Arrays.asList("FIELDS");
-    public static final List<String> DEFAULT_INCLUDED_FIELDS = Arrays.asList(CACHED_FIELD);
+    public static final List<String> DEFAULT_INCLUDED_FIELDS = Arrays.asList("*",CACHED_FIELD);
 
 
     private SolrParams initArgs = null;
@@ -84,13 +84,14 @@ public class RewriteParamListComponent extends SearchComponent implements SolrCo
         {
             String rewritten = rewrite(paramList);
             ModifiableSolrParams modParams = new ModifiableSolrParams(params);
-            modParams.set(paramName, rewritten);
+            modParams.set(paramName, String.join(DEFAULT_SEPERATOR, includes));
+            modParams.set("alfresco_"+paramName, rewritten);
             req.setParams(modParams);
         }
     }
 
     public String rewrite(String paramList) {
-        return rewrite(paramList, this.excludes, this.includes);
+        return rewrite(paramList, this.excludes);
     }
 
     /**
@@ -98,15 +99,11 @@ public class RewriteParamListComponent extends SearchComponent implements SolrCo
      * @param paramList
      * @return the rewritten list
      */
-    public static String rewrite(String paramList, List<String> allExcludes, List<String> allIncludes) {
+    public static String rewrite(String paramList, List<String> allExcludes) {
         if (!paramList.isEmpty()) {
             List<String> split = new ArrayList<>(Arrays.asList(paramList.split(DEFAULT_SEPERATOR)));
 
             split.removeAll(allExcludes);
-
-            //To avoid duplicates lets remove all the includes then add them again.
-            split.removeAll(allIncludes);
-            split.addAll(allIncludes);
             if (logger.isDebugEnabled()) {
                 logger.debug("Rewriting "+paramList+ " as "+String.join(DEFAULT_SEPERATOR, split));
             }

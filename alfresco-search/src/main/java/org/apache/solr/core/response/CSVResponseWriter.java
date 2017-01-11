@@ -18,10 +18,12 @@ package org.apache.solr.core.response;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.alfresco.solr.component.RewriteParamListComponent;
 import org.apache.lucene.index.IndexableField;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrException;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.internal.csv.CSVPrinter;
@@ -33,6 +35,7 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.schema.StrField;
 import org.apache.solr.search.DocList;
 import org.apache.solr.search.ReturnFields;
+import org.apache.solr.search.SolrReturnFields;
 import org.apache.solr.util.FastWriter;
 
 import java.io.CharArrayWriter;
@@ -238,7 +241,16 @@ class CSVWriter extends TextResponseWriter {
       // encapsulator will already be disabled if it wasn't specified
     }
 
-    Collection<String> fields = returnFields.getRequestedFieldNames();
+    String alffl = params.get("alfresco_"+CommonParams.FL);
+    Collection<String> fields;
+
+    if (alffl != null && !alffl.equals("*"))
+    {
+      fields = Arrays.asList(alffl.split(RewriteParamListComponent.DEFAULT_SEPERATOR));
+    } else {
+      fields = returnFields.getRequestedFieldNames();
+    }
+
     Object responseObj = rsp.getResponse();
     boolean returnOnlyStored = false;
     if (fields==null||returnFields.hasPatternMatching()) {
