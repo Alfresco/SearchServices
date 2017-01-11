@@ -5,8 +5,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModel;
-import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
-import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
@@ -294,5 +292,4 @@ public class GetFavoriteSanityTests extends RestTest
                   .usingUser(siteManager).getFavorite(siteModel.getGuid());        
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
     }
-    
 }
