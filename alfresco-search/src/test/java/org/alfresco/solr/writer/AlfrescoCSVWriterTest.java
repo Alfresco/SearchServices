@@ -32,14 +32,21 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.common.params.HighlightParams;
+import org.apache.solr.internal.csv.CSVParser;
+import org.apache.solr.internal.csv.CSVStrategy;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.StringReader;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
@@ -103,9 +110,10 @@ public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
         Node fileNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node fileNode2 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
 
-        NodeMetaData folderMetaData = getNodeMetaData(folderNode, foldertxn, acl, "mike", null, false);
-        NodeMetaData fileMetaData   = getNodeMetaData(fileNode,  txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
-        NodeMetaData fileMetaData2  = getNodeMetaData(fileNode2, txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
+        String testUser = "mike"+generateId();
+        NodeMetaData folderMetaData = getNodeMetaData(folderNode, foldertxn, acl, testUser, null, false);
+        NodeMetaData fileMetaData   = getNodeMetaData(fileNode,  txn, acl, testUser, ancestors(folderMetaData.getNodeRef()), false);
+        NodeMetaData fileMetaData2  = getNodeMetaData(fileNode2, txn, acl, testUser, ancestors(folderMetaData.getNodeRef()), false);
 
         //Index the transaction, nodes, and nodeMetaDatas.
         indexTransaction(foldertxn, list(folderNode), list(folderMetaData));
@@ -114,27 +122,57 @@ public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
                 list(fileMetaData, fileMetaData2));
         logger.info("######### Waiting for Doc Count ###########");
 
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "mike")), 3, 10000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, testUser)), 3, 10000);
 
         logger.info("######### Testing CSV writer ###########");
 
-        //q=DOC_TYPE:Node&wt=csv&fl=*,[cached
-        SolrServletRequest req = areq(params( "q", "DOC_TYPE:Node", "qt", "/afts",
-                "wt", "csv",
-                "fl", "*"),
-//                "fl", "cm:name, cm:title"),
+        SolrServletRequest req = areq(params( "q", "OWNER:"+testUser, "qt", "/afts",
+                "wt", "csv", "fl", "*"),
                 "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
 
-        queryRequest(req);
+        String response = queryRequest(req);
+        String[][] data = new CSVParser(new StringReader(response)).getAllValues();
+        assertTrue("There should be 4 rows, 1 header and 3 rows of data", data.length == 4);
+        List<String> headers = Arrays.asList(data[0]);
+        //All fields (although I want do them all)
+        assertTrue(headers.contains("DBID"));
+        assertTrue(headers.contains("id"));
+        assertTrue(headers.contains("OWNER"));
+        assertTrue(headers.contains("ACLID"));
+        assertTrue(headers.contains("content@s__size@{http://www.alfresco.org/model/content/1.0}content"));
+
+        //Change the field list
+        req = areq(params( "q", "OWNER:"+testUser, "qt", "/afts",
+                "wt", "csv", "fl", "id,ACLID"),
+                "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
+
+        response = queryRequest(req);
+        data = new CSVParser(new StringReader(response)).getAllValues();
+        assertTrue("There should be 4 rows, 1 header and 3 rows of data", data.length == 4);
+        headers = Arrays.asList(data[0]);
+        assertFalse(headers.contains("DBID"));
+        assertTrue(headers.contains("id"));
+        assertFalse(headers.contains("OWNER"));
+        assertTrue(headers.contains("ACLID"));
+/**
+        req = areq(params( "q", "OWNER:"+testUser, "qt", "/afts",
+                "wt", "csv", "fl", "id,content@s__size@{http://www.alfresco.org/model/content/1.0}content"),
+                "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
+
+        response = queryRequest(req);
+        data = new CSVParser(new StringReader(response)).getAllValues();
+        assertTrue("There should be 4 rows, 1 header and 3 rows of data", data.length == 4);
+ **/
+
+
     }
 
-    private void queryRequest(SolrServletRequest req) {
+    private String queryRequest(SolrServletRequest req) {
 
         try {
             String response = h.query(req);
-            System.out.println(response);
             logger.debug("Query response is "+ response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Exception during query", e);
         }

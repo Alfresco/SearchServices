@@ -273,7 +273,7 @@ public class AlfrescoSolrUtils
      * Creates a unique id.
      * @return Long unique id
      */
-    private static synchronized Long generateId()
+    public static synchronized Long generateId()
     {
         return id.incrementAndGet();
     }
