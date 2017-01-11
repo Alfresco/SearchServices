@@ -123,7 +123,7 @@ public class GetFavoriteCoreTests extends RestTest {
 	@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
 	public void getFavoriteFileUsingMe()  throws Exception
 	{
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingAuthUser().addFileToFavorites(fileModel);
         
         RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingMe().getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
