@@ -18,34 +18,14 @@
  */
 package org.apache.solr.handler.component;
 
-import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.component.RewriteParamListComponent;
-import org.alfresco.solr.transformer.CachedDocTransformer;
-import org.apache.lucene.index.IndexableField;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.response.CSVResponseWriter;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.QueryResponseWriter;
-import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
-import org.apache.solr.schema.SchemaField;
-import org.apache.solr.search.DocIterator;
-import org.apache.solr.search.DocList;
-import org.apache.solr.search.SolrIndexSearcher;
-import org.apache.solr.search.SolrReturnFields;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-import static org.alfresco.solr.SolrInformationServer.getFieldValueString;
 
 /**
  * A wrapper around the CSV writer for Alfresco-specific logic
@@ -60,16 +40,6 @@ public class AlfrescoCSVResponseWriter implements QueryResponseWriter
 
     @Override
     public void write(Writer writer, SolrQueryRequest req, SolrQueryResponse rsp) throws IOException {
-        SolrParams params = req.getParams();
-        String fl = params.get("fl");
-        String wt = params.get("wt");
-
-        if (fl != null) {
-            rsp.setReturnFields( new SolrReturnFields(
-                    RewriteParamListComponent.rewrite(fl, Arrays.asList(RewriteParamListComponent.CACHED_FIELD), Collections.emptyList()), req) );
-        }
-
-        Object responseObj = rsp.getResponse();
         delegate.write(writer, req, rsp);
     }
 
