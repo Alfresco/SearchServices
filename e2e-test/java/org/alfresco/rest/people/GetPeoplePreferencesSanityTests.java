@@ -44,7 +44,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         restPreferenceModelsCollection = restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist().and()
-                .entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
@@ -58,7 +58,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         restPreferenceModelsCollection = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist().and()
-                .entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
@@ -72,7 +72,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         restPreferenceModelsCollection = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist().and()
-                .entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
@@ -86,7 +86,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         restPreferenceModelsCollection = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist().and()
-                .entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
@@ -101,7 +101,7 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         restPreferenceModelsCollection = restClient.authenticateUser(adminUser).withCoreAPI().usingUser(managerUser).getPersonPreferences();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty().assertThat().paginationExist().and()
-                .entriesListContains("id", PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
