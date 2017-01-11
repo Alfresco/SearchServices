@@ -138,7 +138,7 @@ public class DeleteFavoriteCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
-    @Bug(id="MNT-16557")
+    @Bug(id="ACE-5588")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
@@ -153,7 +153,7 @@ public class DeleteFavoriteCoreTests extends RestTest
                   .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }    
 
-    @Bug(id="MNT-16557")
+    @Bug(id="ACE-5588")
     @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })

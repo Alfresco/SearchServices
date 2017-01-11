@@ -44,7 +44,7 @@ public class DeleteFavoriteSanityTests extends RestTest
         restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("targetGuid", siteModel.getGuid());
     }        
 
-    @Bug(id="MNT-16557")
+    @Bug(id="ACE-5588")
     @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
             description = "Verify user doesn't have permission to delete favorites of admin user with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })

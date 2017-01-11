@@ -70,7 +70,7 @@ public class DeleteFavoriteFullTests extends RestTest
                   .entriesListDoesNotContain("targetGuid", fileModel.getNodeRefWithoutVersion());
     }  
     
-    @Bug(id="MNT-16557")
+    @Bug(id="ACE-5588")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
@@ -86,7 +86,7 @@ public class DeleteFavoriteFullTests extends RestTest
                   .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }  
         
-    @Bug(id="MNT-16557")
+    @Bug(id="ACE-5588")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
@@ -102,7 +102,7 @@ public class DeleteFavoriteFullTests extends RestTest
                   .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }  
     
-    @Bug(id="MNT-16557")
+    @Bug(id="ACE-5588")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor user doesn't have permission to delete favorites of another user with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
