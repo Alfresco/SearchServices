@@ -78,7 +78,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with invald skipCount parameter with Rest API and response is 400")
-    public void userGetPeopleActivitiesUsingSkipCountParameter() throws Exception
+    public void userGetPeopleActivitiesUsingInvalidSkipCountParameter() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("skipCount=-1").getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
@@ -90,7 +90,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with invalid maxItems parameter with Rest API and response is 400")
-    public void userGetPeopleActivitiesUsingMaxItemsParameter() throws Exception
+    public void userGetPeopleActivitiesUsingInvalidMaxItemsParameter() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("maxItems=0").getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
@@ -102,7 +102,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities using invalid value for parameter 'who'with Rest API and response is 400")
-    public void userGetsPeopleActivitiesUsingMeForWhoParameter() throws Exception
+    public void userGetsPeopleActivitiesUsingInvalidValueForWhoParameter() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).usingParams("who=mee").getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
