@@ -282,6 +282,7 @@
         <arr name="components">
             <str>setLocale</str>
             <str>rewriteFacetParameters</str>
+            <str>rewriteFieldList</str>
             <str>query</str>
             <str>facet</str>
             <str>mlt</str>
@@ -541,6 +542,9 @@
     <searchComponent name="spellcheckbackcompat" class="org.alfresco.solr.component.spellcheck.AlfrescoSpellCheckBackCompatComponent"/>
     <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
     <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
+    <searchComponent name="rewriteFieldList"     class="org.alfresco.solr.component.RewriteParamListComponent" >
+        <str name="excludes">DBID</str>
+    </searchComponent>
     <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
 
 
