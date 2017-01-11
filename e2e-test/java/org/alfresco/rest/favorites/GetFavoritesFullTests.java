@@ -63,7 +63,7 @@ public class GetFavoritesFullTests extends RestTest
     {
         userFavorites = restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().where().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-        .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
+            .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
     }
     
     @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
@@ -125,7 +125,7 @@ public class GetFavoritesFullTests extends RestTest
     {
         userFavorites = restClient.withCoreAPI().usingAuthUser().where().invalidWhereParameter("EXIST((target/site))").targetFileExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-        .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
+            .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
@@ -137,8 +137,8 @@ public class GetFavoritesFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);  
         
         userFavorites.assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
-        .and().entriesListContains("targetGuid", secondSiteModel.getGuid())
-        .and().entriesListDoesNotContain("targetGuid", thirdSiteModel.getGuid());
+            .and().entriesListContains("targetGuid", secondSiteModel.getGuid())
+            .and().entriesListDoesNotContain("targetGuid", thirdSiteModel.getGuid());
     }
    
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
@@ -150,12 +150,15 @@ public class GetFavoritesFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);  
         
         userFavorites.assertThat().entriesListContains("targetGuid", thirdSiteModel.getGuid())
-        .and().entriesListContains("targetGuid", secondSiteModel.getGuid())
-        .and().entriesListDoesNotContain("targetGuid", firstSiteModel.getGuid());
+            .and().entriesListContains("targetGuid", secondSiteModel.getGuid())
+            .and().entriesListDoesNotContain("targetGuid", firstSiteModel.getGuid())
+            .getPagination().assertThat().field("maxItems").is("2")
+            .and().field("hasMoreItems").is("true")
+            .and().field("count").is("2");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify get first two favorites sites")
+            description = "Verify get favorites sites when using empty values for skipCount and maxItems")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
     public void userIsAbleToGetFavoritesWhenSkipCountAndMaxItemsAreEmpty() throws Exception
     {        
@@ -181,8 +184,7 @@ public class GetFavoritesFullTests extends RestTest
         tenantUser.setDomain("invalidNetwork");
         restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-        .assertLastError()
-        .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
+            .assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
