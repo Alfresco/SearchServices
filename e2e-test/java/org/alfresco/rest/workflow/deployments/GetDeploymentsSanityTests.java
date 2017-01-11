@@ -27,8 +27,7 @@ public class GetDeploymentsSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
         description = "Verify Admin user gets non-network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY})
     public void getNonNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
@@ -38,8 +37,7 @@ public class GetDeploymentsSanityTests extends RestTest
         deployments.assertThat().entriesListIsNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-        TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
         description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.NETWORKS})
     public void getNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
