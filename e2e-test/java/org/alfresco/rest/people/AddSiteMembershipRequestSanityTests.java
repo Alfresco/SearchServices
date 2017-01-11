@@ -6,7 +6,6 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteMembershipRequestModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;

@@ -13,6 +13,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,6 @@ public class GetFavoriteCoreTests extends RestTest {
 		fileModel = dataContent.usingUser(adminUserModel).usingResource(folderModel)
 				.createContent(DocumentType.TEXT_PLAIN);
 
-		siteModel.setGuid(
-				restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).getSite().getGuid());
-
 		usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator,
 				UserRole.SiteConsumer, UserRole.SiteContributor);
 	}
@@ -59,6 +57,22 @@ public class GetFavoriteCoreTests extends RestTest {
 				.stackTraceIs(RestErrorModel.STACKTRACE)
 				.containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
 	}
+	
+	@Bug(id = "ACE-2413")
+	@TestRail(section = { TestGroup.REST_API,
+			TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify get favorite site when person id is empty")
+	@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
+	public void getFavoriteSiteWithEmptyUserId() throws JsonToModelConversionException, Exception {
+		
+		restClient.withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(siteModel);
+		UserModel someUser = new UserModel("", DataUser.PASSWORD);
+
+		restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(someUser).getFavorite(siteModel.getGuid());
+		restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+				.containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, someUser.getUsername()))
+				.statusCodeIs(HttpStatus.BAD_REQUEST);
+	}
+	
 	
 	
 	@TestRail(section = { TestGroup.REST_API,
@@ -102,5 +116,17 @@ public class GetFavoriteCoreTests extends RestTest {
         RestPersonFavoritesModel favoriteSite = restClient.withCoreAPI().usingMe().getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
         favoriteSite.assertThat().field("targetGuid").equals(siteModel.getGuid());   
+	}
+	
+	@TestRail(section = { TestGroup.REST_API,
+			TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify get favorite site for -me-")
+	@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
+	public void getFavoriteFileUsingMe()  throws Exception
+	{
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingAuthUser().addFileToFavorites(fileModel);
+        
+        RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingMe().getFavorite(fileModel.getNodeRefWithoutVersion());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        favoriteFile.assertThat().field("targetGuid").equals(fileModel.getNodeRef());   
 	}
 }
