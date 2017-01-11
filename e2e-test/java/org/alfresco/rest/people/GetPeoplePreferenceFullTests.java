@@ -40,7 +40,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
     public void checkDefaultErrorSchema() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel("invalidPersonID", "password"))
-            .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+            .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
             .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidPersonID"))
             .statusCodeIs(HttpStatus.NOT_FOUND)
@@ -55,10 +55,10 @@ public class GetPeoplePreferenceFullTests extends RestTest
     public void preferenceIsReturnedWhenUsingMeAsPersonId() throws Exception
     {
         restPreferenceModel = restClient.authenticateUser(userModel).withCoreAPI().usingMe()
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
         
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        restPreferenceModel.assertThat().field("id").is(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()))
             .and().field("value").is("true");
      }
     
@@ -68,15 +68,15 @@ public class GetPeoplePreferenceFullTests extends RestTest
     public void propertiesParameterIsAppliedWhenRetrievingPreference() throws Exception
     {
         restPreferenceModel = restClient.authenticateUser(userModel).withParams("properties=id").withCoreAPI().usingUser(userModel)
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        restPreferenceModel.assertThat().field("id").is(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()))
             .and().field("value").isNull();
         
         restPreferenceModel = restClient.authenticateUser(userModel).withParams("properties=id,value").withCoreAPI().usingUser(userModel)
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+        restPreferenceModel.assertThat().field("id").is(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()))
             .and().field("value").is("true");
      }
     
@@ -86,8 +86,8 @@ public class GetPeoplePreferenceFullTests extends RestTest
     public void validateIdElementInGetSitePreferenceResponse() throws Exception
     {
         restPreferenceModel = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser()
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId())
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
+        restPreferenceModel.assertThat().field("id").is(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()))
             .and().field("value").is("true");
      }
     
@@ -201,9 +201,9 @@ public class GetPeoplePreferenceFullTests extends RestTest
     public void adminIsAbleToGetOtherUserPreference() throws Exception
     {
         restPreferenceModel = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(userModel)
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId()).and().field("value").is("true");
+        restPreferenceModel.assertThat().field("id").is(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId())).and().field("value").is("true");
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
