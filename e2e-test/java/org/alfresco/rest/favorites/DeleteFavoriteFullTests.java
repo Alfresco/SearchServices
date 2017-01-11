@@ -141,7 +141,7 @@ public class DeleteFavoriteFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify user can't delete favorites using an invalid network ID.")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
-    public void userIsNotAbleToDeleteFavoriteSiteWithInvalidNetworkID() throws JsonToModelConversionException, Exception
+    public void userIsNotAbleToDeleteFavoriteSiteWithInvalidNetworkID() throws Exception
     {
         UserModel networkUserModel = dataUser.createRandomTestUser();       
         restClient.authenticateUser(networkUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);    
@@ -227,7 +227,7 @@ public class DeleteFavoriteFullTests extends RestTest
     public void tenantUserIsAbleToDeleteFavoriteSiteAddedByAdminSameNetwork() throws JsonToModelConversionException, Exception
     {      
         adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser);       
+        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser);  
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");      
         siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
         siteModel.setGuid(restClient.authenticateUser(adminTenantUser).withCoreAPI().usingSite(siteModel).getSite().getGuid());
