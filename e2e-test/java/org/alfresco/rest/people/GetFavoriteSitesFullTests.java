@@ -143,7 +143,7 @@ public class GetFavoriteSitesFullTests extends RestTest
         RestSiteModel restSiteModel = restClient.authenticateUser(userModel).withParams("properties=title")
                 .withCoreAPI().usingAuthUser().getFavoriteSites().getOneRandomEntry().onModel();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSiteModel//.assertThat().fieldCount().is(0)
+        restSiteModel.assertThat().fieldCount().is(1)
                 .assertThat().field("title").is(siteModel.getTitle());
     }
 
@@ -153,7 +153,7 @@ public class GetFavoriteSitesFullTests extends RestTest
     public void getFavoriteSitesRequestWithInvalidPropertiesParam() throws Exception
     {
         restClient.authenticateUser(userModel).withParams("properties=tas").withCoreAPI().usingAuthUser()
-                .getFavoriteSites().getOneRandomEntry().onModel();//.assertThat().fieldCount().is(0);
+                .getFavoriteSites().getOneRandomEntry().onModel().assertThat().fieldCount().is(0);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
