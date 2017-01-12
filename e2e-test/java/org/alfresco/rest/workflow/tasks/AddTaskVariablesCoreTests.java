@@ -79,6 +79,7 @@ public class AddTaskVariablesCoreTests extends RestTest
 
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case incomplete body - missing required: name type is provided")
     public void failedAddingTaskVariableIfIncompleteRequiredBodyIsProvided() throws Exception
     {
@@ -103,6 +104,7 @@ public class AddTaskVariablesCoreTests extends RestTest
     }
 
     @Bug(id = "ACE-5674")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid type prefix is provided")
     public void failedAddingTaskVariableIfInvalidTypePrefixIsProvided() throws Exception
     {
