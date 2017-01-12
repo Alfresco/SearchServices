@@ -107,7 +107,7 @@ public class UpdateTaskCoreTestsBulk3 extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
         restTaskModel = restClient.processModel(RestTaskModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("priorityTask").is(CMISUtil.Priority.Low.getLevel());
+        restTaskModel.assertThat().field("priority").is(CMISUtil.Priority.Low.getLevel());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
