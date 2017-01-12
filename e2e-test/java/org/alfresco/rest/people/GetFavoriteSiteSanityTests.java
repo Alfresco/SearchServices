@@ -131,6 +131,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         managerUser.setPassword("newpassword");
 
         restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

@@ -106,7 +106,8 @@ public class AddCommentSanityTests extends RestTest
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
         restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
 }

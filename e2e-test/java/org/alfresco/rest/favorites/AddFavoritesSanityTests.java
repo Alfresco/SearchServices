@@ -2,6 +2,7 @@ package org.alfresco.rest.favorites;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
@@ -95,6 +96,7 @@ public class AddFavoritesSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

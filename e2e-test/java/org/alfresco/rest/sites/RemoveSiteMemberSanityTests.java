@@ -1,6 +1,7 @@
 package org.alfresco.rest.sites;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -125,6 +126,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser).withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
 
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

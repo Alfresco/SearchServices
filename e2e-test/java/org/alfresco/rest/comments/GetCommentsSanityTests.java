@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
@@ -105,7 +106,8 @@ public class GetCommentsSanityTests extends RestTest
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel).withCoreAPI()
                 .usingResource(document).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.SANITY,

@@ -2,6 +2,7 @@ package org.alfresco.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
@@ -123,7 +124,8 @@ public class AddRatingSanityTests extends RestTest
         FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -206,6 +208,7 @@ public class AddRatingSanityTests extends RestTest
         FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

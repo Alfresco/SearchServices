@@ -1,6 +1,7 @@
 package org.alfresco.rest.sites;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteContainerModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
@@ -112,6 +113,7 @@ public class GetSiteContainerSanityTests extends RestTest
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel)
                   .withCoreAPI().usingSite(siteModel).getSiteContainer(siteContainerModel.onModel());
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

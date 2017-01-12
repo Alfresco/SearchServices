@@ -2,6 +2,7 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -84,6 +85,7 @@ public class GetSiteMembershipSanityTests extends RestTest
     {
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI()
                 .usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).getSiteMembership(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

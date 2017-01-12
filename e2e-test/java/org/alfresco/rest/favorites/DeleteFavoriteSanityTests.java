@@ -166,6 +166,7 @@ public class DeleteFavoriteSanityTests extends RestTest
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager).withCoreAPI().usingAuthUser()
-                  .deleteSiteFromFavorites(siteModel).assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+                  .deleteSiteFromFavorites(siteModel).assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

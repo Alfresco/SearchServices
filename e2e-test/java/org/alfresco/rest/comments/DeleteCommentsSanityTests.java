@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
@@ -90,6 +91,7 @@ public class DeleteCommentsSanityTests extends RestTest
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel);
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

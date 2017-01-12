@@ -2,6 +2,7 @@ package org.alfresco.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModelsCollection;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
@@ -177,10 +178,12 @@ public class DeleteRatingSanityTests extends RestTest
         restClient.authenticateUser(new UserModel("random user", "random password"));
 
         restClient.withCoreAPI().usingResource(document).deleteLikeRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
 
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify one user is not able to remove rating added by another user")

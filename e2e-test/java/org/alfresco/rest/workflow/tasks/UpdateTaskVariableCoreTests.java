@@ -167,7 +167,8 @@ public class UpdateTaskVariableCoreTests extends RestTest
         variableModel.setName("new-name");
         taskVariable = restClient.authenticateUser(UserModel.getRandomUserModel())
                 .withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
 }

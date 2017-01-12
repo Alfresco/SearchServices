@@ -1,6 +1,7 @@
 package org.alfresco.rest.networks;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -36,7 +37,8 @@ public class RestGetNetworksForPersonSanityTests extends RestTest
         tenantUser.setDomain(adminTenantUser.getDomain());
         restClient.authenticateUser(tenantUser);
         restClient.withCoreAPI().usingAuthUser().getNetworks(adminTenantUser);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,

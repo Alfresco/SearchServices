@@ -1,6 +1,7 @@
 package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPreferenceModel;
 import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.constants.UserRole;
@@ -114,6 +115,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
 
         restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser()
                 .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

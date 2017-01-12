@@ -55,7 +55,7 @@ public class GetSiteMembershipCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @Bug(id = "REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
+//    @Bug(id = "REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify get site membership for a site returns status 404 when personId does not exist.")
     public void getSiteMembershipUsingNonExistentPersonId() throws Exception
     {

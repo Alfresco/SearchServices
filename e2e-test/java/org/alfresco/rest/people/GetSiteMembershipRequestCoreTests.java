@@ -38,7 +38,7 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify contributor user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
-    @Bug(id = "16904")
+    @Bug(id = "MNT-16904")
     public void unauthorizedContributorUserFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel contributor = dataUser.usingAdmin().createRandomTestUser();
@@ -71,7 +71,8 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(consumer, siteModel, UserRole.SiteContributor);
         consumer.setPassword("newpassword");
         restClient.authenticateUser(consumer).withCoreAPI().usingUser(newMember).getSiteMembershipRequest(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
