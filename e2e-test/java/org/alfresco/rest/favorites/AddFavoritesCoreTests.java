@@ -55,7 +55,7 @@ public class AddFavoritesCoreTests extends RestTest
         SiteModel site = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         site.setGuid(link.getNodeRef());
         
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(site);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(site);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, site.getGuid().split("/")[3]));
     }
 
@@ -64,7 +64,7 @@ public class AddFavoritesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteUsingInexistentUser() throws Exception
     {
-        restClient.withCoreAPI().usingUser(new UserModel("random_user", "random_password")).addSiteToFavorites(siteModel);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(new UserModel("random_user", "random_password")).addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_user"));
     }
@@ -77,7 +77,7 @@ public class AddFavoritesCoreTests extends RestTest
         SiteModel site = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         site.setGuid("random_guid");
 
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(site);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(site);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_guid"));
     }
@@ -102,7 +102,7 @@ public class AddFavoritesCoreTests extends RestTest
         String nodeRef = document.getNodeRef();
         document.setNodeRef(folder.getNodeRef());
         
-        restClient.withCoreAPI().usingAuthUser().addFileToFavorites(document);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addFileToFavorites(document);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, 
                 adminUserModel.getUsername(), folder.getNodeRefWithoutVersion()));
         
