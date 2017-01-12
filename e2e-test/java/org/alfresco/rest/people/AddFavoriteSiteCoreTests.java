@@ -38,7 +38,7 @@ public class AddFavoriteSiteCoreTests extends RestTest
     public void emptyUserIsNotAbleToRemoveFavoriteSite() throws Exception
     {
         UserModel emptyUser = new UserModel("", "password");
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(emptyUser).addSiteToFavorites(siteModel);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(emptyUser).addFavoriteSite(siteModel);
         
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "emptyUser"));
@@ -49,12 +49,12 @@ public class AddFavoriteSiteCoreTests extends RestTest
     description = "Verify inexistent user is not able to add a site from favorites and response is (404)")
     public void inexistentUserIsNotAbleToRemoveFavoriteSite() throws Exception
     {
-        UserModel inexistentUser = new UserModel("inexistenUser", "password");
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(inexistentUser).addSiteToFavorites(siteModel);
+        UserModel inexistentUser = new UserModel("inexistentUser", "password");
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(inexistentUser).addFavoriteSite(siteModel);
         
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "inexistenUser"))   
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "inexistentUser"))   
                   .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
@@ -65,11 +65,11 @@ public class AddFavoriteSiteCoreTests extends RestTest
     description = "Verify manager user is not able to add a favorite site when the site is already favorite - status code (409)")
     public void managerUserAddFavoriteSiteAlreadyAFavoriteSite() throws Exception
     {
-        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
+        UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();       
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
 
-        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     
         restClient.withCoreAPI().usingUser(managerUser).addFavoriteSite(siteModel);
@@ -85,7 +85,7 @@ public class AddFavoriteSiteCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
     description = "Verify user is not able to add a favorite site when the 'id' is empty - status code (400)")
-    public void collaboratorUserAddFavoriteSiteAFavoriteSite() throws Exception
+    public void userAddFavoriteSiteAFavoriteSite() throws Exception
     {         
         siteModel.setId("");
         restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
@@ -98,58 +98,24 @@ public class AddFavoriteSiteCoreTests extends RestTest
                   .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
     }
     
-    @Bug(id="MNT-17338")
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify user doesn't have permission to delete favorites of admin user with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void userIsNotAbleToAddFavoriteSiteOfAnotherUser() throws JsonToModelConversionException, Exception
     {
+        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(contributorUser, siteModel, UserRole.SiteContributor);
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(consumerUser, siteModel, UserRole.SiteConsumer);
              
         restClient.authenticateUser(consumerUser).withCoreAPI()
-                  .usingUser(contributorUser).addSiteToFavorites(siteModel);
+                  .usingUser(contributorUser).addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                   .assertLastError()
                   .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);   
-    }
-
-    @Bug(id="MNT-17338")
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
-            description = "Verify admin user doesn't have permission to add a favorite site of another user with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    public void adminIsNotAbleToAddFavoriteSiteOfAnotherUser() throws JsonToModelConversionException, Exception
-    {
-        UserModel collaboratorrUser = dataUser.usingAdmin().createRandomTestUser();
-        dataUser.usingUser(userModel).addUserToSite(collaboratorrUser, siteModel, UserRole.SiteCollaborator);
-        restClient.authenticateUser(collaboratorrUser)
-                  .withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(siteModel);
-
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError()
-                  .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
-    }    
+    }         
         
-    @Bug(id="MNT-17339")
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
-            description = "Verify non member user is not able to add a public favorite site - status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    public void privateSiteAddFavoriteSiteUserNotMemberOfTheSite() throws JsonToModelConversionException, Exception
-    {            
-        UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();                            
-        restClient.authenticateUser(contributorUser).withCoreAPI()
-                  .usingAuthUser().addSiteToFavorites(privateSiteModel);
-        
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                  .assertLastError()                  
-                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, privateSiteModel.getId()))   
-                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);  
-    }
-    
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify manager user is able to add as favorite a private site.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
@@ -158,7 +124,7 @@ public class AddFavoriteSiteCoreTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, privateSiteModel, UserRole.SiteManager);
 
-        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(managerUser).addSiteToFavorites(privateSiteModel); 
+        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(managerUser).addFavoriteSite(privateSiteModel); 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);     
         
         RestPersonFavoritesModelsCollection favorites = restClient.withCoreAPI().usingAuthUser().getFavorites();
@@ -180,7 +146,7 @@ public class AddFavoriteSiteCoreTests extends RestTest
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, moderatedSiteModel, UserRole.SiteManager);
 
-        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(managerUser).addSiteToFavorites(moderatedSiteModel); 
+        restClient.authenticateUser(managerUser).withCoreAPI().usingUser(managerUser).addFavoriteSite(moderatedSiteModel); 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
           
         RestPersonFavoritesModelsCollection favorites = restClient.withCoreAPI().usingAuthUser().getFavorites();
@@ -200,7 +166,7 @@ public class AddFavoriteSiteCoreTests extends RestTest
     public void addFavoriteSiteWithSuccessUsingMeAsPersonId() throws Exception
     {
         restClient.authenticateUser(adminUserModel); 
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingMe().addSiteToFavorites(moderatedSiteModel);         
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingMe().addFavoriteSite(moderatedSiteModel);         
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
@@ -218,7 +184,6 @@ public class AddFavoriteSiteCoreTests extends RestTest
         
         restClient.withCoreAPI().usingUser(managerUser).addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-    }
-    
+    }    
 
 }
