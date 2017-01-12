@@ -149,7 +149,7 @@ public class GetFavoriteSiteFullTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify request returns status 200 when using -me-")
+        description = "Verify request returns status 401 when using invalid network")
     public void getFavoriteSiteUsingInvalidNetwork() throws Exception
     {
         UserModel invalidUserNetwork = dataUser.createRandomTestUser();
