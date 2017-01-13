@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class DeleteCommentsCoreTests extends RestTest
+public class DeleteCommentCoreTests extends RestTest
 {
     private UserModel adminUserModel;
 
