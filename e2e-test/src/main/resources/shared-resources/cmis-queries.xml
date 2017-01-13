@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="CMISQueries" thread-count="1">
+	<listeners>
+		<listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+		<listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"></listener>
+	</listeners>
 	<test name="SolrQueries">	
 		<packages>
 			<package name="org.alfresco.cmis.search"></package>
