@@ -85,7 +85,7 @@ public class GetFavoritesFullTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify get favorites when using invalid network id")
+            description = "Verify get favorites when using invalid network id for non-tenant user")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
     public void getFavoritesWhenNetworkIdIsInvalid() throws Exception
     {
@@ -171,7 +171,7 @@ public class GetFavoritesFullTests extends RestTest
     
     @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify the get favorites request when network id is invalid")
+            description = "Verify the get favorites request when network id is invalid for tenant user")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL, TestGroup.NETWORKS})
     public void getFavoriteSitesWhenNetworkIdIsInvalid() throws JsonToModelConversionException, Exception
     {   
