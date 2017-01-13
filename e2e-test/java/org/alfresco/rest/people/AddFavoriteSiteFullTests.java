@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
 
 public class AddFavoriteSiteFullTests extends RestTest
 {
-    UserModel userModel, adminUserModel;
+    UserModel userModel, adminUserModel, adminTenantUser, tenantUser;
     SiteModel siteModel, privateSiteModel, moderatedSiteModel;
     UserModel searchedUser;
     FileModel document;
@@ -261,5 +261,71 @@ public class AddFavoriteSiteFullTests extends RestTest
       restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()   
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, site.getId().split("/")[3]));
   }       
+    
+    @Bug(id="MNT-16904")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify tenant user is not able to delete favorites using an invalid network ID - status code (401)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.NETWORKS, TestGroup.FULL })
+    public void tenantIsNotAbleToDeleteFavoriteSiteWithInvalidNetworkID() throws JsonToModelConversionException, Exception
+    {
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser);
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");        
+        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();        
+        siteModel.setGuid(restClient.authenticateUser(tenantUser).withCoreAPI().usingSite(siteModel).getSite().getGuid());
+        restClient.authenticateUser(tenantUser).withCoreAPI();  
+        tenantUser.setDomain("invalidNetwork");       
+        
+        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+                  .assertLastError()
+                  .containsSummary(RestErrorModel.AUTHENTICATION_FAILED)
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)    
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+       }  
+      
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify tenant user deletes favorites site and status code is (201)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.NETWORKS, TestGroup.FULL })
+    public void tenantDeleteFavoriteSiteValidNetwork() throws JsonToModelConversionException, Exception
+    {              
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser);       
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");      
+        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
+        siteModel.setGuid(restClient.authenticateUser(tenantUser).withCoreAPI().usingSite(siteModel).getSite().getGuid());
+        restClient.authenticateUser(tenantUser).withCoreAPI();
+        tenantUser.setDomain(tenantUser.getDomain());  
+        
+        restClient.withCoreAPI()
+                  .usingAuthUser().addSiteToFavorites(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+              
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                  .assertThat()
+                  .entriesListContains("targetGuid", siteModel.getGuidWithoutVersion());
+    }  
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify tenant user deletes favorites site created by admin tenant - same network and status code is (201)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.NETWORKS, TestGroup.FULL })
+    public void tenantUserIsAbleToDeleteFavoriteSiteAddedByAdminSameNetwork() throws JsonToModelConversionException, Exception
+    {      
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser);       
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");      
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        siteModel.setGuid(restClient.authenticateUser(adminTenantUser).withCoreAPI().usingSite(siteModel).getSite().getGuid());
+        restClient.authenticateUser(tenantUser).withCoreAPI();
+        tenantUser.setDomain(adminTenantUser.getDomain());  
+        
+        restClient.withCoreAPI().usingAuthUser().addFavoriteSite(siteModel);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                  .assertThat()
+                  .entriesListContains("targetGuid", siteModel.getGuidWithoutVersion());
+    }   
 
 }
