@@ -81,20 +81,6 @@
             <version>1.7.12</version>
         </dependency>
 
-
-        <!--  NLP  -->
-        <dependency>
-            <groupId>edu.emory.mathcs.nlp</groupId>
-            <artifactId>nlp4j</artifactId>
-            <version>1.1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>edu.emory.mathcs.nlp</groupId>
-            <artifactId>nlp4j-english</artifactId>
-            <version>1.1.2</version>
-        </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -124,6 +110,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!--  NLP  -->
+        <dependency>
+            <groupId>edu.emory.mathcs.nlp</groupId>
+            <artifactId>nlp4j</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.emory.mathcs.nlp</groupId>
+            <artifactId>nlp4j-english</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
