@@ -60,14 +60,13 @@ public class RestGetNetworkFullTests extends RestTest
             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Bug(id = "needs to be checked")
+    @Bug(id = "ACE-5745")
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user gets an existing network successfully with Rest API")
     @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.FULL })
     public void adminUserGetsExistingNetwork() throws Exception
     {
-        restClient.authenticateUser(adminuser);
-        RestNetworkModel restNetworkModel = restClient.withCoreAPI().usingNetworks().getNetwork(adminTenantUser);
+        RestNetworkModel restNetworkModel = restClient.authenticateUser(adminuser).withCoreAPI().usingNetworks().getNetwork(adminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restNetworkModel.assertThat().fieldsCount().is("1");
         restNetworkModel.assertThat().field("id").is(adminTenantUser.getDomain())
@@ -80,8 +79,7 @@ public class RestGetNetworkFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.FULL })
     public void adminTenantGetsNetworkUsingPropertiesParameter() throws Exception
     {
-        restClient.authenticateUser(tenantUser);
-        JSONObject entryResponse= restClient.withCoreAPI().usingNetworks().usingParams("properties=id").getNetworkWithParams(adminTenantUser);
+        JSONObject entryResponse= restClient.authenticateUser(tenantUser).withCoreAPI().usingNetworks().usingParams("properties=id").getNetworkWithParams(adminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(entryResponse.get("id").equals(adminTenantUser.getDomain().toLowerCase()));
         assertJsonResponseDoesnotContainField(entryResponse, "homeNetwork");

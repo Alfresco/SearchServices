@@ -69,16 +69,6 @@ public class RestGetNetworkSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
-            description = "Verify tenant admin user gets non existing network with Rest API and checks the not found status")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
-    public void adminTenantChecksIfNonExistingNetworkIsNotFound() throws Exception
-    {
-        restClient.authenticateUser(adminTenantUser);
-        restClient.withCoreAPI().usingNetworks().getNetwork(UserModel.getRandomTenantUser());
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify tenant admin user gets another existing network with Rest API and checks the forbidden status")
     @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
     public void adminTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
