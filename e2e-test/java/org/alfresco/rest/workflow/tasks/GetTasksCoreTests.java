@@ -56,21 +56,11 @@ public class GetTasksCoreTests extends RestTest
             TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that orderBy parameter is applied.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void orderByParameterApplied() throws Exception
-    {
-        
-        
-        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id DESC").withWorkflowAPI().getTasks();
+    { 
+        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         taskModels.assertThat().entriesListIsNotEmpty().
-            and().entriesListIsSortedAscBy("id");
-        List<RestTaskModel> tasksList = taskModels.getEntries();
-        List<String> taskIds = new ArrayList<String>();
-        for(RestTaskModel task: tasksList)
-        {
-            taskIds.add(task.onModel().getId());   
-        }      
-        boolean sorted = Ordering.natural().isOrdered(taskIds);
-        Assert.assertTrue(sorted, "Tasks list should be ordered ascendent after id");     
+            and().entriesListIsSortedAscBy("id");       
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,

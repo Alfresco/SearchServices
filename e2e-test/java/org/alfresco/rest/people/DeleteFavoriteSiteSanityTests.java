@@ -68,12 +68,12 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
         restClient.withCoreAPI().usingAuthUser().getFavorites()
-        .assertThat()
-        .entriesListDoesNotContain("targetGuid", siteModel1.getGuid())
-        .and().entriesListDoesNotContain("id", siteModel1.getId())
-        .and().entriesListDoesNotContain("description", siteModel1.getDescription())
-        .and().entriesListDoesNotContain("visibility", siteModel1.getVisibility().toString())
-        .and().entriesListDoesNotContain("title", siteModel1.getTitle());        
+                  .assertThat()
+                  .entriesListDoesNotContain("targetGuid", siteModel1.getGuid())
+                  .and().entriesListDoesNotContain("id", siteModel1.getId())
+                  .and().entriesListDoesNotContain("description", siteModel1.getDescription())
+                  .and().entriesListDoesNotContain("visibility", siteModel1.getVisibility().toString())
+                  .and().entriesListDoesNotContain("title", siteModel1.getTitle());        
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
@@ -90,12 +90,12 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
         restClient.withCoreAPI().usingAuthUser().getFavorites()
-        .assertThat()
-        .entriesListDoesNotContain("targetGuid", siteModel1.getGuid())
-        .and().entriesListDoesNotContain("id", siteModel1.getId())
-        .and().entriesListDoesNotContain("description", siteModel1.getDescription())
-        .and().entriesListDoesNotContain("visibility", siteModel1.getVisibility().toString())
-        .and().entriesListDoesNotContain("title", siteModel1.getTitle());
+                  .assertThat()
+                  .entriesListDoesNotContain("targetGuid", siteModel1.getGuid())
+                  .and().entriesListDoesNotContain("id", siteModel1.getId())
+                  .and().entriesListDoesNotContain("description", siteModel1.getDescription())
+                  .and().entriesListDoesNotContain("visibility", siteModel1.getVisibility().toString())
+                  .and().entriesListDoesNotContain("title", siteModel1.getTitle());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
@@ -112,12 +112,12 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
         restClient.withCoreAPI().usingAuthUser().getFavorites()
-        .assertThat()
-        .entriesListDoesNotContain("targetGuid", siteModel1.getGuid())
-        .and().entriesListDoesNotContain("id", siteModel1.getId())
-        .and().entriesListDoesNotContain("description", siteModel1.getDescription())
-        .and().entriesListDoesNotContain("visibility", siteModel1.getVisibility().toString())
-        .and().entriesListDoesNotContain("title", siteModel1.getTitle());
+                  .assertThat()
+                  .entriesListDoesNotContain("targetGuid", siteModel1.getGuid())
+                  .and().entriesListDoesNotContain("id", siteModel1.getId())
+                  .and().entriesListDoesNotContain("description", siteModel1.getDescription())
+                  .and().entriesListDoesNotContain("visibility", siteModel1.getVisibility().toString())
+                  .and().entriesListDoesNotContain("title", siteModel1.getTitle());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
@@ -156,7 +156,6 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })    
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
     description = "Verify manager user is NOT Authorized to remove a site from its favorite sites list with Rest API when authentication fails (401)")
-    @Bug(id = "MNT-16904")
     public void managerUserNotAuthorizedFailsToRemoveFavoriteSite() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
