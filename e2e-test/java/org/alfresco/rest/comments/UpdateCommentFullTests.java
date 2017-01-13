@@ -201,7 +201,6 @@ public class UpdateCommentFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void managerIsAbleToUpdateACommentWithMultiByteContent() throws JsonToModelConversionException, Exception
     {
-      //TODO update comment with multi-byte content - verify
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String multiByte = "\ufeff\u6768\u6728\u91d1";
         
@@ -277,10 +276,10 @@ public class UpdateCommentFullTests extends RestTest
             restClient.assertStatusCodeIs(HttpStatus.CREATED);
             
             restClient.authenticateUser(newUser).withCoreAPI().usingResource(file).updateComment(commentModel, updatedComment);
-            restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);  
-            restClient.assertLastError().getErrorKey().contains(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
-            restClient.assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
-            restClient.assertLastError().getDescriptionURL().contains("https://api-explorer.alfresco.com");
-            restClient.assertLastError().getStackTrace().contains("For security reasons the stack trace is no longer displayed");
+            restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                    .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+                    .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                    .stackTraceIs(RestErrorModel.STACKTRACE)
+                    .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
         }
 }
