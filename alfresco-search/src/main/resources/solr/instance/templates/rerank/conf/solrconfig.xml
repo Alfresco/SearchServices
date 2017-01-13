@@ -835,6 +835,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldList</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>

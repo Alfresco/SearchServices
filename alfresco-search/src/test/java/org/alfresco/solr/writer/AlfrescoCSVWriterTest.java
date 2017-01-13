@@ -115,6 +115,19 @@ public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
         NodeMetaData fileMetaData   = getNodeMetaData(fileNode,  txn, acl, testUser, ancestors(folderMetaData.getNodeRef()), false);
         NodeMetaData fileMetaData2  = getNodeMetaData(fileNode2, txn, acl, testUser, ancestors(folderMetaData.getNodeRef()), false);
 
+        fileMetaData.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("my file1 Name"));
+        HashMap<Locale, String> title = new HashMap<Locale, String> ();
+        title.put(Locale.ENGLISH, "title1");
+        fileMetaData.getProperties().put(ContentModel.PROP_TITLE, new  MLTextPropertyValue(title));
+        HashMap<Locale, String> desc = new HashMap<Locale, String> ();
+        desc.put(Locale.ENGLISH, "file desc");
+        fileMetaData.getProperties().put(ContentModel.PROP_DESCRIPTION, new  MLTextPropertyValue(desc));
+
+        fileMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("my file2 name"));
+        HashMap<Locale, String> title2 = new HashMap<Locale, String> ();
+        title2.put(Locale.ENGLISH, "file2");
+        fileMetaData2.getProperties().put(ContentModel.PROP_TITLE,  new  MLTextPropertyValue(title2));
+
         //Index the transaction, nodes, and nodeMetaDatas.
         indexTransaction(foldertxn, list(folderNode), list(folderMetaData));
         indexTransaction(txn,
@@ -160,7 +173,6 @@ public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
                 "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
 
         response = queryRequest(req);
-        System.out.println(response);
         data = new CSVParser(new StringReader(response)).getAllValues();
         assertTrue("There should be 4 rows, 1 header and 3 rows of data", data.length == 4);
         headers = Arrays.asList(data[0]);
@@ -177,6 +189,8 @@ public class AlfrescoCSVWriterTest extends AbstractAlfrescoSolrTests
 
         try {
             String response = h.query(req);
+            System.out.println(response);
+            System.out.println("");
             logger.debug("Query response is "+ response);
             return response;
         } catch (Exception e) {

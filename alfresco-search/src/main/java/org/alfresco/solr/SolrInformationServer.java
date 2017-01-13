@@ -883,7 +883,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private String getFieldValueString(SolrDocument doc, String fieldName)
+    public static String getFieldValueString(SolrDocument doc, String fieldName)
     {
         IndexableField field = (IndexableField)doc.getFieldValue(fieldName);
         String value = null;
@@ -895,7 +895,7 @@ public class SolrInformationServer implements InformationServer
     }
 
 
-    private long getFieldValueLong(SolrDocument doc, String fieldName)
+    public static long getFieldValueLong(SolrDocument doc, String fieldName)
     {
         return Long.parseLong(getFieldValueString(doc, fieldName));
     }

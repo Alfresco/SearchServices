@@ -36,6 +36,7 @@ import org.apache.solr.core.CoreContainer;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.schema.SchemaField;
+import org.apache.solr.search.SolrIndexSearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,18 +69,17 @@ public class CachedDocTransformer extends DocTransformer
      * @see org.apache.solr.response.transform.DocTransformer#transform(org.apache.solr.common.SolrDocument, int)
      */
     @Override
-    public void transform(SolrDocument doc, int docid, float score) throws IOException
-    {
+    public void transform(SolrDocument doc, int docid, float score) throws IOException {
+        transformDocument(context.getSearcher(), doc);
+    }
+
+    public static void transformDocument(SolrIndexSearcher searcher, SolrDocument doc) throws IOException {
+
         SolrInputDocument cachedDoc = null;
         try
         {
             String id = getFieldValueString(doc, FIELD_SOLR4_ID);
-            TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-            CoreContainer coreContainer = context.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
-            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
-            SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(context.getSearcher().getCore().getName());
-            SolrContentStore solrContentStore = srv.getSolrContentStore();
-            cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(tenantAndDbId.tenant, tenantAndDbId.dbId);
+            cachedDoc = getDocument(searcher, id);
         }
         catch(StringIndexOutOfBoundsException e)
         {
@@ -91,7 +91,7 @@ public class CachedDocTransformer extends DocTransformer
             Collection<String> fieldNames = cachedDoc.getFieldNames();
             for (String fieldName : fieldNames)
             {
-               SchemaField schemaField = context.getSearcher().getSchema().getFieldOrNull(fieldName);
+               SchemaField schemaField = searcher.getSchema().getFieldOrNull(fieldName);
                if(schemaField != null)
                {
                    doc.removeFields(fieldName);
@@ -172,8 +172,17 @@ public class CachedDocTransformer extends DocTransformer
 
     }
 
-    
-    private String getFieldValueString(SolrDocument doc, String fieldName)
+    public static SolrInputDocument getDocument(SolrIndexSearcher searcher, String id) throws IOException {
+        TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
+        CoreContainer coreContainer = searcher.getCore().getCoreDescriptor().getCoreContainer();
+        AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
+        SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(searcher.getCore().getName());
+        SolrContentStore solrContentStore = srv.getSolrContentStore();
+        return solrContentStore.retrieveDocFromSolrContentStore(tenantAndDbId.tenant, tenantAndDbId.dbId);
+    }
+
+
+    private static String getFieldValueString(SolrDocument doc, String fieldName)
     {
         Object o = doc.getFieldValue(fieldName);
         if(o != null)

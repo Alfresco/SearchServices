@@ -360,7 +360,7 @@ public class AlfrescoLukeRequestHandler extends RequestHandlerBase {
 		return finfo;
 	}
 
-	private static SimpleOrderedMap<Object> getIndexedFieldsInfo(
+	public static SimpleOrderedMap<Object> getIndexedFieldsInfo(
 			SolrQueryRequest req) throws Exception {
 
 		SolrIndexSearcher searcher = req.getSearcher();
@@ -488,7 +488,7 @@ public class AlfrescoLukeRequestHandler extends RequestHandlerBase {
 	/**
 	 * Return info from the index
 	 */
-	private static SimpleOrderedMap<Object> getSchemaInfo(IndexSchema schema) {
+	public static SimpleOrderedMap<Object> getSchemaInfo(IndexSchema schema) {
 		Map<String, List<String>> typeusemap = new TreeMap<>();
 		Map<String, Object> fields = new TreeMap<>();
 		SchemaField uniqueField = schema.getUniqueKeyField();
