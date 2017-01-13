@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class DeleteCommentsSanityTests extends RestTest
+public class DeleteCommentSanityTests extends RestTest
 {
     private UserModel adminUserModel;
 
@@ -79,6 +79,18 @@ public class DeleteCommentsSanityTests extends RestTest
         comment = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Contributor");
         restClient.withCoreAPI().usingResource(document).deleteComment(comment);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }
+    
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user cannot delete comments and status code returned is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        comment = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Manager");
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        restClient.withCoreAPI().usingResource(document).deleteComment(comment);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
     
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify User gets status code 401 if authentication call fails")
