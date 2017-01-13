@@ -91,7 +91,7 @@ public class AddCommentsFullTests extends RestTest
     public void addCommentsWithSpecialCharsWithCollaboratorCheckCommentIsReturned() throws Exception
     {
         document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        String specialCharsString = "!@#$%^&*()_+♂µΓyádo«√<╡┌6£";
+        String specialCharsString = "!@#$%^&*()'\".,<>-_+=|\\";
         String shortString = RandomStringUtils.randomAlphanumeric(2);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
