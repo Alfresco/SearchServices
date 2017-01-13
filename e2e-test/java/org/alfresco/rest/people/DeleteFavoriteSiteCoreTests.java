@@ -7,7 +7,6 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -48,8 +47,12 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
     public void inexistentUserIsNotAbleToRemoveFavoriteSite() throws Exception
     {
         UserModel inexistentUser = new UserModel("inexistenUser", "password");
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(inexistentUser).removeFavoriteSite(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "inexistenUser"));
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(inexistentUser)
+                  .removeFavoriteSite(siteModel);
+        
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "inexistenUser"));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
@@ -58,7 +61,9 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
     public void userIsNotAbleToRemoveFavoriteSiteWithInexistentId() throws Exception
     {
         SiteModel inexistentSite = new SiteModel("inexistentSite");
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).removeFavoriteSite(inexistentSite);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel)
+                  .removeFavoriteSite(inexistentSite);
+        
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError()
                   .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, 
@@ -77,7 +82,9 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
-        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel);
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser()
+                  .removeFavoriteSite(siteModel);
+        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withCoreAPI().usingUser(managerUser).addFavoriteSite(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -92,9 +99,12 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         dataSite.usingUser(managerUser).usingSite(siteModel).addSiteToFavorites();
 
-        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel);
+        restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser()
+                  .removeFavoriteSite(siteModel);
+        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingAuthUser().getFavorites().assertThat().entriesListDoesNotContain("id", siteModel.getId());
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                  .assertThat().entriesListDoesNotContain("id", siteModel.getId());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
@@ -105,9 +115,12 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         SiteModel publicSiteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).addFavoriteSite(publicSiteModel);
 
-        restClient.withCoreAPI().usingAuthUser().removeFavoriteSite(publicSiteModel);
+        restClient.withCoreAPI().usingAuthUser()
+                  .removeFavoriteSite(publicSiteModel);
+        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListDoesNotContain("id", publicSiteModel.getId());
+        restClient.withCoreAPI().usingAuthUser().getFavoriteSites()
+                  .assertThat().entriesListDoesNotContain("id", publicSiteModel.getId());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
@@ -118,9 +131,12 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         SiteModel moderatedSiteModel = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).addFavoriteSite(moderatedSiteModel);
 
-        restClient.withCoreAPI().usingAuthUser().removeFavoriteSite(moderatedSiteModel);
+        restClient.withCoreAPI().usingAuthUser()
+                  .removeFavoriteSite(moderatedSiteModel);
+        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListDoesNotContain("id", moderatedSiteModel.getId());
+        restClient.withCoreAPI().usingAuthUser().getFavoriteSites()
+                  .assertThat().entriesListDoesNotContain("id", moderatedSiteModel.getId());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
@@ -131,9 +147,12 @@ public class DeleteFavoriteSiteCoreTests extends RestTest
         SiteModel privateSiteModel = dataSite.usingUser(userModel).createPrivateRandomSite();
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).addFavoriteSite(privateSiteModel);
 
-        restClient.withCoreAPI().usingAuthUser().removeFavoriteSite(privateSiteModel);
+        restClient.withCoreAPI().usingAuthUser()
+                  .removeFavoriteSite(privateSiteModel);
+        
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListDoesNotContain("id", privateSiteModel.getId());
+        restClient.withCoreAPI().usingAuthUser().getFavoriteSites()
+                  .assertThat().entriesListDoesNotContain("id", privateSiteModel.getId());
     }
 
 }

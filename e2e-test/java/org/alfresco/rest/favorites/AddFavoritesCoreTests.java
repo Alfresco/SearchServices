@@ -55,7 +55,7 @@ public class AddFavoritesCoreTests extends RestTest
         SiteModel site = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         site.setGuid(link.getNodeRef());
         
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(site);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(site);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, site.getGuid().split("/")[3]));
     }
 
@@ -64,7 +64,7 @@ public class AddFavoritesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteUsingInexistentUser() throws Exception
     {
-        restClient.withCoreAPI().usingUser(new UserModel("random_user", "random_password")).addSiteToFavorites(siteModel);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(new UserModel("random_user", "random_password")).addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_user"));
     }
@@ -77,7 +77,7 @@ public class AddFavoritesCoreTests extends RestTest
         SiteModel site = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         site.setGuid("random_guid");
 
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(site);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(site);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_guid"));
     }
@@ -88,7 +88,7 @@ public class AddFavoritesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteTwice() throws Exception
     {
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT);
@@ -102,7 +102,7 @@ public class AddFavoritesCoreTests extends RestTest
         String nodeRef = document.getNodeRef();
         document.setNodeRef(folder.getNodeRef());
         
-        restClient.withCoreAPI().usingAuthUser().addFileToFavorites(document);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addFileToFavorites(document);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, 
                 adminUserModel.getUsername(), folder.getNodeRefWithoutVersion()));
         
@@ -129,7 +129,7 @@ public class AddFavoritesCoreTests extends RestTest
             .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
-        restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
@@ -164,7 +164,7 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.assertThat().field("targetGuid").is(siteModel.getGuid());
         
-        restClient.withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
     }
 
     @Bug(id = "MNT-17158")
@@ -204,7 +204,7 @@ public class AddFavoritesCoreTests extends RestTest
         String guid = siteModel.getGuid();
         siteModel.setGuid(document.getNodeRefWithoutVersion());
         
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRefWithoutVersion()));
         
         siteModel.setGuid(guid);    
@@ -218,7 +218,7 @@ public class AddFavoritesCoreTests extends RestTest
         String nodeRef = folder.getNodeRef();
         folder.setNodeRef(document.getNodeRef());
         
-        restClient.withCoreAPI().usingAuthUser().addFolderToFavorites(folder);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addFolderToFavorites(folder);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
         
         folder.setNodeRef(nodeRef);

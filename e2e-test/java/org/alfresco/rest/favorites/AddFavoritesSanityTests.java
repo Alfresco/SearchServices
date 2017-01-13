@@ -37,7 +37,7 @@ public class AddFavoritesSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     public void adminIsAbleToAddToFavorites() throws Exception
     {
-        restPersonFavoritesModel = restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restPersonFavoritesModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.assertThat().field("targetGuid").is(siteModel.getGuid());
     }
