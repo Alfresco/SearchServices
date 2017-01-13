@@ -30,7 +30,7 @@ public class GetPeoplePreferenceCoreTests extends RestTest
     {
         UserModel secondUser = dataUser.createRandomTestUser();
         restClient.authenticateUser(secondUser).withCoreAPI().usingUser(userModel)
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
         restClient.assertLastError().containsSummary("Permission was denied");
     }
@@ -40,7 +40,7 @@ public class GetPeoplePreferenceCoreTests extends RestTest
     public void statusNotFoundIsReturnedForAPersonIDThatDoesNotExist() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel("invalidPersonID", "password"))
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + siteModel.getId());
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
         restClient.assertLastError().containsSummary("The entity with id: invalidPersonID was not found");
     }
@@ -57,17 +57,17 @@ public class GetPeoplePreferenceCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for an removed preference with Rest API and response is 404")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for  removed preference with Rest API and response is 404")
     public void statusNotFoundIsReturnedForAPreferenceNameThatHasBeenRemoved() throws Exception
     {
         SiteModel preferenceSite = dataSite.usingUser(userModel).createPublicRandomSite();
         dataSite.usingUser(userModel).usingSite(preferenceSite).addSiteToFavorites();
         dataSite.usingUser(userModel).usingSite(preferenceSite).removeSiteFromFavorites();
         restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser()
-                .getPersonPreferenceInformation(PreferenceName.SITES_FAVORITES_PREFIX + preferenceSite.getId());
+                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), preferenceSite.getId()));
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
         restClient.assertLastError().containsSummary(
                 String.format("The relationship resource was not found for the" + " entity with id: %s and a relationship id of %s", userModel.getUsername(),
-                        PreferenceName.SITES_FAVORITES_PREFIX + preferenceSite.getId()));
+                        String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), preferenceSite.getId())));
     }
 }

@@ -131,6 +131,7 @@ public class DeleteSiteMembershipRequestSanityTests extends RestTest
         restClient.authenticateUser(dataUser.createRandomTestUser()).withCoreAPI().usingAuthUser().addSiteMembershipRequest(siteModel);
         UserModel inexistentUser = new UserModel("inexistent user", "inexistent password");
         restClient.authenticateUser(inexistentUser).withCoreAPI().usingAuthUser().deleteSiteMembershipRequest(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

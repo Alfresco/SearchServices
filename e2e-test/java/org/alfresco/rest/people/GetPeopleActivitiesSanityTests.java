@@ -37,6 +37,10 @@ public class GetPeopleActivitiesSanityTests extends RestTest
                 UserRole.SiteContributor);
         unauthenticatedUser = dataUser.usingAdmin().createRandomTestUser();
         unauthenticatedUser.setPassword("newpassword");
+        
+        // only once the activity list is checked with retry in order not to wait the entire list in each test
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(5);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })

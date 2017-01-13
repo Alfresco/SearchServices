@@ -52,7 +52,7 @@ public class GetFavoriteSitesCoreTests extends RestTest
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(testUser1).getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
-                .containsErrorKey(RestErrorModel.PERMISION_DENIED_ERRORKEY)
+                .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
                 .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
@@ -76,7 +76,7 @@ public class GetFavoriteSitesCoreTests extends RestTest
     {
         restClient.authenticateUser(testUser1).withCoreAPI().usingUser(dataUser.getAdminUser()).getFavoriteSites();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
-                .containsErrorKey(RestErrorModel.PERMISION_DENIED_ERRORKEY)
+                .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
                 .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);

@@ -68,7 +68,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
                 .assertLastError().containsSummary("User is not a member of the site");
     }
 
-    @Bug(id="REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
+//    @Bug(id="REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 404 when personId does not exist")

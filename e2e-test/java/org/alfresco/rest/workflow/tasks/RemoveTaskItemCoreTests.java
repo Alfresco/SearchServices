@@ -129,7 +129,8 @@ public class RemoveTaskItemCoreTests extends RestTest
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
         restClient.authenticateUser(UserModel.getRandomUserModel()).withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,

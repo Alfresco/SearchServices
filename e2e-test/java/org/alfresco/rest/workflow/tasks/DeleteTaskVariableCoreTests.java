@@ -120,6 +120,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
             .withWorkflowAPI()
             .usingTask(taskModel)
             .deleteTaskVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

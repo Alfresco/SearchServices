@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class DeleteCommentsCoreTests extends RestTest
+public class DeleteCommentCoreTests extends RestTest
 {
     private UserModel adminUserModel;
 
@@ -38,6 +38,7 @@ public class DeleteCommentsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Consumer user can't delete comments created by admin user and status code is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);

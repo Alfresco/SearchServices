@@ -35,30 +35,46 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
         newMember = dataUser.createRandomTestUser();
 
         restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
-
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that for invalid maxItems parameter status code returned is 400.")            
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Verify that for invalid maxItems parameter status code returned is 400.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void checkInvalidMaxItemsStatusCode() throws Exception
     {
-        restClient.authenticateUser(adminUser).withParams("maxItems=AB").withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Invalid paging parameter");
+        restClient.authenticateUser(adminUser).withParams("maxItems=AB")
+                .withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "AB"));
+
+        restClient.authenticateUser(adminUser).withParams("maxItems=0")
+                .withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that for invalid skipCount parameter status code returned is 400.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Verify that for invalid skipCount parameter status code returned is 400.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void checkInvalidSkipCountStatusCode() throws Exception
     {
-        restClient.authenticateUser(adminUser).withParams("skipCount=AB").withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Invalid paging parameter");
+        restClient.authenticateUser(adminUser).withParams("skipCount=AB")
+                .withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "AB"));
+
+        restClient.authenticateUser(adminUser).withParams("skipCount=-1")
+                .withCoreAPI().usingUser(newMember).getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError().containsSummary(RestErrorModel.NEGATIVE_VALUES_SKIPCOUNT);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that if personId does not exist status code returned is 404.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Verify that if personId does not exist status code returned is 404.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void ifPersonIdDoesNotExist() throws Exception
     {
@@ -66,11 +82,17 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
         nonexistentUser.setUsername("nonexistent");
         
         restClient.authenticateUser(adminUser).withCoreAPI().usingUser(nonexistentUser).getSiteMembershipRequests();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "nonexistent"));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "nonexistent"))
+                .statusCodeIs(HttpStatus.NOT_FOUND)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE)
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Specify -me- string in place of <personid> for request.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Specify -me- string in place of <personid> for request.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void replacePersonIdWithMeRequest() throws Exception
     {
@@ -81,7 +103,9 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
         returnedCollection.assertThat().entriesListContains("id", moderatedSite.getId());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that if empty personId is used status code returned is 404.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Verify that if empty personId is used status code returned is 404.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void useEmptyPersonId() throws Exception
     {
@@ -89,11 +113,13 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
         emptyNameMember.setUsername(" ");
         
         restClient.authenticateUser(adminUser).withCoreAPI().usingUser(emptyNameMember).getSiteMembershipRequests();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary("The entity with id: "  + emptyNameMember.getUsername() + " was not found");
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, emptyNameMember.getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Get site membership requests to a public site.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Get site membership requests to a public site.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void getRequestsToPublicSite() throws Exception
     {
@@ -105,8 +131,9 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
         returnedCollection.assertThat().entriesListDoesNotContain("id", publicSite.getId());
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Get site membership requests to a moderated site.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Get site membership requests to a moderated site.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void getRequestsToModeratedSite() throws Exception
     {
@@ -117,7 +144,9 @@ public class GetSiteMembershipRequestsCoreTests extends RestTest
         returnedCollection.assertThat().entriesListContains("id", moderatedSite.getId());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Approve request then get requests.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION,
+            description = "Approve request then get requests.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void approveRequestThenGetRequests() throws Exception
     {
