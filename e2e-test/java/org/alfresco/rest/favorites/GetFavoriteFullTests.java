@@ -16,6 +16,7 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -121,11 +122,86 @@ public class GetFavoriteFullTests extends RestTest {
     {
     	UserModel collaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
     	restClient.authenticateUser(collaborator);
-        restClient.withCoreAPI().usingUser(collaborator).addSiteToFavorites(siteModel);
+        restClient.withCoreAPI().usingUser(collaborator).addFileToFavorites(fileModel);
         
-        RestPersonFavoritesModel favoriteSite = restClient.authenticateUser(collaborator).withParams("properties=tas")
+        RestPersonFavoritesModel favoriteFile = restClient.authenticateUser(collaborator).withParams("properties=tas")
         		.withCoreAPI().usingAuthUser().getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteSite.assertThat().fieldsCount().is(0);	
+        favoriteFile.assertThat().fieldsCount().is(0);	
+    }
+    
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+            description = "Verify all values from get favorite rest api for a file")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
+    public void verifyRequestFieldsforGetFavoriteFile() throws JsonToModelConversionException, Exception
+    {
+    	UserModel contributor = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
+    	restClient.authenticateUser(contributor);
+        restClient.withCoreAPI().usingUser(contributor).addFileToFavorites(fileModel);
+        
+        RestPersonFavoritesModel favoriteFile = restClient.authenticateUser(contributor)
+        		.withCoreAPI().usingAuthUser().getFavorite(fileModel.getNodeRefWithoutVersion());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        favoriteFile.assertThat().field("targetGuid").is(fileModel.getNodeRefWithoutVersion())
+        	.and().field("target.file.isFile").is("true")
+        	.and().field("target.file.mimeType").is("text/plain")
+        	.and().field("target.file.isFolder").is("false")
+        	.and().field("target.file.createdBy").is(adminUserModel.getUsername())
+        	.and().field("target.file.versionLabel").is("1.0") 
+        	.and().field("target.file.name").is(fileModel.getName())
+           	.and().field("target.file.parentId").is(folderModel.getNodeRef())
+        	.and().field("target.file.guid").is(fileModel.getNodeRefWithoutVersion()) 
+        	.and().field("target.file.modifiedBy").is(adminUserModel.getUsername()) 
+        	.and().field("target.file.id").is(fileModel.getNodeRefWithoutVersion());
+    }
+    
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+            description = "Verify all values from get favorite rest api for a site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
+    public void verifyRequestFieldsforGetFavoriteSite() throws JsonToModelConversionException, Exception
+    {
+    	UserModel contributor = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
+    	restClient.authenticateUser(contributor);
+        restClient.withCoreAPI().usingUser(contributor).addFavoriteSite(siteModel);
+        
+        RestPersonFavoritesModel favoriteSite = restClient.authenticateUser(contributor)
+        		.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        favoriteSite.assertThat().field("targetGuid").is(siteModel.getGuid())
+    		.and().field("target.site.role").is(UserRole.SiteContributor.toString())
+    		.and().field("target.site.visibility").is(Site.Visibility.PUBLIC.toString())
+    		.and().field("target.site.guid").is(siteModel.getGuid())
+    		.and().field("target.site.description").is(siteModel.getDescription())
+    		.and().field("target.site.id").is(siteModel.getId())
+    		.and().field("target.site.preset").is("site-dashboard")
+    		.and().field("target.site.title").is(siteModel.getTitle());		
+    }
+    
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+            description = "Verify all values from get favorite rest api for a folder")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
+    public void verifyRequestFieldsforGetFavoriteFolder() throws JsonToModelConversionException, Exception
+    {
+    	UserModel contributor = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
+    	restClient.authenticateUser(contributor);
+        restClient.withCoreAPI().usingUser(contributor).addFolderToFavorites(folderModel);
+        
+        RestPersonFavoritesModel favoriteFolder = restClient.authenticateUser(contributor)
+        		.withCoreAPI().usingAuthUser().getFavorite(folderModel.getNodeRef());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        favoriteFolder.assertThat().field("targetGuid").is(folderModel.getNodeRef())
+    	.and().field("target.folder.isFile").is("false")
+    	.and().field("target.folder.isFolder").is("true")
+    	.and().field("target.folder.createdBy").is(adminUserModel.getUsername())
+    	.and().field("target.folder.name").is(folderModel.getName())
+    	.and().field("target.folder.guid").is(folderModel.getNodeRef()) 
+    	.and().field("target.folder.modifiedBy").is(adminUserModel.getUsername()) 
+    	.and().field("target.folder.id").is(folderModel.getNodeRef());
     }
 }
