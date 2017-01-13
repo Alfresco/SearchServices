@@ -113,11 +113,11 @@ public class DeleteCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
             .withCoreAPI().usingResource(file).deleteComment(commentModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
-        restClient.assertLastError().getErrorKey().contains("PermissionDenied");
-        restClient.assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
-        restClient.assertLastError().getDescriptionURL().contains("https://api-explorer.alfresco.com");
-        restClient.assertLastError().getStackTrace().contains("For security reasons the stack trace is no longer displayed");
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+                .statusCodeIs(HttpStatus.FORBIDDEN)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE)
+                .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
         
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -136,6 +136,7 @@ public class DeleteCommentFullTests extends RestTest
         commentModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addComment(comment);
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
             .withCoreAPI().usingResource(file).deleteComment(commentModel);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
