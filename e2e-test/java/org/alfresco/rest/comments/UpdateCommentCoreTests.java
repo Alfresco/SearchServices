@@ -21,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class UpdateCommentsCoreTests extends RestTest
+public class UpdateCommentCoreTests extends RestTest
 {
     private UserModel adminUserModel;
     private FileModel document;
@@ -74,21 +74,22 @@ public class UpdateCommentsCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify updated comment by Manager is listed when calling getComments and status code is 200")
-    @Bug(id="REPO-1011")
+//    @Bug(id="REPO-1011")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void updatedCommentByManagerIsListed() throws JsonToModelConversionException, Exception
     {
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
-        restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Collaborator user"); 
+        commentModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI()
+        .usingResource(document).updateComment(commentModel, "This is the updated comment with Manager user"); 
         comments = restClient.withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);   
-        comments.assertThat().entriesListContains("content", "This is the updated comment with Collaborator user");
+        comments.assertThat().entriesListContains("content", "This is the updated comment with Manager user");
     }
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can not update comments of another user and status code is 200")
-    @Bug(id="MNT-2502",description="seems it's one old issue: also logged as MNT-2502, MNT-2346")
+//    @Bug(id="MNT-2502",description="seems it's one old issue: also logged as MNT-2502, MNT-2346")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void collaboratorIsNotAbleToUpdateCommentOfAnotherUser() throws JsonToModelConversionException, Exception
     {

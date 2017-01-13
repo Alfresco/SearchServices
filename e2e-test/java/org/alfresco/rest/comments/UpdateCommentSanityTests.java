@@ -19,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class UpdateCommentsSanityTests extends RestTest
+public class UpdateCommentSanityTests extends RestTest
 {
     private UserModel adminUserModel;
     private FileModel document;
@@ -93,7 +93,7 @@ public class UpdateCommentsSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can update his own comment and status code is 200")
-    @Bug(id="REPO-1011")
+//    @Bug(id="REPO-1011")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     public void collaboratorIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
     {
