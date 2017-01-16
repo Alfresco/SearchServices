@@ -82,17 +82,14 @@ public class GetPeopleActivitiesFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify activity summary from user gets activities response with Rest API")
     public void userGetPeopleActivitiesWithActivitySummaryCheck() throws Exception
     {
-        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivities();
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams(String.format("siteId=%s", siteModel1.getId())).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().paginationField("count").is("4");
+        restActivityModelsCollection.assertThat().paginationField("count").is("1");
         RestActivitySummaryModel summary = restActivityModelsCollection.getEntries().get(0).onModel().getActivitySummary();
-                summary.assertThat().field("firstName").is(managerUser.getUsername() + " FirstName")
-                .and().field("lastName").is("LN-" + managerUser.getUsername())
-                .and().field("memberFirstName").is(managerUser.getUsername() + " FirstName")
-                .and().field("role").is(managerUser.getUserRole())
-                .and().field("memberLastName").is("LN-" + managerUser.getUsername())
-                .and().field("title").is(String.format("%s FirstName LN-%s (%s)", managerUser.getUsername(), managerUser.getUsername(), managerUser.getUsername()))
-                .and().field("memberPersonId").is(managerUser.getUsername());
+        summary.assertThat().field("firstName").is(userModel.getUsername() + " FirstName")
+                .and().field("lastName").is("LN-" + userModel.getUsername())
+                .and().field("title").is(fileInSite1.getName())
+                .and().field("objectId").is(fileInSite1.getNodeRefWithoutVersion());
     }
     
     @Bug(id = "ACE-5460")
