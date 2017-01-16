@@ -200,25 +200,37 @@ public class GetPeopleActivitiesFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with skipCount parameter applied with Rest API and response is successful")
     public void userGetPeopleActivitiesUsingSkipCountParameter() throws Exception
     {
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("4");
+        RestActivityModel expectedRestActivity3 = restActivityModelsCollection.getEntries().get(2).onModel();
+        RestActivityModel expectedRestActivity4 = restActivityModelsCollection.getEntries().get(3).onModel();
+        
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("skipCount=2").getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("2");
-        restActivityModelsCollection.getEntries().get(0).onModel().assertThat().field("postPersonId").is(userModel.getUsername().toLowerCase())
-                .and().field("activityType").is(ActivityType.FOLDER_ADDED.toString());
-        restActivityModelsCollection.getEntries().get(1).onModel().assertThat().field("postPersonId").is(userModel.getUsername().toLowerCase())
-                .and().field("activityType").is(ActivityType.FILE_ADDED.toString());
+        restActivityModelsCollection.getEntries().get(0).onModel().assertThat().field("postPersonId").is(expectedRestActivity3.getPostPersonId())
+                .and().field("activityType").is(expectedRestActivity3.getActivityType());
+        restActivityModelsCollection.getEntries().get(1).onModel().assertThat().field("postPersonId").is(expectedRestActivity4.getPostPersonId())
+                .and().field("activityType").is(expectedRestActivity4.getActivityType());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with maxItems parameter applied with Rest API and response is successful")
     public void userGetPeopleActivitiesUsingMaxItemsParameter() throws Exception
     {
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("4");
+        RestActivityModel expectedRestActivity1 = restActivityModelsCollection.getEntries().get(0).onModel();
+        RestActivityModel expectedRestActivity2 = restActivityModelsCollection.getEntries().get(1).onModel();
+        
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("maxItems=2").getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("2");
-        restActivityModelsCollection.getEntries().get(0).onModel().assertThat().field("postPersonId").is(managerUser.getUsername().toLowerCase())
-                .and().field("activityType").is(ActivityType.USER_JOINED.toString());
-        restActivityModelsCollection.getEntries().get(1).onModel().assertThat().field("postPersonId").is(adminUser.getUsername().toLowerCase())
-                .and().field("activityType").is(ActivityType.FILE_ADDED.toString());
+        restActivityModelsCollection.getEntries().get(0).onModel().assertThat().field("postPersonId").is(expectedRestActivity1.getPostPersonId())
+                .and().field("activityType").is(expectedRestActivity1.getActivityType());
+        restActivityModelsCollection.getEntries().get(1).onModel().assertThat().field("postPersonId").is(expectedRestActivity2.getPostPersonId())
+                .and().field("activityType").is(expectedRestActivity2.getActivityType());
     }
 }
