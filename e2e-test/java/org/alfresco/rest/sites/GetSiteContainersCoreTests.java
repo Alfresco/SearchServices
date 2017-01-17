@@ -50,7 +50,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 200 with valid maxItems parameter")
     public void getContainersWithValidMaxItems() throws Exception
     {
@@ -75,7 +75,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
     public void getContainersWithMaxItemsZero () throws Exception
     {
@@ -87,7 +87,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
     public void getContainersWithMaxItemsCharacter () throws Exception
     {
@@ -99,7 +99,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request returns status code 200 when maxItems parameter starts with multiple zero")
     public void getContainersWithMaxItemsMultipleZero () throws Exception
     {
@@ -111,7 +111,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 200 when valid skipCount parameter is used")
     public void getSiteContainersWithValidSkipCount() throws Exception
     {
@@ -137,7 +137,7 @@ public class GetSiteContainersCoreTests  extends RestTest
         }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 400 when invalid skipCount parameter is used")
     public void getSiteContainersWithSkipCountCharacter() throws Exception
     {
@@ -148,7 +148,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 200 when skipCount parameter starts with multiple zero")
     public void getSiteContainersWithSkipCountMultipleZero() throws Exception
     {
@@ -159,7 +159,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site containers request returns status code 400 when site doesn't exist")
     public void getSiteContainersWithNonExistentSite() throws Exception
     {
@@ -170,7 +170,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for private site")
     public void getSiteContainersForPrivateSite() throws Exception
     {
@@ -181,7 +181,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for moderated site")
     public void getSiteContainersForModeratedSite() throws Exception
     {
@@ -192,7 +192,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for several containers")
     public void getSiteContainersForSeveralItems() throws Exception
     {
@@ -206,7 +206,7 @@ public class GetSiteContainersCoreTests  extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site containers request returns status 200 for one container")
     public void getSiteContainersWithOneItem() throws Exception
     {
