@@ -23,7 +23,7 @@ import org.testng.annotations.BeforeMethod;
 public abstract class CmisTest extends AbstractTestNGSpringContextTests
 {
     private static Logger LOG = LogFactory.getLogger();
-    
+
     @Autowired
     protected CmisWrapper cmisApi;
 
@@ -39,21 +39,23 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
     @Autowired
     ServerHealth serverHealth;
 
+    public String documentContent = "CMIS document content";
+
     @BeforeClass(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
         serverHealth.assertServerIsOnline();
     }
-    
-    @BeforeMethod(alwaysRun=true)
+
+    @BeforeMethod(alwaysRun = true)
     public void showStartTestInfo(Method method)
-    {      
-      LOG.info(String.format("*** STARTING Test: [%s] ***",method.getName()));      
+    {
+        LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
     }
-    
-    @AfterMethod(alwaysRun=true)
+
+    @AfterMethod(alwaysRun = true)
     public void showEndTestInfo(Method method)
-    {      
-      LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
+    {
+        LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
 }
