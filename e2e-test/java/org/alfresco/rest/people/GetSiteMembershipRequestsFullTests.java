@@ -99,12 +99,14 @@ public class GetSiteMembershipRequestsFullTests extends RestTest
                 .assertThat().entriesListContains("id", moderatedSite2.getId());
 
         RestSiteMembershipRequestModel firstSiteMembershipRequest = siteMembershipRequests.getEntries().get(0).onModel();
+        RestSiteMembershipRequestModel secondSiteMembershipRequest = siteMembershipRequests.getEntries().get(1).onModel();
 
         siteMembershipRequests = restClient.authenticateUser(newMember).withParams("orderBy=id ASC&skipCount=1").withCoreAPI()
                 .usingMe().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         siteMembershipRequests.assertThat().entriesListDoesNotContain("id", firstSiteMembershipRequest.getId())
-                .assertThat().entriesListContains("id", moderatedSite2.getId());
+                .assertThat().entriesListContains("id", secondSiteMembershipRequest.getId())
+                .assertThat().entriesListContains("id", secondSiteMembershipRequest.getSite().getId());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
