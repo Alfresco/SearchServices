@@ -50,7 +50,12 @@ public class AddRatingCoreTests extends RestTest
         FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
         FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"invalidRate\"}");
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalidRate"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.INVALID_RATING, "invalidRate"))
+                  .containsErrorKey(String.format(RestErrorModel.INVALID_RATING, "invalidRate"))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -63,8 +68,12 @@ public class AddRatingCoreTests extends RestTest
         
         document.setNodeRef(RandomStringUtils.randomAlphanumeric(10));
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()))
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -223,8 +232,13 @@ public class AddRatingCoreTests extends RestTest
         document.setNodeRef(comment.getId());
 
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(RestErrorModel.CANNOT_RATE));
-
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.CANNOT_RATE))
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+        
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).rateStarsToDocument(5);
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(String.format(RestErrorModel.CANNOT_RATE));
     }
