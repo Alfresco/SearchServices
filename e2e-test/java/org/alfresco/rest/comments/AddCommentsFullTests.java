@@ -43,7 +43,7 @@ public class AddCommentsFullTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can provide a large string for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addLongCommentsWithManagerAndCheckThatCommentIsReturned() throws Exception
@@ -64,7 +64,7 @@ public class AddCommentsFullTests extends RestTest
         comments.assertThat().paginationField("count").is("2");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can provide a short string for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addShortCommentsWithManagerAndCheckThatCommentIsReturned() throws Exception
@@ -85,7 +85,7 @@ public class AddCommentsFullTests extends RestTest
         comments.assertThat().paginationField("count").is("2");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Collaborator user verify that you can provide a string with special characters for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentsWithSpecialCharsWithCollaboratorCheckCommentIsReturned() throws Exception
@@ -106,7 +106,7 @@ public class AddCommentsFullTests extends RestTest
         comments.assertThat().paginationField("count").is("2");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Manager user verify that you can not provide an empty string for one comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addEmptyStringCommentsWithManagerCheckCommentIsReturned() throws Exception
@@ -120,7 +120,7 @@ public class AddCommentsFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.NON_NULL_COMMENT);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Using Collaborator user verify that you can provide several comments in one request")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addSeveralCommentsWithCollaboratorCheckCommentsAreReturned() throws Exception
@@ -141,7 +141,7 @@ public class AddCommentsFullTests extends RestTest
         comments.assertThat().paginationField("count").is("5");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Provide invalid request body parameter and check default error model schema")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void invalidRequestBodyParameterCheckErrorModelSchema() throws Exception

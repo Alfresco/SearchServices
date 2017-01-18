@@ -37,7 +37,7 @@ public class GetSiteCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify invalid request returns status code 404 if siteId does not exist")
     public void checkStatusCodeForNonExistentSiteId() throws Exception
     {
@@ -48,7 +48,7 @@ public class GetSiteCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify user gets all public and moderated sites if an empty siteId is provided")
     public void checkStatusCodeForEmptySiteId() throws Exception
     {
@@ -60,7 +60,7 @@ public class GetSiteCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets public site details and status code is 200")
     public void getPublicSite() throws Exception
     {
@@ -75,7 +75,7 @@ public class GetSiteCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets moderated site details and status code is 200")
     public void getModeratedSite() throws Exception
     {
@@ -90,7 +90,7 @@ public class GetSiteCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if member of a private site gets that site details and status code is 200")
     public void getPrivateSiteBySiteMember() throws Exception
     {
@@ -105,7 +105,7 @@ public class GetSiteCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if user that is not member of a private site does not get that site details and status code is 200")
     public void getPrivateSiteByNotASiteMember() throws Exception
     {

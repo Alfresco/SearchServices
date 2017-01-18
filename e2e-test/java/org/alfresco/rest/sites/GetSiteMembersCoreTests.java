@@ -40,7 +40,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site members call returns status code 404 if siteId does not exist")
     public void checkStatusCodeForNonExistentSiteId() throws Exception
     {
@@ -51,7 +51,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site members call returns status code 400 for invalid maxItems")
     public void checkStatusCodeForInvalidMaxItems() throws Exception
     {
@@ -67,7 +67,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get site members call returns status code 400 for invalid skipCount ")
     public void checkStatusCodeForInvalidSkipCount() throws Exception
     {
@@ -83,7 +83,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets public site members and status code is 200")
     public void getPublicSiteMembers() throws Exception
     {
@@ -96,7 +96,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if any user gets moderated site members and status code is 200")
     public void getModeratedSiteMembers() throws Exception
     {
@@ -109,7 +109,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if user gets private site members if he is a member of that site and status code is 200")
     public void getPrivateSiteMembersByASiteMember() throws Exception
     {
@@ -122,7 +122,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if user doesn't get private site members if he is not a member of that site and status code is 404")
     public void getPrivateSiteMembersByNotASiteMember() throws Exception
     {
@@ -133,7 +133,7 @@ public class GetSiteMembersCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if user gets moderated site members after the adding of a new member and status code is 200")
     public void getSiteMembersAfterAddingNewMember() throws Exception
     {

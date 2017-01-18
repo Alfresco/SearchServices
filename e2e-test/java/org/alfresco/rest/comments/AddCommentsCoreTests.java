@@ -44,7 +44,7 @@ public class AddCommentsCoreTests extends RestTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't add comments to a node with ID that does not exist and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userCanNotAddCommentsOnNonexistentFile() throws Exception
@@ -57,7 +57,7 @@ public class AddCommentsCoreTests extends RestTest
         .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nonexistentFile.getNodeRef()));
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't add comments to a node that exists but is not a document or a folder and status code is 405")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     @Bug(id = "MNT-16904")
@@ -73,7 +73,7 @@ public class AddCommentsCoreTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.UNABLE_TO_LOCATE);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can add comments with the same content as one existing comment")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userCanAddCommentWithTheSameContentAsExistingOne() throws Exception
@@ -97,7 +97,7 @@ public class AddCommentsCoreTests extends RestTest
         commentsList.get(1).onModel().assertThat().field("content").is(sameComment);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can not add comments to a not joined private site. Status code returned is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userCanNotAddCommentsToANotJoinedPrivateSite() throws Exception
@@ -110,7 +110,7 @@ public class AddCommentsCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify add comments from node with invalid network id returns status code 401")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentsWithInvalidNetworkId() throws Exception
@@ -122,7 +122,7 @@ public class AddCommentsCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify add comments from node with empty network id returns status code 401")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentsWithEmptyNetworkId() throws Exception

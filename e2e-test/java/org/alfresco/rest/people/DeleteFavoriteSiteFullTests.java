@@ -36,7 +36,7 @@ public class DeleteFavoriteSiteFullTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,  TestGroup.FULL }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
     description = "User is not able to remove a favorite site of admin user")
     public void userIsNotAbleToDeleteFavoritesOfAdmin() throws Exception
     {         
@@ -52,7 +52,7 @@ public class DeleteFavoriteSiteFullTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
     description = "Users removed twice from favorites same site.")
     public void managerUserRemovesDeletedFavoriteSite() throws Exception
     {
@@ -67,7 +67,7 @@ public class DeleteFavoriteSiteFullTests extends RestTest
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
     description = "Users removes from favorite a site that is already deleted.")
     public void consumerUserRemovesDeletedFavoriteSite() throws Exception
     {
@@ -86,7 +86,7 @@ public class DeleteFavoriteSiteFullTests extends RestTest
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
     description = "Delete  favorite site that is NOT favorite.")
     public void adminUserRemovesDeletedFavoriteSiteThatIsNotFavorite() throws Exception
     {
