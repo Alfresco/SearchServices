@@ -46,15 +46,15 @@ public class GetSiteContainersFullTests  extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request with properties paramater applied returns status code 200")
+            description= "Verify if get site container request with properties parameter applied returns status code 200")
     public void getSiteContainersUsingPropertiesParameter() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
             .withCoreAPI().usingSite(publicSiteWithContainers).usingParams("properties=folderId").getSiteContainers()
             .assertThat().entriesListCountIs(3)
-            .and().entriesListContains("folderId" ,ContainerName.discussions.toString())
-            .and().entriesListContains("folderId" ,ContainerName.documentLibrary.toString())
-            .and().entriesListContains("folderId" ,ContainerName.links.toString())
+            .and().entriesListContains("folderId", ContainerName.discussions.toString())
+            .and().entriesListContains("folderId", ContainerName.documentLibrary.toString())
+            .and().entriesListContains("folderId", ContainerName.links.toString())
             .and().entriesListDoesNotContain("id");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -67,7 +67,7 @@ public class GetSiteContainersFullTests  extends RestTest
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
             .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
             .assertThat().entriesListCountIs(3)
-            .and().entriesListContains("folderId" ,ContainerName.documentLibrary.toString());
+            .and().entriesListContains("folderId", ContainerName.documentLibrary.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -79,9 +79,9 @@ public class GetSiteContainersFullTests  extends RestTest
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
             .withParams("skipCount=1").withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
             .assertThat().entriesListCountIs(2)
-            .and().entriesListDoesNotContain("folderId" , restSiteContainers.getEntries().get(0).onModel().getFolderId())
-            .and().entriesListContains("folderId" , restSiteContainers.getEntries().get(1).onModel().getFolderId())
-            .and().entriesListContains("folderId" , restSiteContainers.getEntries().get(2).onModel().getFolderId());
+            .and().entriesListDoesNotContain("folderId", restSiteContainers.getEntries().get(0).onModel().getFolderId())
+            .and().entriesListContains("folderId", restSiteContainers.getEntries().get(1).onModel().getFolderId())
+            .and().entriesListContains("folderId", restSiteContainers.getEntries().get(2).onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -93,9 +93,9 @@ public class GetSiteContainersFullTests  extends RestTest
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
             .withParams("skipCount=" + String.valueOf(totalItems-1)).withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
             .assertThat().entriesListCountIs(1)
-            .and().entriesListDoesNotContain("folderId" , restSiteContainers.getEntries().get(0).onModel().getFolderId())
-            .and().entriesListDoesNotContain("folderId" , restSiteContainers.getEntries().get(1).onModel().getFolderId())
-            .and().entriesListContains("folderId" , restSiteContainers.getEntries().get(2).onModel().getFolderId());
+            .and().entriesListDoesNotContain("folderId", restSiteContainers.getEntries().get(0).onModel().getFolderId())
+            .and().entriesListDoesNotContain("folderId", restSiteContainers.getEntries().get(1).onModel().getFolderId())
+            .and().entriesListContains("folderId", restSiteContainers.getEntries().get(2).onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
@@ -114,7 +114,7 @@ public class GetSiteContainersFullTests  extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request for a empty siteId returns status code 404")
+            description= "Verify if get site container request for an empty siteId returns status code 404")
     public void getSiteContainersForEmptySiteId() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
