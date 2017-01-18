@@ -46,6 +46,21 @@ public class GetSiteContainersFullTests  extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+            description= "Verify if get site container request with properties paramater applied returns status code 200")
+    public void getSiteContainersUsingPropertiesParameter() throws Exception
+    {
+        restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
+            .withCoreAPI().usingSite(publicSiteWithContainers).usingParams("properties=folderId").getSiteContainers()
+            .assertThat().entriesListCountIs(3)
+            .and().entriesListContains("folderId" ,ContainerName.discussions.toString())
+            .and().entriesListContains("folderId" ,ContainerName.documentLibrary.toString())
+            .and().entriesListContains("folderId" ,ContainerName.links.toString())
+            .and().entriesListDoesNotContain("id");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get site container request for a container that is not empty returns status code 200")
     public void getSiteContainersThatIsNotEmpty() throws Exception
     {
