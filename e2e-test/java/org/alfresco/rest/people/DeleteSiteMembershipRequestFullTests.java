@@ -12,6 +12,7 @@ import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,4 +167,47 @@ public class DeleteSiteMembershipRequestFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
+    @Bug(id="ACE-2413")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+             description = "Verify user is not able to remove a site memebership request-  empty person id and response is 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    public void userIsNotAbleToDeleteSiteMembershipRequestEmptyPersonID() throws JsonToModelConversionException, DataPreparationException, Exception
+    {
+        UserModel emptyPersonId = new UserModel("", "password");
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(emptyPersonId).deleteSiteMembershipRequest(moderatedSite);
+        
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                  .assertLastError()
+                  .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                  .containsSummary(RestErrorModel.ENTITY_NOT_FOUND)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify COLLABORATOR removes/cancel twice same site memebership request and response is 204")
+  @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+  public void userCancelsSiteMembershipRequestTwiceModeratedSite() throws JsonToModelConversionException,
+          DataPreparationException, Exception
+  {
+      UserModel user = dataUser.createRandomTestUser();
+      UserModel userCollaborator = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
+      moderatedSite = dataSite.usingUser(userCollaborator).createModeratedRandomSite();
+
+      restClient.authenticateUser(user).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
+      restClient.authenticateUser(userCollaborator).withCoreAPI().usingUser(user).getSiteMembershipRequest(moderatedSite).assertThat().field("id")
+              .is(moderatedSite.getId());
+
+      restClient.authenticateUser(userCollaborator).withCoreAPI().usingUser(user).deleteSiteMembershipRequest(moderatedSite);
+      restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+      restClient.authenticateUser(userCollaborator).withCoreAPI().usingUser(user).deleteSiteMembershipRequest(moderatedSite);
+
+      restClient.withCoreAPI().usingUser(user).getSiteMembershipRequest(moderatedSite);
+      restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError()
+                .containsErrorKey(RestErrorModel.RELATIONSHIP_NOT_FOUND_ERRORKEY)
+                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, user.getUsername(), moderatedSite.getTitle()))
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
+  }    
 }
