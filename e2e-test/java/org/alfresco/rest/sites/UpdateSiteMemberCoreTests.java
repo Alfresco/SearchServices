@@ -43,7 +43,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 404 when nonexistent siteId is used")
     public void updateSiteMemberOfNonexistentSite() throws Exception
     {
@@ -58,7 +58,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 400 when personId is not member of the site")
     public void updateNotASiteMember() throws Exception
     {
@@ -70,7 +70,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
 
 //    @Bug(id="REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 404 when personId does not exist")
     public void updateNonexistentSiteMember() throws Exception
     {
@@ -84,7 +84,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
 
     @Bug(id="REPO-1660")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if a manager is able to downgrade to contributor using -me- string in place of personId.")
     public void updateSiteManagerToSiteContributorUsingMe() throws Exception
     {
@@ -100,7 +100,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 404 when empty siteId is used")
     public void updateSiteMemberUsingEmptySiteId() throws Exception
     {
@@ -111,7 +111,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 405 when empty personId is used")
     public void updateSiteMemberUsingEmptyPersonId() throws Exception
     {
@@ -124,7 +124,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 400 when invalid role is used")
     public void updateSiteMemberUsingInvalidRole() throws Exception
     {
@@ -138,7 +138,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update another site manager to site collaborator")
     public void managerUpdateSiteManagerToSiteCollaborator() throws Exception
     {
@@ -152,7 +152,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site contributor to site manager")
     public void managerUpdateSiteContributorToSiteManager() throws Exception
     {
@@ -166,7 +166,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site collaborator to site manager")
     public void managerUpdateSiteCollaboratorToSiteManager() throws Exception
     {
@@ -180,7 +180,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site consumer to site manager")
     public void managerUpdateSiteConsumerToSiteManager() throws Exception
     {
@@ -194,7 +194,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to downgrade himself to site consumer")
     public void managerDowngradeHimselfToSiteConsumer() throws Exception
     {

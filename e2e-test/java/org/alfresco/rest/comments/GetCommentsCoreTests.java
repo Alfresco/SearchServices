@@ -42,7 +42,7 @@ public class GetCommentsCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify invalid request returns status code 400 for invalid maxItems or skipCount")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void checkStatusCodeForInvalidMaxItems() throws Exception
@@ -53,7 +53,7 @@ public class GetCommentsCoreTests extends RestTest
                 .assertLastError().containsSummary("Only positive values supported for maxItems");
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't get comments for node with ID that does not exist and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void userCanNotGetCommentsOnNonexistentFile() throws Exception
@@ -66,7 +66,7 @@ public class GetCommentsCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nonexistentFile.getNodeRef()));
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't get comments for node that exists but is not a document or a folder and status code is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     @Bug(id = "MNT-16904")
@@ -81,7 +81,7 @@ public class GetCommentsCoreTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.UNABLE_TO_LOCATE);
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify request returns status 403 if the user does not have permission read comments on the node")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void uninvitedUserCanNotGetCommentsFromPrivateSite() throws Exception
@@ -92,7 +92,7 @@ public class GetCommentsCoreTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify user gets comments without the first 2 and status code is 200")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void skipFirst2Comments() throws Exception
@@ -106,7 +106,7 @@ public class GetCommentsCoreTests extends RestTest
         comments.assertThat().paginationField("totalItems").is("3");
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with invalid network id returns status code 401")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void getCommentsWithInvalidNetwork() throws Exception
@@ -116,7 +116,7 @@ public class GetCommentsCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with empty network id returns status code 401")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void getCommentsWithEmptyNetwork() throws Exception

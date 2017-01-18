@@ -42,7 +42,7 @@ public class UpdateCommentFullTests extends RestTest
                 UserRole.SiteConsumer, UserRole.SiteContributor);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with a large string")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void managerIsAbleToUpdateACommentWithALargeString() throws JsonToModelConversionException, Exception
@@ -60,7 +60,7 @@ public class UpdateCommentFullTests extends RestTest
         returnedCommentModel.assertThat().field("content").is(longString);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with a short string")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void managerIsAbleToUpdateACommentWithAShortString() throws JsonToModelConversionException, Exception
@@ -78,7 +78,7 @@ public class UpdateCommentFullTests extends RestTest
         returnedCommentModel.assertThat().field("content").is(shortString);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Collaborator user can update a comment with special characters")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void collaboratorIsAbleToUpdateACommentThatContainsSpecialChars() throws JsonToModelConversionException, Exception
@@ -96,7 +96,7 @@ public class UpdateCommentFullTests extends RestTest
         returnedCommentModel.assertThat().field("content").is(specialChars);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Check that you cannot update comment with Consumer then call getComments and check new comment is not listed")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void cannotUpdateCommentWithConsumerCallGetComments() throws JsonToModelConversionException, Exception
@@ -117,7 +117,7 @@ public class UpdateCommentFullTests extends RestTest
             .and().paginationField("totalItems").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Contributor then call getComments and check new comment is listed")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     @Bug(id = "ACE-4614")
@@ -139,7 +139,7 @@ public class UpdateCommentFullTests extends RestTest
             .and().paginationField("totalItems").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Collaborator then call getComments and check new comment is listed")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void updateCommentWithCollaboratorCallGetComments() throws JsonToModelConversionException, Exception
@@ -160,7 +160,7 @@ public class UpdateCommentFullTests extends RestTest
             .and().paginationField("totalItems").is("1");
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Manager then check modified by information in response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void updateCommentWithManagerCheckModifiedBy() throws JsonToModelConversionException, Exception
@@ -178,7 +178,7 @@ public class UpdateCommentFullTests extends RestTest
             .and().field("content").is(updatedComment); 
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Delete comment with Admin then try to update it")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void deleteCommentThenTryToUpdateIt() throws JsonToModelConversionException, Exception
@@ -196,7 +196,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with multi byte content")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void managerIsAbleToUpdateACommentWithMultiByteContent() throws JsonToModelConversionException, Exception
@@ -214,7 +214,7 @@ public class UpdateCommentFullTests extends RestTest
         returnedCommentModel.assertThat().field("content").is(multiByte);
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Admin user can update a comment with properties parameter")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void adminIsAbleToUpdateACommentWithPropertiesParameter() throws JsonToModelConversionException, Exception
@@ -234,7 +234,7 @@ public class UpdateCommentFullTests extends RestTest
             .assertThat().fieldsCount().is(4);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FULL }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Update comment with invalid node")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void updateCommentUsingInvalidNodeId() throws JsonToModelConversionException, Exception
@@ -250,7 +250,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, file.getNodeRef()));
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify update comment from node with invalid network id returns status code 401")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void updateCommentWithInvalidNetworkId() throws Exception
@@ -263,7 +263,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED); 
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
                description= "Verify User can not update comment to a not joined private site. Status code returned is 403")
         @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
         public void userCanNotUpdateCommentToANotJoinedPrivateSiteDefaultErrorModelSchema() throws Exception

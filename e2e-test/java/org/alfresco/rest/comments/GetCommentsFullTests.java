@@ -43,7 +43,7 @@ public class GetCommentsFullTests extends RestTest
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that if manager adds one comment, it will be returned in getComments response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithManagerAndCheckThatCommentIsReturned() throws Exception
@@ -58,7 +58,7 @@ public class GetCommentsFullTests extends RestTest
             .assertThat().field("count").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that if collaborator adds one comment, it will be returned in getComments response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithCollaboratorAndCheckThatCommentIsReturned() throws Exception
@@ -74,7 +74,7 @@ public class GetCommentsFullTests extends RestTest
             .assertThat().field("count").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that if contributor adds one comment, it will be returned in getComments response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     @Bug(id = "ACE-4614")
@@ -91,7 +91,7 @@ public class GetCommentsFullTests extends RestTest
             .assertThat().field("count").is("1");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that consumer cannot add a comment and no comments will be returned in getComments response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithConsumerAndCheckThatCommentIsNotReturned() throws Exception
@@ -106,7 +106,7 @@ public class GetCommentsFullTests extends RestTest
         comments.assertThat().paginationField("count").is("0");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add one comment with Manager and check that returned person is the right one")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithManagerCheckReturnedPersonIsTheRightOne() throws Exception
@@ -120,7 +120,7 @@ public class GetCommentsFullTests extends RestTest
             .assertThat().field("lastName").is("LN-" + user1.getUsername());        
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add one comment with Collaborator and check that returned company details are correct")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addCommentWithCollaboratorCheckReturnedCompanyDetails() throws Exception
@@ -140,7 +140,7 @@ public class GetCommentsFullTests extends RestTest
                 .assertThat().field("email").isNull();        
     }  
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add 2 comments with Manager and Collaborator users and verify valid request using skipCount. Check that param is applied")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithManagerCollaboratorVerifySkipCountParamIsApplied() throws Exception
@@ -157,7 +157,7 @@ public class GetCommentsFullTests extends RestTest
         comments.assertThat().paginationField("totalItems").is("2");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add 2 comments with Admin and Collaborator users and verify valid request using maxItems. Check that param is applied")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithAdminCollaboratorVerifyMaxItemsParamIsApplied() throws Exception
@@ -173,7 +173,7 @@ public class GetCommentsFullTests extends RestTest
         comments.assertThat().paginationField("totalItems").is("2");
     }
   
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add 2 comments with Manager and Admin users and verify valid request using properties. Check that param is applied")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithAdminManagerVerifyPropertiesParamIsApplied() throws Exception
@@ -196,7 +196,7 @@ public class GetCommentsFullTests extends RestTest
             .assertThat().field("id").is("admin");
     }
     
-    @TestRail(section={TestGroup.REST_API, TestGroup.FULL, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Check default error model schema")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void addTwoCommentsWithManagerCheckDefaultErrorModelSchema() throws Exception

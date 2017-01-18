@@ -37,7 +37,7 @@ public class GetSiteContainerCoreTests extends RestTest{
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get container request returns status code 400 when site doesn't exist")            
     public void getContainerWithNonExistentSite() throws Exception
     {
@@ -48,7 +48,7 @@ public class GetSiteContainerCoreTests extends RestTest{
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get container request returns status code 400 when container item doesn't exist")            
     public void getContainerWithNonExistentItem() throws Exception
     {
@@ -59,7 +59,7 @@ public class GetSiteContainerCoreTests extends RestTest{
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for public site")
     public void getContainerForPublicSite() throws Exception
     {
@@ -75,7 +75,7 @@ public class GetSiteContainerCoreTests extends RestTest{
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for private site")
     public void getContainerForPrivateSite() throws Exception
     {
@@ -90,7 +90,7 @@ public class GetSiteContainerCoreTests extends RestTest{
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify get container request returns status 200 for moderated site")
     public void getContainerForModeratedSite() throws Exception
     {

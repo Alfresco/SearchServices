@@ -47,7 +47,7 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get sites request returns status code 400 when invalid maxItems parameter is used")
     public void getSitesWithInvalidMaxItems() throws Exception
     {
@@ -68,7 +68,7 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get sites request returns status code 400 when invalid skipCount parameter is used")
     public void getSitesWithInvalidSkipCount() throws Exception
     {
@@ -84,7 +84,7 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if User gets sites ordered by title ascending and status code is 200")
     public void getSitesOrderedByNameASC() throws Exception
     {
@@ -99,7 +99,7 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if a regular user gets all public and moderated sites and status code is 200")
     public void regularUserGetsOnlyPublicAndModeratedSites() throws Exception
     {
@@ -112,7 +112,7 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if a member of a private site gets the private site, all public sites and all moderated sites. Verify if status code is 200")
     public void privateSiteMemberGetsSitesVisibleForHim() throws Exception
     {
@@ -125,7 +125,7 @@ public class GetSitesCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.CORE, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if a site is not retrieved anymore after deletion and status code is 200")
     public void checkDeletedSiteIsNotRetrieved() throws Exception
     {

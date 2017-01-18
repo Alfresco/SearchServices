@@ -143,7 +143,8 @@ public class GetFavoriteSitesFullTests extends RestTest
         RestSiteModel restSiteModel = restClient.authenticateUser(userModel).withParams("properties=title")
                 .withCoreAPI().usingAuthUser().getFavoriteSites().getOneRandomEntry().onModel();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSiteModel.assertThat().fieldsCount().is(1);
+        restSiteModel.assertThat().fieldsCount().is(1)
+            .assertThat().field("title").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
