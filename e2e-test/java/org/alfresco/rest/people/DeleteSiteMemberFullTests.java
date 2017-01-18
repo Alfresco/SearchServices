@@ -222,14 +222,14 @@ public class DeleteSiteMemberFullTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to remove from site a user that created a member request that was not accepted yet")
+    @Bug(id="ACE-5447")
     public void adminIsNotAbleToRemoveFromSiteANonExistingMember() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
-        restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(publicSiteModel);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(newMember).deleteSiteMember(publicSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.authenticateUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingSite(publicSiteModel).addPerson(adminUserModel);
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", adminUserModel.getUsername());
+        restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSiteModel);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSiteModel);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsSummary(RestErrorModel.ENTITY_NOT_FOUND);
     }
     
 }
