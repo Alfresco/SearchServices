@@ -11,6 +11,7 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -119,7 +120,7 @@ public class DeleteSiteMemberFullTests extends RestTest
     {
         restClient.authenticateUser(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingUser(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteContributor)).deleteSiteMember(moderatedSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
-        .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
+            .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -128,7 +129,7 @@ public class DeleteSiteMemberFullTests extends RestTest
     {
         restClient.authenticateUser(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingUser(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(moderatedSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
-        .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
+            .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -164,7 +165,7 @@ public class DeleteSiteMemberFullTests extends RestTest
     {
         restClient.authenticateUser(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingUser(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteContributor)).deleteSiteMember(privateSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
-        .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
+            .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -173,7 +174,7 @@ public class DeleteSiteMemberFullTests extends RestTest
     {
         restClient.authenticateUser(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingUser(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(privateSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
-        .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
+            .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -186,6 +187,9 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator)).deleteSiteMember(publicSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(RestErrorModel.ENTITY_NOT_FOUND);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator));
+        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
+            .when().getSiteMember(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
+            .assertSiteMemberHasRole(Role.SiteCollaborator);
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -197,13 +201,13 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.withCoreAPI().usingUser(adminUserModel).deleteSiteMember(publicSiteModel);
         
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-        .assertLastError()                  
-        .containsSummary(String.format(RestErrorModel.DELETE_LAST_MANAGER, publicSiteModel.getTitle()))   
-        .containsErrorKey(String.format(RestErrorModel.DELETE_LAST_MANAGER, publicSiteModel.getTitle()))
-        .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-        .stackTraceIs(RestErrorModel.STACKTRACE); 
+            .assertLastError().containsSummary(String.format(RestErrorModel.DELETE_LAST_MANAGER, publicSiteModel.getTitle()))   
+            .containsErrorKey(String.format(RestErrorModel.DELETE_LAST_MANAGER, publicSiteModel.getTitle()))
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER).stackTraceIs(RestErrorModel.STACKTRACE); 
         
         restClient.withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager));
+        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
+            .assertThat().entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager).getUsername());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -213,6 +217,7 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).deleteSiteMember(publicSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingSite(publicSiteModel).addPerson(adminUserModel);
+        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", adminUserModel.getUsername());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -224,6 +229,7 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(newMember).deleteSiteMember(publicSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingSite(publicSiteModel).addPerson(adminUserModel);
+        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", adminUserModel.getUsername());
     }
     
 }
