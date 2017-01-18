@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 public class AuthTests extends RestTest
 {
     @TestRail(section = { TestGroup.REST_API, TestGroup.AUTH }, executionType = ExecutionType.SANITY, description = "Verify TICKET is returned on admin user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SANITY, TestGroup.AUTH })
     public void adminShouldGetTicketBody() throws JsonToModelConversionException, Exception
     {
         RestTicketBodyModel ticketBody = new RestTicketBodyModel();
