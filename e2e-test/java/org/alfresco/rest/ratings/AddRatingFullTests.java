@@ -13,6 +13,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -465,12 +466,12 @@ public class AddRatingFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
               description = "Verify that Collaborator is NOT able to add a high rating to a file")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.FULL })
-    public void contributorIsNotAbleToAddANegativeRatingToAFile() throws Exception
+    public void collaboratorIsNotAbleToAddAHighRatingToAFile() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
         FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         
-        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI()
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI()
                                         .usingResource(document)
                                         .rateStarsToDocument(10);        
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
@@ -481,6 +482,7 @@ public class AddRatingFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
+    @Bug(id = "MNT-17375")
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
               description = "Do not provide field - 'id'")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.FULL })
@@ -489,11 +491,11 @@ public class AddRatingFullTests extends RestTest
         FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
         FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"\":\"likes\", \"myRating\":\"2\"}");
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"myRating\":\"true\"}");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field \"\""))
-                  .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field \"\""))
+                  .containsSummary(RestErrorModel.NULL_LIKE_RATING)
+                  .containsErrorKey(RestErrorModel.NULL_LIKE_RATING)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
@@ -506,11 +508,11 @@ public class AddRatingFullTests extends RestTest
         FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
         FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"likes\", \"\":\"2\"}");
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"likes\"}");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field \"\""))
-                  .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field \"\""))
+                  .containsSummary(RestErrorModel.NULL_LIKE_RATING)
+                  .containsErrorKey(RestErrorModel.NULL_LIKE_RATING)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
