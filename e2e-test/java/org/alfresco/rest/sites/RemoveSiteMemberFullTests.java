@@ -70,7 +70,7 @@ public class RemoveSiteMemberFullTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that admin can delete a site member with Collaborator role and gets status code 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
-    public void adminIsNotAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
+    public void adminIsAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel)
             .deleteSiteMember(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -119,7 +119,7 @@ public class RemoveSiteMemberFullTests extends RestTest
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify that admin can not delete a site member twice and gets status code 204")
+            description = "Verify that admin can not delete a site member twice and gets status code 404 for the second attempt")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @Bug(id="ACE-5447")
     public void adminIsNotAbleToRemoveSiteMemberTwice() throws Exception
