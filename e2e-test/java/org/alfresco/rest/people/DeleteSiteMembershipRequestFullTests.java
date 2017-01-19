@@ -45,7 +45,7 @@ public class DeleteSiteMembershipRequestFullTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify COLLABORATOR is able to remove/cancel a site memebership request of admin to a moderated site and response is 204")
+              description = "Verify COLLABORATOR is able to remove/cancel a site memebership request of a user to a moderated site and response is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     public void collaboratorUserIsAbleToCancelSiteMembershipRequestOfAnotherUserToAModeratedSite() throws JsonToModelConversionException,
             DataPreparationException, Exception
@@ -71,7 +71,7 @@ public class DeleteSiteMembershipRequestFullTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify CONTRIBUTOR is able to remove/cancel a site memebership request of admin to a moderated site and response is 204")
+              description = "Verify CONTRIBUTOR is able to remove/cancel a site memebership request of a user to a moderated site and response is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     public void contributorUserIsAbleToCancelSiteMembershipRequestOfAnotherUserToAModeratedSite() throws JsonToModelConversionException,
             DataPreparationException, Exception
@@ -97,7 +97,7 @@ public class DeleteSiteMembershipRequestFullTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify CONSUMER is able to remove/cancel a site memebership request of admin to a moderated site and response is 204")
+              description = "Verify CONSUMER is able to remove/cancel a site memebership request of a user to a moderated site and response is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     public void consumerUserIsAbleToCancelSiteMembershipRequestOfAnotherUserToAModeratedSite() throws JsonToModelConversionException, DataPreparationException,
             Exception
@@ -185,7 +185,7 @@ public class DeleteSiteMembershipRequestFullTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify COLLABORATOR removes/cancel twice same site memebership request and response is 204")
+            description = "Verify COLLABORATOR removes/cancel twice same site memebership request and response is 404")
   @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
   public void userCancelsSiteMembershipRequestTwiceModeratedSite() throws JsonToModelConversionException,
           DataPreparationException, Exception
