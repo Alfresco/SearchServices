@@ -25,10 +25,10 @@
         </snapshotRepository>
     </distributionManagement>
     <scm>
-        <connection>scm:git:https://gitlab.alfresco.com/search_discovery/solr.git</connection>
-        <developerConnection>scm:git:https://gitlab.alfresco.com/search_discovery/solr.git</developerConnection>
-        <url>https://gitlab.alfresco.com/search_discovery/solr</url>
-      <tag>HEAD</tag>
+        <connection>scm:git:https://git.alfresco.com/search_discovery/searchservices.git</connection>
+        <developerConnection>scm:git:https://git.alfresco.com/search_discovery/searchservices.git</developerConnection>
+        <url>https://git.alfresco.com/search_discovery/searchservices.git</url>
+        <tag>HEAD</tag>
   </scm>
 
     <modules>
