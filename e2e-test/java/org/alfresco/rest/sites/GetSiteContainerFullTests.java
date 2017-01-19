@@ -127,7 +127,7 @@ public class GetSiteContainerFullTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if user cannot get container request for a private site created by admin and status code is 403")            
+            description= "Verify if user cannot get container request for a private site created by admin and status code is 404")            
     public void userCannotGetContainerForPrivateSiteCreatedByAdmin() throws Exception
     {        
         restClient.authenticateUser(testUserModel)
