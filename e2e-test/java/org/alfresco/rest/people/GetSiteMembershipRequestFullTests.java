@@ -231,7 +231,8 @@ public class GetSiteMembershipRequestFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, description = "Add process item using by the admin in same network.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, 
+             description = "Add process item using by the admin in same network.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL, TestGroup.NETWORKS })
     public void getSiteMembershipRequestByAdminSameNetwork() throws Exception
     {
@@ -254,7 +255,8 @@ public class GetSiteMembershipRequestFullTests extends RestTest
                      .and().field("site.preset").is("site-dashboard");
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, description = "Add process item using by admin in other network.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, 
+              description = "Add process item using by admin in other network.")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL, TestGroup.NETWORKS })
     public void getSiteMembershipRequestByAdminInOtherNetwork() throws Exception
     {
