@@ -162,7 +162,7 @@ public class DeleteRatingSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to remove its own rating of a document")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAbleToDeleteRatings() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();

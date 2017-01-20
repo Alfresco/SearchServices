@@ -101,7 +101,7 @@ public class GetSiteContainersSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Failed authentication get site containers call returns status code 401 with Manager role")
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainers() throws JsonToModelConversionException, Exception
     {
         userModel = dataUser.createRandomTestUser();

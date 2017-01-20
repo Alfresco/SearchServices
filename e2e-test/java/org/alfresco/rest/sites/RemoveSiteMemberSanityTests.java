@@ -117,7 +117,7 @@ public class RemoveSiteMemberSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Verify that unauthenticated user is not able to delete site member")
-    @Bug(id = "MNT-16904")
+    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAuthorizedToDeleteSiteMember() throws Exception
     {
         UserModel testUserModel = dataUser.createRandomTestUser();

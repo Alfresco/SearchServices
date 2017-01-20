@@ -111,7 +111,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable by inexistent user")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void deleteTaskVarialbleByInexistentUser() throws Exception
     {
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");

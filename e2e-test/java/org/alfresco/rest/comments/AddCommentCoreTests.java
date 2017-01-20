@@ -138,7 +138,7 @@ public class AddCommentCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify comment cannot be added if empty network ID is provided")
-    @Bug(id = "MNT-16904")
+    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void addCommentUsingEmptyNetworkId() throws JsonToModelConversionException, Exception
     {

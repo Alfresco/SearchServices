@@ -51,7 +51,7 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify collaborator user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthorizedCollaboratorUserFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel collaborator = dataUser.usingAdmin().createRandomTestUser();
@@ -64,7 +64,7 @@ public class GetSiteMembershipRequestCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify consumer user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
-    @Bug(id = "MNT-16904")
+    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     public void unauthorizedConsumerUserFailsToGetSiteMembershipRequests() throws Exception
     {
         UserModel consumer = dataUser.usingAdmin().createRandomTestUser();

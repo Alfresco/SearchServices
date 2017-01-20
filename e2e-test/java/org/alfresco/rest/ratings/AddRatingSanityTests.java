@@ -117,7 +117,7 @@ public class AddRatingSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post like rating to a document")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAbleToLikeDocument() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
@@ -201,7 +201,7 @@ public class AddRatingSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to post stars rating to a document")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.SANITY })
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "fails only on environment with tenants")
     public void unauthenticatedUserIsNotAbleToRateStarsToDocument() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
