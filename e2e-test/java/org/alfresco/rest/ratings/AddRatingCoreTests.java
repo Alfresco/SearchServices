@@ -238,7 +238,7 @@ public class AddRatingCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
                   .assertLastError()
                   .containsSummary(String.format(RestErrorModel.CANNOT_RATE))
-                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                  .containsErrorKey(RestErrorModel.CANNOT_RATE)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
         
