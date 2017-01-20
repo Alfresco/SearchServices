@@ -3,12 +3,12 @@ package org.alfresco.rest.people;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActivityModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -101,10 +101,11 @@ public class GetPeopleActivitiesSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is NOT Authorized to gets another user activities with Rest API")
-    @Bug(id = "MNT-16904")
     public void unauthenticatedUserShouldNotGetPeopleActivitiesList() throws Exception
     {
         restClient.authenticateUser(unauthenticatedUser).withCoreAPI().usingUser(userModel).getPersonActivities();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+            .assertLastError().containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+            .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 }

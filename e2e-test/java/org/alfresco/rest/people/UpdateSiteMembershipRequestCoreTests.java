@@ -7,7 +7,6 @@ import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -32,14 +31,15 @@ public class UpdateSiteMembershipRequestCoreTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify unauthorized user is not able to update user site membership request")
-    @Bug(id="MNT-16904")
     public void unauthorizedUserIsNotAbleToUpdateSiteMembershipRequest() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(siteModel);
         newMember.setPassword("fakePass");
         restClient.withCoreAPI().usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+            .assertLastError().containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+            .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })

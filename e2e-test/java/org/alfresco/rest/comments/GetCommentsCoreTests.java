@@ -4,8 +4,12 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.utility.model.*;
-import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.LinkModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -69,16 +73,19 @@ public class GetCommentsCoreTests extends RestTest
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't get comments for node that exists but is not a document or a folder and status code is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    @Bug(id = "MNT-16904")
     public void userCanNotGetCommentsOnLink() throws Exception
     {
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
         FileModel fileWithNodeRefFromLink = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
-        fileWithNodeRefFromLink.setNodeRef(link.getNodeRef());
+        fileWithNodeRefFromLink.setNodeRef(link.getNodeRef().replace("workspace://SpacesStore/", "workspace%3A%2F%2FSpacesStore%2F"));
         restClient.authenticateUser(adminUserModel).withCoreAPI()
                 .usingResource(fileWithNodeRefFromLink).getNodeComments();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(RestErrorModel.UNABLE_TO_LOCATE);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+            .assertLastError()
+            .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, fileWithNodeRefFromLink.getNodeRef()))
+            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,

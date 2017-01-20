@@ -14,7 +14,6 @@ import org.alfresco.utility.model.LinkModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -42,7 +41,6 @@ public class UpdateCommentCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify can not update comment if NodeId is neither document or folder and returns status code 405")
-    @Bug(id="MNT-16904")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
     public void canNotUpdateCommentIfNodeIdIsNeitherDocumentOrFolder() throws JsonToModelConversionException, Exception
     {
@@ -53,11 +51,15 @@ public class UpdateCommentCoreTests extends RestTest
         commentModel = restClient.withCoreAPI().usingResource(content).addComment("This is a new comment");
         
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
-        content.setNodeRef(link.getNodeRef());
+        content.setNodeRef(link.getNodeRef().replace("workspace://SpacesStore/", "workspace%3A%2F%2FSpacesStore%2F"));
         
         restClient.withCoreAPI().usingResource(content).updateComment(commentModel, "This is the updated comment.");                
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
-                  .assertLastError().containsSummary("node ref that does not exist was not found");
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+            .assertLastError()
+            .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, content.getNodeRef()))
+            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user is not able to update with empty comment body and status code is 400")
