@@ -15,7 +15,6 @@ import org.alfresco.utility.model.LinkModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -79,16 +78,20 @@ public class AddRatingCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Verify that if nodeId provided cannot be rated 405 status code is returned")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
-    @Bug(id = "MNT-16904")
     public void likeResourceThatCannotBeRated() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(userModel).usingSite(siteModel).createFolder();
         FileModel document = dataContent.usingUser(userModel).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
-        document.setNodeRef(link.getNodeRef());
+        document.setNodeRef(link.getNodeRef().replace("workspace://SpacesStore/", "workspace%3A%2F%2FSpacesStore%2F"));
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).likeDocument();
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+            .assertLastError()
+            .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, document.getNodeRef()))
+            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section = { TestGroup.REST_API,
