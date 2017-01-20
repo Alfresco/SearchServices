@@ -58,7 +58,10 @@ public class GetSiteMembersCoreTests extends RestTest
         restClient.authenticateUser(publicSiteContributor).withParams("maxItems=0")
                 .withCoreAPI().usingSite(publicSite).getSiteMembers();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
+                .assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS)
+                .containsErrorKey(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
 
         restClient.authenticateUser(publicSiteContributor).withParams("maxItems=A")
                 .withCoreAPI().usingSite(publicSite).getSiteMembers();
