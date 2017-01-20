@@ -120,7 +120,7 @@ public class GetNodeTagsSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
             executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to get node tags")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    @Bug(id="MNT-16904")
+    @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
     public void unauthenticatedUserIsNotAbleToRetrieveNodeTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));

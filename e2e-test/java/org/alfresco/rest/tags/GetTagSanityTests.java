@@ -109,7 +109,7 @@ public class GetTagSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void managerIsNotAbleToGetTagIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         String tagValue = RandomData.getRandomName("tag");

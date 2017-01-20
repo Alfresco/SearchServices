@@ -100,7 +100,7 @@ public class GetCommentsSanityTests extends RestTest
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.SANITY,
             description= "Verify Manager user gets status code 401 if authentication call fails")    
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");

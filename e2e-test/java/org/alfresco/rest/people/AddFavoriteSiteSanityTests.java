@@ -93,7 +93,7 @@ public class AddFavoriteSiteSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })    
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify a manager user is NOT Authorized to add a favorite site with Rest API when authentication fails (401)")
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void managerUserNotAuthorizedFailsToAddFavoriteSite() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();

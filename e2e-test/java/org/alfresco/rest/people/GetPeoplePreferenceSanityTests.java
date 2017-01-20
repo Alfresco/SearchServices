@@ -105,7 +105,7 @@ public class GetPeoplePreferenceSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to get a specific preference with Rest API when authentication fails (401)")
-    @Bug(id = "MNT-16904")
+    @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
     public void managerUserNotAuthorizedFailsToGetsAPreference() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();

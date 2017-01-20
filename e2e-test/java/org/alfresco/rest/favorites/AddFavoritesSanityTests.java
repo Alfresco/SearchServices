@@ -87,7 +87,7 @@ public class AddFavoritesSanityTests extends RestTest
         restPersonFavoritesModel.and().field("targetGuid").is(siteModel.getGuid());
     }
 
-    @Bug(id="MNT-16904")
+    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
               description = "Verify Manager user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })

@@ -92,7 +92,7 @@ public class GetSiteMembershipRequestsSanityTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @Bug(id = "MNT-16904")
+    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get all site membership requests of a specific person with Rest API when the authentication fails (401)")
     public void unauthorizedUserFailsToGetSiteMembershipRequests() throws Exception
     {

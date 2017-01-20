@@ -281,7 +281,7 @@ public class GetFavoriteSanityTests extends RestTest
             description = "Verify user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
     @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
-    public void userIsNotAbleToRetrieveFavoritesIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    public void userIsNotAbleToRetrieveFavoriteSiteIfAuthenticationFails() throws JsonToModelConversionException, Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         siteManager.setPassword("wrongPassword");
