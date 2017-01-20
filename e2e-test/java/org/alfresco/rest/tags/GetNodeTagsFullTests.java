@@ -48,9 +48,8 @@ public class GetNodeTagsFullTests extends RestTest
         restClient.withCoreAPI().usingResource(document).addTag(tagValue2);
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify site Manager is able to get node tags "
-                    + "using properties parameter.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify site Manager is able to get node tags using properties parameter")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void siteManagerIsAbleToRetrieveNodeTagsWithPropertiesParameter() throws JsonToModelConversionException, Exception
     {     
@@ -62,9 +61,8 @@ public class GetNodeTagsFullTests extends RestTest
             .and().entriesListDoesNotContain("id");
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify that Collaborator user is not able to get node tags "
-                    + "using site id instead of node id.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that Collaborator user is not able to get node tags using site id instead of node id")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void collaboratorGetNodeTagsUseSiteIdInsteadOfNodeId() throws JsonToModelConversionException, Exception
     {
@@ -77,8 +75,8 @@ public class GetNodeTagsFullTests extends RestTest
             .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, file.getNodeRef()));
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "With admin get node tags and use skipCount parameter. Check pagination and maxItems.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "With admin get node tags and use skipCount parameter. Check pagination and maxItems")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void useSkipCountCheckPaginationAndMaxItems() throws JsonToModelConversionException, Exception
     {     
@@ -91,8 +89,8 @@ public class GetNodeTagsFullTests extends RestTest
             .and().field("count").is("1");
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "With admin get node tags and use maxItems parameter. Check pagination.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "With admin get node tags and use maxItems parameter. Check pagination")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void useMaxItemsParameterCheckPagination() throws JsonToModelConversionException, Exception
     {     
@@ -106,9 +104,8 @@ public class GetNodeTagsFullTests extends RestTest
             .and().field("skipCount").is("0");
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Get tags from a node to which user does not have access."
-                    + " Check default error model schema")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Get tags from a node to which user does not have access. Check default error model schema")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void getTagsFromNodeWithUserWhoDoesNotHaveAccessCheckDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
     {     
@@ -120,8 +117,8 @@ public class GetNodeTagsFullTests extends RestTest
             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Using manager user get only one tag.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Using manager user get only one tag.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void usingManagerGetOnlyOneTag() throws JsonToModelConversionException, Exception
     {   
@@ -139,8 +136,8 @@ public class GetNodeTagsFullTests extends RestTest
             .and().field("skipCount").is("0");
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Using admin get last 2 tags and skip first 2 tags")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "Using admin get last 2 tags and skip first 2 tags")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void adminUserGetLast2TagsAndSkipFirst2Tags() throws JsonToModelConversionException, Exception
     {     
@@ -167,8 +164,8 @@ public class GetNodeTagsFullTests extends RestTest
             .and().field("skipCount").is("2");
     }
     
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "With admin get node tags and use maxItems=0.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+            description = "With admin get node tags and use maxItems=0.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void getTagsWithZeroMaxItems() throws JsonToModelConversionException, Exception
     {     
@@ -179,7 +176,7 @@ public class GetNodeTagsFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that using high skipCount parameter returns status code 200.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void getTagsWithHighSkipCount() throws JsonToModelConversionException, Exception
     {        
         returnedCollection = restClient.authenticateUser(adminUserModel).withParams("skipCount=10000")
