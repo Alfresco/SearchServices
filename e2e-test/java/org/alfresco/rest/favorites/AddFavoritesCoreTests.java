@@ -181,14 +181,13 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
-    @Bug(id="MNT-16917")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify add file favorite with tag id returns status code 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFileFavoriteUsingTagId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        returnedModel = restClient.withCoreAPI().usingResource(document).addTag("random_tag");
+        returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addTag("random_tag");
         file.setNodeRef(returnedModel.getId());
         
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addFileToFavorites(file);

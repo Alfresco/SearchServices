@@ -230,14 +230,13 @@ public class AddFavoriteSiteFullTests extends RestTest
         siteModel.setId(id);    
     }
     
-    @Bug(id="MNT-16917")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
             description = "Check that if user provides site in id but id is of a tag status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     public void addSiteFavoriteUsingTagId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
-        returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag("random_tag");
+        returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addTag("random_tag");
         file.setNodeRef(returnedModel.getId());
         siteModel.setId(returnedModel.getId());
         
