@@ -185,7 +185,8 @@ public class GetSiteMemberFullTests extends RestTest
                 .withCoreAPI().usingSite(siteModel).usingParams("properties=id").getSiteMember(consumer)
                 .assertThat().fieldsCount().is(1)
                 .and().field("id").isNotEmpty()
-                .and().field("role").isNull();
+                .and().field("role").isNull()
+                .and().field("person").isNull();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
