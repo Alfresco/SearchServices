@@ -106,13 +106,28 @@ public class DeleteTagFullTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
-            executionType = ExecutionType.REGRESSION, description = "Verify Contributor user cannot delete tag added by another user. Check default error model schema.")
+            executionType = ExecutionType.REGRESSION, description = "Verify Manager user can delete tag added by another user.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
-    public void contributorCannotDeleteTagAddedByAnotherUserCheckDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
+    public void managerCanDeleteTagAddedByAnotherUser() throws JsonToModelConversionException, Exception
     {
         String tag = RandomStringUtils.randomAlphanumeric(10);
         
-        tagReturnedModel = restClient.authenticateUser(adminUserModel)
+        tagReturnedModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+            .withCoreAPI().usingResource(document).addTag(tag);
+
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+            .withCoreAPI().usingResource(document).deleteTag(tagReturnedModel);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    }  
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
+            executionType = ExecutionType.REGRESSION, description = "Check default error model schema. Contributor cannot delete tag added by Manager.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
+    public void checkDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
+    {
+        String tag = RandomStringUtils.randomAlphanumeric(10);
+        
+        tagReturnedModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
             .withCoreAPI().usingResource(document).addTag(tag);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
