@@ -124,6 +124,24 @@ public class AddRatingCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Verify that manager is able to like a site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
+    public void managerIsAbleToLikeASite() throws Exception
+    {
+        FolderModel folderModel = new FolderModel();
+        folderModel.setNodeRef(siteModel.getGuid());
+
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(folderModel)
+                .likeDocument();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes").and().field("aggregate").isNotEmpty();
+
+        restClient.withCoreAPI().usingResource(folderModel).getRatings()
+                .assertNodeIsLiked();
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
             TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Verify that manager is able to rate a folder")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void managerIsAbleToRateAFolder() throws Exception
@@ -148,6 +166,23 @@ public class AddRatingCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
+    }
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Verify that manager is able to rate a site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
+    public void managerIsAbleToRateASite() throws Exception
+    {
+        FolderModel folderModel = new FolderModel();
+        folderModel.setNodeRef(siteModel.getGuid());
+        returnedRatingModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(folderModel)
+                .rateStarsToDocument(5);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
+
+        restClient.withCoreAPI().usingResource(folderModel).getRatings()
+                .assertNodeHasFiveStarRating();
     }
 
     @TestRail(section = { TestGroup.REST_API,

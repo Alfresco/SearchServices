@@ -203,10 +203,13 @@ public class DeleteRatingSanityTests extends RestTest
 
         restClient.authenticateUser(userB);
 
-        restClient.authenticateUser(userB).withCoreAPI().usingResource(document).deleteLikeRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
 
         restClient.withCoreAPI().usingResource(document).deleteFiveStarRating();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastExceptionContains(HttpStatus.UNAUTHORIZED.toString());
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.withCoreAPI().usingResource(document).getRatings()
+                .assertNodeIsLiked()
+                .assertNodeHasFiveStarRating();
     }
 }

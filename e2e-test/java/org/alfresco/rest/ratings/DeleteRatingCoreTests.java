@@ -46,7 +46,12 @@ public class DeleteRatingCoreTests extends RestTest
         FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
         FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).deleteInvalidRating("random_rating");
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_RATING, "random_rating"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                    .containsSummary(String.format(RestErrorModel.INVALID_RATING, "random_rating"))
+                    .containsErrorKey(String.format(RestErrorModel.INVALID_RATING, "random_rating"))
+                    .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                    .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -121,34 +126,24 @@ public class DeleteRatingCoreTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Delete rating of a document using site manager")
+            TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is not able to remove rating added by another user")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
+    @Bug(id = "ACE-5459")
     public void deleteDocumentRatingUsingManager() throws Exception
     {
         FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
         FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).rateStarsToDocument(5);
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).likeDocument();
+        restClient.withCoreAPI().usingResource(document).likeDocument();
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document).deleteFiveStarRating();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingResource(document).deleteLikeRating();
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.withCoreAPI().usingResource(document).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
 
-        restClient.withCoreAPI().usingResource(document).getRatings().assertNodeIsLiked().assertNodeHasFiveStarRating();
-    }
-
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, description = "One user is not able to delete like of another user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
-    public void deleteLikeOfAnotherUser() throws Exception
-    {
-        FolderModel folderModel = dataContent.usingUser(adminUser).usingSite(siteModel).createFolder();
-        FileModel document = dataContent.usingUser(adminUser).usingResource(folderModel).createContent(DocumentType.TEXT_PLAIN);
-        
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingResource(document).likeDocument();
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingResource(document).deleteLikeRating();
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingResource(document).getRatings().assertNodeIsLiked();
+        restClient.withCoreAPI().usingResource(document).getRatings()
+                .assertNodeIsLiked()
+                .assertNodeHasFiveStarRating();
     }
 }
