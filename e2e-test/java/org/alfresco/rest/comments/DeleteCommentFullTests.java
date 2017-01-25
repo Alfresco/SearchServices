@@ -157,7 +157,7 @@ public class DeleteCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(file.getNodeRef() + " was not found");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify deleteComment from node with invalid network id returns status code 401")
     @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.COMMENTS, TestGroup.FULL })
     public void deleteCommentWithInvalidNetworkId() throws Exception
