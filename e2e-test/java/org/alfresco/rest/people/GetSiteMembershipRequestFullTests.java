@@ -38,7 +38,7 @@ public class GetSiteMembershipRequestFullTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify site manager can get site membership requests on moderated site and response is not found (200)")
+              description = "Verify site manager can get site membership requests on moderated site and response is successful (200)")
     public void siteManagerCanGetModeratedSiteMembershipRequests() throws Exception
     {
         UserModel moderatedUser = dataUser.createRandomTestUser();
@@ -147,7 +147,8 @@ public class GetSiteMembershipRequestFullTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify request returns status 200 when using valid parameters")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that getFavoriteSites request returns status 200 when using valid parameters")
     public void getSiteMembershipRequestUsingParameters() throws Exception
     {
         RestSiteMembershipRequestModel returnedModel = restClient.withParams("message=Please accept me")
