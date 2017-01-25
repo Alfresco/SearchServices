@@ -190,7 +190,7 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
               description = "Verify admin is able to update site membership request")
-    public void adminIsAbleToRetrieveSiteMembershipRequest() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToUpdateSiteMembershipRequest() throws JsonToModelConversionException, Exception
     {
         regularUser = dataUser.createRandomTestUser();
         SiteModel anotherModeratedSite = dataSite.usingUser(regularUser).createModeratedRandomSite();
@@ -391,7 +391,7 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
         moderatedSite.setId(moderatedSiteId);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
               description = "Verify inexistent user is not able to update site membership request")
     public void emptyUserCannotUpdateSiteMembershipRequest() throws Exception
@@ -408,7 +408,7 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
               description = "Update site membership request - rejected Request")
-    public void rejectRequestTheUpdateSiteMembershipRequest() throws Exception
+    public void rejectRequestThenUpdateSiteMembershipRequest() throws Exception
     {
         UserModel userWithRejectedRequests = dataUser.createRandomTestUser();
         restClient.authenticateUser(userWithRejectedRequests).withCoreAPI().usingAuthUser()
@@ -432,7 +432,7 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
               description = "Update site membership request - approved Request")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    public void approveRequestTheUpdateSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
+    public void approveRequestThenUpdateSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel userWithApprovedRequests = dataUser.createRandomTestUser();
         restClient.authenticateUser(userWithApprovedRequests).withCoreAPI().usingAuthUser()
@@ -474,7 +474,7 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,  TestGroup.FULL }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
               description = "Update site membership request using invalid network")
     public void updateSiteMembershipRequestUsingInvalidNetwork() throws Exception
     {
@@ -490,9 +490,9 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
                   .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,  TestGroup.FULL}, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, 
               description = "Verify user is not able to update an inexitent site membership request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     public void userIsNotAbleToUpdateAnInexistentSiteMembershipRequest() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(managerUser).createModeratedRandomSite();
@@ -506,7 +506,7 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,  TestGroup.FULL }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, 
               description = "Verify user is not able to update a deleted site membership request")
     public void userCantUpdateSiteMembershipRequestForDeletedRequest() throws Exception
     {
