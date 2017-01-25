@@ -3,7 +3,6 @@ package org.alfresco.rest.tags;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
@@ -118,28 +117,5 @@ public class DeleteTagFullTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
             .withCoreAPI().usingResource(document).deleteTag(tagReturnedModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-    }  
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
-            executionType = ExecutionType.REGRESSION, description = "Check default error model schema. Contributor cannot delete tag added by Manager.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
-    public void checkDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
-    {
-        String tag = RandomStringUtils.randomAlphanumeric(10);
-        
-        tagReturnedModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
-            .withCoreAPI().usingResource(document).addTag(tag);
-
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-            .withCoreAPI().usingResource(document).deleteTag(tagReturnedModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
-            .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-            .stackTraceIs(RestErrorModel.STACKTRACE);
-        
-        returnedTag = restClient.withCoreAPI().getTag(tagReturnedModel);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedTag.assertThat().field("tag").is(tag.toLowerCase());
-    }  
+    }   
 }

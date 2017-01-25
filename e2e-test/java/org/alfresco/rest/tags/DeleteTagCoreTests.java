@@ -36,16 +36,20 @@ public class DeleteTagCoreTests extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify that if user has no permission to remove tag returned status code is 403")
+            description = "Verify that if user has no permission to remove tag returned status code is 403. Check default error model schema")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.CORE })
-    public void deleteTagWithUserWithoutPermission() throws Exception
+    public void deleteTagWithUserWithoutPermissionCheckDefaultErrorModelSchema() throws Exception
     {
         restClient.authenticateUser(adminUserModel);        
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
         
         restClient.authenticateUser(userModel);
         restClient.withCoreAPI().usingResource(document).deleteTag(tag);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+                .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+                .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
