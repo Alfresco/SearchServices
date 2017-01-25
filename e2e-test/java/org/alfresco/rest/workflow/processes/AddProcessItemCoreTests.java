@@ -113,7 +113,6 @@ public class AddProcessItemCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process item is falling in case of invalid process id is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    @Bug(id="AUTOMATION", description="Please fix this issue. It seems it's failing with 400 or 404 error code on 5.2")
     public void failedAddingProcessItemIfInvalidProcessIdIsProvided() throws Exception
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(adminUser).withParams("maxItems=1").withWorkflowAPI().getProcesses();
@@ -156,5 +155,4 @@ public class AddProcessItemCoreTests extends RestTest
         restClient.processModel(RestItemModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.REQUIRED_TO_ADD, "itemId"));
     }
-
 }
