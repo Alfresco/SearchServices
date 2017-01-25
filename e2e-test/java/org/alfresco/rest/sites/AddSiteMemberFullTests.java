@@ -104,9 +104,10 @@ public class AddSiteMemberFullTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, json, "sites/{siteId}/members?{parameters}", publicSiteModel.getId(), restClient.getParameters());
         restClient.processModel(RestSiteMemberModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-            .containsSummary(String.format(RestErrorModel.NO_CONTENT, 
-                    "N/A (through reference chain: org.alfresco.rest.api.model.SiteMember[\"role\"])"));
-
+            .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "N/A (through reference chain: org.alfresco.rest.api.model.SiteMember[\"role\"])"))
+            .containsSummary(String.format(RestErrorModel.NO_CONTENT, "N/A (through reference chain: org.alfresco.rest.api.model.SiteMember[\"role\"])"))
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
@@ -233,21 +234,22 @@ public class AddSiteMemberFullTests extends RestTest
     {
         UserModel testUser = dataUser.createRandomTestUser();
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
+        adminUserModel.setUserRole(UserRole.SiteContributor);
         memberModel = restClient.authenticateUser(testUser).withCoreAPI().usingSite(privateSite).addPerson(adminUserModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        memberModel.assertThat().field("id").is(adminUserModel.getUsername())
-               .and().field("role").is(adminUserModel.getUserRole());
+        memberModel.assertThat().field("id").is(adminUserModel.getUsername()).and().field("role").is(adminUserModel.getUserRole());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify that admin can be added to private site by site manager")
-    public void adminCanBeAddedToPrivateSiteBySiteCollaborator() throws Exception
+            description = "Verify that admin cannot be added to private site by site collaborator")
+    public void adminCannotBeAddedToPrivateSiteBySiteCollaborator() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser();
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
         UserModel siteCollaborator = dataUser.createRandomTestUser();
         dataUser.addUserToSite(siteCollaborator, privateSite, UserRole.SiteCollaborator);
+        adminUserModel.setUserRole(UserRole.SiteContributor);
         memberModel = restClient.authenticateUser(siteCollaborator).withCoreAPI().usingSite(privateSite).addPerson(adminUserModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);   
     }
