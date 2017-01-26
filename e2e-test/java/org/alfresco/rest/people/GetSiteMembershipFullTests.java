@@ -123,6 +123,7 @@ public class GetSiteMembershipFullTests extends RestTest
             .usingUser(leaveSiteUser).getSiteMembership(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
             .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, leaveSiteUser.getUsername(), publicSite.getTitle()))
-            .descriptionURLIs(RestErrorModel.DESCRIPTION_URL_ERRORS_EXPLAINED);
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }
