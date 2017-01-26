@@ -50,8 +50,28 @@ public class UpdateSiteMemberSanityTests extends RestTest
             description = "Verify that collaborator is not able to update site member and gets status code FORBIDDEN (403)")
     public void collaboratorIsNotAbleToUpdateSiteMember() throws Exception
     {
+        UserModel testUserModel = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(testUserModel, siteModel, UserRole.SiteConsumer);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
+        restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
+        restClient.assertLastError()
+            .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));        
+    }
+    
+    @Bug(id = "REPO-1889")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+            description = "Verify that collaborator is not able to update site member and gets status code FORBIDDEN (403)")
+    public void collaboratorIsNotAbleToUpdateSiteMemberWithTheSameRole() throws Exception
+    {
+        UserModel testUserModel = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(testUserModel, siteModel, UserRole.SiteConsumer);
+        
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        testUserModel.setUserRole(UserRole.SiteConsumer);
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
         restClient.assertLastError()
@@ -63,6 +83,9 @@ public class UpdateSiteMemberSanityTests extends RestTest
             description = "Verify that contributor is not able to update site member and gets status code FORBIDDEN (403)")
     public void contributorIsNotAbleToUpdateSiteMember() throws Exception
     {
+        UserModel testUserModel = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(testUserModel, siteModel, UserRole.SiteConsumer);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
@@ -76,6 +99,9 @@ public class UpdateSiteMemberSanityTests extends RestTest
             description = "Verify that consumer is not able to update site member and gets status code FORBIDDEN (403)")
     public void consumerIsNotAbleToUpdateSiteMember() throws Exception
     {
+        UserModel testUserModel = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(testUserModel, siteModel, UserRole.SiteConsumer);
+        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
