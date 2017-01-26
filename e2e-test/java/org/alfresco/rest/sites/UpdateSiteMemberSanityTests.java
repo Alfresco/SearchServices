@@ -45,7 +45,6 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
     
-    @Bug(id="ACE-5444")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that collaborator is not able to update site member and gets status code FORBIDDEN (403)")
@@ -54,12 +53,11 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
         restClient.assertLastError()
             .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));        
     }
     
-    @Bug(id="ACE-5444")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that contributor is not able to update site member and gets status code FORBIDDEN (403)")
@@ -68,12 +66,11 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         testUserModel.setUserRole(UserRole.SiteCollaborator);
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
         restClient.assertLastError()
         .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));        
     }
     
-    @Bug(id="ACE-5444")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that consumer is not able to update site member and gets status code FORBIDDEN (403)")
@@ -84,7 +81,7 @@ public class UpdateSiteMemberSanityTests extends RestTest
         restClient.withCoreAPI().usingSite(siteModel).updateSiteMember(testUserModel);
         restClient.assertLastError()
         .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
