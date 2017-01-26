@@ -263,8 +263,8 @@ public class UpdateSiteMemberFullTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if manager is able to update a user that has created a merge request, but it's not a member of the site yet")
-    public void verifyManagerCanNotUpdateUserWithMergeRequest() throws Exception
+            description= "Verify if manager is able to update a user that has created a site membership request, but it's not a member of the site yet")
+    public void verifyManagerCanNotUpdateUserWithSiteMembershipRequest() throws Exception
     {
         UserModel siteConsumer = dataUser.createRandomTestUser();
         siteConsumer.setUserRole(UserRole.SiteConsumer);
