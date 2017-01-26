@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class GetSiteMembershipInformationCoreTests extends RestTest
+public class GetSitesMembershipInformationCoreTests extends RestTest
 {
     private SiteModel publicSiteModel;
     private SiteModel moderatedSiteModel;
@@ -48,7 +48,10 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel("invalidPersonId", "password")).getSitesMembershipInformation()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
-        restClient.assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidPersonId"));
+        restClient.assertLastError().containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+            .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidPersonId"))
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
@@ -89,7 +92,10 @@ public class GetSiteMembershipInformationCoreTests extends RestTest
 
         restClient.withParams("skipCount=test").withCoreAPI().usingAuthUser().getSitesMembershipInformation().assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-        restClient.assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "test"));
+        restClient.assertLastError().containsErrorKey(String.format(RestErrorModel.INVALID_SKIPCOUNT, "test"))
+            .containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "test"))
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
