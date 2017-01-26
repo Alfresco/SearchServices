@@ -53,7 +53,9 @@ public class GetSiteMembershipFullTests extends RestTest
     {
         restSiteEntry = restClient.authenticateUser(regularUser).withCoreAPI().usingUser(adminUser).getSiteMembership(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSiteEntry.assertThat().field("role").is(UserRole.SiteManager).and().field("id").is(publicSite.getId()).and().field("site").isNotEmpty();
+        restSiteEntry.assertThat().field("role").is(UserRole.SiteManager)
+            .and().field("id").is(publicSite.getId())
+            .and().field("site.id").is(publicSite.getId());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -65,8 +67,14 @@ public class GetSiteMembershipFullTests extends RestTest
             .usingUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).getSiteMembership(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSiteEntry.assertThat().field("role").is(UserRole.SiteCollaborator)
+            .and().field("guid").is(publicSite.getGuid())
             .and().field("id").is(publicSite.getId())
-            .and().field("site").isNotEmpty();
+            .and().field("site.visibility").is(publicSite.getVisibility().toString())
+            .and().field("site.guid").is(publicSite.getGuid())
+            .and().field("site.description").is(publicSite.getDescription())
+            .and().field("site.id").is(publicSite.getId())
+            .and().field("site.preset").is("site-dashboard")
+            .and().field("site.title").is(publicSite.getTitle());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
@@ -122,6 +130,7 @@ public class GetSiteMembershipFullTests extends RestTest
         restSiteEntry = restClient.authenticateUser(adminUser).withCoreAPI()
             .usingUser(leaveSiteUser).getSiteMembership(publicSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+            .containsErrorKey(RestErrorModel.RELATIONSHIP_NOT_FOUND_ERRORKEY)
             .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, leaveSiteUser.getUsername(), publicSite.getTitle()))
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
             .stackTraceIs(RestErrorModel.STACKTRACE);
