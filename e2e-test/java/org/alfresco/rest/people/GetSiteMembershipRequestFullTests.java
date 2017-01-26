@@ -160,9 +160,9 @@ public class GetSiteMembershipRequestFullTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify admin user have permission to get site membership request of another user with Rest API and status code is 200")
+              description = "Verify user doesn't have permission to get site membership request of admin with membership request with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    public void adminIsAbleToGetSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
+    public void userIsNotAbleToGetSiteMembershipRequestOfAdminWithRequest() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
@@ -179,10 +179,12 @@ public class GetSiteMembershipRequestFullTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify user doesn't have permission to get site membership request of admin with Rest API and status code is 404")
+              description = "Verify user doesn't have permission to get site membership request of admin without membership request with Rest API and status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    public void userIsNotAbleToGetSiteMembershipRequestOfAdmin() throws JsonToModelConversionException, Exception
+    public void userIsNotAbleToGetSiteMembershipRequestOfAdminWithoutRequest() throws JsonToModelConversionException, Exception
     {
+        SiteModel moderatedSite = dataSite.usingUser(userModel).createModeratedRandomSite();
+        restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
 
