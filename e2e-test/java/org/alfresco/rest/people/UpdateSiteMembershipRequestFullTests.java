@@ -453,27 +453,6 @@ public class UpdateSiteMembershipRequestFullTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify user is able to update site membership request - empty message")
-    public void userUpdateSiteMembershipRequestWithEmptyMessage() throws Exception
-    {
-        UserModel newMember = dataUser.createRandomTestUser();
-        requestUpdateModel = restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser()
-                                       .addSiteMembershipRequest(moderatedSite);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        requestUpdateModel.assertThat().field("id").is(moderatedSite.getId())
-                          .assertThat().field("message").is("Please accept me");
-
-        requestUpdateModel = restClient.withCoreAPI().usingMe()
-                                       .updateSiteMembershipRequest(moderatedSite, "");
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        requestUpdateModel.assertThat().field("id").is(moderatedSite.getId())
-                          .and().field("modifiedAt").isNotEmpty()
-                          .assertThat().field("message").isNull();
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,  TestGroup.FULL }, executionType = ExecutionType.REGRESSION, 
               description = "Update site membership request using invalid network")
     public void updateSiteMembershipRequestUsingInvalidNetwork() throws Exception
