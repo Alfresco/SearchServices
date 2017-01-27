@@ -13,6 +13,7 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
@@ -142,10 +143,11 @@ public class UpdateTaskCoreTests extends RestTest
         restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("unclaimed");
     }
 
+    @Bug(id = "MNT-17407")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify owner can not update task from delegated to completed and response is 500")
+            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify owner can update task from delegated to completed and response is 200")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    public void taskOwnerCanNotUpdateTaskFromDelegatedToCompleted() throws Exception
+    public void taskOwnerCanUpdateTaskFromDelegatedToCompleted() throws Exception
     {
         restClient.authenticateUser(userModel).withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel);
         HashMap<String, String> body = new HashMap<String, String>();
@@ -160,7 +162,8 @@ public class UpdateTaskCoreTests extends RestTest
                 .is(assigneeUser.getUsername());
 
         restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("completed");
-        restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR).assertLastError().containsSummary(RestErrorModel.DELEGATED_TASK_CAN_NOT_BE_COMPLETED);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("completed");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
