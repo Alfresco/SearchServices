@@ -3,6 +3,8 @@ package org.alfresco.rest.nodes;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNodeBodyModel;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.RestNodeModelsCollection;
+import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.TestGroup;
@@ -48,11 +50,46 @@ public class NodesChildrenTests extends RestTest
                     .addFormParam("renditions", "doclib")
                     .addFormParam("autoRename", true);
         
-        RestNodeModel newNode = restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();                     
+        RestNodeModel newNode = restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED); 
         newNode.assertThat().field("aspectNames").contains("cm:auditable")
                .assertThat().field("isFolder").is(false)
                .assertThat().field("isFile").is(true)
                .assertThat().field("name").contains("restapi-resource");   
     }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
+            description = "Verify list children when listing with relativePath and pagination")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    public void checkRelativePathAndPaginationOnCreateChildrenNode() throws Exception
+    {
+        /*
+         * Given we have a folder hierarchy folder1/folder2/folder3 and folder3 containing 3 files file1, file2, and file3
+         */
+        NodesBuilder nodesBuilder = restClient.authenticateUser(dataUser.getAdminUser())
+                                              .withCoreAPI().usingNode(ContentModel.my())
+                                              .defineNodes();        
+        nodesBuilder
+            .folder("F1")
+            .folder("F2")
+            .folder("F3")            
+                .file("f1")
+                .file("f2")
+                .file("f2");
+              
+        RestNodeModelsCollection returnedFiles = restClient.withParams("maxItems=2", 
+                                                               "skipCount=1", 
+                                                               String.format("relativePath=%s/%s", nodesBuilder.getNode("F2").getName(), nodesBuilder.getNode("F3").getName()))                                                               
+                                                               .withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).listChildren();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        /*
+        * Then I receive file2 and file3
+        * 
+        */
+        returnedFiles.assertThat().entriesListCountIs(2);
+        returnedFiles.getEntries().get(0).onModel().assertThat().field("id").equals(nodesBuilder.getNode("F2").getId());
+        returnedFiles.getEntries().get(1).onModel().assertThat().field("id").equals(nodesBuilder.getNode("F3").getId());        
+    }
+    
 }
