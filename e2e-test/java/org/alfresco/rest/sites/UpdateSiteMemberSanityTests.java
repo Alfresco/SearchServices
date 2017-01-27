@@ -61,7 +61,7 @@ public class UpdateSiteMemberSanityTests extends RestTest
             .containsSummary(String.format("The current user does not have permissions to modify the membership details of the site %s.", siteModel.getTitle()));        
     }
     
-    @Bug(id = "REPO-1889")
+    @Bug(id = "REPO-1832")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that collaborator is not able to update site member and gets status code FORBIDDEN (403)")
