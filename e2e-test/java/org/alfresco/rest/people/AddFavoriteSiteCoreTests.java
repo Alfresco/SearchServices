@@ -81,7 +81,7 @@ public class AddFavoriteSiteCoreTests extends RestTest
                   .containsErrorKey(String.format("Site %s is already a favourite site", siteModel.getId()));
     }
     
-    @Bug(id="MNT-17337")
+    @Bug(id="REPO-1827")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
     description = "Verify user is not able to add a favorite site when the 'id' is empty - status code (400)")
