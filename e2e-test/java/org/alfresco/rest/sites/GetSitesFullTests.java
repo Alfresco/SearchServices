@@ -3,8 +3,11 @@ import java.util.List;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestSiteContainerModelsCollection;
+import org.alfresco.rest.model.RestSiteMemberModelsCollection;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
+import org.alfresco.utility.constants.ContainerName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
@@ -24,10 +27,12 @@ public class GetSitesFullTests extends RestTest
     private SiteModel publicSite, secondSite, privateSite, moderatedSite;
     private RestSiteModelsCollection sites;
     private String name;
+    private UserModel adminUser;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
+        adminUser = dataUser.getAdminUser();
         name = RandomData.getRandomName("ZZZZZZZZZ-PublicSite");
         regularUser = dataUser.createRandomTestUser();
         publicSite = dataSite.usingAdmin().createSite(new SiteModel(Visibility.PUBLIC, "guid", name, name, name));
@@ -109,7 +114,7 @@ public class GetSitesFullTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify user can not get sites using zero maxItems parameter and status code is 404")
+            description= "Verify user can not get sites using zero maxItems parameter and status code is 400")
     public void userCanNotGetSitesUsingZeroMaxItems() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams("maxItems=0").withCoreAPI().getSites();
@@ -166,6 +171,96 @@ public class GetSitesFullTests extends RestTest
         sitesList.get(sitesList.size()-2).onModel().assertThat().field("title").is(publicSite.getTitle());
         
         dataSite.deleteSite(secondPublicSite);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL } )
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+            description= "Check that relations parameter is applied for containers")
+    public void checkThatRelationsParameterIsAppliedForContainers() throws Exception
+    {
+        List<List<Object>> jsonObjects = restClient.authenticateUser(adminUser)
+                .withParams("relations=containers").withCoreAPI().usingSite(publicSite).getSitesWithRelations();
+        
+        List<Object> siteObjects = jsonObjects.get(0);
+        for (int i = 0; i < siteObjects.size(); i++)
+        {
+            RestSiteModel siteModel = (RestSiteModel) siteObjects.get(i);
+            siteModel.assertThat().field("visibility").isNotEmpty()
+                .and().field("id").isNotEmpty()
+                .and().field("title").isNotEmpty()
+                .and().field("preset").is("site-dashboard")
+                .and().field("guid").isNotEmpty();
+        }
+        
+        List<Object> containerObjects = jsonObjects.get(1);
+        for (int i = 0; i < containerObjects.size(); i++)
+        {
+            RestSiteContainerModelsCollection containers = (RestSiteContainerModelsCollection) containerObjects.get(i);
+            containers.assertThat().entriesListIsNotEmpty().and().entriesListContains("folderId", ContainerName.documentLibrary.toString());
+        }
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL } )
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+            description= "Check that relations parameter is applied for members")
+    public void checkThatRelationsParameterIsAppliedForMembers() throws Exception
+    {
+        List<List<Object>> jsonObjects = restClient.authenticateUser(adminUser)
+                .withParams("relations=members").withCoreAPI().usingSite(publicSite).getSitesWithRelations();
+        
+        List<Object> siteObjects = jsonObjects.get(0);
+        for (int i = 0; i < siteObjects.size(); i++)
+        {
+            RestSiteModel siteModel = (RestSiteModel) siteObjects.get(i);
+            siteModel.assertThat().field("visibility").isNotEmpty()
+                .and().field("id").isNotEmpty()
+                .and().field("title").isNotEmpty()
+                .and().field("preset").is("site-dashboard")
+                .and().field("guid").isNotEmpty();
+        }
+        
+        List<Object> memberObjects = jsonObjects.get(1);
+        for (int i = 0; i < memberObjects.size(); i++)
+        {
+            RestSiteMemberModelsCollection siteMembers = (RestSiteMemberModelsCollection) memberObjects.get(i);
+            siteMembers.assertThat().entriesListIsNotEmpty().assertThat().entriesListContains("id").assertThat().entriesListContains("role", UserRole.SiteManager.toString());
+            siteMembers.getOneRandomEntry().onModel().assertThat().field("person.firstName").isNotEmpty().and().field("person.id").isNotEmpty();
+        }
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL } )
+    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
+            description= "Check that relations parameter is applied for members and containers")
+    public void checkThatRelationsParameterIsAppliedForMembersAndContainers() throws Exception
+    {
+        List<List<Object>> jsonObjects = restClient.authenticateUser(adminUser)
+                .withParams("relations=containers,members").withCoreAPI().usingSite(publicSite).getSitesWithRelations();
+        
+        List<Object> siteObjects = jsonObjects.get(0);
+        for (int i = 0; i < siteObjects.size(); i++)
+        {
+            RestSiteModel siteModel = (RestSiteModel) siteObjects.get(i);
+            siteModel.assertThat().field("visibility").isNotEmpty()
+                .and().field("id").isNotEmpty()
+                .and().field("title").isNotEmpty()
+                .and().field("preset").is("site-dashboard")
+                .and().field("guid").isNotEmpty();
+        }
+        
+        List<Object> containerObjects = jsonObjects.get(1);
+        for (int i = 0; i < containerObjects.size(); i++)
+        {
+            RestSiteContainerModelsCollection containers = (RestSiteContainerModelsCollection) containerObjects.get(i);
+            containers.assertThat().entriesListIsNotEmpty().and().entriesListContains("folderId", ContainerName.documentLibrary.toString());
+        }
+        
+        List<Object> memberObjects = jsonObjects.get(2);
+        for (int i = 0; i < memberObjects.size(); i++)
+        {
+            RestSiteMemberModelsCollection siteMembers = (RestSiteMemberModelsCollection) memberObjects.get(i);
+            siteMembers.assertThat().entriesListIsNotEmpty().assertThat().entriesListContains("id").assertThat().entriesListContains("role", UserRole.SiteManager.toString());
+            siteMembers.getOneRandomEntry().onModel().assertThat().field("person.firstName").isNotEmpty().and().field("person.id").isNotEmpty();
+        }
     }
     
     @AfterClass(alwaysRun=true)
