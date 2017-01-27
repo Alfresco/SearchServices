@@ -116,10 +116,11 @@ public class AddProcessItemCoreTests extends RestTest
     public void failedAddingProcessItemIfInvalidProcessIdIsProvided() throws Exception
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(adminUser).withParams("maxItems=1").withWorkflowAPI().getProcesses();
-        processModel= processes.assertThat().entriesListIsNotEmpty().when().getOneRandomEntry().onModel();        
+        processModel = processes.assertThat().entriesListIsNotEmpty().when().getOneRandomEntry().onModel();
+        FileModel testDocument = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         
         processModel.setId("invalidProcessId");
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(testDocument);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidProcessId"));
     }

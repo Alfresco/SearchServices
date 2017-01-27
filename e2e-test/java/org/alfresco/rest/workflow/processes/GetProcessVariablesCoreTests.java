@@ -106,6 +106,15 @@ public class GetProcessVariablesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
     public void getProcessVariablesForADeletedProcess() throws JsonToModelConversionException, Exception
     {
+        SiteModel siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
+        UserModel userWhoStartsTask = dataUser.createRandomTestUser();
+        UserModel assignee = dataUser.createRandomTestUser();
+        FileModel document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        RestProcessModel processModel;
+        RestProcessVariableCollection variables;
+
+        dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+
         processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
