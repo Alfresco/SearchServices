@@ -174,8 +174,8 @@ public class GetSiteFullTests extends RestTest
         siteMembers.assertThat().entriesListCountIs(1)
             .assertThat().entriesListContains("id", adminUserModel.getUsername())
             .assertThat().entriesListContains("role", UserRole.SiteManager.toString());
-        siteMembers.getOneRandomEntry().onModel().getPerson().assertThat().field("firstName").is("Administrator")
-            .and().field("id").is("admin");
+        siteMembers.getOneRandomEntry().onModel().assertThat().field("person.firstName").is("Administrator")
+            .and().field("person.id").is("admin");
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL } )
@@ -203,7 +203,7 @@ public class GetSiteFullTests extends RestTest
         siteMembers.assertThat().entriesListCountIs(1)
             .assertThat().entriesListContains("id", adminUserModel.getUsername())
             .assertThat().entriesListContains("role", UserRole.SiteManager.toString());
-        siteMembers.getOneRandomEntry().onModel().getPerson().assertThat().field("firstName").is("Administrator")
-            .and().field("id").is("admin");
+        siteMembers.getOneRandomEntry().onModel().assertThat().field("person.firstName").is("Administrator")
+            .and().field("person.id").is("admin");
     }
 }
