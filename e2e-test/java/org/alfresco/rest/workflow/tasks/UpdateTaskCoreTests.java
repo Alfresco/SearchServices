@@ -143,11 +143,11 @@ public class UpdateTaskCoreTests extends RestTest
         restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("unclaimed");
     }
 
-    @Bug(id = "MNT-17407")
+    @Bug(id = "REPO-1924")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify owner can update task from delegated to completed and response is 200")
+            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify owner can not update task from delegated to completed and response is 422")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    public void taskOwnerCanUpdateTaskFromDelegatedToCompleted() throws Exception
+    public void taskOwnerCanNotUpdateTaskFromDelegatedToCompleted() throws Exception
     {
         restClient.authenticateUser(userModel).withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel);
         HashMap<String, String> body = new HashMap<String, String>();
@@ -161,9 +161,8 @@ public class UpdateTaskCoreTests extends RestTest
         restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("delegated").and().field("assignee")
                 .is(assigneeUser.getUsername());
 
-        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("completed");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("completed");
+        restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("completed");
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError().containsSummary(RestErrorModel.DELEGATED_TASK_CAN_NOT_BE_COMPLETED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
