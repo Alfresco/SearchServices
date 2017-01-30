@@ -167,18 +167,19 @@ public class AddFavoritesCoreTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
     }
 
-    @Bug(id = "MNT-17158")
+//    @Bug(id = "MNT-17158", description="Not a bug, If we need to stop comments from being favourited then an improvement/enhancement request should be raised against the platform.")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify add file favorite with comment id returns status code 404")
+            description = "Verify add file favorite with comment id returns status code 201")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFileFavoriteUsingCommentId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         comment = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addComment("This is a comment");
         file.setNodeRef(comment.getId());
-        
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addFileToFavorites(file);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+
+        restPersonFavoritesModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addFileToFavorites(file);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restPersonFavoritesModel.assertThat().field("targetGuid").is(file.getNodeRef());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
