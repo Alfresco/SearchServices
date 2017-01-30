@@ -113,7 +113,7 @@ public class GetPeoplePreferencesFullTests extends RestTest
         restPreferenceModelsCollection.assertThat().entriesListIsEmpty();
     }
     
-    @Bug(id = "ACE-5460")
+    @Bug(id = "REPO-1911")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get preferences for empty user with Rest API and response is 400")
     public void userGetsItsPeoplePreferencesForEmptyPersonId() throws Exception

@@ -92,7 +92,7 @@ public class GetPeopleActivitiesFullTests extends RestTest
                 .and().field("objectId").is(fileInSite1.getNodeRefWithoutVersion());
     }
     
-    @Bug(id = "ACE-5460")
+    @Bug(id = "REPO-1911")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for empty user with Rest API and response is 400")
     public void userCannotGetPeopleActivitiesForEmptyPersonId() throws Exception
