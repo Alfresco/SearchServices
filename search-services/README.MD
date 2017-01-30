@@ -19,16 +19,15 @@ mvn clean install
 To build the docker image, first run the maven build then
 ```
 cd packaging/src/docker
-export bamboo_planRepository_1_branch=local
-./buildAndTest.sh
+docker build --build-arg solrUrl=http://download.alfresco.com/release/community/201701-build-00015/alfresco-search-services-1.0.b.zip -t search-services:myimage .
 ```
 
 ### License
 Copyright (C) 2005 - 2017 Alfresco Software Limited
 
-This file is part of the Alfresco software. 
-If the software was purchased under a paid Alfresco license, the terms of 
-the paid license agreement will prevail.  Otherwise, the software is 
+This file is part of the Alfresco software.
+If the software was purchased under a paid Alfresco license, the terms of
+the paid license agreement will prevail.  Otherwise, the software is
 provided under the following open source license terms:
 
 Alfresco is free software: you can redistribute it and/or modify
