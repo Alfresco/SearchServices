@@ -482,7 +482,7 @@ public class AddRatingFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Bug(id = "MNT-17375")
+//    @Bug(id = "MNT-17375", description = "Won't Fix, the error message is not ideal and a little cryptic but it does provide the reason i.e. ratingSchemeId is null.")
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS }, executionType = ExecutionType.REGRESSION, 
               description = "Do not provide field - 'id'")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.FULL })
@@ -494,8 +494,8 @@ public class AddRatingFullTests extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"myRating\":\"true\"}");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError()
-                  .containsSummary(RestErrorModel.NULL_LIKE_RATING)
-                  .containsErrorKey(RestErrorModel.NULL_LIKE_RATING)
+                  .containsSummary(String.format(RestErrorModel.INVALID_RATING, "null"))
+                  .containsErrorKey(String.format(RestErrorModel.INVALID_RATING, "null"))
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
