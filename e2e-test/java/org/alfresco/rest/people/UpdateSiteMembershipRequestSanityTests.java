@@ -23,12 +23,6 @@ import org.testng.annotations.Test;
 
 public class UpdateSiteMembershipRequestSanityTests extends RestTest
 {
-    @Autowired
-    DataUser dataUser;
-
-    @Autowired
-    DataSite dataSite;
-
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
     private UserModel adminUser;
@@ -60,7 +54,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update membership request of another user")
-    @Bug(id = "MNT-16919")
+//    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteManagerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -70,12 +64,13 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingUser(newMember)
                 .updateSiteMembershipRequest(siteModel, updatedMessage);
 
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site collaborator is not able to update membership request of another user")
-    @Bug(id = "MNT-16919")
+    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteCollaboratorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -85,12 +80,13 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingUser(newMember)
                 .updateSiteMembershipRequest(siteModel, updatedMessage);
 
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site contributor is not able to update membership request of another user")
-    @Bug(id = "MNT-16919")
+    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteContributorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -100,12 +96,13 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingUser(newMember)
                 .updateSiteMembershipRequest(siteModel, updatedMessage);
 
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site consumer is not able to update membership request of another user")
-    @Bug(id = "MNT-16919")
+    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteConsumerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -115,12 +112,13 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingUser(newMember)
                 .updateSiteMembershipRequest(siteModel, updatedMessage);
 
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify one user is not able to update membership request of another user")
-    @Bug(id = "MNT-16919")
+    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void oneUserIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -130,12 +128,13 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
 
         restClient.authenticateUser(otherMember).withCoreAPI().usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);
 
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin is not able to update membership request of another user")
-    @Bug(id = "MNT-16919")
+    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void adminIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -144,6 +143,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
 
         restClient.authenticateUser(adminUser).withCoreAPI().usingUser(newMember).updateSiteMembershipRequest(siteModel, updatedMessage);
 
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 }
