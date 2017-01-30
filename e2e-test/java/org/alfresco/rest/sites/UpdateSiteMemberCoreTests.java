@@ -82,7 +82,7 @@ public class UpdateSiteMemberCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nonexistentUser.getUsername()));
     }
 
-    @Bug(id="REPO-1660")
+    @Bug(id="REPO-1941")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if a manager is able to downgrade to contributor using -me- string in place of personId.")

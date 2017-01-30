@@ -44,11 +44,11 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().getSites().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
+        restClient.withCoreAPI().usingSite(siteModel).getSiteMembers()
+            .assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Bug(id = "ACE-5444")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Verify that site collaborator cannot delete site member and gets status code 403, 'Forbidden'")
@@ -59,13 +59,13 @@ public class RemoveSiteMemberSanityTests extends RestTest
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         restClient.withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
+        restClient.withCoreAPI().usingSite(siteModel).getSiteMembers()
+            .assertThat().entriesListContains("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Bug(id = "ACE-5444")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Verify that site contributor cannot delete site member and gets status code 403, 'Forbidden'")
@@ -76,13 +76,13 @@ public class RemoveSiteMemberSanityTests extends RestTest
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         restClient.withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
+        restClient.withCoreAPI().usingSite(siteModel).getSiteMembers()
+            .assertThat().entriesListContains("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Bug(id = "ACE-5444")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Verify that site consumer cannot delete site member and gets status code 403, 'Forbidden'")
@@ -93,9 +93,10 @@ public class RemoveSiteMemberSanityTests extends RestTest
         
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingSite(siteModel)
                 .deleteSiteMember(testUserModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        restClient.withCoreAPI().getSites().assertThat().entriesListContains("id", testUserModel.getUsername());
+        restClient.withCoreAPI().usingSite(siteModel).getSiteMembers()
+            .assertThat().entriesListContains("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -110,7 +111,8 @@ public class RemoveSiteMemberSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.withCoreAPI().getSites().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
+        restClient.withCoreAPI().usingSite(siteModel).getSiteMembers()
+            .assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
