@@ -28,6 +28,8 @@ public class GetSitesFullTests extends RestTest
     private RestSiteModelsCollection sites;
     private String name;
     private UserModel adminUser;
+    private int maxItems = 200;
+    private int skipCount = 10;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -81,12 +83,15 @@ public class GetSitesFullTests extends RestTest
             description= "Verify pagination")
     public void checkPagination() throws Exception
     {
-        restClient.authenticateUser(regularUser).withCoreAPI().getSites().getPagination().assertThat()
+        sites = restClient.authenticateUser(regularUser).withCoreAPI().getSites();
+        int totalItems = sites.getPagination().getTotalItems();
+        int maxItems = 100;
+        sites.getPagination().assertThat()
             .field("totalItems").isNotEmpty().and()
-            .field("maxItems").is("100").and()
-            .field("hasMoreItems").is("true").and()
+            .field("maxItems").is(String.valueOf(maxItems)).and()
+            .field("hasMoreItems").is((totalItems>maxItems) ? true : false).and()
             .field("skipCount").is("0").and()
-            .field("count").is("100");
+            .field("count").is(String.valueOf((maxItems>totalItems) ? totalItems - skipCount : maxItems));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
@@ -145,12 +150,14 @@ public class GetSitesFullTests extends RestTest
             description= "Verify pagination when skipCount and MaxItems are used")
     public void checkPaginationWithSkipCountAndMaxItems() throws Exception
     {
-        restClient.authenticateUser(regularUser).withParams("skipCount=10&maxItems=200").withCoreAPI().getSites().getPagination().assertThat()
+        sites = restClient.authenticateUser(regularUser).withParams(String.format("skipCount=%s&maxItems=%s", skipCount, maxItems)).withCoreAPI().getSites();
+        int totalItems = sites.getPagination().getTotalItems();
+        sites.getPagination().assertThat()
             .field("totalItems").isNotEmpty().and()
-            .field("maxItems").is("200").and()
-            .field("hasMoreItems").is("true").and()
-            .field("skipCount").is("10").and()
-            .field("count").is("200");
+            .field("maxItems").is(String.valueOf(maxItems)).and()
+            .field("hasMoreItems").is((totalItems>maxItems) ? true : false).and()
+            .field("skipCount").is(String.valueOf(skipCount)).and()
+            .field("count").is(String.valueOf((maxItems>totalItems) ? totalItems - skipCount : maxItems));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
