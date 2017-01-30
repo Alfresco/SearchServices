@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e 
+set -e
 
 [ "$DEBUG" ] && set -x
 
@@ -7,13 +7,10 @@ set -e
 cd "$(dirname "$0")"
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="docker-internal.alfresco.com/search-services:${nicebranch}-latest"
+dockerImage="docker-internal.alfresco.com/search-services:$bamboo_maven_version"
+echo "Building $dockerImage from $nicebranch using version $bamboo_maven_version"
 
-echo "Building $dockerImage..."
-
-rm -f src/docker/alfresco-search-services-*.zip
-cp target/alfresco-search-services-*.zip src/docker
-docker build -t $dockerImage src/docker
+docker build --build-arg solrBranch=$nicebranch --build-arg solrVer=$bamboo_maven_version -t $dockerImage src/docker
 
 echo "Running tests"
 docker run --rm "$dockerImage" [ -d /opt/alfresco-solr/solr ] || (echo "solr dir does not exist" && exit 1)
