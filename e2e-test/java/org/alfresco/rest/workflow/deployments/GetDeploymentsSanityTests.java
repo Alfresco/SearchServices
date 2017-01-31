@@ -35,6 +35,11 @@ public class GetDeploymentsSanityTests extends RestTest
         deployments = restClient.authenticateUser(adminUserModel).withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         deployments.assertThat().entriesListIsNotEmpty();
+        deployments.getOneRandomEntry().onModel().assertThat()
+                .fieldsCount().is(3).and()
+                .field("id").isNotEmpty().and()
+                .field("deployedAt").isNotEmpty().and()
+                .field("name").isNotEmpty();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
@@ -45,6 +50,7 @@ public class GetDeploymentsSanityTests extends RestTest
         restClient.usingTenant().createTenant(adminTenantUser);
         deployments = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        deployments.assertThat().entriesListIsNotEmpty();
+        deployments.assertThat().entriesListIsNotEmpty()
+                .and().entriesListDoesNotContain("name", "customWorkflowExtentionForRest.bpmn");
     }
 }
