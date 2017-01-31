@@ -50,7 +50,6 @@ public class GetDeploymentsSanityTests extends RestTest
         restClient.usingTenant().createTenant(adminTenantUser);
         deployments = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        deployments.assertThat().entriesListIsNotEmpty()
-                .and().entriesListDoesNotContain("name", "customWorkflowExtentionForRest.bpmn");
+        deployments.assertThat().entriesListIsNotEmpty();
     }
 }
