@@ -62,7 +62,7 @@ public class GetProcessDefinitionsCoreTests extends RestTest
                 .getAllProcessDefinitions()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_DEFINITIONS_INVALID_ORDERBY, "test"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ORDERBY, "test", "deploymentId, name, id, category, version, key"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
@@ -76,6 +76,6 @@ public class GetProcessDefinitionsCoreTests extends RestTest
                 .getAllProcessDefinitions()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_DEFINITIONS_INVALID_WHERE, "test"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_WHERE_QUERY, "test"));
     }
 }

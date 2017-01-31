@@ -50,7 +50,7 @@ public class GetSiteMembersFullTests extends RestTest
         firstSiteMember = siteMembers.getEntries().get(0).onModel();
         secondSiteMember = siteMembers.getEntries().get(1).onModel();
         thirdSiteMember = siteMembers.getEntries().get(2).onModel();
-        fourthSiteMember = siteMembers.getEntries().get(2).onModel();
+        fourthSiteMember = siteMembers.getEntries().get(3).onModel();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
