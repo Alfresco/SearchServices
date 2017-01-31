@@ -34,8 +34,8 @@ public class DeleteDeploymentSanityTests extends RestTest
 
     @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.FULL, TestGroup.WORKFLOW }, priority = 100)
+            executionType = ExecutionType.SANITY, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.WORKFLOW }, priority = 100)
     public void adminDeletesDeploymentWithSuccess() throws Exception
     {
         dataContent.assertExtensionAmpExists("alfresco-workflow-extension");
