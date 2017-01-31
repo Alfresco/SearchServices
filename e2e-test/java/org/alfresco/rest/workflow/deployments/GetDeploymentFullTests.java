@@ -57,27 +57,6 @@ public class GetDeploymentFullTests extends RestTest
                 .field("name").is(expectedDeployment.getName());
     }
 
-
-    @Bug(id = "MNT-16996")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.FULL}, priority = 100)
-    public void deleteDeploymentThenGet() throws Exception
-    {
-        dataContent.assertExtensionAmpExists("alfresco-workflow-extension");
-        // The deployment with name "customWorkflowExtentionForRest.bpmn" is created by Workflow Extention Point
-        RestDeploymentModelsCollection allDeployments = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments();
-        allDeployments.assertThat().entriesListContains("name", "customWorkflowExtentionForRest.bpmn");
-        expectedDeployment = allDeployments.getDeploymentByName("customWorkflowExtentionForRest.bpmn");
-
-        restClient.withWorkflowAPI().usingDeployment(expectedDeployment).deleteDeployment();
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-
-        restClient.withWorkflowAPI().usingDeployment(expectedDeployment).getDeployment();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, expectedDeployment.getId()));
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION,
             description = "Verify that network admin user is not able to get a deployment from other network using REST API and status code is OK (200)")

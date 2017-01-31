@@ -1,9 +1,8 @@
 package org.alfresco.rest.workflow.deployments;
 
+import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestDeploymentModel;
-import org.alfresco.rest.model.RestDeploymentModelsCollection;
-import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.*;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -12,6 +11,8 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 /**
  * Tests for REST API call DELETE "/deployments/{deploymentId}"
@@ -33,8 +34,8 @@ public class DeleteDeploymentSanityTests extends RestTest
 
     @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.SANITY, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.WORKFLOW }, priority = 100)
+            executionType = ExecutionType.REGRESSION, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.FULL, TestGroup.WORKFLOW }, priority = 100)
     public void adminDeletesDeploymentWithSuccess() throws Exception
     {
         dataContent.assertExtensionAmpExists("alfresco-workflow-extension");
@@ -43,8 +44,47 @@ public class DeleteDeploymentSanityTests extends RestTest
         allDeployments.assertThat().entriesListContains("name", "customWorkflowExtentionForRest.bpmn");
         deployment = allDeployments.getDeploymentByName("customWorkflowExtentionForRest.bpmn");
 
+        RestProcessDefinitionModel processDefinitionAssociated =
+                restClient.withWorkflowAPI().getAllProcessDefinitions().getProcessDefinitionByDeploymentId(deployment.getId());
+
+        RestProcessModel addedProcess =
+                restClient.withWorkflowAPI().addProcess(processDefinitionAssociated.getName(), adminUser, false, CMISUtil.Priority.Normal);
+
+        List<RestTaskModel> processTasks =
+                restClient.withWorkflowAPI().usingProcess(addedProcess).getProcessTasks().getEntries();
+
         restClient.withWorkflowAPI().usingDeployment(deployment).deleteDeployment();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        //check get deployment returns http status Not Found after deleting the deployment
+        restClient.withWorkflowAPI().usingDeployment(deployment).getDeployment();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, deployment.getId()));
+
+        //check that process definitions contained by deployment are deleted
+        restClient.withWorkflowAPI().usingProcessDefinitions(processDefinitionAssociated).getProcessDefinition();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processDefinitionAssociated.getId()));
+
+        //check that history information associated with the deployment is deleted
+        restClient.withWorkflowAPI().usingProcess(addedProcess).getProcess();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, addedProcess.getId()));
+
+        for (RestTaskModel processTask: processTasks)
+        {
+            restClient.withWorkflowAPI().usingTask(processTask).getTask();
+            restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                    .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processTask.getId()));
+        }
+
+        //delete deployment twice
+        restClient.withWorkflowAPI().usingDeployment(deployment).deleteDeployment();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, deployment.getId()))
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @Bug(id = "MNT-16996")
