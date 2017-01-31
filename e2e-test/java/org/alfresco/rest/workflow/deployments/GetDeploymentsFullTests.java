@@ -78,8 +78,8 @@ public class GetDeploymentsFullTests extends RestTest
     {
         deployments = restClient.withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        RestDeploymentModel firstDeployment = deployments.getEntries().get(0);
-        RestDeploymentModel secondDeployment = deployments.getEntries().get(1);
+        RestDeploymentModel firstDeployment = deployments.getEntries().get(0).onModel();
+        RestDeploymentModel secondDeployment = deployments.getEntries().get(1).onModel();
         RestDeploymentModelsCollection deploymentsWithMaxItems = restClient.withParams("maxItems=2").withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         deploymentsWithMaxItems
@@ -108,7 +108,7 @@ public class GetDeploymentsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.FULL})
     public void getNonNetworkDeploymentsWithNotNumericMaxItems() throws JsonToModelConversionException, Exception
     {
-        restClient.withParams("skipCount=A").withWorkflowAPI().getDeployments();
+        restClient.withParams("maxItems=A").withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                 .containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "A"));
     }
