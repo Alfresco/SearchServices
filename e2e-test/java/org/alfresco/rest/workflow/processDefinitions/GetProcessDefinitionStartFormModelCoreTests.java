@@ -51,7 +51,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     public void getStartFormModelUsingInvalidProcessDefinitionId() throws Exception
     {
         randomProcessDefinition = allProcessDefinitions.getOneRandomEntry().onModel();
-        randomProcessDefinition.onModel().setId("invalidID");
+        randomProcessDefinition.setId("invalidID");
 
         restClient.authenticateUser(adminUser).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel();
@@ -70,12 +70,12 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     public void getStartFormModelUsingEmptyProcessDefinitionId() throws Exception
     {
         randomProcessDefinition = allProcessDefinitions.getOneRandomEntry().onModel();
-        randomProcessDefinition.onModel().setId("");
+        randomProcessDefinition.setId("");
 
         restClient.authenticateUser(adminUser).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
+                .assertLastError().containsSummary("no deployed process definition found with id ''");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
