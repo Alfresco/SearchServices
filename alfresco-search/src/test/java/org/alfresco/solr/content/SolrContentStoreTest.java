@@ -241,4 +241,10 @@ public class SolrContentStoreTest
         document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNull(document);
     }
+
+    @Test
+    public void nonExistentSolrHome() throws IOException {
+        SolrContentStore solrContentStore = new SolrContentStore("bob");
+        Assert.assertNotNull(solrContentStore);
+    }
 }
