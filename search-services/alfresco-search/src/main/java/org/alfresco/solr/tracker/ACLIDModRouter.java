@@ -19,7 +19,7 @@
 package org.alfresco.solr.tracker;
 
 /*
- * @author Joel Bernstein
+ * @author Joel
  */
 
 import org.alfresco.solr.client.Acl;
