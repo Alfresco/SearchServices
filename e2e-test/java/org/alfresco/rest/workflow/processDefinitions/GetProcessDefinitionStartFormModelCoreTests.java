@@ -36,7 +36,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     public void nonNetworkUserGetsStartFormModel() throws Exception
     {
         UserModel nonNetworkUser = dataUser.createRandomTestUser();
-        randomProcessDefinition = allProcessDefinitions.getOneRandomEntry();
+        randomProcessDefinition = allProcessDefinitions.getOneRandomEntry().onModel();
         restClient.authenticateUser(nonNetworkUser).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel()
                 .assertThat().entriesListIsNotEmpty();
@@ -50,13 +50,16 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void getStartFormModelUsingInvalidProcessDefinitionId() throws Exception
     {
-        randomProcessDefinition = allProcessDefinitions.getOneRandomEntry();
+        randomProcessDefinition = allProcessDefinitions.getOneRandomEntry().onModel();
         randomProcessDefinition.onModel().setId("invalidID");
 
         restClient.authenticateUser(adminUser).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidID"));
+                .assertLastError().containsSummary(String.format("no deployed process definition found with id '%s'", "invalidID"))
+                .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @Bug(id = "ALF-20187")
@@ -66,7 +69,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void getStartFormModelUsingEmptyProcessDefinitionId() throws Exception
     {
-        randomProcessDefinition = allProcessDefinitions.getOneRandomEntry();
+        randomProcessDefinition = allProcessDefinitions.getOneRandomEntry().onModel();
         randomProcessDefinition.onModel().setId("");
 
         restClient.authenticateUser(adminUser).withWorkflowAPI()
@@ -86,7 +89,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
                 .usingTenant().createTenant(adminTenantUser);
         UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         randomProcessDefinition = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry();
+                .getAllProcessDefinitions().getOneRandomEntry().onModel();
         restClient.authenticateUser(tenantUser).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel()
                 .assertThat().entriesListIsNotEmpty();

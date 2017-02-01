@@ -32,7 +32,7 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
     public void nonNetworkAdminGetsStartFormModel() throws Exception
     {
-        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
+        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -45,7 +45,7 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestTest
     {
         restClient.usingTenant().createTenant(adminTenantUser);
         restClient.authenticateUser(adminTenantUser);
-        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
+        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }

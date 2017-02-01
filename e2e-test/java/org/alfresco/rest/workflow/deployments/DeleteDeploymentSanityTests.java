@@ -78,6 +78,16 @@ public class DeleteDeploymentSanityTests extends RestTest
                     .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processTask.getId()));
         }
 
+        //check getProcessDefinitionStartFormModel after deletion of process definition
+        restClient.withWorkflowAPI().usingProcessDefinitions(processDefinitionAssociated).getProcessDefinitionStartFormModel();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processDefinitionAssociated.getId()));
+
+        //check getProcessDefinitionImage after deletion of process definition
+        restClient.withWorkflowAPI().usingProcessDefinitions(processDefinitionAssociated).getProcessDefinitionImage();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processDefinitionAssociated.getId()));
+
         //delete deployment twice
         restClient.withWorkflowAPI().usingDeployment(deployment).deleteDeployment();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
