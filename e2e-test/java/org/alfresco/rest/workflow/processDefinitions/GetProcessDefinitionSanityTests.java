@@ -46,6 +46,16 @@ public class GetProcessDefinitionSanityTests extends RestTest
         restClient.authenticateUser(testUser);
         returnedProcessDefinition = restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedProcessDefinition.assertThat().field("name").is(randomProcessDefinition.getName());
+        returnedProcessDefinition.assertThat()
+                .field("name").is(randomProcessDefinition.getName()).and()
+                .field("deploymentId").is(randomProcessDefinition.getDeploymentId()).and()
+                .field("description").is(randomProcessDefinition.getDescription()).and()
+                .field("id").is(randomProcessDefinition.getId()).and()
+                .field("startFormResourceKey").is(randomProcessDefinition.getStartFormResourceKey()).and()
+                .field("category").is(randomProcessDefinition.getCategory()).and()
+                .field("title").is(randomProcessDefinition.getTitle()).and()
+                .field("version").is(randomProcessDefinition.getVersion()).and()
+                .field("graphicNotationDefined").is(randomProcessDefinition.getGraphicNotationDefined()).and()
+                .field("key").is(randomProcessDefinition.getKey());
     }
 }
