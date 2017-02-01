@@ -2,6 +2,7 @@ package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestProcessDefinitionModelsCollection;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -30,11 +31,21 @@ public class GetProcessDefinitionsCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void nonNetworkUserGetsProcessDefinitions() throws Exception
     {
-        restClient.authenticateUser(userModel)
+        RestProcessDefinitionModelsCollection processDefinitions = restClient.authenticateUser(userModel)
                 .withWorkflowAPI()
-                .getAllProcessDefinitions()
-                .assertThat().entriesListIsNotEmpty();
+                .getAllProcessDefinitions();
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        processDefinitions.assertThat().entriesListIsNotEmpty();
+        processDefinitions.getProcessDefinitionByDeploymentId("1").assertThat()
+                .field("name").is("Adhoc Activiti Process").and()
+                .field("description").is("Assign a new task to yourself or a colleague").and()
+                .field("id").is("activitiAdhoc:1:4").and()
+                .field("startFormResourceKey").is("wf:submitAdhocTask").and()
+                .field("category").is("http://alfresco.org").and()
+                .field("title").is("New Task").and()
+                .field("version").is("1").and()
+                .field("graphicNotationDefined").is("true").and()
+                .field("key").is("activitiAdhoc");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
@@ -76,6 +87,9 @@ public class GetProcessDefinitionsCoreTests extends RestTest
                 .getAllProcessDefinitions()
                 .assertThat().entriesListIsEmpty();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_WHERE_QUERY, "test"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_WHERE_QUERY, "test"))
+                .containsErrorKey(RestErrorModel.INVALID_QUERY_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

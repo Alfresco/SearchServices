@@ -16,9 +16,6 @@ import org.testng.annotations.Test;
  */
 public class GetProcessDefinitionsSanityTests extends RestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     private UserModel adminUserModel, adminTenantUser;
 
     @BeforeClass(alwaysRun = true)

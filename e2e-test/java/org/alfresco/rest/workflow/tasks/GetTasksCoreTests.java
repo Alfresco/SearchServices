@@ -3,6 +3,7 @@ package org.alfresco.rest.workflow.tasks;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTaskModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -62,7 +63,7 @@ public class GetTasksCoreTests extends RestTest
     public void orderByParameterSupportsOnlyOneParameter() throws Exception
     {
         taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id,processDefinitionId").withWorkflowAPI().getTasks();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Only one order by parameter is supported");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.ONLY_ONE_ORDERBY);
         taskModels.assertThat().entriesListIsEmpty();   
     }
 

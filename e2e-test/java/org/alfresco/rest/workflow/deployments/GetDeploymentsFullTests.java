@@ -35,8 +35,8 @@ public class GetDeploymentsFullTests extends RestTest
     {
         deployments = restClient.withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        RestDeploymentModel firstDeployment = deployments.getEntries().get(0);
-        RestDeploymentModel secondDeployment = deployments.getEntries().get(1);
+        RestDeploymentModel firstDeployment = deployments.getEntries().get(0).onModel();
+        RestDeploymentModel secondDeployment = deployments.getEntries().get(1).onModel();
         RestDeploymentModelsCollection deploymentsWithSkipCount = restClient.withParams("skipCount=2").withWorkflowAPI().getDeployments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         deploymentsWithSkipCount
