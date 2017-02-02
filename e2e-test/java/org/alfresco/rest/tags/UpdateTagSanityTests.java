@@ -51,7 +51,7 @@ public class UpdateTagSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates tags and status code is 200")
-    @Bug(id="MNT-16917")
+    @Bug(id="REPO-1828")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void adminIsAbleToUpdateTags() throws JsonToModelConversionException, Exception
     {
