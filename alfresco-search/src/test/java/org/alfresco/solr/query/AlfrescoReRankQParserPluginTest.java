@@ -573,10 +573,9 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         assertU(adoc(doc5));
         assertU(commit());
 
-        ModifiableSolrParams params = new ModifiableSolrParams();
 
         //Calculate the scales manually
-        params = new ModifiableSolrParams();
+        ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=200 scale=false}");
         params.add("q", "term_s:YYYY");
         params.add("rqq", "{!edismax bf=$bff}id:(1 2 4 5 6)");
@@ -655,4 +654,27 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         req.close();
     }
+    
+    /**
+     * Fix for SEARCH-296, handling too many rows.
+     * @throws Exception if error
+     */
+    @Test
+    public void testInsaneAmoutOfRows() throws Exception 
+    {
+        String[] doc = {"id","1", "term_s", "YYYY", "group_s", "group1", "test_ti", "5", "test_tl", "10", "test_tf", "2000"};
+        assertU(adoc(doc));
+        assertU(commit());
+
+        //Request with lots of rows 200000001
+        ModifiableSolrParams params = new ModifiableSolrParams();
+        params.add("qt", "/afts");
+        params.add("q", "term_s:YYYY");
+        params.add("rows", "200000001");
+        params.add("rq","{!alfrescoReRank reRankQuery=$rqq reRankDocs=3 reRankWeight=2 }");
+        params.add("rqq", "{!edismax bf=$bff}*:*");
+        params.add("bff", "field(test_ti)");
+        assertQ(req(params), "*[count(//doc)=1]");
+    }
+ 
 }

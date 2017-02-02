@@ -47,13 +47,14 @@ public class RewriteFacetParametersComponent extends SearchComponent
     @Override
     public void prepare(ResponseBuilder rb) throws IOException
     {
-    	 SolrQueryRequest req = rb.req;
+         SolrQueryRequest req = rb.req;
          SolrParams params = req.getParams();
          
          ModifiableSolrParams fixed = new ModifiableSolrParams();
          fixFilterQueries(fixed, params, rb);
          fixFacetParams(fixed, params, rb);
          copyOtherQueryParams(fixed, params);
+         fixRows(fixed, params, rb);
          
          if(fixed.get(CommonParams.SORT) != null)
          {
@@ -65,15 +66,33 @@ public class RewriteFacetParametersComponent extends SearchComponent
 
     
     /**
+     * Prevents users from requesting a large number of rows by
+     * replacing an enormous row value with a maximum value that will
+     * not cause a run time exception.
      * @param fixed
      * @param params
      * @param rb
      */
+    private void fixRows(ModifiableSolrParams fixed, SolrParams params, ResponseBuilder rb)
+    {
+        String rows = params.get("rows");
+        if(rows != null && !rows.isEmpty())
+        {
+            Integer row = new Integer(rows);
+            // Avoid +1 in SOLR code which produces null:java.lang.NegativeArraySizeException at at org.apache.lucene.util.PriorityQueue.<init>(PriorityQueue.java:56)
+            if(row >  1000000)
+            {
+                fixed.remove("rows");
+                fixed.add("rows", "1000000");
+            }
+        }
+    }
     private void fixFilterQueries(ModifiableSolrParams fixed, SolrParams params, ResponseBuilder rb)
     {
         for(Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
         {
             String name = it.next();
+            
             if(name.equals("fq"))
             {
                 String[] values = params.getParams(name);
