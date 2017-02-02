@@ -3,7 +3,8 @@ services:
   repo:
     image: docker-internal.alfresco.com/platform:latest
     environment:
-        JAVA_OPTS : "-Dsolr.secureComms=none -Dsolr.useDynamicShardRegistration=true -Dsearch.solrTrackingSupport.ignorePathsForSpecificTypes=true"
+         JAVA_OPTS : "-Dsolr.host=solr6  -Dsolr.port=8983 -Dsolr.secureComms=none
+         -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
     ports:
           - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
           - "5005:5005" #Java debugging
@@ -15,21 +16,16 @@ services:
     environment:
       - "REPO_HOST=repo:8080"
   solr6:
-    image: docker-internal.alfresco.com/search-services:1.0.1-SNAPSHOT
-    command: [ "/opt/alfresco-solr/solr/bin/solr", "start", "-f", "-a",
-               "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
-    expose:
-     - "8183"
+    image: docker-internal.alfresco.com/search-services:1.0.b
     environment:
       #Solr needs to know how to register itself with Alfresco
       SOLR_ALFRESCO_HOST: repo
       SOLR_ALFRESCO_PORT: 8080
       #Alfresco needs to know how to call solr
       SOLR_SOLR_HOST: solr6
-      #SOLR_SOLR_PORT: 8983
+      SOLR_SOLR_PORT: 8983
+
       #Create the default alfresco and archive cores
-      SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive,version
+      SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive
     ports:
-      - "8083:8183" #Browser port
-      - "1044:1044" #Java debugging
-#In the Index Server Shard Management Admin console the index server is: solr6:8983/solr
+      - "8083:8983" #Browser port

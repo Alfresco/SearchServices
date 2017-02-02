@@ -9,7 +9,8 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <project.timestamp>${maven.build.timestamp}</project.timestamp>
-      <project.build.key>${bamboo_buildKey}</project.build.key>
+      <project.build.key>${bamboo_fullBuildKey}</project.build.key>
+      <project.revision.key>${bamboo_repository_revision_number}</project.revision.key>
     </properties>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -155,17 +156,17 @@
                                 <replace token="SOLR_SSL_OPTS=%SOLR_SSL_OPTS%" value="SOLR_SSL_OPTS=!SOLR_SSL_OPTS!" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token="#SOLR_LOGS_DIR=logs" value="${alfresco.search.logs}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh" />
+                                <replace token= "#SOLR_LOGS_DIR=logs" value="${alfresco.search.logs}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh"/>
                                 </replace>
-                                <replace token="REM set SOLR_LOGS_DIR=logs" value="${alfresco.search.logs.win}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.cmd" />
+                                <replace token= "REM set SOLR_LOGS_DIR=logs" value="${alfresco.search.logs.win}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd"/>
                                 </replace>
-                                <replace token="GC logging" value="GC logging${line.separator}${alfresco.gc.logs}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh" />
+                                <replace token= "GC logging" value="GC logging${line.separator}${alfresco.gc.logs}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh"/>
                                 </replace>
-                                <replace token="GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.cmd" />
+                                <replace token= "GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd"/>
                                 </replace>
                                 <replace token="# Anything you add to the SOLR_OPTS" value="${alfresco.search.config}${line.separator}${line.separator}# Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.sh" />

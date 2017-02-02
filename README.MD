@@ -1,10 +1,12 @@
-## Alfresco Solr 6 implementation
-Alfresco Solr 6
+## Alfresco Search Services Implementation
+
+Alfresco Search Services using Alfresco and Apache Solr
+
 ### Get the code
 
 Git:
 
-	git clone https://gitlab.alfresco.com/search_discovery/solr.git
+	git clone https://github.com/Alfresco/SearchServices.git
 
 ### Use Maven
 1. Build
@@ -14,28 +16,29 @@ mvn clean install
 ```
 
 ### Docker
-To build the docker image, first run the maven build then
+To build the docker image:
 ```
 cd packaging/src/docker
-export bamboo_planRepository_1_branch=local
-./buildAndTest.sh
+docker build --build-arg solrUrl=http://download.alfresco.com/release/community/201701-build-00015/alfresco-search-services-1.0.b.zip -t search-services:myimage .
 ```
 
 ### License
-Copyright (C) 2016 Alfresco Software Limited
+Copyright (C) 2005 - 2017 Alfresco Software Limited
 
-This file is part of an unsupported extension to Alfresco.
+This file is part of the Alfresco software.
+If the software was purchased under a paid Alfresco license, the terms of
+the paid license agreement will prevail.  Otherwise, the software is
+provided under the following open source license terms:
 
-Alfresco Software Limited licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
+Alfresco is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
- http://www.apache.org/licenses/LICENSE-2.0
+Alfresco is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
+You should have received a copy of the GNU Lesser General Public License
+along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
