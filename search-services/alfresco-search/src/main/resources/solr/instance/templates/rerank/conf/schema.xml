@@ -727,7 +727,7 @@
       <dynamicField name="content@s__mimetype@*"         type="identifier"   indexed="true"  omitNorms="true"  stored="false"  multiValued="false" docValues="true" sortMissingLast="true" />
       <dynamicField name="content@s__encoding@*"         type="identifier"   indexed="true"  omitNorms="true"  stored="false"  multiValued="false" docValues="true" sortMissingLast="true" />
       <dynamicField name="content@s__docid@*"            type="long"         indexed="true"  omitNorms="true"  stored="false"  multiValued="false"  docValues="true" sortMissingLast="false" sortMissingFirst="false" />
-      <dynamicField name="content@s__tr_ex@*"            type="text___"      indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
+      <dynamicField name="content@s__tr_ex@*"            type="identifier"   indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
       <dynamicField name="content@s__tr_time@*"          type="long"         indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
       <dynamicField name="content@s__tr_status@*"        type="lowercase_id" indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
 
