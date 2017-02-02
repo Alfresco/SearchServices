@@ -42,42 +42,40 @@ public class GetProcessVariablesCoreTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from the same network is able to retrieve network process variables")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
-    public void getProcessVariablesWithAdminFromSameNetwork() throws JsonToModelConversionException, Exception
+    public void getProcessVariablesWithAdminFromSameNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
         restClient.authenticateUser(admin).usingTenant().createTenant(adminTenantUser1);
         UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
 
-        RestProcessModel networkProcess1 = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);   
-        processModel = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().usingProcess(networkProcess1).getProcess();
+        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
+                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
 
-        variables = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().usingProcess(processModel).getProcessVariables();
+        variables = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().usingProcess(networkProcess1).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         variables.assertThat().entriesListIsNotEmpty();
     }
-    
+
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from different network is not able to retrieve network process variables")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
-    public void getProcessVariablesWithAdminFromDifferentNetwork() throws JsonToModelConversionException, Exception
+    public void getProcessVariablesWithAdminFromDifferentNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
         restClient.authenticateUser(admin).usingTenant().createTenant(adminTenantUser1);
         UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
 
         RestProcessModel networkProcess1 = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);   
-        processModel = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().usingProcess(networkProcess1).getProcess();
+                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
 
-        variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).getProcessVariables();
+        variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(networkProcess1).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
     }
-    
+
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process variables using invalid process ID")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    public void getProcessVariablesUsingInvalidProcessId() throws JsonToModelConversionException, Exception
+    public void getProcessVariablesUsingInvalidProcessId() throws Exception
     {        
         restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses();
@@ -86,13 +84,17 @@ public class GetProcessVariablesCoreTests extends RestTest
         String id = RandomStringUtils.randomAlphanumeric(10);
         processModel.setId(id);
         variables = restClient.withParams("maxItems=2").withWorkflowAPI().usingProcess(processModel).getProcessVariables();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, id));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, id))
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process variables using empty process ID")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    public void getProcessVariablesUsingEmptyProcessId() throws JsonToModelConversionException, Exception
+    public void getProcessVariablesUsingEmptyProcessId() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processModel.setId("");
@@ -103,24 +105,17 @@ public class GetProcessVariablesCoreTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete process then get process variables, status OK should be returned")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    public void getProcessVariablesForADeletedProcess() throws JsonToModelConversionException, Exception
+    public void getProcessVariablesForADeletedProcess() throws Exception
     {
-        SiteModel siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
         UserModel userWhoStartsTask = dataUser.createRandomTestUser();
         UserModel assignee = dataUser.createRandomTestUser();
-        FileModel document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        RestProcessModel processModel;
-        RestProcessVariableCollection variables;
 
-        dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+        RestProcessModel processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
 
-        processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.authenticateUser(admin).withParams("maxItems=2").withWorkflowAPI().usingProcess(processModel).getProcess();
-
-        variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(processModel).getProcessVariables();
+        RestProcessVariableCollection variables = restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         variables.assertThat().entriesListIsNotEmpty();
     }
