@@ -160,7 +160,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
         solrConfig = new SolrConfig(resourceLoader, "solrconfig.xml", null);
         IndexSchema indexSchema = IndexSchemaFactory.buildIndexSchema(schema, solrConfig);
-        System.out.println("################ Index schema:"+schema+":"+indexSchema.getResourceName());
+        log.info("################ Index schema:"+schema+":"+indexSchema.getResourceName());
         TestCoresLocator locator = new TestCoresLocator(SolrTestCaseJ4.DEFAULT_TEST_CORENAME,
                                                         "data", 
                                                         solrConfig.getResourceName(),
