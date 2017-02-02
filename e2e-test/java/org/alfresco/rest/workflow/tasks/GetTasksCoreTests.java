@@ -63,7 +63,7 @@ public class GetTasksCoreTests extends RestTest
     public void orderByParameterSupportsOnlyOneParameter() throws Exception
     {
         taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=id,processDefinitionId").withWorkflowAPI().getTasks();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.ONLY_ONE_ORDERBY);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Only one order by parameter is supported");
         taskModels.assertThat().entriesListIsEmpty();   
     }
 
