@@ -38,59 +38,59 @@ public class GetProcessItemsFullTests extends RestTest
         document3 = dataContent.usingUser(userWhoStartsTask).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
-//    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-//            description = "Get process items using admin from different network")
-//    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
-//    public void getProcessItemsUsingAdminUserFromDifferentNetwork() throws Exception
-//    {
-//        adminTenantUser = UserModel.getAdminTenantUser();
-//        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
-//        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-//        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-//        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, CMISUtil.Priority.Normal);
-//
-//        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-//        document1 = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-//        restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document1);
-//        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-//
-//        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-//        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser2);
-//
-//        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel).getProcessItems();
-//        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-//                .assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
-//    }
-//
-//    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-//            description = "Get process items using admin from different network")
-//    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
-//    public void getProcessItemsReturnsOnlyItemsInsideNetwork() throws Exception
-//    {
-//        adminTenantUser = UserModel.getAdminTenantUser();
-//        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
-//        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-//        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-//        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, CMISUtil.Priority.Normal);
-//
-//        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-//        document1 = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-//        restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document1);
-//        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-//
-//        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-//        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser2);
-//        RestProcessModel processModel2 = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().addProcess("activitiAdhoc", adminTenantUser2, false, CMISUtil.Priority.Normal);
-//
-//        SiteModel siteModel2 = dataSite.usingUser(adminTenantUser2).createPublicRandomSite();
-//        document2 = dataContent.usingUser(adminTenantUser2).usingSite(siteModel2).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-//        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel2).addProcessItem(document2);
-//        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-//
-//        items = restClient.withWorkflowAPI().usingProcess(processModel2).getProcessItems();
-//        restClient.assertStatusCodeIs(HttpStatus.OK);
-//        items.assertThat().entriesListDoesNotContain("name", document1.getName());
-//    }
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+            description = "Get process items using admin from different network")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
+    public void getProcessItemsUsingAdminUserFromDifferentNetwork() throws Exception
+    {
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, CMISUtil.Priority.Normal);
+
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        document1 = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser2);
+
+        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel).getProcessItems();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                .assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+            description = "Get process items using admin from different network")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
+    public void getProcessItemsReturnsOnlyItemsInsideNetwork() throws Exception
+    {
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, CMISUtil.Priority.Normal);
+
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        document1 = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser2);
+        RestProcessModel processModel2 = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().addProcess("activitiAdhoc", adminTenantUser2, false, CMISUtil.Priority.Normal);
+
+        SiteModel siteModel2 = dataSite.usingUser(adminTenantUser2).createPublicRandomSite();
+        document2 = dataContent.usingUser(adminTenantUser2).usingSite(siteModel2).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel2).addProcessItem(document2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        items = restClient.withWorkflowAPI().usingProcess(processModel2).getProcessItems();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        items.assertThat().entriesListDoesNotContain("name", document1.getName());
+    }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process items for process without items")
