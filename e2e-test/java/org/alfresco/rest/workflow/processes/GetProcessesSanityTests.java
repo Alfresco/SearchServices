@@ -43,7 +43,7 @@ public class GetProcessesSanityTests extends RestTest
     {
         allProcesses = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        allProcesses.assertThat().entriesListContains("id", task.getNodeRef());
+        allProcesses.assertThat().entriesListContains("id", task.getProcessId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
@@ -53,7 +53,7 @@ public class GetProcessesSanityTests extends RestTest
     {
         allProcesses = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        allProcesses.assertThat().entriesListContains("id", task.getNodeRef());
+        allProcesses.assertThat().entriesListContains("id", task.getProcessId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
@@ -63,7 +63,7 @@ public class GetProcessesSanityTests extends RestTest
     {
         allProcesses = restClient.authenticateUser(anotherUser).withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        allProcesses.assertThat().entriesListDoesNotContain("id", task.getNodeRef());
+        allProcesses.assertThat().entriesListDoesNotContain("id", task.getProcessId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
@@ -73,6 +73,6 @@ public class GetProcessesSanityTests extends RestTest
     {
         allProcesses = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        allProcesses.assertThat().entriesListContains("id", task.getNodeRef());
+        allProcesses.assertThat().entriesListContains("id", task.getProcessId());
     }
 }

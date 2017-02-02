@@ -74,8 +74,8 @@ public class GetProcessesCoreTests extends RestTest
         processes.assertThat().entriesListIsNotEmpty();
         List<RestProcessModel> processesList = processes.getEntries();
         processesList.get(0).onModel().assertThat().field("id").is(process3.getId());
-        processesList.get(1).onModel().assertThat().field("id").is(task2.getNodeRef());
-        processesList.get(2).onModel().assertThat().field("id").is(task1.getNodeRef());
+        processesList.get(1).onModel().assertThat().field("id").is(task2.getProcessId());
+        processesList.get(2).onModel().assertThat().field("id").is(task1.getProcessId());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
