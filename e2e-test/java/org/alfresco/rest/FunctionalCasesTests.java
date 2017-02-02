@@ -1,10 +1,13 @@
 package org.alfresco.rest;
 
+import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.rest.model.RestActivityModelsCollection;
 import org.alfresco.rest.model.RestFavoriteSiteModel;
 import org.alfresco.rest.model.RestSiteMemberModel;
 import org.alfresco.rest.model.RestSiteMembershipRequestModelsCollection;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -21,12 +24,16 @@ public class FunctionalCasesTests extends RestTest
     private RestSiteMemberModel updatedMember;
     private RestSiteMembershipRequestModelsCollection returnedCollection;
     private RestFavoriteSiteModel restFavoriteSiteModel;
+    private RestActivityModelsCollection activities;
+    private UserModel user;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();        
+        adminUserModel = dataUser.getAdminUser();
+        user = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
+        dataUser.addUserToSite(user, siteModel, UserRole.SiteManager);
         moderatedSite = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
     }
     
@@ -176,5 +183,61 @@ public class FunctionalCasesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
         restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newMember.getUsername());
+    }
+    
+    /**
+     * Scenario:
+     * 1. Add file
+     * 2. Check file is included in person activities list
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Add a file and check that activity is included in person activities")
+    public void addFileThenGetPersonActivities() throws Exception
+    {
+        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        activities = restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
+        activities.assertThat().entriesListIsNotEmpty()
+            .and().entriesListContains("siteId", siteModel.getId())
+            .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-added")
+            .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
+    }
+    
+    /**
+     * Scenario:
+     * 1. Add a comment to a file
+     * 2. Check that comment is included in person activities list
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Add a comment to a file and check that activity is included in person activities")
+    public void addCommentThenGetPersonActivities() throws Exception
+    {
+        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        restClient.authenticateUser(user).withCoreAPI().usingResource(file).addComment("new comment");
+        activities = restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(3);
+        activities.assertThat().entriesListIsNotEmpty()
+            .and().entriesListContains("siteId", siteModel.getId())
+            .and().entriesListContains("activityType", "org.alfresco.comments.comment-created")
+            .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
+    }
+    
+    /**
+     * Scenario:
+     * 1. Add file then delete it
+     * 2. Check action is included in person activities list
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Add a file, delete it and check that activity is included in person activities")
+    public void addFileDeleteItThenGetPersonActivities() throws Exception
+    {
+        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        dataContent.usingUser(user).usingResource(file).deleteContent();
+        activities = restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
+        activities.assertThat().entriesListIsNotEmpty()
+            .and().entriesListContains("siteId", siteModel.getId())
+            .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-deleted")
+            .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
     }
 }
