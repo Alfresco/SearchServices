@@ -583,7 +583,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         Transactions transactions;
         BoundedDeque<Transaction> txnsFound = new BoundedDeque<Transaction>(100);
         HashSet<Transaction> txsIndexed = new LinkedHashSet<>(); 
-        TrackerState state =  this.getTrackerState();
         long totalUpdatedDocs = 0;
         int docCount = 0;
         
@@ -594,11 +593,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 getWriteLock().acquire();
                 //System.out.println("######## Metadata Tracket Acquiring Write Lock ########");
 
-                if(state == null)
-                {
-                    //A rollback occurred in the CommitTracker. Break the loop and let the next tracker create the next state.
-                    break;
-                }
+                TrackerState state = getTrackerState();
 
                 //System.out.println("######## Do Track Transactions ########:"+docCount);
 
