@@ -1,8 +1,12 @@
 package org.alfresco.rest.sites;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+
 import java.util.List;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestRequest;
+import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteContainerModelsCollection;
 import org.alfresco.rest.model.RestSiteMemberModelsCollection;
@@ -15,11 +19,11 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 public class GetSiteFullTests extends RestTest
 {
     private UserModel adminUserModel, testUser;
@@ -176,6 +180,23 @@ public class GetSiteFullTests extends RestTest
             .assertThat().entriesListContains("role", UserRole.SiteManager.toString());
         siteMembers.getOneRandomEntry().onModel().assertThat().field("person.firstName").is("Administrator")
             .and().field("person.id").is("admin");
+    }
+    
+    @Test(groups="demo")
+    public void checkThatRelationsParameterIsAppliedForMembersCustom()
+    {
+        /*1 - select API endpoint*/
+        restClient.withCoreAPI();
+        
+        /*2 - define request */
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}?{parameters}", publicSite.getId(), "relations=members");
+        
+        /*3 - send request */
+        RestResponse response  = restClient.authenticateUser(adminUserModel).process(request);
+        
+        /*assertions */
+        response.assertThat().body("entry.id", equalTo(publicSite.getId()));        
+        response.assertThat().body("relations.members.list.entries.entry[0].role", equalTo("SiteManager"));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL } )
