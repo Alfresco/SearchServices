@@ -66,14 +66,17 @@ public class GetTagsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void useSkipCountCheckPagination() throws JsonToModelConversionException, Exception
     {     
-        returnedCollection = restClient.authenticateUser(adminUserModel)
-                .withParams("skipCount=20").withCoreAPI().getTags();
+        returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.getPagination().assertThat().field("maxItems").is(100)
-            .and().field("hasMoreItems").is("true")
-            .and().field("count").is("100")
-            .and().field("skipCount").is(20)
-            .and().field("totalItems").isNull();
+        
+        RestTagModel firstTag = returnedCollection.getEntries().get(0).onModel();
+        RestTagModel secondTag = returnedCollection.getEntries().get(1).onModel();
+        RestTagModelsCollection tagsWithSkipCount = restClient.withParams("skipCount=2").withCoreAPI().getTags();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        tagsWithSkipCount.assertThat().entriesListDoesNotContain("tag", firstTag.getTag())
+            .assertThat().entriesListDoesNotContain("tag", secondTag.getTag());
+        tagsWithSkipCount.assertThat().paginationField("skipCount").is("2");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
@@ -81,14 +84,18 @@ public class GetTagsFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
     public void useMaxItemsParameterCheckPagination() throws JsonToModelConversionException, Exception
     {     
-        returnedCollection = restClient.authenticateUser(adminUserModel)
-                .withParams("maxItems=50").withCoreAPI().getTags();
+        returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.getPagination().assertThat().field("maxItems").is(50)
-            .and().field("hasMoreItems").is("true")
-            .and().field("count").is("50")
-            .and().field("skipCount").is("0")
-            .and().field("totalItems").isNull();
+        
+        RestTagModel firstTag = returnedCollection.getEntries().get(0).onModel();
+        RestTagModel secondTag = returnedCollection.getEntries().get(1).onModel();
+        RestTagModelsCollection tagsWithMaxItems = restClient.withParams("maxItems=2").withCoreAPI().getTags();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        tagsWithMaxItems.assertThat().entriesListContains("tag", firstTag.getTag())
+            .assertThat().entriesListContains("tag", secondTag.getTag())
+            .assertThat().entriesListCountIs(2);
+        tagsWithMaxItems.assertThat().paginationField("maxItems").is("2");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
