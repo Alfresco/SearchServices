@@ -75,7 +75,8 @@ public class GetTagsFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         
         tagsWithSkipCount.assertThat().entriesListDoesNotContain("tag", firstTag.getTag())
-            .assertThat().entriesListDoesNotContain("tag", secondTag.getTag());
+            .assertThat().entriesListDoesNotContain("tag", secondTag.getTag())
+            .assertThat().entriesListCountIs(returnedCollection.getEntries().size()-2);
         tagsWithSkipCount.assertThat().paginationField("skipCount").is("2");
     }
     
