@@ -145,7 +145,7 @@ public class GetProcessVariablesFullTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify get all process variables call using admin user. Admin can see the process even if he isn't involved in it.")
+            description = "Verify get all process variables with properties parameter.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void getProcessVariablesWithPropertiesParameter() throws Exception
     {
