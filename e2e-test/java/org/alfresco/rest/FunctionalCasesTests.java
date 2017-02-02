@@ -114,7 +114,7 @@ public class FunctionalCasesTests extends RestTest
      * 4. Delete site from Favorites
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
-            executionType = ExecutionType.REGRESSION, description = "Approve request, add site to favorites, then delete it")
+            executionType = ExecutionType.REGRESSION, description = "Approve request, add site to favorites, then delete it from favorites")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
     public void approveRequestAddAndDeleteSiteFromFavorites() throws Exception
     {
@@ -129,11 +129,11 @@ public class FunctionalCasesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListDoesNotContain("id", moderatedSite.getId());
         
-        restFavoriteSiteModel = restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).addFavoriteSite(siteModel);
+        restFavoriteSiteModel = restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).addFavoriteSite(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
+        restFavoriteSiteModel.assertThat().field("id").is(moderatedSite.getId());
         
-        restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel);
+        restClient.authenticateUser(newMember).withCoreAPI().usingAuthUser().removeFavoriteSite(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
     
@@ -162,9 +162,9 @@ public class FunctionalCasesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListDoesNotContain("id", moderatedSite.getId());
         
-        restFavoriteSiteModel = restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).addFavoriteSite(siteModel);
+        restFavoriteSiteModel = restClient.authenticateUser(newMember).withCoreAPI().usingUser(newMember).addFavoriteSite(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        restFavoriteSiteModel.assertThat().field("id").is(siteModel.getId());
+        restFavoriteSiteModel.assertThat().field("id").is(moderatedSite.getId());
         
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -174,5 +174,7 @@ public class FunctionalCasesTests extends RestTest
         
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newMember.getUsername());
     }
 }
