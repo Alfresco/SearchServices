@@ -1,5 +1,7 @@
 package org.alfresco.rest.workflow.processDefinitions;
 
+import java.util.Arrays;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestFormModelsCollection;
@@ -11,8 +13,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
 
 /**
  * Created by Claudia Agache on 1/31/2017.

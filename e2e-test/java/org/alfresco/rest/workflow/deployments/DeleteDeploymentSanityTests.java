@@ -1,8 +1,15 @@
 package org.alfresco.rest.workflow.deployments;
 
+import java.util.List;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.*;
+import org.alfresco.rest.model.RestDeploymentModel;
+import org.alfresco.rest.model.RestDeploymentModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestProcessDefinitionModel;
+import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -11,8 +18,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.List;
 
 /**
  * Tests for REST API call DELETE "/deployments/{deploymentId}"

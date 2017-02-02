@@ -7,7 +7,6 @@ import org.alfresco.rest.model.RestDeploymentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;

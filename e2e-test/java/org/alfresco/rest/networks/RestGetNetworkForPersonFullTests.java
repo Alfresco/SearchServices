@@ -1,5 +1,7 @@
 package org.alfresco.rest.networks;
 
+import java.util.ArrayList;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNetworkModel;
 import org.alfresco.rest.model.RestNetworkQuotaModel;
@@ -10,8 +12,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
 
 /**
  * Tests for /people/{personId}/networks

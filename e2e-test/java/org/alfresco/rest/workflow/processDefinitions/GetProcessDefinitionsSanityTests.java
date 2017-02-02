@@ -1,12 +1,10 @@
 package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
