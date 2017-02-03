@@ -113,6 +113,6 @@ public class DeleteProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
                   .assertThat().entriesListDoesNotContain("name", variableModel.getName());       
-    }   
+    }     
     
 }
