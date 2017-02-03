@@ -2,6 +2,7 @@ package org.alfresco.rest;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.model.RestActivityModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestFavoriteSiteModel;
 import org.alfresco.rest.model.RestSiteMemberModel;
 import org.alfresco.rest.model.RestSiteMembershipRequestModelsCollection;
@@ -20,7 +21,7 @@ import org.testng.annotations.Test;
 public class FunctionalCasesTests extends RestTest
 {
     private UserModel adminUserModel;
-    private SiteModel siteModel, moderatedSite;
+    private SiteModel siteModel, moderatedSite, privateSite;
     private RestSiteMemberModel updatedMember;
     private RestSiteMembershipRequestModelsCollection returnedCollection;
     private RestFavoriteSiteModel restFavoriteSiteModel;
@@ -35,6 +36,7 @@ public class FunctionalCasesTests extends RestTest
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         dataUser.addUserToSite(user, siteModel, UserRole.SiteManager);
         moderatedSite = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
+        privateSite = dataSite.usingUser(adminUserModel).createPrivateRandomSite();
     }
     
     /**
@@ -239,5 +241,63 @@ public class FunctionalCasesTests extends RestTest
             .and().entriesListContains("siteId", siteModel.getId())
             .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-deleted")
             .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
+    }
+    
+    /**
+     * Scenario:
+     * 1. Add user to private site
+     * 2. Remove user from private site
+     * 3. User creates membership request to the same private site
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION, description = "Verify membership request by user after it was removed from site gets status code 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    public void userCanNotCreateMembershipRequestIfItWasRemovedFromPrivateSite() throws Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        newMember.setUserRole(UserRole.SiteCollaborator);
+
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSite).addPerson(newMember)
+               .assertThat().field("id").is(newMember.getUsername());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);   
+        
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(newMember).deleteSiteMember(privateSite);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(privateSite);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+        .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getTitle()));
+    }
+    
+    /**
+     * Scenario:
+     * 1. User creates membership request to moderated site
+     * 2. Accept membership request
+     * 3. Remove user from moderated site
+     * 4. Add user on private site
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION, description = "Verify user can be added back after if was removed from site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    public void userCanBeAddedAfterItWasRemovedFromSite() throws Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        newMember.setUserRole(UserRole.SiteCollaborator);
+        
+        restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        RestTaskModel taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
+        workflow.approveSiteMembershipRequest(adminUserModel.getUsername(), adminUserModel.getPassword(), taskModel.getId(), true, "Accept");
+        
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSite);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newMember.getUsername());
+
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSite).addPerson(newMember)
+               .assertThat().field("id").is(newMember.getUsername());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);   
+        restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListContains("id", newMember.getUsername());
+        
     }
 }
