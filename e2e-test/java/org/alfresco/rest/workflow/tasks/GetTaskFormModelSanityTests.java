@@ -40,8 +40,7 @@ public class GetTaskFormModelSanityTests extends RestTest
             executionType = ExecutionType.SANITY, description = "Verify admin user gets all task form models with Rest API and response is successful (200)")
     public void adminGetsTaskFormModels() throws Exception
     {
-        restClient.authenticateUser(dataUser.getAdminUser());
-        returnedCollection = restClient.withWorkflowAPI().usingTask(taskModel).getTaskFormModel();
+        returnedCollection = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().usingTask(taskModel).getTaskFormModel();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty();
 
@@ -62,8 +61,6 @@ public class GetTaskFormModelSanityTests extends RestTest
         {
           returnedCollection.assertThat().entriesListContains("qualifiedName", formQualifiedName);
         }
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
@@ -71,8 +68,7 @@ public class GetTaskFormModelSanityTests extends RestTest
             executionType = ExecutionType.SANITY, description = "Verify user involved in task gets all the task form models with Rest API and response is successful (200)")
     public void involvedUserGetsTaskFormModels() throws Exception
     {
-        restClient.authenticateUser(userModel);
-        returnedCollection = restClient.withWorkflowAPI().usingTask(taskModel).getTaskFormModel();
+        returnedCollection = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTaskFormModel();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty();
     }

@@ -386,8 +386,8 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
         restTaskModel = restClient.authenticateUser(owner)
             .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask("claimed");
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT).assertLastError()
-            .containsErrorKey(RestErrorModel.TAS_ALREADY_CLAIMED)
-            .containsSummary(RestErrorModel.TAS_ALREADY_CLAIMED)
+            .containsErrorKey(RestErrorModel.TASK_ALREADY_CLAIMED)
+            .containsSummary(RestErrorModel.TASK_ALREADY_CLAIMED)
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
