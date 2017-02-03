@@ -8,6 +8,7 @@ import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestTaskModel;
+import org.alfresco.rest.model.RestVariableModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
@@ -258,8 +259,8 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify task can be updated from status claimed to claimed and response is 200")
-    public void taskCanBeUpdatedFromClaimedToClaimed() throws Exception
+            description = "Verify task cannot be updated from status claimed to claimed and response is 200")
+    public void taskCannotBeUpdatedFromClaimedToClaimed() throws Exception
     {       
         restTaskModel = restClient.authenticateUser(owner).withWorkflowAPI().usingTask(taskModel).getTask();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -273,5 +274,34 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
             .containsSummary(RestErrorModel.TAS_ALREADY_CLAIMED)
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
             .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify task owner can complete task with valid variables and response is 200")
+    public void taskOwnerCanCompleteTaskWithValidVariables() throws Exception
+    {      
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "completed")
+                .add("variables", JsonBodyGenerator.defineJSONArray()
+                                    .add(JsonBodyGenerator.defineJSON()
+                                            .add("name", "bpm_priority")
+                                            .add("type", "d:int")
+                                            .add("value", 3)
+                                            .add("scope", "global").build())
+                                    ).build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+                .withParams("select=state,variables").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("priority").is(1)
+            .and().field("state").is("completed")
+            .and().field("assignee").is(taskModel.getAssignee());
+        RestVariableModelsCollection variables = restClient.authenticateUser(owner).withWorkflowAPI().usingTask(restTaskModel).getTaskVariables();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        variables.getVariableByName("bpm_priority").assertThat().field("scope").is("global")
+            .and().field("name").is("bpm_priority")
+            .and().field("type").is("d:int")
+            .and().field("value").is(3);
     }
 }
