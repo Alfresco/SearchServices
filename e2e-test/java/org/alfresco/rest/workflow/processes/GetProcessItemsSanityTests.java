@@ -32,7 +32,7 @@ public class GetProcessItemsSanityTests extends RestTest
         userWhoStartsTask = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
-        document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        document = dataContent.usingUser(userWhoStartsTask).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
 
@@ -67,11 +67,16 @@ public class GetProcessItemsSanityTests extends RestTest
         restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
+        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
 
-        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
         items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        items.assertThat().entriesListIsNotEmpty();
+        items.assertThat().entriesListContains("name", document.getName());
     }
 }
