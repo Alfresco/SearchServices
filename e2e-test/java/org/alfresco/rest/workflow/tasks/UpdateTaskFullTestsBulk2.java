@@ -169,6 +169,69 @@ public class UpdateTaskFullTestsBulk2 extends RestTest
         restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("resolved");
     }
     
+    @Bug(id = "REPO-1982")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that task can be updated from resolved to unclaimed")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void userCanUpdateTaskFromResolvedToUnclaimed() throws Exception
+    {
+        restTaskModel = restClient.authenticateUser(assigneeUser).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("resolved");
+     
+        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("unclaimed");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("resolved");
+    }
+    
+    @Bug(id = "REPO-1982")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that task cannot be updated from resolved to claimed")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void updateTaskFromResolvedToClaimed() throws Exception
+    {
+        restTaskModel = restClient.authenticateUser(assigneeUser).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("resolved");
+     
+        // assignee tries to claim the task 
+        restTaskModel = restClient.authenticateUser(assigneeUser).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("claimed");
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+            .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
+        
+        // owner tries to claim the task 
+        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("claimed");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("resolved");
+    }
+    
+    @Bug(id = "REPO-1982")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that task can be updated from resolved to delegated")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void userCannotUpdateTaskFromResolvedToDelegated() throws Exception
+    {
+        restTaskModel = restClient.authenticateUser(assigneeUser).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("resolved");
+     
+        JsonObject inputJson = JsonBodyGenerator.defineJSON().add("state", "delegated").add("assignee", assigneeUser.getUsername()).build();
+        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("delegated");
+    }
+    
+    @Bug(id = "REPO-1982")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify that task can be updated from resolved to resolved")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void userCannotUpdateTaskFromResolvedToResolved() throws Exception
+    {
+        restTaskModel = restClient.authenticateUser(assigneeUser).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("resolved");
+     
+        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("resolved");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("resolved");
+    }
+    
+    @Bug(id = "REPO-1982")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
             description = "Update task by providing empty select value")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
@@ -183,11 +246,11 @@ public class UpdateTaskFullTestsBulk2 extends RestTest
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
-            description = "Update task by providing empty select value")
+            description = "Update task by providing empty state value")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     public void updateTaskByProvidingEmptyStateValue() throws Exception
     {
-        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("");
+        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask(" ");
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError()
             .containsErrorKey(RestErrorModel.PUT_EMPTY_ARGUMENT)
             .containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT)
