@@ -49,10 +49,10 @@ public class GetProcessTasksSanityTests extends RestTest
         processTasks = restClient.authenticateUser(userModel).withWorkflowAPI().usingProcess(process).getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processTasks.assertThat()
-            .entriesListIsNotEmpty().and()
+            .entriesListCountIs(3).and()
             .entriesListContains("assignee", assignee1.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername()).and()
-            .entriesListContains("assignee", assignee2.getUsername());
+            .entriesListContains("assignee", assignee3.getUsername());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
@@ -65,7 +65,7 @@ public class GetProcessTasksSanityTests extends RestTest
         processTasks.assertThat()
             .entriesListContains("assignee", assignee1.getUsername()).and()
             .entriesListContains("assignee", assignee2.getUsername()).and()
-            .entriesListContains("assignee", assignee2.getUsername());
+            .entriesListContains("assignee", assignee3.getUsername());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
