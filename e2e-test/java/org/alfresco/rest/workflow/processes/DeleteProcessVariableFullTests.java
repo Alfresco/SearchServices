@@ -21,7 +21,7 @@ public class DeleteProcessVariableFullTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsTask, assignee, anotherUser, adminUser;
+    private UserModel userWhoStartsTask, assignee, adminUser;
     private RestProcessModel restProcessModel;
     private ProcessModel processModel;
     private RestProcessVariableModel variableModel, updatedVariable;
@@ -31,8 +31,7 @@ public class DeleteProcessVariableFullTests extends RestTest
     {
         adminUser = dataUser.getAdminUser();
         userWhoStartsTask = dataUser.createRandomTestUser();
-        assignee = dataUser.createRandomTestUser();
-        anotherUser = dataUser.createRandomTestUser();
+        assignee = dataUser.createRandomTestUser();      
         siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         processModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createSingleReviewerTaskAndAssignTo(assignee);
