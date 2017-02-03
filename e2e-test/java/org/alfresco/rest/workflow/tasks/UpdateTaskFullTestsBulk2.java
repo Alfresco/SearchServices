@@ -168,4 +168,30 @@ public class UpdateTaskFullTestsBulk2 extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("id").is(taskModel.getId()).and().field("state").is("resolved");
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Update task by providing empty select value")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void updateTaskByProvidingEmptySelectValue() throws Exception
+    {
+        restTaskModel = restClient.authenticateUser(userModel).withParams("select=").withWorkflowAPI().usingTask(taskModel).updateTask("resolved");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(RestErrorModel.INVALID_SELECT_ERRORKEY)
+            .containsSummary(RestErrorModel.INVALID_SELECT)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Update task by providing empty select value")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void updateTaskByProvidingEmptyStateValue() throws Exception
+    {
+        restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("");
+        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError()
+            .containsErrorKey(RestErrorModel.PUT_EMPTY_ARGUMENT)
+            .containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
 }
