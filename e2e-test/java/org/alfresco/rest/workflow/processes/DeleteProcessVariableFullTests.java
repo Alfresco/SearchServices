@@ -56,30 +56,7 @@ public class DeleteProcessVariableFullTests extends RestTest
                   .containsErrorKey(RestErrorModel.DELETE_EMPTY_ARGUMENT)
                   .stackTraceIs(RestErrorModel.STACKTRACE);     
     }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-              description = "Delete process variable using any user.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void deleteProcessVariableWithAnyUser() throws Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(anotherUser).withWorkflowAPI()
-                                 .addProcess("activitiAdhoc", anotherUser, false, Priority.Normal);
-
-        variableModel = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        variableModel.assertThat().field("name").is(variableModel.getName()).and().field("type")
-                     .is(variableModel.getType()).and().field("value")
-                     .is(variableModel.getValue());
-
-        restClient.authenticateUser(anotherUser).withWorkflowAPI().usingProcess(processModel)
-                  .deleteProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                  .assertThat()
-                  .entriesListDoesNotContain("name", variableModel.getName());
-    }
-
+  
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Add a new process varaiables, update the variable and then delete.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
