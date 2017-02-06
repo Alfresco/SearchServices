@@ -51,7 +51,7 @@ public class UpdateTagSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates tags and status code is 200")
-    @Bug(id="MNT-16917")
+    @Bug(id="REPO-1828")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void adminIsAbleToUpdateTags() throws JsonToModelConversionException, Exception
     {
@@ -74,11 +74,14 @@ public class UpdateTagSanityTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can't update tags with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    public void collaboratorIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
+    public void collaboratorIsNotAbleToUpdateTagCheckDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section = { TestGroup.REST_API,
