@@ -15,24 +15,22 @@ import org.testng.annotations.Test;
 
 public class FunctionalCasesTests extends RestTest
 {
-    private UserModel adminUserModel;
-    private SiteModel siteModel, moderatedSite;
+    private UserModel adminUser, manager;
+    private SiteModel publicSite, moderatedSite;
     private RestSiteMemberModel updatedMember;
     private RestSiteMembershipRequestModelsCollection returnedCollection;
     private RestFavoriteSiteModel restFavoriteSiteModel;
     private RestActivityModelsCollection activities;
-    private UserModel user;
-    private UserModel userJoinSite;
+    private FileModel file;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        user = dataUser.createRandomTestUser();
-        userJoinSite = dataUser.createRandomTestUser();
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        dataUser.addUserToSite(user, siteModel, UserRole.SiteManager);
-        moderatedSite = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
+        adminUser = dataUser.getAdminUser();
+        manager = dataUser.createRandomTestUser();
+        publicSite = dataSite.usingUser(adminUser).createPublicRandomSite();
+        dataUser.addUserToSite(manager, publicSite, UserRole.SiteManager);
+        moderatedSite = dataSite.usingUser(adminUser).createModeratedRandomSite();
     }
     
     /**
@@ -49,26 +47,26 @@ public class FunctionalCasesTests extends RestTest
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteManager);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).addPerson(testUser)
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(publicSite).addPerson(testUser)
                .assertThat().field("id").is(testUser.getUsername())
                .and().field("role").is(testUser.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         testUser.setUserRole(UserRole.SiteCollaborator);
-        updatedMember = restClient.authenticateUser(adminUserModel).withCoreAPI()
-                .usingSite(siteModel).updateSiteMember(testUser);
+        updatedMember = restClient.withCoreAPI()
+                .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
         
         testUser.setUserRole(UserRole.SiteContributor);
-        updatedMember = restClient.authenticateUser(adminUserModel).withCoreAPI()
-                .usingSite(siteModel).updateSiteMember(testUser);
+        updatedMember = restClient.withCoreAPI()
+                .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
         
         testUser.setUserRole(UserRole.SiteConsumer);
-        updatedMember = restClient.authenticateUser(adminUserModel).withCoreAPI()
-                .usingSite(siteModel).updateSiteMember(testUser);
+        updatedMember = restClient.withCoreAPI()
+                .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
     }
@@ -87,26 +85,26 @@ public class FunctionalCasesTests extends RestTest
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).addPerson(testUser)
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(publicSite).addPerson(testUser)
                .assertThat().field("id").is(testUser.getUsername())
                .and().field("role").is(testUser.getUserRole());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         testUser.setUserRole(UserRole.SiteContributor);
-        updatedMember = restClient.authenticateUser(adminUserModel).withCoreAPI()
-                .usingSite(siteModel).updateSiteMember(testUser);
+        updatedMember = restClient.withCoreAPI()
+                .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
         
         testUser.setUserRole(UserRole.SiteCollaborator);
-        updatedMember = restClient.authenticateUser(adminUserModel).withCoreAPI()
-                .usingSite(siteModel).updateSiteMember(testUser);
+        updatedMember = restClient.withCoreAPI()
+                .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
         
         testUser.setUserRole(UserRole.SiteManager);
-        updatedMember = restClient.authenticateUser(adminUserModel).withCoreAPI()
-                .usingSite(siteModel).updateSiteMember(testUser);
+        updatedMember = restClient.withCoreAPI()
+                .usingSite(publicSite).updateSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedMember.assertThat().field("id").is(testUser.getUsername()).and().field("role").is(testUser.getUserRole());
     }
@@ -129,7 +127,7 @@ public class FunctionalCasesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         RestTaskModel taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
-        workflow.approveSiteMembershipRequest(adminUserModel.getUsername(), adminUserModel.getPassword(), taskModel.getId(), true, "Approve");
+        workflow.approveSiteMembershipRequest(adminUser.getUsername(), adminUser.getPassword(), taskModel.getId(), true, "Approve");
         returnedCollection = restClient.authenticateUser(newMember).withCoreAPI().usingMe().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListDoesNotContain("id", moderatedSite.getId());
@@ -162,7 +160,7 @@ public class FunctionalCasesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         RestTaskModel taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
-        workflow.approveSiteMembershipRequest(adminUserModel.getUsername(), adminUserModel.getPassword(), taskModel.getId(), false, "Rejected");
+        workflow.approveSiteMembershipRequest(adminUser.getUsername(), adminUser.getPassword(), taskModel.getId(), false, "Rejected");
         returnedCollection = restClient.authenticateUser(newMember).withCoreAPI().usingMe().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListDoesNotContain("id", moderatedSite.getId());
@@ -175,9 +173,9 @@ public class FunctionalCasesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
-        workflow.approveSiteMembershipRequest(adminUserModel.getUsername(), adminUserModel.getPassword(), taskModel.getId(), true, "Accept");
+        workflow.approveSiteMembershipRequest(adminUser.getUsername(), adminUser.getPassword(), taskModel.getId(), true, "Accept");
         
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSite);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSite);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
         restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newMember.getUsername());
@@ -193,10 +191,10 @@ public class FunctionalCasesTests extends RestTest
             description = "Add a file and check that activity is included in person activities")
     public void addFileThenGetPersonActivities() throws Exception
     {
-        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        activities = restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
+        file = dataContent.usingUser(manager).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
+        activities = restClient.authenticateUser(manager).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
         activities.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("siteId", siteModel.getId())
+            .and().entriesListContains("siteId", publicSite.getId())
             .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-added")
             .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
     }
@@ -211,11 +209,11 @@ public class FunctionalCasesTests extends RestTest
             description = "Add a comment to a file and check that activity is included in person activities")
     public void addCommentThenGetPersonActivities() throws Exception
     {
-        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        restClient.authenticateUser(user).withCoreAPI().usingResource(file).addComment("new comment");
-        activities = restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(3);
+        file = dataContent.usingUser(manager).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
+        restClient.authenticateUser(manager).withCoreAPI().usingResource(file).addComment("new comment");
+        activities = restClient.authenticateUser(manager).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(3);
         activities.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("siteId", siteModel.getId())
+            .and().entriesListContains("siteId", publicSite.getId())
             .and().entriesListContains("activityType", "org.alfresco.comments.comment-created")
             .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
     }
@@ -230,11 +228,11 @@ public class FunctionalCasesTests extends RestTest
             description = "Add a file, delete it and check that activity is included in person activities")
     public void addFileDeleteItThenGetPersonActivities() throws Exception
     {
-        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        dataContent.usingUser(user).usingResource(file).deleteContent();
-        activities = restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
+        file = dataContent.usingUser(manager).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
+        dataContent.usingUser(manager).usingResource(file).deleteContent();
+        activities = restClient.authenticateUser(manager).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
         activities.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("siteId", siteModel.getId())
+            .and().entriesListContains("siteId", publicSite.getId())
             .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-deleted")
             .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
     }
@@ -252,8 +250,8 @@ public class FunctionalCasesTests extends RestTest
             description = "Add comment to a file, then get comment details. Update it and check that get comment returns updated details. Delete comment then check that file has no comments.")
     public void addUpdateDeleteCommentThenGetCommentDetails() throws Exception
     {
-        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        RestCommentModel newComment = restClient.authenticateUser(user).withCoreAPI().usingResource(file).addComment("new comment");
+        file = dataContent.usingUser(manager).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
+        RestCommentModel newComment = restClient.authenticateUser(manager).withCoreAPI().usingResource(file).addComment("new comment");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         RestCommentModelsCollection fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
@@ -276,6 +274,40 @@ public class FunctionalCasesTests extends RestTest
     }
 
     /**
+     * 1. Post one comment
+     * 2. Delete comment
+     * 3. Post the same comment again
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+            executionType = ExecutionType.REGRESSION,
+            description = "Add a comment to a file, delete it, then added the same comment again.")
+    public void checkThatADeletedCommentCanBePostedAgain() throws Exception
+    {
+        file = dataContent.usingUser(manager).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
+        RestCommentModel newComment = restClient.authenticateUser(manager).withCoreAPI().usingResource(file).addComment("new comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        RestCommentModelsCollection fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        fileComments.assertThat().entriesListContains("content", newComment.getContent());
+
+        restClient.withCoreAPI().usingResource(file).deleteComment(newComment);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        fileComments.assertThat().entriesListIsEmpty();
+
+        restClient.authenticateUser(manager).withCoreAPI().usingResource(file).addComment("new comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        fileComments.assertThat().entriesListContains("content", newComment.getContent());
+    }
+
+    /**
      * Scenario:
      * 1. join an user to a site
      * 2. Check action is included in person activities list
@@ -288,10 +320,12 @@ public class FunctionalCasesTests extends RestTest
             description = "Create an user, join the user to a site and check that activity is included in person activities")
     public void joinUserToSiteThenGetPersonActivities() throws Exception
     {
-        restClient.authenticateUser(userJoinSite).withCoreAPI().usingMe().addSiteMembershipRequest(siteModel);
+        UserModel userJoinSite = dataUser.createRandomTestUser();
+
+        restClient.authenticateUser(userJoinSite).withCoreAPI().usingMe().addSiteMembershipRequest(publicSite);
         activities = restClient.withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
         activities.assertThat().entriesListIsNotEmpty().and()
-                .entriesListContains("siteId", siteModel.getId()).and()
+                .entriesListContains("siteId", publicSite.getId()).and()
                 .entriesListContains("activityType", "org.alfresco.site.user-joined").and()
                 .entriesListContains("activitySummary.memberPersonId", userJoinSite.getUsername());
     }
