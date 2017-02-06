@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
  */
 public class UpdateTaskFullTestsBulk1 extends RestTest
 {
-    UserModel owner;
+    UserModel owner, anyUser;
     SiteModel siteModel;
     UserModel candidateUser;
     FileModel fileModel;
@@ -41,6 +41,7 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
+        anyUser = dataUser.createRandomTestUser();
         owner = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(owner).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
@@ -583,5 +584,82 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
             .containsErrorKey(String.format(RestErrorModel.TASK_INVALID_STATE, "null"))
             .containsSummary(String.format(RestErrorModel.TASK_INVALID_STATE, "null"));
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using another name")
+    public void anyUserCannotUpdateTaskUsingAnotherName() throws Exception
+    {
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("name", "Review Task-updated")
+                .build();
+
+        restClient.authenticateUser(anyUser).withParams("select=name").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+            .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using another description")
+    public void anyUserCannotUpdateTaskUsingAnotherDescription() throws Exception
+    {
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("description", "description updated")
+                .build();
+
+        restClient.authenticateUser(anyUser).withParams("select=description").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+            .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using another description")
+    public void anyUserCannotUpdateTaskUsingAnotherDueAt() throws Exception
+    {
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("dueAt", "2025-01-01T11:57:32.000+0000")
+                .build();
+
+        restClient.authenticateUser(anyUser).withParams("select=dueAt").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+            .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using another priority")
+    public void anyUserCannotUpdateTaskUsingAnotherPriority() throws Exception
+    {
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("priority", 3)
+                .build();
+        
+        restClient.authenticateUser(anyUser).withParams("select=priority").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+            .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using another priority")
+    public void anyUserCannotUpdateTaskUsingAnotherOwner() throws Exception
+    {
+        UserModel newOwner = dataUser.createRandomTestUser();
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("owner", newOwner.getUsername())
+                .build();
+
+
+        restClient.authenticateUser(anyUser).withParams("select=owner").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+            .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 }
