@@ -97,10 +97,11 @@ public class AddProcessVariableCoreTests extends RestTest
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
 
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Unsupported type of variable: 'd:textarea'.");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(
+                    String.format(RestErrorModel.UNSUPPORTED_TYPE, "d:textarea"));
     }
 
-    @Bug(id = "ACE-5674")
+    @Bug(id = "REPO-1938")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable is falling in case invalid type prefix is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
