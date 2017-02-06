@@ -3,7 +3,6 @@ package org.alfresco.rest.tags;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
@@ -86,22 +85,6 @@ public class UpdateTagFullTests extends RestTest
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(specialCharsString);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(specialCharsString);
-    }
-    
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can't update tags with Rest API and status code is 403."
-                    + "Check default error model schema.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
-    public void collaboratorIsNotAbleToUpdateTagCheckDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
-    {
-        String newTag = "newTag";
-        
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.withCoreAPI().usingTag(oldTag).update(newTag);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
