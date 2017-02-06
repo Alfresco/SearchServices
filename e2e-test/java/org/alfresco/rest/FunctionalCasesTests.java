@@ -22,12 +22,14 @@ public class FunctionalCasesTests extends RestTest
     private RestFavoriteSiteModel restFavoriteSiteModel;
     private RestActivityModelsCollection activities;
     private UserModel user;
+    private UserModel userJoinSite;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
         user = dataUser.createRandomTestUser();
+        userJoinSite = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         dataUser.addUserToSite(user, siteModel, UserRole.SiteManager);
         moderatedSite = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
@@ -263,8 +265,7 @@ public class FunctionalCasesTests extends RestTest
 
         fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        fileComments.assertThat().entriesListContains("content", updatedComment.getContent())
-                    .assertThat().entriesListDoesNotContain("content", newComment.getContent());
+        fileComments.assertThat().entriesListContains("content", updatedComment.getContent()).assertThat().entriesListDoesNotContain("content", newComment.getContent());
 
         restClient.withCoreAPI().usingResource(file).deleteComment(updatedComment);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
@@ -272,5 +273,26 @@ public class FunctionalCasesTests extends RestTest
         fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         fileComments.assertThat().entriesListIsEmpty();
+    }
+
+    /**
+     * Scenario:
+     * 1. join an user to a site
+     * 2. Check action is included in person activities list
+     * 
+     * @throws Exception
+     */
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+            description = "Create an user, join the user to a site and check that activity is included in person activities")
+    public void joinUserToSiteThenGetPersonActivities() throws Exception
+    {
+        restClient.authenticateUser(userJoinSite).withCoreAPI().usingMe().addSiteMembershipRequest(siteModel);
+        activities = restClient.withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(2);
+        activities.assertThat().entriesListIsNotEmpty().and()
+                .entriesListContains("siteId", siteModel.getId()).and()
+                .entriesListContains("activityType", "org.alfresco.site.user-joined").and()
+                .entriesListContains("activitySummary.memberPersonId", userJoinSite.getUsername());
     }
 }
