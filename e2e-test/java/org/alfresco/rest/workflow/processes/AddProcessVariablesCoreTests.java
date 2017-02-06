@@ -19,7 +19,7 @@ public class AddProcessVariablesCoreTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsTask, assignee, adminUser, adminTenantUser, secondAdminTenantUser, tenantUser;
+    private UserModel userWhoStartsProcess, assignee, adminUser, adminTenantUser, secondAdminTenantUser, tenantUser;
     private RestProcessModel processModel;
     private RestProcessVariableModel variableModel, processVariable;
 
@@ -27,17 +27,17 @@ public class AddProcessVariablesCoreTests extends RestTest
     public void dataPreparation() throws Exception
     {
         adminUser = dataUser.getAdminUser();
-        userWhoStartsTask = dataUser.createRandomTestUser();
+        userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
-        siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
+        siteModel = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+        dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by admin in other network with REST API and status code is FORBIDDEN (403)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
-    public void addProcessVariableByAdminInOtherNetworkIsForbidden() throws Exception
+    public void addProcessVariablesByAdminInOtherNetworkIsForbidden() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
         secondAdminTenantUser = UserModel.getAdminTenantUser();
@@ -50,7 +50,8 @@ public class AddProcessVariablesCoreTests extends RestTest
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
 
-        restClient.authenticateUser(secondAdminTenantUser).withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        restClient.authenticateUser(secondAdminTenantUser).withWorkflowAPI().usingProcess(processModel)
+                  .addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                 .assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
     }
@@ -58,16 +59,17 @@ public class AddProcessVariablesCoreTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user with REST API and status code is CREATED (201)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    public void addProcessVariableByAnyUser() throws Exception
+    public void addProcessVariablesByAnyUser() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
 
-        processVariable = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processVariable = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)
+                                    .addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processVariable.assertThat().field("name").is(variableModel.getName())
-                .and().field("type").is(variableModel.getType())
-                .and().field("value").is(variableModel.getValue());
+        processVariable.assertThat().field("name").is(processVariable.getName())
+                .and().field("type").is(processVariable.getType())
+                .and().field("value").is(processVariable.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
                 .assertThat().entriesListContains("name", processVariable.getName());
@@ -76,13 +78,14 @@ public class AddProcessVariablesCoreTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for invalid processID with REST API and status code is NOT_FOUND (404)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    public void addProcessVariableForInvalidProcessIdIsNotFound() throws Exception
+    public void addProcessVariablesForInvalidProcessIdIsNotFound() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processModel.setId("invalidProcessID");
 
-        processVariable = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)
+                                    .addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidProcessID"));
     }
@@ -90,14 +93,34 @@ public class AddProcessVariablesCoreTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for empty processID with REST API and status code is NOT_FOUND (404)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    public void addProcessVariableForInvalidProcessIdIsEmpty() throws Exception
+    public void addProcessVariablesForInvalidProcessIdIsEmpty() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processModel.setId("");
 
-        processVariable = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Add process variables using by the user who started the process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    public void addProcessVariablesByUserThatStartedTheProcess() throws Exception
+    {        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+
+        processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)           
+                                    .addProcessVariable(variableModel);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        processVariable.assertThat().field("name").is(processVariable.getName())
+                .and().field("type").is(processVariable.getType())
+                .and().field("value").is(processVariable.getValue());
+
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                .assertThat().entriesListContains("name", processVariable.getName());     
+    }    
+    
 }
