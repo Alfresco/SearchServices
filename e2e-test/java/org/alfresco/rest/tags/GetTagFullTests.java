@@ -84,8 +84,8 @@ public class GetTagFullTests extends RestTest
       
         restClient.withParams("skipCount=abc").withCoreAPI().getTag(tag);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-            .containsErrorKey(RestErrorModel.INVALID_SKIPCOUNT)
-            .containsSummary(RestErrorModel.INVALID_SKIPCOUNT)
+            .containsErrorKey(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"))
+            .containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"))
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
