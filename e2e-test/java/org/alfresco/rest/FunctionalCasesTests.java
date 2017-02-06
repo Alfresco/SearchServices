@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 public class FunctionalCasesTests extends RestTest
 {
     private UserModel adminUser, manager;
-    private SiteModel publicSite, moderatedSite;
+    private SiteModel publicSite, moderatedSite, privateSite;
     private RestSiteMemberModel updatedMember;
     private RestSiteMembershipRequestModelsCollection returnedCollection;
     private RestFavoriteSiteModel restFavoriteSiteModel;
@@ -31,6 +31,7 @@ public class FunctionalCasesTests extends RestTest
         publicSite = dataSite.usingUser(adminUser).createPublicRandomSite();
         dataUser.addUserToSite(manager, publicSite, UserRole.SiteManager);
         moderatedSite = dataSite.usingUser(adminUser).createModeratedRandomSite();
+        privateSite = dataSite.usingUser(adminUser).createPrivateRandomSite();
     }
     
     /**
@@ -328,5 +329,62 @@ public class FunctionalCasesTests extends RestTest
                 .entriesListContains("siteId", publicSite.getId()).and()
                 .entriesListContains("activityType", "org.alfresco.site.user-joined").and()
                 .entriesListContains("activitySummary.memberPersonId", userJoinSite.getUsername());
+    }
+    
+    /**
+     * Scenario:
+     * 1. Add user to private site
+     * 2. Remove user from private site
+     * 3. User creates membership request to the same private site
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION, description = "Verify membership request by user after it was removed from site gets status code 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    public void userCanNotCreateMembershipRequestIfItWasRemovedFromPrivateSite() throws Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        newMember.setUserRole(UserRole.SiteCollaborator);
+
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(privateSite).addPerson(newMember)
+               .assertThat().field("id").is(newMember.getUsername());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);   
+        
+        restClient.authenticateUser(adminUser).withCoreAPI().usingUser(newMember).deleteSiteMember(privateSite);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        
+        restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(privateSite);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+        .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getTitle()));
+    }
+    
+    /**
+     * Scenario:
+     * 1. User creates membership request to moderated site
+     * 2. Accept membership request
+     * 3. Remove user from moderated site
+     * 4. Add user on moderated site
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
+            executionType = ExecutionType.REGRESSION, description = "Verify user can be added back after if was removed from site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    public void userCanBeAddedAfterItWasRemovedFromSite() throws Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        newMember.setUserRole(UserRole.SiteCollaborator);
+        
+        restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        RestTaskModel taskModel = restClient.authenticateUser(newMember).withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
+        workflow.approveSiteMembershipRequest(adminUser.getUsername(), adminUser.getPassword(), taskModel.getId(), true, "Accept");
+        
+        restClient.authenticateUser(adminUser).withCoreAPI().usingUser(newMember).deleteSiteMember(moderatedSite);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newMember.getUsername());
+
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(moderatedSite).addPerson(newMember)
+               .assertThat().field("id").is(newMember.getUsername());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);   
+        restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListContains("id", newMember.getUsername());
     }
 }
