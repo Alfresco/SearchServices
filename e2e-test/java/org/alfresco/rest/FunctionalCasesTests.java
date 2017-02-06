@@ -1,11 +1,7 @@
 package org.alfresco.rest;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.model.RestActivityModelsCollection;
-import org.alfresco.rest.model.RestFavoriteSiteModel;
-import org.alfresco.rest.model.RestSiteMemberModel;
-import org.alfresco.rest.model.RestSiteMembershipRequestModelsCollection;
-import org.alfresco.rest.model.RestTaskModel;
+import org.alfresco.rest.model.*;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -239,5 +235,42 @@ public class FunctionalCasesTests extends RestTest
             .and().entriesListContains("siteId", siteModel.getId())
             .and().entriesListContains("activityType", "org.alfresco.documentlibrary.file-deleted")
             .and().entriesListContains("activitySummary.objectId", file.getNodeRefWithoutVersion());
+    }
+
+    /**
+     * 1. Post one comment
+     * 2. Get comment details
+     * 3. Update comment
+     * 4. Get again comment details
+     * 5. Delete comment
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+            executionType = ExecutionType.REGRESSION,
+            description = "Add comment to a file, then get comment details. Update it and check that get comment returns updated details. Delete comment then check that file has no comments.")
+    public void addUpdateDeleteCommentThenGetCommentDetails() throws Exception
+    {
+        FileModel file = dataContent.usingUser(user).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        RestCommentModel newComment = restClient.authenticateUser(user).withCoreAPI().usingResource(file).addComment("new comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        RestCommentModelsCollection fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        fileComments.assertThat().entriesListContains("content", newComment.getContent());
+
+        RestCommentModel updatedComment = restClient.withCoreAPI().usingResource(file).updateComment(newComment, "updated comment");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        fileComments.assertThat().entriesListContains("content", updatedComment.getContent())
+                    .assertThat().entriesListDoesNotContain("content", newComment.getContent());
+
+        restClient.withCoreAPI().usingResource(file).deleteComment(updatedComment);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        fileComments = restClient.withCoreAPI().usingResource(file).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        fileComments.assertThat().entriesListIsEmpty();
     }
 }
