@@ -1,5 +1,6 @@
 package org.alfresco.rest;
 
+import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.model.*;
 import org.alfresco.utility.constants.UserRole;
@@ -354,7 +355,7 @@ public class FunctionalCasesTests extends RestTest
         
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(privateSite);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-        .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getTitle()));
+                  .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getTitle()));
     }
     
     /**
@@ -386,5 +387,66 @@ public class FunctionalCasesTests extends RestTest
                .assertThat().field("id").is(newMember.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);   
         restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers().assertThat().entriesListContains("id", newMember.getUsername());
+    }
+
+    /**
+     * Scenario:
+     * 1. Create document in site
+     * 2. Add comment
+     * 3. Delete document
+     * 4. Get comments and check if the above comment was deleted
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+            executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document was also removed after deleting the document")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void checkTheCommentOfADocumentThatWasDeletedDoesNotExist() throws Exception
+    {
+        FileModel document = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        String newContent = "This is a new comment added by " + adminUser.getUsername();
+
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addComment(newContent)
+                .assertThat().field("content").isNotEmpty()
+                .and().field("content").is(newContent);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        dataContent.usingUser(adminUser).usingResource(document).deleteContent();
+
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary((String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, document.getNodeRefWithoutVersion())));
+    }
+
+    /**
+     * Scenario:
+     * 1. Add user to private site
+     * 2. Add comment to a document of private site
+     * 3. Remove user from site
+     * 4. Get comments and check if the above comment was deleted
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+            executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document from a private site is not deleted after user is removed")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void checkThatCommentIsNotDeletedWhenPrivateSiteMemberIsRemoved() throws Exception
+    {
+        UserModel newUser = dataUser.createRandomTestUser();
+        newUser.setUserRole(UserRole.SiteManager);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(privateSite).addPerson(newUser);
+        
+        FileModel document = dataContent.usingSite(privateSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        String newContent = "This is a new comment added by " + newUser.getUsername();
+        
+        restClient.authenticateUser(newUser).withCoreAPI().usingResource(document).addComment(newContent)
+                   .assertThat().field("content").isNotEmpty()
+                   .and().field("content").is(newContent);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(privateSite).deleteSiteMember(newUser);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingSite(privateSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newUser.getUsername());
+        
+        RestCommentModelsCollection comments = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        comments.assertThat().entriesListContains("content", newContent)
+            .and().entriesListContains("createdBy.id", newUser.getUsername());
     }
 }
