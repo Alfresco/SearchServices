@@ -517,4 +517,40 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
         restTaskModel = restClient.authenticateUser(anyUser).withWorkflowAPI().usingTask(taskModel).updateTask("unclaimed");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify user cannot delegate task with emty assignee name and response is 400")
+    public void updateTaskWithEmptyAssigneeValue() throws Exception
+    {      
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "delegated")
+                .add("assignee", "")
+                .build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+                .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(RestErrorModel.DELEGATING_ASSIGNEE_PROVIDED)
+            .containsSummary(RestErrorModel.DELEGATING_ASSIGNEE_PROVIDED)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify owner can resolve task when assignee is the owner and response is 200")
+    public void taskOwnerUpdateTaskResolveStateAndOwnerAssignee() throws Exception
+    {      
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("state", "resolved")
+                .add("assignee", owner.getUsername())
+                .build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+                .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restTaskModel.assertThat().field("state").is("resolved")
+            .and().field("assignee").isNull();
+    }
 }
