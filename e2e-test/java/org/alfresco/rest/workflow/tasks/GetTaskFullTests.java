@@ -19,6 +19,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -42,7 +43,12 @@ public class GetTaskFullTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        assigneeUser = dataUser.createRandomTestUser();
+        assigneeUser = dataUser.createRandomTestUser();   
+    }
+    
+    @BeforeMethod(alwaysRun=true)
+    public void createTask() throws Exception
+    {
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
