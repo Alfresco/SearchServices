@@ -279,9 +279,9 @@ public class FunctionalCasesTests extends RestTest
      * 4. Get comments and check if the above comment was deleted
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
-            executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document in a private site was also removed after deleting the document")
+            executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document from a private site is not deleted after user is removed")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void checkTheCommentOfADocumentFromPrivateSiteDoesNotExist() throws Exception
+    public void checkThatCommentIsNotDeletedWhenPrivateSiteMemberIsRemoved() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
         newUser.setUserRole(UserRole.SiteManager);
