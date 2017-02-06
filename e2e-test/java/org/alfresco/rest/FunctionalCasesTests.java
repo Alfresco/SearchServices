@@ -401,19 +401,19 @@ public class FunctionalCasesTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
     public void checkTheCommentOfADocumentThatWasDeletedDoesNotExist() throws Exception
     {
-        FileModel document = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        file = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         String newContent = "This is a new comment added by " + adminUser.getUsername();
 
-        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addComment(newContent)
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(file).addComment(newContent)
                 .assertThat().field("content").isNotEmpty()
                 .and().field("content").is(newContent);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
-        dataContent.usingUser(adminUser).usingResource(document).deleteContent();
+        dataContent.usingUser(adminUser).usingResource(file).deleteContent();
 
-        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).getNodeComments();
+        restClient.authenticateUser(adminUser).withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary((String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, document.getNodeRefWithoutVersion())));
+                .assertLastError().containsSummary((String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, file.getNodeRefWithoutVersion())));
     }
 
     /**
@@ -432,10 +432,10 @@ public class FunctionalCasesTests extends RestTest
         newUser.setUserRole(UserRole.SiteManager);
         restClient.authenticateUser(adminUser).withCoreAPI().usingSite(privateSite).addPerson(newUser);
         
-        FileModel document = dataContent.usingSite(privateSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        file = dataContent.usingSite(privateSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         String newContent = "This is a new comment added by " + newUser.getUsername();
         
-        restClient.authenticateUser(newUser).withCoreAPI().usingResource(document).addComment(newContent)
+        restClient.authenticateUser(newUser).withCoreAPI().usingResource(file).addComment(newContent)
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(newContent);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -444,9 +444,57 @@ public class FunctionalCasesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withCoreAPI().usingSite(privateSite).getSiteMembers().assertThat().entriesListDoesNotContain("id", newUser.getUsername());
         
-        RestCommentModelsCollection comments = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).getNodeComments();
+        RestCommentModelsCollection comments = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(file).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         comments.assertThat().entriesListContains("content", newContent)
             .and().entriesListContains("createdBy.id", newUser.getUsername());
     }
+
+    /**
+     * Scenario:
+     * 1. Add one file to favorites then add a comment to this file
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+            executionType = ExecutionType.REGRESSION,
+            description = "Add one file to favorites then add a comment to this file")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void commentAFavoriteFile() throws Exception
+    {
+        file = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        restClient.authenticateUser(manager).withCoreAPI().usingMe().addFileToFavorites(file);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                .assertThat().entriesListContains("targetGuid", file.getNodeRefWithoutVersion());
+
+        RestCommentModel comment = restClient.withCoreAPI().usingResource(file).addComment("new comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        comment.assertThat().field("content").is("new comment");
+    }
+
+    /**
+     * Scenario:
+     * 1. Remove one file from favorites then add a comment to this file
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
+            executionType = ExecutionType.REGRESSION,
+            description = "Remove one file from favorites then add a comment to this file")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void commentFileRemovedFromFavorites() throws Exception
+    {
+        file = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        restClient.authenticateUser(manager).withCoreAPI().usingMe().addFileToFavorites(file);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.withCoreAPI().usingMe().deleteFileFromFavorites(file);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        restClient.withCoreAPI().usingAuthUser().getFavorites()
+                .assertThat().entriesListDoesNotContain("targetGuid", file.getNodeRefWithoutVersion());
+
+        RestCommentModel comment = restClient.withCoreAPI().usingResource(file).addComment("new comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        comment.assertThat().field("content").is("new comment");
+    }
+
 }
