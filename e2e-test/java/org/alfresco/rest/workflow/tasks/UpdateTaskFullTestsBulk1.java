@@ -5,6 +5,7 @@ import javax.json.JsonObject;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
+import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestTaskModel;
@@ -18,6 +19,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -618,7 +620,7 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Verify any user cannot update task using another description")
+            description = "Verify any user cannot update task using another dueAt")
     public void anyUserCannotUpdateTaskUsingAnotherDueAt() throws Exception
     {
         JsonObject inputJson = JsonBodyGenerator.defineJSON()
@@ -661,5 +663,80 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
             .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
             .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using invalid name")
+    public void anyUserCannotUpdateTaskUsingInvalidName() throws Exception
+    {
+        restClient.authenticateUser(owner).withParams("select=name").withWorkflowAPI().usingTask(taskModel);
+        String postBody = "{\"name\":\"invalid-\"a\"}";
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
+        restTaskModel = restClient.processModel(RestTaskModel.class, request);
+        
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Unexpected character ('a'"))
+            .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unexpected character ('a'"));
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using invalid description")
+    public void anyUserCannotUpdateTaskUsingInvalidDescription() throws Exception
+    {
+        restClient.authenticateUser(owner).withParams("select=description").withWorkflowAPI().usingTask(taskModel);
+        String postBody = "{\"description\":\"invalid-\"a\"}";
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
+        restTaskModel = restClient.processModel(RestTaskModel.class, request);
+        
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Unexpected character ('a'"))
+            .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unexpected character ('a'"));
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using invalid dueAt")
+    public void anyUserCannotUpdateTaskUsingInvalidDueAt() throws Exception
+    {
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("dueAt", "invalid-date")
+                .build();
+
+        restClient.authenticateUser(anyUser).withParams("select=dueAt").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of java.util.Date from String value 'invalid-date'"))
+            .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of java.util.Date from String value 'invalid-date'"));
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using invalid priority")
+    public void anyUserCannotUpdateTaskUsingInvalidPriority() throws Exception
+    {
+        JsonObject inputJson = JsonBodyGenerator.defineJSON()
+                .add("priority", "a")
+                .build();
+        
+        restClient.authenticateUser(anyUser).withParams("select=priority").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of int from String value 'a'"))
+            .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of int from String value 'a'"));
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify any user cannot update task using invalid priority")
+    public void anyUserCannotUpdateTaskUsingInvalidOwner() throws Exception
+    {
+        restClient.authenticateUser(owner).withParams("select=owner").withWorkflowAPI().usingTask(taskModel);
+        String postBody = "{\"owner\":\"invalid-\"a\"}";
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}?{parameters}", taskModel.getId(), restClient.getParameters());
+        restTaskModel = restClient.processModel(RestTaskModel.class, request);
+        
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Unexpected character ('a'"))
+            .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unexpected character ('a'"));
     }
 }
