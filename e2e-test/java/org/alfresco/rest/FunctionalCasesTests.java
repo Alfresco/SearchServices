@@ -11,6 +11,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -495,6 +496,55 @@ public class FunctionalCasesTests extends RestTest
         RestCommentModel comment = restClient.withCoreAPI().usingResource(file).addComment("new comment");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         comment.assertThat().field("content").is("new comment");
+    }
+
+    /**
+     * Scenario:
+     * 1. Add public site to favorites
+     * 2. Change site visibility to moderated
+     * 3. Check favorites
+     * 4. Change site visibility to private
+     * 5. Check favorites
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES },
+            executionType = ExecutionType.REGRESSION,
+            description = "Check favorite sites after a favorite site visibility is changed")
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
+    public void changeFavoriteSiteVisibilityThenCheckFavorites() throws Exception
+    {
+        SiteModel favoriteSite = dataSite.usingUser(manager).createPublicRandomSite();
+        UserModel regularUser = dataUser.createRandomTestUser();
+
+        restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().addSiteToFavorites(favoriteSite);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        RestPersonFavoritesModelsCollection userFavoriteSites = restClient.withCoreAPI().usingAuthUser().where().targetSiteExist().getFavorites();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        userFavoriteSites.assertThat().entriesListContains("targetGuid", favoriteSite.getGuid())
+                .assertThat().entriesListContains("target.site.visibility", favoriteSite.getVisibility().name())
+                .assertThat().entriesListContains("target.site.id", favoriteSite.getId());
+
+        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Site.Visibility.MODERATED);
+
+        userFavoriteSites = restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().where().targetSiteExist().getFavorites();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        userFavoriteSites.assertThat().entriesListContains("targetGuid", favoriteSite.getGuid())
+                .assertThat().entriesListContains("target.site.visibility", "MODERATED")
+                .assertThat().entriesListContains("target.site.id", favoriteSite.getId());
+
+        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Site.Visibility.PRIVATE);
+
+        userFavoriteSites = restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().where().targetSiteExist().getFavorites();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        userFavoriteSites.assertThat().entriesListIsEmpty();
+
+        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Site.Visibility.PUBLIC);
+
+        userFavoriteSites = restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().where().targetSiteExist().getFavorites();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        userFavoriteSites.assertThat().entriesListContains("targetGuid", favoriteSite.getGuid())
+                .assertThat().entriesListContains("target.site.visibility", favoriteSite.getVisibility().name())
+                .assertThat().entriesListContains("target.site.id", favoriteSite.getId());
     }
 
 }
