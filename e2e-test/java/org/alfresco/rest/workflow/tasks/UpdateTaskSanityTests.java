@@ -88,7 +88,17 @@ public class UpdateTaskSanityTests extends RestTest
 
         restTaskModel = restClient.authenticateUser(userModel1).withWorkflowAPI().usingTask(taskModel).updateTask("completed");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restTaskModel.assertThat().field("id").is(taskModel.getId())
-                .and().field("description").is(taskModel.getMessage());
+        restTaskModel.assertThat()
+            .field("dueAt").isNotEmpty()
+            .and().field("processDefinitionId").is("activitiReviewPooled:1:12")
+            .and().field("processId").is(taskModel.getProcessId())
+            .and().field("name").is("Review Task")
+            .and().field("description").is(taskModel.getMessage())
+            .and().field("startedAt").isNotEmpty()
+            .and().field("id").is(taskModel.getId())
+            .and().field("state").is("unclaimed")
+            .and().field("activityDefinitionId").is("reviewTask")
+            .and().field("priority").is(taskModel.getPriority().getLevel())
+            .and().field("formResourceKey").is("wf:activitiReviewTask");
     }
 }

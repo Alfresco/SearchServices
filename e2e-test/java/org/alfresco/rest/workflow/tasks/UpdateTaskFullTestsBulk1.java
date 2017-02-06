@@ -10,6 +10,7 @@ import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestVariableModelsCollection;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.TestGroup;
@@ -552,5 +553,35 @@ public class UpdateTaskFullTestsBulk1 extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat().field("state").is("resolved")
             .and().field("assignee").isNull();
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify owner cannot update task after it was deleted and response is 404")
+    public void updateTaskAfterItWasDeleted() throws Exception
+    {         
+        ProcessModel process = new ProcessModel();
+        process.setId(taskModel.getProcessId());
+        dataWorkflow.usingUser(owner).deleteProcess(process);
+        
+        restTaskModel = restClient.authenticateUser(owner)
+                .withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("completed");
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+            .containsSummary(String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, taskModel.getId()));        
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Verify task owner cannot update task with empty input body and response is 400")
+    public void taskOwnerCannotUpdateTaskWithEmptyInputBody() throws Exception
+    {      
+        JsonObject inputJson = JsonBodyGenerator.defineJSON().build();
+        
+        restTaskModel = restClient.authenticateUser(owner)
+                .withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(String.format(RestErrorModel.TASK_INVALID_STATE, "null"))
+            .containsSummary(String.format(RestErrorModel.TASK_INVALID_STATE, "null"));
     }
 }
