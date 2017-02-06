@@ -251,9 +251,9 @@ public class UpdateTaskFullTestsBulk2 extends RestTest
     public void updateTaskByProvidingEmptyStateValue() throws Exception
     {
         restTaskModel = restClient.authenticateUser(userModel).withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask(" ");
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError()
-            .containsErrorKey(RestErrorModel.PUT_EMPTY_ARGUMENT)
-            .containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT)
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+            .containsErrorKey(String.format(RestErrorModel.TASK_INVALID_STATE, " "))
+            .containsSummary(String.format(RestErrorModel.TASK_INVALID_STATE, " "))
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
