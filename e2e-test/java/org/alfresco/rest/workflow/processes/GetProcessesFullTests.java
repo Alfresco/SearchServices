@@ -114,11 +114,23 @@ public class GetProcessesFullTests extends RestTest
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("properties=id")
                 .withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processes.assertThat().entriesListIsNotEmpty();
         List<RestProcessModel> processesList = processes.getEntries();
-        processesList.get(0).onModel().assertThat().fieldsCount().is(1).and().field("id").is(process3.getId());
-        processesList.get(1).onModel().assertThat().fieldsCount().is(1).and().field("id").is(task2.getProcessId());
-        processesList.get(2).onModel().assertThat().fieldsCount().is(1).and().field("id").is(task1.getProcessId());
+        processesList.get(0).onModel().assertThat().fieldsCount().is(1)
+            .and().field("id").isNotEmpty()
+            .and().field("processDefinitionId").isNull()
+            .and().field("startUserId").isNull();
+        processesList.get(1).onModel().assertThat().fieldsCount().is(1)
+            .and().field("id").isNotEmpty()
+            .and().field("processDefinitionId").isNull()
+            .and().field("startUserId").isNull();
+        processesList.get(2).onModel().assertThat().fieldsCount().is(1)
+            .and().field("id").isNotEmpty()
+            .and().field("processDefinitionId").isNull()
+            .and().field("startUserId").isNull();
+        processes.assertThat().entriesListIsNotEmpty()
+            .and().entriesListContains("id", process3.getId())
+            .and().entriesListContains("id", task2.getProcessId())
+            .and().entriesListContains("id", task1.getProcessId());
     }
     
     @Bug(id = "REPO-1958")

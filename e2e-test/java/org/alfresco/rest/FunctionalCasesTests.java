@@ -547,4 +547,79 @@ public class FunctionalCasesTests extends RestTest
                 .assertThat().entriesListContains("target.site.id", favoriteSite.getId());
     }
 
+    /**
+     * Scenario:
+     * 1. Regular user adds moderated site membership request
+     * 2. Site manager approves the request
+     * 3. Site manager updates the new member role to Manager
+     * 4. New member adds comment to a file on site
+     * 5. New member likes and rate one file
+     * 6. New member adds tags to a file
+     * 7. New member adds site to favorite
+     * 8. New member adds, then deletes a site member
+     */
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES },
+            executionType = ExecutionType.REGRESSION,
+            description = "Check that a user who joins a moderated site as manager is able to comment, rate, tag an existing file from the site, add site to favorites, add and remove site members.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    public void checkNewManagerActions() throws Exception
+    {
+        UserModel newMember = dataUser.createRandomTestUser();
+        file = dataContent.usingSite(moderatedSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        RestTaskModel taskModel = restClient.withWorkflowAPI().getTasks().getTaskModelByDescription(moderatedSite);
+        workflow.approveSiteMembershipRequest(adminUser.getUsername(), adminUser.getPassword(), taskModel.getId(), true, "Approve");
+        returnedCollection = restClient.withCoreAPI().usingMe().getSiteMembershipRequests();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat().entriesListDoesNotContain("id", moderatedSite.getId());
+
+        newMember.setUserRole(UserRole.SiteManager);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(moderatedSite).updateSiteMember(newMember)
+                .assertThat().field("id").is(newMember.getUsername())
+                .and().field("role").is(newMember.getUserRole());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        RestCommentModel comment = restClient.authenticateUser(newMember).withCoreAPI().usingResource(file).addComment("new comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        comment.assertThat().field("content").is("new comment");
+
+        RestRatingModel returnedRatingModel = restClient.withCoreAPI().usingResource(file).likeDocument();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        returnedRatingModel.assertThat().field("myRating").is("true")
+                .and().field("id").is("likes")
+                .and().field("aggregate").isNotEmpty();
+
+        returnedRatingModel = restClient.withCoreAPI().usingResource(file).rateStarsToDocument(5);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        returnedRatingModel.assertThat().field("myRating").is("5")
+                .and().field("id").is("fiveStar")
+                .and().field("aggregate").isNotEmpty();
+
+        RestTagModel tag = restClient.withCoreAPI().usingResource(file).addTag("filetag");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        tag.assertThat().field("tag").is("filetag")
+                .and().field("id").isNotEmpty();
+
+        restFavoriteSiteModel = restClient.withCoreAPI().usingAuthUser().addFavoriteSite(moderatedSite);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restFavoriteSiteModel.assertThat().field("id").is(moderatedSite.getId());
+
+        UserModel testUser = dataUser.createRandomTestUser("testUser");
+        testUser.setUserRole(UserRole.SiteManager);
+        restClient.withCoreAPI().usingSite(moderatedSite).addPerson(testUser)
+                .assertThat().field("id").is(testUser.getUsername())
+                .and().field("role").is(testUser.getUserRole());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.withCoreAPI().usingSite(moderatedSite).deleteSiteMember(testUser);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers()
+                .assertThat().entriesListDoesNotContain("id", testUser.getUsername());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
 }
