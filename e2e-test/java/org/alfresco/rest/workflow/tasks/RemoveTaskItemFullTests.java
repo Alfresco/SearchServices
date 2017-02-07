@@ -49,7 +49,7 @@ public class RemoveTaskItemFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""))
+            .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_ENTITY_NOT_FOUND, document2.getNodeRefWithoutVersion()))
                               .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                               .stackTraceIs(RestErrorModel.STACKTRACE);
