@@ -39,10 +39,19 @@ public class CoreDescriptorDecorator
     private final Properties properties = new Properties();
 
     public static ImmutableList<String> substitutableProperties = 
-            ImmutableList.of("alfresco.host", 
-                             "alfresco.port",
-                             "alfresco.baseUrl",
-                             "alfresco.port.ssl");
+            ImmutableList.of(
+                    "alfresco.host",
+                    "alfresco.port",
+                    "alfresco.baseUrl",
+                    "alfresco.port.ssl",
+                    "alfresco.encryption.ssl.keystore.passwordFileLocation",
+                    "alfresco.encryption.ssl.truststore.passwordFileLocation",
+                    "alfresco.encryption.ssl.keystore.location",
+                    "alfresco.encryption.ssl.truststore.location",
+                    "alfresco.encryption.ssl.truststore.provider",
+                    "alfresco.encryption.ssl.keystore.type",
+                    "alfresco.encryption.ssl.keystore.provider",
+                    "alfresco.encryption.ssl.truststore.type");
 
     public CoreDescriptorDecorator(CoreDescriptor descriptor)
     {
@@ -50,8 +59,8 @@ public class CoreDescriptorDecorator
         try
         {
             substitutableProperties.forEach(prop ->
-            properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
-                    );
+                 properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
+            );
         }
         catch(Exception e)
         {
