@@ -3,6 +3,7 @@ package org.alfresco.rest.workflow.processes;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.data.RandomData;
@@ -89,6 +90,7 @@ public class AddProcessVariableSanityTests extends RestTest
         restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processVariable.assertThat().field("name").is(variableModel.getName())
@@ -103,8 +105,13 @@ public class AddProcessVariableSanityTests extends RestTest
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("incorrect type");
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        
         restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary("Unsupported type of variable: 'incorrect type'.");
+                  .assertLastError()
+                  .containsErrorKey(String.format(RestErrorModel.UNSUPPORTED_TYPE, "incorrect type"))
+                  .containsSummary(String.format(RestErrorModel.UNSUPPORTED_TYPE, "incorrect type"))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }
