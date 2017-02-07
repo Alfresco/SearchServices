@@ -1,14 +1,19 @@
 package org.alfresco.rest.sites;
 
+import java.util.List;
+
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.*;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestSiteContainerModelsCollection;
+import org.alfresco.rest.model.RestSiteMemberModelsCollection;
+import org.alfresco.rest.model.RestSiteModel;
+import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.utility.constants.ContainerName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -16,8 +21,6 @@ import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.List;
 
 public class GetSitesFullTests extends RestTest
 {
