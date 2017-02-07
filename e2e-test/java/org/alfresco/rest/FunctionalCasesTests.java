@@ -3,11 +3,14 @@ package org.alfresco.rest;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.model.*;
+import org.alfresco.utility.constants.ActivityType;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,10 @@ public class FunctionalCasesTests extends RestTest
     private RestFavoriteSiteModel restFavoriteSiteModel;
     private RestActivityModelsCollection activities;
     private FileModel file;
+    private RestActivityModelsCollection restActivityModelsCollection;
+    private FolderModel folderInSite;
+    private FileModel fileInSite;
+    private RestCommentModel commentModel;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -620,6 +627,64 @@ public class FunctionalCasesTests extends RestTest
         restClient.withCoreAPI().usingSite(moderatedSite).getSiteMembers()
                 .assertThat().entriesListDoesNotContain("id", testUser.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+    
+    /**
+     * Scenario:
+     * 1. Add user to site
+     * 2. Create folder
+     * 3. Create document
+     * 4. Add comment to the document
+     * 5. Like document
+     * 6. Update Comment
+     * 7. Update user role
+     * 8. Delete like rating
+     * 9. Delete site member
+     * 10. Delete comment
+     * 11. Get Activities
+     * 
+     * @throws Exception
+     */
+    @Bug(id="REPO-1830")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities with Rest API and response is successful")
+    public void userGetsItsPeopleActivities() throws Exception
+    {  
+        UserModel newUser = dataUser.createRandomTestUser();
+        SiteModel userSiteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
+        dataUser.addUserToSite(newUser, userSiteModel, UserRole.SiteCollaborator);
+        folderInSite = dataContent.usingUser(newUser).usingSite(userSiteModel).createFolder();
+        fileInSite = dataContent.usingUser(newUser).usingSite(userSiteModel).createContent(DocumentType.TEXT_PLAIN);
+        String newContent = "This is a new comment added by " + newUser.getUsername();
+        commentModel = restClient.authenticateUser(newUser).withCoreAPI().usingResource(fileInSite).addComment(newContent);
+        restClient.authenticateUser(newUser).withCoreAPI().usingResource(fileInSite).likeDocument();
+        
+        restClient.withCoreAPI().usingResource(fileInSite).updateComment(commentModel, "new Content");
+        newUser.setUserRole(UserRole.SiteManager);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(userSiteModel).updateSiteMember(newUser);
+        
+        restClient.authenticateUser(newUser).withCoreAPI().usingResource(fileInSite).deleteLikeRating();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingResource(fileInSite).deleteComment(commentModel);  
+        restClient.authenticateUser(adminUser).withCoreAPI().usingSite(userSiteModel).deleteSiteMember(newUser);
+        
+        restActivityModelsCollection = restClient.authenticateUser(newUser).withCoreAPI().usingMe().getPersonActivitiesUntilEntriesCountIs(10);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("10");
+        
+        restActivityModelsCollection = restClient.authenticateUser(newUser).withCoreAPI().usingMe().getPersonActivities();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restActivityModelsCollection.assertThat().paginationField("count").is("10");
+        
+        restActivityModelsCollection.assertThat().entriesListContains("activityType", ActivityType.USER_JOINED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.FILE_ADDED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.FOLDER_ADDED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.COMMENT_CREATED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.FILE_LIKED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.COMMENT_UPDATED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.USER_ROLE_CHANGED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.COMMENT_DELETED.toString()).assertThat()
+            .entriesListContains("activityType", ActivityType.USER_LEFT.toString());
     }
 
 }
