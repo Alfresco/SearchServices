@@ -1,18 +1,14 @@
 package org.alfresco.rest.sites;
-import java.util.List;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestSiteContainerModelsCollection;
-import org.alfresco.rest.model.RestSiteMemberModelsCollection;
-import org.alfresco.rest.model.RestSiteModel;
-import org.alfresco.rest.model.RestSiteModelsCollection;
+import org.alfresco.rest.model.*;
 import org.alfresco.utility.constants.ContainerName;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -21,6 +17,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 public class GetSitesFullTests extends RestTest
 {
     private UserModel regularUser;
@@ -28,8 +26,6 @@ public class GetSitesFullTests extends RestTest
     private RestSiteModelsCollection sites;
     private String name;
     private UserModel adminUser;
-    private int maxItems = 200;
-    private int skipCount = 10;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -84,14 +80,12 @@ public class GetSitesFullTests extends RestTest
     public void checkPagination() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withCoreAPI().getSites();
-        int totalItems = sites.getPagination().getTotalItems();
-        int maxItems = 100;
         sites.getPagination().assertThat()
             .field("totalItems").isNotEmpty().and()
-            .field("maxItems").is(String.valueOf(maxItems)).and()
-            .field("hasMoreItems").is((totalItems>maxItems) ? true : false).and()
+            .field("maxItems").is("100").and()
+            .field("hasMoreItems").is((sites.getPagination().getTotalItems() > sites.getPagination().getMaxItems()) ? "true" : "false").and()
             .field("skipCount").is("0").and()
-            .field("count").is(String.valueOf((maxItems>totalItems) ? totalItems - skipCount : maxItems));
+            .field("count").is((sites.getPagination().isHasMoreItems()) ? sites.getPagination().getMaxItems() : sites.getPagination().getTotalItems());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
@@ -111,10 +105,14 @@ public class GetSitesFullTests extends RestTest
             description= "Verify user can get sites using high skipCount parameter and status code is 200")
     public void getSitesUsingHighSkipCount() throws Exception
     {
-        sites = restClient.authenticateUser(regularUser).withParams("skipCount=100").withCoreAPI().getSites();
+        RestSiteModelsCollection allSites = restClient.authenticateUser(regularUser).withCoreAPI().getSites();
+        sites = restClient.withParams("skipCount=100").withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().paginationField("skipCount").is("100");
-        sites.assertThat().entriesListIsNotEmpty();
+        if(allSites.getPagination().getTotalItems() > 100)
+            sites.assertThat().entriesListIsNotEmpty();
+        else
+            sites.assertThat().entriesListIsEmpty();
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
@@ -150,14 +148,14 @@ public class GetSitesFullTests extends RestTest
             description= "Verify pagination when skipCount and MaxItems are used")
     public void checkPaginationWithSkipCountAndMaxItems() throws Exception
     {
-        sites = restClient.authenticateUser(regularUser).withParams(String.format("skipCount=%s&maxItems=%s", skipCount, maxItems)).withCoreAPI().getSites();
-        int totalItems = sites.getPagination().getTotalItems();
+        sites = restClient.authenticateUser(regularUser).withParams("skipCount=10&maxItems=110").withCoreAPI().getSites();
         sites.getPagination().assertThat()
             .field("totalItems").isNotEmpty().and()
-            .field("maxItems").is(String.valueOf(maxItems)).and()
-            .field("hasMoreItems").is((totalItems>maxItems) ? true : false).and()
-            .field("skipCount").is(String.valueOf(skipCount)).and()
-            .field("count").is(String.valueOf((maxItems>totalItems) ? totalItems - skipCount : maxItems));
+            .field("maxItems").is("110").and()
+            .field("hasMoreItems").is((sites.getPagination().getTotalItems() > sites.getPagination().getMaxItems())?"true":"false").and()
+            .field("skipCount").is("10").and()
+                .field("count").is((sites.getPagination().isHasMoreItems()) ? sites.getPagination().getMaxItems()
+                        : sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount());
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
