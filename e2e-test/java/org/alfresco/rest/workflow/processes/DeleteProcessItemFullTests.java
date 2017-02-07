@@ -10,12 +10,14 @@ import org.alfresco.rest.model.RestItemModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class DeleteProcessItemFullTests extends RestTest
@@ -35,7 +37,15 @@ public class DeleteProcessItemFullTests extends RestTest
         assignee = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+    }
+    
+    @BeforeMethod(alwaysRun = true)
+    public void createProcess() throws Exception
+    {
+        TaskModel task = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+        processModel = new ProcessModel();
+        processModel.setId(task.getProcessId());
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(processModel).getProcess();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
@@ -43,7 +53,6 @@ public class DeleteProcessItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void deleteProcessItemUsingEmptyProcessId() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -63,7 +72,6 @@ public class DeleteProcessItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void createUpdateDeleteProcessItem() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -84,7 +92,6 @@ public class DeleteProcessItemFullTests extends RestTest
     {
         anotherUser = dataUser.createRandomTestUser();
 
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.HTML);
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -104,7 +111,6 @@ public class DeleteProcessItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void deleteProcessItemWithAdmin() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.HTML);
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -121,7 +127,6 @@ public class DeleteProcessItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void deleteProcessItemByUserInvolvedInTheProcess() throws Exception
     {
-        processModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
@@ -137,7 +142,6 @@ public class DeleteProcessItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void deleteProcessItemByUserThatStartedTheProcess() throws Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
@@ -153,7 +157,6 @@ public class DeleteProcessItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void deleteProcessItemsForDeletedProcess() throws Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
@@ -175,7 +178,6 @@ public class DeleteProcessItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void deleteProcessItemByInexistentUser() throws Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 

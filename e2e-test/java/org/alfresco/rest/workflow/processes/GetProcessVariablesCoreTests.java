@@ -4,7 +4,6 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessModelsCollection;

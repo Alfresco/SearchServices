@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
 
 public class GetProcessTasksCoreTests extends RestTest
 {
-    private FileModel document, document1, document2, document3;
+    private FileModel document, document1, document2;
     private SiteModel siteModel;
     private UserModel adminUser, userWhoStartsProcess, candidate, anotherAssignee, assignee;
     private ProcessModel process;
@@ -66,7 +66,7 @@ public class GetProcessTasksCoreTests extends RestTest
         restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenant);
         SiteModel siteModel = dataSite.usingUser(adminTenant).createPublicRandomSite();
         UserModel tenantAssignee = dataUser.usingUser(adminTenant).createUserWithTenant("uTenant");
-        document3 = dataContent.usingUser(adminTenant).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        dataContent.usingUser(adminTenant).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         RestProcessModel processModel = restClient.authenticateUser(tenantAssignee).withWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, CMISUtil.Priority.Normal);
 
@@ -86,7 +86,7 @@ public class GetProcessTasksCoreTests extends RestTest
         restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenant);
 
         SiteModel siteModel = dataSite.usingUser(adminTenant).createPublicRandomSite();
-        document3 = dataContent.usingUser(adminTenant).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        dataContent.usingUser(adminTenant).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         tenantAssignee = dataUser.usingUser(adminTenant).createUserWithTenant("uTenant");
         RestProcessModel processModel = restClient.authenticateUser(adminTenant).withWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, CMISUtil.Priority.Normal);
 
