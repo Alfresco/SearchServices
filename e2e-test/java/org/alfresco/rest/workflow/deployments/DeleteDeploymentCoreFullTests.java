@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class DeleteDeploymentCoreTests extends RestTest
+public class DeleteDeploymentCoreFullTests extends RestTest
 {
     private UserModel adminUser;
     private UserModel userModel;
