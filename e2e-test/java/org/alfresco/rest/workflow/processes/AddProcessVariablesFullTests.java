@@ -1,6 +1,7 @@
 package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -162,6 +163,7 @@ public class AddProcessVariablesFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void failedAddingProcessVariableIfEmptyNameIsProvided() throws Exception
     {              
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
                 .getProcessModelByProcessDefId(processModel.getId());        
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -182,6 +184,7 @@ public class AddProcessVariablesFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
     public void failedAddingProcessVariableUsingOnlyWhiteSpaceInName() throws Exception
     {
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
         restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
                 .getProcessModelByProcessDefId(processModel.getId());        
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
