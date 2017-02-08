@@ -4,7 +4,6 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.model.RestProcessVariableCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -23,7 +22,6 @@ public class AddProcessVariablesCoreTests extends RestTest
     private UserModel userWhoStartsProcess, assignee, adminUser;
     private RestProcessModel processModel;
     private RestProcessVariableModel variableModel, processVariable, variableModel1;
-    private RestProcessVariableCollection processVariableCollection;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -114,7 +112,7 @@ public class AddProcessVariablesCoreTests extends RestTest
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();       
         processModel.setId("invalidProcessID");
         
-        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)           
+       restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)           
                                               .addProcessVariables(variableModel1, variableModel); 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError()
@@ -131,7 +129,7 @@ public class AddProcessVariablesCoreTests extends RestTest
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();       
         processModel.setId("");
         
-        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)           
+        restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)           
                                               .addProcessVariables(variableModel1, variableModel); 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError()
