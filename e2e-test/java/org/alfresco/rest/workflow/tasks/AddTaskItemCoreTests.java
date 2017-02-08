@@ -24,11 +24,8 @@ public class AddTaskItemCoreTests extends RestTest
 {
     private UserModel userModel, assigneeUser, anotherUser;
     private SiteModel siteModel;
-    private FileModel fileModel;
+    private FileModel fileModel, fileModel1;
     private TaskModel taskModel;
-    @SuppressWarnings("unused")
-    private RestItemModel taskItem;
-
     private String taskId;
 
     @BeforeClass(alwaysRun = true)
@@ -37,6 +34,7 @@ public class AddTaskItemCoreTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        fileModel1 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         assigneeUser = dataUser.createRandomTestUser();
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
 
@@ -44,51 +42,130 @@ public class AddTaskItemCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Add task item using random user.")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+    description = "Add task item using random user.")
     public void addTaskItemByRandomUser() throws JsonToModelConversionException, Exception
     {
         anotherUser = dataUser.createRandomTestUser();
-        taskItem = restClient.authenticateUser(anotherUser).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
+       restClient.authenticateUser(anotherUser).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError()
+                  .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+                  .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+     }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+    description = "Add multiple task item using random user.")
+    public void addMultipleTaskItemByRandomUser() throws JsonToModelConversionException, Exception
+    {
+        anotherUser = dataUser.createRandomTestUser();
+        restClient.authenticateUser(anotherUser).withWorkflowAPI().usingTask(taskModel)
+                             .addTaskItems(fileModel,fileModel1);
+
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+                  .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);;
     }
 
     @Bug(id = "ACE-5683")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item, is falling in case invalid itemBody is provided")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+    description = "Adding task item, is falling in case invalid itemBody is provided")
     public void failedAddingTaskItemIfInvalidItemBodyIsProvided() throws Exception
     {
         fileModel.setNodeRef("invalidNodeRef");
-        taskItem = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidNodeRef"));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidNodeRef"))
+                  .containsErrorKey(RestErrorModel.NOT_FOUND_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+    
+    @Bug(id = "ACE-5683")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+     description = "Adding multiple task item, is falling in case invalid itemBody is provided")
+    public void failedAddingMultipleTaskItemIfInvalidItemBodyIsProvided() throws Exception
+    {
+        fileModel.setNodeRef("invalidNodeRef");
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel)
+                              .addTaskItems(fileModel, fileModel1);
+
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidNodeRef"))
+                  .containsErrorKey(RestErrorModel.NOT_FOUND_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);;
     }
 
     @Bug(id = "ACE-5675")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case empty item body is provided")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+    description = "Adding task item is falling in case empty item body is provided")
     public void failedAddingTaskItemIfEmptyItemBodyIsProvided() throws Exception
     {
         fileModel.setNodeRef("");
-        taskItem = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
+
+        // TODO - expected error message to be added
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("");
+    }
+    
+    @Bug(id = "ACE-5675")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+       description = "Adding multiple task item is falling in case empty item body is provided")
+    public void failedAddingMultipleTaskItemIfEmptyItemBodyIsProvided() throws Exception
+    {
+        fileModel.setNodeRef("");
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItems(fileModel, fileModel1);
 
         // TODO - expected error message to be added
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case invalid task id is provided")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+    description = "Adding task item is falling in case invalid task id is provided")
     public void failedAddingTaskItemIfInvalidTaskIdIsProvided() throws Exception
     {
         taskModel.setId("invalidTaskId");
-        taskItem = restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
 
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"))
+                  .containsErrorKey(RestErrorModel.NOT_FOUND_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);;
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+    description = "Adding task item is falling in case invalid task id is provided")
+    public void failedAddingMultipleTaskItemIfInvalidTaskIdIsProvided() throws Exception
+    {
+        taskModel.setId("invalidTaskId");
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskItems(fileModel,fileModel1);
+
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"))
+                  .containsErrorKey(RestErrorModel.NOT_FOUND_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);;
     }
 
     @Bug(id = "ACE-5675")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task item is falling in case incomplete body type is provided")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
+    description = "Adding task item is falling in case incomplete body type is provided")
     public void failedAddingTaskVariableIfIncompleteBodyIsProvided() throws Exception
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{}", "tasks/{taskId}/items", taskId);
@@ -96,5 +173,5 @@ public class AddTaskItemCoreTests extends RestTest
 
         // TODO - expected error message to be added
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("");
-    }
+    }    
 }

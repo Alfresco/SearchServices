@@ -28,7 +28,6 @@ public class AddTaskVariablesCoreTests extends RestTest
     private UserModel assigneeUser;
     private TaskModel taskModel;
     private RestVariableModel invalidVariableModel, variableModel, variableModel1;
-    private RestVariableModelsCollection restVariableCollection;
     
     private String taskId;
 

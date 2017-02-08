@@ -99,6 +99,22 @@ public class AddProcessItemCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ACCESS_INFORMATION_NOT_ALLOWED, processModel.getId()));
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Add multiple process item by a random user.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    public void addMultipleProcessItemByAnyUser() throws Exception
+    {
+        anotherUser = dataUser.createRandomTestUser();
+
+        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        processModel = restClient.authenticateUser(adminUser).withParams("maxItems=1").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItems = restClient.authenticateUser(anotherUser).withWorkflowAPI().usingProcess(processModel)
+                                 .addProcessItems(document2, document);
+
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
+                .containsSummary(String.format(RestErrorModel.ACCESS_INFORMATION_NOT_ALLOWED, processModel.getId()));
+    }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Add process item using by the admin in same network.")

@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestProcessVariableCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -22,6 +23,7 @@ public class AddProcessVariablesCoreTests extends RestTest
     private UserModel userWhoStartsProcess, assignee, adminUser;
     private RestProcessModel processModel;
     private RestProcessVariableModel variableModel, processVariable, variableModel1;
+    private RestProcessVariableCollection processVariableCollection;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -52,6 +54,33 @@ public class AddProcessVariablesCoreTests extends RestTest
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
                 .assertThat().entriesListContains("name", processVariable.getName());
     }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+            description = "Verify multiple addProcessVariable by any user with REST API and status code is CREATED (201)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    public void addMultipleProcessVariableByAnyUser() throws Exception
+    {
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+
+        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)
+                                    .addProcessVariables(variableModel, variableModel1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+                
+        processVariableCollection.getEntries().get(0).onModel()
+                 .assertThat().field("name").is(variableModel.getName())
+                 .and().field("type").is(variableModel.getType())
+                 .and().field("value").is(variableModel.getValue());
+        processVariableCollection.getEntries().get(1).onModel()
+                  .assertThat().field("name").is(variableModel1.getName())
+                  .and().field("type").is(variableModel1.getType())
+                  .and().field("value").is(variableModel1.getValue());
+
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(0).onModel().getName())
+                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(1).onModel().getName());
+    }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for invalid processID with REST API and status code is NOT_FOUND (404)")
@@ -71,7 +100,7 @@ public class AddProcessVariablesCoreTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for empty processID with REST API and status code is NOT_FOUND (404)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
-    public void addProcessVariableForInvalidProcessIdIsEmpty() throws Exception
+    public void addProcessVariableForEmptyProcessIdIsEmpty() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -99,6 +128,33 @@ public class AddProcessVariablesCoreTests extends RestTest
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
                 .assertThat().entriesListContains("name", processVariable.getName());     
+    }  
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Add multiple process variables using by the user who started the process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    public void addMultipleProcessVariableByUserThatStartedTheProcess() throws Exception
+    {        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+
+        processVariableCollection = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)           
+                                    .addProcessVariables(variableModel, variableModel1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        processVariableCollection.getEntries().get(0).onModel()
+                 .assertThat().field("name").is(variableModel.getName())
+                 .and().field("type").is(variableModel.getType())
+                 .and().field("value").is(variableModel.getValue());
+        
+        processVariableCollection.getEntries().get(1).onModel()
+                 .assertThat().field("name").is(variableModel1.getName())
+                 .and().field("type").is(variableModel1.getType())
+                 .and().field("value").is(variableModel1.getValue());
+
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(1).onModel().getName())
+                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(0).onModel().getName());     
     }  
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 

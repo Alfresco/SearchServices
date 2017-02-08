@@ -23,7 +23,7 @@ public class AddProcessVariablesSanityTests extends RestTest
     private SiteModel siteModel;
     private UserModel userWhoStartsProcess, assignee, adminUser, adminTenantUser, tenantUserAssignee, tenantUser;
     private RestProcessModel processModel;
-    private RestProcessVariableModel variableModel, variableModel1, processVariable;
+    private RestProcessVariableModel variableModel, variableModel1, variableModel2, processVariable;
     private RestProcessVariableCollection processVariableCollection;
 
     @BeforeClass(alwaysRun = true)
@@ -56,6 +56,41 @@ public class AddProcessVariablesSanityTests extends RestTest
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+            description = "Create non-existing variable")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    public void addMultipleProcessVariable() throws Exception
+    {
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel2 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+
+        processVariableCollection = restClient.withWorkflowAPI().usingProcess(processModel)
+                                    .addProcessVariables(variableModel, variableModel1, variableModel2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        processVariableCollection.getEntries().get(0).onModel()
+                        .assertThat().field("name").is( processVariableCollection.getEntries().get(0).onModel().getName())
+                        .and().field("type").is( processVariableCollection.getEntries().get(0).onModel().getType())
+                        .and().field("value").is( processVariableCollection.getEntries().get(0).onModel().getValue());
+        
+        processVariableCollection.getEntries().get(1).onModel()
+                        .assertThat().field("name").is( processVariableCollection.getEntries().get(1).onModel().getName())
+                        .and().field("type").is( processVariableCollection.getEntries().get(1).onModel().getType())
+                        .and().field("value").is( processVariableCollection.getEntries().get(1).onModel().getValue());
+        
+        processVariableCollection.getEntries().get(2).onModel()
+                        .assertThat().field("name").is( processVariableCollection.getEntries().get(2).onModel().getName())
+                        .and().field("type").is( processVariableCollection.getEntries().get(2).onModel().getType())
+                        .and().field("value").is( processVariableCollection.getEntries().get(2).onModel().getValue());
+
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                .assertThat().entriesListContains("name",  processVariableCollection.getEntries().get(1).onModel().getName())
+                .assertThat().entriesListContains("name",  processVariableCollection.getEntries().get(0).onModel().getName())
+                .assertThat().entriesListContains("name",  processVariableCollection.getEntries().get(2).onModel().getName());
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Update existing variables")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void updateExistingProcessVariable() throws Exception
@@ -74,6 +109,39 @@ public class AddProcessVariablesSanityTests extends RestTest
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("value").is(newValue);
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+            description = "Update existing variables")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    public void updateExistingMultipleProcessVariable() throws Exception
+    {
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+       
+        processVariableCollection = restClient.withWorkflowAPI().usingProcess(processModel)
+                                              .addProcessVariables(variableModel, variableModel1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        processVariableCollection.getEntries().get(0).onModel()
+                                 .assertThat().field("name").is(variableModel.getName())
+                                 .and().field("type").is(variableModel.getType())
+                                 .and().field("value").is(variableModel.getValue());
+        
+        processVariableCollection.getEntries().get(1).onModel()
+                                 .assertThat().field("name").is(variableModel1.getName())
+                                 .and().field("type").is(variableModel1.getType())
+                                 .and().field("value").is(variableModel1.getValue());
+
+        String newValueVar = RandomData.getRandomName("valueVar");
+        variableModel.setValue(newValueVar);
+        String newValueVar1 = RandomData.getRandomName("valueVar1");
+        variableModel1.setValue(newValueVar1);
+        
+        processVariableCollection = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariables(variableModel, variableModel1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        processVariableCollection.getEntries().get(0).onModel().assertThat().field("value").is(newValueVar);
+        processVariableCollection.getEntries().get(1).onModel().assertThat().field("value").is(newValueVar1);
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
