@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestProcessVariableCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
@@ -22,7 +23,8 @@ public class AddProcessVariablesSanityTests extends RestTest
     private SiteModel siteModel;
     private UserModel userWhoStartsProcess, assignee, adminUser, adminTenantUser, tenantUserAssignee, tenantUser;
     private RestProcessModel processModel;
-    private RestProcessVariableModel variableModel, processVariable;
+    private RestProcessVariableModel variableModel, variableModel1, processVariable;
+    private RestProcessVariableCollection processVariableCollection;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -38,7 +40,7 @@ public class AddProcessVariablesSanityTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Create non-existing variable")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void addProcessVariables() throws Exception
+    public void addProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -56,7 +58,7 @@ public class AddProcessVariablesSanityTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Update existing variables")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void updateExistingProcessVariables() throws Exception
+    public void updateExistingProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -77,7 +79,7 @@ public class AddProcessVariablesSanityTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Adding process variables is falling in case invalid variableBody is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void failedAddingProcessVariablesIfInvalidBodyIsProvided() throws Exception
+    public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("incorrect type");
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -90,7 +92,7 @@ public class AddProcessVariablesSanityTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add process variables using admin user from same network")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
-    public void addProcessVariablesByAdminSameNetwork() throws Exception
+    public void addProcessVariableByAdminSameNetwork() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
@@ -106,6 +108,37 @@ public class AddProcessVariablesSanityTests extends RestTest
         processVariable.assertThat().field("name").is(processVariable.getName())
                         .and().field("type").is(processVariable.getType())
                         .and().field("value").is(processVariable.getValue());
+    }
+    
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+            description = "Add multiple process variables using admin user from same network")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
+    public void addMultipleProcessVariablesByAdminSameNetwork() throws Exception
+    {
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+
+        restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+       
+        processVariableCollection = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariables(variableModel, variableModel1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        processVariableCollection.assertThat().entriesListContains("name", variableModel.getName())
+                                 .assertThat().entriesListContains("name", variableModel1.getName());
+
+        processVariableCollection.getEntries().get(0).onModel().assertThat()
+                                 .field("name").is(variableModel.getName()).and()
+                                 .field("value").is(variableModel.getValue()).and()
+                                 .field("type").is(variableModel.getType());
+        processVariableCollection.getEntries().get(1).onModel().assertThat()
+                                 .field("name").is(variableModel1.getName()).and()
+                                 .field("value").is(variableModel1.getValue()).and()
+                                 .field("type").is(variableModel1.getType());
     }
 
 }

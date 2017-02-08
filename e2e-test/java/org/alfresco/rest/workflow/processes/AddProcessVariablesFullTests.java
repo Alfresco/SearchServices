@@ -1,13 +1,14 @@
 package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestProcessVariableCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -24,8 +25,10 @@ public class AddProcessVariablesFullTests extends RestTest
     private FileModel document;
     private SiteModel siteModel;
     private UserModel userWhoStartsProcess, assignee, adminUser, adminTenantUser, adminTenantUser2, tenantUser, tenantUserAssignee;
-    private RestProcessModel processModel;
-    private RestProcessVariableModel variableModel, processVariable;
+    private ProcessModel processModel;
+    private RestProcessModel restProcessModel;
+    private RestProcessVariableModel variableModel, processVariable, variableModel1, variableModel2, variableModel3;
+    private RestProcessVariableCollection processVariableCollection;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -35,39 +38,41 @@ public class AddProcessVariablesFullTests extends RestTest
         assignee = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
-    }
+        processModel = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createSingleReviewerTaskAndAssignTo(assignee);
+       }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Add process variables using by the user involved in the process.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void addProcessVariablesByUserInvolvedTheProcess() throws Exception
+    public void addProcessVariableByUserInvolvedTheProcess() throws Exception
     {        
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-
-        processVariable = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)           
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");       
+        restProcessModel = restClient.authenticateUser(assignee).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());
+        
+        processVariable = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(restProcessModel)           
                                     .addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("name").is(processVariable.getName())
                        .and().field("type").is(processVariable.getType())
                        .and().field("value").is(processVariable.getValue());
 
-        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+        restClient.withWorkflowAPI().usingProcess(restProcessModel).getProcessVariables()
                 .assertThat().entriesListContains("name", processVariable.getName());     
     }    
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Add process variables using by inexistent user.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void addProcessVariablesByInexistentUser() throws Exception
+    public void addProcessVariableByInexistentUser() throws Exception
     {        
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-
-        processVariable = restClient.authenticateUser(UserModel.getRandomUserModel()).withWorkflowAPI().usingProcess(processModel)           
-                                    .addProcessVariable(variableModel);
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");      
+        restProcessModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());
         
+        processVariable = restClient.authenticateUser(UserModel.getRandomUserModel()).withWorkflowAPI()
+                                    .usingProcess(restProcessModel)           
+                                    .addProcessVariable(variableModel);        
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
                   .assertLastError()
                   .containsSummary(RestErrorModel.AUTHENTICATION_FAILED)
@@ -79,13 +84,13 @@ public class AddProcessVariablesFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variables is falling in case invalid type is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void failedAddingProcessVariablesIfInvalidTypeIsProvided() throws Exception
+    public void failedAddingProcessVariableIfInvalidTypeIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:textarea");
-
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());
+      
+        restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError().containsSummary(
                       String.format(RestErrorModel.UNSUPPORTED_TYPE, "d:textarea"))
@@ -98,13 +103,13 @@ public class AddProcessVariablesFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variables is falling in case invalid type prefix is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void failedAddingProcessVariablesIfInvalidTypePrefixIsProvided() throws Exception
+    public void failedAddingProcessVariableIfInvalidTypePrefixIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("ddt:text");
-
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());
+    
+        restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError()
                   .containsSummary(String.format(RestErrorModel.INVALID_NAMEPACE_PREFIX, "ddt"))
@@ -116,14 +121,14 @@ public class AddProcessVariablesFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variables is falling in case invalid value is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void failedAddingProcessVariablesIfInvalidValueIsProvided() throws Exception
+    public void failedAddingProcessVariableIfInvalidValueIsProvided() throws Exception
     {
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:int");
         variableModel.setValue("invalidValue");
-
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());        
+       
+        restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError()
                   .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
@@ -135,14 +140,14 @@ public class AddProcessVariablesFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Adding process variables is falling in case invalid variableBody (adding extra parameter in body:scope) is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void failedAddingProcessVariablesIfInvalidBodyIsProvided() throws Exception
+    public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());       
               
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"name\": \"variableName\",\"scope\": \"local\",\"value\": \"testing\",\"type\": \"d:text\"}",
                 "processes/{processId}/variables", processModel.getId());
-        restClient.processModel(RestProcessVariableModel.class, request);
-        
+        restClient.processModel(RestProcessVariableModel.class, request);        
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError()
                   .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field \"scope\""))
@@ -151,19 +156,18 @@ public class AddProcessVariablesFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Bug(id="REPO-1985")
+    //@Bug(id="REPO-1985")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variables is falling in case empty name is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void failedAddingProcessVariablesIfEmptyNameIsProvided() throws Exception
-    {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+    public void failedAddingProcessVariableIfEmptyNameIsProvided() throws Exception
+    {              
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());        
         RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        variableModel.setName("");
-
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-
+        variableModel.setName("");    
+              
+        restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError()
                   .containsSummary(RestErrorModel.VARIABLE_NAME_REQUIRED)
@@ -172,25 +176,24 @@ public class AddProcessVariablesFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Bug(id="REPO-1985")
+    //@Bug(id="REPO-1985")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variables is falling in case invalid name is provided: ony white spaces")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void failedAddingProcessVariablesUsingOnlyWhiteSpaceInName() throws Exception
+    public void failedAddingProcessVariableUsingOnlyWhiteSpaceInName() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
-        RestProcessVariableModel variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         variableModel.setName(" ");
 
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-       
+        processVariable = restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);       
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("name").isNull()
                        .and().field("type").is(processVariable.getType())
                        .and().field("value").is(processVariable.getValue());
 
-        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+        restClient.withWorkflowAPI().usingProcess(restProcessModel).getProcessVariables()
                 .assertThat().entriesListContains("value", processVariable.getValue());               
     }
     
@@ -198,23 +201,143 @@ public class AddProcessVariablesFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variables is falling in case invalid name is provided: symbols")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
-    public void addingProcessVariablesUsingSymbolsInName() throws Exception
+    public void failedAddingProcessVariableWithSymbolsInName() throws Exception
     {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());            
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        variableModel.setName("123_%^&: õÈ,Ì,Ò");
-
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-       
+        variableModel.setName("123_%^&: õÈ,Ì,Ò");     
+               
+        processVariable = restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);       
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processVariable.assertThat().field("name").is(processVariable.getName())
                        .and().field("type").is(processVariable.getType())
                        .and().field("value").is(processVariable.getValue());
 
-        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+        restClient.withWorkflowAPI().usingProcess(restProcessModel).getProcessVariables()
                 .assertThat().entriesListContains("name", processVariable.getName()); 
-    }    
+    }  
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Add two process variables using by the user involved in the process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void addingMultipleValidProcessVariables() throws Exception
+    {        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel2 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel3 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());        
+
+        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(restProcessModel)           
+                                    .addProcessVariables(variableModel, variableModel2, variableModel3);               
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        
+        processVariableCollection.assertThat().entriesListContains("name", variableModel.getName())
+                                 .assertThat().entriesListContains("name", variableModel2.getName())
+                                 .assertThat().entriesListContains("name", variableModel3.getName());
+       
+        processVariableCollection.getEntries().get(0).onModel().assertThat()
+                                 .field("name").is(variableModel.getName()).and()
+                                 .field("value").is(variableModel.getValue()).and()
+                                 .field("type").is(variableModel.getType());
+        processVariableCollection.getEntries().get(1).onModel().assertThat()
+                                 .field("name").is(variableModel2.getName()).and()
+                                 .field("value").is(variableModel2.getValue()).and()
+                                 .field("type").is(variableModel2.getType());
+        processVariableCollection.getEntries().get(2).onModel().assertThat()
+                                 .field("name").is(variableModel3.getName()).and()
+                                 .field("value").is(variableModel3.getValue()).and()
+                                 .field("type").is(variableModel3.getType());
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Add two process variables using by the user involved in the process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void failedAddingMultipleProcessVariablesInvalidType() throws Exception
+    {        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel.setType("d:string");
+        variableModel2 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());        
+
+        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(restProcessModel)           
+                                    .addProcessVariables(variableModel, variableModel2);               
+        
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                  .assertLastError().containsSummary(String.format(RestErrorModel.UNSUPPORTED_TYPE, "d:string"))
+                  .containsErrorKey(String.format(RestErrorModel.UNSUPPORTED_TYPE, "d:string"))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);  
+    }
+    
+    @Bug(id = "REPO-1938")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Add two process variables using by the user involved in the process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void failledAddingMultipleProcessVariablesInvalidTypePrefix() throws Exception
+    {        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel.setType("e:text");
+        variableModel2 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());        
+
+        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(restProcessModel)           
+                                    .addProcessVariables(variableModel, variableModel2);               
+        
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.INVALID_NAMEPACE_PREFIX, "e"))
+                  .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);       
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Adding process variables is falling in case invalid value is provided")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void failledAddingMultipleProcessVariablesInvalidValue() throws Exception
+    {
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:int");
+        variableModel.setValue("invalidValue");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel2 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());        
+       
+        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(restProcessModel)           
+                                              .addProcessVariables(variableModel, variableModel1, variableModel2); 
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                  .assertLastError()
+                  .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                  .containsSummary(String.format(RestErrorModel.FOR_INPUT_STRING, "invalidValue"))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+            description = "Adding process variables is falling in case invalid value is provided")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void failledAddingMultipleInvalidProcessVariables() throws Exception
+    {
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:int");
+        variableModel.setValue("invalidValue");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel1.setType("");
+        restProcessModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses()
+                .getProcessModelByProcessDefId(processModel.getId());         
+       
+        processVariableCollection = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(restProcessModel)           
+                                              .addProcessVariables(variableModel1, variableModel); 
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                  .assertLastError()
+                  .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                  .containsSummary(String.format(RestErrorModel.FOR_INPUT_STRING, "invalidValue"))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }        
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES,  TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, 
             description = "Add process variables using by Admin in other network.")
@@ -237,6 +360,37 @@ public class AddProcessVariablesFullTests extends RestTest
         processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processVariable = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)           
                 .addProcessVariable(variableModel);
+        
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError()
+                  .containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .containsErrorKey(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES,  TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, 
+            description = "Add multiple process variables using by Admin in other network.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
+    public void addMultipleProcessVariablesByAdminInOtherNetwork() throws Exception
+    { 
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+       
+        adminTenantUser2 = UserModel.getAdminTenantUser();
+        restClient.usingTenant().createTenant(adminTenantUser2);
+        
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document)
+                    .createNewTaskAndAssignTo(tenantUserAssignee);
+        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)           
+                  .addProcessVariables(variableModel, variableModel1);
         
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                   .assertLastError()
