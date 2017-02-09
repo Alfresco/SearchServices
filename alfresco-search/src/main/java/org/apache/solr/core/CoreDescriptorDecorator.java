@@ -44,6 +44,7 @@ public class CoreDescriptorDecorator
                     "alfresco.port",
                     "alfresco.baseUrl",
                     "alfresco.port.ssl",
+                    "alfresco.secureComms",
                     "alfresco.encryption.ssl.keystore.passwordFileLocation",
                     "alfresco.encryption.ssl.truststore.passwordFileLocation",
                     "alfresco.encryption.ssl.keystore.location",
