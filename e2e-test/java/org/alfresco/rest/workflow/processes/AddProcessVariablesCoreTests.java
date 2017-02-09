@@ -20,7 +20,7 @@ public class AddProcessVariablesCoreTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsProcess, assignee, adminUser;
+    private UserModel userWhoStartsProcess, assignee;
     private RestProcessModel processModel;
     private RestProcessVariableModel variableModel, processVariable, variableModel1;
     private RestProcessVariableCollection processVariableCollection;
@@ -28,7 +28,6 @@ public class AddProcessVariablesCoreTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUser = dataUser.getAdminUser();
         userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();

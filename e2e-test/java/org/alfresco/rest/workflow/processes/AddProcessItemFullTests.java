@@ -5,8 +5,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestItemModelsCollection;
-import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.SiteModel;
