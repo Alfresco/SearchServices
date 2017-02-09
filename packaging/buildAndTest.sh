@@ -19,7 +19,7 @@ docker run --rm "$dockerImage" [ -e /opt/alfresco-search-services/solr.in.sh ] |
 docker run --rm "$dockerImage" grep -q Alfresco /opt/alfresco-search-services/solr.in.sh || (echo "solr.in.sh does not contain Alfresco config" && exit 1)
 docker run --rm "$dockerImage" grep -q Alfresco /opt/alfresco-search-services/solr.in.cmd || (echo "solr.in.cmd does not containAlfresco config" && exit 1)
 docker run --rm "$dockerImage" grep -q LOG4J_PROPS /opt/alfresco-search-services/solr.in.sh || (echo "solr.in.sh does not contain LOG4J_PROPS" && exit 1)
-docker run --rm "$dockerImage" grep -q LOG4J_PROPS /opt/alfresco-search-services/solr.in.cmd || (echo "solr.in.cmd does not contain LOG4J_PROPS" && exit 1)
+docker run --rm "$dockerImage" grep -q LOG4J_CONFIG /opt/alfresco-search-services/solr.in.cmd || (echo "solr.in.cmd does not contain LOG4J_CONFIG" && exit 1)
 docker run --rm "$dockerImage" [ -e /opt/alfresco-search-services/solrhome/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
 docker run --rm "$dockerImage" /opt/alfresco-search-services/solr/bin/solr start
 
