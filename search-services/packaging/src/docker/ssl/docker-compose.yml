@@ -1,0 +1,69 @@
+version: '2'
+services:
+  repo:
+    image: docker-internal.alfresco.com/platform:latest
+    environment:
+         JAVA_OPTS : "-Dsolr.useDynamicShardRegistration=false
+         -Dsolr.host=solr6  -Dsolr.port.ssl=8084 -Dsolr.secureComms=https
+         -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
+    ports:
+          - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
+          - "5005:5005" #Java debugging
+          - "8082:8080" #Browser port
+  share:
+    image: docker-internal.alfresco.com/share:5.2.1-demo
+    ports:
+      - "8081:8080"
+    environment:
+      - "REPO_HOST=repo:8080"
+  solr6:
+    image: docker-internal.alfresco.com/search-services:1.0.2-SNAPSHOT
+    command: [ "/opt/alfresco-search-services/solr/bin/solr", "start", "-f", "-p","8084", "-a",
+               "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"]
+    expose:
+     - "8084"
+    environment:
+      #Solr needs to know how to register itself with Alfresco
+      SOLR_ALFRESCO_HOST: repo
+      SOLR_ALFRESCO_PORT: 8080
+      #Alfresco needs to know how to call solr
+      SOLR_SOLR_HOST: solr6
+      SOLR_SOLR_PORT: 8084
+
+      #Create the default alfresco and archive cores
+      SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive
+
+      #Alfresco <-> Jetty
+      SOLR_OPTS: '$SOLR_OPTS -Djavax.net.ssl.keyStoreType=JCEKS -Djavax.net.ssl.trustStoreType=JCEKS -Dsolr.allow.unsafe.resourceloading=true -Dsolr.ssl.checkPeerName=false'
+      SOLR_SSL_KEY_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
+      SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
+      SOLR_SSL_TRUST_STORE: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
+      SOLR_SSL_TRUST_STORE_PASSWORD: kT9X6oe68t
+      SOLR_SSL_NEED_CLIENT_AUTH : "true"
+      SOLR_SSL_WANT_CLIENT_AUTH : "false"
+
+      #Alfresco <-> trackers
+      SOLR_ALFRESCO_SECURECOMMS : https
+      SOLR_ALFRESCO_ENCRYPTION_SSL_KEYSTORE_PASSWORDFILELOCATION: /opt/alfresco/alf_data/keystore/ssl-keystore-passwords.properties
+      SOLR_ALFRESCO_ENCRYPTION_SSL_KEYSTORE_LOCATION: /opt/alfresco/alf_data/keystore/ssl.repo.client.keystore
+      SOLR_ALFRESCO_ENCRYPTION_SSL_KEYSTORE_TYPE : JCEKS
+      #SOLR_ALFRESCO_ENCRYPTION_SSL_KEYSTORE_PROVIDER
+      SOLR_ALFRESCO_ENCRYPTION_SSL_TRUSTSTORE_PASSWORDFILELOCATION: /opt/alfresco/alf_data/keystore/ssl-truststore-passwords.properties
+      SOLR_ALFRESCO_ENCRYPTION_SSL_TRUSTSTORE_LOCATION: /opt/alfresco/alf_data/keystore/ssl.repo.client.truststore
+      SOLR_ALFRESCO_ENCRYPTION_SSL_TRUSTSTORE_TYPE : JCEKS
+      #SOLR_ALFRESCO_ENCRYPTION_SSL_TRUSTSTORE_PROVIDER
+    ports:
+      - "8084:8084" #Browser port
+      - "1044:1044" #Java debugging
+    volumes_from:
+     - repo:ro
+
+#docker-compose up
+#Solr fails to start.
+#Bash to Alfresco instance: docker exec -it [containerid] bash
+# cd /opt/alfresco/alf_data/keystore
+# chmod +x generate_keystores.sh
+# ./generate_keystores.sh
+# cp /root/ssl.repo.client.keystore /opt/alfresco/alf_data/keystore/
+# cp /root/ssl.repo.client.truststore /opt/alfresco/alf_data/keystore/
+#restart docker-compose
