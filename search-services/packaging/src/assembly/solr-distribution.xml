@@ -32,7 +32,7 @@
                 <exclude>**/example/**</exclude>
                 <exclude>**/bin/solr.in.sh</exclude>
                 <exclude>**/bin/solr.in.cmd</exclude>
-                
+                <exclude>**/commons-fileupload-1.3.1.jar</exclude>
             </excludes>
         </fileSet>
         <!-- Solr config -->
@@ -52,6 +52,7 @@
             <excludes>
                 <exclude>**/workspace-SpacesStore/**</exclude>
                 <exclude>**/archive-SpacesStore/**</exclude>
+                <exclude>**/commons-fileupload-1.3.1.jar</exclude>
                 <exclude>context.xml</exclude>
             </excludes>
         </fileSet>
