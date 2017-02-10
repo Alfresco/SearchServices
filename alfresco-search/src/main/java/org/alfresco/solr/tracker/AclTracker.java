@@ -636,7 +636,6 @@ public class AclTracker extends AbstractTracker
         AclChangeSets aclChangeSets;
         BoundedDeque<AclChangeSet> changeSetsFound = new BoundedDeque<AclChangeSet>(100);
         HashSet<AclChangeSet> changeSetsIndexed = new LinkedHashSet<AclChangeSet>();
-        TrackerState state = super.getTrackerState();
         long totalAclCount = 0;
         int aclCount = 0;
         
@@ -647,11 +646,7 @@ public class AclTracker extends AbstractTracker
                 getWriteLock().acquire();
                 //System.out.println("############# AclTracker acquire lock ################");
 
-                if(state == null)
-                {
-                    // A rollback occurred. Break and let the next tracker get the state from the index.
-                    break;
-                }
+                TrackerState state = getTrackerState();
 
                 Long fromCommitTime = getChangeSetFromCommitTime(changeSetsFound, state.getLastGoodChangeSetCommitTimeInIndex());
                 aclChangeSets = getSomeAclChangeSets(changeSetsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,

@@ -173,7 +173,7 @@ public class AlfrescoReRankQParserPlugin extends QParserPlugin {
     }
 
     private class ReRankWeight extends Weight{
-    	private Query reRankQuery;
+        private Query reRankQuery;
         private IndexSearcher searcher;
         private Weight mainWeight;
         private double reRankWeight;
