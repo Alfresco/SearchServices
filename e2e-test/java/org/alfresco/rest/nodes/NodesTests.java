@@ -10,7 +10,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -52,6 +51,6 @@ public class NodesTests extends RestTest
          *   - destinationFolder
          *     - file
          */
-        Assert.assertEquals(response.getParentId(), destinationFolder.getId());
+        response.assertThat().field("parentId").equals(destinationFolder.getId());        
     }
 }
