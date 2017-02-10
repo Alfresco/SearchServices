@@ -486,8 +486,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 									params.remove(CommonParams.QT);
 								}
 							}
-							shardHandler1.submit(sreq, shard, params,
-									rb.preferredHostAddress);
+							shardHandler1.submit(sreq, shard, params);
 						}
 					}
 
