@@ -59,16 +59,16 @@ public class UpdateProcessVariableTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void updateProcessVariableTwoUsers() throws Exception
     {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:any");
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        variableModel.setType("d:boolean");
-        
+       
+        variableModel.setType("d:text");
         updatedVariable = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)
                                      .updateProcessVariable(variableModel);    
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        updatedVariable.assertThat().field("type").is("d:boolean");
+        updatedVariable.assertThat().field("type").is("d:text");
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
@@ -106,7 +106,7 @@ public class UpdateProcessVariableTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Update existing variable created by the user who started the process using put call with a user that is not involved in the process- value")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void anyUserCantUpdateProcessVariableValueCreated() throws Exception
+    public void cantUpdateProcessVariableValueCreatedWithAnyUser() throws Exception
     {
         UserModel anotherUser = dataUser.createRandomTestUser();      
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
