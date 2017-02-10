@@ -809,7 +809,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
     private Collection fetchFingerPrint(String shards, String nodeId) {
         shards = shards.replace(",", "|");
-        List<String> urls = ((HttpShardHandlerFactory)shardHandlerFactory).makeURLList(shards);
+        List<String> urls = ((HttpShardHandlerFactory)shardHandlerFactory).buildURLList(shards);
         ExecutorService executorService =  null;
         List<Future> futures = new ArrayList();
         Collection fingerPrint = null;
