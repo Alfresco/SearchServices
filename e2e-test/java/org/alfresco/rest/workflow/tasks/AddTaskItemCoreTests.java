@@ -142,7 +142,7 @@ public class AddTaskItemCoreTests extends RestTest
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                   .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"))
-                  .containsErrorKey(RestErrorModel.NOT_FOUND_ERRORKEY)
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);;
     }
@@ -157,9 +157,9 @@ public class AddTaskItemCoreTests extends RestTest
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                   .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"))
-                  .containsErrorKey(RestErrorModel.NOT_FOUND_ERRORKEY)
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);;
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @Bug(id = "ACE-5675")
