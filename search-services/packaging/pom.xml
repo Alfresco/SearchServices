@@ -174,14 +174,15 @@
                                 <replace token= "REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}${line.separator}${line.separator}REM Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.cmd"/>
                                 </replace>
-                                <replace token= "${alfresco.search.ssl.token}" value="${alfresco.search.ssl}${line.separator}  ${alfresco.search.ssl.token}" dir="target/solr-${solr.version}">
-                                    <include name="**/server/etc/jetty*.xml"/>
-                                </replace>
                                 <replace token= "${alfresco.search.ssl.need.token}" value="${alfresco.search.ssl.need}" dir="target/solr-${solr.version}">
                                     <include name="**/server/etc/jetty-ssl.xml"/>
                                 </replace>
                                 <replace token= "wantClientAuth" value="wantclientauth" dir="target/solr-${solr.version}">
                                     <include name="**/server/etc/jetty-ssl.xml"/>
+                                </replace>
+                                <replace token= "STORE_TYPE=JKS" value="STORE_TYPE=JCEKS" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd"/>
+                                    <include name="**/bin/solr.in.sh"/>
                                 </replace>
                                 <chmod file="target/solr-${solr.version}/bin/solr" perm="755"/>
                             </target>
