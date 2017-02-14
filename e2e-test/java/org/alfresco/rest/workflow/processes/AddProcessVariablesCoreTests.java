@@ -46,12 +46,12 @@ public class AddProcessVariablesCoreTests extends RestTest
         processVariable = restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)
                                     .addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processVariable.assertThat().field("name").is(processVariable.getName())
-                .and().field("type").is(processVariable.getType())
-                .and().field("value").is(processVariable.getValue());
+        processVariable.assertThat().field("name").is(variableModel.getName())
+                .and().field("type").is(variableModel.getType())
+                .and().field("value").is(variableModel.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListContains("name", processVariable.getName());
+                .assertThat().entriesListContains("name", variableModel.getName());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
@@ -77,8 +77,8 @@ public class AddProcessVariablesCoreTests extends RestTest
                   .and().field("value").is(variableModel1.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(0).onModel().getName())
-                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(1).onModel().getName());
+                .assertThat().entriesListContains("name",variableModel.getName())
+                .assertThat().entriesListContains("name",variableModel1.getName());
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
@@ -105,7 +105,8 @@ public class AddProcessVariablesCoreTests extends RestTest
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         processModel.setId("");
 
-        processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
+        processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)
+                                    .addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
@@ -121,12 +122,12 @@ public class AddProcessVariablesCoreTests extends RestTest
         processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)           
                                     .addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processVariable.assertThat().field("name").is(processVariable.getName())
-                .and().field("type").is(processVariable.getType())
-                .and().field("value").is(processVariable.getValue());
+        processVariable.assertThat().field("name").is(variableModel.getName())
+                .and().field("type").is(variableModel.getType())
+                .and().field("value").is(variableModel.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListContains("name", processVariable.getName());     
+                .assertThat().entriesListContains("name", variableModel.getName());     
     }  
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
@@ -152,8 +153,8 @@ public class AddProcessVariablesCoreTests extends RestTest
                  .and().field("value").is(variableModel1.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(1).onModel().getName())
-                .assertThat().entriesListContains("name", processVariableCollection.getEntries().get(0).onModel().getName());     
+                .assertThat().entriesListContains("name", variableModel.getName())
+                .assertThat().entriesListContains("name", variableModel1.getName());     
     }  
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 

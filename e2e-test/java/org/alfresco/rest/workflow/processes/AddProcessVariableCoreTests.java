@@ -49,9 +49,9 @@ public class AddProcessVariableCoreTests extends RestTest
 
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processVariable.assertThat().field("name").is(processVariable.getName())
-                       .and().field("type").is(processVariable.getType())
-                       .and().field("value").is(processVariable.getValue());
+        processVariable.assertThat().field("name").is(variableModel.getName())
+                       .and().field("type").is(variableModel.getType())
+                       .and().field("value").is(variableModel.getValue());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
@@ -64,9 +64,9 @@ public class AddProcessVariableCoreTests extends RestTest
 
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processVariable.assertThat().field("name").is(processVariable.getName())
-                       .and().field("type").is(processVariable.getType())
-                       .and().field("value").is(processVariable.getValue());
+        processVariable.assertThat().field("name").is(variableModel.getName())
+                       .and().field("type").is(variableModel.getType())
+                       .and().field("value").is(variableModel.getValue());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 

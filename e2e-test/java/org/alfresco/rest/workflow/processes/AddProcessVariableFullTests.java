@@ -144,9 +144,9 @@ public class AddProcessVariableFullTests  extends RestTest
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processVariable.assertThat().field("name").is(processVariable.getName())
+        processVariable.assertThat().field("name").is(variableModel.getName())
                        .and().field("type").is("d:text")
-                       .and().field("value").is(processVariable.getValue());
+                       .and().field("value").is(variableModel.getValue());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
@@ -185,7 +185,7 @@ public class AddProcessVariableFullTests  extends RestTest
                        .and().field("value").is(variableModel.getValue());
         
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-        .assertThat().entriesListContains("name", processVariable.getName());
+        .assertThat().entriesListContains("name", variableModel.getName());
           
         updatedProcessVariable = restClient.withWorkflowAPI().usingProcess(processModel)
                                     .updateProcessVariable(variableModel);

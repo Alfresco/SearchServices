@@ -47,12 +47,12 @@ public class AddProcessVariablesSanityTests extends RestTest
 
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processVariable.assertThat().field("name").is(processVariable.getName())
-                       .and().field("type").is(processVariable.getType())
-                       .and().field("value").is(processVariable.getValue());
+        processVariable.assertThat().field("name").is(variableModel.getName())
+                       .and().field("type").is(variableModel.getType())
+                       .and().field("value").is(variableModel.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListContains("name", processVariable.getName());
+                .assertThat().entriesListContains("name", variableModel.getName());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
@@ -70,24 +70,24 @@ public class AddProcessVariablesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
         processVariableCollection.getEntries().get(0).onModel()
-                        .assertThat().field("name").is( processVariableCollection.getEntries().get(0).onModel().getName())
-                        .and().field("type").is( processVariableCollection.getEntries().get(0).onModel().getType())
-                        .and().field("value").is( processVariableCollection.getEntries().get(0).onModel().getValue());
+                        .assertThat().field("name").is( variableModel.getName())
+                        .and().field("type").is( variableModel.getType())
+                        .and().field("value").is( variableModel.getValue());
         
         processVariableCollection.getEntries().get(1).onModel()
-                        .assertThat().field("name").is( processVariableCollection.getEntries().get(1).onModel().getName())
-                        .and().field("type").is( processVariableCollection.getEntries().get(1).onModel().getType())
-                        .and().field("value").is( processVariableCollection.getEntries().get(1).onModel().getValue());
+                        .assertThat().field("name").is(variableModel1.getName())
+                        .and().field("type").is(variableModel1.getType())
+                        .and().field("value").is(variableModel1.getValue());
         
         processVariableCollection.getEntries().get(2).onModel()
-                        .assertThat().field("name").is( processVariableCollection.getEntries().get(2).onModel().getName())
-                        .and().field("type").is( processVariableCollection.getEntries().get(2).onModel().getType())
-                        .and().field("value").is( processVariableCollection.getEntries().get(2).onModel().getValue());
+                        .assertThat().field("name").is(variableModel2.getName())
+                        .and().field("type").is(variableModel2.getType())
+                        .and().field("value").is(variableModel2.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListContains("name",  processVariableCollection.getEntries().get(1).onModel().getName())
-                .assertThat().entriesListContains("name",  processVariableCollection.getEntries().get(0).onModel().getName())
-                .assertThat().entriesListContains("name",  processVariableCollection.getEntries().get(2).onModel().getName());
+                .assertThat().entriesListContains("name",  variableModel.getName())
+                .assertThat().entriesListContains("name",  variableModel1.getName())
+                .assertThat().entriesListContains("name", variableModel2.getName());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
@@ -100,9 +100,9 @@ public class AddProcessVariablesSanityTests extends RestTest
        
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processVariable.assertThat().field("name").is(processVariable.getName())
-                        .and().field("type").is(processVariable.getType())
-                        .and().field("value").is(processVariable.getValue());
+        processVariable.assertThat().field("name").is(variableModel.getName())
+                        .and().field("type").is(variableModel.getType())
+                        .and().field("value").is(variableModel.getValue());
 
         String newValue = RandomData.getRandomName("value");
         variableModel.setValue(newValue);
@@ -173,9 +173,9 @@ public class AddProcessVariablesSanityTests extends RestTest
        
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processVariable.assertThat().field("name").is(processVariable.getName())
-                        .and().field("type").is(processVariable.getType())
-                        .and().field("value").is(processVariable.getValue());
+        processVariable.assertThat().field("name").is(variableModel.getName())
+                        .and().field("type").is(variableModel.getType())
+                        .and().field("value").is(variableModel.getValue());
     }
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,

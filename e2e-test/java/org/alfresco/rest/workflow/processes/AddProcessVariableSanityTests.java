@@ -54,7 +54,7 @@ public class AddProcessVariableSanityTests extends RestTest
                        .and().field("value").is(variableModel.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListContains("name", processVariable.getName());
+                .assertThat().entriesListContains("name", variableModel.getName());
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
