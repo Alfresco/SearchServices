@@ -43,6 +43,6 @@ public class SolrSearchByPathTests extends CmisTest
     @XMLDataConfig(file = "src/main/resources/shared-resources/testdata/search-by-path.xml")
     public void executeSearchByPathQueries(QueryModel query) throws Exception
     {
-        cmisApi.withQuery(query.getValue()).assertResultsCountIs(query.getResults());
+        cmisApi.withQuery(query.getValue()).assertResultsCount().equals(query.getResults());
     }
 }

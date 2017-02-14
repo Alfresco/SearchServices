@@ -46,6 +46,6 @@ public class SolrSearchByAspectTests extends CmisTest
     public void executeSearchByAspect(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue())
-            .applyNodeRefsFrom(testData).assertResultsCountIs(query.getResults());
+            .applyNodeRefsFrom(testData).assertResultsCount().equals(query.getResults());
     }
 }

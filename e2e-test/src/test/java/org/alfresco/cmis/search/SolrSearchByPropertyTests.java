@@ -46,6 +46,6 @@ public class SolrSearchByPropertyTests extends CmisTest
     public void executeSortedSearchByID(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue())
-            .applyNodeRefsFrom(testData).assertResultsCountIs(query.getResults());
+            .applyNodeRefsFrom(testData).assertResultsCount().equals(query.getResults());
     }
 }
