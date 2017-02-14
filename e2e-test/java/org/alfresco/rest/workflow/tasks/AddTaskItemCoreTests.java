@@ -5,7 +5,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;

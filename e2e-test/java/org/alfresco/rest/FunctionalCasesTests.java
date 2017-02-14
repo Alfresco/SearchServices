@@ -2,11 +2,20 @@ package org.alfresco.rest;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.model.*;
+import org.alfresco.rest.model.RestActivityModelsCollection;
+import org.alfresco.rest.model.RestCommentModel;
+import org.alfresco.rest.model.RestCommentModelsCollection;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestFavoriteSiteModel;
+import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
+import org.alfresco.rest.model.RestRatingModel;
+import org.alfresco.rest.model.RestSiteMemberModel;
+import org.alfresco.rest.model.RestSiteMembershipRequestModelsCollection;
+import org.alfresco.rest.model.RestTagModel;
+import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.constants.ActivityType;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -28,7 +37,7 @@ public class FunctionalCasesTests extends RestTest
     private RestActivityModelsCollection activities;
     private FileModel file;
     private RestActivityModelsCollection restActivityModelsCollection;
-    private FolderModel folderInSite;
+   
     private FileModel fileInSite;
     private RestCommentModel commentModel;
     
@@ -652,8 +661,10 @@ public class FunctionalCasesTests extends RestTest
     {  
         UserModel newUser = dataUser.createRandomTestUser();
         SiteModel userSiteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
+        
         dataUser.addUserToSite(newUser, userSiteModel, UserRole.SiteCollaborator);
-        folderInSite = dataContent.usingUser(newUser).usingSite(userSiteModel).createFolder();
+        dataContent.usingUser(newUser).usingSite(userSiteModel).createFolder();
+        
         fileInSite = dataContent.usingUser(newUser).usingSite(userSiteModel).createContent(DocumentType.TEXT_PLAIN);
         String newContent = "This is a new comment added by " + newUser.getUsername();
         commentModel = restClient.authenticateUser(newUser).withCoreAPI().usingResource(fileInSite).addComment(newContent);
