@@ -1,14 +1,12 @@
 package org.alfresco.rest.sites;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestSiteBodyCreateModel;
 import org.alfresco.rest.model.RestSiteModel;
-import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.Test;
 
 /**
@@ -23,12 +21,8 @@ public class SitesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Tests the creation of a site")
     public void testCreateSite() throws Exception
     {
-        RestSiteBodyCreateModel site = new RestSiteBodyCreateModel();
-        site.setId(RandomData.getRandomName("siteId"));
-        site.setTitle(RandomData.getRandomName("siteTitle"));
-        site.setDescription(RandomData.getRandomName("siteDescription"));
-        site.setVisibility(Visibility.PUBLIC);
-
+        SiteModel site = RestSiteModel.getRandomSiteModel();
+        
         RestSiteModel createdSite = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite("").createSite(site);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
