@@ -23,7 +23,7 @@ public class SitesTests extends RestTest
     {
         SiteModel site = RestSiteModel.getRandomSiteModel();
         
-        RestSiteModel createdSite = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite("").createSite(site);
+        RestSiteModel createdSite = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(site).createSite();
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
