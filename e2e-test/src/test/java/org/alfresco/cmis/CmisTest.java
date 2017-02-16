@@ -43,8 +43,7 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
 
     @BeforeSuite(alwaysRun = true)
     public void checkServerHealth() throws Exception
-    {
-        super.springTestContextBeforeTestClass();
+    {        
         super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
     }
