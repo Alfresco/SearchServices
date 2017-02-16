@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 
 @ContextConfiguration("classpath:alfresco-cmis-context.xml")
 @Component
@@ -41,9 +41,11 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
 
     public String documentContent = "CMIS document content";
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeSuite(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
+        super.springTestContextBeforeTestClass();
+        super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
     }
 
