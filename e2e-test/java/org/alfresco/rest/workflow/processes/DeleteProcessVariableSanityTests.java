@@ -37,6 +37,7 @@ public class DeleteProcessVariableSanityTests extends RestTest
         siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", adminUser, false, Priority.Normal);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
@@ -44,11 +45,7 @@ public class DeleteProcessVariableSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void deleteProcessVariable() throws Exception
     {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", adminUser, false, Priority.Normal);
-        RestProcessModelsCollection pmColl = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses();                
-        processModel = pmColl.assertThat().entriesListIsNotEmpty().when().getOneRandomEntry().onModel();
-        
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");       
         restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessVariable(variableModel);
@@ -63,7 +60,6 @@ public class DeleteProcessVariableSanityTests extends RestTest
     public void deleteProcessVariableUsingInvalidProcessId() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processModel.setId("incorrectProcessId");
