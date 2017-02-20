@@ -656,7 +656,7 @@ public class FunctionalCasesTests extends RestTest
      */
     @Bug(id="REPO-1830")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities with Rest API and response is successful")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities with Rest API and response is successful")
     public void userGetsItsPeopleActivities() throws Exception
     {  
         UserModel newUser = dataUser.createRandomTestUser();
