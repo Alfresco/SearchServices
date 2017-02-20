@@ -19,12 +19,14 @@
 package org.alfresco.rest.search;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.rest.model.builder.NodesBuilder;
-import org.alfresco.rest.model.builder.NodesBuilder.NodeDetail;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * Search end point Public API test.
@@ -36,7 +38,8 @@ public class SearchTest extends RestTest
     UserModel userModel, adminUserModel;
     SiteModel siteModel, privateSiteModel, moderatedSiteModel;
     UserModel searchedUser;
-
+    NodesBuilder nodesBuilder;
+    
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -50,8 +53,30 @@ public class SearchTest extends RestTest
          *   - sourceFolder
          *     - suzuki
          */
-        NodesBuilder nodesBuilder = restClient.withCoreAPI().usingNode(ContentModel.my()).defineNodes();
-        NodeDetail sourceFolder = nodesBuilder.folder("source");
-        sourceFolder.file("suzuki");
+        nodesBuilder = restClient.authenticateUser(userModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
+        
+        nodesBuilder.folder("source")
+                      .file("suzuki")
+                      .file("suzuki-2");
+        
+        //just for showing available properties
+        System.out.println(String.format("Source Folder Full Name [%s ] withd ID: %s",nodesBuilder.getNode("source").getName(), nodesBuilder.getNode("source").getId()));
+        System.out.println(String.format("Source File Full Name [%s ] withd ID: %s",nodesBuilder.getNode("suzuki").getName(), nodesBuilder.getNode("suzuki").getId()));
+    }
+    
+    @Test
+    public void searchCreatedData() throws Exception
+    {        
+        RestNodeModelsCollection nodes =  restClient.authenticateUser(userModel)
+                                                .withCoreAPI()
+                                                .usingParams("term=suzuki")
+                                                .usingQueries()
+                                                .findNodes();
+        
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        nodes.assertThat()
+             .entriesListIsNotEmpty()
+             .and().entriesListCountIs(2);                            
     }
 }
