@@ -183,9 +183,9 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     }
  
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @Bug(id = "TBD")
+    @Bug(id = "REPO-2062")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify task owner cannot complete task with invalid name - (200))")
+            description = "Verify task owner cannot complete task with invalid name - Bad Request(400))")
     public void taskOwnerCannotCompleteTaskWithInvalidName() throws Exception
     {              
         JsonObject inputJson = JsonBodyGenerator.defineJSON()
@@ -205,7 +205,6 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     }
      
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @Bug(id = "TBD")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify task owner cannot complete task with invalid Type - Bad Request(400))")
     public void taskOwnerCannotCompleteTaskWithInvalidType() throws Exception
@@ -227,7 +226,7 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     }
  
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @Bug(id = "TBD")
+    @Bug(id = "REPO-2062")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify task owner cannot complete task with invalid value - Bad Request(400))")
     public void taskOwnerCannotCompleteTaskWithInvalidValue() throws Exception
@@ -330,9 +329,9 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
     }
     
      
-    @Bug(id = "TBD") //as per api-explorer: should not have OK status
+    @Bug(id = "REPO-2063")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify task assignee cannot delegate task to task owner -  (200)")
+            description = "Verify task assignee cannot delegate task to task owner -  (400)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     public void taskAssigneeCannotDelegateTaskToTaskOwner() throws Exception
     {        
@@ -340,16 +339,16 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
                 .add("state", "delegated")
                 .add("assignee", owner.getUsername()).build();
         
-        restTaskModel = restClient.authenticateUser(owner)
+        restTaskModel = restClient.authenticateUser(assigneeUser)
             .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    @Bug(id = "TBD")
+    @Bug(id = "REPO-2063")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify task owner cannot delegate task to invalid assignee - (200)")
-    public void taskOwnerCannotDelegateTaskToInvalidAssignee() throws Exception
+            description = "Verify task assignee cannot delegate task to invalid assignee - (400)")
+    public void taskAssigneeCannotDelegateTaskToInvalidAssignee() throws Exception
     {         
         UserModel invalidAssignee = new UserModel("invalidAssignee", "password");
         
@@ -357,7 +356,7 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
                 .add("state", "delegated")
                 .add("assignee", invalidAssignee.getUsername()).build();
         
-        restTaskModel = restClient.authenticateUser(owner)
+        restTaskModel = restClient.authenticateUser(assigneeUser)
             .withParams("select=state,assignee").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
