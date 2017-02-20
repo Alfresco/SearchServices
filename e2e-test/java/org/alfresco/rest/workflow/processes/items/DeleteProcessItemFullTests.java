@@ -1,0 +1,269 @@
+package org.alfresco.rest.workflow.processes.items;
+
+import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.exception.EmptyRestModelCollectionException;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestItemModel;
+import org.alfresco.rest.model.RestItemModelsCollection;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.ProcessModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TaskModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+public class DeleteProcessItemFullTests extends RestTest
+{
+    private FileModel document, document2;
+    private SiteModel siteModel;
+    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser, adminTenantUser, tenantUser, tenantUserAssignee, adminTenantUser2;
+    private ProcessModel processModel;
+    private RestItemModelsCollection items;
+    private RestItemModel processItem;
+
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        adminUser = dataUser.getAdminUser();
+        userWhoStartsProcess = dataUser.createRandomTestUser();
+        assignee = dataUser.createRandomTestUser();
+        siteModel = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();
+        document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+    }
+    
+    @BeforeMethod(alwaysRun = true)
+    public void createProcess() throws Exception
+    {
+        TaskModel task = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+        processModel = new ProcessModel();
+        processModel.setId(task.getProcessId());
+        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(processModel).getProcess();
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Try to delete existing process item using empty processId")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void deleteProcessItemUsingEmptyProcessId() throws Exception
+    {
+        document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        processModel.setId("");
+        restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "The entity with id: "))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+             description = "Add a new process item, update the item and then delete.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void createUpdateDeleteProcessItem() throws Exception
+    {
+        document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        processItem.setName("newItemName");
+        processItem.assertThat().field("name").is("newItemName");
+
+        restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems()
+                  .assertThat().entriesListDoesNotContain("name", processItem.getName());
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Delete process item using any user.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void deleteProcessItemByAnyUser() throws Exception
+    {
+        anotherUser = dataUser.createRandomTestUser();
+
+        document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.HTML);
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(anotherUser).withWorkflowAPI().usingProcess(processModel)
+                 .deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ACCESS_INFORMATION_NOT_ALLOWED, processModel.getId()))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .containsErrorKey(String.format(RestErrorModel.ACCESS_INFORMATION_NOT_ALLOWED, processModel.getId()))
+                  .stackTraceIs(RestErrorModel.STACKTRACE);;
+    } 
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+             description = "Delete process item with admin.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void deleteProcessItemWithAdmin() throws Exception
+    {
+        document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.HTML);
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(processModel)
+                  .deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                  .assertThat().entriesListDoesNotContain("name", processItem.getName());
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Delete process item by the user who is involved in the process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void deleteProcessItemByUserInvolvedInTheProcess() throws Exception
+    {
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)
+                  .deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                  .assertThat().entriesListDoesNotContain("name", processItem.getName());
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Delete process item by the user who started the process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void deleteProcessItemByUserThatStartedTheProcess() throws Exception
+    {
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)
+                  .deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                  .assertThat().entriesListDoesNotContain("name", processItem.getName());
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Delete process item for a deleted process.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void deleteProcessItemsForDeletedProcess() throws Exception
+    {
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.withWorkflowAPI().usingProcess(processModel).deleteProcess();
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processModel.getId()))
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Delete process item by inexistent user.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    public void deleteProcessItemByInexistentUser() throws Exception
+    {
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(UserModel.getRandomUserModel()).withWorkflowAPI().usingProcess(processModel)
+                 .deleteProcessItem(processItem);
+
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+                  .assertLastError()
+                  .containsSummary(RestErrorModel.AUTHENTICATION_FAILED)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Delete process item for process without items.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL}, 
+          expectedExceptions = EmptyRestModelCollectionException.class)
+    public void deleteProcessItemsForProcessWithoutItems() throws Exception
+    {
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
+                .addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.Normal);
+
+        items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        items.assertThat().entriesListIsEmpty();
+
+        restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)
+                  .deleteProcessItem(items.getOneRandomEntry());
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
+              description = "Delete process item using by the admin in same network.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
+    public void deleteProcessItemByAdminSameNetwork() throws Exception
+    {
+        restClient.authenticateUser(adminUser);
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.usingTenant().createTenant(adminTenantUser);
+
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
+
+        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel)
+                  .deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
+                  .assertThat().entriesListDoesNotContain("name", processItem.getName());
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
+              description = "Delete process item using by admin in other network.")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    public void deleteProcessItemByAdminInOtherNetwork() throws Exception
+    {
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
+        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+
+        adminTenantUser2 = UserModel.getAdminTenantUser();
+        restClient.usingTenant().createTenant(adminTenantUser2);
+
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document)
+                    .createNewTaskAndAssignTo(tenantUserAssignee);
+
+        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)
+                  .deleteProcessItem(processItem);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                  .assertLastError()
+                  .containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .containsErrorKey(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+}
