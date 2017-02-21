@@ -68,27 +68,24 @@ public class SearchTest extends RestTest
         cm.setName(folder.getName());
         dataContent.usingSite(siteModel).usingResource(cm).createContent(file);
         dataContent.usingSite(siteModel).usingResource(cm).createContent(file2);
-        
-        }
+    }
+    
+    protected RestNodeModelsCollection query(String term) throws Exception
+    {
+        return restClient.authenticateUser(userModel)
+                .withCoreAPI()
+                .usingParams("term=" + term)
+                .usingQueries()
+                .findNodes();
+    }
     
     @Test(groups={TestGroup.SEARCH})
     public void searchCreatedData() throws Exception
     {        
-        RestNodeModelsCollection nodes =  restClient.authenticateUser(userModel)
-                                                .withCoreAPI()
-                                                .usingParams("term=cars")
-                                                .usingQueries()
-                                                .findNodes();
-        
+        RestNodeModelsCollection nodes =  query("cars");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
-       
-        nodes =  restClient.authenticateUser(userModel)
-                .withCoreAPI()
-                .usingParams("term=fox")
-                .usingQueries()
-                .findNodes();
-        
+        nodes =  query("fox");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
     }
