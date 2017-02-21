@@ -1,4 +1,4 @@
-package org.alfresco.rest.sites;
+package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
