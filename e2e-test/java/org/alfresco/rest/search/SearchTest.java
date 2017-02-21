@@ -21,7 +21,11 @@ package org.alfresco.rest.search;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.rest.model.builder.NodesBuilder;
+import org.alfresco.rest.model.builder.NodesBuilder.NodeDetail;
 import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpStatus;
@@ -35,8 +39,9 @@ import org.testng.annotations.Test;
  */
 public class SearchTest extends RestTest
 {
+    private static final String SEARCH_DATA_SAMPLE_FOLDER = "folder";
     UserModel userModel, adminUserModel;
-    SiteModel siteModel, privateSiteModel, moderatedSiteModel;
+    SiteModel siteModel;
     UserModel searchedUser;
     NodesBuilder nodesBuilder;
     
@@ -46,37 +51,45 @@ public class SearchTest extends RestTest
         adminUserModel = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        moderatedSiteModel = dataSite.usingUser(userModel).createModeratedRandomSite();
-        
         /*
          * Create the following file structure for preconditions : 
-         *   - sourceFolder
-         *     - suzuki
+         *   |- folder
+         *        |-- pangram.txt
+         *        |-- cars.pdf
          */
         nodesBuilder = restClient.authenticateUser(userModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
+        FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
+        dataContent.usingSite(siteModel).createFolder(folder);
+        //Create files
+        FileModel file = new FileModel("pangram.txt", FileType.TEXT_PLAIN, "The qucik brown fox jumps over the lazy dog");
+        FileModel file2 = new FileModel("cars.txt", FileType.TEXT_PLAIN, "The landrover discovery is not a sports car");
+        ContentModel cm = new ContentModel();
+        cm.setCmisLocation(folder.getCmisLocation());
+        cm.setName(folder.getName());
+        dataContent.usingSite(siteModel).usingResource(cm).createContent(file);
+        dataContent.usingSite(siteModel).usingResource(cm).createContent(file2);
         
-        nodesBuilder.folder("source")
-                      .file("suzuki")
-                      .file("suzuki-2");
-        
-        //just for showing available properties
-        System.out.println(String.format("Source Folder Full Name [%s ] withd ID: %s",nodesBuilder.getNode("source").getName(), nodesBuilder.getNode("source").getId()));
-        System.out.println(String.format("Source File Full Name [%s ] withd ID: %s",nodesBuilder.getNode("suzuki").getName(), nodesBuilder.getNode("suzuki").getId()));
-    }
+        }
     
     @Test
     public void searchCreatedData() throws Exception
     {        
         RestNodeModelsCollection nodes =  restClient.authenticateUser(userModel)
                                                 .withCoreAPI()
-                                                .usingParams("term=suzuki")
+                                                .usingParams("term=cars")
                                                 .usingQueries()
                                                 .findNodes();
         
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        nodes.assertThat().entriesListIsNotEmpty();
+       
+        nodes =  restClient.authenticateUser(userModel)
+                .withCoreAPI()
+                .usingParams("term=fox")
+                .usingQueries()
+                .findNodes();
         
-        nodes.assertThat()
-             .entriesListIsNotEmpty()
-             .and().entriesListCountIs(2);                            
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        nodes.assertThat().entriesListIsNotEmpty();
     }
 }
