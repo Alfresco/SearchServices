@@ -1,11 +1,13 @@
 package org.alfresco.rest.favorites;
 
+import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -124,6 +126,18 @@ public class GetFavoriteSiteFullTests extends RestTest
         restSiteModel = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getFavoriteSite(siteFolder);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
             .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, userModel.getUsername(), folder.getName()));
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+        description = "Verify invalid request returns status 404 when providing file name instead of site id")
+    public void getFavoriteSiteUsingFile() throws Exception
+    {
+        FileModel file = dataContent.usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
+        SiteModel siteFolder = new SiteModel(file.getName());
+        restSiteModel = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getFavoriteSite(siteFolder);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+            .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, userModel.getUsername(), file.getName()));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })

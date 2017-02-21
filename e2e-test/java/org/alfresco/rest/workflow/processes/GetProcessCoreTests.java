@@ -36,7 +36,12 @@ public class GetProcessCoreTests extends RestTest
         newProcess.setId(processId);
         restClient.authenticateUser(dataUser.getAdminUser())
                 .withWorkflowAPI().usingProcess(newProcess).getProcess();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processId));
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, processId))
+                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                  .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION, 
@@ -57,7 +62,9 @@ public class GetProcessCoreTests extends RestTest
         RestProcessModel networkProcess1 = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);       
         
         restClient.authenticateUser(tenantUser2).withWorkflowAPI().usingProcess(networkProcess1).getProcess();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+                  .assertLastError().containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                  .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
@@ -90,7 +97,9 @@ public class GetProcessCoreTests extends RestTest
         RestProcessModel networkProcess1 = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);       
         
         restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(networkProcess1).getProcess();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
+                  .assertLastError().containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                  .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
 }

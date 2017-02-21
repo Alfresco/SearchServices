@@ -38,7 +38,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable with any user")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    public void deleteTaskVarialbleByAnyUser() throws Exception
+    public void deleteTaskVariableByAnyUser() throws Exception
     {
         restClient.authenticateUser(userModel);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -97,7 +97,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable by non assigned user")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
-    public void deleteTaskVarialbleByNonAssignedUser() throws Exception
+    public void deleteTaskVariableByNonAssignedUser() throws Exception
     {
         UserModel nonAssigned = dataUser.createRandomTestUser();
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -112,7 +112,7 @@ public class DeleteTaskVariableCoreTests extends RestTest
             description = "Delete task variable by inexistent user")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
     @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void deleteTaskVarialbleByInexistentUser() throws Exception
+    public void deleteTaskVariableByInexistentUser() throws Exception
     {
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskVariable(variableModel);

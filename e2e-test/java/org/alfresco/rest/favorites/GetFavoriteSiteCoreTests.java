@@ -51,10 +51,12 @@ public class GetFavoriteSiteCoreTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify User fails to get specific favorite site of admin with Rest API and response is 403")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
+    description = "Verify User fails to get specific favorite site of admin with Rest API and response is 403")
     public void userFailsToGetFavoriteSiteOfAdmin() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(dataUser.getAdminUser()).getFavoriteSite(site1);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
-    }
+    } 
+   
 }

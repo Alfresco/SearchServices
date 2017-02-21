@@ -40,10 +40,8 @@ public class AddSiteMemberCoreTests extends RestTest
         usersWithRolesToPrivateSite = dataUser.addUsersWithRolesToSite(privateSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, 
                                                           UserRole.SiteConsumer,UserRole.SiteContributor);
         addMembersJson = "{\"role\":\"%s\",\"id\":\"%s\"}, {\"role\":\"%s\",\"id\":\"%s\"}";
-    }
+    }   
     
-    
-
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager can add another user as manager to a public site and gets status code CREATED (201)")

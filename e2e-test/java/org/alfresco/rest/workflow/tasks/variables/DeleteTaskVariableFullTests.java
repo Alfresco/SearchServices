@@ -40,7 +40,7 @@ public class DeleteTaskVariableFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable twice")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
-    public void deleteTaskVarialbleTwice() throws Exception
+    public void deleteTaskVariableTwice() throws Exception
     {
         restClient.authenticateUser(userModel);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -62,7 +62,7 @@ public class DeleteTaskVariableFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable with empty variable name")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
-    public void deleteTaskEmptyVarialbleName() throws Exception
+    public void deleteTaskEmptyVariableName() throws Exception
     {
         restClient.authenticateUser(userModel);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -80,7 +80,7 @@ public class DeleteTaskVariableFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable with empty variable scope")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
-    public void deleteTaskEmptyVarialbleScope() throws Exception
+    public void deleteTaskEmptyVariableScope() throws Exception
     {
         restClient.authenticateUser(userModel);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -97,7 +97,7 @@ public class DeleteTaskVariableFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task variable with invalid variable name")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
-    public void deleteTaskInvalidVarialbleName() throws Exception
+    public void deleteTaskInvalidVariableName() throws Exception
     {
         restClient.authenticateUser(userModel);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");

@@ -66,8 +66,7 @@ public class UpdateTaskCoreTestsBulk2 extends RestTest
         
         restClient.authenticateUser(owner)
             .withParams("select=state").withWorkflowAPI().usingTask(taskModel).updateTask("resolved");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+        restClient.assertStatusCodeIs(HttpStatus.OK);        
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })

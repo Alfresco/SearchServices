@@ -3,6 +3,8 @@ package org.alfresco.rest.workflow.tasks.variables;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestRequest;
+import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestTaskModel;
@@ -15,6 +17,7 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -29,6 +32,7 @@ public class AddTaskVariablesFullTests extends RestTest
     private TaskModel taskModel;
     private RestVariableModel restVariablemodel, variableModel, variableModel1;
     private RestVariableModelsCollection restVariableCollection;
+    private String taskId;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -39,6 +43,8 @@ public class AddTaskVariablesFullTests extends RestTest
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
+   
+        taskId = taskModel.getId();
     }
 
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
@@ -101,6 +107,36 @@ public class AddTaskVariablesFullTests extends RestTest
                               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                               .stackTraceIs(RestErrorModel.STACKTRACE);
     }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Update task variable with invalid variable name")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void createTaskVariableWithInvalidVariableName() throws Exception
+    {            
+        restClient.authenticateUser(adminUser).withWorkflowAPI();
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"scope\": \"local\",\"names\": \"varName\",\"value\": \"test\","
+                + "\"type\": \"d:text\"}", "tasks/{taskId}/variables", taskId);
+        restClient.processModel(RestVariableModel.class, request);
+                       
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                  .assertLastError()
+                  .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unrecognized field " + "\"names\"")); 
+    }
+    
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Create task variable with invalid name")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    public void createTaskVariableWithInvalidName() throws Exception
+    {
+        restClient.authenticateUser(adminUser).withWorkflowAPI();
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "{\"scope\": \"local\",\"name\": ',\"value\": \"test\","
+                + "\"type\": \"d:text\"}", "tasks/{taskId}/variables", taskId);
+        restClient.processModel(RestVariableModel.class, request);
+        
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+        .assertLastError()
+        .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unexpected character " + "('''"));        
+     }
     
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
