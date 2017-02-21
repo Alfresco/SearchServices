@@ -87,7 +87,7 @@ public class AddTaskItemFullTests extends RestTest
                  .assertThat().field("mimeType").is(taskItems.getEntries().get(1).onModel().getMimeType());    
      }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Add task item using by admin in other network.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
     public void addTaskItemByAdminInOtherNetwork() throws Exception
@@ -111,7 +111,7 @@ public class AddTaskItemFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Add multiple task item using by admin in other network.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
     public void addMultipleTaskItemByAdminInOtherNetwork() throws Exception
@@ -137,7 +137,7 @@ public class AddTaskItemFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);;
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task item then create it again")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL})
     public void deleteTaskItemThenCreateItAgain() throws Exception
@@ -156,7 +156,7 @@ public class AddTaskItemFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
     
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete multiple task item then create it again")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL})
     public void deleteMultipleTaskItemThenCreateItAgain() throws Exception

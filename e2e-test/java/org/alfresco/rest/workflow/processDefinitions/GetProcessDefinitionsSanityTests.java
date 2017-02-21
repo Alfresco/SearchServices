@@ -24,7 +24,7 @@ public class GetProcessDefinitionsSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY, description = "Verify Admin user gets process definitions for non-network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
     public void nonNetworkAdminGetsProcessDefinitions() throws Exception
@@ -34,7 +34,7 @@ public class GetProcessDefinitionsSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets process definitions for network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY, TestGroup.NETWORKS})
     public void networkAdminGetsProcessDefinitions() throws Exception

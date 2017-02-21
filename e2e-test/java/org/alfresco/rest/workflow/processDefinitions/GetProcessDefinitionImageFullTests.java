@@ -27,7 +27,7 @@ public class GetProcessDefinitionImageFullTests extends RestTest
     }
 
     @Bug(id = "REPO-1911")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition image returns status code 404 when empty processDefinitionId is used")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
@@ -41,7 +41,7 @@ public class GetProcessDefinitionImageFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Tenant User doesn't get process definition image for another network deployment using REST API")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL, TestGroup.NETWORKS })

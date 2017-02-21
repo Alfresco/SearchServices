@@ -26,7 +26,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
         adminUserModel = dataUser.getAdminUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions with valid skipCount parameter applied using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsWithValidSkipCount() throws Exception
@@ -46,7 +46,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
         procDefWithSkipCount.assertThat().paginationField("skipCount").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with negative skipCount parameter applied using REST API")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsWithNegativeSkipCount() throws Exception
@@ -60,7 +60,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with non numeric skipCount parameter applied using REST API")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsWithNonNumericSkipCount() throws Exception
@@ -70,7 +70,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "A"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions with valid maxItems parameter applied using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsWithValidMaxItems() throws Exception
@@ -90,7 +90,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
         procDefWithMaxItems.assertThat().paginationField("maxItems").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with negative maxItems parameter applied using REST API")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsWithNegativeMaxItems() throws Exception
@@ -104,7 +104,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
                 .statusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with non numeric maxItems parameter applied using REST API")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsWithNonNumericMaxItems() throws Exception
@@ -114,7 +114,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "A"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets process definitions with properties parameter applied using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsWithValidProperties() throws Exception
@@ -136,7 +136,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
                 .field("name").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions ordered by name ascendant using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsOrderedByNameAsc() throws Exception
@@ -147,7 +147,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
         processDefinitions.assertThat().entriesListIsSortedAscBy("name");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions when many fields are used for orderBy parameter")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsOrderedByManyFields() throws Exception
@@ -158,7 +158,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.ONLY_ONE_ORDERBY);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions when where parameter is applied")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
     public void getProcessDefinitionsFilteredByKey() throws Exception
@@ -171,7 +171,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
                     .assertThat().entriesListContains("key", "activitiParallelGroupReview");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Tenant User doesn't get process definitions for another network deployment using REST API")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL, TestGroup.NETWORKS })

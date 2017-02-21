@@ -26,7 +26,7 @@ public class GetProcessDefinitionSanityTests extends RestTest
         randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Admin user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
@@ -37,7 +37,7 @@ public class GetProcessDefinitionSanityTests extends RestTest
         returnedProcessDefinition.assertThat().field("name").is(randomProcessDefinition.getName());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Any user gets a specific process definition for non-network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })

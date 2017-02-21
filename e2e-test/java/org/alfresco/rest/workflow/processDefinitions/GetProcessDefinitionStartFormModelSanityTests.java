@@ -26,7 +26,7 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestTest
         restClient.authenticateUser(adminUserModel);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Admin gets a model of the start form type definition for non-network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
@@ -37,7 +37,7 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.SANITY,
             description = "Verify Tenant Admin gets a model of the start form type definition for network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY, TestGroup.NETWORKS })

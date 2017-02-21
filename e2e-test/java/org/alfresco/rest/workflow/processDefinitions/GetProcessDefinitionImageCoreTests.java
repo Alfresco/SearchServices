@@ -26,7 +26,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition image returns status code 404 when invalid processDefinitionId is used")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
@@ -44,7 +44,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify network admin is able to get a process definition image using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE, TestGroup.NETWORKS })
@@ -60,7 +60,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify network user is able to get a process definition image using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE, TestGroup.NETWORKS })

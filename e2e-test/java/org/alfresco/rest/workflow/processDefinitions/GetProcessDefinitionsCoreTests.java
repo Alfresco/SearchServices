@@ -26,7 +26,7 @@ public class GetProcessDefinitionsCoreTests extends RestTest
         adminTenantUser = UserModel.getAdminTenantUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify any user gets process definitions for non-network deployments using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void nonNetworkUserGetsProcessDefinitions() throws Exception
@@ -48,7 +48,7 @@ public class GetProcessDefinitionsCoreTests extends RestTest
                 .field("key").is("activitiAdhoc");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify get process definitions using any network user for network enabled deployments with REST API status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE, TestGroup.NETWORKS})
     public void networkUserGetsProcessDefinitions() throws Exception
@@ -62,7 +62,7 @@ public class GetProcessDefinitionsCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify call to get process definitions with invalid orderBy parameter with REST API and status code is BAD_REQUEST (400)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void userGetProcessDefinitionsWithInvalidOrderBy() throws Exception
@@ -76,7 +76,7 @@ public class GetProcessDefinitionsCoreTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ORDERBY, "test", "deploymentId, name, id, category, version, key"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify call to get process definitions with invalid where parameter with REST API and status code is BAD_REQUEST (400)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
     public void userGetProcessDefinitionsWithInvalidWhere() throws Exception
