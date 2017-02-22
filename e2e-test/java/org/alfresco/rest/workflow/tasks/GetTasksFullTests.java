@@ -24,7 +24,7 @@ public class GetTasksFullTests extends RestTest
     UserModel candidateUser;
     FileModel fileModel;
     UserModel assigneeUser;
-    RestTaskModelsCollection taskModels;    
+    RestTaskModelsCollection taskModels, taskCollections;    
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -42,16 +42,16 @@ public class GetTasksFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     public void skipCountParameterApplied() throws Exception
     { 
-        RestTaskModelsCollection taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().getTasks();
+        taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         RestTaskModel firstTask = taskCollections.getEntries().get(0).onModel();
         RestTaskModel secondTask = taskCollections.getEntries().get(1).onModel();
         
         taskModels = restClient.withParams("skipCount=2").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty()
-            .assertThat().entriesListDoesNotContain("id", firstTask.getId())
-            .assertThat().entriesListDoesNotContain("id", secondTask.getId());       
+        taskModels.assertThat().entriesListDoesNotContain("id", firstTask.getId())
+            .assertThat().entriesListDoesNotContain("id", secondTask.getId());    
+        taskModels.assertThat().paginationField("skipCount").is("2");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
@@ -59,16 +59,17 @@ public class GetTasksFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     public void maxItemsParameterApplied() throws Exception
     { 
-        RestTaskModelsCollection taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().getTasks();
+        taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         RestTaskModel firstTask = taskCollections.getEntries().get(0).onModel();
         RestTaskModel secondTask = taskCollections.getEntries().get(1).onModel();
         
         taskModels = restClient.withParams("maxItems=2").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty()
-            .assertThat().entriesListContains("id", firstTask.getId())
-            .assertThat().entriesListContains("id", secondTask.getId());       
+        
+        taskModels.assertThat().entriesListContains("id", firstTask.getId())
+            .assertThat().entriesListContains("id", secondTask.getId());   
+        taskModels.assertThat().paginationField("maxItems").is("2");
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
