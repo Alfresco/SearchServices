@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 public class GetProcessDefinitionSanityTests extends RestTest
 {
     private UserModel testUser;
-    private RestProcessDefinitionModel randomProcessDefinition, returnedProcessDefinition;
+    private RestProcessDefinitionModel randomProcessDefinition, firstRandomProcessDefinition, returnedProcessDefinition;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -24,6 +24,7 @@ public class GetProcessDefinitionSanityTests extends RestTest
         testUser = dataUser.createRandomTestUser();
         restClient.authenticateUser(dataUser.getAdminUser());
         randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
+        firstRandomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getProcessDefinitionByDeploymentId("1");
     }
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
@@ -44,18 +45,18 @@ public class GetProcessDefinitionSanityTests extends RestTest
     public void anyUserGetsProcessDefinition() throws Exception
     {
         restClient.authenticateUser(testUser);
-        returnedProcessDefinition = restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition();
+        returnedProcessDefinition = restClient.withWorkflowAPI().usingProcessDefinitions(firstRandomProcessDefinition).getProcessDefinition();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedProcessDefinition.assertThat()
-                .field("name").is(randomProcessDefinition.getName()).and()
-                .field("deploymentId").is(randomProcessDefinition.getDeploymentId()).and()
-                .field("description").is(randomProcessDefinition.getDescription()).and()
-                .field("id").is(randomProcessDefinition.getId()).and()
-                .field("startFormResourceKey").is(randomProcessDefinition.getStartFormResourceKey()).and()
-                .field("category").is(randomProcessDefinition.getCategory()).and()
-                .field("title").is(randomProcessDefinition.getTitle()).and()
-                .field("version").is(randomProcessDefinition.getVersion()).and()
-                .field("graphicNotationDefined").is(randomProcessDefinition.getGraphicNotationDefined()).and()
-                .field("key").is(randomProcessDefinition.getKey());
+        returnedProcessDefinition.assertThat()        
+                .field("name").is(firstRandomProcessDefinition.getName()).and()
+                .field("deploymentId").is(firstRandomProcessDefinition.getDeploymentId()).and()
+                .field("description").is(firstRandomProcessDefinition.getDescription()).and()
+                .field("id").is(firstRandomProcessDefinition.getId()).and()
+                .field("startFormResourceKey").is(firstRandomProcessDefinition.getStartFormResourceKey()).and()
+                .field("category").is(firstRandomProcessDefinition.getCategory()).and()
+                .field("title").is(firstRandomProcessDefinition.getTitle()).and()
+                .field("version").is(firstRandomProcessDefinition.getVersion()).and()
+                .field("graphicNotationDefined").is(firstRandomProcessDefinition.getGraphicNotationDefined()).and()
+                .field("key").is(firstRandomProcessDefinition.getKey());
     }
 }
