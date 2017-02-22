@@ -70,7 +70,7 @@ public class GetTagsCoreTests extends RestTest
     public void fileTagIsRetrieved() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
+        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase());
@@ -82,7 +82,7 @@ public class GetTagsCoreTests extends RestTest
     public void folderTagIsRetrieved() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
+        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue2.toLowerCase());
