@@ -410,7 +410,7 @@ public class AddProcessVariablesFullTests extends RestTest
                     .createNewTaskAndAssignTo(tenantUserAssignee);
         
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
         processVariable = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)           
                 .addProcessVariable(variableModel);
         
@@ -441,7 +441,7 @@ public class AddProcessVariablesFullTests extends RestTest
         
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
+        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
         restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)           
                   .addProcessVariables(variableModel, variableModel1);
         

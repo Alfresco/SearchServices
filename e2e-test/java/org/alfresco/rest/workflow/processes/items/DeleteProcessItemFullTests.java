@@ -42,7 +42,8 @@ public class DeleteProcessItemFullTests extends RestTest
     @BeforeMethod(alwaysRun = true)
     public void createProcess() throws Exception
     {
-        TaskModel task = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+        TaskModel task = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document)
+                                      .createNewTaskAndAssignTo(assignee);
         processModel = new ProcessModel();
         processModel.setId(task.getProcessId());
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(processModel).getProcess();

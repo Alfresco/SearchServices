@@ -165,7 +165,7 @@ public class AddProcessItemCoreTests extends RestTest
                     .field("createdBy").is(adminUser.getUsername()).and()
                     .field("modifiedAt").isNotEmpty().and()
                     .field("name").is(document.getName()).and()
-                    .field("modifiedBy").is(userWhoStartsProcess.getUsername()).and()
+                    .field("modifiedBy").is(adminUser.getUsername()).and()
                     .field("id").isNotEmpty().and()
                     .field("mimeType").is(document.getFileType().mimeType);
         processItems.getEntries().get(1).onModel().assertThat()
@@ -174,7 +174,7 @@ public class AddProcessItemCoreTests extends RestTest
                     .field("createdBy").is(adminUser.getUsername()).and()
                     .field("modifiedAt").isNotEmpty().and()
                     .field("name").is(document2.getName()).and()
-                    .field("modifiedBy").is(userWhoStartsProcess.getUsername()).and()
+                    .field("modifiedBy").is(adminUser.getUsername()).and()
                     .field("id").isNotEmpty().and()
                     .field("mimeType").is(document2.getFileType().mimeType);
     }
