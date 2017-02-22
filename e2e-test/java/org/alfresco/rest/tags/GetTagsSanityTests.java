@@ -53,7 +53,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithManagerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -65,7 +65,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithCollaboratorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -77,7 +77,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithContributorRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -89,7 +89,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithConsumerRole() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())
@@ -101,7 +101,7 @@ public class GetTagsSanityTests extends RestTest
     public void getTagsWithAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
-        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=500").withCoreAPI().getTags();
+        RestTagModelsCollection returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", tagValue.toLowerCase())

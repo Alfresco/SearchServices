@@ -141,7 +141,7 @@ public class GetTagsFullTests extends RestTest
         restClient.withCoreAPI().usingResource(document).deleteTag(deletedTag);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         
-        returnedCollection = restClient.withParams("maxItems=5000").withCoreAPI().getTags();
+        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListDoesNotContain("tag", removedTag.toLowerCase());
     }
