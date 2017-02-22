@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <dependencies>
@@ -129,6 +129,23 @@
                           <outputDirectory>${project.build.directory}/wars</outputDirectory>
                           <overWriteReleases>false</overWriteReleases>
                           <overWriteSnapshots>true</overWriteSnapshots>
+                      </configuration>
+                  </execution>
+                  <execution>
+                      <id>replace</id>
+                      <phase>validate</phase>
+                      <goals>
+                          <goal>copy</goal>
+                      </goals>
+                      <configuration>
+                          <artifactItems>
+                              <artifactItem>
+                                  <groupId>commons-fileupload</groupId>
+                                  <artifactId>commons-fileupload</artifactId>
+                                  <version>1.3.2</version>
+                                  <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>
+                              </artifactItem>
+                          </artifactItems>
                       </configuration>
                   </execution>
               </executions>
