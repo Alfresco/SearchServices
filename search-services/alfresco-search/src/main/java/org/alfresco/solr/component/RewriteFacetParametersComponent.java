@@ -401,7 +401,7 @@ public class RewriteFacetParametersComponent extends SearchComponent
                         continue;
                     }
                     
-                    if(field.startsWith("{!afts"))
+                    if(field.startsWith("{!"))
                     {
                     	int index = field.indexOf("}");
                     	if((index > 0) && (index < (field.length() - 1)))
@@ -409,7 +409,6 @@ public class RewriteFacetParametersComponent extends SearchComponent
                     		prefix = field.substring(0, index+1);
                     		field = field.substring(index+1);
                     	}
-                    	
                     }
                     
                     if(req.getSchema().getFieldOrNull(field) != null)
