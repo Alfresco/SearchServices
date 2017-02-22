@@ -19,6 +19,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -29,6 +30,7 @@ public class GetSitesFullTests extends RestTest
     private RestSiteModelsCollection sites;
     private String name;
     private UserModel adminUser;
+    private SiteModel secondPublicSite, thirdPublicSite;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
@@ -166,8 +168,10 @@ public class GetSitesFullTests extends RestTest
             description= "Verify if User gets sites ordered by id ascending and status code is 200")
     public void getSitesOrderedByTitleASCAndVisibilityASC() throws Exception
     {
-        SiteModel secondPublicSite = dataSite.usingAdmin().createSite(
-                new SiteModel(Visibility.PUBLIC, "guid", name+"A", name+"A", name));   
+        secondPublicSite = dataSite.usingAdmin().createSite(
+                new SiteModel(Visibility.PUBLIC, "guid", name+"A", name+"A", name));  
+        thirdPublicSite = dataSite.usingAdmin().createSite(
+                new SiteModel(Visibility.PUBLIC, "guid", name+"B", name+"B", name)); 
         
         int totalItems = restClient.authenticateUser(regularUser).withCoreAPI().getSites().getPagination().getTotalItems();
         sites = restClient.authenticateUser(regularUser).withParams(String.format("maxItems=%s&orderBy=description ASC&orderBy=title ASC", totalItems))
@@ -175,10 +179,13 @@ public class GetSitesFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListIsNotEmpty();
         List<RestSiteModel> sitesList = sites.getEntries();
-        sitesList.get(sitesList.size()-1).onModel().assertThat().field("title").is(secondPublicSite.getTitle());
-        sitesList.get(sitesList.size()-2).onModel().assertThat().field("title").is(publicSite.getTitle());
+        sitesList.get(sitesList.size()-1).onModel().assertThat().field("title").is(thirdPublicSite.getTitle());
+        sitesList.get(sitesList.size()-2).onModel().assertThat().field("title").is(secondPublicSite.getTitle());
         
         dataSite.deleteSite(secondPublicSite);
+        secondPublicSite = null;
+        dataSite.deleteSite(thirdPublicSite);
+        thirdPublicSite = null;
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL } )
@@ -269,6 +276,15 @@ public class GetSitesFullTests extends RestTest
             siteMembers.assertThat().entriesListIsNotEmpty().assertThat().entriesListContains("id").assertThat().entriesListContains("role", UserRole.SiteManager.toString());
             siteMembers.getOneRandomEntry().onModel().assertThat().field("person.firstName").isNotEmpty().and().field("person.id").isNotEmpty();
         }
+    }
+    
+    @AfterMethod(alwaysRun=true)
+    public void deleteSites() throws Exception
+    {
+        if(secondPublicSite != null)
+            dataSite.deleteSite(secondPublicSite);
+        if(thirdPublicSite != null)
+            dataSite.deleteSite(thirdPublicSite);
     }
     
     @AfterClass(alwaysRun=true)
