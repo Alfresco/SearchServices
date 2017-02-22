@@ -18,7 +18,6 @@
  */
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.utility.model.TestGroup;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
@@ -30,21 +29,22 @@ import org.testng.annotations.Test;
  */
 public class SearchTest extends AbstractSearchTest
 {
-    @Test(groups={TestGroup.SEARCH})
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
     public void searchCreatedData() throws Exception
     {        
-        RestNodeModelsCollection nodes =  query("cars");
+        SearchResponse nodes =  query("ipsum");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
+        
         nodes =  query("fox");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
     }
     
-    @Test(groups={TestGroup.SEARCH})
+    @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
     public void searchNonIndexedData() throws Exception
     {        
-        RestNodeModelsCollection nodes =  query("yeti");
+        SearchResponse nodes =  query("yeti");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsEmpty();
     }

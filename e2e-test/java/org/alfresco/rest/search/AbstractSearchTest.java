@@ -19,7 +19,6 @@
 package org.alfresco.rest.search;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
@@ -30,7 +29,11 @@ import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
 
 /**
- * Abstract Search test.
+ * Abstract Search test class that contains useful methods
+ * such as:
+ *  <ul>
+ *      <li>Preparing the data to index.
+ *      <li>Preparing search requests.
  * @author Michael Suzuki
  *
  */
@@ -66,14 +69,20 @@ public class AbstractSearchTest extends RestTest
         dataContent.usingSite(siteModel).usingResource(cm).createContent(file);
         dataContent.usingSite(siteModel).usingResource(cm).createContent(file2);
     }
-    
-    protected RestNodeModelsCollection query(String term) throws Exception
+    /**
+     * Helper method which create an http post request to Search API end point.
+     * @param term String search term
+     * @return {@link SearchResponse} response.
+     * @throws Exception if error
+     */
+    protected SearchResponse query(String term) throws Exception
     {
-        return restClient.authenticateUser(userModel)
-                .withCoreAPI()
-                .usingParams("term=" + term)
-                .usingQueries()
-                .findNodes();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        
+        queryReq.setLanguage("afts");
+        queryReq.setQuery(term);
+        SearchRequest query = new SearchRequest(queryReq);
+        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
     }
     
 }
