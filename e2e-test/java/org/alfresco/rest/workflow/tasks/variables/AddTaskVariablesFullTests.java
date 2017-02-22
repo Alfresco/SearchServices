@@ -232,7 +232,6 @@ public class AddTaskVariablesFullTests extends RestTest
                 .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
         RestTaskModel task = restClient.authenticateUser(adminTenantUser1)
                             .withWorkflowAPI().usingProcess(networkProcess1).getProcessTasks().getOneRandomEntry();
-        restClient.authenticateUser(adminTenantUser1);
         RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         restVariablemodel = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI()
                     .usingTask(task.onModel())

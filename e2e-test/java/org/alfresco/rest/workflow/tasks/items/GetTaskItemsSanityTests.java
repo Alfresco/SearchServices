@@ -1,9 +1,12 @@
 package org.alfresco.rest.workflow.tasks.items;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestItemModelsCollection;
+import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -78,22 +81,21 @@ public class GetTaskItemsSanityTests extends RestTest
     @Test(groups = { TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
     public void getTaskItemsByAdminInSameNetwork() throws Exception
     {
-        UserModel adminuser = dataUser.getAdminUser();
-        restClient.authenticateUser(adminuser);
+        UserModel adminUser = dataUser.getAdminUser();
+        restClient.authenticateUser(adminUser);
+        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
+  
+        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant");
+        UserModel tenantUserAssignee1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenantAssignee");
 
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser);
-
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
-
-        document1 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document1);
+        siteModel = dataSite.usingUser(adminTenantUser1).createPublicRandomSite();
+        document1 = dataContent.usingUser(adminTenantUser1).usingSite(siteModel).createContent(DocumentType.XML);
+        RestProcessModel addedProcess = restClient.authenticateUser(tenantUser1).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee1, false, Priority.Normal);
+        RestTaskModel addedTask = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().getTasks().getTaskModelByProcess(addedProcess);  
+        taskItem = restClient.withWorkflowAPI().usingTask(addedTask).addTaskItem(document1);
         
-        itemModels = restClient.withWorkflowAPI().usingTask(taskModel).getTaskItems();
+        itemModels = restClient.withWorkflowAPI().usingTask(addedTask).getTaskItems();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         itemModels.assertThat()
             .entriesListIsNotEmpty().and()

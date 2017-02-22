@@ -1,7 +1,10 @@
 package org.alfresco.rest.workflow.tasks.variables;
 
+import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestProcessModel;
+import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -81,23 +84,21 @@ public class UpdateTaskVariableSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY, TestGroup.NETWORKS})
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
-            description = "Update existing task variable by admin in the same network")
-    
+            description = "Update existing task variable by admin in the same network")    
     public void updateTaskVariableByAdminInSameNetwork() throws Exception
     {
-        restClient.authenticateUser(adminUser);
+        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser1);
+        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
 
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser);
-
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        tenantTask = dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(tenantUserAssignee);
-
+        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
+                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
+        RestTaskModel task = restClient.authenticateUser(adminTenantUser1)
+                            .withWorkflowAPI().usingProcess(networkProcess1).getProcessTasks().getOneRandomEntry();
+        
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        taskVariable = restClient.withWorkflowAPI().usingTask(tenantTask).updateTaskVariable(variableModel);
+        taskVariable = restClient.withWorkflowAPI().usingTask(task.onModel())
+                                 .updateTaskVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         taskVariable.assertThat().field("scope").is(taskVariable.getScope())
             .and().field("name").is(taskVariable.getName())
@@ -105,7 +106,7 @@ public class UpdateTaskVariableSanityTests extends RestTest
             .and().field("value").is(taskVariable.getValue());
 
         variableModel.setValue("updatedValue");
-        taskVariable = restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel).and().field("value").is("updatedValue");
+        taskVariable = restClient.withWorkflowAPI().usingTask(task.onModel()).updateTaskVariable(variableModel).and().field("value").is("updatedValue");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
