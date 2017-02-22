@@ -121,22 +121,19 @@ public class AddProcessItemCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
     public void addProcessItemByAdminSameNetwork() throws Exception
     {
-        restClient.authenticateUser(adminUser);
         adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser);
-
+        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
 
         siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
-
-        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
+        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        processItem = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processItem.assertThat().field("createdAt").isNotEmpty().and().field("size").is("19").and().field("createdBy").is(adminUser.getUsername()).and()
-                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(adminUser.getUsername()).and()
+        processItem.assertThat().field("createdAt").isNotEmpty().and().field("size").is("19").and().field("createdBy").is(adminTenantUser.getUsername().toLowerCase()).and()
+                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(adminTenantUser.getUsername().toLowerCase()).and()
                 .field("id").isNotEmpty().and().field("mimeType").is(document.getFileType().mimeType);
     }
     
@@ -145,36 +142,34 @@ public class AddProcessItemCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
     public void addMultipleProcessItemsByAdminSameNetwork() throws Exception
     {
-        restClient.authenticateUser(adminUser);
         adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser);
-
+        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
+        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
 
         siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(tenantUserAssignee);
-
-        processModel = restClient.withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processItems = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItems(document, document2);
+        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        document2 = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        processItems = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel).addProcessItems(document, document2);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processItems.getEntries().get(0).onModel().assertThat()
                     .field("createdAt").isNotEmpty().and()
                     .field("size").is("19").and()    
-                    .field("createdBy").is(adminUser.getUsername()).and()
+                    .field("createdBy").is(adminTenantUser.getUsername().toLowerCase()).and()
                     .field("modifiedAt").isNotEmpty().and()
                     .field("name").is(document.getName()).and()
-                    .field("modifiedBy").is(adminUser.getUsername()).and()
+                    .field("modifiedBy").is(adminTenantUser.getUsername().toLowerCase()).and()
                     .field("id").isNotEmpty().and()
                     .field("mimeType").is(document.getFileType().mimeType);
         processItems.getEntries().get(1).onModel().assertThat()
                     .field("createdAt").isNotEmpty().and()
                     .field("size").is("19").and()    
-                    .field("createdBy").is(adminUser.getUsername()).and()
+                    .field("createdBy").is(adminTenantUser.getUsername().toLowerCase()).and()
                     .field("modifiedAt").isNotEmpty().and()
                     .field("name").is(document2.getName()).and()
-                    .field("modifiedBy").is(adminUser.getUsername()).and()
+                    .field("modifiedBy").is(adminTenantUser.getUsername().toLowerCase()).and()
                     .field("id").isNotEmpty().and()
                     .field("mimeType").is(document2.getFileType().mimeType);
     }

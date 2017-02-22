@@ -59,8 +59,9 @@ public class DeleteTagFullTests extends RestTest
     public void collaboratorCanDeleteLongTag() throws JsonToModelConversionException, Exception
     {
         String longTag = RandomStringUtils.randomAlphanumeric(10000);
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         
-        tagReturnedModel = restClient.authenticateUser(adminUserModel)
+        RestTagModel tagReturnedModel = restClient.authenticateUser(adminUserModel)
             .withCoreAPI().usingResource(document).addTag(longTag);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))

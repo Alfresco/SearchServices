@@ -1,7 +1,7 @@
 package org.alfresco.rest.workflow.processes.items;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestErrorModel;
@@ -10,7 +10,6 @@ import org.alfresco.rest.model.RestItemModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -42,11 +41,8 @@ public class DeleteProcessItemFullTests extends RestTest
     @BeforeMethod(alwaysRun = true)
     public void createProcess() throws Exception
     {
-        TaskModel task = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document)
-                                      .createNewTaskAndAssignTo(assignee);
-        processModel = new ProcessModel();
-        processModel.setId(task.getProcessId());
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(processModel).getProcess();
+        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
+                                 .addProcess("activitiAdhoc", assignee, false, Priority.Normal);          
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
@@ -199,9 +195,6 @@ public class DeleteProcessItemFullTests extends RestTest
           expectedExceptions = EmptyRestModelCollectionException.class)
     public void deleteProcessItemsForProcessWithoutItems() throws Exception
     {
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
-                .addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.Normal);
-
         items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         items.assertThat().entriesListIsEmpty();
