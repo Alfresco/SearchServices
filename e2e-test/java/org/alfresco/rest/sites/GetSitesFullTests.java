@@ -174,7 +174,7 @@ public class GetSitesFullTests extends RestTest
                 new SiteModel(Visibility.PUBLIC, "guid", name+"B", name+"B", name)); 
         
         int totalItems = restClient.authenticateUser(regularUser).withCoreAPI().getSites().getPagination().getTotalItems();
-        sites = restClient.authenticateUser(regularUser).withParams(String.format("maxItems=%s&orderBy=description ASC&orderBy=title ASC", totalItems))
+        sites = restClient.authenticateUser(regularUser).withParams(String.format("maxItems=%s&orderBy=title ASC&orderBy=description ASC", totalItems))
                 .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListIsNotEmpty();
