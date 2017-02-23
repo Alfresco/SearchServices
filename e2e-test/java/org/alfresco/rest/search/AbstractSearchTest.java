@@ -61,7 +61,7 @@ public class AbstractSearchTest extends RestTest
         FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
         dataContent.usingSite(siteModel).createFolder(folder);
         //Create files
-        FileModel file = new FileModel("pangram.txt", FileType.TEXT_PLAIN, "The qucik brown fox jumps over the lazy dog");
+        FileModel file = new FileModel("pangram.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog");
         FileModel file2 = new FileModel("cars.txt", FileType.TEXT_PLAIN, "The landrover discovery is not a sports car");
         ContentModel cm = new ContentModel();
         cm.setCmisLocation(folder.getCmisLocation());

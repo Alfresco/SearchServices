@@ -32,7 +32,7 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
     public void searchCreatedData() throws Exception
     {        
-        SearchResponse nodes =  query("ipsum");
+        SearchResponse nodes =  query("car");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
         
