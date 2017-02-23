@@ -56,12 +56,11 @@ public class DeleteTagFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can delete long tag.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.FULL })
-    public void collaboratorCanDeleteLongTag() throws JsonToModelConversionException, Exception
+    public void userCollaboratorCanDeleteLongTag() throws JsonToModelConversionException, Exception
     {
-        String longTag = RandomStringUtils.randomAlphanumeric(3000);
-        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        
-        RestTagModel tagReturnedModel = restClient.authenticateUser(adminUserModel)
+        String longTag = RandomStringUtils.randomAlphanumeric(5000);
+          
+        tagReturnedModel = restClient.authenticateUser(adminUserModel)
             .withCoreAPI().usingResource(document).addTag(longTag);
 
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
