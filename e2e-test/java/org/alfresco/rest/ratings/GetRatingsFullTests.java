@@ -74,7 +74,7 @@ public class GetRatingsFullTests extends RestTest
         ratingsModel = restClient.authenticateUser(adminUserModel).withParams("maxItems=1").withCoreAPI().usingResource(document).getRatings();
         ratingsModel.assertThat().entriesListCountIs(1);
         ratingsModel.getPagination().assertThat().field("hasMoreItems").is("true")
-            .and().field("totalItems").is("2");
+            .and().field("count").is("1").and().field("maxItems").is("1");
     }
     
     @Bug(id = "REPO-1831")
