@@ -20,6 +20,7 @@ package org.alfresco.rest.search;
 
 import org.alfresco.utility.model.TestGroup;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -32,13 +33,22 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
     public void searchCreatedData() throws Exception
     {        
-        SearchResponse nodes =  query("car");
+        SearchResponse nodes =  query("fox");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
         
-        nodes =  query("fox");
+        SearchNodeModel entity = nodes.getEntryByIndex(0);
+        Assert.assertEquals(entity.getSearch().getScore(), 1);
+        entity.assertThat().field("name").contains("pangram.txt");
+        
+        nodes =  query("car");
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        entity = nodes.getEntryByIndex(0);
+
         nodes.assertThat().entriesListIsNotEmpty();
+        Assert.assertEquals(entity.getSearch().getScore(), 1);
+        entity.assertThat().field("search").contains("score");
+        entity.assertThat().field("name").contains("cars.txt");
     }
     
     @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
