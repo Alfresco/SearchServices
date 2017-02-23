@@ -42,12 +42,12 @@ public class GetTasksFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     public void skipCountParameterApplied() throws Exception
     { 
-        taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().getTasks();
+        taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=name ASC").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         RestTaskModel firstTask = taskCollections.getEntries().get(0).onModel();
         RestTaskModel secondTask = taskCollections.getEntries().get(1).onModel();
         
-        taskModels = restClient.withParams("skipCount=2").withWorkflowAPI().getTasks();
+        taskModels = restClient.withParams("skipCount=2&orderBy=name ASC").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         taskModels.assertThat().entriesListDoesNotContain("id", firstTask.getId())
             .assertThat().entriesListDoesNotContain("id", secondTask.getId());    
@@ -65,7 +65,7 @@ public class GetTasksFullTests extends RestTest
         RestTaskModel firstTask = taskCollections.getEntries().get(0).onModel();
         RestTaskModel secondTask = taskCollections.getEntries().get(1).onModel();
         
-        taskModels = restClient.withParams("maxItems=2").withWorkflowAPI().getTasks();
+        taskModels = restClient.withParams("maxItems=2&orderBy=name ASC").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         
         taskModels.assertThat().entriesListContains("id", firstTask.getId())
