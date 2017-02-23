@@ -59,7 +59,8 @@ public class GetTasksFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     public void maxItemsParameterApplied() throws Exception
     { 
-        taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().getTasks();
+        taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=name ASC").withWorkflowAPI().getTasks();
+        
         restClient.assertStatusCodeIs(HttpStatus.OK);
         RestTaskModel firstTask = taskCollections.getEntries().get(0).onModel();
         RestTaskModel secondTask = taskCollections.getEntries().get(1).onModel();
