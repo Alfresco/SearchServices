@@ -96,8 +96,17 @@ public class AbstractSearchTest extends RestTest
     {
         SearchRequest query = new SearchRequest(queryReq);
         query.setHighlight(highlight);
-        System.out.println(query.toString());
         return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
     }
-    
+    /**
+     * Helper method which create an http post request to Search API end point.
+     * @param term String search term
+     * @return {@link SearchResponse} response.
+     * @throws Exception if error
+     * 
+     */
+    protected SearchResponse query(SearchRequest query) throws Exception
+    {
+        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
+    }
 }
