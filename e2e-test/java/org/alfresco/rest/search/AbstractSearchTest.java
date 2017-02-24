@@ -44,6 +44,7 @@ public class AbstractSearchTest extends RestTest
     SiteModel siteModel;
     UserModel searchedUser;
     NodesBuilder nodesBuilder;
+    protected FileModel file,file2;
     
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -61,8 +62,8 @@ public class AbstractSearchTest extends RestTest
         FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
         dataContent.usingSite(siteModel).createFolder(folder);
         //Create files
-        FileModel file = new FileModel("pangram.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog");
-        FileModel file2 = new FileModel("cars.txt", FileType.TEXT_PLAIN, "The landrover discovery is not a sports car");
+        file = new FileModel("pangram.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog");
+        file2 = new FileModel("cars.txt", FileType.TEXT_PLAIN, "The landrover discovery is not a sports car");
         ContentModel cm = new ContentModel();
         cm.setCmisLocation(folder.getCmisLocation());
         cm.setName(folder.getName());
@@ -74,14 +75,28 @@ public class AbstractSearchTest extends RestTest
      * @param term String search term
      * @return {@link SearchResponse} response.
      * @throws Exception if error
+     * 
      */
     protected SearchResponse query(String term) throws Exception
     {
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        
         queryReq.setLanguage("afts");
         queryReq.setQuery(term);
         SearchRequest query = new SearchRequest(queryReq);
+        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
+    }
+    /**
+     * Helper method which create an http post request to Search API end point.
+     * @param term String search term
+     * @return {@link SearchResponse} response.
+     * @throws Exception if error
+     * 
+     */
+    protected SearchResponse query(RestRequestQueryModel queryReq,RestRequestHighlightModel highlight) throws Exception
+    {
+        SearchRequest query = new SearchRequest(queryReq);
+        query.setHighlight(highlight);
+        System.out.println(query.toString());
         return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
     }
     
