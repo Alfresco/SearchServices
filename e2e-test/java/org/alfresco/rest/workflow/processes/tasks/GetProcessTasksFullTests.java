@@ -27,9 +27,9 @@ public class GetProcessTasksFullTests extends RestTest
     {
         adminUser = dataUser.getAdminUser();
         userWhoStartsProcess = dataUser.createRandomTestUser();
-        assignee1 = dataUser.createRandomTestUser();
-        assignee2 = dataUser.createRandomTestUser();
-        assignee3 = dataUser.createRandomTestUser();
+        assignee1 = dataUser.createRandomTestUser("A_1");
+        assignee2 = dataUser.createRandomTestUser("B_2");
+        assignee3 = dataUser.createRandomTestUser("C_3");
         publicSite = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();
         document = dataContent.usingSite(publicSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         processWithSingleTask = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(publicSite).usingResource(document)
@@ -56,7 +56,7 @@ public class GetProcessTasksFullTests extends RestTest
     public void getProcessTasksWithValidSkipCount() throws Exception
     {
         processTasks = restClient.authenticateUser(userWhoStartsProcess)
-                .withParams("skipCount=2").withWorkflowAPI()
+                .withParams("orderBy=assignee ASC&skipCount=2").withWorkflowAPI()
                 .usingProcess(processWithMultipleTasks).getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processTasks.assertThat().entriesListContains("assignee", assignee3.getUsername())
@@ -100,7 +100,7 @@ public class GetProcessTasksFullTests extends RestTest
     public void getProcessTasksWithValidMaxItems() throws Exception
     {
         processTasks = restClient.authenticateUser(userWhoStartsProcess)
-                .withParams("maxItems=2").withWorkflowAPI()
+                .withParams("orderBy=assignee ASC&maxItems=2").withWorkflowAPI()
                 .usingProcess(processWithMultipleTasks).getProcessTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processTasks.assertThat().entriesListDoesNotContain("assignee", assignee3.getUsername())
