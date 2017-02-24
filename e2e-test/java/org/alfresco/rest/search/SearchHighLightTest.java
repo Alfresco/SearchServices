@@ -31,24 +31,24 @@ import org.testng.annotations.Test;
  */
 public class SearchHighLightTest extends AbstractSearchTest
 {
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
     public void searchWithHighLight() throws Exception
     {        
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("description:workflow");
-        queryReq.setUserQuery("workflow");
+        queryReq.setQuery("cm:content:cars");
+        queryReq.setUserQuery("cars");
         
         RestRequestHighlightModel highlight = new RestRequestHighlightModel();
         highlight.setPrefix("¿");
         highlight.setPostfix("?");
         highlight.setMergeContiguous(true);
         List<RestRequestFieldsModel> fields = new ArrayList<RestRequestFieldsModel>();
-        fields.add(new RestRequestFieldsModel("cm:title"));
+        fields.add(new RestRequestFieldsModel("cm:content"));
         highlight.setFields(fields);
         SearchResponse nodes =  query(queryReq, highlight);
         nodes.assertThat().entriesListIsNotEmpty();
         ResponseHighLightModel hl = nodes.getEntryByIndex(0).getSearch().getHighlight().get(0);
-        hl.assertThat().field("snippets").contains("Customized ¿Workflow? Process Definitions");
+        hl.assertThat().field("snippets").contains( "The landrover discovery is not a sports ¿car?");
     }
     
     @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
