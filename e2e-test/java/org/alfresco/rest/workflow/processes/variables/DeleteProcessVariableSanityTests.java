@@ -5,7 +5,6 @@ import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
