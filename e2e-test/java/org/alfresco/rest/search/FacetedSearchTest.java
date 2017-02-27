@@ -23,11 +23,10 @@ import java.util.List;
 
 import org.alfresco.rest.model.RestRequestFacetFieldsModel;
 import org.alfresco.utility.model.TestGroup;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Search high lighting test.
+ * Faceted search test.
  * @author Michael Suzuki
  *
  */
@@ -49,6 +48,35 @@ public class FacetedSearchTest extends AbstractSearchTest
      *    ],
      *      "facetFields": {"facets": [{"field": "'content.size'"}]}
      * }
+     * 
+     * Expected response
+     * {"list": {
+     *     "entries": [... All the results],
+     *     "pagination": {
+     *        "maxItems": 100,
+     *        "hasMoreItems": false,
+     *        "totalItems": 61,
+     *        "count": 61,
+     *        "skipCount": 0
+     *     },
+     *     "context": {
+     *        "consistency": {"lastTxId": 512},
+     *        "facetQueries": [
+     *           {
+     *              "count": 61,
+     *              "label": "small"
+     *           },
+     *           {
+     *              "count": 0,
+     *              "label": "large"
+     *           },
+     *           {
+     *              "count": 0,
+     *              "label": "medium"
+     *           }
+     *        ]
+     *     }
+     * }}
      * @throws Exception
      */
     public void searchWithFaceting() throws Exception
@@ -66,14 +94,18 @@ public class FacetedSearchTest extends AbstractSearchTest
         
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         List<Object> list = new ArrayList<Object>();
-        list.add(new FacetField("'content.size'"));
+        list.add(new FacetFieldQuery("'content.size'"));
         facetFields.setFacets(list);
         
         query.setFacetFields(facetFields);
         
-        SearchResponse nodes =  query(query);
-        nodes.assertThat().entriesListIsNotEmpty();
-        nodes.getContext().assertThat().field("facetQueries").isNotEmpty();
+        SearchResponse response =  query(query);
+        response.assertThat().entriesListIsNotEmpty();
+        response.getContext().assertThat().field("facetQueries").isNotEmpty();
+        FacetFieldResponse facet = response.getContext().getFacetQueries().get(0);
+        facet.assertThat().field("label").contains("small").and().field("count").isGreaterThan(0);
+        response.getContext().getFacetQueries().get(1).assertThat().field("label").contains("large").and().field("count").isLessThan(1);
+        response.getContext().getFacetQueries().get(2).assertThat().field("label").contains("medium").and().field("count").isLessThan(1);
         
     }
     
