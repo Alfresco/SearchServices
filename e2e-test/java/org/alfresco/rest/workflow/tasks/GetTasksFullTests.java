@@ -59,16 +59,16 @@ public class GetTasksFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     public void maxItemsParameterApplied() throws Exception
     { 
-        taskCollections = restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=description ASC").withWorkflowAPI().getTasks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        RestTaskModel firstTask = taskCollections.getEntries().get(0).onModel();
-        RestTaskModel secondTask = taskCollections.getEntries().get(1).onModel();
+        restClient.authenticateUser(userModel).withWorkflowAPI().addProcess("activitiAdhoc", assigneeUser, false, Priority.Low);
+        restClient.authenticateUser(userModel).withWorkflowAPI().addProcess("activitiAdhoc", adminUser, false, Priority.Low);        
+        taskCollections = restClient.authenticateUser(userModel).withParams("orderBy=assignee ASC").withWorkflowAPI().getTasks();
+        restClient.assertStatusCodeIs(HttpStatus.OK);        
         
-        taskModels = restClient.withParams("orderBy=description ASC&maxItems=2").withWorkflowAPI().getTasks();
+        taskModels = restClient.withParams("orderBy=assignee ASC&maxItems=2").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
-        taskModels.assertThat().entriesListContains("id", firstTask.getId())
-            .assertThat().entriesListContains("id", secondTask.getId());   
+        taskModels.assertThat().entriesListIsNotEmpty()
+            .assertThat().entriesListContains("assignee", assigneeUser.getUsername())
+            .assertThat().entriesListDoesNotContain("assignee", adminUser.getUsername());   
         taskModels.assertThat().paginationField("maxItems").is("2");
         taskModels.assertThat().paginationField("count").is("2");
     }
