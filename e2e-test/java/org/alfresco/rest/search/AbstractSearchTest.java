@@ -58,7 +58,6 @@ public class AbstractSearchTest extends RestTest
          *        |-- pangram.txt
          *        |-- cars.pdf
          */
-        nodesBuilder = restClient.authenticateUser(userModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
         FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
         dataContent.usingSite(siteModel).createFolder(folder);
         //Create files
