@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 
 @ContextConfiguration("classpath:alfresco-restapi-context.xml")
 public abstract class RestTest extends AbstractTestNGSpringContextTests
@@ -63,9 +63,10 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     @Autowired
     protected WorkflowService workflow;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeSuite(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
+        super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
     }
     
