@@ -35,7 +35,7 @@ public class FingerPrintTest extends AbstractSearchTest
      * The data prep should have loaded a file
      * identical to the one loaded as part of this test.
      * @throws Exception
-     */ 
+     */
     public void search() throws Exception
     {
         String uuid = file.getNodeRefWithoutVersion();

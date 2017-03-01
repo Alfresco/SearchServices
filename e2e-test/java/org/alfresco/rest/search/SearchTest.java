@@ -38,7 +38,8 @@ public class SearchTest extends AbstractSearchTest
         nodes.assertThat().entriesListIsNotEmpty();
         
         SearchNodeModel entity = nodes.getEntryByIndex(0);
-        Assert.assertEquals(entity.getSearch().getScore(), 1);
+        entity.assertThat().field("search").contains("score");
+        entity.getSearch().assertThat().field("score").isNotEmpty();
         entity.assertThat().field("name").contains("pangram.txt");
         
         nodes =  query("car");
@@ -46,8 +47,8 @@ public class SearchTest extends AbstractSearchTest
         entity = nodes.getEntryByIndex(0);
 
         nodes.assertThat().entriesListIsNotEmpty();
-        Assert.assertEquals(entity.getSearch().getScore(), 1);
         entity.assertThat().field("search").contains("score");
+        entity.getSearch().assertThat().field("score").isNotEmpty();
         entity.assertThat().field("name").contains("cars.txt");
     }
     
