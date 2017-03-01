@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.report.Bug;
 import org.testng.annotations.Test;
 
 /**
@@ -32,6 +33,7 @@ import org.testng.annotations.Test;
 public class SearchHighLightTest extends AbstractSearchTest
 {
     @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
+    @Bug(id = "TAS-3220")
     public void searchWithHighLight() throws Exception
     {        
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
