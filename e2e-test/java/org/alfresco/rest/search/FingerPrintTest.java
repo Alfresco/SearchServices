@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
  */
 public class FingerPrintTest extends AbstractSearchTest
 {
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+//    Disabled until solr4 resolution @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
     /**
      * Search similar document based on document finger print.
      * The data prep should have loaded a file
