@@ -207,9 +207,9 @@ public class GetCommentsFullTests extends RestTest
         
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).usingParams("maxItems=0").getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
-        restClient.assertLastError().getErrorKey().contains("Only positive values supported for maxItems.");
-        restClient.assertLastError().containsSummary("Only positive values supported for maxItems.");
-        restClient.assertLastError().getDescriptionURL().contains("https://api-explorer.alfresco.com");
-        restClient.assertLastError().getStackTrace().contains("For security reasons the stack trace is no longer displayed, but the property is kept for previous versions");
+        restClient.assertLastError().containsErrorKey(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
+        restClient.assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
+        restClient.assertLastError().descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
+        restClient.assertLastError().stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

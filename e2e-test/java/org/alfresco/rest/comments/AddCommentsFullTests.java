@@ -154,9 +154,9 @@ public class AddCommentsFullTests extends RestTest
         restClient.processModel(RestCommentModel.class, request);
         
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-        restClient.assertLastError().getErrorKey().contains("Unrecognized field \"content2\"");
-        restClient.assertLastError().containsSummary("Unrecognized field \"content2\"");
-        restClient.assertLastError().getDescriptionURL().contains("https://api-explorer.alfresco.com");
-        restClient.assertLastError().getStackTrace().contains("For security reasons the stack trace is no longer displayed, but the property is kept for previous versions");
+        restClient.assertLastError().containsErrorKey(String.format(RestErrorModel.UNRECOGNIZED_FIELD, "content2"));
+        restClient.assertLastError().containsSummary(String.format(RestErrorModel.UNRECOGNIZED_FIELD, "content2"));
+        restClient.assertLastError().descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
+        restClient.assertLastError().stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

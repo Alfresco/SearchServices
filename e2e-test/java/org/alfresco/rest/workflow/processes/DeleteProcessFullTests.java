@@ -43,7 +43,7 @@ public class DeleteProcessFullTests extends RestTest
         restClient.withWorkflowAPI().usingProcess(process).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
             .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-            .containsSummary(String.format("%s: %s ", "The entity with id" , process.getId(), RestErrorModel.ENTITY_NOT_FOUND))
+            .containsSummary(String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, process.getId()))
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
             .stackTraceIs(RestErrorModel.STACKTRACE);
 
