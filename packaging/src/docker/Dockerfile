@@ -5,7 +5,7 @@ MAINTAINER Gethin James, gethin.james@alfresco.com
 ARG solrUrl
 ARG solrBranch
 ARG solrVer
-ENV SOLR_URL ${solrUrl:-nightlybuilds.alfresco.com/SearchServices/$solrBranch/LATEST/Distribution/alfresco-search-services-$solrVer.zip}
+ENV SOLR_URL ${solrUrl:-https://nightlybuilds.alfresco.com/SearchServices/$solrBranch/LATEST/Distribution/alfresco-search-services-$solrVer.zip}
 ENV SOLR_ZIP alfresco-search-services.zip
 ENV DIST_DIR /opt/alfresco-search-services
 ENV LANG C.UTF-8
