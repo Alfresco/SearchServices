@@ -21,7 +21,6 @@ package org.alfresco.rest.search;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.model.RestRequestFacetFieldsModel;
 import org.alfresco.utility.model.TestGroup;
 import org.testng.annotations.Test;
 
@@ -102,10 +101,15 @@ public class FacetedSearchTest extends AbstractSearchTest
         SearchResponse response =  query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facetQueries").isNotEmpty();
-        FacetFieldResponse facet = response.getContext().getFacetQueries().get(0);
+        FacetFieldBucket facet = response.getContext().getFacetQueries().get(0);
         facet.assertThat().field("label").contains("small").and().field("count").isGreaterThan(0);
-        response.getContext().getFacetQueries().get(1).assertThat().field("label").contains("large").and().field("count").isLessThan(1);
-        response.getContext().getFacetQueries().get(2).assertThat().field("label").contains("medium").and().field("count").isLessThan(1);
+        facet.assertThat().field("label").contains("small").and().field("filterQuery").equals("content.size:[0 TO 102400]");
+        response.getContext().getFacetQueries().get(1).assertThat().field("label").contains("large")
+                    .and().field("count").isLessThan(1)
+                    .and().field("filterQuery").equals("content.size:[1048576 TO 16777216]");
+        response.getContext().getFacetQueries().get(2).assertThat().field("label").contains("medium")
+                    .and().field("count").isLessThan(1)
+                    .and().field("filterQuery").equals("content.size:[102400 TO 1048576]");
         
     }
     
