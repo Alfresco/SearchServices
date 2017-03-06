@@ -3,7 +3,10 @@ package org.alfresco.rest.renditions;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -55,14 +58,38 @@ public class CreateRenditionTests  extends RestTest
     
     @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux" )
     @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
-            description = "Verify user that created the document can also creates rendition for it with Rest API and status code is 202")
+            description = "Verify user that created the document can also creates 'pdf' rendition for it with Rest API and status code is 202")
     @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
-    public void userThatCreatedFileCanCreateRenditionForIt() throws JsonToModelConversionException, Exception
+    public void userThatCreatedFileCanCreatePdfRenditionForIt() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("pdf");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         
         restClient.withCoreAPI().usingNode(document).getNodeRendition("pdf")
+            .assertThat().field("status").is("CREATED");
+    }
+    
+    @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux" )
+    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
+            description = "Verify user that created the document can also creates 'doclib' rendition for it with Rest API and status code is 202")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
+    public void userThatCreatedFileCanCreateDoclibRenditionForIt() throws JsonToModelConversionException, Exception
+    {
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        restClient.authenticateUser(user)
+        .configureRequestSpec() 
+        .addMultiPart("filedata", Utility.getResourceTestDataFile("my-file.tif"));
+
+        RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingResource(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED); 
+        document = new FileModel("my-file.tif");
+        document.setCmisLocation(folder.getCmisLocation() + "/my-file.tif");
+        document.setNodeRef(fileNode.getId());
+        
+        restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("doclib");
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        
+        restClient.withCoreAPI().usingNode(document).getNodeRendition("doclib")
             .assertThat().field("status").is("CREATED");
     }
 }
