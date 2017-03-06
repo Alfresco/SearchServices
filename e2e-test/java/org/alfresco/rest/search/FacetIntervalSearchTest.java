@@ -125,7 +125,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         restFacetSetModel.setEnd("now");
         restFacetSetModel.setLabel("From2016");
 
-        FacetInterval facetInterval = new FacetInterval("cm:modified", null, Arrays.asList(restRequestFacetSetModel, restFacetSetModel));
+        FacetInterval facetInterval = new FacetInterval("cm:modified", "modified", Arrays.asList(restRequestFacetSetModel, restFacetSetModel));
         facetIntervalsModel.setIntervals(Arrays.asList(facetInterval));
         query.setFacetIntervals(facetIntervalsModel);
 
@@ -134,6 +134,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         response.getContext().assertThat().field("facetIntervals").isNotEmpty();
         RestResultBucketsModel resultBucketsModel = response.getContext().getFacetIntervals().get(0);
 
+        resultBucketsModel.assertThat().field("label").is("modified");
         FacetFieldBucket bucket = resultBucketsModel.getBuckets().get(0);
         Assert.assertEquals(resultBucketsModel.getBuckets().size(), 2);
 
