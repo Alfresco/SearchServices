@@ -34,8 +34,8 @@ public class GetProcessDefinitionImageFullTests extends RestTest
     public void getProcessDefinitionImageUsingEmptyProcessDefinitionId() throws Exception
     {
         restClient.authenticateUser(adminUser);
-        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry();
-        randomProcessDefinition.onModel().setId("");
+        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
+        randomProcessDefinition.setId("");
         restClient.withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
@@ -53,7 +53,7 @@ public class GetProcessDefinitionImageFullTests extends RestTest
         restClient.usingTenant().createTenant(adminTenantUser2);
 
         RestProcessDefinitionModel randomProcessDefinition = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry();
+                .getAllProcessDefinitions().getOneRandomEntry().onModel();
         restClient.authenticateUser(adminTenantUser2).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)

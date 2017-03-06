@@ -50,7 +50,7 @@ public class DeleteDeploymentSanityTests extends RestTest
         deployment = allDeployments.getDeploymentByName("customWorkflowExtentionForRest.bpmn");
 
         RestProcessDefinitionModel processDefinitionAssociated =
-                restClient.withWorkflowAPI().getAllProcessDefinitions().getProcessDefinitionByDeploymentId(deployment.getId());
+                restClient.withWorkflowAPI().getAllProcessDefinitions().getProcessDefinitionById(deployment.getId());
 
         RestProcessModel addedProcess =
                 restClient.withWorkflowAPI().addProcess(processDefinitionAssociated.getName(), adminUser, false, CMISUtil.Priority.Normal);
