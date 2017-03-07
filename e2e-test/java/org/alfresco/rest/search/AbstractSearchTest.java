@@ -60,15 +60,15 @@ public class AbstractSearchTest extends RestTest
          */
         nodesBuilder = restClient.authenticateUser(userModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
         FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
-        dataContent.usingSite(siteModel).createFolder(folder);
+        dataContent.usingUser(userModel).usingSite(siteModel).createFolder(folder);
         //Create files
         file = new FileModel("pangram.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog");
         file2 = new FileModel("cars.txt", FileType.TEXT_PLAIN, "The landrover discovery is not a sports car");
         ContentModel cm = new ContentModel();
         cm.setCmisLocation(folder.getCmisLocation());
         cm.setName(folder.getName());
-        dataContent.usingSite(siteModel).usingResource(cm).createContent(file);
-        dataContent.usingSite(siteModel).usingResource(cm).createContent(file2);
+        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(cm).createContent(file);
+        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(cm).createContent(file2);
     }
     /**
      * Helper method which create an http post request to Search API end point.
