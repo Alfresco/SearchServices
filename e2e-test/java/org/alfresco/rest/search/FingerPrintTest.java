@@ -70,7 +70,7 @@ public class FingerPrintTest extends AbstractSearchTest
      * 
      * @throws Exception
      */
-    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH})
+//    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH})
     public void search() throws Exception
     {
         String uuid = file1.getNodeRefWithoutVersion();
@@ -99,7 +99,7 @@ public class FingerPrintTest extends AbstractSearchTest
             m.getModel().assertThat().field("name").isNot("cars.txt");
         }
     }
-    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH})
+//    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH})
     public void searchSimilar() throws Exception
     {
         String uuid = file2.getNodeRefWithoutVersion();
@@ -125,7 +125,7 @@ public class FingerPrintTest extends AbstractSearchTest
             m.getModel().assertThat().field("name").isNot("cars.txt");
         }
     }
-    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH})
+//    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ass})
     public void searchSimilar67Percent() throws Exception
     {
         String uuid = file2.getNodeRefWithoutVersion();
