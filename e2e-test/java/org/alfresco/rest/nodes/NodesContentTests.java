@@ -11,6 +11,7 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 /**
  * 
@@ -19,17 +20,28 @@ import org.testng.annotations.Test;
  */
 public class NodesContentTests extends RestTest
 {
+    private UserModel user1, user2;
+    private SiteModel site1, site2;
+    private FileModel file1;
+    
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {  
+        user1 = dataUser.createRandomTestUser();
+        user2 = dataUser.createRandomTestUser();
+        site1 = dataSite.usingUser(user1).createPublicRandomSite();
+        site2 = dataSite.usingUser(user2).createPublicRandomSite();    
+        file1 = dataContent.usingUser(user1).usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
+    }
+    
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify file name in Content-Disposition header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})    
     public void checkFileNameWithRegularCharsInHeader() throws Exception
     {
-        UserModel user = dataUser.createRandomTestUser();
-        SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
-        FileModel file = dataContent.usingUser(user).usingSite(site).createContent(DocumentType.TEXT_PLAIN);
-        restClient.authenticateUser(user).withCoreAPI().usingNode(file).usingParams("attachment=false").getNodeContent();
+        restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("attachment=false").getNodeContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file.getName()));
+        restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file1.getName()));
     }
     
     @Bug(id="REPO-2112")
@@ -41,10 +53,8 @@ public class NodesContentTests extends RestTest
         char c1 = 127;
         char c2 = 31;
         char c3 = 256;
-        UserModel user = dataUser.createRandomTestUser();
-        SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
-        FileModel file = dataContent.usingUser(user).usingSite(site).createContent(new FileModel("\ntest\""+c1+c2+c3,FileType.TEXT_PLAIN));
-        restClient.authenticateUser(user).withCoreAPI().usingNode(file).usingParams("attachment=false").getNodeContent();
+        FileModel file = dataContent.usingUser(user2).usingSite(site2).createContent(new FileModel("\ntest\"" + c1 + c2 + c3, FileType.TEXT_PLAIN));
+        restClient.authenticateUser(user2).withCoreAPI().usingNode(file).usingParams("attachment=false").getNodeContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Disposition","filename=\" test    .txt\"");
     }
