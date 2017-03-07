@@ -20,7 +20,6 @@ package org.alfresco.rest.search;
 
 import org.alfresco.utility.model.TestGroup;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**

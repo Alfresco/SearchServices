@@ -18,9 +18,7 @@
  */
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.model.TestGroup;
 import org.testng.Assert;
-import org.testng.annotations.Test;
 
 /**
  * Search end point Public API test with finger print.

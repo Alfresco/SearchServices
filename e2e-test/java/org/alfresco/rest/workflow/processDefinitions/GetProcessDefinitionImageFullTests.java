@@ -57,6 +57,6 @@ public class GetProcessDefinitionImageFullTests extends RestTest
         restClient.authenticateUser(adminTenantUser2).withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, randomProcessDefinition.onModel().getId()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, randomProcessDefinition.getId()));
     }
 }

@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 
 public class GetTaskItemsSanityTests extends RestTest
 {
-    private UserModel userModel, userWhoStartsTask, assignee, adminTenantUser, tenantUser, tenantUserAssignee;
+    private UserModel userModel, userWhoStartsTask, assignee;
     private SiteModel siteModel;
     private FileModel fileModel, document1;
     private TaskModel taskModel;
