@@ -20,6 +20,7 @@ package org.alfresco.rest.search;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.builder.NodesBuilder;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -69,6 +70,8 @@ public class AbstractSearchTest extends RestTest
         cm.setName(folder.getName());
         dataContent.usingSite(siteModel).usingResource(cm).createContent(file);
         dataContent.usingSite(siteModel).usingResource(cm).createContent(file2);
+
+        Utility.waitToLoopTime(60);
     }
     /**
      * Helper method which create an http post request to Search API end point.
