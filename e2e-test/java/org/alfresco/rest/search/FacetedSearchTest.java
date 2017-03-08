@@ -103,13 +103,13 @@ public class FacetedSearchTest extends AbstractSearchTest
         response.getContext().assertThat().field("facetQueries").isNotEmpty();
         FacetFieldBucket facet = response.getContext().getFacetQueries().get(0);
         facet.assertThat().field("label").contains("small").and().field("count").isGreaterThan(0);
-        facet.assertThat().field("label").contains("small").and().field("filterQuery").equals("content.size:[0 TO 102400]");
+        facet.assertThat().field("label").contains("small").and().field("filterQuery").is("content.size:[0 TO 102400]");
         response.getContext().getFacetQueries().get(1).assertThat().field("label").contains("large")
                     .and().field("count").isLessThan(1)
-                    .and().field("filterQuery").equals("content.size:[1048576 TO 16777216]");
+                    .and().field("filterQuery").is("content.size:[1048576 TO 16777216]");
         response.getContext().getFacetQueries().get(2).assertThat().field("label").contains("medium")
                     .and().field("count").isLessThan(1)
-                    .and().field("filterQuery").equals("content.size:[102400 TO 1048576]");
+                    .and().field("filterQuery").is("content.size:[102400 TO 1048576]");
         
     }
     
