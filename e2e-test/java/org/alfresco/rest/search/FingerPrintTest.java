@@ -70,7 +70,7 @@ public class FingerPrintTest extends AbstractSearchTest
      * 
      * @throws Exception
      */
-//    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH})
+    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1})
     public void search() throws Exception
     {
         String uuid = file1.getNodeRefWithoutVersion();
@@ -99,12 +99,13 @@ public class FingerPrintTest extends AbstractSearchTest
             m.getModel().assertThat().field("name").isNot("cars.txt");
         }
     }
-//    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH})
+    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1})
     public void searchSimilar() throws Exception
     {
         String uuid = file2.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
-        String fingerprint = String.format("FINGERPRINT:%s_68", uuid);
+        // In the response eneity there is a score of each doc, change below threshold to bring more like or less.
+        String fingerprint = String.format("FINGERPRINT:%s_68", uuid); 
         SearchResponse response = query(fingerprint);
         int count = response.getEntries().size();
         Assert.assertTrue(count > 1);
@@ -125,7 +126,7 @@ public class FingerPrintTest extends AbstractSearchTest
             m.getModel().assertThat().field("name").isNot("cars.txt");
         }
     }
-//    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ass})
+    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1})
     public void searchSimilar67Percent() throws Exception
     {
         String uuid = file2.getNodeRefWithoutVersion();

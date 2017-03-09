@@ -34,6 +34,7 @@ import org.testng.annotations.BeforeClass;
  *  <ul>
  *      <li>Preparing the data to index.
  *      <li>Preparing search requests.
+ *      
  * @author Michael Suzuki
  *
  */
