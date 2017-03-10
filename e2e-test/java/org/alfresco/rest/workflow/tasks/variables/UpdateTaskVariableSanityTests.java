@@ -27,9 +27,7 @@ public class UpdateTaskVariableSanityTests extends RestTest
     private SiteModel siteModel;
     private FileModel fileModel;
     private UserModel assigneeUser;
-    private TaskModel taskModel, tenantTask;
-
-    private UserModel adminTenantUser, tenantUser, tenantUserAssignee;
+    private TaskModel taskModel;
 
     private RestVariableModel taskVariable;
     private RestVariableModel variableModel;

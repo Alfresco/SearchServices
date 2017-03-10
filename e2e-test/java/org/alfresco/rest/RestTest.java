@@ -14,6 +14,7 @@ import org.alfresco.utility.data.DataLink;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.DataWorkflow;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.network.ServerHealth;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +64,14 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     @Autowired
     protected WorkflowService workflow;
 
+    protected SiteModel testSite;
+    
     @BeforeSuite(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
         super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
+        testSite = dataSite.createPublicRandomSite();
     }
     
     @BeforeMethod(alwaysRun=true)
