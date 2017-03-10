@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.annotations.Test;
 
 /**
@@ -31,8 +33,10 @@ import org.testng.annotations.Test;
  */
 public class FacetedSearchTest extends AbstractSearchTest
 {
-    
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
+              description = "Checks facet queries for the Search api")
     /**
      * Perform the below facet query.
      * {
