@@ -20,13 +20,13 @@ package org.alfresco.rest.search;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Faceted Intervals Search Test
@@ -36,8 +36,10 @@ import java.util.List;
 public class FacetIntervalSearchTest extends AbstractSearchTest
 {
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1 })
-    public void testValidation() throws Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check facet intervals mandatory fields")
+    public void checkingFacetsMandatoryErrorMessages()throws Exception
     {
         SearchRequest query = carsQuery();
 
@@ -68,8 +70,10 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1 })
-    public void searchWithBasicInterval() throws Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check basic facet intervals search api")
+    public void searchWithBasicInterval()throws Exception
     {
         SearchRequest query = carsQuery();
 
@@ -108,7 +112,9 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1 })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check date facet intervals search api")
     public void searchWithDates() throws Exception
     {
         SearchRequest query = carsQuery();
