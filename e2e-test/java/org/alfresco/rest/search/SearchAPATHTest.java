@@ -92,7 +92,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         SearchResponse response =  query(searchQuery);
-        RestResultBucketsModel fresponse = response.getContext().getFacetFields().get(0);
+        RestResultBucketsModel fresponse = response.getContext().getFacetsFields().get(0);
         fresponse.assertThat().field("buckets").isNotEmpty();
         Assert.assertEquals(2,fresponse.getBuckets().size());
         fresponse.getBuckets().get(0).assertThat().field("label").contains("0/");
@@ -112,7 +112,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         SearchResponse response =  query(searchQuery);
-        RestResultBucketsModel fresponse = response.getContext().getFacetFields().get(0);
+        RestResultBucketsModel fresponse = response.getContext().getFacetsFields().get(0);
         Assert.assertEquals(4,fresponse.getBuckets().size());
         fresponse.getBuckets().get(0).assertThat().field("label").contains("1/");
     }
@@ -131,7 +131,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         searchQuery.setFacetFields(facetFields);
         
         SearchResponse response =  query(searchQuery);
-        RestResultBucketsModel fresponse = response.getContext().getFacetFields().get(0);
+        RestResultBucketsModel fresponse = response.getContext().getFacetsFields().get(0);
         String path = fresponse.getBuckets().get(0).getLabel().replace("1/", "2/");
         list.remove(0);
         list.add(new FacetFieldQuery("APATH", path));
@@ -139,7 +139,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         response =  query(searchQuery);
-        fresponse = response.getContext().getFacetFields().get(0);
+        fresponse = response.getContext().getFacetsFields().get(0);
         Assert.assertEquals(fresponse.getBuckets().size(),3);
         fresponse.getBuckets().get(0).assertThat().field("label").contains("2/");
         fresponse.getBuckets().get(0).assertThat().field("label").contains(path);
@@ -159,7 +159,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         response =  query(searchQuery);
-        fresponse = response.getContext().getFacetFields().get(0);
+        fresponse = response.getContext().getFacetsFields().get(0);
         System.out.println(response);
         Assert.assertTrue(fresponse.getBuckets().size() > 5);
         fresponse.getBuckets().get(0).assertThat().field("label").contains("3/");
