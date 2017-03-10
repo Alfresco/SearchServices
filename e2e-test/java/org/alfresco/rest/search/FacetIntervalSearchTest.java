@@ -36,7 +36,7 @@ import java.util.List;
 public class FacetIntervalSearchTest extends AbstractSearchTest
 {
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1 })
     public void testValidation() throws Exception
     {
         SearchRequest query = carsQuery();
@@ -68,7 +68,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1 })
     public void searchWithBasicInterval() throws Exception
     {
         SearchRequest query = carsQuery();
@@ -108,7 +108,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1 })
     public void searchWithDates() throws Exception
     {
         SearchRequest query = carsQuery();
