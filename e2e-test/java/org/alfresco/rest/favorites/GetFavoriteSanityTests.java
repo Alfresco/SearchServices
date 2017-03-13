@@ -49,7 +49,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteSite = restClient.withCoreAPI().usingUser(adminUserModel).getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteSite.assertThat().field("targetGuid").equals(siteModel.getGuid());
+        favoriteSite.assertThat().field("targetGuid").is(siteModel.getGuid());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -61,7 +61,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFolder = restClient.withCoreAPI().usingUser(adminUserModel).getFavorite(folderModel.getNodeRef());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFolder.assertThat().field("targetGuid").equals(folderModel.getNodeRef());        
+        favoriteFolder.assertThat().field("targetGuid").is(folderModel.getNodeRef());        
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -73,7 +73,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingUser(adminUserModel).getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFile.assertThat().field("targetGuid").equals(fileModel.getNodeRef());
+        favoriteFile.assertThat().field("targetGuid").is(fileModel.getNodeRefWithoutVersion());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -86,7 +86,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favSite = restClient.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favSite.assertThat().field("targetGuid").equals(siteModel.getGuid());
+        favSite.assertThat().field("targetGuid").is(siteModel.getGuid());
 
     }
     
@@ -100,7 +100,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFolder = restClient.withCoreAPI().usingAuthUser().getFavorite(folderModel.getNodeRef());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFolder.assertThat().field("targetGuid").equals(folderModel.getNodeRef());
+        favoriteFolder.assertThat().field("targetGuid").is(folderModel.getNodeRef());
 
     }
     
@@ -114,7 +114,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingAuthUser().getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFile.assertThat().field("targetGuid").equals(fileModel.getNodeRef());
+        favoriteFile.assertThat().field("targetGuid").is(fileModel.getNodeRefWithoutVersion());
     }
 
 
@@ -128,7 +128,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favSite = restClient.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favSite.assertThat().field("targetGuid").equals(siteModel.getGuid());    
+        favSite.assertThat().field("targetGuid").is(siteModel.getGuid());    
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -141,7 +141,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFolder = restClient.withCoreAPI().usingAuthUser().getFavorite(folderModel.getNodeRef());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFolder.assertThat().field("targetGuid").equals(folderModel.getNodeRef());
+        favoriteFolder.assertThat().field("targetGuid").is(folderModel.getNodeRef());
 
     }
     
@@ -155,7 +155,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingAuthUser().getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFile.assertThat().field("targetGuid").equals(fileModel.getNodeRef());
+        favoriteFile.assertThat().field("targetGuid").is(fileModel.getNodeRefWithoutVersion());
     }
 
     
@@ -169,7 +169,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favSite = restClient.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favSite.assertThat().field("targetGuid").equals(siteModel.getGuid());   ;
+        favSite.assertThat().field("targetGuid").is(siteModel.getGuid());   ;
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -182,7 +182,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFolder = restClient.withCoreAPI().usingAuthUser().getFavorite(folderModel.getNodeRef());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFolder.assertThat().field("targetGuid").equals(folderModel.getNodeRef());
+        favoriteFolder.assertThat().field("targetGuid").is(folderModel.getNodeRef());
 
     }
     
@@ -196,7 +196,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingAuthUser().getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFile.assertThat().field("targetGuid").equals(fileModel.getNodeRef());
+        favoriteFile.assertThat().field("targetGuid").is(fileModel.getNodeRefWithoutVersion());
     }
 
     
@@ -210,7 +210,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favSite = restClient.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favSite.assertThat().field("targetGuid").equals(siteModel.getGuid());   
+        favSite.assertThat().field("targetGuid").is(siteModel.getGuid());   
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
@@ -223,7 +223,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFolder = restClient.withCoreAPI().usingAuthUser().getFavorite(folderModel.getNodeRef());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFolder.assertThat().field("targetGuid").equals(folderModel.getNodeRef());
+        favoriteFolder.assertThat().field("targetGuid").is(folderModel.getNodeRef());
 
     }
     
@@ -237,7 +237,7 @@ public class GetFavoriteSanityTests extends RestTest
         
         RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingAuthUser().getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFile.assertThat().field("targetGuid").equals(fileModel.getNodeRef());
+        favoriteFile.assertThat().field("targetGuid").is(fileModel.getNodeRefWithoutVersion());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,

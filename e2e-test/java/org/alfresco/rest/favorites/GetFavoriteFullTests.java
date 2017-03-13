@@ -42,7 +42,6 @@ public class GetFavoriteFullTests extends RestTest {
 		usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator,
 				UserRole.SiteConsumer, UserRole.SiteContributor);
 	}
-
     
 	@Bug(id = "MNT-16904")
 	@TestRail(section = { TestGroup.REST_API,
@@ -93,9 +92,9 @@ public class GetFavoriteFullTests extends RestTest {
         
         RestPersonFavoritesModel favoriteSite = restClient.withCoreAPI().usingUser(adminUserModel).getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteSite.assertThat().field("targetGuid").equals(siteModel.getGuid());
+        favoriteSite.assertThat().field("targetGuid").is(siteModel.getGuid());
         favoriteSite.getTarget().getSite()
-        	.assertThat().field("guid").equals(siteModel.getGuid());
+        	.assertThat().field("guid").is(siteModel.getGuid());
     }
     
     
@@ -111,7 +110,7 @@ public class GetFavoriteFullTests extends RestTest {
         RestPersonFavoritesModel favoriteSite = restClient.authenticateUser(manager).withParams("properties=targetGuid")
         		.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteSite.assertThat().field("targetGuid").equals(siteModel.getGuid());
+        favoriteSite.assertThat().field("targetGuid").is(siteModel.getGuid());
         favoriteSite.assertThat().fieldsCount().is(1);	
     }
     

@@ -51,6 +51,6 @@ public class NodesTests extends RestTest
          *   - destinationFolder
          *     - file
          */
-        response.assertThat().field("parentId").equals(destinationFolder.getId());        
+        response.assertThat().field("parentId").is(destinationFolder.getId());        
     }
 }

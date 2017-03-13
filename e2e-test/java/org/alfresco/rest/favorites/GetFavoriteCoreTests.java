@@ -73,8 +73,6 @@ public class GetFavoriteCoreTests extends RestTest {
 				.statusCodeIs(HttpStatus.BAD_REQUEST);
 	}
 	
-	
-	
 	@TestRail(section = { TestGroup.REST_API,
 			TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify get favorite site when favorite id does't exist")
 	@Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
@@ -115,7 +113,7 @@ public class GetFavoriteCoreTests extends RestTest {
         
         RestPersonFavoritesModel favoriteSite = restClient.withCoreAPI().usingMe().getFavorite(siteModel.getGuid());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteSite.assertThat().field("targetGuid").equals(siteModel.getGuid());   
+        favoriteSite.assertThat().field("targetGuid").is(siteModel.getGuid());   
 	}
 	
 	@TestRail(section = { TestGroup.REST_API,
@@ -127,6 +125,6 @@ public class GetFavoriteCoreTests extends RestTest {
         
         RestPersonFavoritesModel favoriteFile = restClient.withCoreAPI().usingMe().getFavorite(fileModel.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        favoriteFile.assertThat().field("targetGuid").equals(fileModel.getNodeRef());   
+        favoriteFile.assertThat().field("targetGuid").is(fileModel.getNodeRefWithoutVersion());   
 	}
 }

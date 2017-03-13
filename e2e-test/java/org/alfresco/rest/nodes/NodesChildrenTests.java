@@ -75,7 +75,7 @@ public class NodesChildrenTests extends RestTest
             .folder("F3")            
                 .file("f1")
                 .file("f2")
-                .file("f2");
+                .file("f3");
               
         RestNodeModelsCollection returnedFiles = restClient.withParams("maxItems=2", 
                                                                "skipCount=1", 
@@ -84,12 +84,11 @@ public class NodesChildrenTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         /*
-        * Then I receive file2 and file3
-        * 
-        */
+         * Then I receive file2 and file3
+         */
         returnedFiles.assertThat().entriesListCountIs(2);
-        returnedFiles.getEntries().get(0).onModel().assertThat().field("id").equals(nodesBuilder.getNode("F2").getId());
-        returnedFiles.getEntries().get(1).onModel().assertThat().field("id").equals(nodesBuilder.getNode("F3").getId());        
+        returnedFiles.getEntries().get(0).onModel().assertThat().field("id").is(nodesBuilder.getNode("f2").getId());
+        returnedFiles.getEntries().get(1).onModel().assertThat().field("id").is(nodesBuilder.getNode("f3").getId());        
     }
     
 }
