@@ -77,7 +77,15 @@ public class FacetedSearchTest extends AbstractSearchTest
      *              "count": 0,
      *              "label": "medium"
      *           }
-     *        ]
+     *        ],
+     *        //Added below as part of SEARCH-374
+     *        "facetsFields": [
+     *          {  "label": "woof",
+     *             "buckets": [
+     *               { "label": "CreatedThisYear", "count": 75, "filterQuery": "created:2017"},
+     *               { "label": "CreatedLastYear", "count": 75, "filterQuery": "created:2016"}
+     *             ]
+     *          }
      *     }
      * }}
      * @throws Exception
