@@ -44,7 +44,7 @@ public class NodesContentTests extends RestTest
         restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file1.getName()));
     }
     
-    @Bug(id="REPO-2112")
+    @Bug(id="MNT-17545", description = "HTTP Header Injection in ContentStreamer", status = Bug.Status.FIXED)
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify file name with special chars is escaped in Content-Disposition header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE})    
@@ -53,10 +53,10 @@ public class NodesContentTests extends RestTest
         char c1 = 127;
         char c2 = 31;
         char c3 = 256;
-        FileModel file = dataContent.usingUser(user2).usingSite(site2).createContent(new FileModel("\ntest\"" + c1 + c2 + c3, FileType.TEXT_PLAIN));
+        FileModel file = dataContent.usingUser(user2).usingSite(site2).createContent(new FileModel("\ntest" + c1 + c2 + c3, FileType.TEXT_PLAIN));
         restClient.authenticateUser(user2).withCoreAPI().usingNode(file).usingParams("attachment=false").getNodeContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restClient.assertHeaderValueContains("Content-Disposition","filename=\" test    .txt\"");
+        restClient.assertHeaderValueContains("Content-Disposition","filename=\" test   .txt\"");
     }
 
 }
