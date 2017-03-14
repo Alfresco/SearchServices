@@ -241,6 +241,8 @@
                                 <exclude>**/junit*.jar</exclude>
                                 <exclude>**/mock*.jar</exclude>
                                 <exclude>**/opencmis*.jar</exclude>
+                                <exclude>**/metrics*.jar</exclude>
+                                <exclude>**/gmetric*.jar</exclude>
                             </excludes>
                         </configuration>
                     </execution>
