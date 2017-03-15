@@ -19,6 +19,8 @@
 package org.alfresco.rest.search;
 
 import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
@@ -58,4 +60,22 @@ public class SearchTest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsEmpty();
     }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Checks its possible to include the original request in the response")
+    public void searchWithRequest() throws Exception
+    {
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("fox");
+        query.setQuery(queryReq);
+        query.setIncludeRequest(true);
+
+        SearchResponse response = query(query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        response.getContext().assertThat().field("request").isNotEmpty();
+    }
+
 }
