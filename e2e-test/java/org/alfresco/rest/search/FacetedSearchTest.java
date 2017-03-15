@@ -19,7 +19,10 @@
 package org.alfresco.rest.search;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -35,7 +38,7 @@ import org.testng.annotations.Test;
 public class FacetedSearchTest extends AbstractSearchTest
 {
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
+//    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks facet queries for the Search api")
     /**
@@ -99,12 +102,12 @@ public class FacetedSearchTest extends AbstractSearchTest
         facets.add(new FacetQuery("content.size:[1048576 TO 16777216]", "large"));
         query.setFacetQueries(facets);
         
-        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<Object> list = new ArrayList<Object>();
-        list.add(new FacetFieldQuery("'content.size'"));
-        facetFields.setFacets(list);
-        
-        query.setFacetFields(facetFields);
+//        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+//        List<Object> list = new ArrayList<Object>();
+//        list.add(new FacetFieldQuery("'content.size'"));
+//        facetFields.setFacets(list);
+//        
+//        query.setFacetFields(facetFields);
         
         SearchResponse response =  query(query);
         response.assertThat().entriesListIsNotEmpty();
@@ -122,6 +125,9 @@ public class FacetedSearchTest extends AbstractSearchTest
         Assert.assertNull(response.getContext().getFacetsFields());
         Assert.assertNull(response.getContext().getFacetIntervals());
     }
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH , TestGroup.ASS_1})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH ,TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION,
+              description = "Checks facet queries for the Search api")
     /**
      * * Perform a group by faceting, below test groups the facet by group name foo.
      * {
@@ -181,8 +187,9 @@ public class FacetedSearchTest extends AbstractSearchTest
         facetFields.setFacets(list);
         
         query.setFacetFields(facetFields);
-        
+        System.out.println(query.toJson());
         SearchResponse response =  query(query);
+        System.out.println(response);
         //We don't expect to see the FacetQueries if group is being used.
         Assert.assertTrue(response.getContext().getFacetQueries().isEmpty());
         //Validate the facet field structure is correct.
@@ -195,7 +202,6 @@ public class FacetedSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").contains("small").and().field("filterQuery").is("content.size:[0 TO 102400]");
         bucket.assertThat().field("label").contains("medium").and().field("filterQuery").is("content.size:[1048576 TO 16777216]");
         bucket.assertThat().field("label").contains("large").and().field("filterQuery").is("content.size:[102400 TO 1048576]");
-        
     }
     
 }
