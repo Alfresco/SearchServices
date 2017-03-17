@@ -1,9 +1,14 @@
 package org.alfresco.rest.nodes;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -57,6 +62,36 @@ public class NodesContentTests extends RestTest
         restClient.authenticateUser(user2).withCoreAPI().usingNode(file).usingParams("attachment=false").getNodeContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Disposition","filename=\" test    .txt\"");
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via REST.")
+    public void verifyFileEncodingUsingRestAPI() throws Exception
+    {
+        STEP("1. Create a folder, two text file templates and define the expected encoding.");
+        FileModel utf8File = dataContent.usingUser(user1).usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
+        FileModel iso8859File = dataContent.usingUser(user1).usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
+        FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
+        String utf8Type = "text/plain;charset=UTF-8";
+        String iso8859Type = "text/plain;charset=ISO-8859-1";
+
+        STEP("2. Using multipart data upload (POST nodes/{nodeId}/children) the UTF-8 encoded file.");
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("UTF-8FILE.txt"));
+        RestNodeModel fileNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        utf8File.setNodeRef(fileNode.getId());
+
+        STEP("3. Using multipart data upload (POST nodes/{nodeId}/children) the ISO-8859-1 file.");
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("iso8859File.txt"));
+        fileNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        iso8859File.setNodeRef(fileNode.getId());
+
+        STEP("4. Retrieve the nodes and verify that the content type is the expected one (GET nodes/{nodeId}).");
+        restClient.authenticateUser(user1).withCoreAPI().usingNode(utf8File).getNodeContent().assertThat().contentType(utf8Type);
+        restClient.authenticateUser(user1).withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
+
     }
 
 }
