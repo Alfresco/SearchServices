@@ -70,27 +70,27 @@ public class NodesContentTests extends RestTest
     public void verifyFileEncodingUsingRestAPI() throws Exception
     {
         STEP("1. Create a folder, two text file templates and define the expected encoding.");
-        FileModel utf8File = dataContent.usingUser(user1).usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
-        FileModel iso8859File = dataContent.usingUser(user1).usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
+        FileModel utf8File = new FileModel("utf8File",FileType.TEXT_PLAIN);
+        FileModel iso8859File = new FileModel("iso8859File",FileType.TEXT_PLAIN);
         FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
         String utf8Type = "text/plain;charset=UTF-8";
         String iso8859Type = "text/plain;charset=ISO-8859-1";
 
         STEP("2. Using multipart data upload (POST nodes/{nodeId}/children) the UTF-8 encoded file.");
         restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("UTF-8FILE.txt"));
-        RestNodeModel fileNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).createNode();
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         utf8File.setNodeRef(fileNode.getId());
 
         STEP("3. Using multipart data upload (POST nodes/{nodeId}/children) the ISO-8859-1 file.");
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("iso8859File.txt"));
-        fileNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).createNode();
+        restClient.configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("iso8859File.txt"));
+        fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         iso8859File.setNodeRef(fileNode.getId());
 
         STEP("4. Retrieve the nodes and verify that the content type is the expected one (GET nodes/{nodeId}).");
-        restClient.authenticateUser(user1).withCoreAPI().usingNode(utf8File).getNodeContent().assertThat().contentType(utf8Type);
-        restClient.authenticateUser(user1).withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
+        restClient.withCoreAPI().usingNode(utf8File).getNodeContent().assertThat().contentType(utf8Type);
+        restClient.withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
 
     }
 
