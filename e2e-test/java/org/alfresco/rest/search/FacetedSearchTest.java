@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
 public class FacetedSearchTest extends AbstractSearchTest
 {
 
-//    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks facet queries for the Search api")
     /**
@@ -93,12 +93,19 @@ public class FacetedSearchTest extends AbstractSearchTest
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
         queryReq.setQuery("cars");
         query.setQuery(queryReq);
+        
 
         List<FacetQuery> facets = new ArrayList<FacetQuery>();
         facets.add(new FacetQuery("content.size:[0 TO 102400]", "small"));
         facets.add(new FacetQuery("content.size:[102400 TO 1048576]", "medium"));
         facets.add(new FacetQuery("content.size:[1048576 TO 16777216]", "large"));
         query.setFacetQueries(facets);
+        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+        List<Object> list = new ArrayList<Object>();
+        list.add(new FacetFieldQuery("'content.size'"));
+        facetFields.setFacets(list);
+        query.setFacetFields(facetFields);
+        query.setIncludeRequest(true);
         
         SearchResponse response =  query(query);
         response.assertThat().entriesListIsNotEmpty();
