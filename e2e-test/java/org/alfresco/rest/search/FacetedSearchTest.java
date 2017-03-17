@@ -121,7 +121,7 @@ public class FacetedSearchTest extends AbstractSearchTest
                     .and().field("filterQuery").is("content.size:[102400 TO 1048576]");
       //We don't expect to see the FacetFields if group is being used.
         Assert.assertNull(response.getContext().getFacetsFields());
-        Assert.assertNull(response.getContext().getFacetIntervals());
+        Assert.assertNull(response.getContext().getFacets());
     }
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH , TestGroup.ASS_1})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH ,TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION,
