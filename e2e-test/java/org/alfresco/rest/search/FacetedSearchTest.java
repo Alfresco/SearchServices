@@ -101,8 +101,8 @@ public class FacetedSearchTest extends AbstractSearchTest
         facets.add(new FacetQuery("content.size:[1048576 TO 16777216]", "large"));
         query.setFacetQueries(facets);
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<Object> list = new ArrayList<Object>();
-        list.add(new FacetFieldQuery("'content.size'"));
+        List<RestRequestFacetFieldModel> list = new ArrayList<>();
+        list.add(new RestRequestFacetFieldModel("'content.size'"));
         facetFields.setFacets(list);
         query.setFacetFields(facetFields);
         query.setIncludeRequest(true);
@@ -182,8 +182,8 @@ public class FacetedSearchTest extends AbstractSearchTest
         query.setFacetQueries(facets);
         
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<Object> list = new ArrayList<Object>();
-        list.add(new FacetFieldQuery("'content.size'"));
+        List<RestRequestFacetFieldModel> list = new ArrayList<>();
+        list.add(new RestRequestFacetFieldModel("'content.size'"));
         facetFields.setFacets(list);
         
         query.setFacetFields(facetFields);
