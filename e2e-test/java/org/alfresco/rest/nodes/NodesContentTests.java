@@ -77,7 +77,7 @@ public class NodesContentTests extends RestTest
         String iso8859Type = "text/plain;charset=ISO-8859-1";
 
         STEP("2. Using multipart data upload (POST nodes/{nodeId}/children) the UTF-8 encoded file.");
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("UTF-8FILE.txt"));
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("UTF-8File.txt"));
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         utf8File.setNodeRef(fileNode.getId());
