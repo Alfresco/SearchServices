@@ -54,7 +54,7 @@ public class GetDeploymentCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         actualDeployment.assertThat().field("deployedAt").isNotEmpty()
                 .and().field("name").is(expectedDeployment.getName())
-                .and().field("id").equals(expectedDeployment.getId());
+                .and().field("id").is(expectedDeployment.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
