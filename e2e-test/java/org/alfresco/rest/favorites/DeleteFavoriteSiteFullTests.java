@@ -91,7 +91,7 @@ public class DeleteFavoriteSiteFullTests extends RestTest
     public void adminUserRemovesDeletedFavoriteSiteThatIsNotFavorite() throws Exception
     {
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel);
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAuthUser().removeFavoriteSite(siteModel);
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError()

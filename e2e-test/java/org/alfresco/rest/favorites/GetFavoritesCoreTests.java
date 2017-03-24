@@ -124,7 +124,7 @@ public class GetFavoritesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void userIsAbleToRetrieveFavoritesFilesOrSites() throws Exception
     {
-        restClient.authenticateUser(adminUserModel);
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
         restClient.withCoreAPI().usingAuthUser().addFileToFavorites(firstFileModel);
         restClient.withCoreAPI().usingAuthUser().addFolderToFavorites(firstFolderModel);

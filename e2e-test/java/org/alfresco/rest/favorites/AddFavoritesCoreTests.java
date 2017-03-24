@@ -88,9 +88,10 @@ public class AddFavoritesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void addFavoriteTwice() throws Exception
     {
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        SiteModel site = dataSite.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).createPublicRandomSite();
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(site);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(site);
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT);
     }
 
@@ -125,11 +126,13 @@ public class AddFavoritesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void verifyGetFavoritesAfterFavoritingSite() throws Exception
     {
-        restPersonFavoritesModel = restClient.authenticateUser(adminUserModel)
+        UserModel user = dataUser.createRandomTestUser();
+        restPersonFavoritesModel = restClient.authenticateUser(user)
             .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
+        restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getFavoriteSites()
+            .assertThat().entriesListContains("guid", siteModel.getGuid());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
@@ -159,15 +162,16 @@ public class AddFavoritesCoreTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
     public void userIsAbleToAddFavoriteWhenUsingMeAsUsername() throws Exception
     {
-        restPersonFavoritesModel = restClient.authenticateUser(adminUserModel)
+        UserModel user = dataUser.createRandomTestUser();
+        restPersonFavoritesModel = restClient.authenticateUser(user)
             .withCoreAPI().usingMe().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.assertThat().field("targetGuid").is(siteModel.getGuid());
         
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
+        restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
     }
 
-//    @Bug(id = "MNT-17158", description="Not a bug, If we need to stop comments from being favourited then an improvement/enhancement request should be raised against the platform.")
+//    @Bug(id = "MNT-17158", description="Not a bug, If we need to stop comments from being favorited then an improvement/enhancement request should be raised against the platform.")
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify add file favorite with comment id returns status code 201")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.CORE })
