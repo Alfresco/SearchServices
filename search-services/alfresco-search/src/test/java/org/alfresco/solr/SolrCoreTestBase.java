@@ -95,7 +95,7 @@ public abstract class SolrCoreTestBase implements SolrTestFiles
           coreDescriptor = new CoreDescriptor(coreContainer, "name", Paths.get(TEST_SOLR_COLLECTION));
         
         // SolrCore is final, we can't mock with mockito
-        core = new SolrCore("name", null, solrConfig, null, null, coreDescriptor, null, null, null);
+        core = new SolrCore("name", null, solrConfig, null, null, coreDescriptor, null, null, null, false);
           
         FieldUtils.writeField(core, "updateHandler", updateHandler, true);
         FieldUtils.writeField(core, "resourceLoader", resourceLoader, true);
