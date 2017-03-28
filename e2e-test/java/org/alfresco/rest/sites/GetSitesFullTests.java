@@ -157,7 +157,7 @@ public class GetSitesFullTests extends RestTest
         sites.getPagination().assertThat()
             .field("totalItems").isNotEmpty().and()
             .field("maxItems").is("110").and()
-            .field("hasMoreItems").is((sites.getPagination().getTotalItems() > sites.getPagination().getMaxItems())?"true":"false").and()
+            .field("hasMoreItems").is((sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount() > sites.getPagination().getMaxItems())?"true":"false").and()
             .field("skipCount").is("10").and()
                 .field("count").is((sites.getPagination().isHasMoreItems()) ? sites.getPagination().getMaxItems()
                         : sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount());
