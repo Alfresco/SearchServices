@@ -32,7 +32,7 @@ import org.testng.annotations.Test;
 public class SearchTest extends AbstractSearchTest
 {
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
-    public void searchCreatedData() throws Exception
+    public void searchOnIndexedData() throws Exception
     {        
         SearchResponse nodes =  query("fox");
         restClient.assertStatusCodeIs(HttpStatus.OK);
