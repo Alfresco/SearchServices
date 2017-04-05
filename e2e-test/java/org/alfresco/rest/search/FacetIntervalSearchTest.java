@@ -95,21 +95,22 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
-        response.getContext().assertThat().field("facetIntervals").isNotEmpty();
-        RestResultBucketsModel resultBucketsModel = response.getContext().getFacetIntervals().get(0);
+        response.getContext().assertThat().field("facets").isNotEmpty();
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
 
-        FacetFieldBucket bucket = resultBucketsModel.getBuckets().get(0);
-        Assert.assertEquals(resultBucketsModel.getBuckets().size(), 2);
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        Assert.assertEquals(facetResponseModel.getBuckets().size(), 2);
         bucket.assertThat().field("label").is("aUser");
-        bucket.assertThat().field("count").isGreaterThan(1);
         bucket.assertThat().field("filterQuery").is("creator:[a,user]");
+        bucket.getMetrics().get(0).assertThat().field("type").is("count");
+        bucket.getMetrics().get(0).assertThat().field("value").contains("{count=");
 
-        bucket = resultBucketsModel.getBuckets().get(1);
+        bucket = facetResponseModel.getBuckets().get(1);
 
         bucket.assertThat().field("label").is("theRest");
-        bucket.assertThat().field("count").isLessThan(1);
         bucket.assertThat().field("filterQuery").is("creator:(user,z]");
-
+        bucket.getMetrics().get(0).assertThat().field("type").is("count");
+        bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
@@ -137,31 +138,25 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
-        response.getContext().assertThat().field("facetIntervals").isNotEmpty();
-        RestResultBucketsModel resultBucketsModel = response.getContext().getFacetIntervals().get(0);
+        response.getContext().assertThat().field("facets").isNotEmpty();
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
 
-        resultBucketsModel.assertThat().field("label").is("modified");
-        FacetFieldBucket bucket = resultBucketsModel.getBuckets().get(0);
-        Assert.assertEquals(resultBucketsModel.getBuckets().size(), 2);
+        facetResponseModel.assertThat().field("label").is("modified");
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        Assert.assertEquals(facetResponseModel.getBuckets().size(), 2);
 
         bucket.assertThat().field("label").is("From2016");
-        bucket.assertThat().field("count").isGreaterThan(1);
         bucket.assertThat().field("filterQuery").is("cm:modified:[2016,now]");
+        bucket.getMetrics().get(0).assertThat().field("type").is("count");
+        bucket.getMetrics().get(0).assertThat().field("value").contains("{count=");
 
-        bucket = resultBucketsModel.getBuckets().get(1);
+
+        bucket = facetResponseModel.getBuckets().get(1);
 
         bucket.assertThat().field("label").is("Before2016");
-        bucket.assertThat().field("count").isLessThan(1);
         bucket.assertThat().field("filterQuery").is("cm:modified:[*,2016)");
-
+        bucket.getMetrics().get(0).assertThat().field("type").is("count");
+        bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
     }
 
-    private SearchRequest carsQuery()
-    {
-        SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cars");
-        query.setQuery(queryReq);
-        return query;
-    }
 }

@@ -87,8 +87,8 @@ public class SearchAPATHTest extends AbstractSearchTest
         searchQuery.setQuery(queryReq);
         
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<Object> list = new ArrayList<Object>();
-        list.add(new FacetFieldQuery("APATH","0"));
+        List<RestRequestFacetFieldModel> list = new ArrayList<>();
+        list.add(new RestRequestFacetFieldModel("APATH","0"));
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         SearchResponse response =  query(searchQuery);
@@ -107,8 +107,8 @@ public class SearchAPATHTest extends AbstractSearchTest
         searchQuery.setQuery(queryReq);
         
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<Object> list = new ArrayList<Object>();
-        list.add(new FacetFieldQuery("APATH","1"));
+        List<RestRequestFacetFieldModel> list = new ArrayList<>();
+        list.add(new RestRequestFacetFieldModel("APATH","1"));
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         SearchResponse response =  query(searchQuery);
@@ -125,8 +125,8 @@ public class SearchAPATHTest extends AbstractSearchTest
         searchQuery.setQuery(queryReq);
         
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<Object> list = new ArrayList<Object>();
-        list.add(new FacetFieldQuery("APATH","1/"));
+        List<RestRequestFacetFieldModel> list = new ArrayList<>();
+        list.add(new RestRequestFacetFieldModel("APATH","1/"));
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         
@@ -134,7 +134,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         RestResultBucketsModel fresponse = response.getContext().getFacetsFields().get(0);
         String path = fresponse.getBuckets().get(0).getLabel().replace("1/", "2/");
         list.remove(0);
-        list.add(new FacetFieldQuery("APATH", path));
+        list.add(new RestRequestFacetFieldModel("APATH", path));
         
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
@@ -155,7 +155,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         searchQuery.setQuery(queryReq);
         facetFields = new RestRequestFacetFieldsModel();
         list.remove(0);
-        list.add(new FacetFieldQuery("APATH",path.replace("2/", "3/")));
+        list.add(new RestRequestFacetFieldModel("APATH",path.replace("2/", "3/")));
         facetFields.setFacets(list);
         searchQuery.setFacetFields(facetFields);
         response =  query(searchQuery);
