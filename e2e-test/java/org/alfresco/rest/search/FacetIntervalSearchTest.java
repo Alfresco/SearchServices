@@ -101,14 +101,14 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
         Assert.assertEquals(facetResponseModel.getBuckets().size(), 2);
         bucket.assertThat().field("label").is("aUser");
-        bucket.assertThat().field("filterQuery").is("creator:[a,user]");
+        bucket.assertThat().field("filterQuery").is("creator:[a TO user]");
         bucket.getMetrics().get(0).assertThat().field("type").is("count");
         bucket.getMetrics().get(0).assertThat().field("value").contains("{count=");
 
         bucket = facetResponseModel.getBuckets().get(1);
 
         bucket.assertThat().field("label").is("theRest");
-        bucket.assertThat().field("filterQuery").is("creator:(user,z]");
+        bucket.assertThat().field("filterQuery").is("creator:<user TO z]");
         bucket.getMetrics().get(0).assertThat().field("type").is("count");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
     }
@@ -146,7 +146,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         Assert.assertEquals(facetResponseModel.getBuckets().size(), 2);
 
         bucket.assertThat().field("label").is("From2016");
-        bucket.assertThat().field("filterQuery").is("cm:modified:[2016,now]");
+        bucket.assertThat().field("filterQuery").is("cm:modified:[2016 TO now]");
         bucket.getMetrics().get(0).assertThat().field("type").is("count");
         bucket.getMetrics().get(0).assertThat().field("value").contains("{count=");
 
@@ -154,7 +154,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         bucket = facetResponseModel.getBuckets().get(1);
 
         bucket.assertThat().field("label").is("Before2016");
-        bucket.assertThat().field("filterQuery").is("cm:modified:[*,2016)");
+        bucket.assertThat().field("filterQuery").is("cm:modified:[* TO 2016>");
         bucket.getMetrics().get(0).assertThat().field("type").is("count");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
     }
