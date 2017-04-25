@@ -31,20 +31,14 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
-import org.alfresco.solr.client.Acl;
-import org.alfresco.solr.client.AclChangeSet;
-import org.alfresco.solr.client.AclReaders;
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.NodeMetaData;
-import org.alfresco.solr.client.SOLRAPIQueueClient;
-import org.alfresco.solr.client.StringPropertyValue;
-import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.client.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.Term;
@@ -243,6 +237,23 @@ public class AlfrescoSolrTrackerTest extends AbstractAlfrescoSolrTests
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, MAX_WAIT_TIME);
 
         logger.info("#################### Passed Eighth Test ##############################");
+
+
+        //Add document with isContentIndexed=false
+
+        Transaction txnNoContent = getTransaction(0, 1);
+        Node noContentNode = getNode(txnNoContent, acl, Node.SolrApiNodeStatus.UPDATED);
+        NodeMetaData noContentMetaData = getNodeMetaData(noContentNode, txnNoContent, acl, "mike", null, false);
+        noContentMetaData.getProperties().put(ContentModel.PROP_IS_CONTENT_INDEXED, new StringPropertyValue("false"));
+        noContentMetaData.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.UK, 298L, "UTF-8", "text/json", null));
+        indexTransaction(txnNoContent, list(noContentNode), list(noContentMetaData));
+
+        //This tests that the mime type has been added for this document. It is the only document with text/json in the index.
+        waitForDocCount(new TermQuery(new Term("content@s__mimetype@{http://www.alfresco.org/model/content/1.0}content", "text/json")), 1, MAX_WAIT_TIME);
+        //Many of the tests beyond this point rely on a specific count of documents in the index that have content.
+        //This document should not have had the content indexed so the tests following will pass.
+        //If the content had been indexed the tests following this one would have failed.
+        //This proves that the ContentModel.PROP_IS_CONTENT_INDEXED property is being followed by the tracker
 
 
         //Try bulk loading
