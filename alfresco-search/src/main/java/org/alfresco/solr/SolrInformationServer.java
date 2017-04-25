@@ -2744,11 +2744,15 @@ public class SolrInformationServer implements InformationServer
                 }
                 else if (value instanceof ContentPropertyValue)
                 {
-                    if (isContentIndexedForNode)
+                    boolean transform = transformContentFlag;
+                    if (!isContentIndexedForNode)
                     {
-                        addContentPropertyToDocUsingCache(newDoc, cachedDoc, propertyQName, 
-                                    (ContentPropertyValue) value, transformContentFlag);
+                        transform = false;
                     }
+
+                    addContentPropertyToDocUsingCache(newDoc, cachedDoc, propertyQName,
+                                    (ContentPropertyValue) value, transform);
+
                 }
                 else if (value instanceof MultiPropertyValue)
                 {
@@ -2774,11 +2778,15 @@ public class SolrInformationServer implements InformationServer
                         }
                         else if (singleValue instanceof ContentPropertyValue)
                         {
-                            if (isContentIndexedForNode)
+                            boolean transform = transformContentFlag;
+                            if (!isContentIndexedForNode)
                             {
-                                addContentPropertyToDocUsingCache(newDoc, cachedDoc, propertyQName,
-                                            (ContentPropertyValue) singleValue, transformContentFlag);
+                                transform = false;
                             }
+
+                            addContentPropertyToDocUsingCache(newDoc, cachedDoc, propertyQName,
+                                    (ContentPropertyValue) singleValue, transform);
+
                         }
                     }
                 }
