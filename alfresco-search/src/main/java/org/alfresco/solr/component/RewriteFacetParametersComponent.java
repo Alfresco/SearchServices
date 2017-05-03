@@ -26,6 +26,8 @@ import java.util.Iterator;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.query.MimetypeGroupingQParserPlugin;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.StringUtil;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
@@ -368,8 +370,22 @@ public class RewriteFacetParametersComponent extends SearchComponent
             }       
         }
     }
-
-
+    /**
+     * Tokenizes a string based on comma's except for the ones in single or double
+     * qoutes.
+     * @param line
+     * @return 
+     */
+    public static String[] parseFacetField(String line)
+    {
+      if(StringUtils.isEmpty(line))
+      {
+          throw new RuntimeException("String input is requried");
+      }
+      String[] tokens = line.split(",(?=(?:[^'|\"]*\"[^'|\"]*\")*[^'|\"]*$)", -1);
+      return tokens;
+        
+    }
     /**
      * @param fixed ModifiableSolrParams
      * @param params SolrParams
@@ -388,7 +404,8 @@ public class RewriteFacetParametersComponent extends SearchComponent
                 StringBuilder commaSeparated = new StringBuilder();
                 StringBuilder mapping = new StringBuilder();
                 StringBuilder unmapped = new StringBuilder();
-                String[] fields = facetFields.split(",");
+               
+                String[] fields = parseFacetField(facetFields);
                 
                 for(String field : fields)
                 {
