@@ -52,7 +52,7 @@ public class CreateRenditionTests  extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI().usingNode(document).createNodeRendition("pdf");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         
-        restClient.withCoreAPI().usingNode(document).getNodeRendition("pdf")
+        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilTheyAreCreated("pdf")
             .assertThat().field("status").is("CREATED");
     }
     
@@ -65,7 +65,7 @@ public class CreateRenditionTests  extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("pdf");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         
-        restClient.withCoreAPI().usingNode(document).getNodeRendition("pdf")
+        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilTheyAreCreated("pdf")
             .assertThat().field("status").is("CREATED");
     }
     
@@ -89,7 +89,7 @@ public class CreateRenditionTests  extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("doclib");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         
-        restClient.withCoreAPI().usingNode(document).getNodeRendition("doclib")
+        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilTheyAreCreated("doclib")
             .assertThat().field("status").is("CREATED");
     }
 }
