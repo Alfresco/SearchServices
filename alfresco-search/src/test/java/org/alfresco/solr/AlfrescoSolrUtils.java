@@ -153,6 +153,26 @@ public class AlfrescoSolrUtils
         node.setStatus(status);
         return node;
     }
+
+
+    /**
+     * Get a node.
+     * @param nodeId
+     * @param txn
+     * @param acl
+     * @param status
+     * @return {@link Node}
+     */
+    public static Node getNode(long nodeId, Transaction txn, Acl acl, Node.SolrApiNodeStatus status)
+    {
+        Node node = new Node();
+        node.setTxnId(txn.getId());
+        node.setId(nodeId);
+        node.setAclId(acl.getId());
+        node.setStatus(status);
+        return node;
+    }
+
     /**
      * Get a nodes meta data.
      * @param node

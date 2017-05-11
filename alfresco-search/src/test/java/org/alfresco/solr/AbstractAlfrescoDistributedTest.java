@@ -296,6 +296,22 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         waitForShardsCount(query, count, waitMillis, begin);
     }
 
+    public void assertShardCount(int shardNumber, Query query, int count) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        SolrCore core = cores.get(shardNumber);
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        try {
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+            TopDocs topDocs = searcher.search(query, 10);
+            if(count != topDocs.totalHits) {
+                throw new Exception("Expecting "+count+" docs on shard "+shardNumber+" , found "+topDocs.totalHits);
+            }
+        } finally {
+            refCounted.decref();
+        }
+    }
+
     /**
      * Waits until all the shards reach the desired count, or errors.
      * @param query
@@ -592,6 +608,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
 
+
+        String[] ranges = {"1-100", "101-200", "201-300", "301-400"};
         for (int i = 0; i < numShards; i++)
         {
             if (sb.length() > 0) sb.append(',');
@@ -599,6 +617,11 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             if (additionalProperties == null) additionalProperties = new Properties();
             additionalProperties.put("shard.instance", Integer.toString(i));
             additionalProperties.put("shard.count", Integer.toString(numShards));
+
+            if(additionalProperties.getProperty("shard.method").equals("DB_ID_RANGE")) {
+                //Add
+                additionalProperties.put("shard.range", ranges[i]);
+            }
 
             String shardKey = jettyKey+"_shard_"+i;
             JettySolrRunner j =  createJetty(shardKey);
