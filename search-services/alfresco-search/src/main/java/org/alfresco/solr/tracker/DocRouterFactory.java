@@ -41,7 +41,15 @@ public class DocRouterFactory
             case PROPERTY:
                 return new PropertyRouter(properties.getProperty("shard.regex", ""));
             default:
-                return new DBIDRouter();
+                if(properties.containsKey("shard.range")) {
+                    String range = properties.getProperty("shard.range");
+                    String[] rangeParts = range.split("-");
+                    long startRange = Long.parseLong(rangeParts[0].trim());
+                    long endRange = Long.parseLong(rangeParts[1].trim());
+                    return new DBIDRangeRouter(startRange, endRange);
+                } else {
+                    return new DBIDRouter();
+                }
         }
     }
 }
