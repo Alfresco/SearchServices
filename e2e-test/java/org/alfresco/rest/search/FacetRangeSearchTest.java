@@ -30,7 +30,30 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Faceted Range Search Test
+ * Faceted Range Search Query for numeric range
+ * {
+ *   "query": {
+ *       "query": "name:A*"
+ *   },
+ *   "range": {
+ *       "field": "content.size",
+ *        "start": "0",
+ *        "end": "400",
+ *        "gap": "100"
+ *   }
+ * }
+ * Date range query:
+ * {
+ *  "query": {
+ *      "query": "name:A*"
+ *  },
+ *  "range": {
+ *      "field": "created",
+ *       "start": "2015-09-29T10:45:15.729Z",
+ *       "end": "2016-09-29T10:45:15.729Z",
+ *       "gap": "+100DAY"
+ *  }
+ * }
  * @author Michael Suzuki
  *
  */
@@ -69,7 +92,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "gap"));
         
-        facetRangeModel.setGap(100);
+        facetRangeModel.setGap("100");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
@@ -83,7 +106,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setField("content.size");
         facetRangeModel.setStart("0");
         facetRangeModel.setEnd("500");
-        facetRangeModel.setGap(200);
+        facetRangeModel.setGap("200");
         query.setRange(facetRangeModel);
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
@@ -129,7 +152,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setField("content.size");
         facetRangeModel.setStart("0");
         facetRangeModel.setEnd("500");
-        facetRangeModel.setGap(200);
+        facetRangeModel.setGap("200");
         facetRangeModel.setHardend(true);
         query.setRange(facetRangeModel);
         SearchResponse response = query(query);
@@ -164,5 +187,40 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         Assert.assertEquals(info.get("to"),"500");
         Assert.assertEquals(info.get("count"),"3");
     }
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check date facet intervals search api")
+    public void searchDateRange()throws Exception
+    {
+        SearchRequest query = createQuery("name:A*");
 
+        RestRequestRangeModel facetRangeModel = new RestRequestRangeModel();
+        facetRangeModel.setField("created");
+        facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
+        facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
+        facetRangeModel.setGap("+280DAY");
+        query.setRange(facetRangeModel);
+        SearchResponse response = query(query);
+        response.assertThat().entriesListIsNotEmpty();
+        response.getContext().assertThat().field("facets").isNotEmpty();
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
+        
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        bucket.assertThat().field("label").is("2015-09-29T10:45:15.729Z - 2016-07-05T10:45:15.729Z");
+        bucket.assertThat().field("filterQuery").is("created:(2015-09-29T10:45:15.729Z TO 2016-07-05T10:45:15.729Z)");
+        bucket.getMetrics().get(0).assertThat().field("value").is("{count=1}");
+        Map<String, String> info = (Map<String, String>) bucket.getFacetInfo();
+        Assert.assertEquals(info.get("from"),"2015-09-29T10:45:15.729Z");
+        Assert.assertEquals(info.get("to"),"2016-07-05T10:45:15.729Z");
+        Assert.assertEquals(info.get("count"),"1");
+        
+        bucket = facetResponseModel.getBuckets().get(1);
+        bucket.assertThat().field("label").is("2016-07-05T10:45:15.729Z - 2017-04-11T10:45:15.729Z");
+        bucket.assertThat().field("filterQuery").is("created:(2016-07-05T10:45:15.729Z TO 2017-04-11T10:45:15.729Z)");
+        bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
+        info = (Map<String, String>) bucket.getFacetInfo();
+        Assert.assertEquals(info.get("from"),"2016-07-05T10:45:15.729Z");
+        Assert.assertEquals(info.get("to"),"2017-04-11T10:45:15.729Z");
+        Assert.assertEquals(info.get("count"),"0");
+    }
 }
