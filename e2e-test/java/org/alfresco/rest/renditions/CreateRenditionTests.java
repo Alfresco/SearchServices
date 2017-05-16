@@ -11,6 +11,7 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.report.Bug.Status;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,7 @@ public class CreateRenditionTests  extends RestTest
         document = dataContent.usingUser(user).usingSite(site).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux" )
+    @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux", status = Status.FIXED )
     @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
             description = "Verify admin user creates rendition with Rest API and status code is 202")
     @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
@@ -52,11 +53,11 @@ public class CreateRenditionTests  extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI().usingNode(document).createNodeRendition("pdf");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         
-        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilTheyAreCreated("pdf")
+        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilIsCreated("pdf")
             .assertThat().field("status").is("CREATED");
     }
     
-    @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux" )
+    @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux", status = Status.FIXED )
     @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
             description = "Verify user that created the document can also creates 'pdf' rendition for it with Rest API and status code is 202")
     @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
@@ -65,11 +66,11 @@ public class CreateRenditionTests  extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("pdf");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         
-        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilTheyAreCreated("pdf")
+        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilIsCreated("pdf")
             .assertThat().field("status").is("CREATED");
     }
     
-    @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux" )
+    @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux", status = Status.FIXED )
     @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
             description = "Verify user that created the document can also creates 'doclib' rendition for it with Rest API and status code is 202")
     @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
@@ -89,7 +90,7 @@ public class CreateRenditionTests  extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("doclib");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         
-        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilTheyAreCreated("doclib")
+        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilIsCreated("doclib")
             .assertThat().field("status").is("CREATED");
     }
 }
