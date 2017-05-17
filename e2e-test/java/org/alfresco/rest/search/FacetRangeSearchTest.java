@@ -21,7 +21,7 @@ package org.alfresco.rest.search;
 import java.util.Map;
 
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestRequestRangeModel;
+import org.alfresco.rest.model.RestRequestRangesModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -67,8 +67,8 @@ public class FacetRangeSearchTest extends AbstractSearchTest
     {
         SearchRequest query = carsQuery();
 
-        RestRequestRangeModel facetRangeModel = new RestRequestRangeModel();
-        query.setRange(facetRangeModel);
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        query.setRanges(facetRangeModel);
 
         SearchResponse response = query(query);
 
@@ -76,18 +76,18 @@ public class FacetRangeSearchTest extends AbstractSearchTest
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "field"));
         facetRangeModel.setField("content.size");
         
-        query.setRange(facetRangeModel);
+        query.setRanges(facetRangeModel);
         response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "start"));
         facetRangeModel.setStart("0");
 
-        query.setRange(facetRangeModel);
+        query.setRanges(facetRangeModel);
         response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "end"));
         facetRangeModel.setEnd("400");
-        query.setRange(facetRangeModel);
+        query.setRanges(facetRangeModel);
         response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "gap"));
@@ -102,12 +102,12 @@ public class FacetRangeSearchTest extends AbstractSearchTest
     {
         SearchRequest query = createQuery("A*");
 
-        RestRequestRangeModel facetRangeModel = new RestRequestRangeModel();
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         facetRangeModel.setField("content.size");
         facetRangeModel.setStart("0");
         facetRangeModel.setEnd("500");
         facetRangeModel.setGap("200");
-        query.setRange(facetRangeModel);
+        query.setRanges(facetRangeModel);
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
@@ -148,13 +148,13 @@ public class FacetRangeSearchTest extends AbstractSearchTest
     {
         SearchRequest query = createQuery("A*");
 
-        RestRequestRangeModel facetRangeModel = new RestRequestRangeModel();
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         facetRangeModel.setField("content.size");
         facetRangeModel.setStart("0");
         facetRangeModel.setEnd("500");
         facetRangeModel.setGap("200");
         facetRangeModel.setHardend(true);
-        query.setRange(facetRangeModel);
+        query.setRanges(facetRangeModel);
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
@@ -194,12 +194,12 @@ public class FacetRangeSearchTest extends AbstractSearchTest
     {
         SearchRequest query = createQuery("name:A*");
 
-        RestRequestRangeModel facetRangeModel = new RestRequestRangeModel();
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         facetRangeModel.setField("created");
         facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
         facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
         facetRangeModel.setGap("+280DAY");
-        query.setRange(facetRangeModel);
+        query.setRanges(facetRangeModel);
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
