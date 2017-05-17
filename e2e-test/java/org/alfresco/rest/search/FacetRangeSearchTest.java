@@ -117,7 +117,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("0 - 200");
         bucket.assertThat().field("filterQuery").is("content.size:(0 TO 200)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=4}");
-        Map<String, String> info = (Map<String, String>) bucket.getFacetInfo();
+        Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"0");
         Assert.assertEquals(info.get("to"),"200");
         Assert.assertEquals(info.get("count"),"4");
@@ -126,7 +126,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("200 - 400");
         bucket.assertThat().field("filterQuery").is("content.size:(200 TO 400)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=4}");
-        info = (Map<String, String>) bucket.getFacetInfo();
+        info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"200");
         Assert.assertEquals(info.get("to"),"400");
         Assert.assertEquals(info.get("count"),"4");
@@ -135,7 +135,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("400 - 600");
         bucket.assertThat().field("filterQuery").is("content.size:(400 TO 600)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=7}");
-        info = (Map<String, String>) bucket.getFacetInfo();
+        info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"400");
         Assert.assertEquals(info.get("to"),"600");
         Assert.assertEquals(info.get("count"),"7");
@@ -164,7 +164,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("0 - 200");
         bucket.assertThat().field("filterQuery").is("content.size:(0 TO 200)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=4}");
-        Map<String, String> info = (Map<String, String>) bucket.getFacetInfo();
+        Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"0");
         Assert.assertEquals(info.get("to"),"200");
         Assert.assertEquals(info.get("count"),"4");
@@ -173,7 +173,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("200 - 400");
         bucket.assertThat().field("filterQuery").is("content.size:(200 TO 400)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=4}");
-        info = (Map<String, String>) bucket.getFacetInfo();
+        info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"200");
         Assert.assertEquals(info.get("to"),"400");
         Assert.assertEquals(info.get("count"),"4");
@@ -182,7 +182,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("400 - 500");
         bucket.assertThat().field("filterQuery").is("content.size:(400 TO 500)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=3}");
-        info = (Map<String, String>) bucket.getFacetInfo();
+        info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"400");
         Assert.assertEquals(info.get("to"),"500");
         Assert.assertEquals(info.get("count"),"3");
@@ -209,7 +209,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("2015-09-29T10:45:15.729Z - 2016-07-05T10:45:15.729Z");
         bucket.assertThat().field("filterQuery").is("created:(2015-09-29T10:45:15.729Z TO 2016-07-05T10:45:15.729Z)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=1}");
-        Map<String, String> info = (Map<String, String>) bucket.getFacetInfo();
+        Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"2015-09-29T10:45:15.729Z");
         Assert.assertEquals(info.get("to"),"2016-07-05T10:45:15.729Z");
         Assert.assertEquals(info.get("count"),"1");
@@ -218,7 +218,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("2016-07-05T10:45:15.729Z - 2017-04-11T10:45:15.729Z");
         bucket.assertThat().field("filterQuery").is("created:(2016-07-05T10:45:15.729Z TO 2017-04-11T10:45:15.729Z)");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
-        info = (Map<String, String>) bucket.getFacetInfo();
+        info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("from"),"2016-07-05T10:45:15.729Z");
         Assert.assertEquals(info.get("to"),"2017-04-11T10:45:15.729Z");
         Assert.assertEquals(info.get("count"),"0");
