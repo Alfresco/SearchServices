@@ -1373,6 +1373,11 @@ public class AlfrescoSolrDataModel implements QueryConstants
         options.setLocales(searchParameters.getLocales());
         options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
         options.setQueryParameterDefinitions(searchParameters.getQueryParameterDefinitions());
+        for(String name : searchParameters.getQueryTemplates().keySet())
+        {
+        	String template = searchParameters.getQueryTemplates().get(name);
+        	options.addQueryTemplate(name, template);
+        }
 
         // parse cmis syntax
         CapabilityJoin joinSupport = (mode == CMISQueryMode.CMS_STRICT) ? CapabilityJoin.NONE : CapabilityJoin.INNERONLY;
