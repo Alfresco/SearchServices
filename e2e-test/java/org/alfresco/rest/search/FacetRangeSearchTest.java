@@ -18,6 +18,10 @@
  */
 package org.alfresco.rest.search;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.rest.model.RestErrorModel;
@@ -66,28 +70,32 @@ public class FacetRangeSearchTest extends AbstractSearchTest
     public void checkingFacetsMandatoryErrorMessages()throws Exception
     {
         SearchRequest query = carsQuery();
-
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
         RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
-        query.setRanges(facetRangeModel);
-
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
         SearchResponse response = query(query);
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "field"));
+        ranges.clear();
         facetRangeModel.setField("content.size");
-        
-        query.setRanges(facetRangeModel);
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
         response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "start"));
         facetRangeModel.setStart("0");
-
-        query.setRanges(facetRangeModel);
+        ranges.clear();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
         response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "end"));
         facetRangeModel.setEnd("400");
-        query.setRanges(facetRangeModel);
+        query.setRanges(ranges);
+        ranges.clear();
+        ranges.add(facetRangeModel);
         response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "gap"));
@@ -107,7 +115,9 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setStart("0");
         facetRangeModel.setEnd("500");
         facetRangeModel.setGap("200");
-        query.setRanges(facetRangeModel);
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
@@ -154,7 +164,9 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setEnd("500");
         facetRangeModel.setGap("200");
         facetRangeModel.setHardend(true);
-        query.setRanges(facetRangeModel);
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
@@ -199,7 +211,9 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
         facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
         facetRangeModel.setGap("+280DAY");
-        query.setRanges(facetRangeModel);
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
@@ -222,5 +236,27 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         Assert.assertEquals(info.get("from"),"2016-07-05T10:45:15.729Z");
         Assert.assertEquals(info.get("to"),"2017-04-11T10:45:15.729Z");
         Assert.assertEquals(info.get("count"),"0");
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check date facet intervals search api")
+    public void searchDateAndSizeRanges()throws Exception
+    {
+        SearchRequest query = createQuery("name:A*");
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        facetRangeModel.setField("created");
+        facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
+        facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
+        facetRangeModel.setGap("+280DAY");
+        ranges.add(facetRangeModel);
+        RestRequestRangesModel facetCountRangeModel = new RestRequestRangesModel();
+        facetCountRangeModel.setField("content.size");
+        facetCountRangeModel.setStart("0");
+        facetCountRangeModel.setEnd("500");
+        facetCountRangeModel.setGap("200");
+        ranges.add(facetCountRangeModel);
+        query.setRanges(ranges);
     }
 }
