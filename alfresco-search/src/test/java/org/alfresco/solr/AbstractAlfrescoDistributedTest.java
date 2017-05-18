@@ -609,7 +609,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         StringBuilder sb = new StringBuilder();
 
 
-        String[] ranges = {"1-100", "101-200", "201-300", "301-400"};
+        String[] ranges = {"0-100", "100-200", "200-300", "300-400"};
         for (int i = 0; i < numShards; i++)
         {
             if (sb.length() > 0) sb.append(',');
