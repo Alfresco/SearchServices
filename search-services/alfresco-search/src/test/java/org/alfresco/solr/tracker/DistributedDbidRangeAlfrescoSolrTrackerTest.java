@@ -65,7 +65,7 @@ public class DistributedDbidRangeAlfrescoSolrTrackerTest extends AbstractAlfresc
     @Test
     public void testDbIdRange() throws Exception
     {
-        Thread.sleep(20000);
+        Thread.sleep(25000);
         putHandleDefaults();
 
         int numAcls = 250;
@@ -96,7 +96,7 @@ public class DistributedDbidRangeAlfrescoSolrTrackerTest extends AbstractAlfresc
 
         for(int i=0; i<numNodes; i++) {
             int aclIndex = i % numAcls;
-            Node node = getNode((long)(i+1), bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            Node node = getNode((long)i, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "mike", null, false);
             nodeMetaDatas.add(nodeMetaData);
@@ -106,7 +106,7 @@ public class DistributedDbidRangeAlfrescoSolrTrackerTest extends AbstractAlfresc
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
         waitForDocCountAllCores(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), numAcls, 80000);
 
-        //The test framework has ranges 1-100, 101-200,
+        //The test framework has ranges 0-100, 100-200, ...
         assertShardCount(0, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 100);
         assertShardCount(1, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 50);
     }
