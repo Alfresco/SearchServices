@@ -24,6 +24,8 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
+import junit.framework.Assert;
+
 /**
  * Search end point Public API test.
  * @author Michael Suzuki
@@ -34,23 +36,14 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
     public void searchOnIndexedData() throws Exception
     {        
-        SearchResponse nodes =  query("fox");
+        SearchResponse nodes =  query("ipsum");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
         
         SearchNodeModel entity = nodes.getEntryByIndex(0);
         entity.assertThat().field("search").contains("score");
         entity.getSearch().assertThat().field("score").isNotEmpty();
-        entity.assertThat().field("name").contains("pangram.txt");
-        
-        nodes =  query("car");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        entity = nodes.getEntryByIndex(0);
-
-        nodes.assertThat().entriesListIsNotEmpty();
-        entity.assertThat().field("search").contains("score");
-        entity.getSearch().assertThat().field("score").isNotEmpty();
-        entity.assertThat().field("name").contains("cars.txt");
+        Assert.assertEquals("Project Overview.ppt",entity.getName());
     }
     
     @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
