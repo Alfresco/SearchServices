@@ -167,7 +167,7 @@ public class StatsSearchTest extends AbstractSearchTest
         SearchResponse response = query(query);
         assertStatsFacetedResponse(response, "creator", 1);
         RestGenericMetricModel countMetric = response.getContext().getFacets().get(0).getBuckets().get(0).getMetrics().get(0);
-        Integer count = response.getEntries().size();
+        Integer count = response.getPagination().getTotalItems();
         Map metricCount = (Map) countMetric.getValue();
         assertEquals(count, metricCount.get("count"));
 

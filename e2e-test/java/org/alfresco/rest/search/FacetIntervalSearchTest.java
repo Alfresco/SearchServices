@@ -68,6 +68,25 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "facetIntervals intervals created sets end"));
 
+        restFacetSetModel.setEnd("B");
+        RestRequestFacetSetModel duplicate = new RestRequestFacetSetModel();
+        facetInterval.setSets(Arrays.asList(restFacetSetModel,duplicate));
+        duplicate.setLabel("theRest");
+        duplicate.setStart("A");
+        duplicate.setEnd("C");
+        response = query(query);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+                    .containsSummary("duplicate set interval label [theRest=2]");
+
+        facetInterval.setSets(Arrays.asList(restFacetSetModel));
+        facetInterval.setLabel("thesame");
+        FacetInterval duplicateLabel = new FacetInterval("creator", "thesame", Arrays.asList(duplicate));
+        facetIntervalsModel.setIntervals(Arrays.asList(facetInterval, duplicateLabel));
+        query.setFacetIntervals(facetIntervalsModel);
+        response = query(query);
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
+                    .containsSummary("duplicate interval label [thesame=2]");
+
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
