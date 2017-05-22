@@ -18,17 +18,16 @@
  */
 package org.alfresco.rest.search;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
-import org.testng.TestException;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Faceted search test.

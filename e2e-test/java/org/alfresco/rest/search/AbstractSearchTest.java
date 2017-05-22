@@ -111,13 +111,16 @@ public class AbstractSearchTest extends RestTest
     {
         return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
     }
-
-    protected SearchRequest carsQuery()
+    protected SearchRequest createQuery(String term)
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cars");
+        queryReq.setQuery(term);
         query.setQuery(queryReq);
         return query;
+    }
+    protected SearchRequest carsQuery()
+    {
+        return createQuery("cars");
     }
 }

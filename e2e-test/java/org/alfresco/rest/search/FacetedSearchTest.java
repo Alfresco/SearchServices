@@ -64,30 +64,32 @@ public class FacetedSearchTest extends AbstractSearchTest
      *        "count": 61,
      *        "skipCount": 0
      *     },
-     *     "context": {
-     *        "consistency": {"lastTxId": 512},
-     *        "facetQueries": [
+     *     "facetsFields": [
+     *       {
+     *         "type": "query",
+     *         "label": "foo",
+     *         "buckets": [
      *           {
-     *              "count": 61,
-     *              "label": "small",
-     *              "filterQuery": "content.size:[o TO 102400]"
+     *             "label": "small",
+     *             "filterQuery": "content.size:[0 TO 102400]",
+     *             "display": 1
      *           },
      *           {
-     *              "count": 0,
-     *              "label": "large",
-     *              "filterQuery": "content.size:[o TO 102400]"
+     *             "label": "large",
+     *             "filterQuery": "content.size:[1048576 TO 16777216]",
+     *             "metrics": [
+     *               {
+     *                 "type": "count",
+     *                 "value": {
+     *                   "count": 0
+     *                 }
+     *               }
+     *             ]
      *           },
-     *           {
-     *              "count": 0,
-     *              "label": "medium",
-     *              "filterQuery": "content.size:[o TO 102400]"
-     *           }
-     *        ]
-     *     }
      * }}
      * @throws Exception
      */
-    public void searchWithFaceting() throws Exception
+    public void searchWithQueryFaceting() throws Exception
     {        
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
@@ -154,7 +156,7 @@ public class FacetedSearchTest extends AbstractSearchTest
      *     "context": {
      *        "consistency": {"lastTxId": 512},
      *        //Added below as part of SEARCH-374
-     *        "facetsFields": [
+     *        "facets": [
      *          {  "label": "foo",
      *             "buckets": [
      *               { "label": "small", "count": 61, "filterQuery": "content.size:[o TO 102400]"},
@@ -168,7 +170,7 @@ public class FacetedSearchTest extends AbstractSearchTest
      * 
      * @throws Exception 
      */
-    public void searchFacetGroup() throws Exception
+    public void searchQueryFacetingWithGroup() throws Exception
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
@@ -191,13 +193,15 @@ public class FacetedSearchTest extends AbstractSearchTest
         //We don't expect to see the FacetQueries if group is being used.
         Assert.assertTrue(response.getContext().getFacetQueries() == null);
         //Validate the facet field structure is correct.
-        Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
-        Assert.assertEquals(response.getContext().getFacetsFields().get(0).getLabel(), "foo");
-        FacetFieldBucket bucket = response.getContext().getFacetsFields().get(0).getBuckets().get(0);
+        Assert.assertFalse(response.getContext().getFacets().isEmpty());
+        Assert.assertEquals(response.getContext().getFacets().get(0).getLabel(), "foo");
+        
+        RestGenericBucketModel bucket = response.getContext().getFacets().get(0).getBuckets().get(0);
         bucket.assertThat().field("label").isNotEmpty();
-        bucket.assertThat().field("count").isNotEmpty();
+        Assert.assertEquals( bucket.getMetrics().get(0).getType(), "count");
+        Assert.assertNotEquals( bucket.getMetrics().get(0).getValue(), "");
         bucket.assertThat().field("filterQuery").isNotEmpty();
-        response.getContext().getFacetsFields().get(0).getBuckets().forEach(action -> {
+        response.getContext().getFacets().get(0).getBuckets().forEach(action -> {
             switch (action.getLabel())
             {
             case "small":
@@ -216,5 +220,44 @@ public class FacetedSearchTest extends AbstractSearchTest
         });
         
     }
+    
+    @Test
+    /**
+     * {
+     *  "query": {
+     *              "query": "*"
+     *           },
+     *  "facetFields": {
+     *      "facets": [{"field": "cm:mimetype"},{"field": "modifier"}]
+     *  }
+     * }
+     */
+    public void searchWithFactedFields() throws Exception
+    {
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
+        queryReq.setQuery("*");
+        query.setQuery(queryReq);
+        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+        List<RestRequestFacetFieldModel>facets = new ArrayList<RestRequestFacetFieldModel>();
+        facets.add(new RestRequestFacetFieldModel("cm:mimetype"));
+        facets.add(new RestRequestFacetFieldModel("modifier"));
+        facetFields.setFacets(facets);
+        query.setFacetFields(facetFields);
+        SearchResponse response =  query(query);
+        Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
+        Assert.assertNull(response.getContext().getFacetQueries());
+        Assert.assertNull(response.getContext().getFacets());
+        RestResultBucketsModel model = response.getContext().getFacetsFields().get(0);
+        Assert.assertEquals(model.getLabel(), "modifier");
+        
+        model.assertThat().field("label").is("modifier");
+        FacetFieldBucket bucket1 = model.getBuckets().get(0);
+        bucket1.assertThat().field("label").is("System");
+        bucket1.assertThat().field("display").is("System");
+        bucket1.assertThat().field("filterQuery").is("modifier:System");
+        bucket1.assertThat().field("count").is(684);
+    }
+    
     
 }
