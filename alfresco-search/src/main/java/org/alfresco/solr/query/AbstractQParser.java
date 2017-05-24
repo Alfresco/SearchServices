@@ -438,7 +438,7 @@ public abstract class AbstractQParser extends QParser implements QueryConstants
                 for (int i = 0; i < textAttributes.length(); i++)
                 {
                     String textAttribute = textAttributes.getString(i);
-                    searchParameters.addAllAttribute(textAttribute);
+                    searchParameters.addTextAttribute(textAttribute);
                 }
                 
                 
