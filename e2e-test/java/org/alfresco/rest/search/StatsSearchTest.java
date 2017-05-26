@@ -203,7 +203,6 @@ public class StatsSearchTest extends AbstractSearchTest
         query.setFacetFields(facetFields);
         query.setIncludeRequest(false);
 
-
         List<RestRequestPivotModel> pivotModelList = new ArrayList<>();
         RestRequestPivotModel pivots = new RestRequestPivotModel();
         pivots.setKey("b0");
@@ -211,9 +210,10 @@ public class StatsSearchTest extends AbstractSearchTest
         pivotn.setKey("created");
         RestRequestPivotModel pivot2 = new RestRequestPivotModel();
         pivot2.setKey("aNumber");
+
+        pivotn.setPivots(Arrays.asList(pivot2));
+        pivots.setPivots(Arrays.asList(pivotn));
         pivotModelList.add(pivots);
-        pivotModelList.add(pivotn);
-        pivotModelList.add(pivot2);
         query.setPivots(pivotModelList);
 
         List<RestRequestStatsModel> statsModels = new ArrayList<>();
@@ -232,14 +232,13 @@ public class StatsSearchTest extends AbstractSearchTest
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
         facetResponseModel.assertThat().field("type").is("pivot");
         facetResponseModel.assertThat().field("label").is("b0");
-        assertEquals(facetResponseModel.getBuckets().get(0).getMetrics().size(), 8, "Metrics on the pivot bucket");
 
+        //pivot created
+        RestGenericFacetResponseModel created = facetResponseModel.getBuckets().get(0).getFacets().get(0);
+        created.assertThat().field("type").is("pivot");
+        created.assertThat().field("label").is("created");
         //Another nested stats
-        assertEquals(facetResponseModel.getBuckets().get(0).getFacets().get(0).getBuckets().get(0).getMetrics().size(), 8, "Metrics are on the end of a pivot bucket");
-
-        RestGenericFacetResponseModel statsFacet = response.getContext().getFacets().get(1);
-        statsFacet.assertThat().field("type").is("stats");
-        statsFacet.assertThat().field("label").is("aNumber");
+        assertEquals(created.getBuckets().get(0).getMetrics().size(), 8, "Metrics are on the end of a pivot bucket");
 
     }
 
@@ -269,8 +268,9 @@ public class StatsSearchTest extends AbstractSearchTest
         pivots.setKey("creator");
         RestRequestPivotModel pivotn = new RestRequestPivotModel();
         pivotn.setKey("numericId");
+
+        pivots.setPivots(Arrays.asList(pivotn));
         pivotModelList.add(pivots);
-        pivotModelList.add(pivotn);
         query.setPivots(pivotModelList);
 
         List<RestRequestStatsModel> statsModels = new ArrayList<>();
