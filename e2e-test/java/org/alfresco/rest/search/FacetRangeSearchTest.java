@@ -297,7 +297,6 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setGap("200");
         List<String> include = new ArrayList<String>();
         include.add("upper");
-//        include.add("lower");
         facetRangeModel.setInclude(include);
         List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
         ranges.add(facetRangeModel);
@@ -308,38 +307,38 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
 
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
-        bucket.assertThat().field("label").is("(0 - 200]");
-        bucket.assertThat().field("filterQuery").is("content.size:<0 TO 200]");
+        bucket.assertThat().field("label").is("[0 - 200]");
+        bucket.assertThat().field("filterQuery").is("content.size:[0 TO 200]");
         Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
         Assert.assertTrue(new Integer(metric.get("count")) >= 4);
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"0");
         Assert.assertEquals(info.get("end"),"200");
         Assert.assertNull(info.get("count"));
-        Assert.assertEquals(info.get("startInclusive"),"false");
+        Assert.assertEquals(info.get("startInclusive"),"true");
         Assert.assertEquals(info.get("endInclusive"),"true");
         
         bucket = facetResponseModel.getBuckets().get(1);
-        bucket.assertThat().field("label").is("(200 - 400]");
-        bucket.assertThat().field("filterQuery").is("content.size:<200 TO 400]");
+        bucket.assertThat().field("label").is("[200 - 400]");
+        bucket.assertThat().field("filterQuery").is("content.size:[200 TO 400]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
         Integer count = new Integer(metric.get("count"));
         Assert.assertTrue(count >= 4);
         info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"200");
         Assert.assertEquals(info.get("end"),"400");
-        Assert.assertEquals(info.get("startInclusive"),"false");
+        Assert.assertEquals(info.get("startInclusive"),"true");
         Assert.assertEquals(info.get("endInclusive"),"true");
         
         bucket = facetResponseModel.getBuckets().get(2);
-        bucket.assertThat().field("label").is("(400 - 600]");
-        bucket.assertThat().field("filterQuery").is("content.size:<400 TO 600]");
+        bucket.assertThat().field("label").is("[400 - 600]");
+        bucket.assertThat().field("filterQuery").is("content.size:[400 TO 600]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
         Assert.assertTrue(new Integer(metric.get("count")) >= 7);
         info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"400");
         Assert.assertEquals(info.get("end"),"600");
-        Assert.assertEquals(info.get("startInclusive"),"false");
+        Assert.assertEquals(info.get("startInclusive"),"true");
         Assert.assertEquals(info.get("endInclusive"),"true");
     }
 
