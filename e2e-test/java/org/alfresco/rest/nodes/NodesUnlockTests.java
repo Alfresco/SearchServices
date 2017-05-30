@@ -5,8 +5,8 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestNodeLockBodyModel;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -34,15 +34,14 @@ public class NodesUnlockTests extends RestTest
         dataUser.addUserToSite(user1, publicSite, UserRole.SiteCollaborator);
         user1.setUserRole(UserRole.SiteCollaborator);
         dataUser.addUserToSite(user2, publicSite, UserRole.SiteCollaborator);
-        user2.setUserRole(UserRole.SiteCollaborator);
-        
+        user2.setUserRole(UserRole.SiteCollaborator);  
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.REGRESSION,
             description= "Verify Collaborator can unlock after EPHEMERAL lock made by same user")
-    public void lockEphemeralAndUnlockWithSameUser() throws Exception{
-        
+    public void lockEphemeralAndUnlockWithSameUser() throws Exception
+    {
         STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
         
@@ -96,7 +95,7 @@ public class NodesUnlockTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify Collaborator can unlock file after EPHEMERAL lock made by different user")
+            description= "Verify Collaborator can not unlock file after EPHEMERAL lock made by different user")
     public void lockEphemeralAndUnlockWithDifferentUser() throws Exception{
         
         STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
@@ -117,7 +116,7 @@ public class NodesUnlockTests extends RestTest
         RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model2.assertThat().field("isLocked").is(true);
         
-        STEP("5. Lock the file with user2 while the file is still locked");
+        STEP("5. Cannot unlock the file with user2 while the file is still locked");
         restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
             .assertLastError()
@@ -128,7 +127,7 @@ public class NodesUnlockTests extends RestTest
     
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify Collaborator can unlock file after PERSISTENT lock made by different user")
+            description= "Verify Collaborator can not unlock file after PERSISTENT lock made by different user")
     public void lockPersistentAndUnlockWithDifferentUser() throws Exception{
         
         STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
@@ -149,7 +148,7 @@ public class NodesUnlockTests extends RestTest
         RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model2.assertThat().field("isLocked").is(true);
         
-        STEP("5. Unlock the file with user2 while the file is still locked");
+        STEP("5. Cannot unlock the file with user2 while the file is still locked");
         restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
             .assertLastError()

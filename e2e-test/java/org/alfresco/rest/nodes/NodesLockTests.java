@@ -5,8 +5,8 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestNodeLockBodyModel;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -42,18 +42,17 @@ public class NodesLockTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by different user")
+            description = "Verify Collaborator can not lock PERSISTENT after EPHEMERAL lock made by different user")
     public void lockEphemeralAndRelockPersistentDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Administrator adds a file in the site.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
         RestNodeModel file1Model1 = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model1.assertThat().field("isLocked").is(false);
 
-        STEP("3. Lock the file using mode EPHEMERAL with user1 (POST nodes/{nodeId}/lock).");
+        STEP("3. Lock the file using mode EPHEMERAL for 20 seconds with user1 (POST nodes/{nodeId}/lock).");
         RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
         lockBodyModel.setLifetime("EPHEMERAL");
         lockBodyModel.setTimeToExpire(20);
@@ -63,9 +62,11 @@ public class NodesLockTests extends RestTest
 
         STEP("4. Verify with user1 that the file is locked.");
         RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
-        file1Model2.assertThat().field("isLocked").is(true).assertThat().field("properties").contains("lockLifetime=EPHEMERAL").assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        file1Model2.assertThat().field("isLocked").is(true)
+            .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
+            .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
 
-        STEP("5. Lock the file using mode PERSISTENT with user2 while the file is still locked");
+        STEP("5. Cannot lock the file using mode PERSISTENT with user2 while the file is still locked");
         RestNodeLockBodyModel lockBodyModel2 = new RestNodeLockBodyModel();
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
@@ -79,11 +80,10 @@ public class NodesLockTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by different user")
+            description = "Verify Collaborator can not lock PERSISTENT after EPHEMERAL lock made by different user")
     public void lockEphemeralAndRelockEphemeralDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -104,7 +104,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
 
-        STEP("5. Lock the file using mode EPHEMERAL with user2 while the file is still locked");
+        STEP("5. Cannot lock the file using mode EPHEMERAL with user2 while the file is still locked");
         RestNodeLockBodyModel lockBodyModel2 = new RestNodeLockBodyModel();
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
@@ -121,8 +121,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by same user")
     public void lockEphemeralAndRelockEphemeralSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -161,8 +160,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by same user")
     public void lockEphemeralAndRelockPersistentSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -204,11 +202,10 @@ public class NodesLockTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by different user")
+            description = "Verify Collaborator can not lock EPHEMERAL after PERSISTENT lock made by different user")
     public void lockPersistentAndRelockEphemeralDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -229,7 +226,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
 
-        STEP("5. Lock the file using mode EPHEMERAL with user2 while the file is still locked");
+        STEP("5. Cannot lock the file using mode EPHEMERAL with user2 while the file is still locked");
         RestNodeLockBodyModel lockBodyModel2 = new RestNodeLockBodyModel();
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
@@ -243,11 +240,10 @@ public class NodesLockTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by different user")
+            description = "Verify Collaborator can not lock PERSISTENT after PERSISTENT lock made by different user")
     public void lockPersistentAndRelockPersistentDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -268,7 +264,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
 
-        STEP("5. Lock the file using mode PERSISTENT with user2 while the file is still locked");
+        STEP("5. Cannot lock the file using mode PERSISTENT with user2 while the file is still locked");
         RestNodeLockBodyModel lockBodyModel2 = new RestNodeLockBodyModel();
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
@@ -285,8 +281,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by different user is expired")
     public void lockPersistentAndRelockEphemeralAfterExpiredLockDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -326,8 +321,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by another user is expired")
     public void lockEphemeralAndRelockPersistentAfterExpiredLockDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -366,8 +360,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by another user is expired")
     public void lockEphemeralAndRelockEphemeralAfterExpiredLockDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -403,11 +396,10 @@ public class NodesLockTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by different user is expired")
+            description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by different user is expired")
     public void lockPersistentAndRelockPersistentAfterExpiredLockDifferentUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -446,8 +438,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by same user is expired")
     public void lockEphemeralAndRelockEphemeralAfterExpiredLockSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -486,8 +477,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by same user is expired")
     public void lockPersistentAndRelockPersistentAfterExpiredLockSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -525,8 +515,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by same user is expired")
     public void lockPersistentAndRelockEphemeralAfterExpiredLockSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -566,8 +555,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by same user is expired")
     public void lockEphemeralAndRelockPersistentAfterExpiredLockSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -607,8 +595,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by same user")
     public void lockPersistentAndRelockPersistentSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
@@ -646,8 +633,7 @@ public class NodesLockTests extends RestTest
             description = "Verify Collaborator can lock EPHERMERAL after PERSISTENT lock made by same user")
     public void lockPersistentAndRelockEphemeralSameUser() throws Exception
     {
-
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
+        STEP("1. Adds a file in the site by administrator.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
 
         STEP("2. Verify with admin that the file is not locked.");
