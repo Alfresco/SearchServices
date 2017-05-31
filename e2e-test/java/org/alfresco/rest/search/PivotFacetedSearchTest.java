@@ -18,11 +18,14 @@
  */
 package org.alfresco.rest.search;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestRequestRangesModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -151,6 +154,52 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         creatorResponse.assertThat().field("label").is("creator");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
+              description = "Checks range pivots using Search api")
+    public void searchWithRangePivoting() throws Exception
+    {
+        SearchRequest query = carsQuery();
+
+        Pagination pagination = new Pagination();
+        pagination.setMaxItems(2);
+        query.setPaging(pagination);
+        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+        List<RestRequestFacetFieldModel> list = new ArrayList<>();
+        list.add(new RestRequestFacetFieldModel("creator"));
+        facetFields.setFacets(list);
+        query.setFacetFields(facetFields);
+        query.setIncludeRequest(false);
+
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        facetRangeModel.setField("created");
+        facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
+        facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
+        facetRangeModel.setGap("+280DAY");
+        facetRangeModel.setLabel("aRange");
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
+
+        List<RestRequestPivotModel> pivotModelList = new ArrayList<>();
+        RestRequestPivotModel creatorpivot = new RestRequestPivotModel();
+        creatorpivot.setKey("creator");
+        RestRequestPivotModel rangepivot = new RestRequestPivotModel();
+        rangepivot.setKey("aRange");
+        creatorpivot.setPivots(Arrays.asList(rangepivot));
+        pivotModelList.add(creatorpivot);
+        query.setPivots(pivotModelList);
+
+        SearchResponse response =  query(query);
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(1);
+        facetResponseModel.assertThat().field("type").is("pivot");
+        facetResponseModel.assertThat().field("label").is("creator");
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        RestGenericFacetResponseModel rangeResponse = bucket.getFacets().get(0);
+        rangeResponse.assertThat().field("type").is("range");
+        assertTrue(rangeResponse.getBuckets().size()>0);
+
+    }
 
     private void assertPivotResponse(SearchResponse response, String field, String alabel) throws Exception
     {
