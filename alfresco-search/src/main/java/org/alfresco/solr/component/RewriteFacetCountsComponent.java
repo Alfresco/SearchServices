@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.handler.component.ResponseBuilder;
 import org.apache.solr.handler.component.SearchComponent;
 
@@ -149,13 +150,13 @@ public class RewriteFacetCountsComponent extends SearchComponent
                 String mapping = mappings.get(pivotName);
                 String[] toParts = mapping != null ? mapping.split(",") : fromParts;
                 Collection<NamedList<Object>> current = (Collection<NamedList<Object>>)found.getVal(i);
-                processPivot(fromParts, toParts, current, 0);
+                processPivot(rb, fromParts, toParts, current, 0);
             }
         }
         
     }
     
-    private void processPivot(String[] fromParts, String[] toParts, Collection<NamedList<Object>> current, int level)
+    private void processPivot(ResponseBuilder rb, String[] fromParts, String[] toParts, Collection<NamedList<Object>> current, int level)
     {
         for(NamedList<Object> entry : current)
         {
@@ -169,7 +170,12 @@ public class RewriteFacetCountsComponent extends SearchComponent
                 else if(name.equals("pivot"))
                 {
                     Collection<NamedList<Object>> pivot = (Collection<NamedList<Object>>)entry.getVal(i);
-                    processPivot(fromParts, toParts, pivot, level+1);
+                    processPivot(rb, fromParts, toParts, pivot, level+1);
+                }
+                else if(name.equals("ranges"))
+                {
+                	SimpleOrderedMap ranges = (SimpleOrderedMap)entry.getVal(i);
+                	processRanges(rb, ranges);
                 }
                 else
                 {
@@ -179,7 +185,27 @@ public class RewriteFacetCountsComponent extends SearchComponent
         }
     }
 
-    /**
+    private void processRanges(ResponseBuilder rb, SimpleOrderedMap ranges) {
+
+    	HashMap<String, String> mappings = (HashMap<String, String>)rb.rsp.getValues().get("_range_mappings_");
+    	if(mappings != null)
+    	{
+    		HashMap<String, String> reverse = getReverseLookUp(mappings);
+    	
+    			for(int i = 0; i < ranges.size(); i++)
+    			{
+    				String name = ranges.getName(i);
+    				String newName = reverse.get(name);
+    				if(newName != null)
+    				{
+    					ranges.setName(i, newName);
+    				}
+    			}
+    		
+    	}
+    }
+
+	/**
      * @param rb
      */
     private void rewrite(ResponseBuilder rb, String mappingName, String ... sections)
