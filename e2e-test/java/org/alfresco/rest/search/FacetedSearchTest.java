@@ -255,7 +255,7 @@ public class FacetedSearchTest extends AbstractSearchTest
         FacetFieldBucket bucket1 = model.getBuckets().get(0);
         bucket1.assertThat().field("label").is("System");
         bucket1.assertThat().field("display").is("System");
-        bucket1.assertThat().field("filterQuery").is("modifier:System");
+        bucket1.assertThat().field("filterQuery").is("modifier:\"System\"");
         bucket1.assertThat().field("count").is(684);
     }
     @Test
@@ -295,7 +295,7 @@ public class FacetedSearchTest extends AbstractSearchTest
         RestGenericBucketModel bucket1 = model.getBuckets().get(0);
         bucket1.assertThat().field("label").is("System");
         bucket1.assertThat().field("display").isNull();
-        bucket1.assertThat().field("filterQuery").is("modifier:System");
+        bucket1.assertThat().field("filterQuery").is("modifier:\"System\"");
         bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=684}}]");
     }
     

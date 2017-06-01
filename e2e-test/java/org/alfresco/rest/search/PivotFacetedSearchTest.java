@@ -211,7 +211,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         facetResponseModel.assertThat().field("label").is(label);
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
         bucket.assertThat().field("label").isNotEmpty();
-        bucket.assertThat().field("filterQuery").is(field+":"+bucket.getLabel());
+        bucket.assertThat().field("filterQuery").is(field+":\""+bucket.getLabel()+"\"");
         Assert.assertEquals("count", bucket.getMetrics().get(0).getType());
         Assert.assertTrue(bucket.getMetrics().get(0).getValue().toString().contains("{count="));
     }
@@ -251,7 +251,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         labelResponseModel.assertThat().field("label").isNotEmpty();
         labelResponseModel.assertThat().field("label").is("aLabel");
         RestGenericBucketModel bucket = labelResponseModel.getBuckets().get(0);
-        bucket.assertThat().field("filterQuery").is("modifier:"+bucket.getLabel());
+        bucket.assertThat().field("filterQuery").is("modifier:\""+bucket.getLabel()+"\"");
         Assert.assertEquals("count", bucket.getMetrics().get(0).getType());
         Assert.assertTrue(bucket.getMetrics().get(0).getValue().toString().contains("{count="));
     }
