@@ -65,7 +65,6 @@ public class DistributedDbidRangeAlfrescoSolrTrackerTest extends AbstractAlfresc
     @Test
     public void testDbIdRange() throws Exception
     {
-        Thread.sleep(25000);
         putHandleDefaults();
 
         int numAcls = 250;
