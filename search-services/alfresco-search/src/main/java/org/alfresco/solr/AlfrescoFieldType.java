@@ -258,10 +258,6 @@ public class AlfrescoFieldType extends FieldType
     
     @Override
     public Type getUninversionType(SchemaField sf) {
-      if (sf.multiValued()) {
-        return Type.SORTED_SET_BINARY;
-      } else {
-        return Type.SORTED;
-      }
+      return Type.SORTED_SET_BINARY;
     }
 }
