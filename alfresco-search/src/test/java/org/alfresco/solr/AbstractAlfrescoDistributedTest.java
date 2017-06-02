@@ -296,6 +296,22 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         waitForShardsCount(query, count, waitMillis, begin);
     }
 
+    public void assertShardCount(int shardNumber, Query query, int count) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        SolrCore core = cores.get(shardNumber);
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        try {
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+            TopDocs topDocs = searcher.search(query, 10);
+            if(count != topDocs.totalHits) {
+                throw new Exception("Expecting "+count+" docs on shard "+shardNumber+" , found "+topDocs.totalHits);
+            }
+        } finally {
+            refCounted.decref();
+        }
+    }
+
     /**
      * Waits until all the shards reach the desired count, or errors.
      * @param query
@@ -573,9 +589,16 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         JettySolrRunner jsr =  createJetty(jettyKey);
         jettyContainers.put(jettyKey, jsr);
 
+        Properties properties = new Properties();
+
+        if(additionalProperties != null) {
+            properties.putAll(additionalProperties);
+            properties.remove("shard.method");
+        }
+
         for (int i = 0; i < coreNames.length; i++) 
         {
-            addCoreToJetty(jettyKey, coreNames[i], coreNames[i], additionalProperties);
+            addCoreToJetty(jettyKey, coreNames[i], coreNames[i], properties);
         }
 
         //Now start jetty
@@ -592,18 +615,30 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
 
+        if (additionalProperties == null) {
+            additionalProperties = new Properties();
+        }
+
+
+        String[] ranges = {"0-100", "100-200", "200-300", "300-400"};
         for (int i = 0; i < numShards; i++)
         {
+            Properties props = new Properties();
+            props.putAll(additionalProperties);
             if (sb.length() > 0) sb.append(',');
             final String shardname = "shard" + i;
-            if (additionalProperties == null) additionalProperties = new Properties();
-            additionalProperties.put("shard.instance", Integer.toString(i));
-            additionalProperties.put("shard.count", Integer.toString(numShards));
+            props.put("shard.instance", Integer.toString(i));
+            props.put("shard.count", Integer.toString(numShards));
+
+            if("DB_ID_RANGE".equalsIgnoreCase(props.getProperty("shard.method"))) {
+                //Add
+                props.put("shard.range", ranges[i]);
+            }
 
             String shardKey = jettyKey+"_shard_"+i;
             JettySolrRunner j =  createJetty(shardKey);
             //use the first corename specified as the Share template
-            addCoreToJetty(shardKey, coreNames[0], shardname, additionalProperties);
+            addCoreToJetty(shardKey, coreNames[0], shardname, props);
             jettyShards.add(j);
             startJetty(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
