@@ -21,6 +21,7 @@ package org.alfresco.solr.tracker;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 
 import java.util.Properties;
+import java.util.Set;
 
 /*
  * @author Joel
@@ -29,9 +30,16 @@ import java.util.Properties;
 public class DocRouterFactory
 {
     public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
+
         switch(method) {
             case DB_ID:
                 return new DBIDRouter();
+            case DB_ID_RANGE:
+                String range = properties.getProperty("shard.range");
+                String[] rangeParts = range.split("-");
+                long startRange = Long.parseLong(rangeParts[0].trim());
+                long endRange = Long.parseLong(rangeParts[1].trim());
+                return new DBIDRangeRouter(startRange, endRange);
             case ACL_ID:
                 return new ACLIDMurmurRouter();
             case MOD_ACL_ID:
@@ -44,4 +52,5 @@ public class DocRouterFactory
                 return new DBIDRouter();
         }
     }
+
 }
