@@ -102,7 +102,7 @@ public class MimetypeGroupingCollector extends DelegatingCollector
         }
 
 
-        delegate.getLeafCollector(context).collect(doc);
+        leafDelegate.collect(doc);
     }
 
     public void finish() throws IOException 
