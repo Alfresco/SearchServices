@@ -255,9 +255,48 @@ public class FacetedSearchTest extends AbstractSearchTest
         FacetFieldBucket bucket1 = model.getBuckets().get(0);
         bucket1.assertThat().field("label").is("System");
         bucket1.assertThat().field("display").is("System");
-        bucket1.assertThat().field("filterQuery").is("modifier:System");
+        bucket1.assertThat().field("filterQuery").is("modifier:\"System\"");
         bucket1.assertThat().field("count").is(684);
     }
-    
+    @Test
+    /**
+     * Test that items returned are in the format of generic facets.
+     * {
+     *  "query": {
+     *              "query": "*"
+     *           },
+     *  "facetFields": {
+     *      "facets": [{"field": "cm:mimetype"},{"field": "modifier"}]
+     *  },
+     *  "facetFormat":"V2"
+     * }
+     */
+    public void searchWithFactedFieldsFacetFormatV2() throws Exception
+    {
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
+        queryReq.setQuery("*");
+        query.setQuery(queryReq);
+        query.setFacetFormat("V2");
+        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+        List<RestRequestFacetFieldModel>facets = new ArrayList<RestRequestFacetFieldModel>();
+        facets.add(new RestRequestFacetFieldModel("cm:mimetype"));
+        facets.add(new RestRequestFacetFieldModel("modifier"));
+        facetFields.setFacets(facets);
+        query.setFacetFields(facetFields);
+        SearchResponse response =  query(query);
+        Assert.assertNull(response.getContext().getFacetsFields());
+        Assert.assertNull(response.getContext().getFacetQueries());
+        Assert.assertFalse(response.getContext().getFacets().isEmpty());
+        RestGenericFacetResponseModel model = response.getContext().getFacets().get(0);
+        Assert.assertEquals(model.getLabel(), "modifier");
+        
+        model.assertThat().field("label").is("modifier");
+        RestGenericBucketModel bucket1 = model.getBuckets().get(0);
+        bucket1.assertThat().field("label").is("System");
+        bucket1.assertThat().field("display").isNull();
+        bucket1.assertThat().field("filterQuery").is("modifier:\"System\"");
+        bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=684}}]");
+    }
     
 }
