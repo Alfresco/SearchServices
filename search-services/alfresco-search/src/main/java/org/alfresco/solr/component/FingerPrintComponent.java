@@ -125,7 +125,7 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
     {
         if(req.getSearcher() != null)
         {
-            CoreContainer coreContainer = req.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+            CoreContainer coreContainer = req.getSearcher().getCore().getCoreContainer();
             AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
             SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
             return srv.getSolrContentStore();

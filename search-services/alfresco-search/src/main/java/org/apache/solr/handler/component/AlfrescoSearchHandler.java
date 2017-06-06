@@ -140,8 +140,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 					"First/Last components only valid if you do not declare 'components'");
 
 		if (shfInfo == null) {
-			shardHandlerFactory = core.getCoreDescriptor().getCoreContainer()
-					.getShardHandlerFactory();
+			shardHandlerFactory = core.getCoreContainer().getShardHandlerFactory();
 		} else {
 			shardHandlerFactory = core.createInitInstance(shfInfo,
 					ShardHandlerFactory.class, null, null);
@@ -259,8 +258,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 
 		rb.isDistrib = req.getParams().getBool(
 				"distrib",
-				req.getCore().getCoreDescriptor().getCoreContainer()
-						.isZooKeeperAware());
+				req.getCore().getCoreContainer().isZooKeeperAware());
 		if (!rb.isDistrib) {
 			// for back compat, a shards param with URLs like
 			// localhost:8983/solr will mean that this

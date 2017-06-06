@@ -72,7 +72,6 @@ public class ConsistencyComponent extends SearchComponent
         SolrQueryRequest req = rb.req;
         AlfrescoCoreAdminHandler adminHandler = (AlfrescoCoreAdminHandler)
                     req.getCore().
-                    getCoreDescriptor().
                     getCoreContainer().
                     getMultiCoreHandler();
 
