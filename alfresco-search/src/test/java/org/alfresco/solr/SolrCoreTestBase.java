@@ -30,22 +30,18 @@ import java.util.Properties;
 
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.commons.lang.reflect.FieldUtils;
-import org.apache.solr.core.CoreContainer;
-import org.apache.solr.core.CoreDescriptor;
-import org.apache.solr.core.RequestHandlers;
-import org.apache.solr.core.SolrConfig;
-import org.apache.solr.core.SolrCore;
-import org.apache.solr.core.SolrInfoMBean;
-import org.apache.solr.core.SolrResourceLoader;
+import org.apache.solr.core.*;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.IndexSchemaFactory;
 import org.apache.solr.update.UpdateHandler;
 import org.apache.solr.update.processor.RunUpdateProcessorFactory;
 import org.apache.solr.update.processor.UpdateRequestProcessor;
 import org.apache.solr.update.processor.UpdateRequestProcessorChain;
 import org.apache.solr.update.processor.UpdateRequestProcessorFactory;
+import org.apache.solr.util.TestHarness;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -91,12 +87,15 @@ public abstract class SolrCoreTestBase implements SolrTestFiles
           coreContainer = new CoreContainer(TEST_FILES_LOCATION);
           resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
           SolrConfig solrConfig = new SolrConfig(resourceLoader, "solrconfig-afts.xml", null);
-          IndexSchemaFactory.buildIndexSchema("schema-afts.xml", solrConfig);
-          coreDescriptor = new CoreDescriptor(coreContainer, "name", Paths.get(TEST_SOLR_COLLECTION));
-        
+          IndexSchema schema =  IndexSchemaFactory.buildIndexSchema("schema-afts.xml", solrConfig);
+          coreDescriptor = new CoreDescriptor("test_core_name",  Paths.get(TEST_SOLR_COLLECTION),
+                  coreContainer.getContainerProperties(), false,
+                  CoreDescriptor.CORE_TRANSIENT, "true",
+                  CoreDescriptor.CORE_LOADONSTARTUP, "true");
+
         // SolrCore is final, we can't mock with mockito
-        core = new SolrCore("name", null, solrConfig, null, null, coreDescriptor, null, null, null, false);
-          
+        core = new SolrCore(coreContainer, coreDescriptor, new ConfigSet("testConfigset", solrConfig, schema, null, true));
+        
         FieldUtils.writeField(core, "updateHandler", updateHandler, true);
         FieldUtils.writeField(core, "resourceLoader", resourceLoader, true);
         infoRegistry = new HashMap<String, SolrInfoMBean>();
