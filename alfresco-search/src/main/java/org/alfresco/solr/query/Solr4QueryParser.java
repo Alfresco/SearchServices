@@ -159,7 +159,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         this.solrParams = req.getParams();
         SolrCore core = req.getCore();
         if(core != null) {
-            this.shardHandlerFactory = core.getCoreDescriptor().getCoreContainer().getShardHandlerFactory();
+            this.shardHandlerFactory = core.getCoreContainer().getShardHandlerFactory();
         }
         this.request = req;
 
@@ -179,7 +179,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     {
         if(req.getSearcher() != null)
         {
-            CoreContainer coreContainer = req.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+            CoreContainer coreContainer = req.getSearcher().getCore().getCoreContainer();
             AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
             SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
             return srv.getSolrContentStore();

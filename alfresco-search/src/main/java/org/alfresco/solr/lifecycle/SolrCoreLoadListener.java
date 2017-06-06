@@ -41,7 +41,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener {
 
     @Override
     public void newSearcher(SolrIndexSearcher newSearcher, SolrIndexSearcher currentSearcher) {
-        CoreContainer coreContainer = getCore().getCoreDescriptor().getCoreContainer();
+        CoreContainer coreContainer = getCore().getCoreContainer();
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
 
         SolrCoreLoadRegistration.registerForCore(coreAdminHandler, coreContainer, getCore(), getCore().getName());

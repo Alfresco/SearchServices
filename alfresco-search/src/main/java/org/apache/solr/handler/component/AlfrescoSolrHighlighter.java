@@ -599,7 +599,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 			String id = getFieldValueString(doc, FIELD_SOLR4_ID);
 			TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel
 					.decodeNodeDocumentId(id);
-			CoreContainer coreContainer = req.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+			CoreContainer coreContainer = req.getSearcher().getCore().getCoreContainer();
             AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
             SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
             SolrContentStore solrContentStore = srv.getSolrContentStore();
