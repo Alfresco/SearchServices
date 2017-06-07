@@ -184,6 +184,9 @@
                                     <include name="**/bin/solr.in.cmd"/>
                                     <include name="**/bin/solr.in.sh"/>
                                 </replace>
+                                <replace token= "JKS" value="JCEKS" dir="target/solr-${solr.version}">
+                                    <include name="**/server/etc/jetty-ssl.xml"/>
+                                </replace>
                                 <chmod file="target/solr-${solr.version}/bin/solr" perm="755"/>
                             </target>
                         </configuration>
