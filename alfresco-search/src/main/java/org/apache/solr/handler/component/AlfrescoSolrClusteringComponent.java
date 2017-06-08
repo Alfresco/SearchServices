@@ -295,7 +295,7 @@ public class AlfrescoSolrClusteringComponent extends SearchComponent implements
 			TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel
 					.decodeNodeDocumentId(id);
 			
-			CoreContainer coreContainer = req.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+			CoreContainer coreContainer = req.getSearcher().getCore().getCoreContainer();
 			AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
 			SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
             SolrContentStore solrContentStore = srv.getSolrContentStore();

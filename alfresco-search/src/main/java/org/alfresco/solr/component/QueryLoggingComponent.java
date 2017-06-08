@@ -94,7 +94,7 @@ public class QueryLoggingComponent extends SearchComponent
         boolean isShard = rb.req.getParams().getBool(ShardParams.IS_SHARD, false);
         if (!isShard)
         {
-            CoreContainer container = rb.req.getCore().getCoreDescriptor().getCoreContainer();
+            CoreContainer container = rb.req.getCore().getCoreContainer();
             SolrCore logCore = container.getCore(rb.req.getCore().getName() + "_qlog");
             if (logCore != null)
             {

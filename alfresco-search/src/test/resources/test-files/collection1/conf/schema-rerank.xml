@@ -407,7 +407,4 @@ valued. -->
       -->
     <uniqueKey>id</uniqueKey>
 
-    <!-- field for the QueryParser to use when an explicit fieldname is absent -->
-    <defaultSearchField>text</defaultSearchField>
-
 </schema>

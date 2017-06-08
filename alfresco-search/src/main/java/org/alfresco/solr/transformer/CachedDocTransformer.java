@@ -75,7 +75,7 @@ public class CachedDocTransformer extends DocTransformer
         {
             String id = getFieldValueString(doc, FIELD_SOLR4_ID);
             TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-            CoreContainer coreContainer = context.getSearcher().getCore().getCoreDescriptor().getCoreContainer();
+            CoreContainer coreContainer = context.getSearcher().getCore().getCoreContainer();
             AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
             SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(context.getSearcher().getCore().getName());
             SolrContentStore solrContentStore = srv.getSolrContentStore();
