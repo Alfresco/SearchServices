@@ -506,7 +506,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
-        if (coreContainer.getCoreNames().contains(coreName))
+        if (coreContainer.getLoadedCoreNames().contains(coreName))
         {
             //Core alfresco exists
             log.warn(coreName + " already exists, not creating again.");
