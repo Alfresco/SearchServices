@@ -17,6 +17,13 @@
             <outputDirectory>.</outputDirectory>
             <includes>
                 <include>solr.in.sh</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>target/solr-${solr.version}/bin</directory>
+            <outputDirectory>.</outputDirectory>
+            <lineEnding>windows</lineEnding>
+            <includes>
                 <include>solr.in.cmd</include>
             </includes>
         </fileSet>
