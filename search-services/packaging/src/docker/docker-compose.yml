@@ -18,7 +18,7 @@ services:
     depends_on:
           - repo
   solr6:
-    image: docker-internal.alfresco.com/search-services:1.1.0-SNAPSHOT
+    image: docker-internal.alfresco.com/search-services:1.2.0-SNAPSHOT
     environment:
       #Solr needs to know how to register itself with Alfresco
       SOLR_ALFRESCO_HOST: repo
