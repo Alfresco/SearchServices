@@ -165,13 +165,13 @@
                                 <replace token= "(java9)" value="(java9)${line.separator}${alfresco.gc.logs}" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.sh"/>
                                 </replace>
-                                <replace token= "GC logging" value="GC logging${alfresco.gc.logs.win}" dir="target/solr-${solr.version}">
+                                <replace token= "GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.cmd"/>
                                 </replace>
                                 <replace token= "# Anything you add to the SOLR_OPTS" value="${alfresco.search.config}${line.separator}${line.separator}# Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.sh"/>
                                 </replace>
-                                <replace token= "REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}REM Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
+                                <replace token= "REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}${line.separator}${line.separator}REM Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.cmd"/>
                                 </replace>
                                 <replace token= "${alfresco.search.ssl.need.token}" value="${alfresco.search.ssl.need}" dir="target/solr-${solr.version}">
