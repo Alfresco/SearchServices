@@ -1197,7 +1197,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-    private String getFieldForNonText(PropertyDefinition propertyDefinition)
+    public String getFieldForNonText(PropertyDefinition propertyDefinition)
     {
         StringBuilder builder = new StringBuilder();
         QName qName = propertyDefinition.getDataType().getName();
