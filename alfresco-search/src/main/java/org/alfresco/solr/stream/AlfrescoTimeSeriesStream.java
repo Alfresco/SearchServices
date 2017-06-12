@@ -32,6 +32,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.repo.dictionary.NamespaceDAO;
+import org.alfresco.repo.search.impl.QueryParserUtils;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
 import org.apache.solr.client.solrj.io.stream.StreamContext;
@@ -44,6 +51,9 @@ import org.apache.solr.client.solrj.io.stream.expr.StreamExpression;
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionParameter;
 import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
 import org.apache.solr.client.solrj.io.stream.metrics.*;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.params.SolrParams;
 
 public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible  {
 
@@ -96,6 +106,8 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
 
     public void open() throws IOException
     {
+        ModifiableSolrParams solrParams = (ModifiableSolrParams)timeSeriesStream.getParams();
+        solrParams.add("defType", "afts");
         Metric[] metrics = timeSeriesStream.getMetrics();
         for(int i=0; i<metrics.length; i++) {
             Metric metric = metrics[i];
@@ -127,10 +139,16 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
         this.timeSeriesStream.open();
     }
 
-    private String getIndexedField(String column) {
+    private String getIndexedField(String field) {
+        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+        NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
+        DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
+        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
+                namespaceDAO,
+                dictionaryService,
+                field);
 
-        //TODO implement this method.
-        return null;
+        return dataModel.getFieldForNonText(propertyDef);
     }
 
     public void close() throws IOException

@@ -209,6 +209,14 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         return this.field;
     }
 
+    public SolrParams getParams() {
+        return params;
+    }
+
+    public void setParams(SolrParams params) {
+        this.params = params;
+    }
+
     public void setField(String field) {
         this.field = field;
     }
