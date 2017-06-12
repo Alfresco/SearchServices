@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.CloudSolrClient.Builder;
 import org.apache.solr.client.solrj.io.SolrClientCache;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
@@ -75,8 +75,9 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
     private String zkHost;
     private SolrParams params;
     private String collection;
-    protected transient SolrClientCache cache;
+    private StreamContext streamContext;
     protected transient CloudSolrClient cloudSolrClient;
+
 
    public TimeSeriesStream(String zkHost,
                            String collection,
@@ -200,6 +201,18 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
       return this.collection;
     }
 
+    public Metric[] getMetrics() {
+        return this.metrics;
+    }
+
+    public String getField() {
+        return this.field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
+
     private void init(String collection,
                       SolrParams params,
                       String field,
@@ -254,9 +267,8 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         expression.addParameter(new StreamExpressionNamedParameter("start", start));
         expression.addParameter(new StreamExpressionNamedParameter("end", end));
         expression.addParameter(new StreamExpressionNamedParameter("gap", gap));
-        expression.addParameter(new StreamExpressionNamedParameter("field", gap));
+        expression.addParameter(new StreamExpressionNamedParameter("field", field));
         expression.addParameter(new StreamExpressionNamedParameter("format", format));
-        
         
         // zkHost
         expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
@@ -292,29 +304,35 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
     
     public List<TupleStream> children()
     {
-      return new ArrayList<TupleStream>();
+      return new ArrayList();
     }
     
     public void open() throws IOException
     {
-        if(cache != null)
-        {
-            cloudSolrClient = cache.getCloudSolrClient(zkHost);
-        } 
-        else
-        {
-            cloudSolrClient = new Builder()
-                .withZkHost(zkHost)
-                .build();
-        }
-        String json = getJsonFacetString(field, metrics, start, end, gap);
+        SolrClient solrClient = null;
         ModifiableSolrParams paramsLoc = new ModifiableSolrParams(params);
+        Map<String, List<String>> shardsMap = (Map<String, List<String>>)streamContext.get("shards");
+        SolrClientCache cache = streamContext.getSolrClientCache();
+        if(shardsMap == null) {
+            solrClient = cache.getCloudSolrClient(zkHost);
+        } else {
+            List<String> shards = shardsMap.get(collection);
+            solrClient = cache.getHttpSolrClient(shards.get(0));
+            if(shards.size() > 1) {
+                String shardsParam = getShardString(shards);
+                paramsLoc.add("shards", shardsParam);
+                paramsLoc.add("distrib", "true");
+            }
+        }
+
+        String json = getJsonFacetString(field, metrics, start, end, gap);
         paramsLoc.set("json.facet", json);
         paramsLoc.set("rows", "0");
         QueryRequest request = new QueryRequest(paramsLoc);
+
         try 
         {
-            NamedList response = cloudSolrClient.request(request, collection);
+            NamedList response = solrClient.request(request, collection);
             getTuples(response, field, metrics);
         } 
         catch (Exception e) 
@@ -323,12 +341,22 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         }
     }
 
+    private String getShardString(List<String> shards) {
+        StringBuilder builder = new StringBuilder();
+        for(String shard : shards) {
+            if(builder.length() > 0) {
+                builder.append(",");
+            }
+            builder.append(shard);
+        }
+        return builder.toString();
+    }
+
+
+
     public void close() throws IOException 
     {
-        if(cache == null) 
-        {
-            cloudSolrClient.close();
-        }
+
     }
     
     public Tuple read() throws IOException 
@@ -459,17 +487,11 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         return null;
     }
 
-    @Override
-    public Map toMap(Map<String, Object> arg0)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
     
     @Override
-    public void setStreamContext(StreamContext arg0)
+    public void setStreamContext(StreamContext streamContext)
     {
-        // TODO Auto-generated method stub
+        this.streamContext = streamContext;
     }
 }
 
