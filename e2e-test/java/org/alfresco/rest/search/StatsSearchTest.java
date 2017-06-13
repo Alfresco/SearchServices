@@ -44,8 +44,9 @@ import java.util.stream.Collectors;
 public class StatsSearchTest extends AbstractSearchTest
 {
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
+              executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats using Search api")
     public void searchWithBasicStats() throws Exception
     {
