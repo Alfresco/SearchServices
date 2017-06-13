@@ -21,13 +21,6 @@ package org.alfresco.rest.search;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +28,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
 
 /**
  * Stats search test.
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 public class StatsSearchTest extends AbstractSearchTest
 {
 
+    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats using Search api")
@@ -127,6 +129,7 @@ public class StatsSearchTest extends AbstractSearchTest
         assertTrue(percentiles.keySet().containsAll(Arrays.asList("1.0","75.0","99.0","99.9")));
     }
 
+    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats labels using Search api")
@@ -146,6 +149,7 @@ public class StatsSearchTest extends AbstractSearchTest
         assertStatsFacetedResponse(response, "DateChanged", 8);
     }
 
+    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats fitlers using Search api")
@@ -180,6 +184,7 @@ public class StatsSearchTest extends AbstractSearchTest
         assertTrue((Integer)metricCount.get("count") > count, "With the exclude filter there will be more documents than returned");
     }
 
+    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats with Pivot using Search api")
@@ -242,7 +247,7 @@ public class StatsSearchTest extends AbstractSearchTest
 
     }
 
-
+    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats with Pivot using Search api")
