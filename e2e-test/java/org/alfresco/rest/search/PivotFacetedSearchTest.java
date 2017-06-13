@@ -27,7 +27,6 @@ import java.util.List;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRequestRangesModel;
 import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -71,7 +70,6 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
                     .containsSummary("Pivot parameter none_like_this does not reference");
     }
 
-    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks with pivot using Search api")
@@ -100,7 +98,6 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         assertPivotResponse(response, "creator", null);
     }
 
-    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks nested pivot using Search api")
@@ -157,7 +154,6 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         creatorResponse.assertThat().field("label").is("creator");
     }
 
-    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks range pivots using Search api")
@@ -220,7 +216,6 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         Assert.assertTrue(bucket.getMetrics().get(0).getValue().toString().contains("{count="));
     }
 
-    @Bug(id = "TAS-3500")
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks with pivot using Search api and a label as a key")
