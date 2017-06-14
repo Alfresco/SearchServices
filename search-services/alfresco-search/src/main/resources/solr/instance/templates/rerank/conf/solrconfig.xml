@@ -1857,6 +1857,7 @@
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
+      <str>facet_module</str>
       <str>mlt</str>
       <str>highlight</str>
       <str>stats</str>
