@@ -368,6 +368,12 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return jettyClients.get(DEFAULT_TEST_CORENAME);
     }
 
+    protected List<SolrClient> getClusterClients()
+    {
+        return clientShards;
+    }
+
+
     public int assertNodesPerShardGreaterThan(int count) throws Exception
     {
         return assertNodesPerShardGreaterThan(count, false);

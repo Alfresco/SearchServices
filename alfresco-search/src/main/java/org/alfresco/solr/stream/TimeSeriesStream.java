@@ -106,8 +106,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         
         StreamExpressionNamedParameter zkHostExpression = factory.getNamedOperand(expression, "zkHost");
         List<StreamExpression> metricExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, Metric.class);
-        
-        
+
         if(qExpression == null) 
         {
             throw new IOException("The timeseries expression requires the q parameter");
@@ -188,11 +187,12 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         {
             zkHost = ((StreamExpressionValue)zkHostExpression.getParameter()).getValue();
         }
+        /*
         if(null == zkHost)
         {
             throw new IOException(String.format(Locale.ROOT,"invalid expression %s - zkHost not found for collection '%s'",expression,collectionName));
         }
-        
+        */
         // We've got all the required items
         init(collectionName, params, field, metrics, start, end, gap, format, zkHost);
     }
@@ -327,7 +327,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
             List<String> shards = shardsMap.get(collection);
             solrClient = cache.getHttpSolrClient(shards.get(0));
             if(shards.size() > 1) {
-                String shardsParam = getShardString(shards);
+                String shardsParam = getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
             }
@@ -336,17 +336,28 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         String json = getJsonFacetString(field, metrics, start, end, gap);
         paramsLoc.set("json.facet", json);
         paramsLoc.set("rows", "0");
-        QueryRequest request = new QueryRequest(paramsLoc);
+        RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
+        QueryRequest request = requestFactory.getRequest(paramsLoc);
 
         try 
         {
-            NamedList response = solrClient.request(request, collection);
-            getTuples(response, field, metrics);
+            if(shardsMap == null) {
+                //Cloud request
+                NamedList response = solrClient.request(request, collection);
+                getTuples(response, field, metrics);
+            } else {
+                NamedList response = solrClient.request(request);
+                getTuples(response, field, metrics);
+            }
         } 
         catch (Exception e) 
         {
             throw new IOException(e);
         }
+    }
+
+    protected QueryRequest authenticate(StreamContext streamContext, ModifiableSolrParams solrParams) throws IOException {
+        return new QueryRequest(solrParams);
     }
 
     private String getShardString(List<String> shards) {

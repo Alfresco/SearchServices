@@ -282,6 +282,7 @@
             <str>rewriteFacetParameters</str>
             <str>query</str>
             <str>facet</str>
+            <str>facet_module</str>
             <str>mlt</str>
             <str>highlight</str>
             <str>stats</str>
@@ -356,6 +357,15 @@
         <arr name="last-components">
             <str>tvComponent</str>
         </arr>
+    </requestHandler>
+
+    <requestHandler name="/stream" class="org.alfresco.solr.stream.AlfrescoStreamHandler">
+        <lst name="defaults">
+            <str name="wt">json</str>
+        </lst>
+        <lst name="invariants">
+            <str name="distrib">false</str>
+        </lst>
     </requestHandler>
 
     <requestHandler name="/mlt" class="solr.MoreLikeThisHandler">
@@ -473,6 +483,10 @@
     <queryParser name="alfrescoReRank" class="org.alfresco.solr.query.AlfrescoReRankQParserPlugin"/>
     <queryParser name="afts" class="org.alfresco.solr.query.AlfrescoFTSQParserPlugin"/>
     <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
+
+    <expressible name="timeSeries" class="org.alfresco.solr.stream.TimeSeriesStream"/>
+    <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
+
     <!--
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
         <str name="mapping">conf/mime_types.csv</str>

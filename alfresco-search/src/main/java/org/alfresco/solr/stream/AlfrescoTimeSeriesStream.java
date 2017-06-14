@@ -37,7 +37,6 @@ import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
@@ -51,9 +50,7 @@ import org.apache.solr.client.solrj.io.stream.expr.StreamExpression;
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionParameter;
 import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
 import org.apache.solr.client.solrj.io.stream.metrics.*;
-import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.params.SolrParams;
 
 public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible  {
 
@@ -111,6 +108,11 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
         Metric[] metrics = timeSeriesStream.getMetrics();
         for(int i=0; i<metrics.length; i++) {
             Metric metric = metrics[i];
+
+            if(metric instanceof  CountMetric) {
+                continue;
+            }
+
             String column = metric.getColumns()[0];
             String newColumn = getIndexedField(column);
             reverseLookup.put(newColumn, column);
@@ -164,14 +166,17 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
         } else {
             Map fields = tuple.fields;
             Set<String> fieldNames = fields.keySet();
+
+            Map newMap = new HashMap();
             for(String fieldName : fieldNames) {
                 if(reverseLookup.containsKey(fieldName)) {
                     Object o = fields.get(fieldName);
-                    fields.remove(fieldName);
-                    fields.put(reverseLookup.get(fieldName), o);
+                    newMap.put(reverseLookup.get(fieldName), o);
+                } else {
+                    newMap.put(fieldName, fields.get(fieldName));
                 }
             }
-            return tuple;
+            return new Tuple(newMap);
         }
     }
 
