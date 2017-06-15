@@ -26,7 +26,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -67,19 +66,19 @@ public class StatsSearchTest extends AbstractSearchTest
         response =  query(query);
         //8 metrics by default for a numeric field
         Set<String> metricTypes = assertStatsFacetedResponse(response, "DBID", 8);
-        assertTrue(metricTypes.containsAll(Arrays.asList("missing", "count", "sum","min","max", "sumOfSquares", "mean", "stddev")));
+        assertTrue(metricTypes.containsAll(Arrays.asList("missing", "countValues", "sum","min","max", "sumOfSquares", "mean", "stddev")));
 
         statsModel1.setField("creator");
         response =  query(query);
         //4 metrics by default for a string field
         metricTypes = assertStatsFacetedResponse(response, "creator", 4);
-        assertTrue(metricTypes.containsAll(Arrays.asList("missing", "count", "min","max")));
+        assertTrue(metricTypes.containsAll(Arrays.asList("missing", "countValues", "min","max")));
 
         statsModel1.setField("modified");
         response =  query(query);
         //8 metrics by default for a date field
         metricTypes = assertStatsFacetedResponse(response, "modified", 8);
-        assertTrue(metricTypes.containsAll(Arrays.asList("missing", "count", "sum","min","max", "sumOfSquares", "mean", "stddev")));
+        assertTrue(metricTypes.containsAll(Arrays.asList("missing", "countValues", "sum","min","max", "sumOfSquares", "mean", "stddev")));
 
         statsModel1.setField("modifier");
         statsModel1.setMin(false);
@@ -92,7 +91,7 @@ public class StatsSearchTest extends AbstractSearchTest
         statsModel1.setField("DBID");
         statsModel1.setMin(true);
         statsModel1.setMax(true);
-        statsModel1.setCount(false);
+        statsModel1.setCountValues(false);
         statsModel1.setMissing(false);
         statsModel1.setSum(false);
         statsModel1.setSumOfSquares(false);
@@ -101,7 +100,7 @@ public class StatsSearchTest extends AbstractSearchTest
         response =  query(query);
         metricTypes = assertStatsFacetedResponse(response, "DBID", 2);
         assertTrue(metricTypes.containsAll(Arrays.asList("min","max")));
-        assertFalse(metricTypes.containsAll(Arrays.asList("missing", "count", "sum","sumOfSquares", "mean", "stddev")));
+        assertFalse(metricTypes.containsAll(Arrays.asList("missing", "countValues", "sum","sumOfSquares", "mean", "stddev")));
 
         statsModel1.setField("modifier");
         statsModel1.setMin(false);
@@ -170,7 +169,7 @@ public class StatsSearchTest extends AbstractSearchTest
         RestGenericMetricModel countMetric = response.getContext().getFacets().get(0).getBuckets().get(0).getMetrics().get(0);
         Integer count = response.getPagination().getTotalItems();
         Map metricCount = (Map) countMetric.getValue();
-        assertEquals(count, metricCount.get("count"));
+        assertEquals(count, metricCount.get("countValues"));
 
         statsModel1.setExcludeFilters(Arrays.asList("justCars"));
         response = query(query);
@@ -178,7 +177,7 @@ public class StatsSearchTest extends AbstractSearchTest
         countMetric = response.getContext().getFacets().get(0).getBuckets().get(0).getMetrics().get(0);
         count = response.getEntries().size();
         metricCount = (Map) countMetric.getValue();
-        assertTrue((Integer)metricCount.get("count") > count, "With the exclude filter there will be more documents than returned");
+        assertTrue((Integer)metricCount.get("countValues") > count, "With the exclude filter there will be more documents than returned");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
@@ -239,7 +238,7 @@ public class StatsSearchTest extends AbstractSearchTest
         created.assertThat().field("type").is("pivot");
         created.assertThat().field("label").is("created");
         //Another nested stats
-        assertEquals(created.getBuckets().get(0).getMetrics().size(), 8, "Metrics are on the end of a pivot bucket");
+        assertEquals(created.getBuckets().get(0).getMetrics().size(), 9, "Metrics are on the end of a pivot bucket");
 
     }
 
@@ -288,7 +287,7 @@ public class StatsSearchTest extends AbstractSearchTest
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
         facetResponseModel.assertThat().field("type").is("pivot");
         facetResponseModel.assertThat().field("label").is("creator");
-        assertEquals(facetResponseModel.getBuckets().get(0).getMetrics().size(), 8, "Metrics are on the end of a pivot bucket");
+        assertEquals(facetResponseModel.getBuckets().get(0).getMetrics().size(), 9, "Metrics are on the end of a pivot bucket");
         RestGenericFacetResponseModel statsFacet = response.getContext().getFacets().get(1);
         statsFacet.assertThat().field("type").is("stats");
         statsFacet.assertThat().field("label").is("numericId");
