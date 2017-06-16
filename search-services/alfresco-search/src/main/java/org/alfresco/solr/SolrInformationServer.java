@@ -1687,7 +1687,21 @@ public class SolrInformationServer implements InformationServer
                     {
                         if (node.getStatus() == SolrApiNodeStatus.DELETED)
                         {
-                            solrContentStore.removeDocFromContentStore(nodeMetaData);
+                        	 try
+                             {
+                                 //Lock the node to ensure that no other trackers work with this node until this code completes.
+                                 if(!spinLock(nodeMetaData.getId(), 120000))
+                                 {
+                                     //We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
+                                     throw new Exception("Unable to acquire lock on nodeId:"+nodeMetaData.getId());
+                                 }
+
+                                 solrContentStore.removeDocFromContentStore(nodeMetaData);
+                             }
+                             finally
+                             {
+                                unlock(nodeMetaData.getId());
+                             }   
                         }
                     }
                     // else, the node has moved on to a later transaction, and it will be indexed later
@@ -1703,72 +1717,85 @@ public class SolrInformationServer implements InformationServer
 
             if ((node.getStatus() == SolrApiNodeStatus.UPDATED) || (node.getStatus() == SolrApiNodeStatus.UNKNOWN) || (node.getStatus() == SolrApiNodeStatus.NON_SHARD_UPDATED))
             {
-                log.info(".. updating");
-                NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
-                nmdp.setFromNodeId(node.getId());
-                nmdp.setToNodeId(node.getId());
+            	log.info(".. updating");
+            	long nodeId = node.getId();
+            	try
+            	{
+            		if(!spinLock(nodeId, 120000))
+            		{
+            			//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
+            			throw new Exception("Unable to acquire lock on nodeId:"+nodeId);
+            		}
+            		NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
+            		nmdp.setFromNodeId(node.getId());
+            		nmdp.setToNodeId(node.getId());
 
-                List<NodeMetaData> nodeMetaDatas =  repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+            		List<NodeMetaData> nodeMetaDatas =  repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
 
-                AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                addDocCmd.overwrite = overwrite;
+            		AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
+            		addDocCmd.overwrite = overwrite;
 
-                if (!nodeMetaDatas.isEmpty())
-                {
-                    NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
-                    if (!(nodeMetaData.getTxnId() > node.getTxnId()))
-                    {
-                        /*
+            		if (!nodeMetaDatas.isEmpty())
+            		{
+            			NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
+            			if (!(nodeMetaData.getTxnId() > node.getTxnId()))
+            			{
+            				/*
                         if (mayHaveChildren(nodeMetaData))
                         {
                             cascadeUpdate(nodeMetaData, overwrite, request, processor);
                         }
-                        */
-                    }
-                    // else, the node has moved on to a later transaction, and it will be indexed later
+            				 */
+            			}
+            			// else, the node has moved on to a later transaction, and it will be indexed later
 
-                    if(node.getTxnId() == Long.MAX_VALUE) {
-                        //This is a re-index. We need to clear the txnId from the pr
-                        this.cleanContentCache.remove(nodeMetaData.getTxnId());
-                    }
+            			if(node.getTxnId() == Long.MAX_VALUE) {
+            				//This is a re-index. We need to clear the txnId from the pr
+            				this.cleanContentCache.remove(nodeMetaData.getTxnId());
+            			}
 
 
-                    if ((node.getStatus() == SolrApiNodeStatus.UPDATED) || (node.getStatus() == SolrApiNodeStatus.UNKNOWN)) {
-                        // check index control
-                        Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
-                        StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
-                        if (pValue != null) {
-                            Boolean isIndexed = Boolean.valueOf(pValue.getValue());
-                            if (!isIndexed.booleanValue()) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug(".. clearing unindexed");
-                                }
-                                deleteNode(processor, request, node);
+            			if ((node.getStatus() == SolrApiNodeStatus.UPDATED) || (node.getStatus() == SolrApiNodeStatus.UNKNOWN)) {
+            				// check index control
+            				Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
+            				StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
+            				if (pValue != null) {
+            					Boolean isIndexed = Boolean.valueOf(pValue.getValue());
+            					if (!isIndexed.booleanValue()) {
+            						if (log.isDebugEnabled()) {
+            							log.debug(".. clearing unindexed");
+            						}
+            						deleteNode(processor, request, node);
 
-                                SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_UNINDEXED_NODE);
-                                solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
-                                addDocCmd.solrDoc = doc;
-                                processor.processAdd(addDocCmd);
+            						SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_UNINDEXED_NODE);
+            						solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
+            						addDocCmd.solrDoc = doc;
+            						processor.processAdd(addDocCmd);
 
-                                long end = System.nanoTime();
-                                this.trackerStats.addNodeTime(end - start);
-                                return;
-                            }
-                        }
+            						long end = System.nanoTime();
+            						this.trackerStats.addNodeTime(end - start);
+            						return;
+            					}
+            				}
 
-                        // Make sure any unindexed or error doc is removed.
-                        if (log.isDebugEnabled())
-                        {
-                            log.debug(".. deleting node " + node.getId());
-                        }
-                        deleteNode(processor, request, node);
+            				// Make sure any unindexed or error doc is removed.
+            				if (log.isDebugEnabled())
+            				{
+            					log.debug(".. deleting node " + node.getId());
+            				}
+            				deleteNode(processor, request, node);
 
-                        SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_NODE);
-                        addToNewDocAndCache(nodeMetaData, doc);
-                        addDocCmd.solrDoc = doc;
-                        processor.processAdd(addDocCmd);
-                    }
-                } // Ends checking for a nodeMetaData
+            				SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_NODE);
+            				addToNewDocAndCache(nodeMetaData, doc);
+            				addDocCmd.solrDoc = doc;
+            				processor.processAdd(addDocCmd);
+            			}
+            		} // Ends checking for a nodeMetaData
+            	}
+            	finally
+            	{
+            		unlock(nodeId);
+            	}
             } // Ends checking for updated or unknown node status
             long end = System.nanoTime();
             this.trackerStats.addNodeTime(end - start);
@@ -1903,62 +1930,75 @@ public class SolrInformationServer implements InformationServer
         
         for (Long childId : childIds)
         {
-            NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
-            nmdp.setFromNodeId(childId);
-            nmdp.setToNodeId(childId);
-            nmdp.setIncludeAclId(false);
-            nmdp.setIncludeAspects(false);
-            nmdp.setIncludeChildAssociations(false);
-            nmdp.setIncludeChildIds(true);
-            nmdp.setIncludeNodeRef(false);
-            nmdp.setIncludeOwner(false);
-            nmdp.setIncludeParentAssociations(false);
-            // We only care about the path and ancestors (which is included) for this case
-            nmdp.setIncludePaths(true);
-            nmdp.setIncludeProperties(false);
-            nmdp.setIncludeType(false);
-            nmdp.setIncludeTxnId(false);
-            // Gets only one 
-            List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
-            
-            if (!nodeMetaDatas.isEmpty())
-            {
-                NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
-                if (mayHaveChildren(nodeMetaData))
-                {
-                    updateDescendantDocs(nodeMetaData, overwrite, request, processor, stack);
-                }
-                
-                if (log.isDebugEnabled())
-                {
-                    log.debug("... cascade update child doc " + childId);
-                }
-                // Gets the document that we have from the content store and updates it 
-                String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
-                SolrInputDocument cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(fixedTenantDomain, nodeMetaData.getId());
+        	NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
+        	nmdp.setFromNodeId(childId);
+        	nmdp.setToNodeId(childId);
+        	nmdp.setIncludeAclId(false);
+        	nmdp.setIncludeAspects(false);
+        	nmdp.setIncludeChildAssociations(false);
+        	nmdp.setIncludeChildIds(true);
+        	nmdp.setIncludeNodeRef(false);
+        	nmdp.setIncludeOwner(false);
+        	nmdp.setIncludeParentAssociations(false);
+        	// We only care about the path and ancestors (which is included) for this case
+        	nmdp.setIncludePaths(true);
+        	nmdp.setIncludeProperties(false);
+        	nmdp.setIncludeType(false);
+        	nmdp.setIncludeTxnId(false);
+        	// Gets only one 
+        	List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
 
-                if (cachedDoc != null)
-                {
+        	if (!nodeMetaDatas.isEmpty())
+        	{
+        		NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
+        		if (mayHaveChildren(nodeMetaData))
+        		{
+        			updateDescendantDocs(nodeMetaData, overwrite, request, processor, stack);
+        		}
 
-                    updatePathRelatedFields(nodeMetaData, cachedDoc);
-                    updateNamePathRelatedFields(nodeMetaData, cachedDoc);
-                    updateAncestorRelatedFields(nodeMetaData, cachedDoc);
+        		try
+        		{
+        			if(!spinLock(childId, 120000))
+        			{
+        				//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
+        				throw new IOException("Unable to acquire lock on nodeId:"+childId);
+        			}
 
-                    AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                    addDocCmd.overwrite = overwrite;
-                    addDocCmd.solrDoc = cachedDoc;
+        			if (log.isDebugEnabled())
+        			{
+        				log.debug("... cascade update child doc " + childId);
+        			}
+        			// Gets the document that we have from the content store and updates it 
+        			String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
+        			SolrInputDocument cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(fixedTenantDomain, nodeMetaData.getId());
 
-                    processor.processAdd(addDocCmd);
-                    solrContentStore.storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), cachedDoc);
-                }
-                else
-                {
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("... no child doc found to update " + childId);
-                    }
-                }
-            }
+        			if (cachedDoc != null)
+        			{
+
+        				updatePathRelatedFields(nodeMetaData, cachedDoc);
+        				updateNamePathRelatedFields(nodeMetaData, cachedDoc);
+        				updateAncestorRelatedFields(nodeMetaData, cachedDoc);
+
+        				AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
+        				addDocCmd.overwrite = overwrite;
+        				addDocCmd.solrDoc = cachedDoc;
+
+        				processor.processAdd(addDocCmd);
+        				solrContentStore.storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), cachedDoc);
+        			}
+        			else
+        			{
+        				if (log.isDebugEnabled())
+        				{
+        					log.debug("... no child doc found to update " + childId);
+        				}
+        			}
+        		}
+        		finally
+        		{
+        			unlock(childId);
+        		}
+        	}
         }
     }
 
@@ -2289,7 +2329,20 @@ public class SolrInformationServer implements InformationServer
                     }
                     if (nodeMetaData != null)
                     {
-                        solrContentStore.removeDocFromContentStore(nodeMetaData);
+                    	try
+                    	{
+                    		//Lock the node to ensure that no other trackers work with this node until this code completes.
+                    		if(!spinLock(nodeMetaData.getId(), 120000))
+                    		{
+                    			//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
+                    			throw new Exception("Unable to acquire lock on nodeId:"+nodeMetaData.getId());
+                    		}
+                    		solrContentStore.removeDocFromContentStore(nodeMetaData);
+                    	}
+                    	finally
+                    	{
+                    		unlock(nodeMetaData.getId());
+                    	}
                     }
                 }
 
@@ -2381,7 +2434,7 @@ public class SolrInformationServer implements InformationServer
                         {
                             log.debug(".. deleting node " + node.getId());
                         }
-                        deleteErrorNode(processor, request, node);
+                        deleteNode(processor, request, node);
 
                         SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_NODE);
                         addToNewDocAndCache(nodeMetaData, doc);
