@@ -611,6 +611,8 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 				sid.addField("_version_", 0);
 				return DocumentBuilder.toDocument(sid, req.getSchema());
 			} else {
+				sid.removeField(FIELD_SOLR4_ID);
+				sid.addField(FIELD_SOLR4_ID, id);
 				return DocumentBuilder.toDocument(sid, req.getSchema());
 			}
 		} catch (StringIndexOutOfBoundsException e) {
