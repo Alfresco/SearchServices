@@ -307,7 +307,7 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
 
-/**
+
         logger.info("######### MultiTerm ###########");
 
         req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
@@ -326,7 +326,7 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=0]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]");
         
-   **/
+   
         logger.info("######### CamelCase ###########");
 
         req = areq(params( "q", "name:cabbage", "qt", "/afts", "start", "0", "rows", "5",
