@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.*;
 import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.index.Term;
@@ -41,8 +42,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.common.util.ContentStream;
-import org.apache.solr.common.util.ContentStreamBase;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -96,6 +95,12 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
+        //Check that both ACL's are in the index
+        BooleanQuery.Builder builder1 = new BooleanQuery.Builder();
+        builder1.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), BooleanClause.Occur.MUST));
+        BooleanQuery waitForQuery1 = builder1.build();
+        waitForDocCountAllCores(waitForQuery1, 2, 80000);
+
         /*
         * Create and index a Transaction
         */
@@ -103,11 +108,10 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
         //First create a transaction.
         Transaction txn = getTransaction(0, 4);
 
-        //Next create two nodes to update for the transaction
         Node node1 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node node2 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
-        Node node3 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
-        Node node4 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        Node node3 = getNode(txn, acl2, Node.SolrApiNodeStatus.UPDATED);
+        Node node4 = getNode(txn, acl2, Node.SolrApiNodeStatus.UPDATED);
 
         //Next create the NodeMetaData for each node. TODO: Add more metadata
 
@@ -121,12 +125,12 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2)));
 
-        NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl, "mike", null, false);
+        NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl2, "mike", null, false);
         Date date3 = getDate(2000, 2, 1);
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date3)));
 
-        NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl, "mike", null, false);
+        NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
         Date date4 = getDate(2000, 3, 1);
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date4)));
@@ -178,6 +182,15 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
         assertTrue(tuples.size() == 5);
         assertBuckets("cm:created", tuples, "2000-01", "2000-02", "2000-03", "2000-04", "2000-05");
         assertCounts("count(*)", tuples, 1, 1, 1, 1, 0);
+
+        //Test that the access control is being applied.
+        String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient)clusterClients.get(0)).getBaseURL(), params);
+        tupleStream.setJson(alfrescoJson2);
+        tuples = getTuples(tupleStream);
+        assertTrue(tuples.size() == 5);
+        assertBuckets("cm:created", tuples, "2000-01", "2000-02", "2000-03", "2000-04", "2000-05");
+        assertCounts("count(*)", tuples, 1, 1, 0, 0, 0);
     }
 
     private void assertBuckets(String field, List<Tuple> tuples, String ... buckets) throws Exception {
