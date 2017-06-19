@@ -48,7 +48,6 @@ import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.highlight.Encoder;
-import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.OffsetLimitTokenFilter;
@@ -69,7 +68,6 @@ import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.highlight.DefaultSolrHighlighter;
-import org.apache.solr.highlight.SolrFragmenter;
 import org.apache.solr.highlight.SolrHighlighter;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
@@ -215,6 +213,14 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 											// key field
 			return null;
 
+		boolean rewrite = query != null && !(Boolean.valueOf(params.get(HighlightParams.USE_PHRASE_HIGHLIGHTER, "true")) &&
+				Boolean.valueOf(params.get(HighlightParams.HIGHLIGHT_MULTI_TERM, "true")));
+
+		if (rewrite) {
+			query = query.rewrite(req.getSearcher().getIndexReader());
+		}
+		
+		
 		SolrIndexSearcher searcher = req.getSearcher();
 		IndexSchema schema = searcher.getSchema();
 
@@ -356,7 +362,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 
 	    int maxCharsToAnalyze = params.getFieldInt(fieldName,
 	        HighlightParams.MAX_CHARS,
-	        Highlighter.DEFAULT_MAX_CHARS_TO_ANALYZE);
+	        DEFAULT_MAX_CHARS);
 	    if (maxCharsToAnalyze < 0) {//e.g. -1
 	      maxCharsToAnalyze = Integer.MAX_VALUE;
 	    }
@@ -582,8 +588,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements
 				// note: seemingly redundant new String(...) releases memory to
 				// the larger text. But is copying better?
 				altList.add(len + altText.length() > alternateFieldLen ? encoder
-						.encodeText(new String(altText.substring(0,
-								alternateFieldLen - len))) : encoder
+						.encodeText(altText.substring(0, alternateFieldLen - len)) : encoder
 						.encodeText(altText));
 				len += altText.length();
 				if (len >= alternateFieldLen)
