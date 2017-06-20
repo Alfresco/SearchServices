@@ -71,8 +71,9 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
                     .containsSummary("Pivot parameter none_like_this does not reference");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
+              executionType = ExecutionType.REGRESSION,
               description = "Checks with pivot using Search api")
     public void searchWithPivoting() throws Exception
     {
@@ -99,8 +100,9 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         assertPivotResponse(response, "creator", null);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
+              executionType = ExecutionType.REGRESSION,
               description = "Checks nested pivot using Search api")
     public void searchWithNestedPivoting() throws Exception
     {
@@ -155,8 +157,9 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         creatorResponse.assertThat().field("label").is("creator");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
+              executionType = ExecutionType.REGRESSION,
               description = "Checks range pivots using Search api")
     public void searchWithRangePivoting() throws Exception
     {
@@ -217,8 +220,9 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         Assert.assertTrue(bucket.getMetrics().get(0).getValue().toString().contains("{count="));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
+              executionType = ExecutionType.REGRESSION,
               description = "Checks with pivot using Search api and a label as a key")
     public void searchWithPivotingUsingLabel() throws Exception
     {
