@@ -1055,11 +1055,20 @@
        </lst>
   </requestHandler>
 
-  <!-- Solr Cell Update Request Handler
+  <requestHandler name="/stream" class="org.alfresco.solr.stream.AlfrescoStreamHandler">
+    <lst name="defaults">
+        <str name="wt">json</str>
+    </lst>
+    <lst name="invariants">
+        <str name="distrib">false</str>
+    </lst>
+  </requestHandler>
 
-       http://wiki.apache.org/solr/ExtractingRequestHandler 
+    <!-- Solr Cell Update Request Handler
 
-    -->
+         http://wiki.apache.org/solr/ExtractingRequestHandler
+
+      -->
   <requestHandler name="/update/extract" 
                   startup="lazy"
                   class="solr.extraction.ExtractingRequestHandler" >
@@ -1915,6 +1924,9 @@
       <int name="buckets">10</int>
   </queryParser>
 
+  <expressible name="timeSeries" class="org.alfresco.solr.stream.TimeSeriesStream"/>
+  <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
+    
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
