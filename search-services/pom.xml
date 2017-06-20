@@ -30,7 +30,12 @@
         <url>https://git.alfresco.com/search_discovery/searchservices.git</url>
         <tag>HEAD</tag>
     </scm>
-
+    <repositories>
+      <repository>
+          <id>internal-staging</id>
+          <url>https://artifacts.alfresco.com/nexus/content/groups/staging</url>
+      </repository>
+    </repositories>
     <build>
         <plugins>
             <!-- Configure deployment of releases to Staging area of Nexus -->
