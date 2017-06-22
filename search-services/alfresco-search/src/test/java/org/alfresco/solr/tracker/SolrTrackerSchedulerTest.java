@@ -80,14 +80,37 @@ public class SolrTrackerSchedulerTest
     }
 
     @Test
-    public void testSchedule() throws SchedulerException
+    public void testAclSchedule() throws SchedulerException
     {
         Properties props = mock(Properties.class);
-        when(props.getProperty("alfresco.cron", "0/15 * * * * ? *")).thenReturn("0/15 * * * * ? *");
+        when(props.getProperty("alfresco.tracker.acl.cron", "0/15 * * * * ? *")).thenReturn("0/10 * * * * ? *");
         this.trackerScheduler.schedule(aclTracker, CORE_NAME, props);
         verify(spiedQuartzScheduler).scheduleJob(any(JobDetail.class), any(Trigger.class));
     }
-
+    @Test
+    public void testContentTrackerSchedule() throws SchedulerException
+    {
+        Properties props = mock(Properties.class);
+        when(props.getProperty("alfresco.tracker.content.cron", "0/15 * * * * ? *")).thenReturn("0/10 * * * * ? *");
+        this.trackerScheduler.schedule(contentTracker, CORE_NAME, props);
+        verify(spiedQuartzScheduler).scheduleJob(any(JobDetail.class), any(Trigger.class));
+    }
+    @Test
+    public void testMetaDataTrackerSchedule() throws SchedulerException
+    {
+        Properties props = mock(Properties.class);
+        when(props.getProperty("alfresco.tracker.metadata.cron", "0/15 * * * * ? *")).thenReturn("0/10 * * * * ? *");
+        this.trackerScheduler.schedule(metadataTracker, CORE_NAME, props);
+        verify(spiedQuartzScheduler).scheduleJob(any(JobDetail.class), any(Trigger.class));
+    }
+    @Test
+    public void testSchedule() throws SchedulerException
+    {
+        Properties props = mock(Properties.class);
+        when(props.getProperty("alfresco.cron", "0/15 * * * * ? *")).thenReturn("0/10 * * * * ? *");
+        this.trackerScheduler.schedule(cascadeTracker, CORE_NAME, props);
+        verify(spiedQuartzScheduler).scheduleJob(any(JobDetail.class), any(Trigger.class));
+    }
     @Test
     public void testShutdown() throws SchedulerException
     {
