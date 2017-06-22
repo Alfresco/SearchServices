@@ -40,8 +40,6 @@ import org.quartz.SchedulerException;
 public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
     private static Log logger = LogFactory.getLog(org.alfresco.solr.tracker.AlfrescoSolrTrackerTest.class);
 
-    static AlfrescoCoreAdminHandler admin;
-
     @BeforeClass
     public static void beforeClass() throws Exception {
         initAlfrescoCore("schema.xml");
@@ -91,6 +89,8 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1000, 100000);
 
         Collection<Tracker> trackers = getTrackers();
+        
+
         int numOfTrackers = trackers.size();
         int jobs = getJobsCount();
 
@@ -131,11 +131,5 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
         int count = admin.getScheduler().getJobsCount();
         logger.info("######### Number of jobs is "+count+" ###########");
         return count;
-    }
-
-    private Collection<Tracker> getTrackers() {
-        Collection<Tracker> trackers = admin.getTrackerRegistry().getTrackersForCore(h.getCore().getName());
-        logger.info("######### Number of trackers is "+trackers.size()+" ###########");
-        return trackers;
     }
 }
