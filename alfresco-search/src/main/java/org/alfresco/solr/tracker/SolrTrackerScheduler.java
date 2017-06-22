@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SolrTrackerScheduler
 {
+    private static final String DEFAULT_CRON = "0/15 * * * * ? *";
     protected static final String SOLR_JOB_GROUP = "Solr";
     protected final static Logger log = LoggerFactory.getLogger(SolrTrackerScheduler.class);
     protected Scheduler scheduler;
@@ -83,7 +84,19 @@ public class SolrTrackerScheduler
         Trigger trigger;
         try
         {
-            String cron =  props.getProperty("alfresco.cron", "0/15 * * * * ? *");
+            String cron =  props.getProperty("alfresco.cron", DEFAULT_CRON);
+            if(tracker instanceof AclTracker) 
+            {
+                cron = props.getProperty("alfresco.tracker.acl.cron", DEFAULT_CRON);
+            }
+            if(tracker instanceof ContentTracker) 
+            {
+                cron = props.getProperty("alfresco.tracker.content.cron", DEFAULT_CRON);
+            }
+            if(tracker instanceof MetadataTracker) 
+            {
+                cron = props.getProperty("alfresco.tracker.metadata.cron", DEFAULT_CRON);
+            }
             trigger = new CronTrigger(jobName, SOLR_JOB_GROUP, cron);
             log.info("Scheduling job " + jobName);
             scheduler.scheduleJob(job, trigger);
@@ -93,7 +106,7 @@ public class SolrTrackerScheduler
             logError("Tracker", e);
         }
         catch (SchedulerException e)
-        {
+        {   
             logError("Tracker", e);
         }
     }

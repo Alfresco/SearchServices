@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.tracker.Tracker;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONArray;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONObject;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
@@ -76,6 +78,7 @@ import org.apache.solr.util.TestHarness;
 import org.apache.solr.util.TestHarness.TestCoresLocator;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.xml.sax.SAXException;
 
 /**
@@ -89,6 +92,7 @@ import org.xml.sax.SAXException;
  */
 public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrecsoSolrConstants
 {
+    static AlfrescoCoreAdminHandler admin;
     private static Log log = LogFactory.getLog(AbstractAlfrescoSolrTests.class);
 
     protected static SolrConfig solrConfig;
@@ -140,6 +144,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             createAlfrescoCore(schema);
         }
         log.info("####initCore end");
+        admin = (AlfrescoCoreAdminHandler)h.getCore().getCoreContainer().getMultiCoreHandler();
     }
 
     public static void createAlfrescoCore(String schema) throws ParserConfigurationException, IOException, SAXException
@@ -149,6 +154,9 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         properties.put("solr.tests.maxIndexingThreads", "10");
         properties.put("solr.tests.ramBufferSizeMB", "1024");
         properties.put("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
+        properties.put("alfresco.tracker.acl.cron", "0/10 * * * * ? *");
+        properties.put("alfresco.tracker.content.cron", "0/10 * * * * ? *");
+        properties.put("alfresco.tracker.metadata.cron", "0/10 * * * * ? *");
         if("schema.xml".equalsIgnoreCase(schema))
         {
             //currently this is hard coded to use the rerank production schema.
@@ -184,7 +192,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         lrf = h.getRequestFactory
                 ("standard",0,20, CommonParams.VERSION,"2.2");
     }
-    @AfterClass
+    @AfterClass()
     public static void tearDown()
     {
         solrConfig = null;
@@ -676,5 +684,10 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         {
             super(core, new MultiMapSolrParams(Collections.<String, String[]> emptyMap()));
         }
+    }
+    protected Collection<Tracker> getTrackers() {
+        Collection<Tracker> trackers = admin.getTrackerRegistry().getTrackersForCore(h.getCore().getName());
+        log.info("######### Number of trackers is "+trackers.size()+" ###########");
+        return trackers;
     }
 }
