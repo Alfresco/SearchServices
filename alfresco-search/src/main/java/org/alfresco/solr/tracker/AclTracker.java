@@ -62,8 +62,6 @@ public class AclTracker extends AbstractTracker
     private int changeSetAclsBatchSize = DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE;
     private int aclBatchSize = DEFAULT_ACL_BATCH_SIZE;
 
-    private int  maxAclChangeSetDocumentIdCacheSize = 700000;
-
     private ConcurrentLinkedQueue<Long> aclChangeSetsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToPurge = new ConcurrentLinkedQueue<Long>();
@@ -159,7 +157,7 @@ public class AclTracker extends AbstractTracker
                 //System.out.println("############## Indexing ACL ID:"+aclId);
                 Acl acl = new Acl(0, aclId);
                 List<AclReaders> readers = client.getAclReaders(Collections.singletonList(acl));
-                AclReaders r = readers.get(0);
+                //AclReaders r = readers.get(0);
                 //System.out.println("############## READERS ID:"+r.getId()+":"+r.getReaders());
                 indexAcl(readers, false);
             }
