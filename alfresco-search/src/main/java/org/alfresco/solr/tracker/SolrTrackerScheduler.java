@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class SolrTrackerScheduler
 {
     private static final String DEFAULT_CRON = "0/15 * * * * ? *";
-    protected static final String SOLR_JOB_GROUP = "Solr";
+    public static final String SOLR_JOB_GROUP = "Solr";
     protected final static Logger log = LoggerFactory.getLogger(SolrTrackerScheduler.class);
     protected Scheduler scheduler;
 
@@ -84,19 +84,28 @@ public class SolrTrackerScheduler
         Trigger trigger;
         try
         {
-            String cron =  props.getProperty("alfresco.cron", DEFAULT_CRON);
+            String cron = null;
             if(tracker instanceof AclTracker) 
             {
-                cron = props.getProperty("alfresco.tracker.acl.cron", DEFAULT_CRON);
+                cron = props.getProperty("alfresco.acl.tracker.cron", DEFAULT_CRON);
             }
             if(tracker instanceof ContentTracker) 
             {
-                cron = props.getProperty("alfresco.tracker.content.cron", DEFAULT_CRON);
+                cron = props.getProperty("alfresco.content.tracker.cron", DEFAULT_CRON);
             }
             if(tracker instanceof MetadataTracker) 
             {
-                cron = props.getProperty("alfresco.tracker.metadata.cron", DEFAULT_CRON);
+                cron = props.getProperty("alfresco.metadata.tracker.cron", DEFAULT_CRON);
             }
+            if(tracker instanceof CascadeTracker) 
+            {
+                cron = props.getProperty("alfresco.cascade.tracker.cron", DEFAULT_CRON);
+            }
+            if(tracker instanceof CommitTracker) 
+            {
+                cron = props.getProperty("alfresco.commit.tracker.cron", DEFAULT_CRON);
+            }
+            cron = cron == null ? DEFAULT_CRON : cron;
             trigger = new CronTrigger(jobName, SOLR_JOB_GROUP, cron);
             log.info("Scheduling job " + jobName);
             scheduler.scheduleJob(job, trigger);
