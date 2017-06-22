@@ -305,6 +305,11 @@ public abstract class AbstractTracker implements Tracker
     {
         return alfrescoVersion;
     }
+
+    public Properties getProps()
+    {
+        return props;
+    }
     
     
 }

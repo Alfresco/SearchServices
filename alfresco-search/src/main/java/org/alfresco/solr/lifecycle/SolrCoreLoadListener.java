@@ -20,13 +20,10 @@
 package org.alfresco.solr.lifecycle;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.apache.solr.core.*;
-import org.apache.solr.handler.admin.CoreAdminHandler;
+import org.apache.solr.core.AbstractSolrEventListener;
+import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.SolrCore;
 import org.apache.solr.search.SolrIndexSearcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 /**
  * Listens for the first searcher to be created for a core and registers the trackers
