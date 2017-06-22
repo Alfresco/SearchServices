@@ -154,9 +154,11 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         properties.put("solr.tests.maxIndexingThreads", "10");
         properties.put("solr.tests.ramBufferSizeMB", "1024");
         properties.put("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
-        properties.put("alfresco.tracker.acl.cron", "0/10 * * * * ? *");
-        properties.put("alfresco.tracker.content.cron", "0/10 * * * * ? *");
-        properties.put("alfresco.tracker.metadata.cron", "0/10 * * * * ? *");
+        properties.put("alfresco.acl.tracker.cron", "0/10 * * * * ? *");
+        properties.put("alfresco.content.tracker.cron", "0/10 * * * * ? *");
+        properties.put("alfresco.metadata.tracker.cron", "0/10 * * * * ? *");
+        properties.put("alfresco.cascade.tracker.cron", "0/10 * * * * ? *");
+        properties.put("alfresco.commit.tracker.cron", "0/10 * * * * ? *");
         if("schema.xml".equalsIgnoreCase(schema))
         {
             //currently this is hard coded to use the rerank production schema.
