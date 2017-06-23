@@ -73,7 +73,14 @@ public class SolrTrackerScheduler
     {
         log.error("Failed to schedule " + jobType + " Job.", e);
     }
-    
+    /**
+     * Schedules individual trackers based on the solrcore properties.
+     * 
+     * @author Michael Suzuki
+     * @param tracker
+     * @param coreName
+     * @param props
+     */
     public void schedule(Tracker tracker, String coreName, Properties props)
     {
         String jobName = this.getJobName(tracker, coreName);
@@ -85,27 +92,29 @@ public class SolrTrackerScheduler
         try
         {
             String cron = null;
-            if(tracker instanceof AclTracker) 
+            switch (tracker.getType())
             {
+            case ACL:
                 cron = props.getProperty("alfresco.acl.tracker.cron", DEFAULT_CRON);
-            }
-            if(tracker instanceof ContentTracker) 
-            {
+                break;
+            case Model:
+                cron = props.getProperty("alfresco.model.tracker.cron", DEFAULT_CRON);
+                break;
+            case Content:
                 cron = props.getProperty("alfresco.content.tracker.cron", DEFAULT_CRON);
-            }
-            if(tracker instanceof MetadataTracker) 
-            {
+                break;
+            case MetaData:
                 cron = props.getProperty("alfresco.metadata.tracker.cron", DEFAULT_CRON);
-            }
-            if(tracker instanceof CascadeTracker) 
-            {
+                break;
+            case Cascade:
                 cron = props.getProperty("alfresco.cascade.tracker.cron", DEFAULT_CRON);
-            }
-            if(tracker instanceof CommitTracker) 
-            {
+                break;
+            case Commit:
                 cron = props.getProperty("alfresco.commit.tracker.cron", DEFAULT_CRON);
+                break;
+            default: props.getProperty(DEFAULT_CRON);
+                break;
             }
-            cron = cron == null ? DEFAULT_CRON : cron;
             trigger = new CronTrigger(jobName, SOLR_JOB_GROUP, cron);
             log.info("Scheduling job " + jobName);
             scheduler.scheduleJob(job, trigger);
