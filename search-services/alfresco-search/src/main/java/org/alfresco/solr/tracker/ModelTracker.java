@@ -32,11 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.naming.NoInitialContextException;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.dictionary.M2Model;
@@ -108,7 +103,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
     public ModelTracker(String solrHome, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.Model);
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
         log.info("Alfresco Model dir " + alfrescoModelDir);
@@ -192,7 +187,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
      */
     ModelTracker()
     {
-        // Testing purposes only
+        super(Tracker.Type.Model);
     }
 
     @Override

@@ -75,13 +75,13 @@ public class AclTracker extends AbstractTracker
      */
     AclTracker()
     {
-        super();
+        super(Tracker.Type.ACL);
     }
     
     public AclTracker(Properties p, SOLRAPIClient client,
                 String coreName, InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.ACL);
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
