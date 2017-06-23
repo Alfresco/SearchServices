@@ -19,22 +19,18 @@
 package org.alfresco.solr.tracker;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
-import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.repo.index.shard.ShardState;
-import org.alfresco.repo.index.shard.ShardStateBuilder;
-import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
-import org.alfresco.solr.NodeReport;
-import org.alfresco.solr.TrackerState;
-import org.alfresco.solr.adapters.IOpenBitSet;
-import org.alfresco.solr.client.*;
-import org.alfresco.solr.client.Node.SolrApiNodeStatus;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIClient;
+import org.alfresco.solr.client.Transaction;
 import org.apache.commons.codec.EncoderException;
 import org.json.JSONException;
 import org.slf4j.Logger;
@@ -54,14 +50,14 @@ public class CascadeTracker extends AbstractTracker implements Tracker
     public CascadeTracker(Properties p, SOLRAPIClient client, String coreName,
                            InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.Cascade);
 
         threadHandler = new ThreadHandler(p, coreName, "CascadeTracker");
     }
 
     CascadeTracker()
     {
-        // Testing purposes only
+       super(Tracker.Type.Cascade);
     }
 
     @Override

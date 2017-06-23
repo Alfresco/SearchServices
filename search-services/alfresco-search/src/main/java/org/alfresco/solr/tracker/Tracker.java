@@ -48,4 +48,15 @@ public interface Tracker
     void invalidateState();
 
     TrackerState getTrackerState();
+    
+    Type getType();
+    
+    enum Type{
+        Model,
+        Content,
+        ACL,
+        Cascade,
+        Commit,
+        MetaData
+    }
 }
