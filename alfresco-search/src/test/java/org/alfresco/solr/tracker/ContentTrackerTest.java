@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -133,4 +134,10 @@ public class ContentTrackerTest
         
         order.verify(srv).getDocsWithUncleanContent(0 + READ_BATCH + READ_BATCH, READ_BATCH);
     }
+    @Test
+    public void typeCheck()
+    {
+        Assert.assertTrue(contentTracker.getType().equals(Tracker.Type.Content));
+    }
+    
 }

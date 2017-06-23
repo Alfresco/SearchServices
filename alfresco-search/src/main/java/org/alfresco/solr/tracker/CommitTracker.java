@@ -21,9 +21,7 @@ package org.alfresco.solr.tracker;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
@@ -53,7 +51,7 @@ public class CommitTracker extends AbstractTracker
      **/
     CommitTracker()
     {
-        super();
+        super(Tracker.Type.Commit);
     }
 
     public CommitTracker(Properties p,
@@ -62,7 +60,7 @@ public class CommitTracker extends AbstractTracker
                          InformationServer informationServer,
                          List<Tracker> trackers)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.Commit);
 
         //Set the trackers
         for(Tracker tracker : trackers) {
