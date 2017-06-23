@@ -21,9 +21,6 @@
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.Semaphore;
 
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
 import org.alfresco.solr.InformationServer;
@@ -48,7 +45,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
     public ContentTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.Content);
         contentReadBatchSize = Integer.parseInt(p.getProperty("alfresco.contentReadBatchSize", "100"));
         contentUpdateBatchSize = Integer.parseInt(p.getProperty("alfresco.contentUpdateBatchSize", "1000"));
         threadHandler = new ThreadHandler(p, coreName, "ContentTracker");
@@ -56,7 +53,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
     
     ContentTracker()
     {
-        // Testing purposes only
+       super(Tracker.Type.Content);
     }
     
     @Override
