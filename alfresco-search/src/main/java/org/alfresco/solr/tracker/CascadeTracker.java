@@ -139,8 +139,8 @@ public class CascadeTracker extends AbstractTracker implements Tracker
                     return;
                 }
 
-                ArrayList<Long> txIds = new ArrayList();
-                Set<Long> txIdSet = new HashSet();
+                ArrayList<Long> txIds = new ArrayList<Long>();
+                Set<Long> txIdSet = new HashSet<Long>();
                 for (Transaction tx : txBatch) {
                     txIds.add(tx.getId());
                     txIdSet.add(tx.getId());
@@ -150,12 +150,12 @@ public class CascadeTracker extends AbstractTracker implements Tracker
 
                 //System.out.println("########### Cascade node meta datas:"+nodeMetaDatas.size());
                 if(nodeMetaDatas.size() > 0) {
-                    LinkedList<NodeMetaData> stack = new LinkedList();
+                    LinkedList<NodeMetaData> stack = new LinkedList<NodeMetaData>();
                     stack.addAll(nodeMetaDatas);
                     int batchSize = 10;
 
                     do {
-                        List<NodeMetaData> batch = new ArrayList();
+                        List<NodeMetaData> batch = new ArrayList<NodeMetaData>();
                         while (batch.size() < batchSize && stack.size() > 0) {
                             batch.add(stack.removeFirst());
                         }

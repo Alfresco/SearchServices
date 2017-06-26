@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -1066,26 +1065,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    private boolean transactionDocumentIdProcessed(Set<Long> transactionDocumentIdSet, Long id) throws IOException
-    {
-        if(transactionDocumentIdSet.contains(id))
-        {
-            return true;
-        }
-        else
-        {
-            if(infoSrv.isInIndex(Long.toString(id))) {
-                return true;
-            }
-            else
-            {
-                transactionDocumentIdSet.add(id);
-                return false;
-            }
-        }
-
-    }
-
     public static QName getShardProperty(String field) {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
@@ -1097,8 +1076,4 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         return propertyDef.getName();
     }
-
-
-
-
 }
