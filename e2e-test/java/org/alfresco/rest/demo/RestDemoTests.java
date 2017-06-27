@@ -1,6 +1,7 @@
 package org.alfresco.rest.demo;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.utility.constants.UserRole;
@@ -10,14 +11,11 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Role;
-import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-
 public class RestDemoTests extends RestTest
-{    
+{
     private UserModel userModel;
     private SiteModel siteModel;
 
@@ -26,7 +24,7 @@ public class RestDemoTests extends RestTest
     {       
         userModel = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        restClient.authenticateUser(userModel);               
+        restClient.authenticateUser(userModel);
     }
 
     /**
@@ -47,8 +45,8 @@ public class RestDemoTests extends RestTest
         restClient.withCoreAPI().usingSite(siteModel).getSite()
               .assertThat().field("id").isNotNull()
               .assertThat().field("description").is(siteModel.getDescription())
-              .assertThat().field("title").is(siteModel.getTitle())            
-          	  .assertThat().field("visibility").is(Visibility.PUBLIC);
+              .assertThat().field("title").is(siteModel.getTitle())
+                  .assertThat().field("visibility").is(Visibility.PUBLIC);
     }
 
     /**
@@ -62,7 +60,7 @@ public class RestDemoTests extends RestTest
     public void adminCanPostAndUpdateComments() throws Exception
     {       
         FileModel fileModel = dataContent.usingUser(userModel)
-                                  .usingResource(FolderModel.getSharedFolderModel())        			       
+                                  .usingResource(FolderModel.getSharedFolderModel())
                                   .createContent(DocumentType.TEXT_PLAIN);
         // add new comment
         restClient.withCoreAPI().usingResource(fileModel).addComment("This is a new comment");
@@ -87,10 +85,10 @@ public class RestDemoTests extends RestTest
         testUser.setUserRole(UserRole.SiteConsumer);
 
         // add user as Consumer to site
-        restClient.withCoreAPI().usingSite(siteModel).addPerson(testUser);        
+        restClient.withCoreAPI().usingSite(siteModel).addPerson(testUser);
         restClient.withCoreAPI().usingSite(siteModel).getSiteMembers().assertThat().entriesListContains("id", testUser.getUsername())
                 .when().getSiteMember(testUser.getUsername())
-            .assertSiteMemberHasRole(Role.SiteConsumer);
+            .assertSiteMemberHasRole(UserRole.SiteConsumer);
 
         // update site member to Manager
         testUser.setUserRole(UserRole.SiteCollaborator);
@@ -98,7 +96,7 @@ public class RestDemoTests extends RestTest
         restClient.withCoreAPI().usingSite(siteModel).getSiteMembers().and()
             .entriesListContains("id", testUser.getUsername())
             .when().getSiteMember(testUser.getUsername())
-            .assertSiteMemberHasRole(Role.SiteCollaborator);
+            .assertSiteMemberHasRole(UserRole.SiteCollaborator);
 
         restClient.withCoreAPI().usingSite(siteModel).deleteSiteMember(testUser);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);

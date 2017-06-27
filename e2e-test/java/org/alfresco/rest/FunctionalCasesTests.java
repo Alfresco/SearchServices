@@ -2,6 +2,7 @@ package org.alfresco.rest;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.model.RestActivityModelsCollection;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestCommentModelsCollection;
@@ -23,7 +24,6 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -540,7 +540,7 @@ public class FunctionalCasesTests extends RestTest
                 .assertThat().entriesListContains("target.site.visibility", favoriteSite.getVisibility().name())
                 .assertThat().entriesListContains("target.site.id", favoriteSite.getId());
 
-        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Site.Visibility.MODERATED);
+        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Visibility.MODERATED);
 
         userFavoriteSites = restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().where().targetSiteExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -548,13 +548,13 @@ public class FunctionalCasesTests extends RestTest
                 .assertThat().entriesListContains("target.site.visibility", "MODERATED")
                 .assertThat().entriesListContains("target.site.id", favoriteSite.getId());
 
-        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Site.Visibility.PRIVATE);
+        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Visibility.PRIVATE);
 
         userFavoriteSites = restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().where().targetSiteExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         userFavoriteSites.assertThat().entriesListIsEmpty();
 
-        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Site.Visibility.PUBLIC);
+        dataSite.usingUser(manager).updateSiteVisibility(favoriteSite, Visibility.PUBLIC);
 
         userFavoriteSites = restClient.authenticateUser(regularUser).withCoreAPI().usingAuthUser().where().targetSiteExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);

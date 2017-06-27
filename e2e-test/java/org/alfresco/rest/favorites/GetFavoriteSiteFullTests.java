@@ -1,6 +1,7 @@
 package org.alfresco.rest.favorites;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -17,7 +18,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 

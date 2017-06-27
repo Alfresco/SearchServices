@@ -10,7 +10,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -134,7 +133,7 @@ public class GetSiteMembersFullTests extends RestTest
         siteMembers = restClient.authenticateUser(userModel).withCoreAPI()
                 .usingSite(moderatedSite2).getSiteMembers();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        siteMembers.assertThat().entriesListContains("role", Role.SiteManager.toString())
+        siteMembers.assertThat().entriesListContains("role", UserRole.SiteManager.toString())
             .and().entriesListContains("id", userModel.getUsername())
             .and().entriesListDoesNotContain("id", userNotJoined.getUsername());
     }
@@ -155,7 +154,7 @@ public class GetSiteMembersFullTests extends RestTest
                 .usingSite(moderatedSite2).getSiteMembers();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         siteMembers.assertThat().entriesListCountIs(1)
-            .and().entriesListContains("role", Role.SiteManager.toString())
+            .and().entriesListContains("role", UserRole.SiteManager.toString())
             .and().entriesListContains("id", userModel.getUsername());
     }
 }
