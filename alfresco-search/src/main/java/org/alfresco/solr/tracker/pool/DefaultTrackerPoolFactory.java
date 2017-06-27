@@ -75,6 +75,39 @@ public class DefaultTrackerPoolFactory implements TrackerPoolFactory
         threadPriority = Integer.parseInt(p.getProperty("alfresco.threadPriority", "5"));
         threadDaemon = Boolean.parseBoolean(p.getProperty("alfresco.threadDaemon", "true"));
         workQueueSize = Integer.parseInt(p.getProperty("alfresco.workQueueSize", "-1"));
+        if(trackerName != null && !trackerName.isEmpty())
+        {
+            switch (trackerName)
+            {
+            case "AclTracker":
+                corePoolSize = Integer.parseInt(p.getProperty("alfresco.acl.tracker.corePoolSize", "4"));
+                maximumPoolSize = Integer.parseInt(p.getProperty("alfresco.acl.tracker.maximumPoolSize", "10"));
+                keepAliveTime = Integer.parseInt(p.getProperty("alfresco.acl.tracker.keepAliveTime", "120"));
+                threadPriority = Integer.parseInt(p.getProperty("alfresco.acl.tracker.threadPriority", "6"));
+                threadDaemon = Boolean.parseBoolean(p.getProperty("alfresco.acl.tracker.threadDaemon", "true"));
+                workQueueSize = Integer.parseInt(p.getProperty("alfresco.acl.tracker.workQueueSize", "-1"));
+                break;
+            case "ContentTracker":
+                corePoolSize = Integer.parseInt(p.getProperty("alfresco.content.tracker.corePoolSize", "12"));
+                maximumPoolSize = Integer.parseInt(p.getProperty("alfresco.content.tracker.maximumPoolSize", "-1"));
+                keepAliveTime = Integer.parseInt(p.getProperty("alfresco.content.tracker.keepAliveTime", "120"));
+                threadPriority = Integer.parseInt(p.getProperty("alfresco.content.tracker.threadPriority", "4"));
+                threadDaemon = Boolean.parseBoolean(p.getProperty("alfresco.content.tracker.threadDaemon", "true"));
+                workQueueSize = Integer.parseInt(p.getProperty("alfresco.content.tracker.workQueueSize", "-1"));
+                break;
+            case "MetadataTracker":
+                corePoolSize = Integer.parseInt(p.getProperty("alfresco.metadata.tracker.corePoolSize", "5"));
+                maximumPoolSize = Integer.parseInt(p.getProperty("alfresco.metadata.tracker.maximumPoolSize", "-1"));
+                keepAliveTime = Integer.parseInt(p.getProperty("alfresco.metadata.tracker.keepAliveTime", "120"));
+                threadPriority = Integer.parseInt(p.getProperty("alfresco.metadata.tracker.threadPriority", "5"));
+                threadDaemon = Boolean.parseBoolean(p.getProperty("alfresco.metadata.tracker.threadDaemon", "true"));
+                workQueueSize = Integer.parseInt(p.getProperty("alfresco.metadata.tracker.workQueueSize", "-1"));
+                break;
+            default:
+                break;
+            }
+        }
+
         
         poolName = "SolrTrackingPool-" + coreName + "-" + trackerName + "-";
 
