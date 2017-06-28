@@ -56,7 +56,7 @@ public class GetDeletedNodesTests extends RestTest
         dataSite.usingAdmin().deleteSite(deleteNodesSiteModel);
     }
 	
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.FULL })
     public void testDeletedNodesBiggerThanMaxCount() throws Exception
     {
 		//get the number of item in the trashcan 
