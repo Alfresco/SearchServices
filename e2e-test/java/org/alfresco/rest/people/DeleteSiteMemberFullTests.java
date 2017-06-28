@@ -11,7 +11,6 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Role;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -189,7 +188,7 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
             .when().getSiteMember(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
-            .assertSiteMemberHasRole(Role.SiteCollaborator);
+            .assertSiteMemberHasRole(UserRole.SiteCollaborator);
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })

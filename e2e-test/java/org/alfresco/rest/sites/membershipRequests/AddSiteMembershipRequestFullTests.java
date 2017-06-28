@@ -1,5 +1,6 @@
 package org.alfresco.rest.sites.membershipRequests;
 
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
@@ -16,7 +17,6 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -304,7 +304,7 @@ public class AddSiteMembershipRequestFullTests extends RestTest
         siteMembershipRequest.assertThat().field("id").is(moderatedThenPrivateSite.getId())
                 .assertThat().field("site").isNotEmpty();
 
-        dataSite.usingUser(adminUser).updateSiteVisibility(moderatedThenPrivateSite, Site.Visibility.PRIVATE);
+        dataSite.usingUser(adminUser).updateSiteVisibility(moderatedThenPrivateSite, Visibility.PRIVATE);
 
         siteMembershipRequests = restClient.withCoreAPI().usingAuthUser().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);

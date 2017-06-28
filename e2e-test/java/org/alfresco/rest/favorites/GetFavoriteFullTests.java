@@ -1,6 +1,7 @@
 package org.alfresco.rest.favorites;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
@@ -16,11 +17,11 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class GetFavoriteFullTests extends RestTest {
+public class GetFavoriteFullTests extends RestTest 
+{
 	private UserModel adminUserModel;
 	private SiteModel siteModel;
 	private FolderModel folderModel;
@@ -172,7 +173,7 @@ public class GetFavoriteFullTests extends RestTest {
         
         favoriteSite.assertThat().field("targetGuid").is(siteModel.getGuid())
     		.and().field("target.site.role").is(UserRole.SiteContributor.toString())
-    		.and().field("target.site.visibility").is(Site.Visibility.PUBLIC.toString())
+    		.and().field("target.site.visibility").is(Visibility.PUBLIC.toString())
     		.and().field("target.site.guid").is(siteModel.getGuid())
     		.and().field("target.site.description").is(siteModel.getDescription())
     		.and().field("target.site.id").is(siteModel.getId())

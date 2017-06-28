@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.List;
 
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
@@ -21,7 +22,6 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 public class GetSiteFullTests extends RestTest
@@ -35,7 +35,7 @@ public class GetSiteFullTests extends RestTest
     {
         adminUserModel = dataUser.getAdminUser();
         testUser = dataUser.createRandomTestUser();
-        restClient.authenticateUser(adminUserModel);        
+        restClient.authenticateUser(adminUserModel);
         publicSite = dataSite.usingUser(adminUserModel).createPublicRandomSite();
     }
 
@@ -82,7 +82,7 @@ public class GetSiteFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newSite.getId()))
             .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-            .stackTraceIs(RestErrorModel.STACKTRACE);      
+            .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL } )
