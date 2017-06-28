@@ -21,8 +21,8 @@ import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -56,8 +56,7 @@ public class GetDeletedNodesTests extends RestTest
         dataSite.usingAdmin().deleteSite(deleteNodesSiteModel);
     }
 	
-    @Bug(id = "REPO-2117")
-	@Test
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
     public void testDeletedNodesBiggerThanMaxCount() throws Exception
     {
 		//get the number of item in the trashcan 
