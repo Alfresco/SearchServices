@@ -27,9 +27,7 @@ package org.alfresco.solr.stream;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
@@ -42,7 +40,6 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
 
     private static final long serialVersionUID = 1;
     private TupleStream tupleStream;
-    private Map<String, String> reverseLookup = new HashMap();
 
     public AlfrescoExpressionStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
@@ -63,7 +60,7 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
             if(streamExpressionParameter instanceof StreamExpressionNamedParameter) {
                 StreamExpressionNamedParameter namedParameter = (StreamExpressionNamedParameter)streamExpressionParameter;
                 StreamExpression expr = (StreamExpression)namedParameter.getParameter();
-                if(expr.getFunctionName().equals("timeseries")) {
+                if(expr.getFunctionName().equals("timeSeries")) {
                     StreamExpression wrapper = new StreamExpression("alfrescoTimeSeries");
                     wrapper.addParameter(expr);
                     namedParameter.setParameter(wrapper);
