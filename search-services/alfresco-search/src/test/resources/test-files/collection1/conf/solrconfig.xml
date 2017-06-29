@@ -486,6 +486,7 @@
 
     <expressible name="timeSeries" class="org.alfresco.solr.stream.TimeSeriesStream"/>
     <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
+    <expressible name="alfrescoExpr" class="org.alfresco.solr.stream.AlfrescoExpressionStream"/>
 
     <!--
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
