@@ -23,17 +23,14 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
@@ -210,5 +207,4 @@ public class SolrTrackerSchedulerTest
         verify(spiedQuartzScheduler).scheduleJob(any(JobDetail.class), any(Trigger.class));
         checkCronExpression(exp);
     }
-
 }
