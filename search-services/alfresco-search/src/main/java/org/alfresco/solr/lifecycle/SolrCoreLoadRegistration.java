@@ -69,11 +69,9 @@ public class SolrCoreLoadRegistration {
 
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))
         {
-
             SolrTrackerScheduler scheduler = adminHandler.getScheduler();
             SolrResourceLoader loader = core.getLatestSchema().getResourceLoader();
             SolrKeyResourceLoader keyResourceLoader = new SolrKeyResourceLoader(loader);
-
             if (trackerRegistry.hasTrackersForCore(coreName))
             {
                 log.info("Trackers for " + coreName+ " is already registered, shutting them down.");
@@ -89,7 +87,7 @@ public class SolrCoreLoadRegistration {
             //Start content store
             SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
             SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
-
+            props.putAll(srv.getProps());
             adminHandler.getInformationServers().put(coreName, srv);
 
             log.info("Starting to track " + coreName);

@@ -854,7 +854,7 @@ public class AclTracker extends AbstractTracker
         
         private List<Acl> filterAcls(List<Acl> acls)
         {
-            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());
+            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());  
             for(Acl acl : acls)
             {
                 if(docRouter.routeAcl(shardCount, shardInstance, acl))
