@@ -1926,7 +1926,8 @@
 
   <expressible name="timeSeries" class="org.alfresco.solr.stream.TimeSeriesStream"/>
   <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
-    
+  <expressible name="alfrescoExpr" class="org.alfresco.solr.stream.AlfrescoExpressionStream"/>
+
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
