@@ -2,6 +2,7 @@ package org.alfresco.rest.audit;
 
 import static org.testng.Assert.assertEquals;
 
+import org.alfresco.rest.model.RestAuditAppModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -20,6 +21,45 @@ public class GetAuditCoreTests extends AuditTest
                 .getAuditApplications();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restAuditCollection.assertThat().entriesListIsNotEmpty();
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets audit application info")
+    public void getAuditApplicationInfoWithAdminUser() throws Exception
+    {
+        restAuditCollection = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit().getAuditApplications();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restAuditCollection.assertThat().entriesListIsNotEmpty();
+        
+        RestAuditAppModel firstRestAuditAppModel = restAuditCollection.getEntries().get(0).onModel();
+        firstRestAuditAppModel.assertThat().field("isEnabled").is(true);
+        firstRestAuditAppModel.assertThat().field("name").is("Alfresco Sync Service");
+        firstRestAuditAppModel.assertThat().field("id").is("sync");
+
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit()
+        .getAuditApp(firstRestAuditAppModel).assertThat().field("isEnabled").is(true);
+        
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit()
+        .getAuditApp(firstRestAuditAppModel).assertThat().field("name").is("Alfresco Sync Service");
+
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit()
+        .getAuditApp(firstRestAuditAppModel).assertThat().field("id").is("sync");
+
+        RestAuditAppModel secondRestAuditAppModel = restAuditCollection.getEntries().get(1).onModel();
+        secondRestAuditAppModel.assertThat().field("isEnabled").is(true);
+        secondRestAuditAppModel.assertThat().field("name").is("Alfresco Tagging Service");
+        secondRestAuditAppModel.assertThat().field("id").is("tagging");
+        
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit()
+        .getAuditApp(secondRestAuditAppModel).assertThat().field("isEnabled").is(true);
+        
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit()
+        .getAuditApp(secondRestAuditAppModel).assertThat().field("name").is("Alfresco Tagging Service");
+
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit()
+        .getAuditApp(secondRestAuditAppModel).assertThat().field("id").is("tagging");  
+               
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
