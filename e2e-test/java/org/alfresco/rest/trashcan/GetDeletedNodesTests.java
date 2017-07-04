@@ -60,7 +60,7 @@ public class GetDeletedNodesTests extends RestTest
     public void testDeletedNodesBiggerThanMaxCount() throws Exception
     {
 		//get the number of item in the trashcan 
-		RestNodeModelsCollection deletedNodes = restClient.withCoreAPI().usingQueries().findDeletedNodes();
+		RestNodeModelsCollection deletedNodes = restClient.withCoreAPI().usingTrashcan().findDeletedNodes();
 		int count = deletedNodes.getPagination().getCount();
 		int totalItems = deletedNodes.getPagination().getTotalItems();
 		
@@ -75,7 +75,7 @@ public class GetDeletedNodesTests extends RestTest
         dataContent.usingUser(adminUserModel).usingResource(deleteNodesFolder3).deleteContent();
         
         int maxItems = count + 1;
-        RestNodeModelsCollection deletedNodesMaxItem = restClient.withCoreAPI().usingQueries().usingParams(String.format("maxItems=%s", maxItems)).findDeletedNodes();
+        RestNodeModelsCollection deletedNodesMaxItem = restClient.withCoreAPI().usingTrashcan().usingParams(String.format("maxItems=%s", maxItems)).findDeletedNodes();
          
 		String countMaxItem = Integer.toString(maxItems);
 		String totalItemsMaxItem = Integer.toString(totalItems + 3);
