@@ -46,7 +46,7 @@ public class GetAuditCoreTests extends AuditTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and status code is 403")
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and status code is 400")
     public void getAuditApplicationsWithAdminUserUsingInvalidSkipCount() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withParams("skipCount=-1").withCoreAPI().usingAudit()
@@ -69,7 +69,7 @@ public class GetAuditCoreTests extends AuditTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid maxItems and status code is 403")
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid maxItems and status code is 400")
     public void getAuditApplicationsWithAdminUserUsingInvalidMaxItems() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withParams("maxItems=-1").withCoreAPI().usingAudit()
@@ -97,7 +97,7 @@ public class GetAuditCoreTests extends AuditTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and/or invalid maxItems and status code is 403")
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and/or invalid maxItems and status code is 400")
     public void getAuditApplicationsWithAdminUserUsingInvalidSkipCountAndMaxItems() throws Exception
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withParams("skipCount=-1&maxItems=1").withCoreAPI().usingAudit()
