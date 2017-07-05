@@ -174,6 +174,12 @@
                                 <replace token= "REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}${line.separator}${line.separator}REM Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
                                     <include name="**/bin/solr.in.cmd"/>
                                 </replace>
+                                <replace token= 'REM set SOLR_JAVA_MEM=-Xms512m -Xmx512m' value='set SOLR_JAVA_MEM=-Xms1g -Xmx1g' dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd"/>
+                                </replace>
+                                <replace token= '#SOLR_JAVA_MEM="-Xms512m -Xmx512m"' value='SOLR_JAVA_MEM="-Xms1g -Xmx1g"' dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh"/>
+                                </replace>
                                 <replace token= "${alfresco.search.ssl.need.token}" value="${alfresco.search.ssl.need}" dir="target/solr-${solr.version}">
                                     <include name="**/server/etc/jetty-ssl.xml"/>
                                 </replace>
