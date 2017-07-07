@@ -58,8 +58,8 @@ public class DefaultTrackerPoolFactoryTest
         
         tpe = poolFactory.create();
         
-        assertEquals(3, tpe.getCorePoolSize());
-        assertEquals(3, tpe.getMaximumPoolSize());
+        assertEquals(4, tpe.getCorePoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
         assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
     }
     
@@ -84,9 +84,8 @@ public class DefaultTrackerPoolFactoryTest
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "AclTracker");
         
         tpe = poolFactory.create();
-        
         assertEquals(4, tpe.getCorePoolSize());
-        assertEquals(10, tpe.getMaximumPoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
         assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
     }
     @Test
@@ -109,8 +108,8 @@ public class DefaultTrackerPoolFactoryTest
         
         tpe = poolFactory.create();
         
-        assertEquals(12, tpe.getCorePoolSize());
-        assertEquals(12, tpe.getMaximumPoolSize());
+        assertEquals(4, tpe.getCorePoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
         assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
     }
     @Test
@@ -133,8 +132,8 @@ public class DefaultTrackerPoolFactoryTest
         
         tpe = poolFactory.create();
         
-        assertEquals(5, tpe.getCorePoolSize());
-        assertEquals(5, tpe.getMaximumPoolSize());
+        assertEquals(4, tpe.getCorePoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
         assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
     }
     @Test
