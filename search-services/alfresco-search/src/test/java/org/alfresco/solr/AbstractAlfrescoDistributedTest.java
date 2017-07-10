@@ -4,6 +4,7 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.stream.AlfrescoStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
@@ -18,6 +19,8 @@ import org.apache.solr.client.solrj.embedded.JettyConfig;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.embedded.SSLConfig;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -662,6 +665,46 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         params.set("shards", getShardsString());
     }
 
+    protected List<Tuple> getTuples(TupleStream tupleStream) throws IOException {
+        List<Tuple> tuples = new ArrayList();
+        tupleStream.open();
+        try {
+            while (true) {
+                Tuple tuple = tupleStream.read();
+                if (!tuple.EOF) {
+                    tuples.add(tuple);
+                } else {
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            try {
+                tupleStream.close();
+            } catch(Exception e2) {
+                e2.printStackTrace();
+            }
+        }
+
+        return tuples;
+    }
+
+    protected String getShardsString(List<SolrClient> clientList)
+    {
+        StringBuilder buf = new StringBuilder();
+        for(int i=0; i<clientList.size(); ++i) {
+            HttpSolrClient solrClient = (HttpSolrClient)clientList.get(i);
+
+            if(buf.length() > 0) {
+                buf.append(",");
+            }
+
+            buf.append(solrClient.getBaseURL());
+        }
+        return buf.toString();
+    }
+
     protected String getShardsString()
     {
         if (deadServers == null)
@@ -985,28 +1028,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     protected QueryRequest getAlfrescoRequest(String json, SolrParams params) {
-        QueryRequest request = new AlfrescoQueryRequest(json, params);
+        QueryRequest request = new AlfrescoStreamHandler.AlfrescoQueryRequest(json, params);
         request.setMethod(SolrRequest.METHOD.POST);
         return request;
-    }
-
-    public static class AlfrescoQueryRequest extends QueryRequest
-    {
-        private static final long serialVersionUID = 103873138415233192L;
-        private String json;
-
-        public AlfrescoQueryRequest(String json, SolrParams params)
-        {
-            super(params);
-            this.json =json;
-        }
-
-        public Collection<ContentStream> getContentStreams()
-        {
-            List<ContentStream> streams = new ArrayList<ContentStream>();
-            streams.add(new ContentStreamBase.StringStream(json));
-            return streams;
-        }
     }
 
     /**
@@ -1577,6 +1601,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         handle.put("_version_", SKIP);
         handle.put("_original_parameters_", SKIP);
     }
+
 
     protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException
     {
