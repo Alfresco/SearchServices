@@ -485,6 +485,8 @@
     <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
 
     <expressible name="timeSeries" class="org.alfresco.solr.stream.TimeSeriesStream"/>
+    <expressible name="stats" class="org.alfresco.solr.stream.StatsStream"/>
+    <expressible name="alfrescoStats" class="org.alfresco.solr.stream.AlfrescoStatsStream"/>
     <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
     <expressible name="alfrescoExpr" class="org.alfresco.solr.stream.AlfrescoExpressionStream"/>
 
