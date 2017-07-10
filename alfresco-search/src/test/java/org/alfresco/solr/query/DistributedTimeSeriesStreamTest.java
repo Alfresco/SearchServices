@@ -58,18 +58,7 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
     @Test
     public void testTimeSeries() throws Exception
     {
-        handle.put("explain", SKIPVAL);
-        handle.put("timestamp", SKIPVAL);
-        handle.put("score", SKIPVAL);
-        handle.put("wt", SKIP);
-        handle.put("distrib", SKIP);
-        handle.put("shards.qt", SKIP);
-        handle.put("shards", SKIP);
-        handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
-        handle.put("q", SKIP);
-        handle.put("maxScore", SKIPVAL);
-        handle.put("_version_", SKIP);
-        handle.put("_original_parameters_", SKIP);
+        putHandleDefaults();
 
         /*
         * Create and index an AclChangeSet.
@@ -218,46 +207,6 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
     private Date getDate(int year, int month, int day)
     {
        return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());
-    }
-
-    private String getShardsString(List<SolrClient> clientList)
-    {
-        StringBuilder buf = new StringBuilder();
-        for(int i=0; i<clientList.size(); ++i) {
-            HttpSolrClient solrClient = (HttpSolrClient)clientList.get(i);
-
-            if(buf.length() > 0) {
-                buf.append(",");
-            }
-
-            buf.append(solrClient.getBaseURL());
-        }
-        return buf.toString();
-    }
-
-    private List<Tuple> getTuples(TupleStream tupleStream) throws IOException {
-        List<Tuple> tuples = new ArrayList();
-        tupleStream.open();
-        try {
-            while (true) {
-                Tuple tuple = tupleStream.read();
-                if (!tuple.EOF) {
-                    tuples.add(tuple);
-                } else {
-                    break;
-                }
-            }
-        }
-        finally
-        {
-            try {
-                tupleStream.close();
-            } catch(Exception e2) {
-                e2.printStackTrace();
-            }
-        }
-
-        return tuples;
     }
 }
 
