@@ -25,6 +25,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.repo.dictionary.NamespaceDAO;
+import org.alfresco.repo.search.impl.QueryParserUtils;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.io.stream.*;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -86,7 +92,19 @@ public class AlfrescoStreamHandler extends StreamHandler
         return streamContext;
     }
 
-    private static class AlfrescoRequestFactory extends RequestFactory
+    public static String getIndexedField(String field) {
+        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+        NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
+        DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
+        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
+                namespaceDAO,
+                dictionaryService,
+                field);
+
+        return dataModel.getFieldForNonText(propertyDef);
+    }
+
+    public static class AlfrescoRequestFactory extends RequestFactory
     {
         private String alfrescoJson;
 
@@ -107,7 +125,7 @@ public class AlfrescoStreamHandler extends StreamHandler
         }
     }
 
-    private static class AlfrescoQueryRequest extends QueryRequest
+    public static class AlfrescoQueryRequest extends QueryRequest
     {
         private String json;
 

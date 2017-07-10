@@ -54,6 +54,9 @@ public class StatsStream extends TupleStream implements Expressible  {
   protected transient CloudSolrClient cloudSolrClient;
   protected StreamContext streamContext;
 
+  private Map<String, String> reverseLookup = new HashMap();
+
+
   // Use StatsStream(String, String, SolrParams, Metric[]
   @Deprecated
   public StatsStream(String zkHost,
@@ -198,6 +201,18 @@ public class StatsStream extends TupleStream implements Expressible  {
     return new ArrayList<>();
   }
 
+  public Metric[] getMetrics() {
+    return this.metrics;
+  }
+
+  public SolrParams getParams() {
+    return params;
+  }
+
+  public Map<String, String> getReverseLookup() {
+    return reverseLookup;
+  }
+
   public void open() throws IOException {
     ModifiableSolrParams paramsLoc = new ModifiableSolrParams(this.params);
     addStats(paramsLoc, metrics);
@@ -224,11 +239,16 @@ public class StatsStream extends TupleStream implements Expressible  {
         paramsLoc.add("distrib", "true");
       }
 
-      QueryRequest request = new QueryRequest(paramsLoc);
-      try {
+      RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
+      QueryRequest request = requestFactory.getRequest(paramsLoc);
+
+      try
+      {
         NamedList response = client.request(request);
         this.tuple = getTuple(response);
-      } catch (Exception e) {
+      }
+      catch (Exception e)
+      {
         throw new IOException(e);
       }
     }
@@ -330,6 +350,10 @@ public class StatsStream extends TupleStream implements Expressible  {
 
       for(int i=0; i<statsFields.size(); i++) {
         String field = statsFields.getName(i);
+        if(reverseLookup.containsKey(field)) {
+          String rewrittenFieldName  = reverseLookup.get(field);
+          field = rewrittenFieldName;
+        }
         NamedList theStats = (NamedList)statsFields.getVal(i);
         for(int s=0; s<theStats.size(); s++) {
           addStat(map, field, theStats.getName(s), theStats.getVal(s));

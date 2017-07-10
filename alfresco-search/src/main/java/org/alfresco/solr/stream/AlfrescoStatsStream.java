@@ -25,13 +25,6 @@
  */
 package org.alfresco.solr.stream;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.impl.QueryParserUtils;
@@ -42,34 +35,31 @@ import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
 import org.apache.solr.client.solrj.io.stream.StreamContext;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
-import org.apache.solr.client.solrj.io.stream.expr.Explanation;
+import org.apache.solr.client.solrj.io.stream.expr.*;
 import org.apache.solr.client.solrj.io.stream.expr.Explanation.ExpressionType;
-import org.apache.solr.client.solrj.io.stream.expr.Expressible;
-import org.apache.solr.client.solrj.io.stream.expr.StreamExplanation;
-import org.apache.solr.client.solrj.io.stream.expr.StreamExpression;
-import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionParameter;
-import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
 import org.apache.solr.client.solrj.io.stream.metrics.*;
 import org.apache.solr.common.params.ModifiableSolrParams;
 
-public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible  {
+import java.io.IOException;
+import java.util.*;
+
+public class AlfrescoStatsStream extends TupleStream implements Expressible  {
 
     private static final long serialVersionUID = 1;
-    private TimeSeriesStream timeSeriesStream;
-    private Map<String, String> reverseLookup = new HashMap();
+    private StatsStream statsStream;
 
-    public AlfrescoTimeSeriesStream(StreamExpression expression, StreamFactory factory) throws IOException
+    public AlfrescoStatsStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
-        List<StreamExpression> streamExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, TimeSeriesStream.class);
+        List<StreamExpression> streamExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, StatsStream.class);
         if(streamExpressions.size() != 1) {
-            throw new IOException("AlfrescoTimeSeriesStream expects a single TimeSeries parameter, found:"+streamExpressions.size());
+            throw new IOException("AlfrescoStatsStream expects a single Stas parameter, found:"+streamExpressions.size());
         }
 
-        init((TimeSeriesStream)factory.constructStream(streamExpressions.get(0)));
+        init((StatsStream)factory.constructStream(streamExpressions.get(0)));
     }
 
-    private void init(TimeSeriesStream timeSeriesStream) throws IOException {
-        this.timeSeriesStream = timeSeriesStream;
+    private void init(StatsStream statsStream) throws IOException {
+        this.statsStream = statsStream;
     }
 
     @Override
@@ -77,7 +67,7 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
     {
         // function name
         StreamExpression expression = new StreamExpression(factory.getFunctionName(this.getClass()));
-        expression.addParameter(timeSeriesStream.toExpression(factory));
+        expression.addParameter(statsStream.toExpression(factory));
         return expression;
     }
 
@@ -86,7 +76,7 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
     {
         Explanation explanation = new StreamExplanation(getStreamNodeId().toString())
                 .withChildren(new Explanation[]{
-                        timeSeriesStream.toExplanation(factory)
+                        statsStream.toExplanation(factory)
                 })
                 .withFunctionName(factory.getFunctionName(this.getClass()))
                 .withImplementingClass(this.getClass().getName())
@@ -103,9 +93,11 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
 
     public void open() throws IOException
     {
-        ModifiableSolrParams solrParams = (ModifiableSolrParams)timeSeriesStream.getParams();
+        ModifiableSolrParams solrParams = (ModifiableSolrParams)statsStream.getParams();
         solrParams.add("defType", "afts");
-        Metric[] metrics = timeSeriesStream.getMetrics();
+        Metric[] metrics = statsStream.getMetrics();
+        Map<String, String> reverseLookup = statsStream.getReverseLookup();
+
         for(int i=0; i<metrics.length; i++) {
             Metric metric = metrics[i];
 
@@ -134,38 +126,18 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             }
         }
 
-        String field = timeSeriesStream.getField();
-        String newField = AlfrescoStreamHandler.getIndexedField(field);
-        reverseLookup.put(newField, field);
-        timeSeriesStream.setField(newField);
-        this.timeSeriesStream.open();
+        this.statsStream.open();
     }
 
     public void close() throws IOException
     {
-        timeSeriesStream.close();
+        statsStream.close();
     }
 
     public Tuple read() throws IOException
     {
-        Tuple tuple = timeSeriesStream.read();
-        if(tuple.EOF) {
-            return tuple;
-        } else {
-            Map fields = tuple.fields;
-            Set<String> fieldNames = fields.keySet();
-
-            Map newMap = new HashMap();
-            for(String fieldName : fieldNames) {
-                if(reverseLookup.containsKey(fieldName)) {
-                    Object o = fields.get(fieldName);
-                    newMap.put(reverseLookup.get(fieldName), o);
-                } else {
-                    newMap.put(fieldName, fields.get(fieldName));
-                }
-            }
-            return new Tuple(newMap);
-        }
+        Tuple tuple = statsStream.read();
+        return tuple;
     }
 
     public int getCost()
@@ -182,7 +154,7 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
     @Override
     public void setStreamContext(StreamContext streamContext)
     {
-        this.timeSeriesStream.setStreamContext(streamContext);
+        this.statsStream.setStreamContext(streamContext);
     }
 }
 
