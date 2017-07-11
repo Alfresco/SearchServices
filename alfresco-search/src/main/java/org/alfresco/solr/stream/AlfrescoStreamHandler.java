@@ -30,7 +30,9 @@ import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.util.Pair;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.io.stream.*;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -92,16 +94,28 @@ public class AlfrescoStreamHandler extends StreamHandler
         return streamContext;
     }
 
+    /**
+     * Rewrites the name of the field passed in to a field name that solr can understand.
+     * Reuses the Alfresco Data model logic for this.
+     * @param field - the name of a field.
+     * @return a field in the index
+     */
     public static String getIndexedField(String field) {
-        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-        NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
-        DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
-        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
-                namespaceDAO,
-                dictionaryService,
-                field);
 
-        return dataModel.getFieldForNonText(propertyDef);
+        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+
+        Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(field);
+        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(), dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
+
+        if(propertyDef != null)
+        {
+            AlfrescoSolrDataModel.IndexedField fields = dataModel.getQueryableFields(propertyDef.getName(), dataModel.getTextField(fieldNameAndEnding.getSecond()), AlfrescoSolrDataModel.FieldUse.SORT);
+            if(fields.getFields().size() > 0)
+            {
+                return fields.getFields().get(0).getField();
+            }
+        }
+        return dataModel.mapNonPropertyFields(field);
     }
 
     public static class AlfrescoRequestFactory extends RequestFactory
