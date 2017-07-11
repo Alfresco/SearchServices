@@ -202,47 +202,6 @@ public class DistributedSearchStreamTest extends AbstractAlfrescoDistributedTest
     {
         return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());
     }
-
-    /*
-    private String getShardsString(List<SolrClient> clientList)
-    {
-        StringBuilder buf = new StringBuilder();
-        for(int i=0; i<clientList.size(); ++i) {
-            HttpSolrClient solrClient = (HttpSolrClient)clientList.get(i);
-
-            if(buf.length() > 0) {
-                buf.append(",");
-            }
-
-            buf.append(solrClient.getBaseURL());
-        }
-        return buf.toString();
-    }
-
-    private List<Tuple> getTuples(TupleStream tupleStream) throws IOException {
-        List<Tuple> tuples = new ArrayList();
-        tupleStream.open();
-        try {
-            while (true) {
-                Tuple tuple = tupleStream.read();
-                if (!tuple.EOF) {
-                    tuples.add(tuple);
-                } else {
-                    break;
-                }
-            }
-        }
-        finally
-        {
-            try {
-                tupleStream.close();
-            } catch(Exception e2) {
-                e2.printStackTrace();
-            }
-        }
-
-        return tuples;
-    }
-    */
+    
 }
 
