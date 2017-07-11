@@ -118,6 +118,7 @@ public class AlfrescoStreamHandler extends StreamHandler
         return dataModel.mapNonPropertyFields(field);
     }
 
+
     public static class AlfrescoRequestFactory extends RequestFactory
     {
         private String alfrescoJson;

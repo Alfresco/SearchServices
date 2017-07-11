@@ -299,6 +299,7 @@ public class StreamHandler extends RequestHandlerBase implements SolrCoreAware, 
     }
 
     public void handleRequestBody(SolrQueryRequest req, SolrQueryResponse rsp) throws Exception {
+        System.out.println("################### HANDLE_REQUEST ##########");
         SolrParams params = req.getParams();
         params = adjustParams(params);
         req.setParams(params);
@@ -326,6 +327,8 @@ public class StreamHandler extends RequestHandlerBase implements SolrCoreAware, 
 
             return;
         }
+
+        System.out.println("###################TUPLESTREAM:"+tupleStream.getClass());
 
         int worker = params.getInt("workerID", 0);
         int numWorkers = params.getInt("numWorkers", 1);
