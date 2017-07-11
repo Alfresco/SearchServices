@@ -267,6 +267,7 @@ public class SolrInformationServer implements InformationServer
     private String hostName;
     
     private String baseUrl;
+    Properties props;
 
     private long cleanContentTxnFloor = -1; // All transactions below this floor have had the content completed.
     private long cleanCascadeTxnFloor = -1;
@@ -313,7 +314,7 @@ public class SolrInformationServer implements InformationServer
         contentStreamLimit = Integer.parseInt(p.getProperty("alfresco.contentStreamLimit", "10000000"));
         
         // build base URL - host and port have to come from configuration.
-        Properties props = AlfrescoSolrDataModel.getCommonConfig();
+        props = AlfrescoSolrDataModel.getCommonConfig();
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
 
         String portNumber =  ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
@@ -4116,6 +4117,12 @@ public class SolrInformationServer implements InformationServer
     public SolrContentStore getSolrContentStore()
     {
         return solrContentStore;
+    }
+
+
+    public Properties getProps()
+    {
+        return props;
     }
     
 }
