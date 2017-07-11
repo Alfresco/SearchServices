@@ -203,6 +203,7 @@ public class DistributedSearchStreamTest extends AbstractAlfrescoDistributedTest
         return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());
     }
 
+    /*
     private String getShardsString(List<SolrClient> clientList)
     {
         StringBuilder buf = new StringBuilder();
@@ -242,5 +243,6 @@ public class DistributedSearchStreamTest extends AbstractAlfrescoDistributedTest
 
         return tuples;
     }
+    */
 }
 
