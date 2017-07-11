@@ -69,6 +69,7 @@ public abstract class AbstractTracker implements Tracker
     protected boolean transformContent;
     protected String shardTemplate;
     protected volatile boolean rollback;
+    protected final Type type;
 
     
     /*
@@ -82,11 +83,12 @@ public abstract class AbstractTracker implements Tracker
     /**
      * Default constructor, strictly for testing.
      */
-    protected AbstractTracker()
+    protected AbstractTracker(Type type)
     {
+        this.type = type;
     }
     
-    protected AbstractTracker(Properties p, SOLRAPIClient client, String coreName, InformationServer informationServer)
+    protected AbstractTracker(Properties p, SOLRAPIClient client, String coreName, InformationServer informationServer,Type type)
     {
         this.props = p;
         this.client = client;
@@ -110,6 +112,9 @@ public abstract class AbstractTracker implements Tracker
         this.trackerStats = this.infoSrv.getTrackerStats();
 
         alfrescoVersion = p.getProperty("alfresco.version", "5.0.0");
+        
+        this.type = type;
+        
         log.info("Solr built for Alfresco version: " + alfrescoVersion);
     }
 
@@ -304,6 +309,16 @@ public abstract class AbstractTracker implements Tracker
     public String getAlfrescoVersion()
     {
         return alfrescoVersion;
+    }
+
+    public Properties getProps()
+    {
+        return props;
+    }
+
+    public Type getType()
+    {
+        return type;
     }
     
     
