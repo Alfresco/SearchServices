@@ -22,6 +22,7 @@ package org.alfresco.solr.highlight;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.client.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -150,7 +151,7 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
         logger.info("######### Waiting for Doc Count ###########");
 
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "mike")), 4, 10000);
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "mike")), 4, MAX_WAIT_TIME);
 
         logger.info("######### Testing SNIPPETS / FRAGSIZE ###########");
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",

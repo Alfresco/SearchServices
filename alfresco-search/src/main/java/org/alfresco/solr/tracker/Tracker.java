@@ -18,9 +18,10 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.TrackerState;
-
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
+
+import org.alfresco.solr.TrackerState;
 
 public interface Tracker
 {
@@ -35,12 +36,27 @@ public interface Tracker
     String getAlfrescoVersion();
     
     void setShutdown(boolean shutdown);
+    
     void shutdown();
 
     boolean getRollback();
+    
+    Properties getProps();
+    
     void setRollback(boolean rollback);
 
     void invalidateState();
 
     TrackerState getTrackerState();
+    
+    Type getType();
+    
+    enum Type{
+        Model,
+        Content,
+        ACL,
+        Cascade,
+        Commit,
+        MetaData
+    }
 }
