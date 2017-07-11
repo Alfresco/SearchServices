@@ -134,6 +134,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 log.info("Attempting to create default alfresco core: "+coreName);
                 switch (coreName)
                 {
+                    case "process":
+                        StoreRef processStoreRef = new StoreRef("process", "services");
+                        newDefaultCore("process", processStoreRef, "aps/process", null, response);
+                        newDefaultCore("processDefinition", processStoreRef, "aps/processDefinition", null, response);
+                        newDefaultCore("task", processStoreRef, "aps/task", null, response);
+                        newDefaultCore("taskDefinition",processStoreRef, "aps/taskDefinition", null, response);
+                        break;
                     case "archive":
                         newDefaultCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
                         break;
