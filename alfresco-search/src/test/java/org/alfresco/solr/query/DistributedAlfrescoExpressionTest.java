@@ -58,18 +58,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
     @Test
     public void testExpression() throws Exception
     {
-        handle.put("explain", SKIPVAL);
-        handle.put("timestamp", SKIPVAL);
-        handle.put("score", SKIPVAL);
-        handle.put("wt", SKIP);
-        handle.put("distrib", SKIP);
-        handle.put("shards.qt", SKIP);
-        handle.put("shards", SKIP);
-        handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
-        handle.put("q", SKIP);
-        handle.put("maxScore", SKIPVAL);
-        handle.put("_version_", SKIP);
-        handle.put("_original_parameters_", SKIP);
+        putHandleDefaults();
 
         /*
         * Create and index an AclChangeSet.
