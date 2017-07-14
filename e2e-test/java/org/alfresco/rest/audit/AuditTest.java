@@ -29,6 +29,9 @@ public abstract class AuditTest extends RestTest
     protected RestAuditAppModel restAuditAppModel;
     protected RestAuditEntryModel restAuditEntryModel;
     protected RestAuditEntryModelsCollection restAuditEntryCollection;
+    protected RestAuditAppModel syncRestAuditAppModel;
+    protected RestAuditAppModel taggingRestAuditAppModel;
+    
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -54,4 +57,23 @@ public abstract class AuditTest extends RestTest
         }while (!restAuditAppModel.getName().equals("alfresco-access"));
 
     }
+    
+    protected RestAuditAppModel getSyncRestAuditAppModel(UserModel userModel) throws Exception
+    {
+	    restAuditCollection = restClient.authenticateUser(userModel).withCoreAPI().usingAudit().getAuditApplications();
+	    restClient.assertStatusCodeIs(HttpStatus.OK);
+	    restAuditCollection.assertThat().entriesListIsNotEmpty();
+	    RestAuditAppModel syncRestAuditAppModel = restAuditCollection.getEntries().get(0).onModel();
+		return syncRestAuditAppModel;    	
+    }
+    
+    protected RestAuditAppModel getTaggingRestAuditAppModel(UserModel userModel) throws Exception
+    {
+	    restAuditCollection = restClient.authenticateUser(userModel).withCoreAPI().usingAudit().getAuditApplications();
+	    restClient.assertStatusCodeIs(HttpStatus.OK);
+	    restAuditCollection.assertThat().entriesListIsNotEmpty();
+	    RestAuditAppModel taggingRestAuditAppModel = restAuditCollection.getEntries().get(1).onModel();
+		return taggingRestAuditAppModel;    	
+    }
+
 }

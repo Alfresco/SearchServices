@@ -3,7 +3,7 @@ package org.alfresco.rest.audit;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.model.RestAuditAppModel;
+
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
