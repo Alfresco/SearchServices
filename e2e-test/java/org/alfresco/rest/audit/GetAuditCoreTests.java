@@ -21,30 +21,17 @@ public class GetAuditCoreTests extends AuditTest
         restAuditAppModel.assertThat().field("isEnabled").is(true);
         restAuditAppModel.assertThat().field("name").is("alfresco-access");
         restAuditAppModel.assertThat().field("id").is("alfresco-access");
+  
+    	syncRestAuditAppModel = getSyncRestAuditAppModel(adminUser);
+        syncRestAuditAppModel.assertThat().field("isEnabled").is(true);
+        syncRestAuditAppModel.assertThat().field("name").is("Alfresco Sync Service");
+        syncRestAuditAppModel.assertThat().field("id").is("sync");
 
-        restClient.authenticateUser(adminUser).withCoreAPI().usingAudit()
-        .getAuditApp(restAuditAppModel).assertThat().field("isEnabled").is(true);
-        
-        restClient.authenticateUser(adminUser).withCoreAPI().usingAudit()
-        .getAuditApp(restAuditAppModel).assertThat().field("name").is("alfresco-access");
-
-        restClient.authenticateUser(adminUser).withCoreAPI().usingAudit()
-        .getAuditApp(restAuditAppModel).assertThat().field("id").is("alfresco-access");
-
-        RestAuditAppModel secondRestAuditAppModel = restAuditCollection.getEntries().get(1).onModel();
-        secondRestAuditAppModel.assertThat().field("isEnabled").is(true);
-        secondRestAuditAppModel.assertThat().field("name").is("Alfresco Tagging Service");
-        secondRestAuditAppModel.assertThat().field("id").is("tagging");
-        
-        restClient.authenticateUser(adminUser).withCoreAPI().usingAudit()
-        .getAuditApp(secondRestAuditAppModel).assertThat().field("isEnabled").is(true);
-        
-        restClient.authenticateUser(adminUser).withCoreAPI().usingAudit()
-        .getAuditApp(secondRestAuditAppModel).assertThat().field("name").is("Alfresco Tagging Service");
-
-        restClient.authenticateUser(adminUser).withCoreAPI().usingAudit()
-        .getAuditApp(secondRestAuditAppModel).assertThat().field("id").is("tagging");  
-               
+    	taggingRestAuditAppModel = getTaggingRestAuditAppModel(adminUser);
+    	taggingRestAuditAppModel.assertThat().field("isEnabled").is(true);
+    	taggingRestAuditAppModel.assertThat().field("name").is("Alfresco Tagging Service");
+    	taggingRestAuditAppModel.assertThat().field("id").is("tagging");
+         
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })

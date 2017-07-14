@@ -14,20 +14,20 @@ public class PutAuditCoreTests extends AuditTest
 	  public void enableDisableSyncApplicationAuditingAsAdminUser() throws Exception
 	  {
 		  //disable sync audit app    
-		  syncRestAuditAppModel = getSyncRestAuditAppModel(dataUser.getAdminUser());
-	      restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit().updateAuditApp(syncRestAuditAppModel, "isEnabled", "false");
+		  syncRestAuditAppModel = getSyncRestAuditAppModel(adminUser);
+	      restClient.authenticateUser(adminUser).withCoreAPI().usingAudit().updateAuditApp(syncRestAuditAppModel, "isEnabled", "false");
 	      
 	      //check isEnabled=false
- 	      syncRestAuditAppModel = getSyncRestAuditAppModel(dataUser.getAdminUser());
+ 	      syncRestAuditAppModel = getSyncRestAuditAppModel(adminUser);
 	      syncRestAuditAppModel.assertThat().field("isEnabled").is(false);
 	      syncRestAuditAppModel.assertThat().field("name").is("Alfresco Sync Service");
 	      syncRestAuditAppModel.assertThat().field("id").is("sync");
 	     
 		  //enable sync audit app
-	      restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit().updateAuditApp(syncRestAuditAppModel, "isEnabled", "true");
+	      restClient.authenticateUser(adminUser).withCoreAPI().usingAudit().updateAuditApp(syncRestAuditAppModel, "isEnabled", "true");
 	      
 		  //check isEnabled=true
-	      syncRestAuditAppModel = getSyncRestAuditAppModel(dataUser.getAdminUser());
+	      syncRestAuditAppModel = getSyncRestAuditAppModel(adminUser);
 	      syncRestAuditAppModel.assertThat().field("isEnabled").is(true);
 	      syncRestAuditAppModel.assertThat().field("name").is("Alfresco Sync Service");
 	      syncRestAuditAppModel.assertThat().field("id").is("sync");
@@ -40,20 +40,20 @@ public class PutAuditCoreTests extends AuditTest
 	  public void enableDisableTaggingApplicationAuditingAsAdminUser() throws Exception
 	  {
 		  //disable tagging audit app    
-		  taggingRestAuditAppModel = getTaggingRestAuditAppModel(dataUser.getAdminUser());
-	      restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit().updateAuditApp(taggingRestAuditAppModel, "isEnabled", "false");
+		  taggingRestAuditAppModel = getTaggingRestAuditAppModel(adminUser);
+	      restClient.authenticateUser(adminUser).withCoreAPI().usingAudit().updateAuditApp(taggingRestAuditAppModel, "isEnabled", "false");
 	      
 	      //check isEnabled=false
-	      taggingRestAuditAppModel = getTaggingRestAuditAppModel(dataUser.getAdminUser());
+	      taggingRestAuditAppModel = getTaggingRestAuditAppModel(adminUser);
 	      taggingRestAuditAppModel.assertThat().field("isEnabled").is(false);
 	      taggingRestAuditAppModel.assertThat().field("name").is("Alfresco Tagging Service");
 	      taggingRestAuditAppModel.assertThat().field("id").is("tagging");
 	      
 		  //enable tagging audit app
-	      restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingAudit().updateAuditApp(taggingRestAuditAppModel, "isEnabled", "true");
+	      restClient.authenticateUser(adminUser).withCoreAPI().usingAudit().updateAuditApp(taggingRestAuditAppModel, "isEnabled", "true");
 	      
 		  //check isEnabled=true
-	      taggingRestAuditAppModel = getTaggingRestAuditAppModel(dataUser.getAdminUser());
+	      taggingRestAuditAppModel = getTaggingRestAuditAppModel(adminUser);
 	      taggingRestAuditAppModel.assertThat().field("isEnabled").is(true);
 	      taggingRestAuditAppModel.assertThat().field("name").is("Alfresco Tagging Service");
 	      taggingRestAuditAppModel.assertThat().field("id").is("tagging");
@@ -67,7 +67,7 @@ public class PutAuditCoreTests extends AuditTest
 	  public void enableDisableSyncApplicationAuditingAsNormalUser() throws Exception
 	  {
 		  //disable sync audit app    
-		  syncRestAuditAppModel = getSyncRestAuditAppModel(dataUser.getAdminUser());
+		  syncRestAuditAppModel = getSyncRestAuditAppModel(adminUser);
 	      restClient.authenticateUser(userModel).withCoreAPI().usingAudit().updateAuditApp(syncRestAuditAppModel, "isEnabled", "false");
 	      
 	      //permission denied
@@ -86,7 +86,7 @@ public class PutAuditCoreTests extends AuditTest
 	  public void enableDisableTaggingApplicationAuditingAsNormalUser() throws Exception
 	  {
 		  //disable tagging audit app    
-		  taggingRestAuditAppModel = getTaggingRestAuditAppModel(dataUser.getAdminUser());
+		  taggingRestAuditAppModel = getTaggingRestAuditAppModel(adminUser);
 	      restClient.authenticateUser(userModel).withCoreAPI().usingAudit().updateAuditApp(taggingRestAuditAppModel, "isEnabled", "false");
 	      
 	      //permission denied
