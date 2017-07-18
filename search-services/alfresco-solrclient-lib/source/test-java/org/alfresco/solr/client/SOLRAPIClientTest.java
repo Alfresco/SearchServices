@@ -25,7 +25,28 @@
  */
 package org.alfresco.solr.client;
 
-import junit.framework.TestCase;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AlgorithmParameters;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.alfresco.encryption.DefaultEncryptionUtils;
 import org.alfresco.encryption.KeyProvider;
 import org.alfresco.encryption.KeyResourceLoader;
@@ -42,7 +63,13 @@ import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.opencmis.mapping.RuntimePropertyLuceneBuilderMapping;
 import org.alfresco.repo.cache.MemoryCache;
-import org.alfresco.repo.dictionary.*;
+import org.alfresco.repo.dictionary.CompiledModelsCache;
+import org.alfresco.repo.dictionary.DictionaryComponent;
+import org.alfresco.repo.dictionary.DictionaryDAOImpl;
+import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.dictionary.M2Namespace;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
@@ -59,15 +86,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.AlgorithmParameters;
-import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import junit.framework.TestCase;
 
 /**
  * Tests {@link SOLRAPIClient} Note: need to make sure that source/solr/instance is on the run classpath. Note: doesn't
@@ -90,7 +109,8 @@ public class SOLRAPIClientTest extends TestCase
     private DictionaryDAOImpl dictionaryDAO;
 
     private CMISStrictDictionaryService cmisDictionaryService;
-
+    
+    private static final String CORENAME = "collection1";
 
     // private M2Model testModel;
 
@@ -181,7 +201,7 @@ public class SOLRAPIClientTest extends TestCase
     private void trackModels() throws AuthenticationException, IOException, JSONException
     {
 
-        List<AlfrescoModelDiff> modelDiffs = client.getModelsDiff(Collections.<AlfrescoModel> emptyList());
+        List<AlfrescoModelDiff> modelDiffs = client.getModelsDiff(CORENAME,Collections.<AlfrescoModel> emptyList());
         HashMap<String, M2Model> modelMap = new HashMap<String, M2Model>();
 
         for (AlfrescoModelDiff modelDiff : modelDiffs)
@@ -189,14 +209,14 @@ public class SOLRAPIClientTest extends TestCase
             switch (modelDiff.getType())
             {
             case CHANGED:
-                AlfrescoModel changedModel = client.getModel(modelDiff.getModelName());
+                AlfrescoModel changedModel = client.getModel(CORENAME, modelDiff.getModelName());
                 for (M2Namespace namespace : changedModel.getModel().getNamespaces())
                 {
                     modelMap.put(namespace.getUri(), changedModel.getModel());
                 }
                 break;
             case NEW:
-                AlfrescoModel newModel = client.getModel(modelDiff.getModelName());
+                AlfrescoModel newModel = client.getModel(CORENAME, modelDiff.getModelName());
                 for (M2Namespace namespace : newModel.getModel().getNamespaces())
                 {
                     modelMap.put(namespace.getUri(), newModel.getModel());
@@ -527,7 +547,7 @@ public class SOLRAPIClientTest extends TestCase
 
     public void testGetModel() throws AuthenticationException, IOException, JSONException
     {
-        AlfrescoModel alfModel = client.getModel(QName.createQName("http://www.alfresco.org/model/content/1.0", "contentmodel"));
+        AlfrescoModel alfModel = client.getModel(CORENAME,QName.createQName("http://www.alfresco.org/model/content/1.0", "contentmodel"));
         M2Model model = alfModel.getModel();
         assertNotNull(model);
         assertEquals("Returned model has incorrect name", "cm:contentmodel", model.getName());
@@ -536,7 +556,7 @@ public class SOLRAPIClientTest extends TestCase
 
     public void testGetModelDiffs() throws AuthenticationException, IOException, JSONException
     {
-        List<AlfrescoModelDiff> diffs = client.getModelsDiff(Collections.<AlfrescoModel> emptyList());
+        List<AlfrescoModelDiff> diffs = client.getModelsDiff(CORENAME,Collections.<AlfrescoModel> emptyList());
         assertTrue(diffs.size() > 0);
     }
 

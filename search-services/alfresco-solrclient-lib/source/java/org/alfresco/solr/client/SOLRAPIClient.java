@@ -1121,7 +1121,7 @@ public class SOLRAPIClient
         return new GetTextContentResponse(response);
     }
     
-    public AlfrescoModel getModel(QName modelName) throws AuthenticationException, IOException, JSONException
+    public AlfrescoModel getModel(String coreName, QName modelName) throws AuthenticationException, IOException, JSONException
     {
         // If the model is new to the SOLR side the prefix will be unknown so we can not generate prefixes for the request!
         // Always use the full QName with explicit URI
@@ -1139,7 +1139,7 @@ public class SOLRAPIClient
             response = repositoryHttpClient.sendRequest(req);
             if(response.getStatus() != HttpStatus.SC_OK)
             {
-                throw new AlfrescoRuntimeException("GetModel return status is " + response.getStatus());
+                throw new AlfrescoRuntimeException(coreName + " GetModel return status is " + response.getStatus());
             }
 
             return new AlfrescoModel(M2Model.createModel(response.getContentAsStream()),
@@ -1154,7 +1154,7 @@ public class SOLRAPIClient
         }
     }
     
-    public List<AlfrescoModelDiff> getModelsDiff(List<AlfrescoModel> currentModels) throws AuthenticationException, IOException, JSONException
+    public List<AlfrescoModelDiff> getModelsDiff(String coreName, List<AlfrescoModel> currentModels) throws AuthenticationException, IOException, JSONException
     {
         StringBuilder url = new StringBuilder(GET_MODELS_DIFF);
 
@@ -1178,7 +1178,7 @@ public class SOLRAPIClient
             response = repositoryHttpClient.sendRequest(req);
             if(response.getStatus() != HttpStatus.SC_OK)
             {
-                throw new AlfrescoRuntimeException("GetModelsDiff return status is " + response.getStatus());
+                throw new AlfrescoRuntimeException(coreName + " GetModelsDiff return status is " + response.getStatus());
             }
     
             Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));

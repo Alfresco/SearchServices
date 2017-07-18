@@ -177,7 +177,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
     }
 
 
-    public List<AlfrescoModelDiff> getModelsDiff(List<AlfrescoModel> currentModels) throws AuthenticationException, IOException, JSONException
+    public List<AlfrescoModelDiff> getModelsDiff(String coreName, List<AlfrescoModel> currentModels) throws AuthenticationException, IOException, JSONException
     {
         if(throwException) {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
