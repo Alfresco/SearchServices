@@ -1,9 +1,11 @@
 package org.alfresco.rest.audit;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
-
+import org.alfresco.rest.model.RestAuditAppModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -21,17 +23,16 @@ public class GetAuditCoreTests extends AuditTest
         restAuditAppModel.assertThat().field("isEnabled").is(true);
         restAuditAppModel.assertThat().field("name").is("alfresco-access");
         restAuditAppModel.assertThat().field("id").is("alfresco-access");
-  
-    	syncRestAuditAppModel = getSyncRestAuditAppModel(adminUser);
+
+        syncRestAuditAppModel = getSyncRestAuditAppModel(adminUser);
         syncRestAuditAppModel.assertThat().field("isEnabled").is(true);
         syncRestAuditAppModel.assertThat().field("name").is("Alfresco Sync Service");
         syncRestAuditAppModel.assertThat().field("id").is("sync");
 
-    	taggingRestAuditAppModel = getTaggingRestAuditAppModel(adminUser);
-    	taggingRestAuditAppModel.assertThat().field("isEnabled").is(true);
-    	taggingRestAuditAppModel.assertThat().field("name").is("Alfresco Tagging Service");
-    	taggingRestAuditAppModel.assertThat().field("id").is("tagging");
-         
+        taggingRestAuditAppModel = getTaggingRestAuditAppModel(adminUser);
+        taggingRestAuditAppModel.assertThat().field("isEnabled").is(true);
+        taggingRestAuditAppModel.assertThat().field("name").is("Alfresco Tagging Service");
+        taggingRestAuditAppModel.assertThat().field("id").is("tagging");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
@@ -191,25 +192,71 @@ public class GetAuditCoreTests extends AuditTest
         
         assertTrue(Integer.parseInt(restAuditEntryCollection.getEntries().get(1).onModel().getId()) > Integer.parseInt(ascId));
     }
-    
+
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using the where parameter to  and status code is 200")
     public void getAuditEntriesWithAdminUserUsingWhere() throws Exception
     {
-        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=10").withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+        int expectedNumberOfItems;
+        String id1,id2;
+        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=2").withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        String id1 = restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount()-1).onModel().getId();
-        String id2 = restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount()/2).onModel().getId();
+        if (restAuditEntryCollection.getPagination().getCount() == 2)
+        {
+            id1 = restAuditEntryCollection.getEntries().get(0).onModel().getId();
+            id2 = restAuditEntryCollection.getEntries().get(1).onModel().getId();
+            expectedNumberOfItems = 2;
+        }
+        else
+        {
+            id1 = id2 = restAuditEntryCollection.getEntries().get(0).onModel().getId();
+            expectedNumberOfItems = 1;
+        }
 
-        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("where=(id BETWEEN ("+id2+","+id1+"))")
+        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("where=(id BETWEEN ("+id1+","+id2+"))")
                 .withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
         
-        restAuditEntryCollection.assertThat().entriesListCountIs(Integer.parseInt(id1)-Integer.parseInt(id2));
-        assertEquals(id2, restAuditEntryCollection.getEntries().get(0).onModel().getId());
-        assertEquals(Integer.toString(Integer.parseInt(id1)-1), restAuditEntryCollection.getEntries().get(Integer.parseInt(id1)-Integer.parseInt(id2)-1).onModel().getId());
+        restAuditEntryCollection.assertThat().entriesListCountIs(expectedNumberOfItems);
+        assertEquals(id1, restAuditEntryCollection.getEntries().get(0).onModel().getId());
+        if(!id1.equals(id2))
+        {
+        assertEquals( id2, restAuditEntryCollection.getEntries().get(1).onModel().getId());
+        }
         
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if retrieving an audit entry for an audit application is only for admin user, with and without the include=values paramater and status code is 200")
+    public void getAuditEntry() throws Exception
+    {
+        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=10").withCoreAPI().usingAudit()
+                .listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        String entryId = restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount() - 1)
+                .onModel().getId();
+        String entryApplicationId = restAuditEntryCollection.getEntries()
+                .get(restAuditEntryCollection.getPagination().getCount() - 1).onModel().getAuditApplicationId();
+
+        restAuditEntryModel = restClient.authenticateUser(userModel).withCoreAPI().usingAudit()
+                .getAuditEntryForAnAuditApplication(restAuditAppModel.getId(), entryId);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+
+        restAuditEntryModel = restClient.authenticateUser(adminUser).withCoreAPI().usingAudit()
+                .getAuditEntryForAnAuditApplication(restAuditAppModel.getId(), entryId);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertEquals(entryId, restAuditEntryModel.getId());
+        assertEquals(entryApplicationId, restAuditEntryModel.getAuditApplicationId());
+        assertNull(restAuditEntryModel.getValues());
+
+        restAuditEntryModel = restClient.authenticateUser(adminUser).withParams("include=values").withCoreAPI().usingAudit()
+                .getAuditEntryForAnAuditApplication(restAuditAppModel.getId(), entryId);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertEquals(entryId, restAuditEntryModel.getId());
+        assertEquals(entryApplicationId, restAuditEntryModel.getAuditApplicationId());
+        assertNotNull(restAuditEntryModel.getValues());
     }
 }
