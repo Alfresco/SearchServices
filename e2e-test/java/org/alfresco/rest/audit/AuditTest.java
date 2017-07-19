@@ -44,6 +44,11 @@ public abstract class AuditTest extends RestTest
         userModel = dataUser.createRandomTestUser();
         adminUser = dataUser.getAdminUser();
 
+        //enable alfresco-access audit application
+        jmxBuilder.getJmxClient().writeProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled", Boolean.TRUE.toString());
+        String alfrescoAccessEnabled = jmxBuilder.getJmxClient().readProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled").toString();
+        Assert.assertEquals(alfrescoAccessEnabled, Boolean.TRUE.toString(), String.format("Property audit.alfresco-access.enabled is [%s]", alfrescoAccessEnabled));
+
         //GET /alfresco/service/api/audit/control to verify if Audit is enabled on the system.
         RestAssured.basePath = "";
         restAPI.configureRequestSpec().setBasePath(RestAssured.basePath);
@@ -55,11 +60,6 @@ public abstract class AuditTest extends RestTest
         restAuditCollection = restClient.authenticateUser(adminUser).withCoreAPI().usingAudit().getAuditApplications();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restAuditCollection.assertThat().entriesListIsNotEmpty();
-
-        //enable alfresco-access audit application
-        jmxBuilder.getJmxClient().writeProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled", Boolean.TRUE.toString());
-        String alfrescoAccessEnabled = jmxBuilder.getJmxClient().readProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled").toString();
-        Assert.assertEquals(alfrescoAccessEnabled, Boolean.TRUE.toString(), String.format("Property audit.alfresco-access.enabled is [%s]", alfrescoAccessEnabled));
 
         //Find alfresco-access audit application in the list of audit applications
         int i = 0;
