@@ -284,7 +284,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
     {
         long start = System.nanoTime();
 
-        List<AlfrescoModelDiff> modelDiffs = client.getModelsDiff(this.infoSrv.getAlfrescoModels());
+        List<AlfrescoModelDiff> modelDiffs = client.getModelsDiff(coreName, this.infoSrv.getAlfrescoModels());
         HashMap<String, M2Model> modelMap = new HashMap<String, M2Model>();
 
         for (AlfrescoModelDiff modelDiff : modelDiffs)
@@ -292,14 +292,14 @@ public class ModelTracker extends AbstractTracker implements Tracker
             switch (modelDiff.getType())
             {
                 case CHANGED:
-                    AlfrescoModel changedModel = client.getModel(modelDiff.getModelName());
+                    AlfrescoModel changedModel = client.getModel(coreName, modelDiff.getModelName());
                     for (M2Namespace namespace : changedModel.getModel().getNamespaces())
                     {
                         modelMap.put(namespace.getUri(), changedModel.getModel());
                     }
                     break;
                 case NEW:
-                    AlfrescoModel newModel = client.getModel(modelDiff.getModelName());
+                    AlfrescoModel newModel = client.getModel(coreName, modelDiff.getModelName());
                     for (M2Namespace namespace : newModel.getModel().getNamespaces())
                     {
                         modelMap.put(namespace.getUri(), newModel.getModel());
