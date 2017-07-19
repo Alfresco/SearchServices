@@ -42,13 +42,15 @@ public abstract class AuditTest extends RestTest
     {
         //Using two users, because audit API is designed for users with admin rights.
         userModel = dataUser.createRandomTestUser();
-        adminUser=dataUser.getAdminUser();
+        adminUser = dataUser.getAdminUser();
+
         //GET /alfresco/service/api/audit/control to verify if Audit is enabled on the system.
         RestAssured.basePath = "";
         restAPI.configureRequestSpec().setBasePath(RestAssured.basePath);
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "alfresco/service/api/audit/control");
         RestResponse response = restAPI.authenticateUser(adminUser).process(request);
         response.assertThat().body("enabled", is(true));
+
         //GET /audit-applications and verify that there are audit applications in the system.
         restAuditCollection = restClient.authenticateUser(adminUser).withCoreAPI().usingAudit().getAuditApplications();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -59,12 +61,12 @@ public abstract class AuditTest extends RestTest
         String alfrescoAccessEnabled = jmxBuilder.getJmxClient().readProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled").toString();
         Assert.assertEquals(alfrescoAccessEnabled, Boolean.TRUE.toString(), String.format("Property audit.alfresco-access.enabled is [%s]", alfrescoAccessEnabled));
 
-        //
-        int i=0;
+        //Find alfresco-access audit application in the list of audit applications
+        int i = 0;
         do
         {
             restAuditAppModel = restAuditCollection.getEntries().get(i++).onModel();
-        }while (!restAuditAppModel.getName().equals("alfresco-access"));
+        } while (!restAuditAppModel.getName().equals("alfresco-access"));
     }
 
     protected RestAuditAppModel getSyncRestAuditAppModel(UserModel userModel) throws Exception

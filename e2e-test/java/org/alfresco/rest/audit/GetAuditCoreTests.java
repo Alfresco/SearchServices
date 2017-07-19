@@ -5,7 +5,6 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.model.RestAuditAppModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -142,7 +141,7 @@ public class GetAuditCoreTests extends AuditTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and/or invalid maxItems and status code is 400")
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using invalid skipCount and/or invalid maxItems and status code is 400")
     public void getAuditEntriesWithAdminUserUsingInvalidSkipCountAndMaxItems() throws Exception
     {
         restClient.authenticateUser(adminUser).withParams("skipCount=-1&maxItems=1").withCoreAPI().usingAudit()
