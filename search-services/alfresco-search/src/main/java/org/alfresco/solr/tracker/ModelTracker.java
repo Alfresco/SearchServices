@@ -268,7 +268,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
         catch (Throwable t)
         {
-            log.error("Model tracking failed", t);
+            log.error("Model tracking failed for core: "+ coreName, t);
         }
 
     }
