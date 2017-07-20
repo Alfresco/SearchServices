@@ -168,7 +168,7 @@ public abstract class AbstractTracker implements Tracker
             catch(IndexTrackingShutdownException t)
             {
                 setRollback(true);
-                log.info("Stopping index tracking for "+coreName);
+                log.info("Stopping index tracking for " + getClass().getSimpleName() + " - " + coreName);
             }
             catch(Throwable t)
             {
@@ -178,23 +178,23 @@ public abstract class AbstractTracker implements Tracker
                     if (log.isDebugEnabled())
                     {
                         // DEBUG, so give the whole stack trace
-                        log.warn("Tracking communication timed out.", t);
+                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName, t);
                     }
                     else
                     {
                         // We don't need the stack trace.  It timed out.
-                        log.warn("Tracking communication timed out.");
+                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName);
                     }
                 }
                 else
                 {
-                    log.error("Tracking failed", t);
+                    log.error("Tracking failed for " + getClass().getSimpleName() + " - " + coreName, t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            log.error("Semaphore interrupted", e);
+            log.error("Semaphore interrupted for " + getClass().getSimpleName() + " - " + coreName, e);
         }
         finally
         {
