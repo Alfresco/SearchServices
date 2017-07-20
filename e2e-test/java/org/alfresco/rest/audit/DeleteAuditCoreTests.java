@@ -48,10 +48,12 @@ public class DeleteAuditCoreTests extends AuditTest
         String secondId = restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount() - 1)
                 .onModel().getId();
 
-        restClient.authenticateUser(userModel).withParams("where=(id BETWEEN ("+firstId+","+secondId+"))").withCoreAPI().usingAudit().deleteAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+        restClient.authenticateUser(userModel).withParams("where=(id BETWEEN (" + firstId + "," + secondId + "))").withCoreAPI()
+                .usingAudit().deleteAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
-        
-        restClient.authenticateUser(adminUser).withParams("where=(id BETWEEN ("+firstId+","+secondId+"))").withCoreAPI().usingAudit().deleteAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+
+        restClient.authenticateUser(adminUser).withParams("where=(id BETWEEN (" + firstId + "," + secondId + "))").withCoreAPI()
+                .usingAudit().deleteAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("where=(id BETWEEN ("+firstId+","+secondId+"))").withCoreAPI().usingAudit()
