@@ -43,10 +43,11 @@ public class DeleteAuditCoreTests extends AuditTest
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=4").withCoreAPI().usingAudit()
                 .listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        String firstId = restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount() - 1)
+
+        String firstId = restAuditEntryCollection.getEntries().get(0).onModel().getId();
+        String secondId = restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount() - 1)
                 .onModel().getId();
-        String secondId = restAuditEntryCollection.getEntries().get(0).onModel().getId();
-        
+
         restClient.authenticateUser(userModel).withParams("where=(id BETWEEN ("+firstId+","+secondId+"))").withCoreAPI().usingAudit().deleteAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
         
