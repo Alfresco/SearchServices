@@ -10,13 +10,17 @@ import org.alfresco.rest.model.RestAuditAppModel;
 import org.alfresco.rest.model.RestAuditAppModelsCollection;
 import org.alfresco.rest.model.RestAuditEntryModel;
 import org.alfresco.rest.model.RestAuditEntryModelsCollection;
+import org.alfresco.rest.model.RestNodeBodyModel;
+import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.JmxBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+
 import com.jayway.restassured.RestAssured;
 
 public abstract class AuditTest extends RestTest
@@ -35,6 +39,7 @@ public abstract class AuditTest extends RestTest
     protected RestAuditEntryModelsCollection restAuditEntryCollection;
     protected RestAuditAppModel syncRestAuditAppModel;
     protected RestAuditAppModel taggingRestAuditAppModel;
+    protected RestNodeModel node; 
     
 
     @BeforeClass(alwaysRun = true)
@@ -67,6 +72,14 @@ public abstract class AuditTest extends RestTest
         {
             restAuditAppModel = restAuditCollection.getEntries().get(i++).onModel();
         } while (!restAuditAppModel.getName().equals("alfresco-access"));
+
+        //Create new node
+        RestNodeBodyModel nodeBody = new RestNodeBodyModel();
+        nodeBody.setName("MyFile");
+        nodeBody.setNodeType("cm:content");
+        node = restClient.withParams("autoRename=true").withCoreAPI().usingNode(ContentModel.my()).createNode(nodeBody);        
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
     }
 
     protected RestAuditAppModel getSyncRestAuditAppModel(UserModel userModel) throws Exception

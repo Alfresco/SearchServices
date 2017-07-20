@@ -1,10 +1,13 @@
 package org.alfresco.rest.audit;
 
+import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -163,7 +166,7 @@ public class GetAuditCoreTests extends AuditTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using valid skipCount and maxItems and status code is 200")
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using valid skipCount and maxItems and status code is 200")
     public void getAuditEntriesWithAdminUserUsingValidSkipCountAndMaxItems() throws Exception
     {
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("skipCount=1&maxItems=1")
@@ -176,7 +179,7 @@ public class GetAuditCoreTests extends AuditTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using orderBy and status code is 200")
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using orderBy and status code is 200")
     public void getAuditEntriesWithAdminUserUsingOrderBy() throws Exception
     {
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("orderBy=createdAt ASC&maxItems=10")
@@ -194,7 +197,7 @@ public class GetAuditCoreTests extends AuditTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using the where parameter to  and status code is 200")
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using the where parameter to  and status code is 200")
     public void getAuditEntriesWithAdminUserUsingWhere() throws Exception
     {
         int expectedNumberOfItems;
@@ -217,14 +220,14 @@ public class GetAuditCoreTests extends AuditTest
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("where=(id BETWEEN ("+id1+","+id2+"))")
                 .withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+
         restAuditEntryCollection.assertThat().entriesListCountIs(expectedNumberOfItems);
         assertEquals(id1, restAuditEntryCollection.getEntries().get(0).onModel().getId());
-        if(!id1.equals(id2))
+        if (!id1.equals(id2))
         {
-        assertEquals( id2, restAuditEntryCollection.getEntries().get(1).onModel().getId());
+            assertEquals(id2, restAuditEntryCollection.getEntries().get(1).onModel().getId());
         }
-        
+
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
@@ -257,5 +260,52 @@ public class GetAuditCoreTests extends AuditTest
         assertEquals(entryId, restAuditEntryModel.getId());
         assertEquals(entryApplicationId, restAuditEntryModel.getAuditApplicationId());
         assertNotNull(restAuditEntryModel.getValues());
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries for node id nodeId using 'where' and 'maxItems' param and status code is 200")
+    public void getAuditEntriesForNodeUsingMaxItemsAndWhereParam() throws Exception
+    {
+        String createdAt1, createdAt2;
+        int expectedNumberOfItems;
+
+        // Get the node id and construct a fileModel to be used when adding comments
+        String nodeId = node.getId();
+        FileModel fileModel = new FileModel("testFile", FileType.TEXT_PLAIN);
+        fileModel.setNodeRef(nodeId);
+
+        // Add comments for a node (to create audit entries)
+        restClient.authenticateUser(adminUser).withCoreAPI().usingNode(fileModel).addComment("This is the first comment");
+        restClient.authenticateUser(adminUser).withCoreAPI().usingNode(fileModel).addComment("This is the second comment");
+
+        // Get maxium two audit entries for the node using 'maxItems' param on /nodes/{nodeId}/audit-entries
+        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=2").withCoreAPI().usingAudit().listAuditEntriesForNode(nodeId);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        if (restAuditEntryCollection.getPagination().getCount() == 2)
+        {
+            createdAt1 = restAuditEntryCollection.getEntries().get(0).onModel().getCreatedAt();
+            createdAt2 = restAuditEntryCollection.getEntries().get(1).onModel().getCreatedAt();
+            expectedNumberOfItems = 2;
+        }
+        else
+        {
+            createdAt1 = createdAt2 = restAuditEntryCollection.getEntries().get(0).onModel().getCreatedAt();
+            expectedNumberOfItems = 1;
+        }
+
+        // Get audit entries between ids for the node using 'where' clause on /nodes/{nodeId}/audit-entries
+        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("where=(createdAt BETWEEN ('" + createdAt1 + "','" + createdAt2 + "'))")
+                .withCoreAPI().usingAudit().listAuditEntriesForNode(nodeId);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restAuditEntryCollection.assertThat().entriesListCountIs(expectedNumberOfItems);
+        assertEquals(createdAt1, restAuditEntryCollection.getEntries().get(0).onModel().getCreatedAt());
+        if (!createdAt1.equals(createdAt2))
+        {
+            assertEquals(createdAt2, restAuditEntryCollection.getEntries().get(1).onModel().getCreatedAt());
+        }
+
     }
 }
