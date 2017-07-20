@@ -275,11 +275,11 @@ public class GetAuditCoreTests extends AuditTest
         FileModel fileModel = new FileModel("testFile", FileType.TEXT_PLAIN);
         fileModel.setNodeRef(nodeId);
 
-        STEP("1. Add comments for a node (to create audit entries)");
+        // Add comments for a node (to create audit entries)
         restClient.authenticateUser(adminUser).withCoreAPI().usingNode(fileModel).addComment("This is the first comment");
         restClient.authenticateUser(adminUser).withCoreAPI().usingNode(fileModel).addComment("This is the second comment");
 
-        STEP("2. Get maxium two audit entries for the node using 'maxItems' param on /nodes/{nodeId}/audit-entries");
+        // Get maxium two audit entries for the node using 'maxItems' param on /nodes/{nodeId}/audit-entries
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=2").withCoreAPI().usingAudit().listAuditEntriesForNode(nodeId);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
@@ -295,7 +295,7 @@ public class GetAuditCoreTests extends AuditTest
             expectedNumberOfItems = 1;
         }
 
-        STEP("3. Get audit entries between ids for the node using 'where' clause on /nodes/{nodeId}/audit-entries");
+        // Get audit entries between ids for the node using 'where' clause on /nodes/{nodeId}/audit-entries
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("where=(createdAt BETWEEN ('" + createdAt1 + "','" + createdAt2 + "'))")
                 .withCoreAPI().usingAudit().listAuditEntriesForNode(nodeId);
         restClient.assertStatusCodeIs(HttpStatus.OK);
