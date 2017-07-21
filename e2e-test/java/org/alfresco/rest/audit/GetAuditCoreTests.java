@@ -175,6 +175,27 @@ public class GetAuditCoreTests extends AuditTest
         restAuditEntryCollection.getPagination().assertThat().field("totalItems").isNotNull().and().field("totalItems")
                 .isGreaterThan(0).and().field("maxItems").is("1").and().field("skipCount").is("1");
         assertEquals(restAuditEntryCollection.getEntries().size(), 1);
+
+        //Testing Pagination 
+        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=10")
+                .withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Long firstId = Long.valueOf(restAuditEntryCollection.getEntries().get(0).onModel().getId());
+        Long lastId = Long.valueOf(restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount()-1).onModel().getId());
+        System.out.println(firstId + "   " + lastId);
+        int skipCount = 0;
+        do
+        {
+            restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=1&skipCount="+skipCount)
+                    .withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            assertEquals(restAuditEntryCollection.getEntries().size(), 1);
+            assertEquals(restAuditEntryCollection.getPagination().getCount(), 1);
+            assertEquals(restAuditEntryCollection.getPagination().getSkipCount(),skipCount);
+            assertEquals(restAuditEntryCollection.getEntries().get(0).onModel().getId(),Long.toString(firstId));
+            skipCount++;
+            firstId++;
+        }while(firstId<=lastId);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
