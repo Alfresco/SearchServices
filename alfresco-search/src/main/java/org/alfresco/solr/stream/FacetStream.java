@@ -16,8 +16,10 @@
  */
 package org.alfresco.solr.stream;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient.Builder;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.SolrClientCache;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.ComparatorOrder;
@@ -60,7 +62,7 @@ public class FacetStream extends TupleStream implements Expressible  {
   private SolrParams params;
   private String collection;
   protected transient SolrClientCache cache;
-  protected transient CloudSolrClient cloudSolrClient;
+  protected StreamContext streamContext;
 
   /*
    *
@@ -183,10 +185,11 @@ public class FacetStream extends TupleStream implements Expressible  {
     else if(zkHostExpression.getParameter() instanceof StreamExpressionValue){
       zkHost = ((StreamExpressionValue)zkHostExpression.getParameter()).getValue();
     }
+    /**
     if(null == zkHost){
       throw new IOException(String.format(Locale.ROOT,"invalid expression %s - zkHost not found for collection '%s'",expression,collectionName));
     }
-    
+    **/
     // We've got all the required items
     init(collectionName, params, buckets, bucketSorts, metrics, limitInt, zkHost);
   }
@@ -317,6 +320,7 @@ public class FacetStream extends TupleStream implements Expressible  {
   }
   
   public void setStreamContext(StreamContext context) {
+    streamContext = context;
     cache = context.getSolrClientCache();
   }
 
@@ -325,13 +329,6 @@ public class FacetStream extends TupleStream implements Expressible  {
   }
 
   public void open() throws IOException {
-    if(cache != null) {
-      cloudSolrClient = cache.getCloudSolrClient(zkHost);
-    } else {
-      cloudSolrClient = new Builder()
-          .withZkHost(zkHost)
-          .build();
-    }
 
     FieldComparator[] adjustedSorts = adjustSorts(buckets, bucketSorts);
     String json = getJsonFacetString(buckets, metrics, adjustedSorts, bucketSizeLimit);
@@ -340,9 +337,35 @@ public class FacetStream extends TupleStream implements Expressible  {
     paramsLoc.set("json.facet", json);
     paramsLoc.set("rows", "0");
 
-    QueryRequest request = new QueryRequest(paramsLoc);
+    SolrClient solrClient = null;
+    Map<String, List<String>> shardsMap = (Map<String, List<String>>)streamContext.get("shards");
+    if(shardsMap == null) {
+      solrClient = cache.getCloudSolrClient(zkHost);
+    } else {
+      List<String> shards = shardsMap.get(collection);
+      solrClient = cache.getHttpSolrClient(shards.get(0));
+
+      if(shards.size() > 1) {
+        String shardsParam = getShardString(shards);
+        paramsLoc.add("shards", shardsParam);
+        paramsLoc.add("distrib", "true");
+      }
+
+    }
+
+    RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
+    QueryRequest request = requestFactory.getRequest(paramsLoc);
+
     try {
-      NamedList response = cloudSolrClient.request(request, collection);
+
+      NamedList response = null;
+      if(shardsMap == null) {
+        //Cloud request
+        response = solrClient.request(request, collection);
+      } else {
+        response = solrClient.request(request);
+      }
+
       getTuples(response, buckets, metrics);
       Collections.sort(tuples, getStreamSort());
 
@@ -351,10 +374,18 @@ public class FacetStream extends TupleStream implements Expressible  {
     }
   }
 
-  public void close() throws IOException {
-    if(cache == null) {
-      cloudSolrClient.close();
+  private String getShardString(List<String> shards) {
+    StringBuilder builder = new StringBuilder();
+    for(String shard : shards) {
+      if(builder.length() > 0) {
+        builder.append(",");
+      }
+      builder.append(shard);
     }
+    return builder.toString();
+  }
+
+  public void close() throws IOException {
   }
 
   public Tuple read() throws IOException {
