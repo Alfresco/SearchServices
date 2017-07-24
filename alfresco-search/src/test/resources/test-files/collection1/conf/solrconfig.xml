@@ -491,7 +491,7 @@
     <expressible name="alfrescoExpr" class="org.alfresco.solr.stream.AlfrescoExpressionStream"/>
     <expressible name="search" class="org.alfresco.solr.stream.SearchStream"/>
     <expressible name="facets" class="org.alfresco.solr.stream.FacetStream"/>
-
+    <expressible name="alfrescoFacets" class="org.alfresco.solr.stream.AlfrescoFacetStream"/>
     <!--
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
         <str name="mapping">conf/mime_types.csv</str>

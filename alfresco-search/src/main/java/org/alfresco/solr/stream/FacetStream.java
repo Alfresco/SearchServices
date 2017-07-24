@@ -546,6 +546,18 @@ public class FacetStream extends TupleStream implements Expressible  {
     }
   }
 
+  public Metric[] getMetrics() {
+    return metrics;
+  }
+
+  public SolrParams getParams() {
+    return params;
+  }
+
+  public FieldComparator[] getBucketSorts() {
+    return bucketSorts;
+  }
+
   public int getCost() {
     return 0;
   }
