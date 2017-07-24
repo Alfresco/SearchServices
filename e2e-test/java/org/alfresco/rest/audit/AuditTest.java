@@ -28,10 +28,10 @@ public abstract class AuditTest extends RestTest
 
     @Autowired
     protected RestWrapper restAPI;
-    
+
     @Autowired
     protected JmxBuilder jmxBuilder;
-    
+
     protected UserModel userModel,adminUser;
     protected RestAuditAppModelsCollection restAuditCollection;
     protected RestAuditAppModel restAuditAppModel;
@@ -40,7 +40,6 @@ public abstract class AuditTest extends RestTest
     protected RestAuditAppModel syncRestAuditAppModel;
     protected RestAuditAppModel taggingRestAuditAppModel;
     protected RestNodeModel node; 
-    
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -49,7 +48,7 @@ public abstract class AuditTest extends RestTest
         userModel = dataUser.createRandomTestUser();
         adminUser = dataUser.getAdminUser();
 
-        //enable alfresco-access audit application
+        //Enable alfresco-access audit application.
         jmxBuilder.getJmxClient().writeProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled", Boolean.TRUE.toString());
         String alfrescoAccessEnabled = jmxBuilder.getJmxClient().readProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled").toString();
         Assert.assertEquals(alfrescoAccessEnabled, Boolean.TRUE.toString(), String.format("Property audit.alfresco-access.enabled is [%s]", alfrescoAccessEnabled));
@@ -66,20 +65,19 @@ public abstract class AuditTest extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restAuditCollection.assertThat().entriesListIsNotEmpty();
 
-        //Find alfresco-access audit application in the list of audit applications
+        //Find alfresco-access audit application in the list of audit applications.
         int i = 0;
         do
         {
             restAuditAppModel = restAuditCollection.getEntries().get(i++).onModel();
         } while (!restAuditAppModel.getName().equals("alfresco-access"));
 
-        //Create new node
+        //Create new node.
         RestNodeBodyModel nodeBody = new RestNodeBodyModel();
         nodeBody.setName("MyFile");
         nodeBody.setNodeType("cm:content");
-        node = restClient.withParams("autoRename=true").withCoreAPI().usingNode(ContentModel.my()).createNode(nodeBody);        
+        node = restClient.withParams("autoRename=true").withCoreAPI().usingNode(ContentModel.my()).createNode(nodeBody);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
     }
 
     protected RestAuditAppModel getSyncRestAuditAppModel(UserModel userModel) throws Exception

@@ -1,6 +1,5 @@
 package org.alfresco.rest.audit;
 
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -248,7 +247,6 @@ public class GetAuditCoreTests extends AuditTest
         {
             assertEquals(id2, restAuditEntryCollection.getEntries().get(1).onModel().getId());
         }
-
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
@@ -327,6 +325,6 @@ public class GetAuditCoreTests extends AuditTest
         {
             assertEquals(createdAt2, restAuditEntryCollection.getEntries().get(1).onModel().getCreatedAt());
         }
-
     }
+
 }
