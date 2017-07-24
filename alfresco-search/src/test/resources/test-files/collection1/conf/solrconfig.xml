@@ -490,6 +490,7 @@
     <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
     <expressible name="alfrescoExpr" class="org.alfresco.solr.stream.AlfrescoExpressionStream"/>
     <expressible name="search" class="org.alfresco.solr.stream.SearchStream"/>
+    <expressible name="facets" class="org.alfresco.solr.stream.FacetStream"/>
 
     <!--
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
