@@ -186,16 +186,16 @@ public class GetAuditCoreTests extends AuditTest
         int skipCount = 0;
         do
         {
-            restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=1&skipCount="+skipCount)
-                    .withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+            restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=1&skipCount=" + skipCount).withCoreAPI().usingAudit()
+                    .listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
             restClient.assertStatusCodeIs(HttpStatus.OK);
             assertEquals(restAuditEntryCollection.getEntries().size(), 1);
             assertEquals(restAuditEntryCollection.getPagination().getCount(), 1);
-            assertEquals(restAuditEntryCollection.getPagination().getSkipCount(),skipCount);
-            assertEquals(restAuditEntryCollection.getEntries().get(0).onModel().getId(),Long.toString(firstId));
+            assertEquals(restAuditEntryCollection.getPagination().getSkipCount(), skipCount);
+            assertEquals(restAuditEntryCollection.getEntries().get(0).onModel().getId(), Long.toString(firstId));
             skipCount++;
             firstId++;
-        }while(firstId<=lastId);
+        } while (firstId <= lastId);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
