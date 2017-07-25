@@ -104,7 +104,7 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
             }
 
             String column = metric.getColumns()[0];
-            String newColumn = "'"+AlfrescoStreamHandler.getIndexedField(column)+"'";
+            String newColumn = "field("+AlfrescoStreamHandler.getIndexedField(column)+")";
 
            // reverseLookup.put(newColumn, column);
             if(metric.getFunctionName().equals("sum"))
