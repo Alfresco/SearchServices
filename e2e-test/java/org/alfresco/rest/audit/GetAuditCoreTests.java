@@ -5,6 +5,8 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.TestGroup;
@@ -175,26 +177,29 @@ public class GetAuditCoreTests extends AuditTest
                 .isGreaterThan(0).and().field("maxItems").is("1").and().field("skipCount").is("1");
         assertEquals(restAuditEntryCollection.getEntries().size(), 1);
 
-        //Testing Pagination 
-        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=10")
-                .withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+        // Testing Pagination
+        restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=10").withCoreAPI().usingAudit()
+                .listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        Long firstId = Long.valueOf(restAuditEntryCollection.getEntries().get(0).onModel().getId());
-        Long lastId = Long.valueOf(restAuditEntryCollection.getEntries().get(restAuditEntryCollection.getPagination().getCount()-1).onModel().getId());
-        System.out.println(firstId + "   " + lastId);
+        ArrayList<String> ids = new ArrayList<>();
+        int numberOfElements = restAuditEntryCollection.getPagination().getCount();
+        for (int i = 0; i < numberOfElements; i++)
+        {
+            ids.add(restAuditEntryCollection.getEntries().get(i).onModel().getId());
+        }
+
         int skipCount = 0;
         do
         {
-            restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=1&skipCount=" + skipCount).withCoreAPI().usingAudit()
-                    .listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
+            restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=1&skipCount=" + skipCount)
+                    .withCoreAPI().usingAudit().listAuditEntriesForAnAuditApplication(restAuditAppModel.getId());
             restClient.assertStatusCodeIs(HttpStatus.OK);
             assertEquals(restAuditEntryCollection.getEntries().size(), 1);
             assertEquals(restAuditEntryCollection.getPagination().getCount(), 1);
             assertEquals(restAuditEntryCollection.getPagination().getSkipCount(), skipCount);
-            assertEquals(restAuditEntryCollection.getEntries().get(0).onModel().getId(), Long.toString(firstId));
+            assertEquals(restAuditEntryCollection.getEntries().get(0).onModel().getId(), ids.get(skipCount));
             skipCount++;
-            firstId++;
-        } while (firstId <= lastId);
+        } while (skipCount < numberOfElements);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
