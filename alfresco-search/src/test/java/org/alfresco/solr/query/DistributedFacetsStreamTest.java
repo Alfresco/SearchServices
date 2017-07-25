@@ -124,6 +124,22 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
 
         Double count = tuple.getDouble("count(*)");
         assertTrue(count.doubleValue() == 10);
+
+        expr = "alfrescoFacets(facet("
+                +   "myCollection, "
+                +   "q=\"*.*\", "
+                +   "buckets=\"audio:trackNumber\", "
+                +   "bucketSorts=\"audio:trackNumber desc\", "
+                +   "bucketSizeLimit=100, "
+                +   "min(audio:trackNumber), max(audio:trackNumber), count(*)"
+                + "))";
+        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
+
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient)clusterClients.get(0)).getBaseURL(), params);
+        tupleStream.setJson(alfrescoJson);
+        tuples = getTuples(tupleStream);
+
+        assert (tuples.size() == 1);
     }
 
 }
