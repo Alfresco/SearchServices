@@ -532,6 +532,9 @@ public class FacetStream extends TupleStream implements Expressible  {
         int m = 0;
         for(Metric metric : _metrics) {
           String identifier = metric.getIdentifier();
+          if(reverseLookup.containsKey(identifier)) {
+            identifier = reverseLookup.get(identifier);
+          }
           if(!identifier.startsWith("count(")) {
             double d = (double)bucket.get("facet_"+m);
             if(metric.outputLong) {

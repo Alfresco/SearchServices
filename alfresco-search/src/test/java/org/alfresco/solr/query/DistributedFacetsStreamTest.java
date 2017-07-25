@@ -91,8 +91,9 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl, "mike", null, false);
             nodeMetaData.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("statsworld"));
-            nodeMetaData.getProperties().put(PROP_RATING, new StringPropertyValue(""+(i+1)));
-            nodeMetaData.getProperties().put(PROP_TRACK, new StringPropertyValue(""+(i*2)));
+            nodeMetaData.getProperties().put(PROP_RATING, new StringPropertyValue("" + (i + 1)));
+            int trackNum = 2 + (i % 3) * 2;
+            nodeMetaData.getProperties().put(PROP_TRACK, new StringPropertyValue("" + trackNum));
             nodeMetaDatas.add(nodeMetaData);
         }
 
@@ -106,16 +107,16 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
 
         String alfrescoJson = "{ \"authorities\": [ \"mike\"], \"tenants\": [ \"\" ] }";
         String expr = "alfrescoFacets(facet("
-                +   "myCollection, "
-                +   "q=\"*.*\", "
-                +   "buckets=\"cm:title\", "
-                +   "bucketSorts=\"cm:title desc\", "
-                +   "bucketSizeLimit=100, "
-                +   "count(*)"
+                + "myCollection, "
+                + "q=\"*.*\", "
+                + "buckets=\"cm:title\", "
+                + "bucketSorts=\"cm:title desc\", "
+                + "bucketSizeLimit=100, "
+                + "count(*)"
                 + "))";
         SolrParams params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
 
-        AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient)clusterClients.get(0)).getBaseURL(), params);
+        AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);
         List<Tuple> tuples = getTuples(tupleStream);
 
@@ -126,20 +127,48 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
         assertTrue(count.doubleValue() == 10);
 
         expr = "alfrescoFacets(facet("
-                +   "myCollection, "
-                +   "q=\"*.*\", "
-                +   "buckets=\"audio:trackNumber\", "
-                +   "bucketSorts=\"audio:trackNumber desc\", "
-                +   "bucketSizeLimit=100, "
-                +   "min(audio:trackNumber), max(audio:trackNumber), count(*)"
+                + "myCollection, "
+                + "q=\"*.*\", "
+                + "buckets=\"audio:trackNumber\", "
+                + "bucketSorts=\"audio:trackNumber desc\", "
+                + "bucketSizeLimit=100, "
+                + "min(cm:fiveStarRatingSchemeTotal), max(cm:fiveStarRatingSchemeTotal),"
+                +" avg(cm:fiveStarRatingSchemeTotal), sum(cm:fiveStarRatingSchemeTotal)"
+                +", count(*)"
                 + "))";
         params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
 
-        tupleStream = new AlfrescoSolrStream(((HttpSolrClient)clusterClients.get(0)).getBaseURL(), params);
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);
         tuples = getTuples(tupleStream);
 
-        assert (tuples.size() == 1);
+        assert (tuples.size() == 3);
+        for (Tuple aTuple : tuples) {
+            switch (aTuple.getDouble("audio:trackNumber").intValue()) {
+                case 2:
+                    assertTrue(aTuple.getDouble("count(*)").doubleValue() == 4D);
+                    assertTrue(aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)").doubleValue() == 1D);
+                    assertTrue(aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)").doubleValue() == 10D);
+                    assertTrue(aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)").doubleValue() == 22D);
+                    assertTrue(aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)").doubleValue() == 5.5D);
+                    break;
+                case 4:
+                    assertTrue(aTuple.getDouble("count(*)").doubleValue() == 3D);
+                    assertTrue(aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)").doubleValue() == 2D);
+                    assertTrue(aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)").doubleValue() == 8D);
+                    assertTrue(aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)").doubleValue() == 15D);
+                    assertTrue(aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)").doubleValue() == 5D);
+                    break;
+                case 6:
+                    assertTrue(aTuple.getDouble("count(*)").doubleValue() == 3D);
+                    assertTrue(aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)").doubleValue() == 3D);
+                    assertTrue(aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)").doubleValue() == 9D);
+                    assertTrue(aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)").doubleValue() == 18D);
+                    assertTrue(aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)").doubleValue() == 6D);
+                    break;
+                default:
+                    assertTrue("Incorrect bucket sizes", false);
+            }
+        }
     }
-
 }
