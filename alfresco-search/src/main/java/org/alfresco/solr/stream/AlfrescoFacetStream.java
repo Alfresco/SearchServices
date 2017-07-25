@@ -93,6 +93,8 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
         ModifiableSolrParams solrParams = (ModifiableSolrParams)facetStream.getParams();
         solrParams.add("defType", "afts");
         Metric[] metrics = facetStream.getMetrics();
+        Map<String, String> reverseLookup = facetStream.getReverseLookup();
+
 
         for(int i=0; i<metrics.length; i++) {
             Metric metric = metrics[i];
@@ -127,6 +129,7 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
         Bucket[] buckets = facetStream.getBuckets();
         for (int i = 0; i <buckets.length ; i++) {
             String newColumn = AlfrescoStreamHandler.getIndexedField(buckets[i].toString());
+            reverseLookup.put(newColumn, buckets[i].toString());
             buckets[i] = new Bucket(newColumn);
         }
 

@@ -63,6 +63,7 @@ public class FacetStream extends TupleStream implements Expressible  {
   private String collection;
   protected transient SolrClientCache cache;
   protected StreamContext streamContext;
+  private Map<String, String> reverseLookup = new HashMap();
 
   /*
    *
@@ -510,6 +511,9 @@ public class FacetStream extends TupleStream implements Expressible  {
     if(nl == null) {
       return;
     }
+    if(reverseLookup.containsKey(bucketName)) {
+      bucketName = reverseLookup.get(bucketName);
+    }
     List allBuckets = (List)nl.get("buckets");
     for(int b=0; b<allBuckets.size(); b++) {
       NamedList bucket = (NamedList)allBuckets.get(b);
@@ -556,6 +560,10 @@ public class FacetStream extends TupleStream implements Expressible  {
 
   public FieldComparator[] getBucketSorts() {
     return bucketSorts;
+  }
+
+  public Map<String, String> getReverseLookup() {
+    return reverseLookup;
   }
 
   public int getCost() {
