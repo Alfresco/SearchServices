@@ -108,10 +108,10 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
         String expr = "alfrescoFacets(facet("
                 +   "myCollection, "
                 +   "q=\"*.*\", "
-                +   "buckets=\"audio:trackNumber\", "
-                +   "bucketSorts=\"sum(audio:trackNumber) desc\", "
+                +   "buckets=\"cm:title\", "
+                +   "bucketSorts=\"cm:title desc\", "
                 +   "bucketSizeLimit=100, "
-                +   "sum(audio:trackNumber), count(*)"
+                +   "count(*)"
                 + "))";
         SolrParams params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
 
@@ -122,24 +122,7 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
         assert (tuples.size() == 1);
         Tuple tuple = tuples.get(0);
 
-        Double sumi = tuple.getDouble("sum(audio:trackNumber)");
-        Double sumf = tuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)");
-        Double mini = tuple.getDouble("min(audio:trackNumber)");
-        Double minf = tuple.getDouble("min(cm:fiveStarRatingSchemeTotal)");
-        Double maxi = tuple.getDouble("max(audio:trackNumber)");
-        Double maxf = tuple.getDouble("max(cm:fiveStarRatingSchemeTotal)");
-        Double avgi = tuple.getDouble("avg(audio:trackNumber)");
-        Double avgf = tuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)");
         Double count = tuple.getDouble("count(*)");
-
-        assertTrue(sumi.longValue() == 90);
-        assertTrue(sumf.doubleValue() == 55.0D);
-        assertTrue(mini.doubleValue() == 0.0D);
-        assertTrue(minf.doubleValue() == 1.0D);
-        assertTrue(maxi.doubleValue() == 18.0D);
-        assertTrue(maxf.doubleValue() == 10.0D);
-        assertTrue(avgi.doubleValue() == 9.0D);
-        assertTrue(avgf.doubleValue() == 5.5D);
         assertTrue(count.doubleValue() == 10);
     }
 
