@@ -170,5 +170,22 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
                     assertTrue("Incorrect bucket sizes", false);
             }
         }
+
+        expr = "alfrescoFacets(facet("
+                + "myCollection, "
+                + "q=\"*.*\", "
+                + "buckets=\"cm:fiveStarRatingSchemeTotal\", "
+                + "bucketSorts=\"fiveStarRatingSchemeTotal desc\", "
+                + "bucketSizeLimit=5, "
+                + "min(audio:trackNumber)"
+                + "))";
+
+        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
+
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
+        tupleStream.setJson(alfrescoJson);
+        tuples = getTuples(tupleStream);
+
+        assert (tuples.size() == 5);
     }
 }
