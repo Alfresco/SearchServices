@@ -2,6 +2,7 @@ package org.alfresco.rest.audit;
 
 import static org.hamcrest.Matchers.is;
 
+import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
@@ -12,7 +13,10 @@ import org.alfresco.rest.model.RestAuditEntryModel;
 import org.alfresco.rest.model.RestAuditEntryModelsCollection;
 import org.alfresco.rest.model.RestNodeBodyModel;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.JmxBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,21 +36,26 @@ public abstract class AuditTest extends RestTest
     @Autowired
     protected JmxBuilder jmxBuilder;
 
-    protected UserModel userModel,adminUser;
+    protected UserModel userModel, userModel1, adminUser;
     protected RestAuditAppModelsCollection restAuditCollection;
     protected RestAuditAppModel restAuditAppModel;
     protected RestAuditEntryModel restAuditEntryModel;
     protected RestAuditEntryModelsCollection restAuditEntryCollection;
     protected RestAuditAppModel syncRestAuditAppModel;
     protected RestAuditAppModel taggingRestAuditAppModel;
-    protected RestNodeModel node; 
+    protected RestNodeModel node;
+    protected FileModel file;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        //Using two users, because audit API is designed for users with admin rights.
+        //Audit API is designed for users with admin rights (except /nodes/{nodeId}/audit-entries)
+        //Create users and add userModel as SiteCollaborator on private site 
         userModel = dataUser.createRandomTestUser();
+        userModel1 = dataUser.createRandomTestUser();
         adminUser = dataUser.getAdminUser();
+        dataUser.addUserToSite(userModel, privateTestSite, UserRole.SiteCollaborator);
+        userModel.setUserRole(UserRole.SiteCollaborator);
 
         //Enable alfresco-access audit application.
         jmxBuilder.getJmxClient().writeProperty("Alfresco:Type=Configuration,Category=Audit,id1=default", "audit.alfresco-access.enabled", Boolean.TRUE.toString());
@@ -72,12 +81,10 @@ public abstract class AuditTest extends RestTest
             restAuditAppModel = restAuditCollection.getEntries().get(i++).onModel();
         } while (!restAuditAppModel.getName().equals("alfresco-access"));
 
-        //Create new node.
-        RestNodeBodyModel nodeBody = new RestNodeBodyModel();
-        nodeBody.setName("MyFile");
-        nodeBody.setNodeType("cm:content");
-        node = restClient.withParams("autoRename=true").withCoreAPI().usingNode(ContentModel.my()).createNode(nodeBody);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        //Create new file
+        file = dataContent.usingUser(adminUser).usingSite(privateTestSite).createContent(DocumentType.TEXT_PLAIN);
+        node = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(file).usingParams("include=isLocked").getNode();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     protected RestAuditAppModel getSyncRestAuditAppModel(UserModel userModel) throws Exception

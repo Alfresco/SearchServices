@@ -7,8 +7,6 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -294,18 +292,18 @@ public class GetAuditCoreTests extends AuditTest
         String createdAt1, createdAt2;
         int expectedNumberOfItems;
 
-        // Get the node id and construct a fileModel to be used when adding comments
+        // Get the node id
         String nodeId = node.getId();
-        FileModel fileModel = new FileModel("testFile", FileType.TEXT_PLAIN);
-        fileModel.setNodeRef(nodeId);
 
         // Add comments for a node (to create audit entries)
-        restClient.authenticateUser(adminUser).withCoreAPI().usingNode(fileModel).addComment("This is the first comment");
-        restClient.authenticateUser(adminUser).withCoreAPI().usingNode(fileModel).addComment("This is the second comment");
+        restClient.authenticateUser(adminUser).withCoreAPI().usingNode(file).addComment("This is the first comment");
+        restClient.authenticateUser(adminUser).withCoreAPI().usingNode(file).addComment("This is the second comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         // Get maxium two audit entries for the node using 'maxItems' param on /nodes/{nodeId}/audit-entries
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("maxItems=2").withCoreAPI().usingAudit().listAuditEntriesForNode(nodeId);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restAuditEntryCollection.assertThat().entriesListIsNotEmpty();
 
         if (restAuditEntryCollection.getPagination().getCount() == 2)
         {
@@ -332,4 +330,27 @@ public class GetAuditCoreTests extends AuditTest
         }
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if user with permissions can get a list of audit entries for node and status code is 200")
+    public void getAuditEntriesForNodeUsingUserWithPermissions() throws Exception
+    {
+        // Get the node id
+        String nodeId = node.getId();
+
+        // Add comments for a node using user with permissions (to create audit entries and check if user can view/edit the node)
+        restClient.authenticateUser(userModel).withCoreAPI().usingNode(file).addComment("This is a comment");
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        // Get audit entries for the node using a user with permissions and /nodes/{nodeId}/audit-entries
+        restAuditEntryCollection = restClient.authenticateUser(userModel).withCoreAPI().usingAudit().listAuditEntriesForNode(nodeId);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restAuditEntryCollection.assertThat().entriesListIsNotEmpty();
+
+        // Check that a user that doesn't have access to node, doesn't have access to audit entries for node
+        restClient.authenticateUser(userModel1).withCoreAPI().usingNode(file).getNode();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.authenticateUser(userModel1).withCoreAPI().usingAudit().listAuditEntriesForNode(nodeId);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+    }
 }

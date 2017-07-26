@@ -65,13 +65,16 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     protected WorkflowService workflow;
 
     protected SiteModel testSite;
-    
+
+    protected SiteModel privateTestSite;
+
     @BeforeSuite(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
         super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
         testSite = dataSite.createPublicRandomSite();
+        privateTestSite = dataSite.createPrivateRandomSite();
     }
     
     @BeforeMethod(alwaysRun=true)
