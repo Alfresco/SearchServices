@@ -21,12 +21,6 @@ package org.alfresco.rest.search;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
 
 /**
  * Stats search test.
@@ -121,8 +122,8 @@ public class StatsSearchTest extends AbstractSearchTest
         assertStatsFacetedResponse(response, "DBID", 1);
         RestGenericMetricModel percMetric = response.getContext().getFacets().get(0).getBuckets().get(0).getMetrics().get(0);
         assertEquals(percMetric.getType(),"percentiles");
-        Map percVal = (Map) percMetric.getValue();
-        Map percentiles = (Map) percVal.get("percentiles");
+        Map<?, ?> percVal = (Map<?, ?>) percMetric.getValue();
+        Map<?, ?> percentiles = (Map<?, ?>) percVal.get("percentiles");
         assertEquals(percentiles.size(),4);
         assertTrue(percentiles.keySet().containsAll(Arrays.asList("1.0","75.0","99.0","99.9")));
     }
@@ -170,7 +171,7 @@ public class StatsSearchTest extends AbstractSearchTest
         assertStatsFacetedResponse(response, "creator", 1);
         RestGenericMetricModel countMetric = response.getContext().getFacets().get(0).getBuckets().get(0).getMetrics().get(0);
         Integer count = response.getPagination().getTotalItems();
-        Map metricCount = (Map) countMetric.getValue();
+        Map<?, ?> metricCount = (Map<?, ?>) countMetric.getValue();
         assertEquals(count, metricCount.get("countValues"));
 
         statsModel1.setExcludeFilters(Arrays.asList("justCars"));
@@ -178,7 +179,7 @@ public class StatsSearchTest extends AbstractSearchTest
         assertStatsFacetedResponse(response, "creator", 1);
         countMetric = response.getContext().getFacets().get(0).getBuckets().get(0).getMetrics().get(0);
         count = response.getEntries().size();
-        metricCount = (Map) countMetric.getValue();
+        metricCount = (Map<?, ?>) countMetric.getValue();
         assertTrue((Integer)metricCount.get("countValues") > count, "With the exclude filter there will be more documents than returned");
     }
 
