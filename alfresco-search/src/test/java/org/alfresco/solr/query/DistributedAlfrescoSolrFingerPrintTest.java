@@ -69,7 +69,7 @@ import org.junit.Test;
 public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2);
+    public JettyServerRule jetty = new JettyServerRule(2, this);
 
     @Test
     public void testFingerPrint() throws Exception
