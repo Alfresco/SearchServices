@@ -217,18 +217,20 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         return System.getProperty("user.dir") + "/target/test-classes/test-files";
     }
-    public void distribSetUp() throws Exception
+    public void distribSetUp(String serverName) throws Exception
     {
         SolrTestCaseJ4.resetExceptionIgnores(); // ignore anything with
                                                 // ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
         System.setProperty("solr.directoryFactory", "org.apache.solr.core.MockDirectoryFactory");
+        System.setProperty("solr.log.dir", testDir.toPath().resolve(serverName).toString());
     }
 
     public void distribTearDown() throws Exception
     {
         System.clearProperty("solr.directoryFactory");
+        System.clearProperty("solr.log.dir");
 
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();
@@ -1729,7 +1731,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         @Override
         protected void before() throws Throwable
         {
-            distribSetUp();
+            distribSetUp(serverName);
             RandVal.uniqueValues = new HashSet(); // reset random values
             createServers(serverName, coreNames, numShards,solrcoreProperties);
         }
