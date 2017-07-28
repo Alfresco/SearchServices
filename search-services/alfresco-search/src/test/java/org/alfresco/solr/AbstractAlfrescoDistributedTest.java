@@ -600,7 +600,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         Properties properties = new Properties();
 
-        if(additionalProperties != null) {
+        if(additionalProperties != null && additionalProperties.size() > 0) {
             properties.putAll(additionalProperties);
             properties.remove("shard.method");
         }
