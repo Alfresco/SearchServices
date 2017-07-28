@@ -497,6 +497,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         long timeout = startMillis + waitMillis;
         int totalHits = 0;
+        int increment = 1;
         while(new Date().getTime() < timeout)
         {
             RefCounted<SolrIndexSearcher> refCounted = null;
@@ -508,7 +509,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 if (topDocs.totalHits == expectedNumFound) {
                     return;
                 } else {
-                    Thread.sleep(2000);
+                    Thread.sleep(500 * increment++);
                 }
             } finally {
                 refCounted.decref();
