@@ -1696,6 +1696,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         /**
          * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * Please use the other constructor by passing in the class instance as well.
          * @param numShards
          */
         private JettyServerRule(int numShards)
