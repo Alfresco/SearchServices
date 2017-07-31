@@ -21,6 +21,7 @@ package org.alfresco.solr.query;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 import org.alfresco.model.ContentModel;
@@ -44,6 +45,8 @@ import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Joel
@@ -52,6 +55,8 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistributedTest
 {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
 
@@ -199,6 +204,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         for(long count : counts) {
             Tuple tuple = tuples.get(i);
             if(!tuple.getLong(field).equals(count)) {
+                logger.error("Invalid tuple "+tuple.getMap());
                 throw new Exception("Bad count found: "+tuple.getLong(field)+" expected: "+count);
             }
             ++i;
