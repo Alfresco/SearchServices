@@ -217,18 +217,20 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         return System.getProperty("user.dir") + "/target/test-classes/test-files";
     }
-    public void distribSetUp() throws Exception
+    public void distribSetUp(String serverName) throws Exception
     {
         SolrTestCaseJ4.resetExceptionIgnores(); // ignore anything with
                                                 // ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
         System.setProperty("solr.directoryFactory", "org.apache.solr.core.MockDirectoryFactory");
+        System.setProperty("solr.log.dir", testDir.toPath().resolve(serverName).toString());
     }
 
     public void distribTearDown() throws Exception
     {
         System.clearProperty("solr.directoryFactory");
+        System.clearProperty("solr.log.dir");
 
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();
@@ -495,6 +497,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         long timeout = startMillis + waitMillis;
         int totalHits = 0;
+        int increment = 1;
         while(new Date().getTime() < timeout)
         {
             RefCounted<SolrIndexSearcher> refCounted = null;
@@ -506,7 +509,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 if (topDocs.totalHits == expectedNumFound) {
                     return;
                 } else {
-                    Thread.sleep(2000);
+                    Thread.sleep(500 * increment++);
                 }
             } finally {
                 refCounted.decref();
@@ -600,7 +603,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         Properties properties = new Properties();
 
-        if(additionalProperties != null) {
+        if(additionalProperties != null && additionalProperties.size() > 0) {
             properties.putAll(additionalProperties);
             properties.remove("shard.method");
         }
@@ -1695,9 +1698,21 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
          * Creates the jetty servers with the specified number of shards and sensible defaults.
          * @param numShards
          */
-        public JettyServerRule(int numShards)
+        private JettyServerRule(int numShards)
         {
             this.serverName = DEFAULT_TEST_CORENAME;
+            coreNames = new String[]{DEFAULT_TEST_CORENAME};
+            this.numShards = numShards;
+            this.solrcoreProperties = new Properties();
+        }
+
+        /**
+         * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * @param numShards
+         */
+        public JettyServerRule(int numShards, AbstractAlfrescoDistributedTest testClass)
+        {
+            this.serverName = testClass.getClass().getSimpleName();
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.numShards = numShards;
             this.solrcoreProperties = new Properties();
@@ -1717,7 +1732,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         @Override
         protected void before() throws Throwable
         {
-            distribSetUp();
+            distribSetUp(serverName);
             RandVal.uniqueValues = new HashSet(); // reset random values
             createServers(serverName, coreNames, numShards,solrcoreProperties);
         }
