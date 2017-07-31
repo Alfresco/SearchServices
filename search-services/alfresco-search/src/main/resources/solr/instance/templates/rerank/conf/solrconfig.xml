@@ -1930,9 +1930,10 @@
   <expressible name="stats" class="org.alfresco.solr.stream.StatsStream"/>
   <expressible name="alfrescoStats" class="org.alfresco.solr.stream.AlfrescoStatsStream"/>
   <expressible name="search" class="org.alfresco.solr.stream.SearchStream"/>
+  <expressible name="facets" class="org.alfresco.solr.stream.FacetStream"/>
+  <expressible name="alfrescoFacets" class="org.alfresco.solr.stream.AlfrescoFacetStream"/>
 
-
-    <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
+  <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
