@@ -56,7 +56,7 @@ public class DistributedStatsStreamTest extends AbstractAlfrescoDistributedTest 
     static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
 
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2);
+    public JettyServerRule jetty = new JettyServerRule(2, this);
 
     @Test
     public void testStats() throws Exception {

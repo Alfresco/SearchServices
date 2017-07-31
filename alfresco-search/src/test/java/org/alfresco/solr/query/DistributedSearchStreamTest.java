@@ -54,7 +54,7 @@ import org.junit.Test;
 public class DistributedSearchStreamTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2);
+    public JettyServerRule jetty = new JettyServerRule(2, this);
 
     @Test
     public void testSearch() throws Exception

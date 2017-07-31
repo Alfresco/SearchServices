@@ -47,7 +47,7 @@ public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistribu
 {
 
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2);
+    public JettyServerRule jetty = new JettyServerRule(2, this);
 
     @Test
     public void testTracker() throws Exception
