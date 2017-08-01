@@ -46,6 +46,7 @@ public class AddCommentSanityTests extends RestTest
                    .assertThat().field("content").isNotEmpty()
                    .and().field("content").is(newContent);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.onResponse().assertThat().body("entry.edited", org.hamcrest.Matchers.is(false));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Manager user adds comments with Rest API and status code is 201")
