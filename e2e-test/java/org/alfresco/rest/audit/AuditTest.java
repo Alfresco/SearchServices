@@ -45,6 +45,7 @@ public abstract class AuditTest extends RestTest
     protected RestAuditAppModel taggingRestAuditAppModel;
     protected RestNodeModel node;
     protected FileModel file;
+    protected SiteModel privateTestSite;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -54,6 +55,8 @@ public abstract class AuditTest extends RestTest
         userModel = dataUser.createRandomTestUser();
         userModel1 = dataUser.createRandomTestUser();
         adminUser = dataUser.getAdminUser();
+        privateTestSite = dataSite.createPrivateRandomSite();
+
         dataUser.addUserToSite(userModel, privateTestSite, UserRole.SiteCollaborator);
         userModel.setUserRole(UserRole.SiteCollaborator);
 
