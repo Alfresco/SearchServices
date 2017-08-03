@@ -490,8 +490,10 @@
     <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
     <expressible name="alfrescoExpr" class="org.alfresco.solr.stream.AlfrescoExpressionStream"/>
     <expressible name="search" class="org.alfresco.solr.stream.SearchStream"/>
-    <expressible name="facets" class="org.alfresco.solr.stream.FacetStream"/>
+    <expressible name="facet" class="org.alfresco.solr.stream.FacetStream"/>
     <expressible name="alfrescoFacets" class="org.alfresco.solr.stream.AlfrescoFacetStream"/>
+    <expressible name="having" class="org.apache.solr.client.solrj.io.stream.HavingStream"/>
+    <expressible name="limit" class="org.alfresco.solr.stream.LimitStream"/>
     <!--
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
         <str name="mapping">conf/mime_types.csv</str>
