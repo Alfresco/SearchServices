@@ -1362,7 +1362,13 @@ public class SolrInformationServer implements InformationServer
             @SuppressWarnings("rawtypes")
             NamedList values = rsp.getValues();
             SolrDocumentList response = (SolrDocumentList)values.get(RESPONSE_DEFAULT_IDS);
-            
+
+            if (response == null)
+            {
+                log.error("No response when getting the tracker state");
+                return state;
+            }
+
             // We can find either or both docs here.
             for(int i = 0; i < response.getNumFound(); i++)
             {
