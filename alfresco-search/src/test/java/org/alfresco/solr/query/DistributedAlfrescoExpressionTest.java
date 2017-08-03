@@ -186,6 +186,46 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         assertTrue(tuples.size() == 5);
         assertBuckets("cm:created", tuples, "2000-01", "2000-02", "2000-03", "2000-04", "2000-05");
         assertCounts("count(*)", tuples, 1, 1, 0, 0, 0);
+
+        expr = "alfrescoExpr(limit(facet("
+                + "myCollection, "
+                + "q=\"*.*\", "
+                + "buckets=\"cm:created\", "
+                + "bucketSorts=\"cm:created desc\", "
+                + "bucketSizeLimit=100, "
+                +"count(*)"
+                + "),2))";
+
+        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
+
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
+        tupleStream.setJson(alfrescoJson);
+        tuples = getTuples(tupleStream);
+        assertTrue(tuples.size() == 2);
+
+        expr = "alfrescoExpr(search(myCollection, q=\"cm:content:world\", sort=\"cm:created desc\"))";
+        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
+
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
+        tupleStream.setJson(alfrescoJson);
+        tuples = getTuples(tupleStream);
+        assertTrue(tuples.size() == 4);
+
+        expr = "alfrescoExpr(having(facet("
+                + "myCollection, "
+                + "q=\"cm:content:world\", "
+                + "buckets=\"cm:created\", "
+                + "bucketSorts=\"cm:created desc\", "
+                + "bucketSizeLimit=100, "
+                +"count(*)"
+                + "),eq(count(*), 1)))";
+        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
+
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
+        tupleStream.setJson(alfrescoJson);
+        tuples = getTuples(tupleStream);
+        assertTrue(tuples.size() == 4);
+
     }
 
     private void assertBuckets(String field, List<Tuple> tuples, String ... buckets) throws Exception {
