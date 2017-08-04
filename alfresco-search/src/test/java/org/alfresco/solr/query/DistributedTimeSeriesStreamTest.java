@@ -204,6 +204,8 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
             Tuple tuple = tuples.get(i);
             if(!tuple.getLong(field).equals(count)) {
                 logger.error("Invalid tuple "+tuple.getMap());
+                logger.error("Locale is "+Locale.getDefault());
+                logger.error("TimeZone is "+TimeZone.getDefault());
                 throw new Exception("Bad count found: "+tuple.getLong(field)+" expected: "+count);
             }
             ++i;
