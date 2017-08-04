@@ -128,11 +128,6 @@ public class ModelTracker extends AbstractTracker implements Tracker
      */
     private void loadPersistedModels()
     {
-    	if(AlfrescoSolrDataModel.getInstance().getAlfrescoModels().size() > 0)
-    	{
-    		return;
-    	}
-    	
         HashMap<String, M2Model> modelMap = new HashMap<String, M2Model>();
         if (alfrescoModelDir.exists() && alfrescoModelDir.isDirectory())
         {
