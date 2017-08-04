@@ -59,7 +59,7 @@ import org.junit.Test;
 public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2,getShardMethod());
+    public JettyServerRule jetty = new JettyServerRule(2,this, getShardMethod());
 
     @Test
     public void testAclId() throws Exception
