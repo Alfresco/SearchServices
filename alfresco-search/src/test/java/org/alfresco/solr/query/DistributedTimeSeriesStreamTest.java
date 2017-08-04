@@ -110,22 +110,22 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
         //Next create the NodeMetaData for each node. TODO: Add more metadata
 
         NodeMetaData nodeMetaData1 = getNodeMetaData(node1, txn, acl, "mike", null, false);
-        Date date1 = getDate(2000, 0, 1);
+        Date date1 = getDate(2000, 0, 2);
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED,
                                           new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
 
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
-        Date date2 = getDate(2000, 1, 1);
+        Date date2 = getDate(2000, 1, 2);
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2)));
 
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl2, "mike", null, false);
-        Date date3 = getDate(2000, 2, 1);
+        Date date3 = getDate(2000, 2, 2);
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date3)));
 
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
-        Date date4 = getDate(2000, 3, 1);
+        Date date4 = getDate(2000, 3, 2);
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date4)));
 
