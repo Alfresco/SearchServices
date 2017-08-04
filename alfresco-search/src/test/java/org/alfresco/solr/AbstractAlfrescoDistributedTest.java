@@ -1722,9 +1722,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
          * Creates the jetty servers with the specified number of shards and sensible defaults.
          * @param numShards
          */
-        public JettyServerRule(int numShards, Properties solrcoreProperties)
+        public JettyServerRule(int numShards, AbstractAlfrescoDistributedTest testClass, Properties solrcoreProperties)
         {
-            this.serverName = DEFAULT_TEST_CORENAME;
+            this.serverName = testClass.getClass().getSimpleName();
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.numShards = numShards;
             this.solrcoreProperties = solrcoreProperties;
