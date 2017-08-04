@@ -60,7 +60,7 @@ import org.junit.Test;
 public class DistributedDbidRangeAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2,getShardMethod());
+    public JettyServerRule jetty = new JettyServerRule(2,this, getShardMethod());
 
     @Test
     public void testDbIdRange() throws Exception
