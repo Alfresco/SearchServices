@@ -15,6 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+/**
+ * Class includes Sanity tests for the favorites api. Detailed tests would be covered in the alfresco-remote-api test project
+ * 
+ * @author meenal bhave
+ */
 public class FavoritesIncludePathSanityTests extends RestTest
 {
     private UserModel adminUser;
