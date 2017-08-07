@@ -11,6 +11,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -87,6 +88,11 @@ public class SharedLinksSanityTests extends RestTest
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.equalTo(sharedLink1.getId()));
         restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.nullValue());
 
+        // Same Checks above using sharedLink methods: GET sharedLink: without includePath
+        Assert.assertEquals(sharedLink1.getNodeId(), file1.getNodeRefWithoutVersion());
+        Assert.assertEquals(sharedLink1.getName(), file1.getName());
+        Assert.assertNull(sharedLink1.getPath(), "Path is expected to be null for noauth api: Response shows: " + sharedLink1.toJson());
+
         // Get without includePath
         restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLink(sharedLink1);
         restClient.onResponse().assertThat().body("entry.nodeId", org.hamcrest.Matchers.equalTo(file1.getNodeRefWithoutVersion()));
@@ -102,6 +108,11 @@ public class SharedLinksSanityTests extends RestTest
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.equalTo(sharedLink2.getId()));
         restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.notNullValue());
 
+        // Same Checks above using sharedLink methods: POST sharedLink: includePath
+        Assert.assertEquals(sharedLink2.getNodeId(), file2.getNodeRefWithoutVersion());
+        Assert.assertEquals(sharedLink2.getName(), file2.getName());
+        Assert.assertNotNull(sharedLink2.getPath(), "Path not expected to be null for noauth api: Response shows: " + sharedLink1.toJson());
+
         // Get with includePath
         restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLink(sharedLink2);
         restClient.onResponse().assertThat().body("entry.nodeId", org.hamcrest.Matchers.equalTo(file2.getNodeRefWithoutVersion()));
@@ -111,12 +122,17 @@ public class SharedLinksSanityTests extends RestTest
         restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.nullValue());
 
         // Get: noAuth with includePath
-        restClient.withCoreAPI().usingSharedLinks().getSharedLink(sharedLink2);
+        sharedLink2 = restClient.withCoreAPI().usingSharedLinks().getSharedLink(sharedLink2);
         restClient.onResponse().assertThat().body("entry.nodeId", org.hamcrest.Matchers.equalTo(file2.getNodeRefWithoutVersion()));
         restClient.onResponse().assertThat().body("entry.name", org.hamcrest.Matchers.equalTo(file2.getName()));
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.equalTo(sharedLink2.getId()));
         // Verify that path is null since includePath is not supported for this noAuth api
-        restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.nullValue()); // includePath is not supported since this is noAuth api
+        restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.nullValue());
+
+        // Same Checks above using sharedLink methods: GET sharedLink: noAuth
+        Assert.assertEquals(sharedLink2.getNodeId(), file2.getNodeRefWithoutVersion());
+        Assert.assertEquals(sharedLink2.getName(), file2.getName());
+        Assert.assertNull(sharedLink2.getPath(), "Path is expected to be null for noauth api: Response shows: " + sharedLink2.toJson());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify delete sharedLinks with and without Path")
@@ -138,8 +154,9 @@ public class SharedLinksSanityTests extends RestTest
     {
         sharedLink5 = restClient.authenticateUser(testUser1).withCoreAPI().includePath().usingSharedLinks().createSharedLinkWithExpiryDate(file5, expiryDate);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        restClient.onResponse().assertThat().body("entry.expiresAt", org.hamcrest.Matchers.equalTo(expiryDate));
-        restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.notNullValue());
+
+        Assert.assertEquals(sharedLink5.getExpiresAt(), expiryDate);
+        Assert.assertNotNull(sharedLink5.getPath(), "Path not expected to be null: Response shows: " + sharedLink5.toJson());
 
         restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditions(sharedLink5);
         restClient.assertStatusCodeIs(HttpStatus.OK);
