@@ -35,17 +35,20 @@ public class DocRouterFactory
 
     public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
 
-        String shardDotId = properties.getProperty("shard.id");
-        if (shardDotId != null  && !shardDotId.isEmpty())
+        if (properties != null)
         {
-            try
+            String shardDotId = properties.getProperty("shard.id");
+            if (shardDotId != null  && !shardDotId.isEmpty())
             {
-                int shardid = Integer.parseInt(shardDotId);
-                log.info("Sharding via an ExplicitRouter for shard "+shardid);
-                return new ExplicitRouter(shardid);
-            } catch (NumberFormatException e)
-            {
-                log.error("Failed to parse a shard.id of "+shardDotId);
+                try
+                {
+                    int shardid = Integer.parseInt(shardDotId);
+                    log.info("Sharding via an ExplicitRouter for shard "+shardid);
+                    return new ExplicitRouter(shardid);
+                } catch (NumberFormatException e)
+                {
+                    log.error("Failed to parse a shard.id of "+shardDotId);
+                }
             }
         }
 
