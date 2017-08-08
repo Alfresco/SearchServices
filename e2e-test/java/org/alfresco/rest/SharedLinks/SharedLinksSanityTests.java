@@ -1,4 +1,4 @@
-package org.alfresco.rest.SharedLinks;
+package org.alfresco.rest.sharedlinks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
