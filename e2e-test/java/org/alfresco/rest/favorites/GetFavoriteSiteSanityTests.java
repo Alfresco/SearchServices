@@ -106,7 +106,7 @@ public class GetFavoriteSiteSanityTests extends RestTest
         restSiteModel.assertThat().field("id").is(siteModel1.getId()).and().field("title").isNotNull();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get specific favorite site of another user with Rest API and response is successful (403)")
     public void managerUserFailsToGetFavoriteSiteOfAnotherUser() throws Exception
     {

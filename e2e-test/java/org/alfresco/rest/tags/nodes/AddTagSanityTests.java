@@ -86,7 +86,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user doesn't have permission to add tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void contributorIsNotAbleToAddTagToAnotherContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -110,7 +110,7 @@ public class AddTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user doesn't have permission to add tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void consumerIsNotAbleToAddTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));

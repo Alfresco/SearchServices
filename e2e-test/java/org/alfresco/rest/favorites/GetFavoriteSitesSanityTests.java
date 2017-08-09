@@ -27,7 +27,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user fails to get an user favorite sites with Rest API (403)")
     public void managerUserFailsToGetAnUserFavoriteSites() throws Exception
     {
@@ -40,7 +40,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify collaborator user fails to get an user favorite sites with Rest API (403)")
     public void collaboratorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
@@ -54,7 +54,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify contributor user fails to get an user favorite sites with Rest API (403)")
     public void contributorUserFailsToGetAnUserFavoriteSites() throws Exception
     {
@@ -68,7 +68,7 @@ public class GetFavoriteSitesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify consumer user fails to get an user favorite sites with Rest API (403)")
     public void consumerUserFailsToGetAnUserFavoriteSites() throws Exception
     {

@@ -63,7 +63,7 @@ public class AddCommentSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user adds comments with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS })
     @Bug(id="ACE-4614")
     public void contributorIsAbleToAddComment() throws JsonToModelConversionException, Exception
     {
@@ -89,7 +89,7 @@ public class AddCommentSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't add comments with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS })
     public void consumerIsNotAbleToAddComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));

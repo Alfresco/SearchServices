@@ -242,7 +242,7 @@ public class GetFavoriteSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
             description = "Verify user doesn't get favorite site of another user with Rest API and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES })
     public void userIsNotAbleToRetrieveFavoriteSiteOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -255,7 +255,7 @@ public class GetFavoriteSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
             description = "Verify user doesn't get favorite site of admin user with Rest API and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES })
     public void userIsNotAbleToRetrieveFavoritesOfAdminUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -267,7 +267,7 @@ public class GetFavoriteSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
             description = "Verify admin user doesn't get favorite site of another user with Rest API and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES })
     public void adminIsNotAbleToRetrieveFavoritesOfAnotherUser() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI()

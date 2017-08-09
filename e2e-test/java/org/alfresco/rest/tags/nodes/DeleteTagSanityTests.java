@@ -79,7 +79,7 @@ public class DeleteTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.SANITY, description = "Verify Contributor user can't delete tags created by admin user with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void contributorIsNotAbleToDeleteTagsForAnotherUserContent() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -106,7 +106,7 @@ public class DeleteTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't delete tags created by admin user with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void consumerIsNotAbleToDeleteTags() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);

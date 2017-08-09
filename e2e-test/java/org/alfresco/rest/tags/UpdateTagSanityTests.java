@@ -63,7 +63,7 @@ public class UpdateTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user can't update tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void managerIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -73,7 +73,7 @@ public class UpdateTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Collaborator user can't update tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void collaboratorIsNotAbleToUpdateTagCheckDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -86,7 +86,7 @@ public class UpdateTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Contributor user can't update tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void contributorIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -96,7 +96,7 @@ public class UpdateTagSanityTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can't update tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS })
     public void consumerIsNotAbleToUpdateTag() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));

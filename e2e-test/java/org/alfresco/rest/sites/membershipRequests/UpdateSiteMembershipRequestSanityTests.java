@@ -48,7 +48,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site manager is not able to update membership request of another user")
 //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteManagerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -64,7 +64,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site collaborator is not able to update membership request of another user")
     //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteCollaboratorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -80,7 +80,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site contributor is not able to update membership request of another user")
     //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteContributorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -96,7 +96,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site consumer is not able to update membership request of another user")
     //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteConsumerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -112,7 +112,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify one user is not able to update membership request of another user")
     //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void oneUserIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception
@@ -128,7 +128,7 @@ public class UpdateSiteMembershipRequestSanityTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify admin is not able to update membership request of another user")
     //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void adminIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws JsonToModelConversionException, Exception

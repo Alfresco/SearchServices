@@ -133,7 +133,7 @@ public class DeleteFavoriteSiteSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, 
     description = "Verify a user removes a site from another user's favorite sites list with Rest API and response is permission denied (403)")
     public void userRemovesAnotherUserFavoriteSiteWithSuccess() throws Exception
