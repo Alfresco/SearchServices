@@ -368,6 +368,17 @@
         </lst>
     </requestHandler>
 
+
+    <requestHandler name="/sql" class="org.apache.solr.handler.AlfrescoSQLHandler">
+        <lst name="defaults">
+            <str name="wt">json</str>
+        </lst>
+        <lst name="invariants">
+            <str name="distrib">false</str>
+        </lst>
+    </requestHandler>
+
+
     <requestHandler name="/mlt" class="solr.MoreLikeThisHandler">
     </requestHandler>
 
