@@ -35,23 +35,6 @@ public class DocRouterFactory
 
     public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
 
-        if (properties != null)
-        {
-            String shardDotId = properties.getProperty("shard.id");
-            if (shardDotId != null  && !shardDotId.isEmpty())
-            {
-                try
-                {
-                    int shardid = Integer.parseInt(shardDotId);
-                    log.info("Sharding via an ExplicitRouter for shard "+shardid);
-                    return new ExplicitRouter(shardid);
-                } catch (NumberFormatException e)
-                {
-                    log.error("Failed to parse a shard.id of "+shardDotId);
-                }
-            }
-        }
-
         switch(method) {
             case DB_ID:
                 log.info("Sharding via DB_ID");
@@ -75,6 +58,9 @@ public class DocRouterFactory
             case PROPERTY:
                 log.info("Sharding via PROPERTY");
                 return new PropertyRouter(properties.getProperty("shard.regex", ""));
+            case EXPLICIT_ID:
+                log.info("Sharding via EXPLICIT_ID");
+                return new ExplicitRouter();
             default:
                 log.info("Sharding via DB_ID (default)");
                 return new DBIDRouter();
