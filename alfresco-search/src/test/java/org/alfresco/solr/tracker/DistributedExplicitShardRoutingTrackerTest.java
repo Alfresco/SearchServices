@@ -106,7 +106,6 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
             if ("shard1".endsWith(core.getName()))
             {
                 waitForDocCountCore(core, contentQuery, numNodes, 100000, begin);
-                waitForDocCountCore(core, aclQuery, numAcls, 100000, begin);
             }
         }
 
@@ -114,8 +113,8 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         assertShardCount(0, contentQuery, 0);
         assertShardCount(2, contentQuery, 0);
 
-        assertShardCount(0, aclQuery, 0);
-        assertShardCount(2, aclQuery, 0);
+        //Acls go to all cores
+        waitForDocCountAllCores(aclQuery, numAcls, 20000);
     }
 
     protected Properties getProperties()
