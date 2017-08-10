@@ -51,6 +51,7 @@ public abstract class AuditTest extends RestTest
     {
         //Audit API is designed for users with admin rights (except /nodes/{nodeId}/audit-entries)
         //Create users and add userModel as SiteCollaborator on private site 
+    	privateTestSite = dataSite.createPrivateRandomSite();
         userModel = dataUser.createRandomTestUser();
         userModel1 = dataUser.createRandomTestUser();
         adminUser = dataUser.getAdminUser();
