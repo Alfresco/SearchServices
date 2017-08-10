@@ -16,7 +16,8 @@ public class ExplicitRouter implements DocRouter {
 
     @Override
     public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
-        return shardId == shardInstance;
+        //all acls go to all shards.
+        return true;
     }
 
     @Override
