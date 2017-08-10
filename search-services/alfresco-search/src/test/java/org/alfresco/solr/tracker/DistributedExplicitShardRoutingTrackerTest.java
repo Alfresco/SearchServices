@@ -83,16 +83,30 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         List<NodeMetaData> nodeMetaDatas = new ArrayList();
 
         Transaction bigTxn = getTransaction(0, numNodes);
-        RandomizedContext context = RandomizedContext.current();
-        Random ints = context.getRandom();
 
         for (int i = 0; i < numNodes; i++) {
             int aclIndex = i % numAcls;
             Node node = getNode(bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "king", null, false);
+            boolean even = i % 2 == 0; // if its even put it on shard 1 otherwise put it on shard 0.
+            node.setShardPropertyValue(even?"1":"0");
             nodeMetaDatas.add(nodeMetaData);
         }
+
+        //Add a node that won't get indexed
+        Node node = getNode(bigTxn, bulkAcls.get(1), Node.SolrApiNodeStatus.UPDATED);
+        nodes.add(node);
+        NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(1), "king", null, false);
+        node.setShardPropertyValue("node YOU DON'T");
+        nodeMetaDatas.add(nodeMetaData);
+
+        //Add a node that won't get indexed
+        node = getNode(bigTxn, bulkAcls.get(2), Node.SolrApiNodeStatus.UPDATED);
+        nodes.add(node);
+        nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(2), "king", null, false);
+        //Don't set the Share Property but add it anyway
+        nodeMetaDatas.add(nodeMetaData);
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
 
@@ -103,15 +117,19 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
 
         for (SolrCore core : shards)
         {
-            if ("shard1".endsWith(core.getName()))
+            switch (core.getName())
             {
-                waitForDocCountCore(core, contentQuery, numNodes, 100000, begin);
+                case "shard0":
+                case "shard1":
+                    waitForDocCountCore(core, contentQuery, 500, 50000, begin);
+                    break;
+                default:
+                    //ignore other shards because we will check below
             }
         }
 
-        //Now we know that shard1 has indexed nodes, lets make sure the other nodes don't have any.
-        assertShardCount(0, contentQuery, 0);
-        assertShardCount(2, contentQuery, 0);
+        //lets make sure the other nodes don't have any.
+         assertShardCount(2, contentQuery, 0);
 
         //Acls go to all cores
         waitForDocCountAllCores(aclQuery, numAcls, 20000);
@@ -120,7 +138,10 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
     protected Properties getProperties()
     {
         Properties prop = new Properties();
-        prop.put("shard.id", "1");
+        prop.put("shard.method", ShardMethodEnum.EXPLICIT_ID.toString());
+        //Normally this would be used by the Solr client which will automatically add the property to the node.shardPropertyValue
+        //For testing this doesn't work like that so I setShardPropertyValue explicitly above.
+        prop.put("shard.key", ContentModel.PROP_SKYPE.toString());
         return prop;
     }
 }
