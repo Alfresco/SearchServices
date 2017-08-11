@@ -16,6 +16,7 @@
  */
 package org.alfresco.solr.sql;
 
+import org.alfresco.solr.query.AbstractQParser;
 import org.alfresco.solr.stream.AlfrescoExpressionStream;
 import org.apache.calcite.adapter.java.AbstractQueryableTable;
 import org.apache.calcite.linq4j.*;
@@ -64,6 +65,7 @@ import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.handler.StreamHandler;
+import org.apache.solr.request.SolrRequestHandler;
 
 import java.io.IOException;
 import java.util.*;
@@ -193,8 +195,15 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
 
       StreamContext streamContext = new StreamContext();
+      String alfrescoJson = properties.getProperty(AbstractQParser.ALFRESCO_JSON);
+      streamContext.put("request-factory", new AlfrescoStreamHandler.AlfrescoRequestFactory(alfrescoJson));
       streamContext.put("shards", getCollectionShards(properties));
       streamContext.setSolrClientCache(StreamHandler.getClientCache());
+      streamContext.put("core", this.schema.core);
+//      context.workerID = worker;
+//      context.numWorkers = numWorkers;
+//      context.setModelCache(modelCache);
+      //context.put("solr-core", req.getCore());
 
       //Turn the TupleStream into StreamExpression.
       StreamExpression streamExpression = (StreamExpression)((Expressible)tupleStream).toExpression(streamFactory);

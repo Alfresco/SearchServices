@@ -107,22 +107,22 @@ public class DistributedSqlTest extends AbstractAlfrescoDistributedTest
         //Next create the NodeMetaData for each node. TODO: Add more metadata
 
         NodeMetaData nodeMetaData1 = getNodeMetaData(node1, txn, acl, "mike", null, false);
-        Date date1 = getDate(2000, 0, 1);
+        Date date1 = getDate(2000, 0, 2);
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
 
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
-        Date date2 = getDate(2000, 1, 1);
+        Date date2 = getDate(2000, 1, 2);
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2)));
 
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl2, "mike", null, false);
-        Date date3 = getDate(2000, 2, 1);
+        Date date3 = getDate(2000, 2, 2);
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date3)));
 
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
-        Date date4 = getDate(2000, 3, 1);
+        Date date4 = getDate(2000, 3, 2);
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date4)));
 
@@ -152,8 +152,7 @@ public class DistributedSqlTest extends AbstractAlfrescoDistributedTest
 
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
-        String sql = "select DBID from alfresco where `cm:content` = 'world' limit 10 ";
-
+        String sql = "select DBID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
 
         String shards = getShardsString(clusterClients);
         SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards);
@@ -164,7 +163,7 @@ public class DistributedSqlTest extends AbstractAlfrescoDistributedTest
         List<Tuple> tuples = getTuples(tupleStream);
 
         assertTrue(tuples.size() == 4);
-        assertNodes(tuples, node4, node3, node2, node1);
+        assertNodes(tuples, node1, node2, node3, node4);
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         //Test that the access control is being applied.
@@ -172,7 +171,7 @@ public class DistributedSqlTest extends AbstractAlfrescoDistributedTest
         tupleStream.setJson(alfrescoJson2);
         tuples = getTuples(tupleStream);
         assertTrue(tuples.size() == 2);
-        assertNodes(tuples, node2, node1);
+        assertNodes(tuples, node1, node2);
     }
 
 
