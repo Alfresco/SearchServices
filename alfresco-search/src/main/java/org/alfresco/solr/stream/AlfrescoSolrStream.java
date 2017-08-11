@@ -263,7 +263,7 @@ public class AlfrescoSolrStream extends TupleStream {
         }
 
         String wt = requestParams.get(CommonParams.WT, "json");
-        AlfrescoQueryRequest query = new AlfrescoQueryRequest(json, requestParams);
+        AlfrescoStreamHandler.AlfrescoQueryRequest query = new AlfrescoStreamHandler.AlfrescoQueryRequest(json, requestParams);
         query.setPath(p);
         query.setResponseParser(new InputStreamResponseParser(wt));
         query.setMethod(SolrRequest.METHOD.POST);
@@ -278,21 +278,4 @@ public class AlfrescoSolrStream extends TupleStream {
         }
     }
 
-    private static class AlfrescoQueryRequest extends QueryRequest
-    {
-        private String json;
-
-        public AlfrescoQueryRequest(String json, SolrParams params)
-        {
-            super(params);
-            this.json =json;
-        }
-
-        public Collection<ContentStream> getContentStreams()
-        {
-            List<ContentStream> streams = new ArrayList<ContentStream>();
-            streams.add(new ContentStreamBase.StringStream(json));
-            return streams;
-        }
-    }
 }
