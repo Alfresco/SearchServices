@@ -76,6 +76,7 @@ import static org.apache.solr.common.params.CommonParams.SORT;
 class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
   private static final StreamFactory streamFactory = new StreamFactory()
+          .withFunctionName("alfrescoExpr", AlfrescoExpressionStream.class)
           .withFunctionName("search", SearchStream.class)
           .withFunctionName("facet", FacetStream.class)
           .withFunctionName("having", HavingStream.class)
@@ -339,10 +340,10 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
     if (limit != null) {
       params.add(CommonParams.ROWS, limit);
-      return new LimitStream(new SearchStream(zk, collection, params), Integer.parseInt(limit));
+      return new AlfrescoExpressionStream(new LimitStream(new SearchStream(zk, collection, params), Integer.parseInt(limit)));
     } else {
       params.add(CommonParams.QT, "/export");
-      return new SearchStream(zk, collection, params);
+      return new AlfrescoExpressionStream(new SearchStream(zk, collection, params));
     }
   }
 

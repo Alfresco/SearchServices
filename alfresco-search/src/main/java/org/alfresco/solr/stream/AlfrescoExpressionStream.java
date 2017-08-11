@@ -42,6 +42,11 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
     private TupleStream tupleStream;
     private final AlfrescoStreamExpressionProcessor processor = new AlfrescoStreamExpressionProcessor();
 
+    public AlfrescoExpressionStream(TupleStream stream) throws IOException
+    {
+        init(stream);
+    }
+
     public AlfrescoExpressionStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
         List<StreamExpression> streamExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, TupleStream.class);
