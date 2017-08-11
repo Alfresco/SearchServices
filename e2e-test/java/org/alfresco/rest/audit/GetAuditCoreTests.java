@@ -274,7 +274,8 @@ public class GetAuditCoreTests extends AuditTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertEquals(entryId, restAuditEntryModel.getId());
         assertEquals(entryApplicationId, restAuditEntryModel.getAuditApplicationId());
-        assertNull(restAuditEntryModel.getValues());
+        // Values are displayed by default for single audit application entry
+        assertNotNull(restAuditEntryModel.getValues());
 
         restAuditEntryModel = restClient.authenticateUser(adminUser).withParams("include=values").withCoreAPI().usingAudit()
                 .getAuditEntryForAnAuditApplication(restAuditAppModel.getId(), entryId);

@@ -47,7 +47,7 @@ public class AddSiteMemberSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);       
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site collaborator is not able to add site member and gets status code FORBIDDEN (403)")
     public void collaboratorIsNotAbleToAddSiteMember() throws Exception
@@ -61,7 +61,7 @@ public class AddSiteMemberSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site contributor is not able to add site member and gets status code FORBIDDEN (403)")
     public void contributorIsNotAbleToAddSiteMember() throws Exception
@@ -74,7 +74,7 @@ public class AddSiteMemberSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
             description = "Verify that site consumer is not able to add site member and gets status code FORBIDDEN (403)")
     public void consumerIsNotAbleToAddSiteMember() throws Exception

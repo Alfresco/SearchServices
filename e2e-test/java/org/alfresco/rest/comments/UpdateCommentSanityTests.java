@@ -76,7 +76,7 @@ public class UpdateCommentSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user can not update comments created by admin user and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS })
     public void consumerIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -113,7 +113,7 @@ public class UpdateCommentSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify update comment with inexistent nodeId returns status code 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS })
     public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);
@@ -127,7 +127,7 @@ public class UpdateCommentSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify if commentId is not set the status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS })
     public void canNotUpdateCommentIfCommentIdIsNotSet() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(adminUserModel);

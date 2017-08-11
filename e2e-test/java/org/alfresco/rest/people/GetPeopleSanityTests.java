@@ -96,7 +96,7 @@ public class GetPeopleSanityTests extends RestTest
         ;
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify manager user gets a non existing person with Rest API and person is not found")
     public void managerUserChecksIfNonExistingPersonIsPresent() throws Exception
     {

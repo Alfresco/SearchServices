@@ -83,7 +83,7 @@ public class DeleteCommentSanityTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Consumer user cannot delete comments and status code returned is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS })
     public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
