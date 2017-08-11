@@ -83,17 +83,23 @@ public class LimitStream extends TupleStream implements Expressible {
   @Override
   public StreamExpressionParameter toExpression(StreamFactory factory) throws IOException {
     StreamExpression expression = new StreamExpression(factory.getFunctionName(this.getClass()));
+    expression.addParameter(((Expressible)stream).toExpression(factory));
     expression.addParameter(String.valueOf(limit));
     return expression;
   }
 
   @Override
   public Explanation toExplanation(StreamFactory factory) throws IOException {
-    StreamExplanation explanation = new StreamExplanation(getStreamNodeId().toString());
-    explanation.setFunctionName(factory.getFunctionName(this.getClass()));
-    explanation.setImplementingClass(this.getClass().getName());
-    explanation.setExpressionType(Explanation.ExpressionType.STREAM_DECORATOR);
-    explanation.setExpression(toExpression(factory).toString());
+
+    Explanation explanation = new StreamExplanation(getStreamNodeId().toString())
+            .withChildren(new Explanation[]{
+                    stream.toExplanation(factory)
+            })
+            .withFunctionName(factory.getFunctionName(this.getClass()))
+            .withImplementingClass(this.getClass().getName())
+            .withExpressionType(Explanation.ExpressionType.STREAM_DECORATOR)
+            .withExpression(toExpression(factory).toString());
+
     return explanation;
   }
 
