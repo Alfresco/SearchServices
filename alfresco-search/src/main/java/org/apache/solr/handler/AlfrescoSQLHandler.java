@@ -16,7 +16,10 @@
  */
 package org.apache.solr.handler;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -27,15 +30,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.solr.query.AbstractQParser;
 import org.apache.calcite.config.Lex;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
 import org.apache.solr.client.solrj.io.stream.ExceptionStream;
+import org.apache.solr.client.solrj.io.stream.StreamContext;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.SolrQueryRequest;
@@ -44,6 +51,9 @@ import org.apache.solr.security.AuthorizationContext;
 import org.apache.solr.security.PermissionNameProvider;
 import org.apache.solr.util.plugin.SolrCoreAware;
 import org.alfresco.solr.sql.AlfrescoCalciteSolrDriver;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +134,12 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       // JDBC driver requires metadata from the SQLHandler. Default to false since this adds a new Metadata stream.
       boolean includeMetadata = params.getBool("includeMetadata", false);
       properties.put("localCore", localCore);
+
+      String json = getAflrescoJson(req);
+      if(json != null) {
+        properties.put(AbstractQParser.ALFRESCO_JSON, json);
+      }
+
       tupleStream = new SqlHandlerStream(url, sql, null, properties, driverClass, includeMetadata);
 
       tupleStream = new StreamHandler.TimerStream(new ExceptionStream(tupleStream));
@@ -201,6 +217,42 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       return tuple;
     }
   }
+
+  public String getAflrescoJson(SolrQueryRequest req)
+  {
+    Iterable<ContentStream> streams = req.getContentStreams();
+    if (streams != null)
+    {
+      try
+      {
+        Reader reader = null;
+        for (ContentStream stream : streams)
+        {
+          reader = new BufferedReader(new InputStreamReader(
+                  stream.getStream(), "UTF-8"));
+        }
+
+        if (reader != null)
+        {
+          JSONObject json = new JSONObject(new JSONTokener(reader));
+          return json.toString();
+        }
+      }
+      catch (JSONException e)
+      {
+        // This is expected when there is no json element to the
+        // request
+      }
+      catch (IOException e)
+      {
+        throw new AlfrescoRuntimeException(
+                "IO Error parsing query parameters", e);
+      }
+    }
+
+    return null;
+  }
+
 
   private ModifiableSolrParams adjustParams(SolrParams params) {
     ModifiableSolrParams adjustedParams = new ModifiableSolrParams();
