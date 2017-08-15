@@ -42,7 +42,7 @@ public class ExplicitRouter implements DocRouter {
             {
                 if (log.isDebugEnabled())
                 {
-                    log.debug("EXPLICIT_ID routing specified but failed to parse a shard property value of "+shardBy);
+                    log.debug("EXPLICIT_ID routing specified but failed to parse a shard property value of "+shardBy+" for node "+node.getNodeRef());
                 }
             }
         }
@@ -50,7 +50,7 @@ public class ExplicitRouter implements DocRouter {
         {
             if (log.isDebugEnabled())
             {
-                log.debug("EXPLICIT_ID routing specified but no shard id property found ");
+                log.debug("EXPLICIT_ID routing specified but no shard id property found for node "+node.getNodeRef());
             }
         }
 
