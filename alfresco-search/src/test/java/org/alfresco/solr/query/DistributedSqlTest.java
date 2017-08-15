@@ -21,7 +21,6 @@ package org.alfresco.solr.query;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 import org.alfresco.model.ContentModel;
@@ -41,29 +40,27 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.client.solrj.io.stream.StreamContext;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Rule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Joel
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistributedTest
+public class DistributedSqlTest extends AbstractAlfrescoDistributedTest
 {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
 
     @Test
-    public void testExpression() throws Exception
+    public void testSearch() throws Exception
     {
         putHandleDefaults();
+
 
         /*
         * Create and index an AclChangeSet.
@@ -155,101 +152,36 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
 
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
-        String expr = "alfrescoExpr(let(a=timeSeries(myCollection, " +
-                                                    "q=\"*.*\", " +
-                                                    "field=\"cm:created\", " +
-                                                    "start=\"2000-01-01T01:00:00.000Z\", " +
-                                                    "end=\"2000-05-31T01:00:00.000Z\", " +
-                                                    "gap=\"+1MONTH\", " +
-                                                    "format=\"YYYY-MM\", " +
-                                                    "count(*))," +
-                                        "get(a)))";
+        String sql = "select DBID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
 
         String shards = getShardsString(clusterClients);
+        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards);
 
+        AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
 
-        SolrParams params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
-
-        AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient)clusterClients.get(0)).getBaseURL(),
-                params);
         tupleStream.setJson(alfrescoJson);
         List<Tuple> tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 5);
-        assertBuckets("cm:created", tuples, "2000-01", "2000-02", "2000-03", "2000-04", "2000-05");
-        assertCounts("count(*)", tuples, 1, 1, 1, 1, 0);
 
-        //Test that the access control is being applied.
+        assertTrue(tuples.size() == 4);
+        assertNodes(tuples, node1, node2, node3, node4);
+
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
-        tupleStream = new AlfrescoSolrStream(((HttpSolrClient)clusterClients.get(0)).getBaseURL(), params);
+        //Test that the access control is being applied.
+        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson2);
         tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 5);
-        assertBuckets("cm:created", tuples, "2000-01", "2000-02", "2000-03", "2000-04", "2000-05");
-        assertCounts("count(*)", tuples, 1, 1, 0, 0, 0);
-
-        expr = "alfrescoExpr(limit(facet("
-                + "myCollection, "
-                + "q=\"*.*\", "
-                + "buckets=\"cm:created\", "
-                + "bucketSorts=\"cm:created desc\", "
-                + "bucketSizeLimit=100, "
-                +"count(*)"
-                + "),2))";
-
-        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
-
-        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
-        tupleStream.setJson(alfrescoJson);
-        tuples = getTuples(tupleStream);
         assertTrue(tuples.size() == 2);
-
-        expr = "alfrescoExpr(search(myCollection, q=\"cm:content:world\", sort=\"cm:created desc\"))";
-        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
-
-        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
-        tupleStream.setJson(alfrescoJson);
-        tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 4);
-
-        expr = "alfrescoExpr(having(facet("
-                + "myCollection, "
-                + "q=\"cm:content:world\", "
-                + "buckets=\"cm:created\", "
-                + "bucketSorts=\"cm:created desc\", "
-                + "bucketSizeLimit=100, "
-                +"count(*)"
-                + "),eq(count(*), 1)))";
-        params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
-
-        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
-        tupleStream.setJson(alfrescoJson);
-        tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 4);
-
+        assertNodes(tuples, node1, node2);
     }
 
-    private void assertBuckets(String field, List<Tuple> tuples, String ... buckets) throws Exception {
-        int i=0;
-        for(String bucket : buckets) {
-            Tuple tuple = tuples.get(i);
-            if(!tuple.getString(field).equals(bucket)) {
-                throw new Exception("Bad bucket found: "+tuple.getString(field)+" expected: "+bucket);
-            }
-            ++i;
-        }
-    }
 
-    private void assertCounts(String field, List<Tuple> tuples, long ... counts) throws Exception {
-        int i=0;
-        for(long count : counts) {
+    private void assertNodes(List<Tuple> tuples, Node... nodes) throws Exception {
+        for(int i=0; i<nodes.length; i++) {
+            Node node = nodes[i];
             Tuple tuple = tuples.get(i);
-            if(!tuple.getLong(field).equals(count)) {
-                logger.error("Invalid tuple "+tuple.getMap());
-                logger.error("Locale is "+Locale.getDefault());
-                logger.error("TimeZone is "+TimeZone.getDefault());
-                throw new Exception("Bad count found: "+tuple.getLong(field)+" expected: "+count);
+            if(node.getId() != tuple.getLong("DBID")) {
+                throw new Exception("Incorrect Node ID, found "+tuple.getLong("DBID")+" expected "+node.getId());
             }
-            ++i;
         }
     }
 

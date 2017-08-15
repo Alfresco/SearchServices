@@ -40,6 +40,12 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
 
     private static final long serialVersionUID = 1;
     private TupleStream tupleStream;
+    private final AlfrescoStreamExpressionProcessor processor = new AlfrescoStreamExpressionProcessor();
+
+    public AlfrescoExpressionStream(TupleStream stream) throws IOException
+    {
+        init(stream);
+    }
 
     public AlfrescoExpressionStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
@@ -48,26 +54,7 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
             throw new IOException("AlfrescoExprStream expects a single TupleStream parameter, found:"+streamExpressions.size());
         }
 
-        StreamExpression streamExpression = streamExpressions.get(0);
-        List<StreamExpressionParameter> parameters = streamExpression.getParameters();
-
-        //Only handles the let and timeseries expressions at the moment.
-        //This loops through the named parameters looking at the function name of each parameter value.
-        //If it finds a timeseries function it wraps it in an alfrescoTimeSeries function.
-
-        for(int i=0; i<parameters.size(); i++) {
-            StreamExpressionParameter streamExpressionParameter = parameters.get(i);
-            if(streamExpressionParameter instanceof StreamExpressionNamedParameter) {
-                StreamExpressionNamedParameter namedParameter = (StreamExpressionNamedParameter)streamExpressionParameter;
-                StreamExpression expr = (StreamExpression)namedParameter.getParameter();
-                if(expr.getFunctionName().equals("timeSeries")) {
-                    StreamExpression wrapper = new StreamExpression("alfrescoTimeSeries");
-                    wrapper.addParameter(expr);
-                    namedParameter.setParameter(wrapper);
-                }
-            }
-        }
-
+        StreamExpression streamExpression = processor.process(streamExpressions);
         init(factory.constructStream(streamExpression));
     }
 

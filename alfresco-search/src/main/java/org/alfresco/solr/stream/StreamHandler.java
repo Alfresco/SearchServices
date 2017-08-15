@@ -91,8 +91,6 @@ public class StreamHandler extends RequestHandlerBase implements SolrCoreAware, 
 
     public void inform(SolrCore core) {
 
-        System.out.println("########### Used Local Stream Handler ###########");
-
     /* The stream factory will always contain the zkUrl for the given collection
      * Adds default streams with their corresponding function names. These
      * defaults can be overridden or added to in the solrConfig in the stream
