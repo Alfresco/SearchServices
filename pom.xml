@@ -12,7 +12,7 @@
     <name>Alfresco Solr Search parent</name>
     <properties>
         <solr.version>6.6.0</solr.version>
-        <alfresco-solr.version>5.2.2-SNAPSHOT</alfresco-solr.version>
+        <alfresco-solr.version>5.3-SNAPSHOT</alfresco-solr.version>
     </properties>
     <distributionManagement>
         <repository>
