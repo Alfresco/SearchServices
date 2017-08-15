@@ -1064,6 +1064,15 @@
     </lst>
   </requestHandler>
 
+  <requestHandler name="/sql" class="org.apache.solr.handler.AlfrescoSQLHandler">
+    <lst name="defaults">
+        <str name="wt">json</str>
+    </lst>
+    <lst name="invariants">
+        <str name="distrib">false</str>
+    </lst>
+  </requestHandler>
+
     <!-- Solr Cell Update Request Handler
 
          http://wiki.apache.org/solr/ExtractingRequestHandler
@@ -1930,8 +1939,10 @@
   <expressible name="stats" class="org.alfresco.solr.stream.StatsStream"/>
   <expressible name="alfrescoStats" class="org.alfresco.solr.stream.AlfrescoStatsStream"/>
   <expressible name="search" class="org.alfresco.solr.stream.SearchStream"/>
-  <expressible name="facets" class="org.alfresco.solr.stream.FacetStream"/>
+  <expressible name="facet" class="org.alfresco.solr.stream.FacetStream"/>
   <expressible name="alfrescoFacets" class="org.alfresco.solr.stream.AlfrescoFacetStream"/>
+  <expressible name="having" class="org.apache.solr.client.solrj.io.stream.HavingStream"/>
+  <expressible name="limit" class="org.alfresco.solr.stream.LimitStream"/>
 
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />

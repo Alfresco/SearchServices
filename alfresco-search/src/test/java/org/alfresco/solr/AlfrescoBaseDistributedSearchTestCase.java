@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.solr.stream.AlfrescoStreamHandler;
 import org.apache.solr.BaseDistributedSearchTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
@@ -47,27 +48,8 @@ public abstract class AlfrescoBaseDistributedSearchTestCase extends BaseDistribu
         System.setProperty("alfresco.test", "true");
     }
 
-    public static class AlfrescoQueryRequest extends QueryRequest
-    {
-        private static final long serialVersionUID = 103873138415233192L;
-        private String json;
-
-        public AlfrescoQueryRequest(String json, SolrParams params)
-        {
-            super(params);
-            this.json =json;
-        }
-
-        public Collection<ContentStream> getContentStreams()
-        {
-            List<ContentStream> streams = new ArrayList<ContentStream>();
-            streams.add(new ContentStreamBase.StringStream(json));
-            return streams;
-        }
-    }
-
     protected QueryRequest getAlfrescoRequest(String json, SolrParams params) {
-        QueryRequest request = new AlfrescoQueryRequest(json, params);
+        QueryRequest request = new AlfrescoStreamHandler.AlfrescoQueryRequest(json, params);
         request.setMethod(SolrRequest.METHOD.POST);
         return request;
     }
