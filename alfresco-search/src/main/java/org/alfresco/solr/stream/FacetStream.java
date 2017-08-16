@@ -288,7 +288,7 @@ public class FacetStream extends TupleStream implements Expressible  {
     expression.addParameter(new StreamExpressionNamedParameter("bucketSizeLimit", Integer.toString(bucketSizeLimit)));
         
     // zkHost
-    expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
+    //expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
         
     return expression;   
   }
