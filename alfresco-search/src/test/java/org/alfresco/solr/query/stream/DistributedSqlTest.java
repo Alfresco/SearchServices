@@ -20,13 +20,9 @@ package org.alfresco.solr.query.stream;
 
 import java.util.List;
 
-import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
-import org.apache.solr.common.params.SolrParams;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -37,34 +33,25 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSqlTest extends AbstractStreamTest
 {
-	@Rule
+    private String sql = "select DBID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
+    
+    @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
+    
     @Test
     public void testSearch() throws Exception
     {
-        List<SolrClient> clusterClients = getClusterClients();
-
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-
-        String sql = "select DBID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
-
-        String shards = getShardsString(clusterClients);
-        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards);
-        System.out.println("!!!!!!!!!!!!!!!!!!Shard: " + shards);
-
-        AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
-
-        tupleStream.setJson(alfrescoJson);
-        List<Tuple> tuples = getTuples(tupleStream);
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
 
         assertTrue(tuples.size() == 4);
         assertNodes(tuples, node1, node2, node3, node4);
-
-        String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
-        //Test that the access control is being applied.
-        tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
-        tupleStream.setJson(alfrescoJson2);
-        tuples = getTuples(tupleStream);
+    }
+        @Test
+    public void testSearchWithDifferentUser() throws Exception
+    {  
+        String alfrescoJson = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 2);
         assertNodes(tuples, node1, node2);
     }
