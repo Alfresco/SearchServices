@@ -64,7 +64,6 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Before;
-import org.junit.Rule;
 
 /**
  * @author Michael Suzuki
@@ -73,9 +72,6 @@ import org.junit.Rule;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AbstractStreamTest extends AbstractAlfrescoDistributedTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
-    
     protected Node node1;
     protected Node node2;
     protected Node node3;
