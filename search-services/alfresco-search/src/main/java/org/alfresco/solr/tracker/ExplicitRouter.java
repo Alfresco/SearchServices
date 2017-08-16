@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 public class ExplicitRouter implements DocRouter {
 
     protected final static Logger log = LoggerFactory.getLogger(ExplicitRouter.class);
+    private final DBIDRouter fallback = new DBIDRouter();
 
     public ExplicitRouter() {
     }
@@ -54,6 +55,6 @@ public class ExplicitRouter implements DocRouter {
             }
         }
 
-        return false;
+        return fallback.routeNode(shardCount, shardInstance, node);
     }
 }
