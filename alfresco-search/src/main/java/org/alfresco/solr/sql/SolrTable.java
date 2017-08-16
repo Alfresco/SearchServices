@@ -79,6 +79,11 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
   private static final StreamFactory streamFactory = new StreamFactory()
           .withFunctionName("alfrescoExpr", AlfrescoExpressionStream.class)
+          .withFunctionName("timeSeries", TimeSeriesStream.class)
+          .withFunctionName("stats", StatsStream.class)
+          .withFunctionName("alfrescoStats", AlfrescoStatsStream.class)
+          .withFunctionName("alfrescoTimeSeries", AlfrescoTimeSeriesStream.class)
+          .withFunctionName("alfrescoFacets", AlfrescoFacetStream.class)
           .withFunctionName("search", SearchStream.class)
           .withFunctionName("facet", FacetStream.class)
           .withFunctionName("having", HavingStream.class)
@@ -97,8 +102,6 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
           .withFunctionName("lt", LessThanEvaluator.class)
           .withFunctionName("lteq", LessThanEqualToEvaluator.class)
           .withFunctionName("gteq", GreaterThanEqualToEvaluator.class);
-
-
 
   private static final String DEFAULT_QUERY = "*:*";
 
@@ -540,28 +543,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     SearchStream cstream = new SearchStream(zk, collection, params);
     tupleStream = new RollupStream(cstream, buckets, metrics);
 
-    StreamFactory factory = new StreamFactory()
-        .withFunctionName("search", SearchStream.class)
-        .withFunctionName("parallel", ParallelStream.class)
-        .withFunctionName("rollup", RollupStream.class)
-        .withFunctionName("sum", SumMetric.class)
-        .withFunctionName("min", MinMetric.class)
-        .withFunctionName("max", MaxMetric.class)
-        .withFunctionName("avg", MeanMetric.class)
-        .withFunctionName("count", CountMetric.class)
-        .withFunctionName("and", AndEvaluator.class)
-        .withFunctionName("or", OrEvaluator.class)
-        .withFunctionName("not", NotEvaluator.class)
-        .withFunctionName("eq", EqualsEvaluator.class)
-        .withFunctionName("gt", GreaterThanEvaluator.class)
-        .withFunctionName("lt", LessThanEvaluator.class)
-        .withFunctionName("val", RawValueEvaluator.class)
-        .withFunctionName("lteq", LessThanEqualToEvaluator.class)
-        .withFunctionName("having", HavingStream.class)
-        .withFunctionName("gteq", GreaterThanEqualToEvaluator.class);
-
     if(havingPredicate != null) {
-      BooleanEvaluator booleanOperation = (BooleanEvaluator)factory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
+      BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
       tupleStream = new HavingStream(tupleStream, booleanOperation);
     }
 
@@ -572,7 +555,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       ParallelStream parallelStream = new ParallelStream(zk, collection, tupleStream, numWorkers, comp);
 
 
-      parallelStream.setStreamFactory(factory);
+      parallelStream.setStreamFactory(streamFactory);
       tupleStream = parallelStream;
     }
 
@@ -675,28 +658,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                               overfetch);
 
 
-
-    StreamFactory factory = new StreamFactory()
-        .withFunctionName("search", CloudSolrStream.class)
-        .withFunctionName("parallel", ParallelStream.class)
-        .withFunctionName("rollup", RollupStream.class)
-        .withFunctionName("sum", SumMetric.class)
-        .withFunctionName("min", MinMetric.class)
-        .withFunctionName("max", MaxMetric.class)
-        .withFunctionName("avg", MeanMetric.class)
-        .withFunctionName("count", CountMetric.class)
-        .withFunctionName("and", AndEvaluator.class)
-        .withFunctionName("or", OrEvaluator.class)
-        .withFunctionName("not", NotEvaluator.class)
-        .withFunctionName("eq", EqualsEvaluator.class)
-        .withFunctionName("val", RawValueEvaluator.class)
-        .withFunctionName("gt", GreaterThanEvaluator.class)
-        .withFunctionName("lt", LessThanEvaluator.class)
-        .withFunctionName("lteq", LessThanEqualToEvaluator.class)
-        .withFunctionName("gteq", GreaterThanEqualToEvaluator.class);
-
     if(havingPredicate != null) {
-      BooleanEvaluator booleanOperation = (BooleanEvaluator)factory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
+      BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
       tupleStream = new HavingStream(tupleStream, booleanOperation);
     }
 
