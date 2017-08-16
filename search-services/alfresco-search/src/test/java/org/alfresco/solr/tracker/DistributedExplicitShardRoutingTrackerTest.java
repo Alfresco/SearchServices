@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr.tracker;
 
-import com.carrotsearch.randomizedtesting.RandomizedContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
@@ -30,11 +29,12 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.core.SolrCore;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
@@ -94,20 +94,6 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
             nodeMetaDatas.add(nodeMetaData);
         }
 
-        //Add a node that won't get indexed
-        Node node = getNode(bigTxn, bulkAcls.get(1), Node.SolrApiNodeStatus.UPDATED);
-        nodes.add(node);
-        NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(1), "king", null, false);
-        node.setShardPropertyValue("node YOU DON'T");
-        nodeMetaDatas.add(nodeMetaData);
-
-        //Add a node that won't get indexed
-        node = getNode(bigTxn, bulkAcls.get(2), Node.SolrApiNodeStatus.UPDATED);
-        nodes.add(node);
-        nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(2), "king", null, false);
-        //Don't set the Share Property but add it anyway
-        nodeMetaDatas.add(nodeMetaData);
-
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
 
         Query contentQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world"));
@@ -115,13 +101,20 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         List<SolrCore> shards = getJettyCores(jettyShards);
         long begin = System.currentTimeMillis();
 
+        //Acls go to all cores
+        waitForDocCountAllCores(aclQuery, numAcls, 25000);
+
+        //Should be 1000
+        waitForShardsCount(contentQuery,numNodes,20000, begin);
+        begin = System.currentTimeMillis();
+
         for (SolrCore core : shards)
         {
             switch (core.getName())
             {
                 case "shard0":
                 case "shard1":
-                    waitForDocCountCore(core, contentQuery, 500, 50000, begin);
+                    waitForDocCountCore(core, contentQuery, 500, 1000, begin);
                     break;
                 default:
                     //ignore other shards because we will check below
@@ -129,10 +122,22 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         }
 
         //lets make sure the other nodes don't have any.
-         assertShardCount(2, contentQuery, 0);
+        assertShardCount(2, contentQuery, 0);
+/**
+        //Add a node that will get indexed by DBID
+        Node node = getNode(bigTxn, bulkAcls.get(1), Node.SolrApiNodeStatus.UPDATED);
+        nodes.add(node);
+        NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(1), "king", null, false);
+        node.setShardPropertyValue("node YOU DON'T");
+        nodeMetaDatas.add(nodeMetaData);
 
-        //Acls go to all cores
-        waitForDocCountAllCores(aclQuery, numAcls, 20000);
+        //Add another node that will get indexed by DBID
+        node = getNode(bigTxn, bulkAcls.get(2), Node.SolrApiNodeStatus.UPDATED);
+        nodes.add(node);
+        nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(2), "king", null, false);
+        //Don't set the Share Property but add it anyway
+        nodeMetaDatas.add(nodeMetaData);
+**/
     }
 
     protected Properties getProperties()
