@@ -46,12 +46,9 @@ public class DistributedSqlTest extends AbstractStreamTest
 
         assertTrue(tuples.size() == 4);
         assertNodes(tuples, node1, node2, node3, node4);
-    }
-        @Test
-    public void testSearchWithDifferentUser() throws Exception
-    {  
-        String alfrescoJson = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
-        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+   
+        String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
+        tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
         assertNodes(tuples, node1, node2);
     }
