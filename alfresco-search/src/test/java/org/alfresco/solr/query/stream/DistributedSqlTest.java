@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.query;
+package org.alfresco.solr.query.stream;
 
 import java.util.List;
 
-import org.alfresco.solr.query.stream.AbstractStreamTest;
 import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
@@ -36,11 +35,10 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedSearchStreamTest extends AbstractStreamTest
+public class DistributedSqlTest extends AbstractStreamTest
 {
-    @Rule
+	@Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
-
     @Test
     public void testSearch() throws Exception
     {
@@ -48,10 +46,11 @@ public class DistributedSearchStreamTest extends AbstractStreamTest
 
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
-        String expr = "search(myCollection, q=\"cm:content:world\", sort=\"cm:created desc\")";
+        String sql = "select DBID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
 
         String shards = getShardsString(clusterClients);
-        SolrParams params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
+        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards);
+        System.out.println("!!!!!!!!!!!!!!!!!!Shard: " + shards);
 
         AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
 
@@ -59,7 +58,7 @@ public class DistributedSearchStreamTest extends AbstractStreamTest
         List<Tuple> tuples = getTuples(tupleStream);
 
         assertTrue(tuples.size() == 4);
-        assertNodes(tuples, node4, node3, node2, node1);
+        assertNodes(tuples, node1, node2, node3, node4);
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         //Test that the access control is being applied.
@@ -67,7 +66,8 @@ public class DistributedSearchStreamTest extends AbstractStreamTest
         tupleStream.setJson(alfrescoJson2);
         tuples = getTuples(tupleStream);
         assertTrue(tuples.size() == 2);
-        assertNodes(tuples, node2, node1);
+        assertNodes(tuples, node1, node2);
     }
+
 }
 

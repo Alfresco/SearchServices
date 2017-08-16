@@ -18,4 +18,5 @@
 /**
  * Classes related to Apache Calcite implementation in {@link org.apache.solr.handler.SQLHandler}
  */
-package org.apache.solr.handler.sql;
+//package org.apache.solr.handler.sql;
+package org.alfresco.solr.sql;
