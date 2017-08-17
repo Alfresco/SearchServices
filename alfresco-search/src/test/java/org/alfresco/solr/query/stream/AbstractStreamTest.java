@@ -134,7 +134,7 @@ public class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
         nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
-        nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("9"));
+        nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
 
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
         Date date2 = getDate(2000, 1, 2);
@@ -148,7 +148,7 @@ public class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date3)));
         nodeMetaData3.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
-        nodeMetaData3.getProperties().put(PROP_TRACK, new StringPropertyValue("7"));
+        nodeMetaData3.getProperties().put(PROP_TRACK, new StringPropertyValue("6"));
 
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
         Date date4 = getDate(2000, 3, 2);
