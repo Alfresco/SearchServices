@@ -70,7 +70,7 @@ import org.junit.Before;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class AbstractStreamTest extends AbstractAlfrescoDistributedTest
+public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
 {
     protected Node node1;
     protected Node node2;
