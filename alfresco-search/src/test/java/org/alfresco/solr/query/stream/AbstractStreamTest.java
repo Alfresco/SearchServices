@@ -42,6 +42,8 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Acl;
@@ -77,6 +79,8 @@ public class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected Node node3;
     protected Node node4;
     
+    protected static final QName PROP_RATING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeTotal");
+    protected static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
     @Before
     public void load() throws Exception
     {
@@ -129,22 +133,29 @@ public class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         Date date1 = getDate(2000, 0, 2);
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
+        nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
+        nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("9"));
 
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
         Date date2 = getDate(2000, 1, 2);
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2)));
+        nodeMetaData2.getProperties().put(PROP_RATING, new StringPropertyValue("15"));
+        nodeMetaData2.getProperties().put(PROP_TRACK, new StringPropertyValue("8"));
 
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl2, "mike", null, false);
         Date date3 = getDate(2000, 2, 2);
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date3)));
+        nodeMetaData3.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
+        nodeMetaData3.getProperties().put(PROP_TRACK, new StringPropertyValue("7"));
 
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
         Date date4 = getDate(2000, 3, 2);
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date4)));
-
+        nodeMetaData4.getProperties().put(PROP_RATING, new StringPropertyValue("20"));
+        nodeMetaData4.getProperties().put(PROP_TRACK, new StringPropertyValue("4"));
 
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
