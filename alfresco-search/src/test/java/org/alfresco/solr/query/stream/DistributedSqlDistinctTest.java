@@ -27,13 +27,12 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * @author Joel
+ * @author Michael Suzuki
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSqlDistinctTest extends AbstractStreamTest
 {
-    private String sql = "select distinct ACLID from alfresco where `cm:content` = 'world' limit 10 ";
     private String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
     
     @Rule
@@ -42,9 +41,18 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
     @Test
     public void testSearch() throws Exception
     {
-        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        List<Tuple> tuples = sqlQuery("select distinct ACLID from alfresco where `cm:content` = 'world' limit 10", alfrescoJson);
         assertTrue(tuples.size() == 2);
         assertFalse(tuples.get(0).get("ACLID").toString().equals(tuples.get(1).get("ACLID").toString()));
+        
+        tuples = sqlQuery("select distinct ACLID,DBID from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        assertTrue(tuples.size() == 4);
+        
+        tuples = sqlQuery("select distinct site from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        
+//        tuples = sqlQuery("select distinct owner from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+//        assertTrue(tuples.size() == 1);
     }
 
 }
