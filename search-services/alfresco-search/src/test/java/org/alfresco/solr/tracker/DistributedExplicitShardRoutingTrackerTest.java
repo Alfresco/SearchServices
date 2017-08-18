@@ -74,9 +74,7 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
                     null));
         }
 
-        indexAclChangeSet(bulkAclChangeSet,
-                bulkAcls,
-                bulkAclReaders);
+        indexAclChangeSet(bulkAclChangeSet, bulkAcls, bulkAclReaders);
 
         int numNodes = 1000;
         List<Node> nodes = new ArrayList();
@@ -123,21 +121,30 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
 
         //lets make sure the other nodes don't have any.
         assertShardCount(2, contentQuery, 0);
-/**
-        //Add a node that will get indexed by DBID
-        Node node = getNode(bigTxn, bulkAcls.get(1), Node.SolrApiNodeStatus.UPDATED);
-        nodes.add(node);
-        NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(1), "king", null, false);
-        node.setShardPropertyValue("node YOU DON'T");
-        nodeMetaDatas.add(nodeMetaData);
 
-        //Add another node that will get indexed by DBID
-        node = getNode(bigTxn, bulkAcls.get(2), Node.SolrApiNodeStatus.UPDATED);
-        nodes.add(node);
-        nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(2), "king", null, false);
+        Transaction txn1 = getTransaction(0, 2);
+        List<Node> extraNodes = new ArrayList();
+        List<NodeMetaData> extraNodeMetaDatas = new ArrayList();
+
+        //Add a node that will get indexed by fallback to DBID
+        Node node = getNode(txn1, bulkAcls.get(1), Node.SolrApiNodeStatus.UPDATED);
+        extraNodes.add(node);
+        NodeMetaData nodeMetaData = getNodeMetaData(node, txn1, bulkAcls.get(1), "king", null, false);
+        node.setShardPropertyValue("node YOU DON'T");
+        extraNodeMetaDatas.add(nodeMetaData);
+
+        //Add another node that will get indexed by fallback to DBID
+        node = getNode(txn1, bulkAcls.get(2), Node.SolrApiNodeStatus.UPDATED);
+        extraNodes.add(node);
+        nodeMetaData = getNodeMetaData(node, txn1, bulkAcls.get(2), "king", null, false);
         //Don't set the Share Property but add it anyway
-        nodeMetaDatas.add(nodeMetaData);
-**/
+        extraNodeMetaDatas.add(nodeMetaData);
+
+        indexTransaction(txn1, extraNodes, extraNodeMetaDatas);
+
+        begin = System.currentTimeMillis();
+        //Asserts the the two nodes were not lost even though the ShardPropertyValue was incorrect
+        waitForShardsCount(contentQuery,numNodes+2,30000, begin);
     }
 
     protected Properties getProperties()
