@@ -104,6 +104,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
           .withFunctionName("gteq", GreaterThanEqualToEvaluator.class);
 
   private static final String DEFAULT_QUERY = "*:*";
+  public static final int DEFAULT_LIMIT = 100;
 
   private final String collection;
   private final SolrSchema schema;
@@ -165,6 +166,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
     TupleStream tupleStream;
     String zk = properties.getProperty("zk");
+    int limitInt = limit != null ? Integer.parseInt(limit) : DEFAULT_LIMIT;
+
     try {
       if (metricPairs.isEmpty() && buckets.isEmpty()) {
         tupleStream = handleSelect(zk, collection, q, fields, orders, limit);
@@ -191,7 +194,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                              orders,
                                              buckets,
                                              metricPairs,
-                                             limit,
+                                             limitInt,
                                              havingPredicate);
           }
         }
@@ -608,7 +611,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                          final List<Pair<String, String>> orders,
                                          final List<String> bucketFields,
                                          final List<Pair<String, String>> metricPairs,
-                                         final String lim,
+                                         final int limit,
                                          final String havingPredicate) throws IOException {
 
 
@@ -633,8 +636,6 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         }
       }
     }
-
-    int limit = lim != null ? Integer.parseInt(lim) : 1000;
 
     FieldComparator[] sorts = null;
 
@@ -663,7 +664,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       tupleStream = new HavingStream(tupleStream, booleanOperation);
     }
 
-    if(lim != null)
+    if(limit > 0)
     {
       tupleStream = new LimitStream(tupleStream, limit);
     }
