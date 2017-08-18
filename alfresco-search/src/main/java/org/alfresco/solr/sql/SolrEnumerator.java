@@ -98,6 +98,9 @@ class SolrEnumerator implements Enumerator<Object> {
       val = buf.toString();
     }
 
+    if(val instanceof Float) {
+      return ((Float) val).doubleValue();
+    }
     return val;
   }
 

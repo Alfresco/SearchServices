@@ -48,8 +48,11 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
         tuples = sqlQuery("select distinct ACLID,DBID from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
         assertTrue(tuples.size() == 4);
         
-        tuples = sqlQuery("select distinct site from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
-        assertTrue(tuples.size() == 1);
+        tuples = sqlQuery("select distinct `cm:name` from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        assertTrue(tuples.size() == 3);
+        
+        tuples = sqlQuery("select distinct `cm:title` from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        assertTrue(tuples.size() == 2);
         
 //        tuples = sqlQuery("select distinct owner from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
 //        assertTrue(tuples.size() == 1);

@@ -79,11 +79,14 @@ class SolrSchema extends AbstractSchema {
         case "solr.TrieLongField":
           type = typeFactory.createJavaType(Long.class);
           break;
-        case "tfloat":
-        case "tdouble":
-        case "float":
-        case "double":
+        case "solr.TrieDoubleField":
           type = typeFactory.createJavaType(Double.class);
+          break;
+        case "solr.TrieFloatField":
+          type = typeFactory.createJavaType(Double.class);
+          break;
+        case "solr.TrieIntField":
+          type = typeFactory.createJavaType(Long.class);
           break;
         default:
           type = typeFactory.createJavaType(String.class);
