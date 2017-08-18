@@ -124,7 +124,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
         nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
         nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
-
+        nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
+        nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
 
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
         Date date2 = getDate(2000, 1, 2);
@@ -133,7 +134,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData2.getProperties().put(PROP_RATING, new StringPropertyValue("15"));
         nodeMetaData2.getProperties().put(PROP_TRACK, new StringPropertyValue("8"));
         nodeMetaData2.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
-
+        nodeMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name2"));
+        nodeMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl2, "mike", null, false);
         Date date3 = getDate(2000, 2, 2);
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
@@ -141,7 +143,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData3.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
         nodeMetaData3.getProperties().put(PROP_TRACK, new StringPropertyValue("6"));
         nodeMetaData3.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Canon"));
-
+        nodeMetaData3.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name3"));
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
         Date date4 = getDate(2000, 3, 2);
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATED,

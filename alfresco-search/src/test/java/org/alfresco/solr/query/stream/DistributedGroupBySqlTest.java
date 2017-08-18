@@ -18,14 +18,13 @@
  */
 package org.alfresco.solr.query.stream;
 
-import org.alfresco.solr.client.Node;
+import java.util.List;
+
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  * @author Joel
