@@ -126,7 +126,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     }
     return protoRowType.apply(typeFactory);
   }
-
+  
   private Enumerable<Object> query(final Properties properties) {
     return query(properties, Collections.emptyList(), null, Collections.emptyList(), Collections.emptyList(),
         Collections.emptyList(), null, null, null);
