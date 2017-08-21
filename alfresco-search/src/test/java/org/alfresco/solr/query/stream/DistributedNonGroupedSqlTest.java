@@ -42,14 +42,14 @@ public class DistributedNonGroupedSqlTest extends AbstractStreamTest
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
 
         // Test count
-        String sql = "select count(*) as countResult from alfresco where `cm:content` = 'world'";
+        String sql = "select count(*) from alfresco where `cm:content` = 'world'";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getLong("countResult") == 4);
+        assertTrue(tuples.get(0).getLong("EXPR$0") == 4);
 
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getLong("countResult") == 2);
+        assertTrue(tuples.get(0).getLong("EXPR$0") == 2);
 
         // Test max
         sql = "select max(`cm:fiveStarRatingSchemeTotal`) as maxResult from alfresco where `cm:content` = 'world'";
@@ -62,14 +62,14 @@ public class DistributedNonGroupedSqlTest extends AbstractStreamTest
         assertTrue(tuples.get(0).getDouble("maxResult") == 15);
 
         // Test min
-        sql = "select min(`cm:fiveStarRatingSchemeTotal`) as minResult from alfresco where `cm:content` = 'world'";
+        sql = "select min(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("minResult") == 10);
+        assertTrue(tuples.get(0).getDouble("EXPR$0") == 10);
 
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("minResult") == 10);
+        assertTrue(tuples.get(0).getDouble("EXPR$0") == 10);
 
         // Test avg
         sql = "select avg(`cm:fiveStarRatingSchemeTotal`) as avgResult from alfresco where `cm:content` = 'world'";
