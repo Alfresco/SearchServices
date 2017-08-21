@@ -33,7 +33,7 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSqlTest extends AbstractStreamTest
 {
-    private String sql = "select DBID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
+    private String sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
     
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
@@ -43,14 +43,14 @@ public class DistributedSqlTest extends AbstractStreamTest
     {
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-
         assertTrue(tuples.size() == 4);
         assertNodes(tuples, node1, node2, node3, node4);
-   
+        assertFieldNotNull(tuples, "LID");
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
         assertNodes(tuples, node1, node2);
+        assertFieldNotNull(tuples, "LID");
     }
 
 }
