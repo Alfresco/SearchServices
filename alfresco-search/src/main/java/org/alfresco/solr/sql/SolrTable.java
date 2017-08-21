@@ -126,7 +126,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     }
     return protoRowType.apply(typeFactory);
   }
-  
+
   private Enumerable<Object> query(final Properties properties) {
     return query(properties, Collections.emptyList(), null, Collections.emptyList(), Collections.emptyList(),
         Collections.emptyList(), null, null, null);
@@ -817,7 +817,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                   String collection,
                                   String query,
                                   List<Pair<String, String>> metricPairs,
-                                  List<Map.Entry<String, Class>> fields) {
+                                  List<Map.Entry<String, Class>> fields) throws IOException {
 
 
     Map<String, Class> fmap = new HashMap();
@@ -836,7 +836,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
     }
 
-    return new StatsStream(zk, collection, solrParams, metrics);
+    return new AlfrescoExpressionStream(new StatsStream(zk, collection, solrParams, metrics));
   }
 
   public <T> Queryable<T> asQueryable(QueryProvider queryProvider, SchemaPlus schema, String tableName) {

@@ -42,43 +42,43 @@ public class DistributedNonGroupedSqlTest extends AbstractStreamTest
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
 
         // Test count
-        String sql = "select count(*) from alfresco where `cm:content` = 'world' limit 10";
+        String sql = "select count(*) as countResult from alfresco where `cm:content` = 'world'";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getLong("EXPR$0") == 4);
+        assertTrue(tuples.get(0).getLong("countResult") == 4);
 
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getLong("EXPR$0") == 2);
+        assertTrue(tuples.get(0).getLong("countResult") == 2);
 
         // Test max
-        sql = "select max(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world' limit 10";
+        sql = "select max(`cm:fiveStarRatingSchemeTotal`) as maxResult from alfresco where `cm:content` = 'world'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("EXPR$0") == 20);
+        assertTrue(tuples.get(0).getDouble("maxResult") == 20);
 
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("EXPR$0") == 15);
+        assertTrue(tuples.get(0).getDouble("maxResult") == 15);
 
         // Test min
-        sql = "select min(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world' limit 10";
+        sql = "select min(`cm:fiveStarRatingSchemeTotal`) as minResult from alfresco where `cm:content` = 'world'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("EXPR$0") == 10);
+        assertTrue(tuples.get(0).getDouble("minResult") == 10);
 
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("EXPR$0") == 10);
+        assertTrue(tuples.get(0).getDouble("minResult") == 10);
 
         // Test avg
-        sql = "select avg(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world' limit 10";
+        sql = "select avg(`cm:fiveStarRatingSchemeTotal`) as avgResult from alfresco where `cm:content` = 'world'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("EXPR$0") == 13.75);
+        assertTrue(tuples.get(0).getDouble("avgResult") == 13.75);
 
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getDouble("EXPR$0") == 12.5);
+        assertTrue(tuples.get(0).getDouble("avgResult") == 12.5);
     }
 }
