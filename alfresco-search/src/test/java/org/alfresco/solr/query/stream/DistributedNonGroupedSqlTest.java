@@ -30,26 +30,24 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedSqlCountTest extends AbstractStreamTest
+public class DistributedNonGroupedSqlTest extends AbstractStreamTest
 {
-    private String sql = "select count(*) from alfresco where `cm:content` = 'world' limit 10";
-
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
 
     @Test
-    public void testCountSearch() throws Exception
+    public void testSearch() throws Exception
     {
+        String sql = "select count(*) from alfresco where `cm:content` = 'world' limit 10";
+
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
-        assertEquals(4, ((Long) tuples.get(0).fields.get("EXPR$0")).intValue());
+        assertTrue(tuples.get(0).getLong("EXPR$0") == 4);
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
-        assertEquals(2, ((Long) tuples.get(0).fields.get("EXPR$0")).intValue());
+        assertTrue(tuples.get(0).getLong("EXPR$0") == 2);
     }
-
 }
-

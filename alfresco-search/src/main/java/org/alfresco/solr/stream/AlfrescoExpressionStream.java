@@ -41,6 +41,7 @@ import org.apache.solr.client.solrj.io.stream.expr.StreamExplanation;
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpression;
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionParameter;
 import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
+import org.apache.solr.client.solrj.io.stream.metrics.Metric;
 
 public class AlfrescoExpressionStream extends TupleStream implements Expressible  {
 
@@ -55,14 +56,25 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
 
     public AlfrescoExpressionStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
-        /*
-        List<StreamExpression> streamExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, TupleStream.class);
-        if(streamExpressions.size() != 1) {
-            throw new IOException("AlfrescoExprStream expects a single TupleStream parameter, found:"+streamExpressions.size());
-        }
-        */
+        List<StreamExpression> streamExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, Metric.class);
+        StreamExpression streamExpression;
 
-        StreamExpression streamExpression = processor.process(Collections.singletonList(expression));
+        if (streamExpressions.size() != 1)
+        {
+            streamExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, TupleStream.class);
+
+            if (streamExpressions.size() != 1)
+            {
+                throw new IOException("AlfrescoExprStream expects a single TupleStream parameter, found:"+streamExpressions.size());
+            }
+
+            streamExpression = processor.process(streamExpressions);
+        }
+        else
+        {
+            streamExpression = processor.process(expression);
+        }
+
         init(factory.constructStream(streamExpression));
     }
 
@@ -132,4 +144,3 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
         this.tupleStream.setStreamContext(streamContext);
     }
 }
-
