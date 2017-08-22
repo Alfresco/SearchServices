@@ -19,9 +19,7 @@
 package org.alfresco.solr.query.stream;
 
 import java.util.List;
-import java.util.Properties;
 
-import org.alfresco.model.ContentModel;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
@@ -39,12 +37,7 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
     
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
-    private Properties getProperties()
-    {
-        Properties prop = new Properties();
-        prop.put("alfresco.identifier.property.4", ContentModel.PROP_OWNER);
-        return prop;
-    }
+
     @Test
     public void testSearch() throws Exception
     {
