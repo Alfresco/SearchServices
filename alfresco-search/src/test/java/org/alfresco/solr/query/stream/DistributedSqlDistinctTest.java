@@ -19,7 +19,9 @@
 package org.alfresco.solr.query.stream;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.alfresco.model.ContentModel;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
@@ -37,13 +39,21 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
     
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
-    
+    private Properties getProperties()
+    {
+        Properties prop = new Properties();
+        prop.put("alfresco.identifier.property.4", ContentModel.PROP_OWNER);
+        return prop;
+    }
     @Test
     public void testSearch() throws Exception
     {
         List<Tuple> tuples = sqlQuery("select distinct ACLID from alfresco where `cm:content` = 'world' limit 10", alfrescoJson);
         assertTrue(tuples.size() == 2);
         assertFalse(tuples.get(0).get("ACLID").toString().equals(tuples.get(1).get("ACLID").toString()));
+
+        tuples = sqlQuery("select distinct ACLID from alfresco limit 10", alfrescoJson);
+        assertTrue(tuples.size() == 2);
         
         tuples = sqlQuery("select distinct ACLID,DBID from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
         assertTrue(tuples.size() == 4);
@@ -51,11 +61,14 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
         tuples = sqlQuery("select distinct `cm:name` from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
         assertTrue(tuples.size() == 3);
         
-        tuples = sqlQuery("select distinct `cm:title` from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        tuples = sqlQuery("select distinct `cm:title` from alfresco limit 10 ", alfrescoJson);
         assertTrue(tuples.size() == 2);
         
-//        tuples = sqlQuery("select distinct owner from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
-//        assertTrue(tuples.size() == 1);
+        tuples = sqlQuery("select distinct `cm:creator` from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        assertTrue(tuples.size() == 3);
+        
+        tuples = sqlQuery("select distinct owner from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        assertTrue(tuples.size() == 1);
     }
 
 }

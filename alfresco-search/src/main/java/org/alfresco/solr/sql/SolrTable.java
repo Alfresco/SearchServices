@@ -103,7 +103,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
           .withFunctionName("lteq", LessThanEqualToEvaluator.class)
           .withFunctionName("gteq", GreaterThanEqualToEvaluator.class);
 
-  private static final String DEFAULT_QUERY = "*:*";
+  private static final String DEFAULT_QUERY = "*";
   public static final int DEFAULT_LIMIT = 100;
 
   private final String collection;
