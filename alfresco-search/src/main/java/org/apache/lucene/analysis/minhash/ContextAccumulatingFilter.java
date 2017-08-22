@@ -19,95 +19,133 @@
 package org.apache.lucene.analysis.minhash;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayDeque;
+import java.util.LinkedList;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.minhash.MinHashFilter.LongPair;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 
-public class ContextAccumulatingFilter extends TokenFilter
-{   
+public class ContextAccumulatingFilter extends TokenFilter {
 
-    private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
-    
-    private static  Map<String, Set<LongPair> > contexts = new ConcurrentHashMap<String, Set<LongPair> >(128);
- 
-    protected ContextAccumulatingFilter(TokenStream input)
-    {
-        super(input);
-    }
-  
+	private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
+	private final TypeAttribute typeAttribute = addAttribute(TypeAttribute.class);
 
-    @Override
-    final public boolean incrementToken() throws IOException
-    {
-        // Pull the underlying stream of tokens
-        // Hash each token found
-        // Generate the required number of variants of this hash
-        // Keep the minimum hash value found so far of each variant
+	private ArrayDeque<String> tokens = new ArrayDeque<String>(9);
 
-        boolean incremented = input.incrementToken();
-        
-        if(incremented)
-        {
-            String current = new String(termAttribute.buffer(), 0, termAttribute.length());
-            String[] parts = current.split(" ");
-            StringBuilder contextBuilder = new StringBuilder();
-            StringBuilder wordBuilder = new StringBuilder();
-            for(int i = 0, l = parts.length; i < l; i++)
-            {
-                if( (i == Math.round(Math.floor((l-1)/2.0))) || (i == Math.round(Math.ceil((l-1)/2.0))))
-                {
-                    if(wordBuilder.length() > 0)
-                    {
-                        wordBuilder.append(" ");
-                    }
-                    wordBuilder.append(parts[i]);
-                }
-                else
-                {
-                    if(contextBuilder.length() > 0)
-                    {
-                        contextBuilder.append(" ");
-                    }
-                    contextBuilder.append(parts[i]);
-                }
-            }
-            
-            String word = wordBuilder.toString();
-            String context = contextBuilder.toString();
-            
-            Set<LongPair> wordContexts = contexts.get(word);
-            if(wordContexts == null)
-            {
-                wordContexts = ConcurrentHashMap.<LongPair>newKeySet(128);
-                contexts.put(word, wordContexts);
-            }
-            byte[] bytes = context.getBytes("UTF-16LE");
-            LongPair contextHash = new LongPair();
-            MinHashFilter.murmurhash3_x64_128(bytes, 0, bytes.length, 0, contextHash);
-            wordContexts.add(contextHash);
-        }
-        
-        return incremented;
-    }
+	private LinkedList<String> tokenStack = new LinkedList<String>();
 
+	private boolean exhausted = false;
 
-    @Override
-    public void end() throws IOException
-    {
-        super.end();
-        long count = 0;
-        for(Set<LongPair> thing : contexts.values())
-        {
-            count += thing.size();
-        }
-        
-        System.out.println("Words = "+contexts.size() + "     contexts = "+count);
-    } 
-    
-    
+	private int windowSize = 9;
+
+	protected ContextAccumulatingFilter(TokenStream input) {
+		super(input);
+
+	}
+
+	@Override
+	final public boolean incrementToken() throws IOException {
+		// Pull the underlying stream of tokens
+		// Hash each token found
+		// Generate the required number of variants of this hash
+		// Keep the minimum hash value found so far of each variant
+
+		if (exhausted) {
+			return false;
+		}
+
+		if (tokens.size() > 0) {
+			String token = tokens.removeFirst();
+			termAttribute.setEmpty().append(token);
+			typeAttribute.setType(MinHashFilter.MIN_HASH_TYPE);
+			return true;
+		}
+
+		boolean filled = false;
+		boolean incremented = false;
+		while ((!filled) && (incremented = input.incrementToken())) {
+			String current = new String(termAttribute.buffer(), 0, termAttribute.length());
+			if (tokenStack.size() >= windowSize) {
+				tokenStack.removeFirst();
+			}
+			tokenStack.addLast(current);
+			if (tokenStack.size() >= windowSize) {
+				filled = true;
+			}
+		}
+
+		if (!incremented) {
+			exhausted = true;
+		}
+
+		if (filled) {
+			StringBuilder wordBuilder = new StringBuilder("");
+			ArrayDeque<String> before = new ArrayDeque<String>();
+			ArrayDeque<String> after = new ArrayDeque<String>();
+			for (int i = 0, l = tokenStack.size(); i < l; i++) {
+				if ((i == Math.round(Math.floor((l - 1) / 2.0))) || (i == Math.round(Math.ceil((l - 1) / 2.0)))) {
+					if (wordBuilder.length() > 0) {
+						wordBuilder.append(" ");
+					}
+					wordBuilder.append(tokenStack.get(i));
+				} else if (i < Math.round(Math.floor((l - 1) / 2.0))) {
+					before.addFirst(tokenStack.get(i));
+				} else if (i > Math.round(Math.ceil((l - 1) / 2.0))) {
+					after.addLast(tokenStack.get(i));
+				}
+			}
+
+			tokens.clear();
+			int i = 1;
+			while (before.peek() != null) {
+				// tokens.add(wordBuilder.toString() + ":-" + i++ + ":" +
+				// before.removeFirst());
+				String beforeString = before.removeFirst();
+				tokens.add(wordBuilder.toString() + ":" + beforeString);
+				// tokens.add(wordBuilder.toString() + ":" + i + "-" +
+				// beforeString);
+				// tokens.add( i + "-" + beforeString + ":" +
+				// wordBuilder.toString());
+				// i++;
+			}
+			i = 1;
+			while (after.peek() != null) {
+				// tokens.add(wordBuilder.toString() + ":+" + i++ + ":" +
+				// after.removeFirst());
+				String afterString = after.removeFirst();
+				tokens.add(wordBuilder.toString() + ":" + afterString);
+				// tokens.add(wordBuilder.toString() + ":" + i + "+" +
+				// afterString);
+				// tokens.add(i + "+" + afterString + ":" +
+				// wordBuilder.toString());
+				// i++;
+			}
+			tokens.add("__tf__:" + wordBuilder.toString());
+
+			if (tokens.size() > 0) {
+				String token = tokens.removeFirst();
+				termAttribute.setEmpty().append(token);
+				typeAttribute.setType(MinHashFilter.MIN_HASH_TYPE);
+			}
+		}
+
+		return filled;
+	}
+
+	@Override
+	public void end() throws IOException {
+		if (!exhausted) {
+			input.end();
+		}
+
+	}
+
+	@Override
+	public void reset() throws IOException {
+		super.reset();
+		exhausted = false;
+		tokens.clear();
+	}
 }
