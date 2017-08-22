@@ -64,7 +64,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(0).getLong("barb") == 2);
         assertTrue(tuples.get(1).getLong("barb") == 2);
 
-        sql = "select SITE, count(*) AS `docsPerSite` from alfresco where `cm:content` = 'world' group by SITE having count(*) > 1";
+        sql = "select SITE, count(*) AS docsPerSite from alfresco where `cm:content` = 'world' group by SITE having count(*) > 1";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
         assertTrue("_REPOSITORY_".equals(tuples.get(0).getString(("SITE"))));
@@ -82,7 +82,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
 
         //created doesn't work but cm:created works
         //min('cm:created') returns an error so need to use backticks
-        sql = "select `exif:manufacturer` as `manu`, count(*) as `tot`, max(`cm:fiveStarRatingSchemeTotal`) AS `cre` from alfresco where `cm:content` = 'world' group by `exif:manufacturer` order by `tot` asc";
+        sql = "select `exif:manufacturer` as manu, count(*) as tot, max(`cm:fiveStarRatingSchemeTotal`) AS cre from alfresco where `cm:content` = 'world' group by `exif:manufacturer` order by tot asc";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 2);
         assertTrue("canon".equals(tuples.get(0).getString(("manu"))));
@@ -93,7 +93,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(1).getDouble("cre") == 20);
 
 
-        sql = "select `exif:manufacturer` as `manu`, sum(`cm:fiveStarRatingSchemeTotal`), min(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world' group by `exif:manufacturer` order by `manu` asc";
+        sql = "select `exif:manufacturer` as manu, sum(`cm:fiveStarRatingSchemeTotal`), min(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world' group by `exif:manufacturer` order by manu asc";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 2);
         assertTrue("canon".equals(tuples.get(0).getString(("manu"))));

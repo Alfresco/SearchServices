@@ -191,6 +191,14 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         }
     }
 
+    protected void assertFieldNotNull(List<Tuple> tuples, String field) throws Exception  {
+        for(Tuple tuple : tuples) {
+            if(tuple.get(field) == null) {
+                throw new Exception("Found unexpected null field:"+field);
+            }
+        }
+    }
+
     protected Date getDate(int year, int month, int day)
     {
         return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());

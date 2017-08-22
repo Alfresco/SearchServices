@@ -158,7 +158,7 @@ public class StatsStream extends TupleStream implements Expressible  {
     }
     
     // zkHost
-    expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
+    //expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
     
     // metrics
     for(Metric metric : metrics){

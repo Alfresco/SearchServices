@@ -335,7 +335,9 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
     }
 
+
     String fl = getFields(fields);
+
 
     if(orders.size() > 0) {
       params.add(SORT, getSort(orders));
@@ -351,15 +353,15 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
     }
 
+    fl=fl+",[cached]";
     params.add(CommonParams.FL, fl);
 
     if (limit != null) {
       params.add(CommonParams.ROWS, limit);
-      return new AlfrescoExpressionStream(new LimitStream(new SearchStream(zk, collection, params), Integer.parseInt(limit)));
-    } else {
-      params.add(CommonParams.QT, "/export");
-      return new AlfrescoExpressionStream(new SearchStream(zk, collection, params));
+      return new LimitStream(new SearchStream(zk, collection, params), Integer.parseInt(limit));
     }
+
+    return null;
   }
 
   private String getSort(List<Pair<String, String>> orders) {
@@ -817,7 +819,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                   String collection,
                                   String query,
                                   List<Pair<String, String>> metricPairs,
-                                  List<Map.Entry<String, Class>> fields) {
+                                  List<Map.Entry<String, Class>> fields) throws IOException {
 
 
     Map<String, Class> fmap = new HashMap();
@@ -836,7 +838,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
     }
 
-    return new StatsStream(zk, collection, solrParams, metrics);
+    return new AlfrescoExpressionStream(new StatsStream(zk, collection, solrParams, metrics));
   }
 
   public <T> Queryable<T> asQueryable(QueryProvider queryProvider, SchemaPlus schema, String tableName) {
