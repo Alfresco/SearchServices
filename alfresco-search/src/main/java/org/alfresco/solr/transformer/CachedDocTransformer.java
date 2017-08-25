@@ -142,7 +142,7 @@ public class CachedDocTransformer extends DocTransformer
                        else
                        {
                            String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
-                           
+                           alfrescoFieldName = alfrescoFieldName.contains(":") ? alfrescoFieldName.replace(":", "_") : alfrescoFieldName;
                            Object value = cachedDoc.getFieldValue(fieldName);
                            if(value instanceof String)
                            {
