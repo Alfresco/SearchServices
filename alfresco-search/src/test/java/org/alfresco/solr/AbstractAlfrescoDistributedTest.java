@@ -5,7 +5,6 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
-import org.alfresco.solr.stream.AlfrescoStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
@@ -1033,7 +1032,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     protected QueryRequest getAlfrescoRequest(String json, SolrParams params) {
-        QueryRequest request = new AlfrescoStreamHandler.AlfrescoQueryRequest(json, params);
+        QueryRequest request = new AlfrescoJsonQueryRequest(json, params);
         request.setMethod(SolrRequest.METHOD.POST);
         return request;
     }
