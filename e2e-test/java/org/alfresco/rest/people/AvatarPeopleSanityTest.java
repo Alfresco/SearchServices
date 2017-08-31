@@ -13,7 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class AvatarPeopleSanityTest extends RestTest {
+import com.jayway.restassured.response.ValidatableResponse;
+
+import junit.framework.Assert;
+
+public class AvatarPeopleSanityTest extends RestTest
+{
 
     private UserModel userModel;
 
@@ -24,22 +29,21 @@ public class AvatarPeopleSanityTest extends RestTest {
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Update Avatar for People")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Update Avatar for People")
     public void updateGetAvatarForPeople() throws Exception
     {
-
         File avatarFile = Utility.getResourceTestDataFile("avatar.jpg");
         restClient.authenticateUser(userModel);
-        restClient.withCoreAPI().usingAuthUser().uploadAvatarContent(restProperties.envProperty().getFullServerUrl(), avatarFile).statusCode(200);
+        ValidatableResponse response = restClient.withCoreAPI().usingAuthUser()
+                .uploadAvatarContent(restProperties.envProperty().getFullServerUrl(), avatarFile).statusCode(200);
         restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().downloadAvatarContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-
+        Assert.assertNotNull(response.extract().body().asByteArray());
+        Assert.assertTrue("Avatar Image not uploaded", response.extract().body().asByteArray().length > 0);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Update Avatar for People")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Remove Avatar for People")
     public void removeGetAvatarForPeople() throws Exception
     {
         File avatarFile = Utility.getResourceTestDataFile("avatar.jpg");
