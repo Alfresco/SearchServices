@@ -359,26 +359,6 @@
         </arr>
     </requestHandler>
 
-    <requestHandler name="/stream" class="org.alfresco.solr.stream.AlfrescoStreamHandler">
-        <lst name="defaults">
-            <str name="wt">json</str>
-        </lst>
-        <lst name="invariants">
-            <str name="distrib">false</str>
-        </lst>
-    </requestHandler>
-
-
-    <requestHandler name="/sql" class="org.apache.solr.handler.AlfrescoSQLHandler">
-        <lst name="defaults">
-            <str name="wt">json</str>
-        </lst>
-        <lst name="invariants">
-            <str name="distrib">false</str>
-        </lst>
-    </requestHandler>
-
-
     <requestHandler name="/mlt" class="solr.MoreLikeThisHandler">
     </requestHandler>
 
@@ -495,16 +475,9 @@
     <queryParser name="afts" class="org.alfresco.solr.query.AlfrescoFTSQParserPlugin"/>
     <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
 
-    <expressible name="timeSeries" class="org.alfresco.solr.stream.TimeSeriesStream"/>
-    <expressible name="stats" class="org.alfresco.solr.stream.StatsStream"/>
-    <expressible name="alfrescoStats" class="org.alfresco.solr.stream.AlfrescoStatsStream"/>
-    <expressible name="alfrescoTimeSeries" class="org.alfresco.solr.stream.AlfrescoTimeSeriesStream"/>
-    <expressible name="alfrescoExpr" class="org.alfresco.solr.stream.AlfrescoExpressionStream"/>
-    <expressible name="search" class="org.alfresco.solr.stream.SearchStream"/>
-    <expressible name="facet" class="org.alfresco.solr.stream.FacetStream"/>
-    <expressible name="alfrescoFacets" class="org.alfresco.solr.stream.AlfrescoFacetStream"/>
-    <expressible name="having" class="org.apache.solr.client.solrj.io.stream.HavingStream"/>
-    <expressible name="limit" class="org.alfresco.solr.stream.LimitStream"/>
+    <xi:include href="solrconfig_insight.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
+        <xi:fallback/>
+    </xi:include>
     <!--
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
         <str name="mapping">conf/mime_types.csv</str>
