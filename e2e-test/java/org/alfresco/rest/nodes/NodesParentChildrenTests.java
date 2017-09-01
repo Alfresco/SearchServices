@@ -36,16 +36,16 @@ public class NodesParentChildrenTests extends RestTest
         RestNodeBodyModel node = new RestNodeBodyModel();
         node.setName("My Folder");
         node.setNodeType("cm:folder");
-        
-        RestNodeModel newNode = restClient.withParams("autoRename=true").withCoreAPI().usingNode(ContentModel.my()).createNode(node);        
+
+        RestNodeModel newNode = restClient.withParams("autoRename=true").withCoreAPI().usingNode(ContentModel.my()).createNode(node);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
+
         newNode.assertThat().field("aspectNames").contains("cm:auditable")
                .assertThat().field("isFolder").is(true)
                .assertThat().field("isFile").is(false)
-               .assertThat().field("name").contains(node.getName());        
+               .assertThat().field("name").contains(node.getName());
     }
-    
+
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify new folder node is created as children on -my- posting as MultiPart content type")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
@@ -53,17 +53,17 @@ public class NodesParentChildrenTests extends RestTest
     {
         //configuring multipart form
         restClient.authenticateUser(dataContent.getAdminUser())
-                  .configureRequestSpec() 
+                  .configureRequestSpec()
                     .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
                     .addFormParam("renditions", "doclib")
                     .addFormParam("autoRename", true);
-        
+
         RestNodeModel newNode = restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED); 
         newNode.assertThat().field("aspectNames").contains("cm:auditable")
                .assertThat().field("isFolder").is(false)
                .assertThat().field("isFile").is(true)
-               .assertThat().field("name").contains("restapi-resource");   
+               .assertThat().field("name").contains("restapi-resource");
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
@@ -76,18 +76,18 @@ public class NodesParentChildrenTests extends RestTest
          */
         NodesBuilder nodesBuilder = restClient.authenticateUser(dataUser.getAdminUser())
                                               .withCoreAPI().usingNode(ContentModel.my())
-                                              .defineNodes();        
+                                              .defineNodes();
         nodesBuilder
             .folder("F1")
             .folder("F2")
-            .folder("F3")            
+            .folder("F3")
                 .file("f1")
                 .file("f2")
                 .file("f3");
               
         RestNodeModelsCollection returnedFiles = restClient.withParams("maxItems=2", 
                                                                "skipCount=1", 
-                                                               String.format("relativePath=%s/%s", nodesBuilder.getNode("F2").getName(), nodesBuilder.getNode("F3").getName()))                                                               
+                                                               String.format("relativePath=%s/%s", nodesBuilder.getNode("F2").getName(), nodesBuilder.getNode("F3").getName()))
                                                                .withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).listChildren();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
@@ -96,7 +96,7 @@ public class NodesParentChildrenTests extends RestTest
          */
         returnedFiles.assertThat().entriesListCountIs(2);
         returnedFiles.getEntries().get(0).onModel().assertThat().field("id").is(nodesBuilder.getNode("f2").getId());
-        returnedFiles.getEntries().get(1).onModel().assertThat().field("id").is(nodesBuilder.getNode("f3").getId());        
+        returnedFiles.getEntries().get(1).onModel().assertThat().field("id").is(nodesBuilder.getNode("f3").getId());
     }
 
     /**

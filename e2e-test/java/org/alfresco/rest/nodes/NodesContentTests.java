@@ -22,19 +22,16 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.TestRailExecutorListener;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 /**
  * 
  * @author mpopa
  *
  */
-@Listeners(value=TestRailExecutorListener.class)
 public class NodesContentTests extends RestTest
 {
     private UserModel user1, user2;
@@ -126,7 +123,7 @@ public class NodesContentTests extends RestTest
 
         String initialNodeVersion = new JSONObject(initialNode.toJson()).getJSONObject("properties").getString("cm:versionLabel");
         String updatedBodyNodeVersion =  new JSONObject(updatedBodyNode.toJson()).getJSONObject("properties").getString("cm:versionLabel");
-        assertTrue(updatedBodyNodeVersion.charAt(0)>initialNodeVersion.charAt(0));
+        assertTrue(updatedBodyNodeVersion.charAt(0) > initialNodeVersion.charAt(0));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
@@ -148,14 +145,14 @@ public class NodesContentTests extends RestTest
                 .copyNode(postBody);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
-        STEP("3. parentId, createdAt, path and lock are different, but the nodes have the same contentSize.");
+        STEP("3. ParentId, createdAt, path and lock are different, but the nodes have the same contentSize.");
         assertNotSame(copiedNode.getParentId(), initialNode.getParentId());
         assertNotSame(copiedNode.getCreatedAt(), initialNode.getCreatedAt());
         assertNotSame(copiedNode.getPath(), initialNode.getPath());
         assertTrue(initialNode.getIsLocked());
         assertSame(copiedNode.getContent().getSizeInBytes(), initialNode.getContent().getSizeInBytes());
         assertFalse(copiedNode.getIsLocked());
-        
+
         STEP("4. Unlock the node (this node may be used in the next tests).");
         initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
