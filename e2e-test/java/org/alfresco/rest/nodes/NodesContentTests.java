@@ -155,5 +155,10 @@ public class NodesContentTests extends RestTest
         assertTrue(initialNode.getIsLocked());
         assertSame(copiedNode.getContent().getSizeInBytes(), initialNode.getContent().getSizeInBytes());
         assertFalse(copiedNode.getIsLocked());
+        
+        STEP("4. Unlock the node (this node may be used in the next tests).");
+        initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertFalse(initialNode.getIsLocked());
     }
 }
