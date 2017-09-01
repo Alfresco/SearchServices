@@ -1,10 +1,18 @@
 package org.alfresco.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotSame;
+import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
+
+import java.io.File;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -15,6 +23,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -35,7 +44,7 @@ public class NodesContentTests extends RestTest
         user1 = dataUser.createRandomTestUser();
         user2 = dataUser.createRandomTestUser();
         site1 = dataSite.usingUser(user1).createPublicRandomSite();
-        site2 = dataSite.usingUser(user2).createPublicRandomSite();    
+        site2 = dataSite.usingUser(user2).createPublicRandomSite();
         file1 = dataContent.usingUser(user1).usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
     }
     
@@ -91,7 +100,62 @@ public class NodesContentTests extends RestTest
         STEP("4. Retrieve the nodes and verify that the content type is the expected one (GET nodes/{nodeId}).");
         restClient.withCoreAPI().usingNode(utf8File).getNodeContent().assertThat().contentType(utf8Type);
         restClient.withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
-
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify updating a node content.")
+    public void testUpdateNodeContent() throws Exception
+    {
+        STEP("1. Retrieve the node in order to get data to compare after update GET /nodes/{nodeId}?include=path.");
+        RestNodeModel initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=path").getNode();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        STEP("2. Update the node content (different from the initial one) PUT /nodes/{nodeId}/content?majorVersion=true&name=newfile.txt.");
+        File avatarFile = Utility.getResourceTestDataFile("my-file.tif");
+        RestNodeModel updatedBodyNode = restClient.withCoreAPI().usingNode(file1).usingParams("majorVersion=true&name=newfile.txt").updateNodeContent(avatarFile);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        STEP("3. Compare contentSize, modifiedAt, name and version, they should be different.");
+        assertNotSame(initialNode.getContent().getSizeInBytes(), updatedBodyNode.getContent().getSizeInBytes());
+        assertNotSame(initialNode.getModifiedAt(), updatedBodyNode.getModifiedAt());
+        assertNotSame(initialNode.getName(), updatedBodyNode.getName());
+
+        String initialNodeVersion = new JSONObject(initialNode.toJson()).getJSONObject("properties").getString("cm:versionLabel");
+        String updatedBodyNodeVersion =  new JSONObject(updatedBodyNode.toJson()).getJSONObject("properties").getString("cm:versionLabel");
+        assertTrue(updatedBodyNodeVersion.charAt(0) > initialNodeVersion.charAt(0));
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test copy a node.")
+    public void testCopyNode() throws Exception
+    {
+        STEP("1. Create a lock and lock the node POST /nodes/{nodeId}/lock?include=path,isLocked.");
+        RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
+        lockBodyModel.setLifetime("EPHEMERAL");
+        lockBodyModel.setTimeToExpire(20);
+        lockBodyModel.setType("FULL");
+        RestNodeModel initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=path,isLocked").lockNode(lockBodyModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        STEP("2. With another user(that has access to the file), copy the node to another path POST /nodes/{nodeId}/copy?include=path,isLocked.");
+        String postBody = JsonBodyGenerator.keyValueJson("targetParentId", site2.getGuid());
+        RestNodeModel copiedNode = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=path,isLocked")
+                .copyNode(postBody);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        STEP("3. ParentId, createdAt, path and lock are different, but the nodes have the same contentSize.");
+        assertNotSame(copiedNode.getParentId(), initialNode.getParentId());
+        assertNotSame(copiedNode.getCreatedAt(), initialNode.getCreatedAt());
+        assertNotSame(copiedNode.getPath(), initialNode.getPath());
+        assertTrue(initialNode.getIsLocked());
+        assertSame(copiedNode.getContent().getSizeInBytes(), initialNode.getContent().getSizeInBytes());
+        assertFalse(copiedNode.getIsLocked());
+
+        STEP("4. Unlock the node (this node may be used in the next tests).");
+        initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertFalse(initialNode.getIsLocked());
+    }
 }
