@@ -71,4 +71,47 @@ public class NodesTargetSourcesTests extends RestTest
         targetsRes.assertThat().entriesListCountIs(1);
     }
 
+    /**
+     * Sanity check for the following api endpoint 
+     * GET /nodes/{nodeId}/sources
+     */
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Check that source objects are retrieved using GET /nodes/{nodeId}/sources")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    public void checkGetNodeSources() throws Exception
+    {
+        STEP("1.Create a folder hierarchy folder1 containing 4 files: f1, f2, and f3");
+        NodesBuilder nodesBuilder = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
+        nodesBuilder.folder("F1").file("f1").file("f2").file("f3");
+
+        STEP("2. Create target associations model objects");
+        RestNodeAssocTargetModel assocDocTarget1 = new RestNodeAssocTargetModel(nodesBuilder.getNode("f3").toContentModel().getNodeRef(), "cm:references");
+        RestNodeAssocTargetModel assocDocTarget2 = new RestNodeAssocTargetModel(nodesBuilder.getNode("f3").toContentModel().getNodeRef(), "cm:preferenceImage");
+
+        STEP("3. Create target  associations using POST /nodes/{nodeId}/targets");
+        restClient.authenticateUser(adminUserModel);
+        restClient.withCoreAPI().usingResource(nodesBuilder.getNode("f1").toContentModel()).createTargetForNode(assocDocTarget1);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.withCoreAPI().usingResource(nodesBuilder.getNode("f2").toContentModel()).createTargetForNode(assocDocTarget2);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        STEP("4. Check using GET /nodes/{nodeId}/sources that all source associations are displayed");
+        RestNodeAssociationModelCollection sources = restClient.withCoreAPI().usingNode(nodesBuilder.getNode("f3").toContentModel()).getNodeSources();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        sources.assertThat().entriesListCountIs(2);
+
+        STEP("5. Check using GET /nodes/{nodeId}/sources with params that sources and fields can be filtered in the response");
+        sources = restClient.withParams("where=(assocType='cm:references')", "fields=isFile,name,association,id,nodeType,parentId").withCoreAPI().usingResource(nodesBuilder.getNode("f3").toContentModel()).getNodeSources();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        sources.assertThat().entriesListCountIs(1);
+
+        sources.getEntryByIndex(0).assertThat()
+                                  .field("isFile").is(true).and()
+                                  .field("name").is(nodesBuilder.getNode("f1").getName()).and()
+                                  .field("id").is(nodesBuilder.getNode("f1").getId()).and()
+                                  .field("id").is(nodesBuilder.getNode("f1").getId()).and()
+                                  .field("nodeType").is("cm:content")
+                                  .getAssociation().assertThat()
+                                                   .field("assocType").is("cm:references");
+    }
 }
