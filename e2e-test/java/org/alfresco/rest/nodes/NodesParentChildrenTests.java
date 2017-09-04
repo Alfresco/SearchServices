@@ -8,7 +8,7 @@ import org.alfresco.rest.model.RestNodeChildAssocModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestNodeModelsCollection;
-import org.alfresco.rest.model.RestNodeParentChildModelCollection;
+import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.ContentModel;
@@ -136,7 +136,7 @@ public class NodesParentChildrenTests extends RestTest
         secondaryChildAssoc.getEntryByIndex(2).assertThat().field("childId").is(childAssoc3.getChildId());
 
         STEP("4. Check using GET /nodes/{nodeId}/secondary-children that the secondary 'cm:contains' child associations were created");
-        RestNodeParentChildModelCollection secondaryChildren = restClient.withParams("where=(assocType='cm:contains')").withCoreAPI()
+        RestNodeAssociationModelCollection secondaryChildren = restClient.withParams("where=(assocType='cm:contains')").withCoreAPI()
                 .usingNode(nodesBuilder.getNode("F1").toContentModel()).getSecondaryChildren();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         secondaryChildren.assertThat().entriesListCountIs(2);
@@ -186,7 +186,7 @@ public class NodesParentChildrenTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         STEP("3. Get all parents for file 'f1' - both primary and secondary");
-        RestNodeParentChildModelCollection parents = restClient.withCoreAPI().usingNode(nodesBuilder.getNode("f1").toContentModel()).getParents();
+        RestNodeAssociationModelCollection parents = restClient.withCoreAPI().usingNode(nodesBuilder.getNode("f1").toContentModel()).getParents();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         parents.assertThat().entriesListCountIs(2);
 
