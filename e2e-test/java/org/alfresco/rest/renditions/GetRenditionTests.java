@@ -3,6 +3,7 @@ package org.alfresco.rest.renditions;
 import static org.alfresco.utility.report.log.Step.STEP;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestRenditionInfoModel;
 import org.alfresco.utility.Utility;
@@ -16,6 +17,7 @@ import org.alfresco.utility.report.Bug.Status;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -94,4 +96,42 @@ public class GetRenditionTests extends RestTest
         renditionInfo.assertThat().field("status").is("CREATED");
         renditionInfo.assertThat().field("content.sizeInBytes").isGreaterThan(120);
     }
+    
+    /**
+     * Sanity test for the following endpoint:
+     * GET /nodes/{nodeId}/renditions/{renditionId}/content
+     * @throws Exception
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
+        description = "Verify that the rendition content can be downloaded using GET /nodes/{nodeId}/renditions/{renditionId}/content")
+    public void getRenditionContent() throws Exception
+    {
+        STEP("1. Create a folder in existing site");
+        FolderModel folder = FolderModel.getRandomFolderModel();
+        folder = dataContent.usingUser(user).usingSite(site).createFolder(folder);
+
+        STEP("2. Upload a local txt file using RESTAPI");
+        restClient.authenticateUser(user).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("iso8859File.txt"));
+
+        RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        FileModel file = new FileModel("iso8859File.txt");
+        file.setCmisLocation(folder.getCmisLocation() + "/iso8859File.txt");
+        file.setNodeRef(fileNode.getId());
+
+        STEP("3. Create thumbnail of txt file using RESTAPI");
+        restClient.withCoreAPI().usingNode(file).createNodeRendition("doclib");
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+
+        STEP("4. Verify thumbnail of txt file is created and has content using RESTAPI");
+        RestResponse restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated("doclib");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertHeaderValueContains("Content-Type","image/png;charset=UTF-8");
+        Assert.assertTrue(restResponse.getResponse().body().asInputStream().available() > 0);
+       
+ 
+    }
+    
 }
+
