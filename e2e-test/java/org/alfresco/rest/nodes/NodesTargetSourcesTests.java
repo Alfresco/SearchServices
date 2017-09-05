@@ -99,7 +99,7 @@ public class NodesTargetSourcesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         STEP("4. Check using GET /nodes/{nodeId}/sources that all source associations are displayed");
-        RestNodeAssociationModelCollection sources = restClient.withCoreAPI().usingNode(nodesBuilder.getNode("f3").toContentModel()).getNodeSources();
+        RestNodeAssociationModelCollection sources = restClient.withCoreAPI().usingResource(nodesBuilder.getNode("f3").toContentModel()).getNodeSources();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sources.assertThat().entriesListCountIs(2);
 
