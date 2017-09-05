@@ -38,26 +38,28 @@ public class NodesTargetSourcesTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     public void checkTargetsNodeApi() throws Exception
     {
-        STEP("1.Create a folder hierarchy folder1/folder2, with folder2 containing 3 files: f1, f2, and f3");
-        NodesBuilder nodesBuilder = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
-        nodesBuilder.folder("F1").folder("F2").folder("F3").file("f1").file("f2").file("f3");
+        STEP("1.Create folder1 which contains 3 files: f1, f2, and f3");
+        NodesBuilder nodesBuilder = restClient.authenticateUser(adminUserModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
+        nodesBuilder.folder("F1").file("f1").file("f2").file("f3");
 
         STEP("2. Create target associations model objects");
         RestNodeAssocTargetModel assocDocTarget1 = new RestNodeAssocTargetModel(nodesBuilder.getNode("f2").toContentModel().getNodeRef(), "cm:references");
         RestNodeAssocTargetModel assocDocTarget2 = new RestNodeAssocTargetModel(nodesBuilder.getNode("f3").toContentModel().getNodeRef(), "cm:references");
 
         STEP("3. Create target  associations using POST /nodes/{nodeId}/targets");
-        restClient.authenticateUser(adminUserModel);
         restClient.withCoreAPI().usingResource(nodesBuilder.getNode("f1").toContentModel()).createTargetForNode(assocDocTarget1);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.withCoreAPI().usingResource(nodesBuilder.getNode("f1").toContentModel()).createTargetForNode(assocDocTarget2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         STEP("4. Check using GET /nodes/{nodeId}/targets targets associations were created");
-        RestNodeAssociationModelCollection tagets = restClient.withParams("where=(assocType='cm:references')").withCoreAPI()
+        RestNodeAssociationModelCollection targetsRes = restClient.withParams("where=(assocType='cm:references')").withCoreAPI()
                 .usingResource(nodesBuilder.getNode("f1").toContentModel()).getNodeTargets();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        tagets.assertThat().entriesListCountIs(2);
+        targetsRes.assertThat().entriesListCountIs(2);
+        targetsRes.getEntryByIndex(0).assertThat().field("association.assocType").is("cm:references");
+        targetsRes.getEntryByIndex(1).assertThat().field("association.assocType").is("cm:references");
+
 
         STEP("5. Check using DELETE /nodes/{nodeId}/targets/{targetId} that a target can be deleted");
         restClient.authenticateUser(adminUserModel);
@@ -65,10 +67,11 @@ public class NodesTargetSourcesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
         STEP("6. Check using GET /nodes/{nodeId}/targets that target association was deleted");
-        RestNodeAssociationModelCollection targetsRes = restClient.withParams("where=(assocType='cm:references')").withCoreAPI()
+        targetsRes = restClient.withParams("where=(assocType='cm:references')").withCoreAPI()
                 .usingResource(nodesBuilder.getNode("f1").toContentModel()).getNodeTargets();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         targetsRes.assertThat().entriesListCountIs(1);
+        targetsRes.getEntryByIndex(0).assertThat().field("association.assocType").is("cm:references");
     }
 
     /**
