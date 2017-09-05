@@ -1,8 +1,11 @@
 package org.alfresco.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNotSame;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
@@ -11,7 +14,10 @@ import java.io.File;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
+import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.RestVersionModel;
+import org.alfresco.rest.model.RestVersionModelsCollection;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
@@ -32,12 +38,12 @@ import org.testng.annotations.Test;
  * @author mpopa
  *
  */
-public class NodesContentTests extends RestTest
+public class NodesContentAndVersioningTests extends RestTest
 {
     private UserModel user1, user2;
     private SiteModel site1, site2;
-    private FileModel file1;
-    
+    private FileModel file1, file2;
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {  
@@ -46,6 +52,7 @@ public class NodesContentTests extends RestTest
         site1 = dataSite.usingUser(user1).createPublicRandomSite();
         site2 = dataSite.usingUser(user2).createPublicRandomSite();
         file1 = dataContent.usingUser(user1).usingSite(site1).createContent(DocumentType.TEXT_PLAIN);
+        file2 = dataContent.usingUser(user2).usingSite(site2).createContent(DocumentType.TEXT_PLAIN);
     }
     
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
@@ -112,8 +119,8 @@ public class NodesContentTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         STEP("2. Update the node content (different from the initial one) PUT /nodes/{nodeId}/content?majorVersion=true&name=newfile.txt.");
-        File avatarFile = Utility.getResourceTestDataFile("my-file.tif");
-        RestNodeModel updatedBodyNode = restClient.withCoreAPI().usingNode(file1).usingParams("majorVersion=true&name=newfile.txt").updateNodeContent(avatarFile);
+        File updatedConentFile = Utility.getResourceTestDataFile("sampleContent.txt");
+        RestNodeModel updatedBodyNode = restClient.withCoreAPI().usingNode(file1).usingParams("majorVersion=true&name=newfile.txt").updateNodeContent(updatedConentFile);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         STEP("3. Compare contentSize, modifiedAt, name and version, they should be different.");
@@ -157,5 +164,85 @@ public class NodesContentTests extends RestTest
         initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertFalse(initialNode.getIsLocked());
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test retrieving node versions, a specific version and version content.")
+    public void testGetVersionContent() throws Exception
+    {
+        file2 = dataContent.usingUser(user2).usingSite(site2).createContent(DocumentType.TEXT_PLAIN);
+        File sampleFile = Utility.getResourceTestDataFile("sampleContent.txt");
+
+        STEP("1. Update the node content in order to increase version(one minor and one major) PUT /nodes/{nodeId}/content.");
+        //minor version update
+        restClient.authenticateUser(user2).withCoreAPI().usingNode(file2).updateNodeContent(sampleFile);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        //major version update
+        restClient.authenticateUser(user2).withCoreAPI().usingParams("majorVersion=true").usingNode(file2).updateNodeContent(sampleFile);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        STEP("2. List node version history GET /nodes/{nodeId}/versions. And verify that first (in the list) version is 2.0 and last is 1.0.");
+        RestVersionModelsCollection versionListing = restClient.withCoreAPI().usingNode(file2).listVersionHistory();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        //additional check that the properties are not displayed by default.
+        assertEquals(versionListing.getEntries().get(versionListing.getPagination().getCount()-1).onModel().getId(),"1.0");
+        assertEquals(versionListing.getEntries().get(0).onModel().getId(),"2.0");
+        assertNull(versionListing.getEntries().get(0).onModel().getProperties());
+
+        STEP("3. List node version using skipCount(1),maxItems(1) and include(properties) GET /nodes/{nodeId}/versions?include=properties&skipCount=1&maxItems=1");
+        versionListing = restClient.withCoreAPI().usingParams("include=properties&skipCount=1&maxItems=1").usingNode(file2).listVersionHistory();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        //we expect only version 1.1 to be retrieved with the value for properties.
+        RestVersionModel version = versionListing.getEntries().get(0).onModel();
+        assertNotNull(version.getProperties());
+        assertEquals(version.getId(), "1.1");
+        assertEquals(versionListing.getPagination().getMaxItems(), 1);
+        assertEquals(versionListing.getPagination().getSkipCount(), 1);
+        assertEquals(versionListing.getPagination().getCount(), 1);
+
+        STEP("4. Get version information for version 1.1 GET /nodes/{nodeId}/versions/{versionId} .");
+        RestVersionModel version11 = restClient.withCoreAPI().usingNode(file2).getVersionInformation("1.1");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        //aspectNames and properties are displayed by default. We compare id,contentSize and name with the values from v1.1, taken from listing all versions.
+        assertNotNull(version11.getAspectNames());
+        assertNotNull(version11.getProperties());
+        assertEquals(version.getId(),version11.getId());
+        assertEquals(version.getContent().getSizeInBytes(),version11.getContent().getSizeInBytes());
+        assertEquals(version.getName(),version11.getName());
+
+        STEP("5. Retrieve version 2.0 content GET /nodes/{nodeId}/versions/{versionId}/content");
+        RestResponse versionContent = restClient.withCoreAPI().usingNode(file2).getVersionContent("2.0");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        //verify the content is the same as the uploaded file and check in headers for Content-Disposition to validate the download as attachment and fileName.
+        assertEquals("Sample text.\n", versionContent.getResponse().body().asString());
+        restClient.assertHeaderValueContains("Content-Disposition", "attachment");
+        restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file2.getName()));
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test revert and delete a node version.")
+    public void testRevertDeleteVersion() throws Exception
+    {
+        STEP("1. Revert to version 1.0 POST /nodes/{nodeId}/versions/{versionId}/revert");
+        RestVersionModel version = restClient.authenticateUser(user2).withCoreAPI().usingNode(file2).revertVersion("1.0", new String("{}"));
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        String nodeVersionType = new JSONObject(version.toJson()).getJSONObject("properties").getString("cm:versionType");
+        assertEquals(nodeVersionType , "MINOR");
+        String nodeVersion = version.getId();
+
+        STEP("2. Revert to last minor version /nodes/{nodeId}/versions/{versionId}/revert");
+        version = restClient.withCoreAPI().usingNode(file2).revertVersion(nodeVersion, new String("{\"majorVersion\": true}"));
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        nodeVersionType = new JSONObject(version.toJson()).getJSONObject("properties").getString("cm:versionType");
+        assertEquals(nodeVersionType , "MAJOR");
+        assertTrue(nodeVersion.charAt(0)+1 == version.getId().charAt(0));
+
+        STEP("3. Delete last MINOR version DELETE /nodes/{nodeId}/versions/{versionId}");
+        restClient.withCoreAPI().usingNode(file2).deleteNodeVersion(nodeVersion);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+        restClient.withCoreAPI().usingNode(file2).getVersionInformation(nodeVersion);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }
