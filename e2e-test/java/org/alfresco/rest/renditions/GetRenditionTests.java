@@ -129,8 +129,6 @@ public class GetRenditionTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Type","image/png;charset=UTF-8");
         Assert.assertTrue(restResponse.getResponse().body().asInputStream().available() > 0);
-       
- 
     }
     
 }
