@@ -96,7 +96,7 @@ public class GetRenditionTests extends RestTest
         renditionInfo.assertThat().field("status").is("CREATED");
         renditionInfo.assertThat().field("content.sizeInBytes").isGreaterThan(120);
     }
-    
+
     /**
      * Sanity test for the following endpoint:
      * GET /nodes/{nodeId}/renditions/{renditionId}/content
@@ -130,6 +130,6 @@ public class GetRenditionTests extends RestTest
         restClient.assertHeaderValueContains("Content-Type","image/png;charset=UTF-8");
         Assert.assertTrue(restResponse.getResponse().body().asInputStream().available() > 0);
     }
-    
+
 }
 
