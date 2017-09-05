@@ -56,8 +56,10 @@ public class NodesTargetSourcesTests extends RestTest
         RestNodeAssociationModelCollection targetsRes = restClient.withParams("where=(assocType='cm:references')").withCoreAPI().usingResource(nodesBuilder.getNode("f1").toContentModel()).getNodeTargets();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         targetsRes.assertThat().entriesListCountIs(2);
-        targetsRes.getEntryByIndex(0).assertThat().field("association.assocType").is("cm:references");
-        targetsRes.getEntryByIndex(1).assertThat().field("association.assocType").is("cm:references");
+        targetsRes.getEntryByIndex(0).assertThat().field("association.assocType").is("cm:references").and().field("name")
+                .is(nodesBuilder.getNode("f2").getName());
+        targetsRes.getEntryByIndex(1).assertThat().field("association.assocType").is("cm:references").and().field("name")
+                .is(nodesBuilder.getNode("f3").getName());
 
         STEP("5. Check using DELETE /nodes/{nodeId}/targets/{targetId} that a target can be deleted");
         restClient.authenticateUser(adminUserModel);
