@@ -64,11 +64,11 @@ public class GetTasksFullTests extends RestTest
         taskCollections = restClient.authenticateUser(userModel).withParams("orderBy=assignee ASC").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);        
         
-        taskModels = restClient.withParams("orderBy=assignee ASC&maxItems=2").withWorkflowAPI().getTasks();
+        taskModels = restClient.withParams("orderBy=startedAt DESC&maxItems=2").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         taskModels.assertThat().entriesListIsNotEmpty()
             .assertThat().entriesListContains("assignee", assigneeUser.getUsername())
-            .assertThat().entriesListDoesNotContain("assignee", adminUser.getUsername());   
+            .assertThat().entriesListDoesNotContain("assignee", userModel.getUsername());   
         taskModels.assertThat().paginationField("maxItems").is("2");
         taskModels.assertThat().paginationField("count").is("2");
     }
