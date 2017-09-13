@@ -306,11 +306,9 @@ public class ModelTracker extends AbstractTracker implements Tracker
                     }
                     break;
                 case REMOVED:
-                    // At the moment we do not unload models - I can see no side effects ....
-                    // However search is used to check for references to indexed properties or types
-                    // This will be partially broken anyway due to eventual consistency
-                    // A model should only be unloaded if there are no data dependencies
-                    // Should have been on the de-lucene list.
+                	// We now remove models as we see them - MNT-17627
+                	// Models have to be deleted from disk before we remove them from memory
+                	// We need to know the prefix for the uri to delete them
                     break;
             }
         }
@@ -348,7 +346,15 @@ public class ModelTracker extends AbstractTracker implements Tracker
                     nos.close();
                     break;
                 case REMOVED:
-                    removeMatchingModels(alfrescoModelDir, modelDiff.getModelName());
+                	// This will remove the model from the dictionary on completion
+                	try
+                	{
+                        removeMatchingModels(alfrescoModelDir, modelDiff.getModelName());
+                	}
+                	finally
+                	{
+                		AlfrescoSolrDataModel.getInstance().removeModel(modelDiff.getModelName());
+                	}
                     break;
             }
         }
