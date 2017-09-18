@@ -30,12 +30,15 @@ import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
 import org.alfresco.solr.adapters.IOpenBitSet;
-import org.alfresco.solr.adapters.ISimpleOrderedMap;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.AlfrescoModel;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.TrackerStats;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.request.SolrQueryRequest;
 import org.json.JSONException;
 
 /**

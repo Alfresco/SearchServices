@@ -18,21 +18,36 @@
  */
 package org.alfresco.solr.lifecycle;
 
-import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.solr.*;
-import org.alfresco.solr.client.SOLRAPIClient;
-import org.alfresco.solr.client.SOLRAPIClientFactory;
-import org.alfresco.solr.content.SolrContentStore;
-import org.alfresco.solr.tracker.*;
-import org.apache.solr.core.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
+import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.SolrInformationServer;
+import org.alfresco.solr.SolrKeyResourceLoader;
+import org.alfresco.solr.client.SOLRAPIClient;
+import org.alfresco.solr.client.SOLRAPIClientFactory;
+import org.alfresco.solr.content.SolrContentStore;
+import org.alfresco.solr.tracker.AclTracker;
+import org.alfresco.solr.tracker.CascadeTracker;
+import org.alfresco.solr.tracker.CommitTracker;
+import org.alfresco.solr.tracker.ContentTracker;
+import org.alfresco.solr.tracker.MetadataTracker;
+import org.alfresco.solr.tracker.ModelTracker;
+import org.alfresco.solr.tracker.SolrTrackerScheduler;
+import org.alfresco.solr.tracker.Tracker;
+import org.alfresco.solr.tracker.TrackerRegistry;
+import org.apache.solr.core.CloseHook;
+import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.CoreDescriptorDecorator;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.core.SolrResourceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Deals with core registration when the core is loaded.
@@ -54,11 +69,9 @@ public class SolrCoreLoadRegistration {
 
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))
         {
-
             SolrTrackerScheduler scheduler = adminHandler.getScheduler();
             SolrResourceLoader loader = core.getLatestSchema().getResourceLoader();
             SolrKeyResourceLoader keyResourceLoader = new SolrKeyResourceLoader(loader);
-
             if (trackerRegistry.hasTrackersForCore(coreName))
             {
                 log.info("Trackers for " + coreName+ " is already registered, shutting them down.");
@@ -74,7 +87,7 @@ public class SolrCoreLoadRegistration {
             //Start content store
             SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
             SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
-
+            props.putAll(srv.getProps());
             adminHandler.getInformationServers().put(coreName, srv);
 
             log.info("Starting to track " + coreName);
@@ -136,7 +149,7 @@ public class SolrCoreLoadRegistration {
      * @return A list of trackers
      */
     private static List<Tracker> createTrackers(String coreName, TrackerRegistry trackerRegistry, Properties props, SolrTrackerScheduler scheduler, SOLRAPIClient repositoryClient, SolrInformationServer srv) {
-        List<Tracker> trackers = new ArrayList();
+        List<Tracker> trackers = new ArrayList<Tracker>();
 
         AclTracker aclTracker = new AclTracker(props, repositoryClient, coreName, srv);
         trackerRegistry.register(coreName, aclTracker);

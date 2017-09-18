@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Alfresco Process Services Strawman schema -->
+
+<schema name="Alfresco Process Services V1.0" version="1.5">
+   <types>
+      <!-- ID and version to support SOLR cloud -->
+
+      <fieldType name="identifier" class="solr.StrField" sortMissingLast="true" positionIncrementGap="100" />
+      <fieldType name="version" class="solr.TrieLongField" precisionStep="64" positionIncrementGap="0" />
+
+
+      <fieldType name="lowercase_id" class="solr.TextField" sortMissingLast="true" omitNorms="true" positionIncrementGap="100" >
+         <analyzer>
+ 	    <tokenizer class="solr.KeywordTokenizerFactory"/>
+            <filter class="solr.LowerCaseFilterFactory" />
+         </analyzer>
+      </fieldType>
+
+      <!-- Fixed analysis for numeric types - query, range, facet, and sorting-->
+
+      <fieldType name="int" class="solr.TrieIntField" precisionStep="4" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="float" class="solr.TrieFloatField" precisionStep="4" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="long" class="solr.TrieLongField" precisionStep="6" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="double" class="solr.TrieDoubleField" precisionStep="6" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+      <fieldType name="date" class="solr.TrieDateField" precisionStep="6" positionIncrementGap="100" sortMissingLast="false" sortMissingFirst="false" />
+
+
+      <!-- Cross-locale -->
+      <!-- Include word splitting -->
+
+      <fieldType name="text___" class="solr.TextField" positionIncrementGap="100">
+         <analyzer>
+            <tokenizer class="solr.ICUTokenizerFactory"/>
+            <!-- <tokenizer class="org.apache.solr.analysis.WhitespaceTokenizerFactory" /> -->
+            <filter class="org.apache.solr.analysis.WordDelimiterFilterFactory" 
+                    generateWordParts="1"
+                    generateNumberParts="1"
+                    catenateWords="1"
+                    catenateNumbers="1"
+                    catenateAll="1"
+                    splitOnCaseChange="1"
+                    splitOnNumerics="1"
+                    preserveOriginal="1"
+                    stemEnglishPossessive="1"/>
+            <filter class="solr.ICUFoldingFilterFactory"/>
+         </analyzer>
+      </fieldType>
+
+
+      <fieldType name="alfrescoCollatableTextFieldType" class="org.alfresco.solr.AlfrescoCollatableTextFieldType" sortMissingLast="true" />
+
+   </types>
+
+
+
+
+
+   <fields>
+     <!-- For SOLR cloud - should be the node version -->
+     <!-- The process definition id -->
+      <field name="id"                    type="identifier"  indexed="true"  omitNorms="true"  stored="true"   multiValued="false"  required="true"  docValues="true"/>
+      <field name="_version_"             type="version"     indexed="false"                   stored="true"                        docValues="true"  required="true" />
+      <field name="_root_"                type="identifier"  indexed="true"                    stored="false"/>
+
+      <!-- Dummy field used to create no matches for unknown properties -->
+      <field name="_dummy_"   type="identifier"  indexed="true"  omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
+      
+      <!-- Core fields --> 
+      
+      <field name="name" type="identifier" indexed="true" omitNorms="true" docValues="true"/>
+      <!-- use _version_ -->
+      <field name="name_fts" type="text___" indexed="true" omitNorms="false" docValues="false"/>
+      <!-- Is this more then a flat list ?? -->
+      <field name="category" type="identifier" indexed="true" omitNorms="true" docValues="true"/>
+      <field name="title_fts" type="text___" indexed="true" omitNorms="false" docValues="false"/>
+
+   </fields>
+
+   <uniqueKey>id</uniqueKey>
+
+</schema>
