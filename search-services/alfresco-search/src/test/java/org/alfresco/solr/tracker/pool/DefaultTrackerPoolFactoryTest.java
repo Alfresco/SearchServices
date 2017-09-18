@@ -42,7 +42,7 @@ public class DefaultTrackerPoolFactoryTest
     public void setup()
     {
         poolFactory = null; // Ensure we don't accidentally reuse between runs.
-        properties = new Properties();        
+        properties = new Properties();
     }
     @After
     public void teardown()
@@ -58,8 +58,8 @@ public class DefaultTrackerPoolFactoryTest
         
         tpe = poolFactory.create();
         
-        assertEquals(3, tpe.getCorePoolSize());
-        assertEquals(3, tpe.getMaximumPoolSize());
+        assertEquals(4, tpe.getCorePoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
         assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
     }
     
@@ -77,5 +77,77 @@ public class DefaultTrackerPoolFactoryTest
         assertEquals(30, tpe.getCorePoolSize());
         assertEquals(40, tpe.getMaximumPoolSize());
         assertEquals(200, tpe.getKeepAliveTime(TimeUnit.SECONDS));
+    }
+    @Test
+    public void testAclDefaultProperties()
+    {
+        poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "AclTracker");
+        
+        tpe = poolFactory.create();
+        assertEquals(4, tpe.getCorePoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
+        assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
+    }
+    @Test
+    public void testAclProperties()
+    {
+        properties.put("alfresco.acl.tracker.corePoolSize", "30");
+        properties.put("alfresco.acl.tracker.maximumPoolSize", "40");
+        properties.put("alfresco.acl.tracker.keepAliveTime", "200");
+        poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "AclTracker");
+        tpe = poolFactory.create();
+        
+        assertEquals(30, tpe.getCorePoolSize());
+        assertEquals(40, tpe.getMaximumPoolSize());
+        assertEquals(200, tpe.getKeepAliveTime(TimeUnit.SECONDS));
+    }
+    @Test
+    public void testContentDefaultProperties()
+    {
+        poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "ContentTracker");
+        
+        tpe = poolFactory.create();
+        
+        assertEquals(4, tpe.getCorePoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
+        assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
+    }
+    @Test
+    public void testContentProperties()
+    {
+        properties.put("alfresco.content.tracker.corePoolSize", "100");
+        properties.put("alfresco.content.tracker.maximumPoolSize", "140");
+        properties.put("alfresco.content.tracker.keepAliveTime", "201");
+        poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "ContentTracker");
+        tpe = poolFactory.create();
+        
+        assertEquals(100, tpe.getCorePoolSize());
+        assertEquals(140, tpe.getMaximumPoolSize());
+        assertEquals(201, tpe.getKeepAliveTime(TimeUnit.SECONDS));
+    }
+    @Test
+    public void testMetaDataDefaultProperties()
+    {
+        poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "MetadataTracker");
+        
+        tpe = poolFactory.create();
+        
+        assertEquals(4, tpe.getCorePoolSize());
+        assertEquals(4, tpe.getMaximumPoolSize());
+        assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
+    }
+    @Test
+    public void testMetaDataProperties()
+    {
+        properties.put("alfresco.metadata.tracker.corePoolSize", "100");
+        properties.put("alfresco.metadata.tracker.maximumPoolSize", "140");
+        properties.put("alfresco.metadata.tracker.keepAliveTime", "201");
+        poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "MetadataTracker");
+        
+        tpe = poolFactory.create();
+        
+        assertEquals(100, tpe.getCorePoolSize());
+        assertEquals(140, tpe.getMaximumPoolSize());
+        assertEquals(201, tpe.getKeepAliveTime(TimeUnit.SECONDS));
     }
 }

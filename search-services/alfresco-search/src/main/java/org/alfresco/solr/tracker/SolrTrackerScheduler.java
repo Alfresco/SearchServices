@@ -39,7 +39,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SolrTrackerScheduler
 {
-    protected static final String SOLR_JOB_GROUP = "Solr";
+    private static final String DEFAULT_CRON = "0/10 * * * * ? *";
+    public static final String SOLR_JOB_GROUP = "Solr";
     protected final static Logger log = LoggerFactory.getLogger(SolrTrackerScheduler.class);
     protected Scheduler scheduler;
 
@@ -72,7 +73,19 @@ public class SolrTrackerScheduler
     {
         log.error("Failed to schedule " + jobType + " Job.", e);
     }
-    
+    private String getCron(Properties props, String cronType)
+    {
+        String cron = props.getProperty(cronType);
+        return cron == null ? props.getProperty("alfresco.cron",DEFAULT_CRON) : cron;
+    }
+    /**
+     * Schedules individual trackers based on the solrcore properties.
+     * 
+     * @author Michael Suzuki
+     * @param tracker
+     * @param coreName
+     * @param props
+     */
     public void schedule(Tracker tracker, String coreName, Properties props)
     {
         String jobName = this.getJobName(tracker, coreName);
@@ -83,7 +96,31 @@ public class SolrTrackerScheduler
         Trigger trigger;
         try
         {
-            String cron =  props.getProperty("alfresco.cron", "0/15 * * * * ? *");
+            String cron = null;
+            switch (tracker.getType())
+            {
+            case ACL:
+                cron = getCron(props,"alfresco.acl.tracker.cron");
+                break;
+            case Model:
+                cron = getCron(props,"alfresco.model.tracker.cron");
+                break;
+            case Content:
+                cron = getCron(props,"alfresco.content.tracker.cron");
+                break;
+            case MetaData:
+                cron = getCron(props,"alfresco.metadata.tracker.cron");
+                break;
+            case Cascade:
+                cron = getCron(props,"alfresco.cascade.tracker.cron");
+                break;
+            case Commit:
+                cron = getCron(props,"alfresco.commit.tracker.cron");
+                break;
+            default: 
+                cron = props.getProperty("alfresco.cron",DEFAULT_CRON);
+                break;
+            }
             trigger = new CronTrigger(jobName, SOLR_JOB_GROUP, cron);
             log.info("Scheduling job " + jobName);
             scheduler.scheduleJob(job, trigger);
@@ -93,7 +130,7 @@ public class SolrTrackerScheduler
             logError("Tracker", e);
         }
         catch (SchedulerException e)
-        {
+        {   
             logError("Tracker", e);
         }
     }

@@ -27,11 +27,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.solr.query.AbstractQParser;
@@ -46,6 +42,7 @@ import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.ShardParams;
+import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
@@ -69,6 +66,7 @@ import org.apache.solr.util.plugin.SolrCoreAware;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.noggit.ObjectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,8 +138,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 					"First/Last components only valid if you do not declare 'components'");
 
 		if (shfInfo == null) {
-			shardHandlerFactory = core.getCoreDescriptor().getCoreContainer()
-					.getShardHandlerFactory();
+			shardHandlerFactory = core.getCoreContainer().getShardHandlerFactory();
 		} else {
 			shardHandlerFactory = core.createInitInstance(shfInfo,
 					ShardHandlerFactory.class, null, null);
@@ -220,7 +217,15 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		return result;
 	}
 
-	private void readJsonIntoContent(SolrQueryRequest req) {
+	private void readJsonIntoContent(SolrQueryRequest req) throws IOException {
+		SolrParams solrParams = req.getParams();
+		String jsonFacet = solrParams.get("json.facet");
+		if(jsonFacet != null) {
+			Object o = ObjectBuilder.fromJSON(jsonFacet);
+			Map<String, Object> json = new HashMap();
+			json.put("facet", o);
+			req.setJSON(json);
+		}
 		Iterable<ContentStream> streams = req.getContentStreams();
 
 		JSONObject json = (JSONObject) req.getContext().get(
@@ -259,8 +264,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 
 		rb.isDistrib = req.getParams().getBool(
 				"distrib",
-				req.getCore().getCoreDescriptor().getCoreContainer()
-						.isZooKeeperAware());
+				req.getCore().getCoreContainer().isZooKeeperAware());
 		if (!rb.isDistrib) {
 			// for back compat, a shards param with URLs like
 			// localhost:8983/solr will mean that this
@@ -312,6 +316,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 
 		if (timer == null) {
 			// non-debugging prepare phase
+
 			for (SearchComponent c : components) {
 				c.prepare(rb);
 			}
@@ -486,8 +491,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 									params.remove(CommonParams.QT);
 								}
 							}
-							shardHandler1.submit(sreq, shard, params,
-									rb.preferredHostAddress);
+							shardHandler1.submit(sreq, shard, params);
 						}
 					}
 

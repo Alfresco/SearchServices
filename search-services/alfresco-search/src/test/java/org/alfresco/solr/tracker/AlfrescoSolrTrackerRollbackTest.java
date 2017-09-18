@@ -91,7 +91,7 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
     public void testTrackers() throws Exception
     {
 
-        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = (AlfrescoCoreAdminHandler)h.getCore().getCoreDescriptor().getCoreContainer().getMultiCoreHandler();
+        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = (AlfrescoCoreAdminHandler)h.getCore().getCoreContainer().getMultiCoreHandler();
 
 
         /*
