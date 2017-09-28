@@ -88,6 +88,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=200 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "term_s:YYYY");
         params.add("rqq", "{!edismax bf=$bff}*:*");
         params.add("bff", "field(test_ti)");
@@ -104,6 +105,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "{!edismax bq=$bqq2}*:*");
@@ -124,6 +126,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test with sort by score.
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "{!edismax bq=$bqq2}*:*");
@@ -145,6 +148,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test with compound sort.
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "{!edismax bq=$bqq2}*:*");
@@ -168,6 +172,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         /*
 
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 reRankWeight=50 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "{!edismax bq=$bqq2}*:*");
@@ -192,6 +197,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test TermQuery rqq
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "test_ti:50^1000");
@@ -213,6 +219,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         /*
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "test_ti:50^1000");
@@ -317,6 +324,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Pass in reRankDocs lower then the length being collected.
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=1 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "test_ti:50^1000");
@@ -335,6 +343,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=0 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "test_ti:50^1000");
@@ -353,6 +362,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=2 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "test_ti:4^1000");
@@ -372,6 +382,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test reRankWeight of 0, reranking will have no effect.
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 reRankWeight=0 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "test_ti:50^1000");
@@ -392,6 +403,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test range query
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "test_ti:[0 TO 2000]");
         params.add("rqq", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("fl", "id,score");
@@ -409,6 +421,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test range query embedded in larger query
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "*:* OR test_ti:[0 TO 2000]");
         params.add("rqq", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("fl", "id,score");
@@ -428,6 +441,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test with start beyond reRankDocs
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=3 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60");
         params.add("rqq", "id:1^1000");
         params.add("fl", "id,score");
@@ -443,6 +457,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=6 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50");
         params.add("rqq", "id:1^1000");
         params.add("fl", "id,score");
@@ -458,6 +473,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Test with zero results
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=3 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "term_s:NNNN");
         params.add("rqq", "id:1^1000");
         params.add("fl", "id,score");
@@ -515,6 +531,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=11 reRankWeight=2 scale="+scale+"}");
+        params.add("df", "TEXT");
         params.add("q", "{!edismax bq=$bqq1}*:*");
         params.add("bqq1", "id:1^10 id:2^20 id:3^30 id:4^40 id:5^50 id:6^60 id:7^70 id:8^80 id:9^90 id:10^100 id:11^110");
         params.add("rqq", "test_ti:50^1000");
@@ -577,6 +594,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Calculate the scales manually
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=200 scale=false}");
+        params.add("df", "TEXT");
         params.add("q", "term_s:YYYY");
         params.add("rqq", "{!edismax bf=$bff}id:(1 2 4 5 6)");
         params.add("bff", "field(test_ti)");
@@ -626,6 +644,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Get the scaled scores from the reRanker
         params = new ModifiableSolrParams();
         params.add("rq", "{!alfrescoReRank reRankQuery=$rqq reRankDocs=200 scale=true}");
+        params.add("df", "TEXT");
         params.add("q", "term_s:YYYY");
         params.add("rqq", "{!edismax bf=$bff}id:(1 2 4 5 6)");
         params.add("bff", "field(test_ti)");
@@ -669,6 +688,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         //Request with lots of rows 200000001
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.add("qt", "/afts");
+        params.add("df", "TEXT");
         params.add("q", "term_s:YYYY");
         params.add("rows", "200000001");
         params.add("rq","{!alfrescoReRank reRankQuery=$rqq reRankDocs=3 reRankWeight=2 }");

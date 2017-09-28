@@ -62,8 +62,6 @@ public class AclTracker extends AbstractTracker
     private int changeSetAclsBatchSize = DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE;
     private int aclBatchSize = DEFAULT_ACL_BATCH_SIZE;
 
-    private int  maxAclChangeSetDocumentIdCacheSize = 700000;
-
     private ConcurrentLinkedQueue<Long> aclChangeSetsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclChangeSetsToPurge = new ConcurrentLinkedQueue<Long>();
@@ -77,13 +75,13 @@ public class AclTracker extends AbstractTracker
      */
     AclTracker()
     {
-        super();
+        super(Tracker.Type.ACL);
     }
     
     public AclTracker(Properties p, SOLRAPIClient client,
                 String coreName, InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.ACL);
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
@@ -159,7 +157,7 @@ public class AclTracker extends AbstractTracker
                 //System.out.println("############## Indexing ACL ID:"+aclId);
                 Acl acl = new Acl(0, aclId);
                 List<AclReaders> readers = client.getAclReaders(Collections.singletonList(acl));
-                AclReaders r = readers.get(0);
+                //AclReaders r = readers.get(0);
                 //System.out.println("############## READERS ID:"+r.getId()+":"+r.getReaders());
                 indexAcl(readers, false);
             }
@@ -856,7 +854,7 @@ public class AclTracker extends AbstractTracker
         
         private List<Acl> filterAcls(List<Acl> acls)
         {
-            ArrayList<Acl> filteredList = new ArrayList(acls.size());
+            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());  
             for(Acl acl : acls)
             {
                 if(docRouter.routeAcl(shardCount, shardInstance, acl))

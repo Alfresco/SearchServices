@@ -32,11 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.naming.NoInitialContextException;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.dictionary.M2Model;
@@ -108,7 +103,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
     public ModelTracker(String solrHome, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.Model);
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
         log.info("Alfresco Model dir " + alfrescoModelDir);
@@ -192,7 +187,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
      */
     ModelTracker()
     {
-        // Testing purposes only
+        super(Tracker.Type.Model);
     }
 
     @Override
@@ -273,7 +268,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
         catch (Throwable t)
         {
-            log.error("Model tracking failed", t);
+            log.error("Model tracking failed for core: "+ coreName, t);
         }
 
     }
@@ -289,7 +284,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
     {
         long start = System.nanoTime();
 
-        List<AlfrescoModelDiff> modelDiffs = client.getModelsDiff(this.infoSrv.getAlfrescoModels());
+        List<AlfrescoModelDiff> modelDiffs = client.getModelsDiff(coreName, this.infoSrv.getAlfrescoModels());
         HashMap<String, M2Model> modelMap = new HashMap<String, M2Model>();
 
         for (AlfrescoModelDiff modelDiff : modelDiffs)
@@ -297,14 +292,14 @@ public class ModelTracker extends AbstractTracker implements Tracker
             switch (modelDiff.getType())
             {
                 case CHANGED:
-                    AlfrescoModel changedModel = client.getModel(modelDiff.getModelName());
+                    AlfrescoModel changedModel = client.getModel(coreName, modelDiff.getModelName());
                     for (M2Namespace namespace : changedModel.getModel().getNamespaces())
                     {
                         modelMap.put(namespace.getUri(), changedModel.getModel());
                     }
                     break;
                 case NEW:
-                    AlfrescoModel newModel = client.getModel(modelDiff.getModelName());
+                    AlfrescoModel newModel = client.getModel(coreName, modelDiff.getModelName());
                     for (M2Namespace namespace : newModel.getModel().getNamespaces())
                     {
                         modelMap.put(namespace.getUri(), newModel.getModel());

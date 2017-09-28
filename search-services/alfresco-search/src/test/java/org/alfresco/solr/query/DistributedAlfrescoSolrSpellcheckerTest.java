@@ -61,7 +61,7 @@ import org.junit.Test;
 public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDistributedTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2);
+    public JettyServerRule jetty = new JettyServerRule(2, this);
 
     @Test
     public void testSpellcheckerOutputFormat() throws Exception
