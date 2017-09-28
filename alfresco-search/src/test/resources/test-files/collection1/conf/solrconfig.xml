@@ -282,6 +282,7 @@
             <str>rewriteFacetParameters</str>
             <str>query</str>
             <str>facet</str>
+            <str>facet_module</str>
             <str>mlt</str>
             <str>highlight</str>
             <str>stats</str>
@@ -473,6 +474,10 @@
     <queryParser name="alfrescoReRank" class="org.alfresco.solr.query.AlfrescoReRankQParserPlugin"/>
     <queryParser name="afts" class="org.alfresco.solr.query.AlfrescoFTSQParserPlugin"/>
     <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
+
+    <xi:include href="solrconfig_insight.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
+        <xi:fallback/>
+    </xi:include>
     <!--
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
         <str name="mapping">conf/mime_types.csv</str>
@@ -540,6 +545,10 @@
     <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
     <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
     <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
+
+    <transformer name="cached" class="org.alfresco.solr.transformer.CachedDocTransformerFactory" >
+    </transformer>
+
 
 
 </config>

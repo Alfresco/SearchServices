@@ -19,7 +19,11 @@
 package org.alfresco.solr.tracker;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -62,7 +66,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private static final int DEFAULT_NODE_BATCH_SIZE = 10;
     private int transactionDocsBatchSize = DEFAULT_TRANSACTION_DOCS_BATCH_SIZE;
     private int nodeBatchSize = DEFAULT_NODE_BATCH_SIZE;
-    private int maxTransactionDocumentIdCacheSize = 700000;
     private ConcurrentLinkedQueue<Long> transactionsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> transactionsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> transactionsToPurge = new ConcurrentLinkedQueue<Long>();
@@ -76,7 +79,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
+        super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         //System.out.println("####### MetadatTracker() ########");
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
@@ -92,7 +95,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     
     MetadataTracker()
     {
-        // Testing purposes only
+        super(Tracker.Type.MetaData);
     }
 
     @Override
@@ -1062,26 +1065,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    private boolean transactionDocumentIdProcessed(Set<Long> transactionDocumentIdSet, Long id) throws IOException
-    {
-        if(transactionDocumentIdSet.contains(id))
-        {
-            return true;
-        }
-        else
-        {
-            if(infoSrv.isInIndex(Long.toString(id))) {
-                return true;
-            }
-            else
-            {
-                transactionDocumentIdSet.add(id);
-                return false;
-            }
-        }
-
-    }
-
     public static QName getShardProperty(String field) {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
@@ -1093,8 +1076,4 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         return propertyDef.getName();
     }
-
-
-
-
 }

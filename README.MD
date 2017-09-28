@@ -19,7 +19,7 @@ mvn clean install
 To build the docker image:
 ```
 cd packaging/src/docker
-docker build --build-arg solrUrl=http://download.alfresco.com/release/community/201701-build-00015/alfresco-search-services-1.0.b.zip -t search-services:myimage .
+docker build --build-arg solrUrl=http://dl.alfresco.com/release/enterprise/SearchServices/1.1.0/alfresco-search-services-1.1.0.zip -t search-services:myimage .
 ```
 
 ### License

@@ -86,7 +86,7 @@ public class AlfrescoCollatableTextFieldType extends StrField
          * @see org.apache.lucene.search.FieldComparatorSource#newComparator(java.lang.String, int, int, boolean)
          */
         @Override
-        public FieldComparator<String> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) throws IOException
+        public FieldComparator<String> newComparator(String fieldname, int numHits, int sortPos, boolean reversed)
         {
             return new TextSortFieldComparator(numHits, fieldname, I18NUtil.getLocale());
         }

@@ -1,5 +1,6 @@
 package org.alfresco.solr;
 
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
@@ -18,6 +19,8 @@ import org.apache.solr.client.solrj.embedded.JettyConfig;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.embedded.SSLConfig;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -77,6 +80,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
  * @since solr 1.5
  * @author Michael Suzuki 
  */
+@ThreadLeakLingering(linger = 2000)
 public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 {
     // TODO: this shouldn't be static. get the random when you need it to avoid
@@ -214,18 +218,20 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         return System.getProperty("user.dir") + "/target/test-classes/test-files";
     }
-    public void distribSetUp() throws Exception
+    public void distribSetUp(String serverName) throws Exception
     {
         SolrTestCaseJ4.resetExceptionIgnores(); // ignore anything with
                                                 // ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
         System.setProperty("solr.directoryFactory", "org.apache.solr.core.MockDirectoryFactory");
+        System.setProperty("solr.log.dir", testDir.toPath().resolve(serverName).toString());
     }
 
     public void distribTearDown() throws Exception
     {
         System.clearProperty("solr.directoryFactory");
+        System.clearProperty("solr.log.dir");
 
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();
@@ -368,6 +374,12 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return jettyClients.get(DEFAULT_TEST_CORENAME);
     }
 
+    protected List<SolrClient> getClusterClients()
+    {
+        return clientShards;
+    }
+
+
     public int assertNodesPerShardGreaterThan(int count) throws Exception
     {
         return assertNodesPerShardGreaterThan(count, false);
@@ -486,6 +498,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         long timeout = startMillis + waitMillis;
         int totalHits = 0;
+        int increment = 1;
         while(new Date().getTime() < timeout)
         {
             RefCounted<SolrIndexSearcher> refCounted = null;
@@ -497,7 +510,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 if (topDocs.totalHits == expectedNumFound) {
                     return;
                 } else {
-                    Thread.sleep(2000);
+                    Thread.sleep(500 * increment++);
                 }
             } finally {
                 refCounted.decref();
@@ -591,7 +604,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         Properties properties = new Properties();
 
-        if(additionalProperties != null) {
+        if(additionalProperties != null && additionalProperties.size() > 0) {
             properties.putAll(additionalProperties);
             properties.remove("shard.method");
         }
@@ -654,6 +667,46 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected void setDistributedParams(ModifiableSolrParams params)
     {
         params.set("shards", getShardsString());
+    }
+
+    protected List<Tuple> getTuples(TupleStream tupleStream) throws IOException {
+        List<Tuple> tuples = new ArrayList();
+        tupleStream.open();
+        try {
+            while (true) {
+                Tuple tuple = tupleStream.read();
+                if (!tuple.EOF) {
+                    tuples.add(tuple);
+                } else {
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            try {
+                tupleStream.close();
+            } catch(Exception e2) {
+                e2.printStackTrace();
+            }
+        }
+
+        return tuples;
+    }
+
+    protected String getShardsString(List<SolrClient> clientList)
+    {
+        StringBuilder buf = new StringBuilder();
+        for(int i=0; i<clientList.size(); ++i) {
+            HttpSolrClient solrClient = (HttpSolrClient)clientList.get(i);
+
+            if(buf.length() > 0) {
+                buf.append(",");
+            }
+
+            buf.append(solrClient.getBaseURL());
+        }
+        return buf.toString();
     }
 
     protected String getShardsString()
@@ -979,28 +1032,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     protected QueryRequest getAlfrescoRequest(String json, SolrParams params) {
-        QueryRequest request = new AlfrescoQueryRequest(json, params);
+        QueryRequest request = new AlfrescoJsonQueryRequest(json, params);
         request.setMethod(SolrRequest.METHOD.POST);
         return request;
-    }
-
-    public static class AlfrescoQueryRequest extends QueryRequest
-    {
-        private static final long serialVersionUID = 103873138415233192L;
-        private String json;
-
-        public AlfrescoQueryRequest(String json, SolrParams params)
-        {
-            super(params);
-            this.json =json;
-        }
-
-        public Collection<ContentStream> getContentStreams()
-        {
-            List<ContentStream> streams = new ArrayList<ContentStream>();
-            streams.add(new ContentStreamBase.StringStream(json));
-            return streams;
-        }
     }
 
     /**
@@ -1572,6 +1606,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         handle.put("_original_parameters_", SKIP);
     }
 
+
     protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException
     {
         seedSolrHome(jettyHome);
@@ -1662,11 +1697,24 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         /**
          * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * Please use the other constructor by passing in the class instance as well.
          * @param numShards
          */
-        public JettyServerRule(int numShards)
+        private JettyServerRule(int numShards)
         {
             this.serverName = DEFAULT_TEST_CORENAME;
+            coreNames = new String[]{DEFAULT_TEST_CORENAME};
+            this.numShards = numShards;
+            this.solrcoreProperties = new Properties();
+        }
+
+        /**
+         * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * @param numShards
+         */
+        public JettyServerRule(int numShards, AbstractAlfrescoDistributedTest testClass)
+        {
+            this.serverName = testClass.getClass().getSimpleName();
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.numShards = numShards;
             this.solrcoreProperties = new Properties();
@@ -1675,9 +1723,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
          * Creates the jetty servers with the specified number of shards and sensible defaults.
          * @param numShards
          */
-        public JettyServerRule(int numShards, Properties solrcoreProperties)
+        public JettyServerRule(int numShards, AbstractAlfrescoDistributedTest testClass, Properties solrcoreProperties)
         {
-            this.serverName = DEFAULT_TEST_CORENAME;
+            this.serverName = testClass.getClass().getSimpleName();
             coreNames = new String[]{DEFAULT_TEST_CORENAME};
             this.numShards = numShards;
             this.solrcoreProperties = solrcoreProperties;
@@ -1686,7 +1734,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         @Override
         protected void before() throws Throwable
         {
-            distribSetUp();
+            distribSetUp(serverName);
             RandVal.uniqueValues = new HashSet(); // reset random values
             createServers(serverName, coreNames, numShards,solrcoreProperties);
         }
