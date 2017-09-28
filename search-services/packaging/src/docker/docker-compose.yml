@@ -1,7 +1,7 @@
 version: '2'
 services:
   platform:
-    image: docker-internal.alfresco.com/platform:5.2.2-SNAPSHOT
+    image: docker-internal.alfresco.com/platform:5.2.3-SNAPSHOT
     environment:
       JAVA_TOOL_OPTIONS: "-Dsolr.host=solr6 -Dsolr.port=8983 -Dsolr.secureComms=none -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
     ports:
