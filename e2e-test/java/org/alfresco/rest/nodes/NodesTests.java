@@ -1,7 +1,7 @@
 package org.alfresco.rest.nodes;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestNodeBodyMoveModel;
+import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.rest.model.builder.NodesBuilder.NodeDetail;
@@ -36,7 +36,7 @@ public class NodesTests extends RestTest
         NodeDetail destinationFolder = nodesBuilder.folder("destinationFolder");
 
         // Move file from sourceFolder to destinationFolder
-        RestNodeBodyMoveModel moveDestinationInfo = new RestNodeBodyMoveModel();
+        RestNodeBodyMoveCopyModel moveDestinationInfo = new RestNodeBodyMoveCopyModel();
         moveDestinationInfo.setTargetParentId(destinationFolder.getId());
 
         ContentModel fileToMove = new ContentModel();
