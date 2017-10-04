@@ -8,8 +8,11 @@ import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.LinkModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -21,27 +24,201 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class UpdateCommentFullTests extends RestTest
-{     
+public class UpdateCommentTests extends RestTest
+{
     private UserModel adminUserModel, networkUserModel;
+    private FileModel document;
     private SiteModel siteModel;
     private RestCommentModel commentModel, returnedCommentModel;
-    private RestCommentModelsCollection comments;
-    private DataUser.ListUserWithRoles usersWithRoles;
+    private RestCommentModelsCollection comments;;
+    private ListUserWithRoles usersWithRoles;
     private String firstComment = "This is a new comment";
     private String updatedComment = "This is the updated comment";
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
-        networkUserModel = dataUser.createRandomTestUser();
         restClient.authenticateUser(adminUserModel);
-        siteModel = dataSite.usingUser(adminUserModel).createPrivateRandomSite(); 
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, 
-                UserRole.SiteConsumer, UserRole.SiteContributor);
+        networkUserModel = dataUser.createRandomTestUser();
+        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
+        
+        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
     }
-    
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    public void adminIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
+        String updatedContent = "This is the updated comment with admin user";
+        restClient.withCoreAPI().usingResource(document).updateComment(commentModel, updatedContent)      
+                   .assertThat().field("content").isNotEmpty()
+                   .and().field("content").is(updatedContent);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on update comment call")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
+    public void unauthenticatedUserIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("To be updated by unauthenticated user.");
+        UserModel incorrectUserModel = new UserModel("userName", "password");
+        restClient.authenticateUser(incorrectUserModel)
+                  .withCoreAPI().usingResource(document).updateComment(commentModel, "try to update");
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
+                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify entry content in response")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
+    public void checkEntryContentInResponse() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
+        commentModel = restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with admin user");        
+        restClient.assertStatusCodeIs(HttpStatus.OK);   
+        commentModel.assertThat().field("content").is("This is the updated comment with admin user");
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Manager user updates comments created by admin user and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    public void managerIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by manager");
+        restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Manager user")
+                .and().field("content").is("This is the updated comment with Manager user")
+                .and().field("canEdit").is(true)
+                .and().field("canDelete").is(true);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Contributor user can update his own comment and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    public void contributorIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by contributor");
+        String updatedContent = "This is the updated comment with Contributor user";
+        restClient.withCoreAPI().usingResource(document).updateComment(commentModel, updatedContent);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Consumer user can not update comments created by admin user and status code is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    public void consumerIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
+        restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Consumer user");
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                                      .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can update his own comment and status code is 200")
+//    @Bug(id="REPO-1011")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    public void collaboratorIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
+        restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Collaborator user");        
+        restClient.assertStatusCodeIs(HttpStatus.OK);   
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can not update comments of another user and status code is 200")
+//  @Bug(id="MNT-2502",description="seems it's one old issue: also logged as MNT-2502, MNT-2346")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    public void collaboratorIsNotAbleToUpdateCommentOfAnotherUser() throws JsonToModelConversionException, Exception
+    {
+      restClient.authenticateUser(adminUserModel);
+      commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
+      restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .withCoreAPI().usingResource(document).updateComment(commentModel, "This is the updated comment with Collaborator user");        
+      restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify update comment with inexistent nodeId returns status code 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+
+        FolderModel content = FolderModel.getRandomFolderModel();
+        content.setNodeRef("node ref that does not exist");
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
+        restClient.withCoreAPI().usingResource(content).updateComment(commentModel, "This is the updated comment.");                
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                  .assertLastError().containsSummary("node ref that does not exist was not found");
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify if commentId is not set the status code is 404")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void canNotUpdateCommentIfCommentIdIsNotSet() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+
+        RestCommentModel comment = new RestCommentModel();
+        String id = "comment id that does not exist";
+        comment.setId(id);
+        restClient.withCoreAPI().usingResource(document).updateComment(comment, "This is the updated comment."); 
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                  .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, id));
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify can not update comment if NodeId is neither document or folder and returns status code 405")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void canNotUpdateCommentIfNodeIdIsNeitherDocumentOrFolder() throws JsonToModelConversionException, Exception
+    {
+        FileModel content = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
+        content = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
+
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(content).addComment("This is a new comment");
+        
+        LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
+        content.setNodeRef(link.getNodeRef().replace("workspace://SpacesStore/", "workspace%3A%2F%2FSpacesStore%2F"));
+        
+        restClient.withCoreAPI().usingResource(content).updateComment(commentModel, "This is the updated comment.");                
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+            .assertLastError()
+            .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, content.getNodeRef()))
+            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+            .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user is not able to update with empty comment body and status code is 400")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void adminIsNotAbleToUpdateWithEmptyCommentBody() throws JsonToModelConversionException, Exception
+    {
+        restClient.authenticateUser(adminUserModel);
+        commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
+        restClient.withCoreAPI().usingResource(document).updateComment(commentModel, "");
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+        .assertLastError().containsSummary("An invalid argument was received");
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify updated comment by Manager is listed when calling getComments and status code is 200")
+//    @Bug(id="REPO-1011")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void updatedCommentByManagerIsListed() throws JsonToModelConversionException, Exception
+    {
+        commentModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+                .withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
+        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI()
+        .usingResource(document).updateComment(commentModel, "This is the updated comment with Manager user"); 
+        comments = restClient.withCoreAPI().usingResource(document).getNodeComments();
+        restClient.assertStatusCodeIs(HttpStatus.OK);   
+        comments.assertThat().entriesListContains("content", "This is the updated comment with Manager user");
+    }
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with a large string")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -59,7 +236,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCommentModel.assertThat().field("content").is(longString);
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with a short string")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -77,7 +254,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCommentModel.assertThat().field("content").is(shortString);
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Collaborator user can update a comment with special characters")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -95,7 +272,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCommentModel.assertThat().field("content").is(specialChars);
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Check that you cannot update comment with Consumer then call getComments and check new comment is not listed")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -116,7 +293,7 @@ public class UpdateCommentFullTests extends RestTest
             .and().entriesListDoesNotContain("content", updatedComment)
             .and().paginationField("totalItems").is("1");
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Contributor then call getComments and check new comment is listed")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -138,7 +315,7 @@ public class UpdateCommentFullTests extends RestTest
             .and().entriesListDoesNotContain("content", firstComment)
             .and().paginationField("totalItems").is("1");
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Collaborator then call getComments and check new comment is listed")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -177,7 +354,7 @@ public class UpdateCommentFullTests extends RestTest
         returnedCommentModel.assertThat().field("modifiedBy.id").is(manager.getUsername())
             .and().field("content").is(updatedComment); 
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Delete comment with Admin then try to update it")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -195,7 +372,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.withCoreAPI().usingResource(file).updateComment(commentModel, updatedComment);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with multi byte content")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -213,7 +390,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCommentModel.assertThat().field("content").is(multiByte);
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Admin user can update a comment with properties parameter")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -233,7 +410,7 @@ public class UpdateCommentFullTests extends RestTest
             .assertThat().field("modifiedBy.id").is(manager.getUsername())
             .assertThat().fieldsCount().is(4);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Update comment with invalid node")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -249,7 +426,7 @@ public class UpdateCommentFullTests extends RestTest
         restClient.withCoreAPI().usingResource(file).updateComment(commentModel, updatedComment);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, file.getNodeRef()));
     }
-    
+
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify update comment from node with invalid network id returns status code 401")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
@@ -262,24 +439,24 @@ public class UpdateCommentFullTests extends RestTest
         restClient.authenticateUser(networkUserModel).withCoreAPI().usingResource(file).updateComment(commentModel, updatedComment);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED); 
     }
-    
-    @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
-               description= "Verify User can not update comment to a not joined private site. Status code returned is 403")
-        @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-        public void userCanNotUpdateCommentToANotJoinedPrivateSiteDefaultErrorModelSchema() throws Exception
-        {
-            UserModel newUser = dataUser.createRandomTestUser();
-            FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-            
-            commentModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
+
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify User can not update comment to a not joined private site. Status code returned is 403")
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    public void userCanNotUpdateCommentToANotJoinedPrivateSiteDefaultErrorModelSchema() throws Exception
+    {
+        UserModel newUser = dataUser.createRandomTestUser();
+        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        commentModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                .withCoreAPI().usingResource(file).addComment(firstComment);         
-            restClient.assertStatusCodeIs(HttpStatus.CREATED);
-            
-            restClient.authenticateUser(newUser).withCoreAPI().usingResource(file).updateComment(commentModel, updatedComment);
-            restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                    .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-                    .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                    .stackTraceIs(RestErrorModel.STACKTRACE)
-                    .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
-        }
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        restClient.authenticateUser(newUser).withCoreAPI().usingResource(file).updateComment(commentModel, updatedComment);
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+               .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+               .stackTraceIs(RestErrorModel.STACKTRACE)
+               .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
+    }
 }
