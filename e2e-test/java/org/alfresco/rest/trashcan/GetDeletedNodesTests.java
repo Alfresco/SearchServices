@@ -47,7 +47,6 @@ public class GetDeletedNodesTests extends RestTest
         adminUserModel = dataUser.getAdminUser();
         restClient.authenticateUser(adminUserModel);        
         deleteNodesSiteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-            
     }
 	
     @AfterClass(alwaysRun=true)
@@ -56,7 +55,7 @@ public class GetDeletedNodesTests extends RestTest
         dataSite.usingAdmin().deleteSite(deleteNodesSiteModel);
     }
 	
-    @Test(groups = { TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.REGRESSION })
     public void testDeletedNodesBiggerThanMaxCount() throws Exception
     {
 		//get the number of item in the trashcan 
@@ -84,9 +83,6 @@ public class GetDeletedNodesTests extends RestTest
 		
         restClient.assertStatusCodeIs(HttpStatus.OK);
         deletedNodesMaxItem.getPagination().assertThat().field("totalItems").is(totalItemsMaxItem).and().field("count").is(countMaxItem);
-        deletedNodesMaxItem.getPagination().assertThat().field("hasMoreItems").is(hasMoreItemsMaxItem).and().field("skipCount").is(skipCount);        
-           	
+        deletedNodesMaxItem.getPagination().assertThat().field("hasMoreItems").is(hasMoreItemsMaxItem).and().field("skipCount").is(skipCount);
     }
-	
-	
 }
