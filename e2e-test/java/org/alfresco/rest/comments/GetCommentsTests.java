@@ -1,9 +1,7 @@
 package org.alfresco.rest.comments;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.UserRole;
@@ -55,7 +53,7 @@ public class GetCommentsTests extends RestTest
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.SANITY,
             description= "Verify Admin user gets comments with Rest API and status code is 200")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
-    public void adminIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToRetrieveComments() throws Exception
     {
         comments = restClient.authenticateUser(adminUserModel).withCoreAPI()
                     .usingResource(document1).getNodeComments();
@@ -67,7 +65,7 @@ public class GetCommentsTests extends RestTest
             description= "Verify Manager user gets status code 401 if authentication call fails")    
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    public void managerIsNotAbleToRetrieveCommentIfAuthenticationFails() throws Exception
     {
         UserModel nonexistentModel = new UserModel("nonexistentUser", "nonexistentPassword");
         restClient.authenticateUser(nonexistentModel).withCoreAPI()
@@ -78,8 +76,8 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user gets comments created by admin user with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void managerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToRetrieveComments() throws Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI()
                     .usingResource(document1).getNodeComments();
@@ -89,8 +87,8 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Contributor user gets comments created by admin user with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void contributorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void contributorIsAbleToRetrieveComments() throws Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI()
                     .usingResource(document1).getNodeComments();
@@ -100,8 +98,8 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Collaborator user gets comments created by admin user with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void collaboratorIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void collaboratorIsAbleToRetrieveComments() throws Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI()
                     .usingResource(document1).getNodeComments();
@@ -111,8 +109,8 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Consumer user gets comments created by admin user with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void consumerIsAbleToRetrieveComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void consumerIsAbleToRetrieveComments() throws Exception
     {
         comments = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI()
                 .usingResource(document1).getNodeComments();
@@ -123,8 +121,8 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user gets comments created by another user and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void managerIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToRetrieveCommentsCreatedByAnotherUser() throws Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         String contentManager = "This is a new comment added by " + userModel.getUsername();
@@ -140,8 +138,8 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify admin user gets comments created by another user and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void adminIsAbleToRetrieveCommentsCreatedByAnotherUser() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void adminIsAbleToRetrieveCommentsCreatedByAnotherUser() throws Exception
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         String contentCollaborator = "This is a new comment added by " + userModel.getUsername();
@@ -157,7 +155,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify request returns status 403 if the user does not have permission read comments on the node")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void uninvitedUserCanNotGetCommentsFromPrivateSite() throws Exception
     {
         restClient.authenticateUser(userModel).withCoreAPI()
@@ -168,7 +166,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify user gets comments without the first 2 and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void skipFirst2Comments() throws Exception
     {
         comments = restClient.authenticateUser(adminUserModel).withParams("skipCount=2")
@@ -182,7 +180,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify invalid request returns status code 400 for invalid maxItems or skipCount")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void checkStatusCodeForInvalidMaxItems() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=0")
@@ -193,7 +191,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't get comments for node with ID that does not exist and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void userCanNotGetCommentsOnNonExistentFile() throws Exception
     {
         FileModel nonexistentFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -206,7 +204,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify User can't get comments for node that exists but is not a document or a folder and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void userCanNotGetCommentsOnLink() throws Exception
     {
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
@@ -224,7 +222,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with invalid network id returns status code 401")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void getCommentsWithInvalidNetwork() throws Exception
     {
         networkUserModel.setDomain("invalidNetwork");
@@ -234,7 +232,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify get comments from node with empty network id returns status code 401")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void getCommentsWithEmptyNetwork() throws Exception
     {
         networkUserModel.setDomain("");
@@ -244,7 +242,7 @@ public class GetCommentsTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that if manager adds one comment, it will be returned in getComments response")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addCommentWithManagerAndCheckThatCommentIsReturned() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -260,7 +258,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that if collaborator adds one comment, it will be returned in getComments response")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addCommentWithCollaboratorAndCheckThatCommentIsReturned() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -277,7 +275,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that if contributor adds one comment, it will be returned in getComments response")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     @Bug(id = "ACE-4614")
     public void addCommentWithContributorAndCheckThatCommentIsReturned() throws Exception
     {
@@ -295,7 +293,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify that consumer cannot add a comment and no comments will be returned in getComments response")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addCommentWithConsumerAndCheckThatCommentIsNotReturned() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -311,7 +309,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add one comment with Manager and check that returned person is the right one")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addCommentWithManagerCheckReturnedPersonIsTheRightOne() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -326,7 +324,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add one comment with Collaborator and check that returned company details are correct")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addCommentWithCollaboratorCheckReturnedCompanyDetails() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -347,7 +345,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add 2 comments with Manager and Collaborator users and verify valid request using skipCount. Check that param is applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addTwoCommentsWithManagerCollaboratorVerifySkipCountParamIsApplied() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -365,7 +363,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add 2 comments with Admin and Collaborator users and verify valid request using maxItems. Check that param is applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addTwoCommentsWithAdminCollaboratorVerifyMaxItemsParamIsApplied() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -382,7 +380,7 @@ public class GetCommentsTests extends RestTest
   
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Add 2 comments with Manager and Admin users and verify valid request using properties. Check that param is applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addTwoCommentsWithAdminManagerVerifyPropertiesParamIsApplied() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -406,7 +404,7 @@ public class GetCommentsTests extends RestTest
     
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Check default error model schema")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void addTwoCommentsWithManagerCheckDefaultErrorModelSchema() throws Exception
     {
         file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);

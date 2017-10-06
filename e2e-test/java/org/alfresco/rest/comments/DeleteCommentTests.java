@@ -44,7 +44,7 @@ public class DeleteCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user deletes comments with Rest API and status code is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
-    public void adminIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToDeleteComments() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
@@ -55,7 +55,7 @@ public class DeleteCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify User gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void userIsNotAbleToDeleteCommentIfAuthenticationFails() throws JsonToModelConversionException, Exception
+    public void userIsNotAbleToDeleteCommentIfAuthenticationFails() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("New comment addded by admin");
@@ -68,8 +68,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Manager user deletes own comments and status code is 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void managerIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToDeleteComments() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Manager");
@@ -79,8 +79,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user deletes own comments and status code is 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void collaboratorIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void collaboratorIsAbleToDeleteComments() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Collaborator");
@@ -90,8 +90,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Contributor user deletes own comments and status code is 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void contributorIsAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void contributorIsAbleToDeleteComments() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("New comment added by Contributor");
@@ -101,8 +101,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Consumer user can't delete comments created by admin user and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void consumerIsNotAbleToDeleteComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void consumerIsNotAbleToDeleteComments() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
@@ -114,8 +114,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user can't delete comments with inexistent ID and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void userIsNotAbleToDeleteInexistentComment() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void userIsNotAbleToDeleteInexistentComment() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = new RestCommentModel();
@@ -126,8 +126,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user can't delete comments with inexistend NodeId and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void userIsNotAbleToDeleteCommentWithInexistentNodeId() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void userIsNotAbleToDeleteCommentWithInexistentNodeId() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
@@ -139,8 +139,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user can't delete deleted comments and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void userIsNotAbleToDeleteDeletedComment() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void userIsNotAbleToDeleteDeletedComment() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
@@ -153,8 +153,8 @@ public class DeleteCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
             executionType = ExecutionType.REGRESSION, description = "Verify Manager user deletes comment created by admin"
             + " and status code is 204. Check with getComments for validation")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void managerIsAbleToDeleteCommentCreatedByOthers() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToDeleteCommentCreatedByOthers() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
          
@@ -174,8 +174,8 @@ public class DeleteCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
             executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can delete comment created by self"
             + " and status code is 204. Check with getComments for validation")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void collaboratorIsAbleToDeleteCommentCreatedBySelf() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void collaboratorIsAbleToDeleteCommentCreatedBySelf() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         
@@ -194,9 +194,9 @@ public class DeleteCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
             executionType = ExecutionType.REGRESSION, description = "Verify Contributor user deletes comment created by self"
             + " and status code is 204. Check with getComments for validation")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     @Bug(id = "ACE-4614")
-    public void contributorIsAbleToDeleteCommentCreatedBySelf() throws JsonToModelConversionException, Exception
+    public void contributorIsAbleToDeleteCommentCreatedBySelf() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
   
@@ -215,8 +215,8 @@ public class DeleteCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
             executionType = ExecutionType.REGRESSION, description = "Verify Consumer user cannot delete comment created by admin"
             + " and status code is 403. Check with getComments for validation and check default error model schema.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void consumerIsNotAbleToDeleteCommentCreatedByOthersDefaultErrorModelSchema() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void consumerIsNotAbleToDeleteCommentCreatedByOthersDefaultErrorModelSchema() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
                     
@@ -238,8 +238,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
             executionType = ExecutionType.REGRESSION, description = "Verify Manager can delete comment with version number")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void usingManagerDeleteCommentWithVersionNumber() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void usingManagerDeleteCommentWithVersionNumber() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         dataContent.usingAdmin().usingResource(file).updateContent("updated content to increase version number");
@@ -253,8 +253,8 @@ public class DeleteCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
             executionType = ExecutionType.REGRESSION, description = "Verify Manager user cannot delete comment with invalid node "
                     + "and status code is 404. Check with getComments for validation")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void usingManagerDeleteCommentWithInvalidNode() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void usingManagerDeleteCommentWithInvalidNode() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
       
@@ -270,7 +270,7 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS}, executionType = ExecutionType.REGRESSION,
             description = "Verify deleteComment from node with invalid network id returns status code 401")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void deleteCommentWithInvalidNetworkId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -283,8 +283,8 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, 
             executionType = ExecutionType.REGRESSION, description = "Verify deleteComment from node with empty network id returns status code 401")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void deleteCommentWithEmptyNetworkId() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void deleteCommentWithEmptyNetworkId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         

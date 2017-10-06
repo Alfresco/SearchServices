@@ -49,7 +49,7 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates comments and status code is 200")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
-    public void adminIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    public void adminIsAbleToUpdateHisComment() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
@@ -63,7 +63,7 @@ public class UpdateCommentTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user gets status code 401 on update comment call")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
     @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
-    public void unauthenticatedUserIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    public void unauthenticatedUserIsNotAbleToUpdateComment() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("To be updated by unauthenticated user.");
@@ -76,7 +76,7 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify entry content in response")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
-    public void checkEntryContentInResponse() throws JsonToModelConversionException, Exception
+    public void checkEntryContentInResponse() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
@@ -86,8 +86,8 @@ public class UpdateCommentTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Manager user updates comments created by admin user and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void managerIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToUpdateHisComment() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by manager");
@@ -99,8 +99,8 @@ public class UpdateCommentTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Contributor user can update his own comment and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void contributorIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void contributorIsAbleToUpdateHisComment() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by contributor");
@@ -110,8 +110,8 @@ public class UpdateCommentTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Consumer user can not update comments created by admin user and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void consumerIsNotAbleToUpdateComment() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void consumerIsNotAbleToUpdateComment() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
@@ -123,8 +123,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can update his own comment and status code is 200")
 //    @Bug(id="REPO-1011")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void collaboratorIsAbleToUpdateHisComment() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void collaboratorIsAbleToUpdateHisComment() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
@@ -134,8 +134,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can not update comments of another user and status code is 200")
 //  @Bug(id="MNT-2502",description="seems it's one old issue: also logged as MNT-2502, MNT-2346")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.CORE })
-    public void collaboratorIsNotAbleToUpdateCommentOfAnotherUser() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void collaboratorIsNotAbleToUpdateCommentOfAnotherUser() throws Exception
     {
       restClient.authenticateUser(adminUserModel);
       commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
@@ -145,8 +145,8 @@ public class UpdateCommentTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify update comment with inexistent nodeId returns status code 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void canNotUpdateCommentIfNodeIdIsNotSet() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void canNotUpdateCommentIfNodeIdIsNotSet() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
 
@@ -159,8 +159,8 @@ public class UpdateCommentTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify if commentId is not set the status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void canNotUpdateCommentIfCommentIdIsNotSet() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void canNotUpdateCommentIfCommentIdIsNotSet() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
 
@@ -173,8 +173,8 @@ public class UpdateCommentTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify can not update comment if NodeId is neither document or folder and returns status code 405")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void canNotUpdateCommentIfNodeIdIsNeitherDocumentOrFolder() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void canNotUpdateCommentIfNodeIdIsNeitherDocumentOrFolder() throws Exception
     {
         FileModel content = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         content = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -195,8 +195,8 @@ public class UpdateCommentTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user is not able to update with empty comment body and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void adminIsNotAbleToUpdateWithEmptyCommentBody() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void adminIsNotAbleToUpdateWithEmptyCommentBody() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment added by admin");
@@ -207,8 +207,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify updated comment by Manager is listed when calling getComments and status code is 200")
 //    @Bug(id="REPO-1011")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void updatedCommentByManagerIsListed() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void updatedCommentByManagerIsListed() throws Exception
     {
         commentModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withCoreAPI().usingResource(document).addComment("This is a new comment added by collaborator");
@@ -221,8 +221,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with a large string")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void managerIsAbleToUpdateACommentWithALargeString() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToUpdateACommentWithALargeString() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String longString = RandomStringUtils.randomAlphanumeric(10000);
@@ -239,8 +239,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with a short string")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void managerIsAbleToUpdateACommentWithAShortString() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToUpdateACommentWithAShortString() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String shortString = RandomStringUtils.randomAlphanumeric(2);
@@ -257,8 +257,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Collaborator user can update a comment with special characters")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void collaboratorIsAbleToUpdateACommentThatContainsSpecialChars() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void collaboratorIsAbleToUpdateACommentThatContainsSpecialChars() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String specialChars = "!@#$%^&*()'\".,<>-_+=|\\";
@@ -275,8 +275,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Check that you cannot update comment with Consumer then call getComments and check new comment is not listed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void cannotUpdateCommentWithConsumerCallGetComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void cannotUpdateCommentWithConsumerCallGetComments() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         
@@ -296,9 +296,9 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Contributor then call getComments and check new comment is listed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     @Bug(id = "ACE-4614")
-    public void updateCommentWithContributorCallGetComments() throws JsonToModelConversionException, Exception
+    public void updateCommentWithContributorCallGetComments() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         
@@ -318,8 +318,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Collaborator then call getComments and check new comment is listed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void updateCommentWithCollaboratorCallGetComments() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void updateCommentWithCollaboratorCallGetComments() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         
@@ -339,8 +339,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Update comment with Manager then check modified by information in response")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void updateCommentWithManagerCheckModifiedBy() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void updateCommentWithManagerCheckModifiedBy() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         UserModel manager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
@@ -357,8 +357,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Delete comment with Admin then try to update it")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void deleteCommentThenTryToUpdateIt() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void deleteCommentThenTryToUpdateIt() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         
@@ -375,8 +375,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Manager user can update a comment with multi byte content")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void managerIsAbleToUpdateACommentWithMultiByteContent() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void managerIsAbleToUpdateACommentWithMultiByteContent() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         String multiByte = "\ufeff\u6768\u6728\u91d1";
@@ -393,8 +393,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify Admin user can update a comment with properties parameter")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void adminIsAbleToUpdateACommentWithPropertiesParameter() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void adminIsAbleToUpdateACommentWithPropertiesParameter() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
         
@@ -413,8 +413,8 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, 
             description = "Update comment with invalid node")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
-    public void updateCommentUsingInvalidNodeId() throws JsonToModelConversionException, Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
+    public void updateCommentUsingInvalidNodeId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         
@@ -429,7 +429,7 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section={TestGroup.REST_API, TestGroup.COMMENTS}, executionType= ExecutionType.REGRESSION,
             description= "Verify update comment from node with invalid network id returns status code 401")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void updateCommentWithInvalidNetworkId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(DocumentType.TEXT_PLAIN);
@@ -442,7 +442,7 @@ public class UpdateCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.COMMENTS }, executionType = ExecutionType.REGRESSION, description = "Verify User can not update comment to a not joined private site. Status code returned is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void userCanNotUpdateCommentToANotJoinedPrivateSiteDefaultErrorModelSchema() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
