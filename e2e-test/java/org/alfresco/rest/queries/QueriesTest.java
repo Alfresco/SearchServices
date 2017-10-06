@@ -14,10 +14,9 @@ import org.testng.annotations.Test;
  */
 public class QueriesTest extends RestTest
 {
-
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.QUERIES }, executionType = ExecutionType.REGRESSION, description = "Verify GET queries on queries/nodes returnes success status code")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.QUERIES },
+            executionType = ExecutionType.REGRESSION, description = "Verify GET queries on queries/nodes returnes success status code")
+    @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
     public void getOnQueriesNodesRoute() throws Exception
     {
         restClient.authenticateUser(dataContent.getAdminUser())
