@@ -57,7 +57,7 @@ public class NodesContentAndVersioningTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify file name in Content-Disposition header")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})    
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkFileNameWithRegularCharsInHeader() throws Exception
     {
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("attachment=false").getNodeContent();
@@ -68,7 +68,7 @@ public class NodesContentAndVersioningTests extends RestTest
     @Bug(id="MNT-17545", description = "HTTP Header Injection in ContentStreamer", status = Bug.Status.FIXED)
     @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify file name with special chars is escaped in Content-Disposition header")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE})    
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
     public void checkFileNameWithSpecialCharsInHeader() throws Exception
     {
         char c1 = 127;
@@ -80,7 +80,7 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertHeaderValueContains("Content-Disposition","filename=\" test   .txt\"");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via REST.")
     public void verifyFileEncodingUsingRestAPI() throws Exception
@@ -109,7 +109,7 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify updating a node content.")
     public void testUpdateNodeContent() throws Exception
@@ -133,7 +133,7 @@ public class NodesContentAndVersioningTests extends RestTest
         assertTrue(updatedBodyNodeVersion.charAt(0) > initialNodeVersion.charAt(0));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test copy a node.")
     public void testCopyNode() throws Exception
@@ -166,7 +166,7 @@ public class NodesContentAndVersioningTests extends RestTest
         assertFalse(initialNode.getIsLocked());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test retrieving node versions, a specific version and version content.")
     public void testGetVersionContent() throws Exception
@@ -220,7 +220,7 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file2.getName()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test revert and delete a node version.")
     public void testRevertDeleteVersion() throws Exception

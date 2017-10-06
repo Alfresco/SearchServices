@@ -40,7 +40,7 @@ public class NodesLockTests extends RestTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can not lock PERSISTENT after EPHEMERAL lock made by different user")
     public void lockEphemeralAndRelockPersistentDifferentUser() throws Exception
@@ -57,7 +57,7 @@ public class NodesLockTests extends RestTest
         lockBodyModel.setLifetime("EPHEMERAL");
         lockBodyModel.setTimeToExpire(20);
         lockBodyModel.setType("FULL");
-        restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include?isLocked").lockNode(lockBodyModel);
+        restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         STEP("4. Verify with user1 that the file is locked.");
@@ -78,9 +78,9 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify Collaborator can not lock PERSISTENT after EPHEMERAL lock made by different user")
+            description = "Verify Collaborator can not lock EPHEMERAL after EPHEMERAL lock made by different user")
     public void lockEphemeralAndRelockEphemeralDifferentUser() throws Exception
     {
         STEP("1. Adds a file in the site by administrator.");
@@ -116,7 +116,7 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by same user")
     public void lockEphemeralAndRelockEphemeralSameUser() throws Exception
@@ -155,7 +155,7 @@ public class NodesLockTests extends RestTest
     }
 
     @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by same user")
     public void lockEphemeralAndRelockPersistentSameUser() throws Exception
@@ -200,7 +200,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can not lock EPHEMERAL after PERSISTENT lock made by different user")
     public void lockPersistentAndRelockEphemeralDifferentUser() throws Exception
@@ -238,7 +238,7 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can not lock PERSISTENT after PERSISTENT lock made by different user")
     public void lockPersistentAndRelockPersistentDifferentUser() throws Exception
@@ -276,7 +276,7 @@ public class NodesLockTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by different user is expired")
     public void lockPersistentAndRelockEphemeralAfterExpiredLockDifferentUser() throws Exception
@@ -316,7 +316,7 @@ public class NodesLockTests extends RestTest
     }
 
     @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by another user is expired")
     public void lockEphemeralAndRelockPersistentAfterExpiredLockDifferentUser() throws Exception
@@ -355,7 +355,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by another user is expired")
     public void lockEphemeralAndRelockEphemeralAfterExpiredLockDifferentUser() throws Exception
@@ -394,7 +394,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by different user is expired")
     public void lockPersistentAndRelockPersistentAfterExpiredLockDifferentUser() throws Exception
@@ -433,7 +433,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after EPHEMERAL lock made by same user is expired")
     public void lockEphemeralAndRelockEphemeralAfterExpiredLockSameUser() throws Exception
@@ -472,7 +472,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by same user is expired")
     public void lockPersistentAndRelockPersistentAfterExpiredLockSameUser() throws Exception
@@ -510,7 +510,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHEMERAL after PERSISTENT lock made by same user is expired")
     public void lockPersistentAndRelockEphemeralAfterExpiredLockSameUser() throws Exception
@@ -550,7 +550,7 @@ public class NodesLockTests extends RestTest
     }
 
     @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by same user is expired")
     public void lockEphemeralAndRelockPersistentAfterExpiredLockSameUser() throws Exception
@@ -590,7 +590,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after PERSISTENT lock made by same user")
     public void lockPersistentAndRelockPersistentSameUser() throws Exception
@@ -628,7 +628,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=WRITE_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock EPHERMERAL after PERSISTENT lock made by same user")
     public void lockPersistentAndRelockEphemeralSameUser() throws Exception

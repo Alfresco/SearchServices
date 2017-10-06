@@ -46,9 +46,9 @@ public class NodesParentChildrenTests extends RestTest
                .assertThat().field("name").contains(node.getName());
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify new folder node is created as children on -my- posting as MultiPart content type")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
     public void createNewFolderNodeWithMultiPartForms() throws Exception
     {
         //configuring multipart form

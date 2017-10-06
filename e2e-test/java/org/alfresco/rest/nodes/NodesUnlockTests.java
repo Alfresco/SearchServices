@@ -37,85 +37,29 @@ public class NodesUnlockTests extends RestTest
         user2.setUserRole(UserRole.SiteCollaborator);  
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify Collaborator can unlock after EPHEMERAL lock made by same user")
-    public void lockEphemeralAndUnlockWithSameUser() throws Exception
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.SANITY,
+            description= "Verify Collaborator canot unlock EPHEMERAL lock made by different user, but can unlock EPHEMERAL lock made by same user")
+    public void lockEphemeralAndUnlock() throws Exception
     {
         STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
-        
+
         STEP("2. Verify with user1 that the file is not locked.");
         RestNodeModel file1Model1 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model1.assertThat().field("isLocked").is(false);
-        
+
         STEP("3. Lock the file using mode EPHEMERAL with user1 (POST nodes/{nodeId}/lock).");
         RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
         lockBodyModel.setLifetime("EPHEMERAL");
         lockBodyModel.setTimeToExpire(20);
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include?isLocked").lockNode(lockBodyModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+
         STEP("4. Verify with user1 that the file is locked.");
         RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model2.assertThat().field("isLocked").is(true);
-        
-        STEP("5. Unlock the file with user1 while the file is still locked");
-        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
-        file1Model3.assertThat().field("isLocked").is(false);
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify Collaborator can unlock after PERSISTENT lock made by same user")
-    public void lockPersistentAndUnlockSameUser() throws Exception{
-        
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
-        file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
-        
-        STEP("2. Verify with admin that the file is not locked.");
-        RestNodeModel file1Model1 = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
-        file1Model1.assertThat().field("isLocked").is(false);
-        
-        STEP("3. Lock the file using mode PERSISTENT with user1 (POST nodes/{nodeId}/lock).");
-        RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
-        lockBodyModel.setLifetime("PERSISTENT");
-        lockBodyModel.setTimeToExpire(20);
-        restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include?isLocked").lockNode(lockBodyModel);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        
-        STEP("4. Verify with user1 that the file is locked.");
-        RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
-        file1Model2.assertThat().field("isLocked").is(true);
-        
-        STEP("5. Unlock the file with user1 while the file is still locked");
-        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
-        file1Model3.assertThat().field("isLocked").is(false);
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify Collaborator can not unlock file after EPHEMERAL lock made by different user")
-    public void lockEphemeralAndUnlockWithDifferentUser() throws Exception{
-        
-        STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
-        file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
-        
-        STEP("2. Verify with admin that the file is not locked.");
-        RestNodeModel file1Model1 = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
-        file1Model1.assertThat().field("isLocked").is(false);
-        
-        STEP("3. Lock the file using mode EPHEMERAL with user1 (POST nodes/{nodeId}/lock).");
-        RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
-        lockBodyModel.setLifetime("EPHEMERAL");
-        lockBodyModel.setTimeToExpire(20);
-        restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include?isLocked").lockNode(lockBodyModel);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        
-        STEP("4. Verify with user1 that the file is locked.");
-        RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
-        file1Model2.assertThat().field("isLocked").is(true);
-        
+
         STEP("5. Cannot unlock the file with user2 while the file is still locked");
         restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
@@ -123,31 +67,35 @@ public class NodesUnlockTests extends RestTest
             .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
             .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
+
+        STEP("6. Unlock the file with user1 while the file is still locked");
+        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
+        file1Model3.assertThat().field("isLocked").is(false);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.CORE })
-    @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify Collaborator can not unlock file after PERSISTENT lock made by different user")
-    public void lockPersistentAndUnlockWithDifferentUser() throws Exception{
-        
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section={TestGroup.REST_API, TestGroup.NODES}, executionType= ExecutionType.SANITY,
+            description= "Verify Collaborator canot unlock PERSISTENT lock made by different user, but can unlock PERSISTENT lock made by same user")
+    public void lockPersistentAndUnlock() throws Exception{
+
         STEP("1. Add user(s) as collaborators to the site created by administrator and add a file in this site.");
         file1 = dataContent.usingUser(adminUser).usingSite(publicSite).createContent(DocumentType.TEXT_PLAIN);
-        
+
         STEP("2. Verify with admin that the file is not locked.");
         RestNodeModel file1Model1 = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model1.assertThat().field("isLocked").is(false);
-        
+
         STEP("3. Lock the file using mode PERSISTENT with user1 (POST nodes/{nodeId}/lock).");
         RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
         lockBodyModel.setLifetime("PERSISTENT");
         lockBodyModel.setTimeToExpire(20);
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include?isLocked").lockNode(lockBodyModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
-        STEP("4. Verify with admin that the file is locked.");
+
+        STEP("4. Verify with user1 that the file is locked.");
         RestNodeModel file1Model2 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
         file1Model2.assertThat().field("isLocked").is(true);
-        
+
         STEP("5. Cannot unlock the file with user2 while the file is still locked");
         restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
@@ -155,6 +103,10 @@ public class NodesUnlockTests extends RestTest
             .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
             .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
+
+        STEP("6. Unlock the file with user1 while the file is still locked");
+        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").unlockNode();
+        file1Model3.assertThat().field("isLocked").is(false);
     }
 
 }
