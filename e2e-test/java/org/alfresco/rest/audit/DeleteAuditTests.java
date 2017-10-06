@@ -8,10 +8,10 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
-public class DeleteAuditCoreTests extends AuditTest
+public class DeleteAuditTests extends AuditTest
 {
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if deleting an audit entry for an application is only for admin user, and status code is 204")
     public void deleteAuditEntry() throws Exception
@@ -35,7 +35,7 @@ public class DeleteAuditCoreTests extends AuditTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if deleting a set of audit entries for an application is only for admin user, and status code is 204")
     public void deleteAuditEntriesForAnAuditApplication() throws Exception

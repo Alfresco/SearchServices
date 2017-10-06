@@ -6,12 +6,12 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
-public class PutAuditCoreTests extends AuditTest
+public class PutAuditTests extends AuditTest
 {
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify that the admin user can enable/disable sync application auditing")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify that the admin user can enable/disable sync application auditing")
     public void enableDisableSyncApplicationAuditingAsAdminUser() throws Exception
     {
         // disable sync audit app
@@ -37,7 +37,7 @@ public class PutAuditCoreTests extends AuditTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify that the admin user can enable/disable tagging application auditing")
     public void enableDisableTaggingApplicationAuditingAsAdminUser() throws Exception
@@ -65,9 +65,9 @@ public class PutAuditCoreTests extends AuditTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify that the normal user can't enable/disable sync application auditing")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify that the normal user can't enable/disable sync application auditing")
     public void enableDisableSyncApplicationAuditingAsNormalUser() throws Exception
     {
         // disable sync audit app
@@ -86,7 +86,7 @@ public class PutAuditCoreTests extends AuditTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify that the normal user can't enable/disable tagging application auditing")
     public void enableDisableTaggingApplicationAuditingAsNormalUser() throws Exception

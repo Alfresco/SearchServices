@@ -2,7 +2,6 @@ package org.alfresco.rest.audit;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -13,10 +12,10 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
-public class GetAuditCoreTests extends AuditTest
+public class GetAuditTests extends AuditTest
 {
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets audit application info")
     public void getAuditApplicationInfoWithAdminUser() throws Exception
@@ -36,7 +35,7 @@ public class GetAuditCoreTests extends AuditTest
         taggingRestAuditAppModel.assertThat().field("id").is("tagging");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if a normal user gets a list of audit applications and status code is 403")
     public void getAuditApplicationsWithNormalUser() throws Exception
@@ -46,9 +45,9 @@ public class GetAuditCoreTests extends AuditTest
         restAuditCollection.assertThat().entriesListIsEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using skipCount and status code is 200")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify if the admin user gets a list of audit applications using skipCount and status code is 200")
     public void getAuditApplicationsWithAdminUserUsingValidSkipCount() throws Exception
     {
         restAuditCollection = restClient.authenticateUser(adminUser).withParams("skipCount=1").withCoreAPI()
@@ -58,9 +57,9 @@ public class GetAuditCoreTests extends AuditTest
                 .isGreaterThan(0).and().field("skipCount").is("1");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and status code is 400")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and status code is 400")
     public void getAuditApplicationsWithAdminUserUsingInvalidSkipCount() throws Exception
     {
         restClient.authenticateUser(adminUser).withParams("skipCount=-1").withCoreAPI().usingAudit()
@@ -68,9 +67,9 @@ public class GetAuditCoreTests extends AuditTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using maxItems and status code is 200")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify if the admin user gets a list of audit applications using maxItems and status code is 200")
     public void getAuditApplicationsWithAdminUserUsingValidMaxItems() throws Exception
     {
         restAuditCollection = restClient.authenticateUser(adminUser).withParams("maxItems=1").withCoreAPI()
@@ -81,9 +80,9 @@ public class GetAuditCoreTests extends AuditTest
         assertEquals(restAuditCollection.getEntries().size(), 1);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid maxItems and status code is 400")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify if the admin user gets a list of audit applications using invalid maxItems and status code is 400")
     public void getAuditApplicationsWithAdminUserUsingInvalidMaxItems() throws Exception
     {
         restClient.authenticateUser(adminUser).withParams("maxItems=-1").withCoreAPI().usingAudit()
@@ -96,7 +95,7 @@ public class GetAuditCoreTests extends AuditTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using skipCount and maxItems and status code is 200")
     public void getAuditApplicationsWithAdminUserUsingValidSkipCountAndMaxItems() throws Exception
@@ -109,9 +108,9 @@ public class GetAuditCoreTests extends AuditTest
         assertEquals(restAuditCollection.getEntries().size(), 1);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and/or invalid maxItems and status code is 400")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify if the admin user gets a list of audit applications using invalid skipCount and/or invalid maxItems and status code is 400")
     public void getAuditApplicationsWithAdminUserUsingInvalidSkipCountAndMaxItems() throws Exception
     {
         restClient.authenticateUser(adminUser).withParams("skipCount=-1&maxItems=1").withCoreAPI().usingAudit()
@@ -131,7 +130,7 @@ public class GetAuditCoreTests extends AuditTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if a normal user gets a list of audit entries for audit application auditApplicationId and status code is 403")
     public void getAuditEntriesWithNormalUser() throws Exception
@@ -141,7 +140,7 @@ public class GetAuditCoreTests extends AuditTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using invalid skipCount and/or invalid maxItems and status code is 400")
     public void getAuditEntriesWithAdminUserUsingInvalidSkipCountAndMaxItems() throws Exception
@@ -163,7 +162,7 @@ public class GetAuditCoreTests extends AuditTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using valid skipCount and maxItems and status code is 200")
     public void getAuditEntriesWithAdminUserUsingValidSkipCountAndMaxItems() throws Exception
@@ -200,9 +199,9 @@ public class GetAuditCoreTests extends AuditTest
         } while (skipCount < numberOfElements);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using orderBy and status code is 200")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify if the admin user gets a list of audit entries using orderBy and status code is 200")
     public void getAuditEntriesWithAdminUserUsingOrderBy() throws Exception
     {
         restAuditEntryCollection = restClient.authenticateUser(adminUser).withParams("orderBy=createdAt ASC&maxItems=10")
@@ -218,9 +217,9 @@ public class GetAuditCoreTests extends AuditTest
         assertTrue(Integer.parseInt(restAuditEntryCollection.getEntries().get(1).onModel().getId()) > Integer.parseInt(ascId));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries using the where parameter to  and status code is 200")
+            TestGroup.AUDIT }, executionType = ExecutionType.REGRESSION, description = "Verify if the admin user gets a list of audit entries using the where parameter to  and status code is 200")
     public void getAuditEntriesWithAdminUserUsingWhere() throws Exception
     {
         int expectedNumberOfItems;
@@ -252,7 +251,7 @@ public class GetAuditCoreTests extends AuditTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if retrieving an audit entry for an audit application is only for admin user, with and without the include=values paramater and status code is 200")
     public void getAuditEntry() throws Exception
@@ -285,7 +284,7 @@ public class GetAuditCoreTests extends AuditTest
         assertNotNull(restAuditEntryModel.getValues());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if the admin user gets a list of audit entries for node id nodeId using 'where' and 'maxItems' param and status code is 200")
     public void getAuditEntriesForNodeUsingMaxItemsAndWhereParam() throws Exception
@@ -331,7 +330,7 @@ public class GetAuditCoreTests extends AuditTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.AUDIT, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.AUDIT }, executionType = ExecutionType.SANITY, description = "Verify if user with permissions can get a list of audit entries for node and status code is 200")
     public void getAuditEntriesForNodeUsingUserWithPermissions() throws Exception
