@@ -67,7 +67,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify collaborator user add a favorite site with Rest API and response is successful (201)")
     public void collaboratorUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -79,7 +79,7 @@ public class AddFavoriteSiteTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(publicSite.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify contributor user add a favorite site with Rest API and response is successful (201)")
     public void contributorUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -91,7 +91,7 @@ public class AddFavoriteSiteTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(publicSite.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify consumer user add a favorite site with Rest API and response is successful (201)")
     public void consumerUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -103,7 +103,7 @@ public class AddFavoriteSiteTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(publicSite.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin user add a favorite site with Rest API and response is successful (201)")
     public void adminUserAddFavoriteSiteWithSuccess() throws Exception
     {
@@ -112,7 +112,7 @@ public class AddFavoriteSiteTests extends RestTest
         restFavoriteSiteModel.assertThat().field("id").is(publicSite.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify manager user is not able to add a favorite site when the site is already favorite - status code (409)")
     public void managerUserAddFavoriteSiteAlreadyAFavoriteSite() throws Exception
@@ -133,7 +133,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsErrorKey(String.format("Site %s is already a favourite site", publicSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify user doesn't have permission to delete favorites of admin user with Rest API and status code is 403")
     public void userIsNotAbleToAddFavoriteSiteOfAnotherUser() throws Exception
@@ -151,7 +151,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify manager user is able to add as favorite a private site.")
     public void managerAddsPrivateSiteAsFavorite() throws Exception
@@ -173,7 +173,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .and().field("title").is(privateSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify manager user is able to add as favorite a moderated site.")
     public void managerAddsModeratedSiteAsFavorite() throws Exception
@@ -195,7 +195,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .and().field("title").is(moderatedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify user removes a site from favorites using '-me-' in place of personId with Rest API and response is successful (201)")
     public void addFavoriteSiteWithSuccessUsingMeAsPersonId() throws Exception
@@ -204,7 +204,7 @@ public class AddFavoriteSiteTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify manager user removes a site from its favorites and adds it again and response is successful (204)")
     public void managerUserRemovesFavoriteSiteAndAddItAgain() throws Exception
@@ -221,7 +221,7 @@ public class AddFavoriteSiteTests extends RestTest
     }
 
     @Bug(id="ACE-2413")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify empty user is not able to add a site from favorites and response is (400)")
     public void emptyUserIsNotAbleToRemoveFavoriteSite() throws Exception
@@ -233,7 +233,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "emptyUser"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify inexistent user is not able to add a site from favorites and response is (404)")
     public void inexistentUserIsNotAbleToRemoveFavoriteSite() throws Exception
@@ -250,7 +250,7 @@ public class AddFavoriteSiteTests extends RestTest
     }
 
     @Bug(id="REPO-1827")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to add a favorite site when the 'id' is empty - status code (400)")
     public void userAddFavoriteSiteWithEmptySiteId() throws Exception
@@ -266,7 +266,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user doesn't have permission to add a favorite site of another user with Rest API and status code is 403")
     public void adminIsNotAbleToAddFavoriteSiteOfAnotherUser() throws Exception
@@ -282,7 +282,7 @@ public class AddFavoriteSiteTests extends RestTest
     }
 
     @Bug(id="MNT-17338")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user doesn't have permission to add a favorite site of another user with Rest API and status code is 403")
     public void userIsNotAbleToAddFavoriteSiteOfAdmin() throws Exception
@@ -297,7 +297,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify add favorite site using empty body - status code is 400")
     public void addFavoriteSiteWithEmptyBody() throws Exception
@@ -312,7 +312,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field " + "\"ids\""));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify add favorite site using empty body - status code is 400")
     public void addFavoriteSiteWithEmptyRequiredFieldsBody() throws Exception
@@ -327,7 +327,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field " + "\"\""));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify non member user is not able to add a private favorite site - status code is 404")
     public void userAddFavoriteSiteUserNotMemberOfPrivateSite() throws Exception
@@ -344,7 +344,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify non member user is able to add a moderated favorite site")
     public void userAddFavoriteSiteUserNotMemberOfModeratedSite() throws Exception
@@ -364,7 +364,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .and().field("title").is(moderatedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify non member user is able to add a public favorite site")
     public void userAddFavoriteSiteUserNotMemberOfPublicSite() throws Exception
@@ -385,7 +385,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .and().field("title").is(publicSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Check that if id does not exist, status code is 404")
     public void addFavoriteSiteUsingInvalidId() throws Exception
@@ -401,7 +401,7 @@ public class AddFavoriteSiteTests extends RestTest
         publicSite.setId(id);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides site in id but id is of a file status code is 404")
     public void addSiteToFavoritesUsingFileId() throws Exception
@@ -415,7 +415,7 @@ public class AddFavoriteSiteTests extends RestTest
         publicSite.setId(id);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides site in id but id is of a folder status code is 404")
     public void addSiteToFavoritesUsingFolderId() throws Exception
@@ -430,7 +430,7 @@ public class AddFavoriteSiteTests extends RestTest
         publicSite.setId(id);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides site in id but id is of a comment status code is 404")
     public void addSiteToFavoriteUsingCommentId() throws Exception
@@ -447,7 +447,7 @@ public class AddFavoriteSiteTests extends RestTest
         publicSite.setId(id);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides site in id but id is of a tag status code is 404")
     public void addSiteFavoriteUsingTagId() throws Exception
@@ -462,7 +462,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, returnedModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Check that if id does not describe a site, file, or folder status code is 400")
     public void addFavoriteUsingInvalidGuid() throws Exception
@@ -477,7 +477,7 @@ public class AddFavoriteSiteTests extends RestTest
     }
 
     @Bug(id="MNT-16904")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.NETWORKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify tenant user is not able to delete favorites using an invalid network ID - status code (401)")
     public void tenantIsNotAbleToDeleteFavoriteSiteWithInvalidNetworkID() throws  Exception
@@ -499,7 +499,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.NETWORKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify tenant user is able to add to favorites his site and status code is (201)")
     public void tenantAddFavoriteSiteValidNetwork() throws  Exception
@@ -521,7 +521,7 @@ public class AddFavoriteSiteTests extends RestTest
                 .entriesListContains("targetGuid", publicSite.getGuidWithoutVersion());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.NETWORKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS, TestGroup.REGRESSION})
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify tenant user is able to add to favorites a site created by admin tenant - same network and status code is (201)")
     public void tenantUserIsAbleToAddFavoriteSiteAddedByAdminSameNetwork() throws Exception

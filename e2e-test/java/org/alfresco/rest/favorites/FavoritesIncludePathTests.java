@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
  * 
  * @author meenal bhave
  */
-public class FavoritesIncludePathSanityTests extends RestTest
+public class FavoritesIncludePathTests extends RestTest
 {
     private UserModel adminUser;
     private UserModel testUser1;
@@ -37,7 +37,6 @@ public class FavoritesIncludePathSanityTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-
         adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
 
@@ -54,7 +53,7 @@ public class FavoritesIncludePathSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify that get favorite site request does not include Path")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES})
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void testGetFavoriteIncludePathForSite() throws Exception
     {
         restClient.authenticateUser(testUser1).withCoreAPI().usingAuthUser().includePath().getFavorite(siteModel1.getGuid());
@@ -64,7 +63,7 @@ public class FavoritesIncludePathSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify that get favorite file or folder request includes path when requested")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES})
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void testGetFavouriteIncludePathForFileFolder() throws Exception
     {
         STEP("1. Favourite Folder and File");
@@ -97,7 +96,7 @@ public class FavoritesIncludePathSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify path in get favorites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES})
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void testGetFavouritesIncludePath() throws Exception
     {
         STEP("1. Favourite Folder and File");
@@ -117,10 +116,9 @@ public class FavoritesIncludePathSanityTests extends RestTest
         restClient.onResponse().assertThat().body("list.entries.entry.target.site.id", org.hamcrest.Matchers.contains(siteModel1.getId()));
         restClient.onResponse().assertThat().body("list.entries.entry.target.site.path", org.hamcrest.Matchers.contains(org.hamcrest.Matchers.nullValue()));       
     }
-    
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify path in post favorites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES})
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void testPostFavouritesIncludePath() throws Exception
     {
         STEP("1. Favourite Site");
@@ -140,9 +138,6 @@ public class FavoritesIncludePathSanityTests extends RestTest
         restClient.authenticateUser(testUser1).withCoreAPI().usingAuthUser().includePath().addFileToFavorites(fileInSubFolder);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.onResponse().assertThat().body("entry.target.file.id", org.hamcrest.Matchers.equalTo(fileInSubFolder.getNodeRefWithoutVersion()));
-        restClient.onResponse().assertThat().body("entry.target.file.path", org.hamcrest.Matchers.notNullValue());   
-        
-       
-    }    
-
+        restClient.onResponse().assertThat().body("entry.target.file.path", org.hamcrest.Matchers.notNullValue());
+    }
 }
