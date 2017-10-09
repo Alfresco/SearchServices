@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 public class SitesTests extends RestTest
 {
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Tests the creation of a site")
     public void testCreateSite() throws Exception
     {
