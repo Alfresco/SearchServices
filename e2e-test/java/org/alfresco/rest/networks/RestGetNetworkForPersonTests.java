@@ -1,0 +1,210 @@
+package org.alfresco.rest.networks;
+
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestNetworkModel;
+import org.alfresco.rest.model.RestNetworkQuotaModel;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+
+/**
+ * Tests for /people/{personId}/networks
+ */
+public class RestGetNetworkForPersonTests extends RestTest
+{
+    UserModel adminUserModel;
+    UserModel adminTenantUser;
+    UserModel tenantUser;
+    UserModel tenantSiteManager;
+    UserModel tenantSiteCollaborator;
+    UserModel tenantSiteContributor;
+    UserModel tenantSiteConsumer;
+    SiteModel tenantSite;
+    RestNetworkModel restNetworkModel;
+
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        adminUserModel = dataUser.getAdminUser();
+        adminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUserModel);
+        restClient.usingTenant().createTenant(adminTenantUser);
+        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        tenantSiteManager = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteManager");
+        tenantSiteCollaborator = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteCollaborator");
+        tenantSiteContributor = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteContributor");
+        tenantSiteConsumer = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteConsumer");
+        tenantSite = dataSite.usingUser(tenantSiteManager).createPublicRandomSite();
+        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteCollaborator, tenantSite, UserRole.SiteCollaborator);
+        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteContributor, tenantSite, UserRole.SiteContributor);
+        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteConsumer, tenantSite, UserRole.SiteConsumer);
+    }
+
+    @Bug(id = "MNT-16904")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify non existing user gets another existing network with Rest API and checks the forbidden status")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void nonExistingTenantUserIsNotAuthorizedToRequest() throws Exception
+    {
+        UserModel tenantUser = new UserModel("nonexisting", "password");
+        tenantUser.setDomain(adminTenantUser.getDomain());
+        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
+            description = "Verify tenant admin user gets specific network with Rest API and response is not empty")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
+    public void adminTenantChecksIfNetworkIsPresent() throws Exception
+    {
+        restClient.authenticateUser(adminTenantUser).withCoreAPI().usingUser(adminTenantUser).getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @Bug(id = "needs to be checked")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify tenant user check network of admin user with Rest API")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void tenantUserIsNotAuthorizedToCheckNetworkOfAdminUser() throws Exception
+    { 
+        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().getNetwork(adminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify admin tenant user is not authorized to check network of another user with Rest API and checks the forbidden status")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void adminTenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
+    {
+        UserModel secondAdminTenantUser = UserModel.getAdminTenantUser();
+        restClient.usingTenant().createTenant(secondAdminTenantUser);
+        UserModel secondTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
+        restClient.authenticateUser(adminTenantUser).withCoreAPI().usingAuthUser().getNetwork(secondTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
+            description = "Verify site manager user gets specific network with Rest API and response is not empty")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.SANITY })
+    public void siteManagerChecksIfNetworkIsPresent() throws Exception
+    {
+        restClient.authenticateUser(tenantSiteManager).withCoreAPI().usingAuthUser().getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify site collaborator user gets specific network with Rest API and response is not empty")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void siteCollaboratorChecksIfNetworkIsPresent() throws Exception
+    {
+        restClient.authenticateUser(tenantSiteCollaborator).withCoreAPI().usingAuthUser().getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify site contributor user gets specific network with Rest API and response is not empty")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void siteContributorChecksIfNetworkIsPresent() throws Exception
+    {
+        restClient.authenticateUser(tenantSiteContributor).withCoreAPI().usingAuthUser().getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify site consumer user gets specific network with Rest API and response is not empty")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void siteConsumerChecksIfNetworkIsPresent() throws Exception
+    {
+        restClient.authenticateUser(tenantSiteConsumer).withCoreAPI().usingAuthUser().getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @Bug(id = "needs to be checked")
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify getNetwork request status code is 200 if a user tries to get network information of another user")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void verifyGetNetworkByAUserForAnotherUser() throws Exception
+    {
+        UserModel randomTestUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("randomTestUser");
+        restNetworkModel = restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().getNetwork(randomTestUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restNetworkModel.assertThat().field("id").is(tenantUser.getDomain());
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify that getNetwork status code is 404 for a personId that does not exist")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void verifyThatGetNetworkStatusIs404ForAPersonIdThatDoesNotExist() throws Exception
+    {
+        UserModel invalidUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("validUsername");
+        invalidUser.setUsername("invalidUsername");
+
+        restClient.authenticateUser(adminTenantUser).withCoreAPI().usingUser(invalidUser).getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, invalidUser.getUsername()))
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify that getNetwork status code is 404 for a networkId that does not exist")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void verifyThatGetNetworkStatusIs404ForANetworkIdThatDoesNotExist() throws Exception
+    {
+        UserModel invalidUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("invalidNetworkId");
+        invalidUser.setDomain("invalidNetworkId");
+
+        restClient.authenticateUser(adminTenantUser).withCoreAPI().usingUser(invalidUser).getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, invalidUser.getUsername()))
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify getNetwork request that is made using -me- instead of personId")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void verifyGetNetworkRequestUsingMeInsteadOfPersonId() throws Exception
+    {
+        restNetworkModel = restClient.authenticateUser(adminTenantUser).withCoreAPI().usingMe().getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restNetworkModel.assertThat().field("quotas").is(new ArrayList<RestNetworkQuotaModel>())
+                .assertThat().field("isEnabled").is("true")
+                .assertThat().field("homeNetwork").is("true")
+                .assertThat().field("id").is(adminTenantUser.getDomain().toLowerCase());
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify that properties parameter is applied to getNetwork request")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void verifyPropertiesParameterIsAppliedToGetNetworkRequest() throws Exception
+    {
+        restNetworkModel = restClient.authenticateUser(adminTenantUser).withParams("properties=id").withCoreAPI().usingMe().getNetwork();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restNetworkModel.assertThat().field("id").is(adminTenantUser.getDomain().toLowerCase());
+        restNetworkModel.assertThat().fieldsCount().is(1);
+    }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify getNetwork request status code is 404 for a network to which user does not belong")
+    @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
+    public void verifyGetNetworkRequestStatusCodeIs404ForANetworkToWhichTheUserDoesNotBelong() throws Exception
+    {
+        UserModel secondAdminTenantUser = UserModel.getAdminTenantUser();
+        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(secondAdminTenantUser);
+        restClient.authenticateUser(adminTenantUser).withCoreAPI().usingAuthUser().getNetwork(secondAdminTenantUser);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+}
