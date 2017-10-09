@@ -39,24 +39,8 @@ public class GetPeoplePreferencesFullTests extends RestTest
         dataSite.usingUser(user1).usingSite(siteModel).addSiteToFavorites();
         dataContent.usingUser(user1).usingSite(siteModel).addFolderToFavorites(folderModel);
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its preferences using me with Rest API and response is successful")
-    public void userGetsItsPeoplePreferencesUsingMe() throws Exception
-    {
-        restPreferenceModelsCollection = restClient.authenticateUser(user1).withCoreAPI().usingMe().getPersonPreferences();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModelsCollection.assertThat().paginationField("count").is("4");
-        restPreferenceModelsCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("id", String.format(PreferenceName.EXT_FOLDERS_FAVORITES_PREFIX.toString(), "workspace://SpacesStore/" + folderModel.getNodeRef()))
-            .and().entriesListContains("id", String.format(PreferenceName.EXT_SITES_FAVORITES_PREFIX.toString(), siteModel.getId()))
-            .and().entriesListContains("id", PreferenceName.FOLDERS_FAVORITES_PREFIX.toString())
-            .and().entriesListContains("value", "workspace://SpacesStore/" + folderModel.getNodeRef())
-            .and().entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()))
-            .and().entriesListContains("value", "true");
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its preferences with skipCount parameter applied with Rest API and response is successful")
     public void userGetsItsPeoplePreferencesUsingSkipCountParameter() throws Exception
     {
@@ -73,7 +57,7 @@ public class GetPeoplePreferencesFullTests extends RestTest
             .and().entriesListContains("value", "true");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its preferences with maxItems parameter applied with Rest API and response is successful")
     public void userGetsItsPeoplePreferencesUsingMaxItemsParameter() throws Exception
     {
@@ -90,7 +74,7 @@ public class GetPeoplePreferencesFullTests extends RestTest
             .and().entriesListDoesNotContain("value", "true");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets admin preferences with Rest API and response is permission denied")
     public void userIsForbiddenToGetAdminPreferences() throws Exception
     {
@@ -102,7 +86,7 @@ public class GetPeoplePreferencesFullTests extends RestTest
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its preferences with skipCount parameter higher then no of entries with Rest API and response is empty")
     public void userGetsItsPeoplePreferencesUsingHighSkipCount() throws Exception
     {
@@ -113,8 +97,8 @@ public class GetPeoplePreferencesFullTests extends RestTest
         restPreferenceModelsCollection.assertThat().entriesListIsEmpty();
     }
     
-    @Bug(id = "REPO-1911")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
+//    @Bug(id = "REPO-1911")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get preferences for empty user with Rest API and response is 400")
     public void userGetsItsPeoplePreferencesForEmptyPersonId() throws Exception
     {

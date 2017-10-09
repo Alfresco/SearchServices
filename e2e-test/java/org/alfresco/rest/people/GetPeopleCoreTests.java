@@ -36,8 +36,8 @@ public class GetPeopleCoreTests extends RestTest
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
         inexistentUser = new UserModel("inexistentUser", "password");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify inexistent user cannot get a person with Rest API and response is 401")
     public void inexistentUserIsUnauthorizedToGetPerson() throws Exception
     {
@@ -45,8 +45,8 @@ public class GetPeopleCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
         restClient.assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get a person that doesn't exists with Rest API and response is 404")
     public void userCannotGetInexistentPerson() throws Exception
     {

@@ -32,16 +32,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
         dataUser.addUserToSite(leaveSiteUserModel, publicSiteModel, UserRole.SiteCollaborator);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is able to retrieve site membership information with -me- as personId")
-    public void siteManagerCanRetrieveSiteMembershipInformationWithMeAsPersonId() throws Exception
-    {
-        restClient.authenticateUser(userModel).withCoreAPI().usingMe().getSitesMembershipInformation().assertThat().entriesListIsNotEmpty().and()
-                .paginationExist().and().paginationField("count").isNot("0");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is not able to retrieve site membership information for a personId that does not exist")
     public void siteManagerCantRetrieveSiteMembershipInformationForAPersonIdThatDoesNotExist() throws Exception
     {
@@ -54,7 +45,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify if get site membership information request returns status code 400 when invalid maxItems parameter is used")
     public void getSiteMembershipInformationRequestReturns400ForInvalidMaxItemsParameter() throws Exception
     {
@@ -72,7 +63,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
         restClient.assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "test"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify if get site membership information request returns status code 200 for valid maxItems parameter")
     public void getSiteMembershipInformationRequestReturns200ForValidMaxItemsParameter() throws Exception
     {
@@ -81,7 +72,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify if get site membership information request returns status code 400 when invalid skipCount parameter is used")
     public void getSiteMembershipInformationRequestReturns400ForInvalidSkipCountParameter() throws Exception
     {
@@ -98,7 +89,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify if get site membership information request returns status code 200 for valid skipCount parameter")
     public void getSiteMembershipInformationRequestReturns200ForValidSkipCountParameter() throws Exception
     {
@@ -107,7 +98,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is able to retrieve public sites")
     public void siteManagerCheckThatPublicSitesAreRetrieved() throws Exception
     {
@@ -116,7 +107,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is able to retrieve moderated sites")
     public void siteManagerCheckThatModeratedSitesAreRetrieved() throws Exception
     {
@@ -125,7 +116,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is able to retrieve private sites")
     public void siteManagerCheckThatPrivateSitesAreRetrieved() throws Exception
     {
@@ -134,7 +125,7 @@ public class GetSitesMembershipInformationCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site member is able to leave site")
     public void siteMemberIsAbleToLeaveSite() throws Exception
     {

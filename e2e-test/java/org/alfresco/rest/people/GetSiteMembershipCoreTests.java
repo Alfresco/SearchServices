@@ -43,17 +43,7 @@ public class GetSiteMembershipCoreTests extends RestTest
         dataUser.usingAdmin().addUserToSite(moderatedSiteManager, moderatedSite, UserRole.SiteManager);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify request using -me- string in place of personId returns site membership information for currently authenticated user.")
-    public void getSiteMembershipUsingMe() throws Exception
-    {
-        restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator));
-        restSiteEntry = restClient.withCoreAPI().usingMe().getSiteMembership(publicSite);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSiteEntry.assertThat().field("role").is(UserRole.SiteCollaborator).and().field("id").is(publicSite.getId()).and().field("site").isNotEmpty();
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
 //    @Bug(id = "REPO-1642", description = "reproduced on 5.2.1 only, it works on 5.2.0")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify get site membership for a site returns status 404 when personId does not exist.")
     public void getSiteMembershipUsingNonExistentPersonId() throws Exception
@@ -64,7 +54,7 @@ public class GetSiteMembershipCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "someUser"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify get site membership for a site returns status 404 when siteId does not exist.")
     public void getSiteMembershipUsingNonExistentSiteId() throws Exception
     {
@@ -75,7 +65,7 @@ public class GetSiteMembershipCoreTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, regularUser.getUsername(), "someSite"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify get site membership for a site returns status 404 when personId is not a site member.")
     public void getSiteMembershipForPersonThatIsNotSiteMember() throws Exception
     {
@@ -84,7 +74,7 @@ public class GetSiteMembershipCoreTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, regularUser.getUsername(), publicSite.getTitle()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify regular user is not able to retrieve site membership information of a private site member.")
     public void regularUserIsNotAbleToRetrieveSiteMembershipForPrivateSiteManager() throws Exception
     {
@@ -93,7 +83,7 @@ public class GetSiteMembershipCoreTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, privateSiteManager.getUsername(), privateSite.getTitle()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify regular user is able to retrieve site membership information of a moderated site member.")
     public void regularUserGetsSiteMembershipForModeratedSiteMember() throws Exception
     {
@@ -102,16 +92,7 @@ public class GetSiteMembershipCoreTests extends RestTest
         restSiteEntry.assertThat().field("role").is(UserRole.SiteManager).and().field("id").is(moderatedSite.getId()).and().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify regular user is able to retrieve site membership information of a public site member.")
-    public void regularUserGetsSiteMembershipForPublicSiteMember() throws Exception
-    {
-        restSiteEntry = restClient.authenticateUser(regularUser).withCoreAPI().usingUser(publicSiteManager).getSiteMembership(publicSite);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSiteEntry.assertThat().field("role").is(UserRole.SiteManager).and().field("id").is(publicSite.getId()).and().field("site").isNotEmpty();
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify if Admin user is able to retrieve site membership information of him.")
     public void adminGetsSiteMembershipForHim() throws Exception
     {
@@ -120,7 +101,7 @@ public class GetSiteMembershipCoreTests extends RestTest
         restSiteEntry.assertThat().field("role").is(UserRole.SiteManager).and().field("id").is(privateSite.getId()).and().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify if Admin user is able to retrieve site membership information of him.")
     public void getSiteMembershipAfterRemovingASiteMember() throws Exception
     {

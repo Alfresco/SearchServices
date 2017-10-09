@@ -41,7 +41,7 @@ public class DeleteSiteMemberFullTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove collaborator member of a public site")
     public void adminIsAbleToRemoveCollaboratorSiteMembershipFromPublicSite() throws Exception
     {
@@ -49,8 +49,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove contributor member of a public site")
     public void adminIsAbleToRemoveContributorSiteMembershipFromPublicSite() throws Exception
     {
@@ -58,17 +58,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteContributor));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove consumer member of a public site")
-    public void adminIsAbleToRemoveConsumerSiteMembershipFromPublicSite() throws Exception
-    {
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(publicSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteConsumer));
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to remove contributor member of a public site and response is 422")
     public void userIsNotAbleToRemoveContributorSiteMembershipFromPublicSite() throws Exception
     {
@@ -76,8 +67,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
         .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to remove consumer member of a public site and response is 422")
     public void userIsNotAbleToRemoveConsumerSiteMembershipFromPublicSite() throws Exception
     {
@@ -85,8 +76,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
         .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove collaborator member of a moderated site")
     public void adminIsAbleToRemoveCollaboratorSiteMembershipFromModeratedSite() throws Exception
     {
@@ -94,8 +85,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteCollaborator));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove contributor member of a moderated site")
     public void adminIsAbleToRemoveContributorSiteMembershipFromModeratedSite() throws Exception
     {
@@ -103,17 +94,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteContributor));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove consumer member of a moderated site")
-    public void adminIsAbleToRemoveConsumerSiteMembershipFromModeratedSite() throws Exception
-    {
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(moderatedSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(moderatedSiteModel).addPerson(usersWithRolesModeratedSite.getOneUserWithRole(UserRole.SiteConsumer));
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to remove contributor member of a moderated site and response is 422")
     public void userIsNotAbleToRemoveContributorSiteMembershipFromModeratedSite() throws Exception
     {
@@ -121,8 +103,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
             .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to remove consumer member of a moderated site and response is 422")
     public void userIsNotAbleToRemoveConsumerSiteMembershipFromModeratedSite() throws Exception
     {
@@ -130,8 +112,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY).assertLastError()
             .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, moderatedSiteModel.getId()));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove collaborator member of a private site")
     public void adminIsAbleToRemoveCollaboratorSiteMembershipFromPrivateSite() throws Exception
     {
@@ -139,8 +121,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteCollaborator));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove contributor member of a private site")
     public void adminIsAbleToRemoveContributorSiteMembershipFromPrivateSite() throws Exception
     {
@@ -148,17 +130,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteContributor));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is able to remove consumer member of a private site")
-    public void adminIsAbleToRemoveConsumerSiteMembershipFromPrivateSite() throws Exception
-    {
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteConsumer)).deleteSiteMember(privateSiteModel);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(privateSiteModel).addPerson(usersWithRolesPrivateSite.getOneUserWithRole(UserRole.SiteConsumer));
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to remove contributor member of a private site and response is 422")
     public void userIsNotAbleToRemoveContributorSiteMembershipFromPrivateSite() throws Exception
     {
@@ -167,7 +140,7 @@ public class DeleteSiteMemberFullTests extends RestTest
             .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to remove consumer member of a private site and response is 422")
     public void userIsNotAbleToRemoveConsumerSiteMembershipFromPrivateSite() throws Exception
     {
@@ -176,7 +149,7 @@ public class DeleteSiteMemberFullTests extends RestTest
             .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, privateSiteModel.getId()));
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to remove same user twice and response is 400")
     @Bug(id="ACE-5447")
     public void adminIsNotAbleToRemoveSameUserTwice() throws Exception
@@ -191,7 +164,7 @@ public class DeleteSiteMemberFullTests extends RestTest
             .assertSiteMemberHasRole(UserRole.SiteCollaborator);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify single manager is not able to delete himself and response is 400")
     public void lastManagerIsNotAbleToDeleteHimself() throws Exception
     {
@@ -209,7 +182,7 @@ public class DeleteSiteMemberFullTests extends RestTest
             .assertThat().entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager).getUsername());
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site creator can be deleted")
     public void siteCreatorCanBeDeleted() throws Exception
     {
@@ -219,7 +192,7 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", adminUserModel.getUsername());
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to remove from site a user that created a member request that was not accepted yet")
     @Bug(id="ACE-5447")
     public void adminIsNotAbleToRemoveFromSiteANonExistingMember() throws Exception

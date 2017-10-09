@@ -50,7 +50,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
         restActivityModelsCollection.assertThat().paginationField("count").is("4");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for inexistent user with Rest API and response is 404")
     public void userCannotGetPeopleActivitiesForInexistentPersonId() throws Exception
     {
@@ -64,7 +64,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
                                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities for inexistent siteId with Rest API and response is 404")
     public void userGetItsPeopleActivitiesForInexistentSite() throws Exception
     {
@@ -76,7 +76,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
                             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with invald skipCount parameter with Rest API and response is 400")
     public void userGetPeopleActivitiesUsingInvalidSkipCountParameter() throws Exception
     {
@@ -88,7 +88,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
                             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with invalid maxItems parameter with Rest API and response is 400")
     public void userGetPeopleActivitiesUsingInvalidMaxItemsParameter() throws Exception
     {
@@ -100,7 +100,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
                         .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities using invalid value for parameter 'who'with Rest API and response is 400")
     public void userGetsPeopleActivitiesUsingInvalidValueForWhoParameter() throws Exception
     {
@@ -112,7 +112,7 @@ public class GetPeopleActivitiesCoreTests extends RestTest
                     .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities successfully using parameter 'who' with 'others' value with Rest API")
     public void userGetsPeopleActivitiesUsingOthersForWhoParameter() throws Exception
     {

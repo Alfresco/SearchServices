@@ -65,19 +65,8 @@ public class SharedLinksSanityTests extends RestTest
         file5 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify empty sharedLinks with and without Path")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS })
-    public void testGetSharedLinksNoLinks() throws Exception
-    {
-        restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-
-        restClient.authenticateUser(testUser1).withCoreAPI().includePath().usingSharedLinks().getSharedLinks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify create sharedLinks with and without Path")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Verify create sharedLinks with and without Path")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SANITY })
     public void testCreateAndGetSharedLinks() throws Exception
     {
         // Post without includePath
@@ -135,8 +124,8 @@ public class SharedLinksSanityTests extends RestTest
         Assert.assertNull(sharedLink2.getPath(), "Path is expected to be null for noauth api: Response shows: " + sharedLink2.toJson());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify delete sharedLinks with and without Path")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Verify delete sharedLinks with and without Path")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SANITY })
     public void testDeleteSharedLinks() throws Exception
     {
         sharedLink3 = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().createSharedLink(file3);
@@ -149,7 +138,7 @@ public class SharedLinksSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify get sharedLink/content and get/renditions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.REGRESSION })
     public void testCreateWithExpiryDateAndGetSharedLinkRendition() throws Exception
     {
         sharedLink5 = restClient.authenticateUser(testUser1).withCoreAPI().includePath().usingSharedLinks().createSharedLinkWithExpiryDate(file5, expiryDate);

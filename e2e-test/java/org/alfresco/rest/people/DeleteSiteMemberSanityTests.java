@@ -69,8 +69,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site contributor does not have permission to delete another member of the site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site contributor does not have permission to delete another member of the site")
     public void siteContributorIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
@@ -83,8 +83,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify site consumer does not have permission to delete another member of the site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site consumer does not have permission to delete another member of the site")
     public void siteConsumerIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         UserModel newUser = dataUser.createRandomTestUser("testUser");
@@ -97,8 +97,8 @@ public class DeleteSiteMemberSanityTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to delete another member of the site")
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify unauthenticated user is not able to delete another member of the site")
     public void unauthenticatedUserIsNotAbleToDeleteSiteMember() throws JsonToModelConversionException, DataPreparationException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));

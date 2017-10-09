@@ -39,7 +39,7 @@ public class GetPeoplePreferencesCoreTests extends RestTest
         dataContent.usingUser(user1).usingSite(siteModel).addFolderToFavorites(folderModel);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its preferences with invalid maxItems parameter with Rest API and response is 400")
     public void userGetsPeoplePreferencesUsingInvalidMaxItemsParameter() throws Exception
     {
@@ -51,7 +51,7 @@ public class GetPeoplePreferencesCoreTests extends RestTest
                     .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its preferences with skipCount parameter applied with Rest API and response is successful")
     public void userGetsPeoplePreferencesUsingInvalidSkipCountParameter() throws Exception
     {
@@ -63,7 +63,7 @@ public class GetPeoplePreferencesCoreTests extends RestTest
                         .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user which doesn't have access to another user preferences fails to get its preferences with Rest API and response is permission denied")
     public void userWithNoAccessToOtherUserPreferencesIsForbiddenToGetItsPreferences() throws Exception
     {
@@ -78,7 +78,7 @@ public class GetPeoplePreferencesCoreTests extends RestTest
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user fails to get preferences for inexistent personId with Rest API and response is 404")
     public void userCannotGetPeoplePreferencesForInexistentPersonId() throws Exception
     {
@@ -92,7 +92,7 @@ public class GetPeoplePreferencesCoreTests extends RestTest
                             .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user get preferences for a user with no preferences with Rest API and response is empty")
     public void userGetsPeoplePreferencesForUserWithNoPreferences() throws Exception
     {
@@ -104,7 +104,7 @@ public class GetPeoplePreferencesCoreTests extends RestTest
         restPreferenceModelsCollection.assertThat().entriesListIsEmpty();
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user fails to get preferences for a removed preference with Rest API and response is 404")
     public void userFailsToGetPeoplePreferencesIfPreferenceWasRemoved() throws Exception
     {

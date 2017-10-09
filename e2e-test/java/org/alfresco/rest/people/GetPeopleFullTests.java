@@ -24,7 +24,6 @@ public class GetPeopleFullTests extends RestTest
     UserModel searchedUser, managerUser;
     UserModel adminUser;
     private RestPersonModel personModel;
-    private String domain = "@tas-automation.org";
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -36,20 +35,8 @@ public class GetPeopleFullTests extends RestTest
         managerUser = dataUser.usingAdmin().createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel, UserRole.SiteManager);
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets person using '-me-' instead of personId with Rest API and response is successful")
-    public void checkGetPersonIsSuccessfulForMe() throws Exception
-    {
-        personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingMe().getPerson();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        personModel.assertThat().field("id").is(managerUser.getUsername())
-                    .and().field("firstName").is(managerUser.getUsername() + " FirstName")
-                    .and().field("email").is(managerUser.getUsername() + domain)
-                    .and().field("emailNotificationsEnabled").is("true");
-    }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify entry details for get person response with Rest API")
     public void checkResponseSchemaForGetPerson() throws Exception
     {
@@ -77,7 +64,7 @@ public class GetPeopleFullTests extends RestTest
             .and().field("emailNotificationsEnabled").is(newUser.getEmailNotificationsEnabled());
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets a person with special chars in username with Rest API and response is not found")
     public void userChecksIfPersonWithSpecilCharsInUsernameIsNotFound() throws Exception
     {     
@@ -93,7 +80,7 @@ public class GetPeopleFullTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets a person with empty personId with Rest API and response is successful")
     public void userGetPersonWithEmptyPersonId() throws Exception
     {
@@ -104,7 +91,7 @@ public class GetPeopleFullTests extends RestTest
         persons.assertThat().entriesListIsNotEmpty();
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets admin user with Rest API and response is successful")
     public void managerUserGetAdminPerson() throws Exception
     {

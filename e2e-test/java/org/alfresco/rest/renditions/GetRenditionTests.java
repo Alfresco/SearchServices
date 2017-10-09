@@ -35,7 +35,7 @@ public class GetRenditionTests extends RestTest
     public void dataPreparation() throws Exception
     {
         user = dataUser.createRandomTestUser();
-        site = dataSite.usingUser(user).createPublicRandomSite();        
+        site = dataSite.usingUser(user).createPublicRandomSite();
     }
 
     @Bug(id = "REPO-2449", status = Status.FIXED)

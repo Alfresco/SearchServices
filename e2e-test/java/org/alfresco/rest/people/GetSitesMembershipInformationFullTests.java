@@ -43,7 +43,7 @@ public class GetSitesMembershipInformationFullTests extends RestTest
         dataUser.addUserToSite(anotherUserModel, anotherUserSite, UserRole.SiteCollaborator);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if get site membership information request returns status code 200 for valid properties parameter")
     public void getSiteMembershipInformationUsingPropertiesParameter() throws Exception
@@ -58,8 +58,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
             .and().entriesListDoesNotContain("role")
             .and().entriesListDoesNotContain("guid");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if get site membership information request returns status code 200 for order ASC by parameter")
     public void getSiteMembershipInformationUsingOrderAscByParameter() throws Exception
@@ -69,8 +69,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
         sitesMembershipInformation.assertThat().entriesListIsNotEmpty().getPagination().assertThat().field("count").is("3");
         sitesMembershipInformation.assertThat().entriesListIsSortedAscBy("id");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if get site membership information request returns status code 200 for order DESC by parameter")
     public void getSiteMembershipInformationUsingOrderDescByParameter() throws Exception
@@ -80,19 +80,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
         sitesMembershipInformation.assertThat().entriesListIsNotEmpty().getPagination().assertThat().field("count").is("3");
         sitesMembershipInformation.assertThat().entriesListIsSortedDescBy("id");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify if get site membership information request returns status code 200 for order by parameter")
-    public void getSiteMembershipInformationUsingOrderByParameter() throws Exception
-    {
-        sitesMembershipInformation = restClient.authenticateUser(userModel).withParams("orderBy=id").withCoreAPI().usingAuthUser().getSitesMembershipInformation();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        sitesMembershipInformation.assertThat().entriesListIsNotEmpty().getPagination().assertThat().field("count").is("3");
-        sitesMembershipInformation.assertThat().entriesListIsSortedAscBy("id");
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if get site membership information request returns status code 200 for order by role parameter")
     public void getSiteMembershipInformationUsingOrderByRoleParameter() throws Exception
@@ -102,8 +91,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
         sitesMembershipInformation.assertThat().entriesListIsNotEmpty().getPagination().assertThat().field("count").is("3");
         sitesMembershipInformation.assertThat().entriesListIsSortedAscBy("role");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if user gets site membership information of another user successfully")
     public void userCanGetSiteMembershipInformationOfAnotherUser() throws Exception
@@ -122,8 +111,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
             .and().field("guid").is(anotherUserSite.getGuid())
             .and().field("role").is(UserRole.SiteCollaborator.toString());
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if get site membership information request returns status code 200 for relations parameter")
     public void getSiteMembershipInformationUsingRelationsParameter() throws Exception
@@ -132,8 +121,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sitesMembershipInformation.assertThat().entriesListIsNotEmpty().getPagination().assertThat().field("count").is("3");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
             description = "Verify get site membership information request when a site membership request is rejected")
     public void getSiteMembershipInformationWhenASiteRequestIsRejected() throws Exception
@@ -156,8 +145,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
         sitesMembershipInformation.assertThat().entriesListIsEmpty()
             .and().paginationField("count").is("0");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
             description = "Verify get site membership information request when a site membership request is approved")
     public void getSiteMembershipInformationWhenASiteRequestIsAppropved() throws Exception
@@ -183,8 +172,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
             .and().entriesListContains("id", moderatedSiteModel.getId())
             .and().paginationField("count").is("1");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if get site membership information request returns status code 200 for valid maxItems parameter")
     public void getSiteMembershipInformationUsingMaxItemsParameter() throws Exception
@@ -198,8 +187,8 @@ public class GetSitesMembershipInformationFullTests extends RestTest
             .and().field("skipCount").is("0")
             .and().field("maxItems").is("2");
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
         description = "Verify if get site membership information request returns status code 200 for valid skipCount parameter")
     public void getSiteMembershipInformationUsingSkipCountParameter() throws Exception

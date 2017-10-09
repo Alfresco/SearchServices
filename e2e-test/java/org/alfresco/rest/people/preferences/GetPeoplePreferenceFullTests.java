@@ -34,7 +34,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
         dataSite.usingUser(userModel).usingSite(siteModel).addSiteToFavorites();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Check default error schema in case of failure")
     public void checkDefaultErrorSchema() throws Exception
@@ -48,21 +48,8 @@ public class GetPeoplePreferenceFullTests extends RestTest
             .stackTraceIs(RestErrorModel.STACKTRACE)
             .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
      }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
-        description = "Specify -me- string in place of <personid> for request")
-    public void preferenceIsReturnedWhenUsingMeAsPersonId() throws Exception
-    {
-        restPreferenceModel = restClient.authenticateUser(userModel).withCoreAPI().usingMe()
-                .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
-        
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restPreferenceModel.assertThat().field("id").is(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()))
-            .and().field("value").is("true");
-     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Check that properties parameter is applied")
     public void propertiesParameterIsAppliedWhenRetrievingPreference() throws Exception
@@ -80,7 +67,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
             .and().field("value").is("true");
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Validate ID element in get site preference response")
     public void validateIdElementInGetSitePreferenceResponse() throws Exception
@@ -91,7 +78,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
             .and().field("value").is("true");
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Validate ID element in get folder preference response")
     public void validateIdElementInGetFolderPreferenceResponse() throws Exception
@@ -106,7 +93,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
             .and().field("value").is(Utility.removeLastSlash(Utility.buildPath("workspace://SpacesStore", folderFavorite.getNodeRef())));
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Validate ID element in get file preference response")
     public void validateIdElementInGetFilePreferenceResponse() throws Exception
@@ -121,7 +108,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
             .and().field("value").is(Utility.removeLastSlash(Utility.buildPath("workspace://SpacesStore", fileFavorite.getNodeRefWithoutVersion())));
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Get preference of an user that has no preferences")
     public void getPreferenceForUserWithoutPreferences() throws Exception
@@ -147,10 +134,10 @@ public class GetPeoplePreferenceFullTests extends RestTest
                         PreferenceName.SITES_FAVORITES_PREFIX.toString()));
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Change one preference for an user then perform get call")
-    @Bug(id = "ACE-5736")
+//    @Bug(id = "ACE-5736")
     public void changePreferenceThenPerformGetPreferenceCall() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
@@ -195,7 +182,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
                         PreferenceName.FOLDERS_FAVORITES_PREFIX.toString()));
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Verify admin is able to get preference of another user")
     public void adminIsAbleToGetOtherUserPreference() throws Exception
@@ -206,7 +193,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
         restPreferenceModel.assertThat().field("id").is(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId())).and().field("value").is("true");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Verify regular user is not able to get preference of admin user")
     public void regularUserIsNotAbleToGetAdminPreference() throws Exception

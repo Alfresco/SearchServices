@@ -1,5 +1,8 @@
 package org.alfresco.rest.people;
 
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
 import java.io.File;
 
 import org.alfresco.rest.RestTest;
@@ -14,8 +17,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.jayway.restassured.response.ValidatableResponse;
-
-import junit.framework.Assert;
 
 public class AvatarPeopleSanityTest extends RestTest
 {
@@ -38,8 +39,8 @@ public class AvatarPeopleSanityTest extends RestTest
                 .uploadAvatarContent(restProperties.envProperty().getFullServerUrl(), avatarFile).statusCode(200);
         restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().downloadAvatarContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        Assert.assertNotNull(response.extract().body().asByteArray());
-        Assert.assertTrue("Avatar Image not uploaded", response.extract().body().asByteArray().length > 0);
+        assertNotNull(response.extract().body().asByteArray());
+        assertTrue(response.extract().body().asByteArray().length > 0, "Avatar Image not uploaded");
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })

@@ -24,7 +24,7 @@ public class GetPeoplePreferenceCoreTests extends RestTest
         dataSite.usingUser(userModel).usingSite(siteModel).addSiteToFavorites();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify user is Forbidden to get a specific preference for another user with Rest API and response is 403")
     public void userDoesNotHaveAccessToFavoriteSitesOfAnotherUser() throws Exception
     {
@@ -35,7 +35,7 @@ public class GetPeoplePreferenceCoreTests extends RestTest
         restClient.assertLastError().containsSummary("Permission was denied");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for an invalid user with Rest API and response is 404")
     public void statusNotFoundIsReturnedForAPersonIDThatDoesNotExist() throws Exception
     {
@@ -45,7 +45,7 @@ public class GetPeoplePreferenceCoreTests extends RestTest
         restClient.assertLastError().containsSummary("The entity with id: invalidPersonID was not found");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for an invalid preference with Rest API and response is 404")
     public void statusNotFoundIsReturnedForAPreferenceNameThatDoesNotExist() throws Exception
     {
@@ -56,7 +56,7 @@ public class GetPeoplePreferenceCoreTests extends RestTest
                         userModel.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, description = "Verify manager fails to get a specific preference for  removed preference with Rest API and response is 404")
     public void statusNotFoundIsReturnedForAPreferenceNameThatHasBeenRemoved() throws Exception
     {

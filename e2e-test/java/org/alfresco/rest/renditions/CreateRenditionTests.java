@@ -35,7 +35,7 @@ public class CreateRenditionTests  extends RestTest
     {
         adminUser = dataUser.getAdminUser();
         user = dataUser.createRandomTestUser();
-        site = dataSite.usingUser(user).createPublicRandomSite();        
+        site = dataSite.usingUser(user).createPublicRandomSite();
     }
     
     @BeforeMethod(alwaysRun = true)
@@ -58,9 +58,9 @@ public class CreateRenditionTests  extends RestTest
     }
     
     @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux", status = Status.FIXED )
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user that created the document can also creates 'pdf' rendition for it with Rest API and status code is 202")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.REGRESSION })
     public void userThatCreatedFileCanCreatePdfRenditionForIt() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("pdf");
@@ -71,9 +71,9 @@ public class CreateRenditionTests  extends RestTest
     }
     
     @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux", status = Status.FIXED )
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user that created the document can also creates 'doclib' rendition for it with Rest API and status code is 202")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.REGRESSION })
     public void userThatCreatedFileCanCreateDoclibRenditionForIt() throws JsonToModelConversionException, Exception
     {
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();

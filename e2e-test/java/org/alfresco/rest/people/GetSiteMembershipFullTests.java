@@ -32,8 +32,8 @@ public class GetSiteMembershipFullTests extends RestTest
         publicSiteUsers = dataUser.addUsersWithRolesToSite(publicSite, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that properties parameter is applied.")
     public void checkThatPropertiesParameterIsApplied() throws Exception
     {
@@ -45,8 +45,8 @@ public class GetSiteMembershipFullTests extends RestTest
             .and().field("site").isNotEmpty()
             .and().field("guid").isNull();
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that regular user "
             + "is able to retrieve site membership information of admin.")
     public void regularUserGetsSiteMembershipForAdmin() throws Exception
@@ -57,8 +57,8 @@ public class GetSiteMembershipFullTests extends RestTest
             .and().field("id").is(publicSite.getId())
             .and().field("site.id").is(publicSite.getId());
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that regular user "
             + "is able to retrieve site membership details for a Collaborator role.")
     public void getSiteMembershipDetailsForACollaboratorRole() throws Exception
@@ -76,8 +76,8 @@ public class GetSiteMembershipFullTests extends RestTest
             .and().field("site.preset").is("site-dashboard")
             .and().field("site.title").is(publicSite.getTitle());
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that regular user "
             + "is able to retrieve site membership details for a Contributor role.")
     public void getSiteMembershipDetailsForAContributorRole() throws Exception
@@ -89,8 +89,8 @@ public class GetSiteMembershipFullTests extends RestTest
             .and().field("id").is(publicSite.getId())
             .and().field("site").isNotEmpty();
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify that regular user "
             + "is able to retrieve site membership details for a Consumer role.")
     public void getSiteMembershipDetailsForAConsumerRole() throws Exception
@@ -102,8 +102,8 @@ public class GetSiteMembershipFullTests extends RestTest
             .and().field("id").is(publicSite.getId())
             .and().field("site").isNotEmpty();
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "As regular user make a request to join a moderated site."
             + " The request is pending. Check membership details.")
     public void pendingRequestToASiteCheckMembershipDetails() throws Exception
@@ -116,8 +116,8 @@ public class GetSiteMembershipFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
             .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, regularUser.getUsername(), moderatedSite.getTitle()));
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "As Collaborator user leave site and perform get call."
             + "Check default error model schema.")
     public void leaveSiteAndPerformGetCallCheckDefaultErrorModelSchema() throws Exception
