@@ -28,7 +28,7 @@ public class GetProcessCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that using invalid process ID returns status code 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void invalidProcessIdTest() throws Exception
     {
         RestProcessModel newProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
@@ -43,11 +43,11 @@ public class GetProcessCoreTests extends RestTest
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION, 
             description = "Verify that tenant user cannot get process from another network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
-    @Bug(id = "MNT-17238")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
+//    @Bug(id = "MNT-17238")
     public void tenantUserCannotGetProcessFromAnotherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -66,10 +66,10 @@ public class GetProcessCoreTests extends RestTest
                   .assertLastError().containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
                   .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that tenant user can get process from the same network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void tenantUserCanGetProcessFromTheSameNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -86,8 +86,8 @@ public class GetProcessCoreTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION, 
             description = "Verify that non network user cannot get process from a network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
-    @Bug(id = "MNT-17238")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
+//    @Bug(id = "MNT-17238")
     public void nonNetworkUserCannotAccessNetworkprocess() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();

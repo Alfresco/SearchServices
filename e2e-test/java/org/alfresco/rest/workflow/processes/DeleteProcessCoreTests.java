@@ -27,7 +27,7 @@ public class DeleteProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,
             TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify admin user is able to delete a process started by another user.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessByAdminUser() throws Exception
     {
         process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
@@ -42,7 +42,7 @@ public class DeleteProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,
             TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify User is not able to delete process with invalid id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessWithInvalidId() throws Exception
     {
         process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
@@ -56,7 +56,7 @@ public class DeleteProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,
             TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify User is not able to delete process with empty id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessWithEmptyId() throws Exception
     {
         process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);

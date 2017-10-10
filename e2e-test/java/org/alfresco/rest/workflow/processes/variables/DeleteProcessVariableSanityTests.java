@@ -44,7 +44,7 @@ public class DeleteProcessVariableSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void deleteProcessVariable() throws Exception
     {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");       
+        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
         restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessVariable(variableModel);

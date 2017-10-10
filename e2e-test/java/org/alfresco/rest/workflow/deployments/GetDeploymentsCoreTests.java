@@ -32,7 +32,7 @@ public class GetDeploymentsCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION, 
             description = "Verify non admin user is not able to get non-network deployments using REST API and status code is Forbidden")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void nonAdminUserCanNotGetNonNetworkDeployments() throws Exception
     {
         UserModel userModel = dataUser.createRandomTestUser();
@@ -44,7 +44,7 @@ public class GetDeploymentsCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION, 
             description = "Verify non admin user is not able to get network deployments using REST API and status code is Forbidden")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION, TestGroup.NETWORKS})
     public void nonAdminUserCanNotGetNetworkDeployments() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -61,7 +61,7 @@ public class GetDeploymentsCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION, 
             description = "Verify get deployments returns an empty list after deleting all network deployments.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.NETWORKS})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION, TestGroup.NETWORKS})
     public void getNetworkDeploymentsAfterDeletingAllNetworkDeployments() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();

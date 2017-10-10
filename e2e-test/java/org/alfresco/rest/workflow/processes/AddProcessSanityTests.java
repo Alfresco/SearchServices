@@ -39,6 +39,7 @@ public class AddProcessSanityTests extends RestTest
         processes = restClient.withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().entriesListContains("id", addedProcess.getId());
+        
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,

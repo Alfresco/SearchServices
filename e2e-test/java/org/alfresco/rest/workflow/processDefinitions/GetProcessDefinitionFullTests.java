@@ -31,7 +31,7 @@ public class GetProcessDefinitionFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition returns all process definitions when empty processDefinitionId is used")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionUsingEmptyProcessDefinitionId() throws Exception
     {
         restClient.authenticateUser(adminUser).withWorkflowAPI();
@@ -44,7 +44,7 @@ public class GetProcessDefinitionFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets a process definition with properties parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionWithValidProperties() throws Exception
     {
         randomProcessDefinition = restClient.authenticateUser(adminUser).withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
@@ -69,7 +69,7 @@ public class GetProcessDefinitionFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Network user is not able to get a process definition from another network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.NETWORKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.NETWORKS, TestGroup.REGRESSION })
     public void getProcessDefinitionFromAnotherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();

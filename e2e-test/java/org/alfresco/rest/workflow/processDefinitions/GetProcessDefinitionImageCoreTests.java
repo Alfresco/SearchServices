@@ -29,7 +29,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition image returns status code 404 when invalid processDefinitionId is used")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionImageUsingInvalidProcessDefinitionId() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -48,7 +48,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify network admin is able to get a process definition image using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE, TestGroup.NETWORKS})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS})
     @Bug(id = "MNT-17243")
     public void networkAdminGetProcessDefinitionImage() throws Exception
     {
@@ -65,8 +65,8 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify network user is able to get a process definition image using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE, TestGroup.NETWORKS})
-    @Bug(id = "MNT-17243")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS})
+//    @Bug(id = "MNT-17243")
     public void networkUserGetProcessDefinitionImage() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();

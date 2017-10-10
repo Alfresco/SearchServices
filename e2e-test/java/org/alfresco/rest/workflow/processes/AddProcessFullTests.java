@@ -36,7 +36,7 @@ public class AddProcessFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify network user cannot start new process with processDefinitionKey from another network using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS})
     public void networkUserCannotStartNewProcessWithProcessDefinitionFromAnotherNetwork() throws JsonToModelConversionException, Exception
     { 
         UserModel adminTenant1 = UserModel.getAdminTenantUser();
@@ -58,7 +58,7 @@ public class AddProcessFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify network user can start new process with processDefinitionKey from same network using REST API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS})
     public void networkUserCanStartNewProcessWithProcessDefinitionFromSameNetwork() throws JsonToModelConversionException, Exception
     { 
         UserModel adminTenant1 = UserModel.getAdminTenantUser();
@@ -79,7 +79,7 @@ public class AddProcessFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot start new process with invalid processDefinitionKey using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void userStartsNewProcessWithInvalidProcessDefinitionKey() throws JsonToModelConversionException, Exception
     { 
         userWhoStartsProcess = dataUser.createRandomTestUser();
@@ -95,7 +95,7 @@ public class AddProcessFullTests extends RestTest
     @Bug(id = "REPO-1970")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot start new process with invalid processDefinitionKey using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void userStartsNewProcessWithEmptyVariablesBody() throws JsonToModelConversionException, Exception
     { 
         userWhoStartsProcess = dataUser.createRandomTestUser();
@@ -113,7 +113,7 @@ public class AddProcessFullTests extends RestTest
     @Bug(id = "REPO-1970")
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot start new process with invalid processDefinitionKey using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void userStartsNewProcessWithNoAssigneeInVariablesBody() throws JsonToModelConversionException, Exception
     { 
         userWhoStartsProcess = dataUser.createRandomTestUser();
@@ -132,7 +132,7 @@ public class AddProcessFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot start new process with invalid assignee using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void userStartsNewProcessWithInvalidAssignee() throws JsonToModelConversionException, Exception
     { 
         userWhoStartsProcess = dataUser.createRandomTestUser();
@@ -149,7 +149,7 @@ public class AddProcessFullTests extends RestTest
     @Bug(id = "REPO-1970")
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot start new process with invalid sendEMailNotifications value using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void userStartsNewProcessWithInvalidEmailNotification() throws JsonToModelConversionException, Exception
     { 
         userWhoStartsProcess = dataUser.createRandomTestUser();
@@ -172,7 +172,7 @@ public class AddProcessFullTests extends RestTest
     @Bug(id = "REPO-1970")
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot start new process with invalid priority using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void userStartsNewProcessWithInvalidPriority() throws JsonToModelConversionException, Exception
     { 
         userWhoStartsProcess = dataUser.createRandomTestUser();

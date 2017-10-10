@@ -31,7 +31,7 @@ public class GetDeploymentFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get deployment request returns all deployments if empty deploymentId is used.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION })
     public void getNonNetworkDeploymentUsingEmptyDeploymentId() throws Exception
     {
         restClient.authenticateUser(adminUser).withWorkflowAPI();
@@ -43,7 +43,7 @@ public class GetDeploymentFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets non-network deployments with properties parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentsWithValidProperties() throws Exception
     {
         expectedDeployment = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();
@@ -59,7 +59,7 @@ public class GetDeploymentFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.REGRESSION,
             description = "Verify that network admin user is not able to get a deployment from other network using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.FULL, TestGroup.NETWORKS})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION, TestGroup.NETWORKS})
     public void adminDoesNotGetDeploymentFromOtherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();

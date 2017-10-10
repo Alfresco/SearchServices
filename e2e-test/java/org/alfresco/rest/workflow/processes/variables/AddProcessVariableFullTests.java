@@ -35,10 +35,10 @@ public class AddProcessVariableFullTests  extends RestTest
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
-    
+
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for invalid processID with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addProcessVariableWithInvalidProcessId() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -53,7 +53,7 @@ public class AddProcessVariableFullTests  extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify addProcessVariable by any user for empty processID with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addProcessVariableWithEmptyProcessId() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -65,10 +65,10 @@ public class AddProcessVariableFullTests  extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable is falling in case of empty value is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void failedAddingProcessVariableIfEmptyValueIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:int");
@@ -84,10 +84,10 @@ public class AddProcessVariableFullTests  extends RestTest
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable in case of having only 'name' field is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addingProcessVariableWithOnlyNameProvided() throws Exception
     {        
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -100,10 +100,10 @@ public class AddProcessVariableFullTests  extends RestTest
                        .and().field("type").is("d:any")
                        .and().field("value").isNull();
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable in case of missing type field is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addingProcessVariableIfMissingValueIsProvided() throws Exception
     {        
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -116,10 +116,10 @@ public class AddProcessVariableFullTests  extends RestTest
                        .and().field("type").is("d:text")
                        .and().field("value").isNull();
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable in case of missing type field is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addingProcessVariableIfMissingTypeIsProvided() throws Exception
     {        
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -132,10 +132,10 @@ public class AddProcessVariableFullTests  extends RestTest
                        .and().field("type").is("d:text")
                        .and().field("value").is("variableValue");
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable is case of empty type value is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addingProcessVariableIfEmptyTypeIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("");
@@ -148,10 +148,10 @@ public class AddProcessVariableFullTests  extends RestTest
                        .and().field("type").is("d:text")
                        .and().field("value").is(variableModel.getValue());
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable in case of empty body field is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addingProcessVariableWithEmptyBodyProvided() throws Exception
     {        
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("");
@@ -168,10 +168,10 @@ public class AddProcessVariableFullTests  extends RestTest
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-        
+
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Update twice in a row the same variable.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void updateTwiceInARowSameProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");

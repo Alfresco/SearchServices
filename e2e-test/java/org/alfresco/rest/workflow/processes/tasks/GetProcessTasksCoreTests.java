@@ -45,7 +45,7 @@ public class GetProcessTasksCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "getProcessTasks with user that is candidate with REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksWithUserThatIsCandidate() throws Exception
     {
         ProcessModel processModel = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document1)
@@ -59,7 +59,7 @@ public class GetProcessTasksCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify getProcessTasks using admin from same network with REST API and status code is OK")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void getProcessTasksWithAdminFromSameNetwork() throws Exception
     {
         UserModel adminTenant = UserModel.getAdminTenantUser();
@@ -77,7 +77,7 @@ public class GetProcessTasksCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify getProcessTasks using admin from different network with REST API and status code is FORBIDDEN (403)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void getProcessTasksWithAdminFromDifferentNetwork() throws Exception
     {
         UserModel adminTenant, secondAdminTenant, tenantAssignee;
@@ -99,7 +99,7 @@ public class GetProcessTasksCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "getProcessTasks for invalid processId with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksUsingInvalidProcessId() throws Exception
     {
         ProcessModel processModel = process;
@@ -112,7 +112,7 @@ public class GetProcessTasksCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "getProcessTasks for empty processId with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksUsingEmptyProcessId() throws Exception
     {
         ProcessModel processModel = process;
@@ -125,7 +125,7 @@ public class GetProcessTasksCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "User completes task then getProcessTasks with REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void completeTaskThenGetProcessTasks() throws Exception
     {
         ProcessModel processModel = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document2)

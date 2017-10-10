@@ -40,7 +40,7 @@ public class GetProcessVariablesCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from the same network is able to retrieve network process variables")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void getProcessVariablesWithAdminFromSameNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -57,7 +57,7 @@ public class GetProcessVariablesCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from different network is not able to retrieve network process variables")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void getProcessVariablesWithAdminFromDifferentNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -73,7 +73,7 @@ public class GetProcessVariablesCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process variables using invalid process ID")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessVariablesUsingInvalidProcessId() throws Exception
     {        
         restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);
@@ -92,7 +92,7 @@ public class GetProcessVariablesCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process variables using empty process ID")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessVariablesUsingEmptyProcessId() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsTask).withParams("maxItems=2").withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
@@ -103,7 +103,7 @@ public class GetProcessVariablesCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete process then get process variables, status OK should be returned")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessVariablesForADeletedProcess() throws Exception
     {
         UserModel userWhoStartsTask = dataUser.createRandomTestUser();

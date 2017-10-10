@@ -28,7 +28,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions with valid skipCount parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsWithValidSkipCount() throws Exception
     {
         processDefinitions = restClient.authenticateUser(adminUserModel)
@@ -48,7 +48,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with negative skipCount parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsWithNegativeSkipCount() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("skipCount=-1").withWorkflowAPI().getAllProcessDefinitions();
@@ -62,7 +62,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with non numeric skipCount parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsWithNonNumericSkipCount() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("skipCount=A").withWorkflowAPI().getAllProcessDefinitions();
@@ -72,7 +72,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions with valid maxItems parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsWithValidMaxItems() throws Exception
     {
         processDefinitions = restClient.authenticateUser(adminUserModel)
@@ -92,7 +92,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with negative maxItems parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsWithNegativeMaxItems() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=-1").withWorkflowAPI().getAllProcessDefinitions();
@@ -106,7 +106,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions with non numeric maxItems parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsWithNonNumericMaxItems() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=A").withWorkflowAPI().getAllProcessDefinitions();
@@ -116,7 +116,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets process definitions with properties parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsWithValidProperties() throws Exception
     {
         processDefinitions =restClient.authenticateUser(adminUserModel).withParams("properties=name,graphicNotationDefined,version").withWorkflowAPI().getAllProcessDefinitions();
@@ -138,7 +138,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions ordered by name ascendant using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsOrderedByNameAsc() throws Exception
     {
         processDefinitions = restClient.authenticateUser(adminUserModel)
@@ -149,7 +149,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get process definitions when many fields are used for orderBy parameter")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsOrderedByManyFields() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
@@ -160,7 +160,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets process definitions when where parameter is applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionsFilteredByKey() throws Exception
     {
         processDefinitions = restClient.authenticateUser(adminUserModel)
@@ -174,7 +174,7 @@ public class GetProcessDefinitionsFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Tenant User doesn't get process definitions for another network deployment using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void networkUserIsNotAbleToGetProcessDefinitionsForAnotherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();

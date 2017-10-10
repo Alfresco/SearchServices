@@ -40,7 +40,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user is able to getProcessTasks even if he wasn't involved in process. Check status code is OK")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksWithAdmin() throws Exception
     {
         processTasks = restClient.authenticateUser(adminUser).withWorkflowAPI()
@@ -52,7 +52,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process tasks with valid skipCount parameter applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksWithValidSkipCount() throws Exception
     {
         processTasks = restClient.authenticateUser(userWhoStartsProcess)
@@ -68,7 +68,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process tasks with negative skipCount parameter applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksWithNegativeSkipCount() throws Exception
     {
         restClient.authenticateUser(userWhoStartsProcess)
@@ -84,7 +84,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process tasks with non numeric skipCount parameter applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksWithNonNumericSkipCount() throws Exception
     {
         restClient.authenticateUser(userWhoStartsProcess)
@@ -96,7 +96,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process tasks with valid maxItems parameter applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksWithValidMaxItems() throws Exception
     {
         processTasks = restClient.authenticateUser(userWhoStartsProcess)
@@ -112,7 +112,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process tasks with negative maxItems parameter applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksWithNegativeMaxItems() throws Exception
     {
         restClient.authenticateUser(userWhoStartsProcess)
@@ -128,7 +128,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process tasks with non numeric maxItems parameter applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})
     public void getProcessTasksWithNonNumericMaxItems() throws Exception
     {
         restClient.authenticateUser(userWhoStartsProcess)
@@ -140,7 +140,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify getProcessTasks with properties parameter")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksWithPropertiesParameter() throws Exception
     {
         processTasks = restClient.authenticateUser(adminUser)
@@ -165,7 +165,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets Process Tasks ordered by assignee ascendant using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksOrderedByAssignee() throws Exception
     {
         processTasks = restClient.authenticateUser(adminUser)
@@ -177,7 +177,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin doesn't get Process Tasks ordered by many fields")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksOrderedByMultipleFields() throws Exception
     {
         restClient.authenticateUser(adminUser)
@@ -189,7 +189,7 @@ public class GetProcessTasksFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process tasks after process is deleted.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessTasksAfterDeletingProcess() throws Exception
     {
         ProcessModel processModel = dataWorkflow.usingUser(userWhoStartsProcess).usingSite(publicSite).usingResource(document)
@@ -203,6 +203,5 @@ public class GetProcessTasksFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processTasks.assertThat().entriesListIsEmpty();
     }
-
 
 }

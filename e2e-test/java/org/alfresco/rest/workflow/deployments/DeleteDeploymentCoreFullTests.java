@@ -28,7 +28,7 @@ public class DeleteDeploymentCoreFullTests extends RestTest
     @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
             description = "Verify deleteDeployment is unsupported for empty deployment id with REST API and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.WORKFLOW })
+    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION, TestGroup.WORKFLOW })
     public void deleteDeploymentIsUnsupportedForEmptyId() throws Exception
     {
         deployment = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();
@@ -41,7 +41,7 @@ public class DeleteDeploymentCoreFullTests extends RestTest
     @Bug(id = "MNT-16996")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.REGRESSION,
             description = "Verify deleteDeployment is forbidden using non admin user or different user than creator with REST API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.CORE, TestGroup.WORKFLOW })
+    @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION, TestGroup.WORKFLOW })
     public void deleteDeploymentUsingNonAdminUser() throws Exception
     {
         deployment = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();

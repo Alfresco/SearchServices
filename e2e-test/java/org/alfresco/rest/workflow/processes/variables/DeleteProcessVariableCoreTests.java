@@ -45,7 +45,7 @@ public class DeleteProcessVariableCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete invalid process variable")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteInvalidProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("x:InvalidVar");
@@ -57,11 +57,11 @@ public class DeleteProcessVariableCoreTests extends RestTest
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
-    }   
-       
+    }
+
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete process variable twice")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessVariableTwice() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -75,10 +75,10 @@ public class DeleteProcessVariableCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, variableModel.getName()));
     }
-    
+
     @TestRail(section = {TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Remove process variables with empty processId")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessVariableEmptyProcessId() throws JsonToModelConversionException, Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -89,17 +89,17 @@ public class DeleteProcessVariableCoreTests extends RestTest
 
         restProcessModel.setId("");
         restClient.withWorkflowAPI().usingProcess(restProcessModel).deleteProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)       
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                   .assertLastError()
                   .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""))
                   .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
-    }       
+    }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process variable with admin.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessVariableWithAdmin() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -107,12 +107,12 @@ public class DeleteProcessVariableCoreTests extends RestTest
                 .getProcesses().getProcessModelByProcessDefId(processModel.getId());
         restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
+
         restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(processModel)
                   .deleteProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                  .assertThat().entriesListDoesNotContain("name", variableModel.getName());       
-    }     
-    
+                  .assertThat().entriesListDoesNotContain("name", variableModel.getName());
+    }
+
 }

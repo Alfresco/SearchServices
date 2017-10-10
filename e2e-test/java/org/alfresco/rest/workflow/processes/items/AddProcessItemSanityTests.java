@@ -104,7 +104,7 @@ public class AddProcessItemSanityTests extends RestTest
                 .assertThat().entriesListContains("id", processItems.getEntries().get(1).onModel().getId());
     }
 
-    @Bug(id= "MNT-16966")
+//    @Bug(id= "MNT-16966")
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add process item that already exists")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
@@ -131,7 +131,7 @@ public class AddProcessItemSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
     
-    @Bug(id= "MNT-16966")
+//    @Bug(id= "MNT-16966")
     @TestRail(section = {TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add process item that already exists")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})

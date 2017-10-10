@@ -26,11 +26,11 @@ public class GetProcessDefinitionImageFullTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-    @Bug(id = "REPO-1911")
+//    @Bug(id = "REPO-1911")
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition image returns status code 404 when empty processDefinitionId is used")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void getProcessDefinitionImageUsingEmptyProcessDefinitionId() throws Exception
     {
         restClient.authenticateUser(adminUser);
@@ -44,7 +44,7 @@ public class GetProcessDefinitionImageFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Tenant User doesn't get process definition image for another network deployment using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void networkUserIsNotAbleToGetProcessDefinitionImageForAnotherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();

@@ -39,7 +39,7 @@ public class DeleteProcessItemCoreTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete process item with invalid id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemWithInvalidItemId() throws Exception
     {
         restProcessModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI()
@@ -54,7 +54,7 @@ public class DeleteProcessItemCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete process item with empty id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemWithEmptyItemId() throws Exception
     {
         restProcessModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI()
@@ -69,7 +69,7 @@ public class DeleteProcessItemCoreTests extends RestTest
     
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Delete process item twice")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemTwice() throws Exception
     {
         restProcessModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI()

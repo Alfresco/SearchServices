@@ -46,10 +46,10 @@ public class GetProcessesFullTests extends RestTest
         task2 = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(adminUser);
         process3 = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createSingleReviewerTaskAndAssignTo(assignee);
     }
-    
+
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify any user cannot get processes from same network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void getProcessFromSameNetworkUsingAnyUser() throws Exception
     {
         UserModel adminTenantUser = UserModel.getAdminTenantUser();
@@ -63,10 +63,10 @@ public class GetProcessesFullTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK); 
         tenantProcesses.assertThat().entriesListIsEmpty().and().paginationField("count").is("0");
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user gets processes when skipCount parameter is applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesWithSkipCountParameter() throws Exception
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses();
@@ -75,7 +75,7 @@ public class GetProcessesFullTests extends RestTest
         RestProcessModel process1 = processes.getEntries().get(0).onModel();
         RestProcessModel process2 = processes.getEntries().get(1).onModel();
         RestProcessModel process3 = processes.getEntries().get(2).onModel();
-        
+
         processes = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().usingParams("skipCount=2").getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().paginationField("count").is("1");
@@ -84,10 +84,10 @@ public class GetProcessesFullTests extends RestTest
         processes.assertThat().entriesListDoesNotContain("id", process2.getId());
         processes.getEntries().get(0).onModel().assertThat().field("id").is(process3.getId());
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user gets processes when maxItems parameter is applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesWithMaxItemsParameter() throws Exception
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().getProcesses();
@@ -96,7 +96,7 @@ public class GetProcessesFullTests extends RestTest
         RestProcessModel process1 = processes.getEntries().get(0).onModel();
         RestProcessModel process2 = processes.getEntries().get(1).onModel();
         RestProcessModel process3 = processes.getEntries().get(2).onModel();
-        
+
         processes = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().usingParams("maxItems=2").getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().paginationField("count").is("2");
@@ -105,10 +105,10 @@ public class GetProcessesFullTests extends RestTest
         processes.getEntries().get(0).onModel().assertThat().field("id").is(process1.getId());
         processes.getEntries().get(1).onModel().assertThat().field("id").is(process2.getId());
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user gets processes when properties parameter is applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesWithPropertiesParameter() throws Exception
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("properties=id")
@@ -132,11 +132,11 @@ public class GetProcessesFullTests extends RestTest
             .and().entriesListContains("id", task2.getProcessId())
             .and().entriesListContains("id", task1.getProcessId());
     }
-    
-    @Bug(id = "REPO-1958")
+
+//    @Bug(id = "REPO-1958")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot get processes when using an invalid orderBy parameter")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesWithInvalidOrderByParameter() throws Exception
     {
         restClient.authenticateUser(userWhoStartsTask).withParams("orderBy=test")
@@ -147,10 +147,10 @@ public class GetProcessesFullTests extends RestTest
             .stackTraceIs(RestErrorModel.STACKTRACE)
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot get processes when using an invalid parameter in where clause")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesWithInvalidWhereParameter() throws Exception
     {
         restClient.authenticateUser(userWhoStartsTask).where("startUserIdd='" + userWhoStartsTask.getUsername() + "'")
@@ -161,10 +161,10 @@ public class GetProcessesFullTests extends RestTest
             .stackTraceIs(RestErrorModel.STACKTRACE)
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot get processes when using an invalid where clause expression")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesWithInvalidWhereClauseExpression() throws Exception
     {
         restClient.authenticateUser(userWhoStartsTask).where("startUserId AND '" + userWhoStartsTask.getUsername() + "'")

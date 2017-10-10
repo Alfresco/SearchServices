@@ -33,7 +33,7 @@ public class GetProcessDefinitionStartFormModelFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets a model of the start form type definition for specific process definition using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void adminGetsStartFormModelForActivitiAdhocProcessDefinition() throws Exception
     {
         returnedResponse = restClient.authenticateUser(adminUser).withWorkflowAPI()
@@ -52,7 +52,7 @@ public class GetProcessDefinitionStartFormModelFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify admin gets a model of the start form type definition with properties parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
     public void adminGetsStartFormModelWithPropertiesParameterApplied() throws Exception
     {
         returnedResponse = restClient.authenticateUser(adminUser).withParams("properties=qualifiedName,dataType,title").withWorkflowAPI()
@@ -73,7 +73,7 @@ public class GetProcessDefinitionStartFormModelFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify Tenant User doesn't get a model of the start form type definition for another network deployment using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void networkUserIsNotAbleToGetStartFormModelForAnotherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();

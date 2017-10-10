@@ -31,7 +31,7 @@ public class DeleteProcessFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user is NOT able to delete process started by him twice using REST API and status code is NOT FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessByUserWhoStartedProcessTwice() throws Exception
     {
         process = restClient.authenticateUser(userWhoAddsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, Priority.Normal);

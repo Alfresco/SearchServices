@@ -28,10 +28,10 @@ public class GetProcessFullTests extends RestTest
         assignee = dataUser.createRandomTestUser();
         addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that admin user can get process started by a network user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void adminUserCanGetProcessFromANetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -39,7 +39,7 @@ public class GetProcessFullTests extends RestTest
         UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("utenant1");
         
         RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI().addProcess("activitiReview", adminTenantUser1, false, CMISUtil.Priority.High);       
-        
+
         restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().usingProcess(networkProcess1).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         networkProcess1.assertThat().field("processDefinitionId").contains(String.format("@%s%s", tenantUser1.getDomain().toLowerCase(), "@activitiReview:1"))
@@ -53,7 +53,7 @@ public class GetProcessFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify user is able to get the process with properties parameter applied using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessWithPropertiesParameter() throws Exception
     {
         process = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingParams("properties=startUserId,id").usingProcess(addedProcess).getProcess();
@@ -63,14 +63,14 @@ public class GetProcessFullTests extends RestTest
             .and().field("id").is(addedProcess.getId())
             .and().field("processDefinitionKey").isNull();
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify user is able to get a process that was deleted, but it has 'deleted through REST API call' deleteReason")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getDeletedProcess() throws Exception
     {
         addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
-        
+
         process = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(addedProcess).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat()
@@ -84,7 +84,7 @@ public class GetProcessFullTests extends RestTest
         
         restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(addedProcess).deleteProcess();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        
+
         process = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(addedProcess).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat()
@@ -98,7 +98,7 @@ public class GetProcessFullTests extends RestTest
             .and().field("completed").is(true)
             .and().field("deleteReason").is("deleted through REST API call")
             .and().field("processDefinitionKey").is("activitiAdhoc");
-        
+
         restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().assertThat().entriesListDoesNotContain("id", process.getId());
     }
 }

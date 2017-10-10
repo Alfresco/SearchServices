@@ -40,7 +40,7 @@ public class DeleteProcessItemFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Try to delete existing process item using empty processId")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemUsingEmptyProcessId() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
@@ -61,7 +61,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
              description = "Add a new process item, update the item and then delete.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void createUpdateDeleteProcessItem() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
@@ -81,7 +81,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process item using any user.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemByAnyUser() throws Exception
     {              
         anotherUser = dataUser.createRandomTestUser();
@@ -102,7 +102,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
              description = "Delete process item with admin.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemWithAdmin() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
@@ -121,7 +121,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process item by the user who is involved in the process.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemByUserInvolvedInTheProcess() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
@@ -139,7 +139,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process item by the user who started the process.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemByUserThatStartedTheProcess() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
@@ -156,7 +156,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process item for a deleted process.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemsForDeletedProcess() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
@@ -178,7 +178,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process item by inexistent user.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void deleteProcessItemByInexistentUser() throws Exception
     {
         processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
@@ -199,7 +199,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process item for process without items.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL}, 
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION}, 
           expectedExceptions = EmptyRestModelCollectionException.class)
     public void deleteProcessItemsForProcessWithoutItems() throws Exception
     {
@@ -216,7 +216,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
               description = "Delete process item using by the admin in same network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void deleteProcessItemByAdminSameNetwork() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
@@ -239,7 +239,7 @@ public class DeleteProcessItemFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
               description = "Delete process item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.CORE, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void deleteProcessItemByAdminInOtherNetwork() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
