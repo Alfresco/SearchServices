@@ -40,6 +40,9 @@ public class GetTaskVariablesTests extends RestTest
             description = "Verify that user that started the process gets task variables")
     public void getTaskVariablesByUserWhoStartedProcess() throws Exception
     {
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask)
+                .usingSite(siteModel).usingResource(fileModel)
+                .createNewTaskAndAssignTo(assignee);
         restClient.authenticateUser(userWhoStartsTask);
         variableModels = restClient.withWorkflowAPI().usingTask(taskModel).getTaskVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -51,6 +54,9 @@ public class GetTaskVariablesTests extends RestTest
             description = "Verify that user that is involved in the process gets task variables")
     public void getTaskVariablesByUserInvolvedInProcess() throws Exception
     {
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask)
+                .usingSite(siteModel).usingResource(fileModel)
+                .createNewTaskAndAssignTo(assignee);
         restClient.authenticateUser(assignee);
         variableModels = restClient.withWorkflowAPI().usingTask(taskModel).getTaskVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -63,7 +69,9 @@ public class GetTaskVariablesTests extends RestTest
     public void getTaskVariablesUsingAnyUser() throws Exception
     {
         UserModel randomUser = dataUser.createRandomTestUser();
-
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask)
+                .usingSite(siteModel).usingResource(fileModel)
+                .createNewTaskAndAssignTo(assignee);
         restClient.authenticateUser(randomUser);
         restClient.withWorkflowAPI().usingTask(taskModel).getTaskVariables();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
@@ -75,7 +83,9 @@ public class GetTaskVariablesTests extends RestTest
     public void getTaskVariablesUsingAdmin() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
-
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask)
+                .usingSite(siteModel).usingResource(fileModel)
+                .createNewTaskAndAssignTo(assignee);
         restClient.authenticateUser(adminUser);
         variableModels = restClient.withWorkflowAPI().usingTask(taskModel).getTaskVariables();
         restClient.assertStatusCodeIs(HttpStatus.OK);
