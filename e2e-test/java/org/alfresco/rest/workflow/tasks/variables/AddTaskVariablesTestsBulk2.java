@@ -19,7 +19,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
-public class AddTaskVariablesCoreTests extends RestTest
+public class AddTaskVariablesTestsBulk2 extends RestTest
 {
     private UserModel userWhoStartsTask, adminUser;
     private SiteModel siteModel;
@@ -44,7 +44,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.authenticateUser(adminUser);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid variableBody is provided")
     public void failedAddingTaskVariableIfInvalidBodyIsProvided() throws Exception
     {
@@ -54,7 +54,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Illegal value for variable scope: 'instance'.");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
      description = "Adding multiple task variable is falling in case invalid variableBody is provided")
     public void failedAddingMultipleTaskVariableIfInvalidBodyIsProvided() throws Exception
@@ -66,7 +66,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Illegal value for variable scope: 'instance'.");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case empty body type is provided")
     public void failedAddingTaskVariableIfEmptyBodyIsProvided() throws Exception
     {
@@ -77,7 +77,7 @@ public class AddTaskVariablesCoreTests extends RestTest
                 .containsSummary("Variable scope is required and can only be 'local' or 'global'.");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding multiple task variable is falling in case empty body type is provided")
     public void failedAddingMultipleTaskVariableIfEmptyBodyIsProvided() throws Exception
@@ -90,7 +90,7 @@ public class AddTaskVariablesCoreTests extends RestTest
                 .containsSummary("Variable scope is required and can only be 'local' or 'global'.");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case incomplete body type is provided")
     public void failedAddingTaskVariableIfIncompleteBodyIsProvided() throws Exception
     {
@@ -102,7 +102,7 @@ public class AddTaskVariablesCoreTests extends RestTest
                 .containsSummary("Variable scope is required and can only be 'local' or 'global'.");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case incomplete body - missing required: name type is provided")
     public void failedAddingTaskVariableIfIncompleteRequiredBodyIsProvided() throws Exception
     {
@@ -113,7 +113,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Variable name is required.");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid type is provided")
     public void failedAddingTaskVariableIfInvalidTypeIsProvided() throws Exception
     {
@@ -124,7 +124,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Unsupported type of variable: 'd:char'.");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
       description = "Adding multiple task variable is falling in case invalid type is provided")
     public void failedAddingMultipleTaskVariableIfInvalidTypeIsProvided() throws Exception
@@ -138,7 +138,7 @@ public class AddTaskVariablesCoreTests extends RestTest
     }
 
     @Bug(id = "ACE-5674")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid type prefix is provided")
     public void failedAddingTaskVariableIfInvalidTypePrefixIsProvided() throws Exception
     {
@@ -150,7 +150,7 @@ public class AddTaskVariablesCoreTests extends RestTest
     }
     
     @Bug(id = "ACE-5674")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding multiple task variable is falling in case invalid type prefix is provided")
     public void failedAddingMultipleTaskVariableIfInvalidTypePrefixIsProvided() throws Exception
@@ -164,7 +164,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Namespace prefix ddm is not mapped to a namespace URI");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid scope is provided")
     public void failedAddingTaskVariableIfInvalidScopeIsProvided() throws Exception
     {
@@ -175,7 +175,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Illegal value for variable scope: 'instance'.");
     }    
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding multiple task variable is falling in case invalid scope is provided")
     public void failedAddingMultipleTaskVariableIfInvalidScopeIsProvided() throws Exception
@@ -189,7 +189,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Illegal value for variable scope: 'instance'.");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid task id is provided")
     public void failedAddingTaskVariableIfInvalidTaskIdIsProvided() throws Exception
     {
@@ -201,7 +201,7 @@ public class AddTaskVariablesCoreTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, taskModel.getId()));
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
       description = "Adding multiple task variable is falling in case invalid task id is provided")
     public void failedAddingMultipleTaskVariableIfInvalidTaskIdIsProvided() throws Exception
@@ -215,7 +215,7 @@ public class AddTaskVariablesCoreTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, taskModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Adding task variable is falling in case invalid task id is provided")
     public void failedAddingTaskVariableIfInvalidValueIsProvided() throws Exception
     {
@@ -226,7 +226,7 @@ public class AddTaskVariablesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("For input string: \"invalidValue\"");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding multiple task variable is falling in case invalid task id is provided")
     public void failedAddingMultipleTaskVariableIfInvalidValueIsProvided() throws Exception

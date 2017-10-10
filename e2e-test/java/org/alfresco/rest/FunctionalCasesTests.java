@@ -59,7 +59,7 @@ public class FunctionalCasesTests extends RestTest
      * 3. Update it's role to Contributor
      * 4. Update it's role to Consumer
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager is able to update manager with different roles and gets status code CREATED (201)")
     public void managerIsAbleToUpdateManagerWithDifferentRoles() throws Exception
@@ -97,7 +97,7 @@ public class FunctionalCasesTests extends RestTest
      * 3. Update it's role to Collaborator
      * 4. Update it's role to Manager
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify that manager is able to update consumer with different roles and gets status code CREATED (201)")
     public void managerIsAbleToUpdateConsumerWithDifferentRoles() throws Exception
@@ -137,7 +137,7 @@ public class FunctionalCasesTests extends RestTest
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
             executionType = ExecutionType.REGRESSION, description = "Approve request, add site to favorites, then delete it from favorites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     public void approveRequestAddAndDeleteSiteFromFavorites() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -170,7 +170,7 @@ public class FunctionalCasesTests extends RestTest
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
             executionType = ExecutionType.REGRESSION, description = "Reject request, add moderated site to favorites, create request again and approve it")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     public void rejectRequestAddModeratedSiteToFavorites() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -205,7 +205,7 @@ public class FunctionalCasesTests extends RestTest
      * 1. Add file
      * 2. Check file is included in person activities list
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
             description = "Add a file and check that activity is included in person activities")
     public void addFileThenGetPersonActivities() throws Exception
@@ -223,7 +223,7 @@ public class FunctionalCasesTests extends RestTest
      * 1. Add a comment to a file
      * 2. Check that comment is included in person activities list
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
             description = "Add a comment to a file and check that activity is included in person activities")
     public void addCommentThenGetPersonActivities() throws Exception
@@ -242,7 +242,7 @@ public class FunctionalCasesTests extends RestTest
      * 1. Add file then delete it
      * 2. Check action is included in person activities list
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
             description = "Add a file, delete it and check that activity is included in person activities")
     public void addFileDeleteItThenGetPersonActivities() throws Exception
@@ -263,7 +263,7 @@ public class FunctionalCasesTests extends RestTest
      * 4. Get again comment details
      * 5. Delete comment
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
             executionType = ExecutionType.REGRESSION,
             description = "Add comment to a file, then get comment details. Update it and check that get comment returns updated details. Delete comment then check that file has no comments.")
@@ -297,7 +297,7 @@ public class FunctionalCasesTests extends RestTest
      * 2. Delete comment
      * 3. Post the same comment again
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
             executionType = ExecutionType.REGRESSION,
             description = "Add a comment to a file, delete it, then added the same comment again.")
@@ -334,7 +334,7 @@ public class FunctionalCasesTests extends RestTest
      * @throws Exception
      */
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, 
             description = "Create an user, join the user to a site and check that activity is included in person activities")
     public void joinUserToSiteThenGetPersonActivities() throws Exception
@@ -357,7 +357,7 @@ public class FunctionalCasesTests extends RestTest
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
             executionType = ExecutionType.REGRESSION, description = "Verify membership request by user after it was removed from site gets status code 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     public void userCanNotCreateMembershipRequestIfItWasRemovedFromPrivateSite() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -384,7 +384,7 @@ public class FunctionalCasesTests extends RestTest
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
             executionType = ExecutionType.REGRESSION, description = "Verify user can be added back after if was removed from site")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     public void userCanBeAddedAfterItWasRemovedFromSite() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -415,7 +415,7 @@ public class FunctionalCasesTests extends RestTest
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
             executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document was also removed after deleting the document")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void checkTheCommentOfADocumentThatWasDeletedDoesNotExist() throws Exception
     {
         file = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -442,7 +442,7 @@ public class FunctionalCasesTests extends RestTest
      */
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
             executionType = ExecutionType.REGRESSION, description = "Check that a comment of a document from a private site is not deleted after user is removed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void checkThatCommentIsNotDeletedWhenPrivateSiteMemberIsRemoved() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();
@@ -474,7 +474,7 @@ public class FunctionalCasesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
             executionType = ExecutionType.REGRESSION,
             description = "Add one file to favorites then add a comment to this file")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void commentAFavoriteFile() throws Exception
     {
         file = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -496,7 +496,7 @@ public class FunctionalCasesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.COMMENTS },
             executionType = ExecutionType.REGRESSION,
             description = "Remove one file from favorites then add a comment to this file")
-    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.REGRESSION })
     public void commentFileRemovedFromFavorites() throws Exception
     {
         file = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -525,7 +525,7 @@ public class FunctionalCasesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES },
             executionType = ExecutionType.REGRESSION,
             description = "Check favorite sites after a favorite site visibility is changed")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
     public void changeFavoriteSiteVisibilityThenCheckFavorites() throws Exception
     {
         SiteModel favoriteSite = dataSite.usingUser(manager).createPublicRandomSite();
@@ -577,7 +577,7 @@ public class FunctionalCasesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES },
             executionType = ExecutionType.REGRESSION,
             description = "Check that a user who joins a moderated site as manager is able to comment, rate, tag an existing file from the site, add site to favorites, add and remove site members.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void checkNewManagerActions() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -655,7 +655,7 @@ public class FunctionalCasesTests extends RestTest
      * @throws Exception
      */
     @Bug(id="REPO-1830")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities with Rest API and response is successful")
     public void userGetsItsPeopleActivities() throws Exception
     {  

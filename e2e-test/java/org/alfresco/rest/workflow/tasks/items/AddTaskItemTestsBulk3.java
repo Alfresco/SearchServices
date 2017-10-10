@@ -20,7 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class AddTaskItemFullTests extends RestTest
+public class AddTaskItemTestsBulk3 extends RestTest
 {
     private UserModel userModel, adminUser,userWhoStartsTask, assigneeUser;
     private SiteModel siteModel; 
@@ -44,7 +44,7 @@ public class AddTaskItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Add task item using random user.")
-    public void addTaskItemByTheUserThatStartedTheProcess() throws JsonToModelConversionException, Exception
+    public void addTaskItemByTheUserThatStartedTheProcess() throws Exception
     {
         taskItem = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -62,7 +62,7 @@ public class AddTaskItemFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Add multiple task item using random user.")
-    public void addMultipleTaskItemByTheUserThatStartedTheProcess() throws JsonToModelConversionException, Exception
+    public void addMultipleTaskItemByTheUserThatStartedTheProcess() throws Exception
     {
         fileModel1 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         taskItems = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI().usingTask(taskModel)
@@ -168,7 +168,7 @@ public class AddTaskItemFullTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete multiple task item then create it again")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL})
-    public void deleteMultipleTaskItemThenCreateItAgain() throws Exception
+    public void deleteMultipleTaskItemsThenCreateThemAgain() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel)
                                  .createNewTaskAndAssignTo(assigneeUser);
@@ -187,5 +187,4 @@ public class AddTaskItemFullTests extends RestTest
         restClient.withWorkflowAPI().usingTask(taskModel).addTaskItems(document2, document1, document3);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-   }
+}

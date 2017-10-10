@@ -19,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class AddTaskItemCoreTests extends RestTest
+public class AddTaskItemTestsBulk2 extends RestTest
 {
     private UserModel userModel, assigneeUser, anotherUser;
     private SiteModel siteModel;
@@ -40,10 +40,10 @@ public class AddTaskItemCoreTests extends RestTest
         taskId = taskModel.getId();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Add task item using random user.")
-    public void addTaskItemByRandomUser() throws JsonToModelConversionException, Exception
+    public void addTaskItemByRandomUser() throws Exception
     {
         anotherUser = dataUser.createRandomTestUser();
        restClient.authenticateUser(anotherUser).withWorkflowAPI().usingTask(taskModel).addTaskItem(fileModel);
@@ -56,10 +56,10 @@ public class AddTaskItemCoreTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Add multiple task item using random user.")
-    public void addMultipleTaskItemByRandomUser() throws JsonToModelConversionException, Exception
+    public void addMultipleTaskItemByRandomUser() throws Exception
     {
         anotherUser = dataUser.createRandomTestUser();
         restClient.authenticateUser(anotherUser).withWorkflowAPI().usingTask(taskModel)
@@ -73,7 +73,7 @@ public class AddTaskItemCoreTests extends RestTest
     }
 
     @Bug(id = "ACE-5683")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding task item, is falling in case invalid itemBody is provided")
     public void failedAddingTaskItemIfInvalidItemBodyIsProvided() throws Exception
@@ -89,7 +89,7 @@ public class AddTaskItemCoreTests extends RestTest
     }
     
     @Bug(id = "ACE-5683")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
      description = "Adding multiple task item, is falling in case invalid itemBody is provided")
     public void failedAddingMultipleTaskItemIfInvalidItemBodyIsProvided() throws Exception
@@ -106,7 +106,7 @@ public class AddTaskItemCoreTests extends RestTest
     }
 
     @Bug(id = "ACE-5675")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding task item is falling in case empty item body is provided")
     public void failedAddingTaskItemIfEmptyItemBodyIsProvided() throws Exception
@@ -119,7 +119,7 @@ public class AddTaskItemCoreTests extends RestTest
     }
     
     @Bug(id = "ACE-5675")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
        description = "Adding multiple task item is falling in case empty item body is provided")
     public void failedAddingMultipleTaskItemIfEmptyItemBodyIsProvided() throws Exception
@@ -131,7 +131,7 @@ public class AddTaskItemCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding task item is falling in case invalid task id is provided")
     public void failedAddingTaskItemIfInvalidTaskIdIsProvided() throws Exception
@@ -146,7 +146,7 @@ public class AddTaskItemCoreTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);;
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding task item is falling in case invalid task id is provided")
     public void failedAddingMultipleTaskItemIfInvalidTaskIdIsProvided() throws Exception
@@ -162,7 +162,7 @@ public class AddTaskItemCoreTests extends RestTest
     }
 
     @Bug(id = "ACE-5675")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Adding task item is falling in case incomplete body type is provided")
     public void failedAddingTaskVariableIfIncompleteBodyIsProvided() throws Exception

@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-public class UpdateTaskVariableSanityTests extends RestTest
+public class UpdateTaskVariableTestsBulk1 extends RestTest
 {
     private UserModel userModel;
     private UserModel adminUser;
@@ -80,8 +80,8 @@ public class UpdateTaskVariableSanityTests extends RestTest
         taskVariable.assertThat().field("value").is("updatedValue");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY, TestGroup.NETWORKS})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS})
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update existing task variable by admin in the same network")    
     public void updateTaskVariableByAdminInSameNetwork() throws Exception
     {

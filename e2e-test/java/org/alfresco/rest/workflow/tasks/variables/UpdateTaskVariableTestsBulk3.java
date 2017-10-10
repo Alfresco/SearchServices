@@ -20,7 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class UpdateTaskVariableFullTests extends RestTest
+public class UpdateTaskVariableTestsBulk3 extends RestTest
 {
     private SiteModel siteModel;
     private FileModel fileModel;
@@ -39,7 +39,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidVariableName() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -58,7 +58,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidVariableValue() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -77,7 +77,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithEmptyVariableName() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -96,7 +96,7 @@ public class UpdateTaskVariableFullTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithEmptyName() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -114,7 +114,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidName() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -132,7 +132,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidValue() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -150,7 +150,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithMissingType() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -170,7 +170,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithMissingTypeAndValue() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -189,7 +189,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithEmptyBody() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -209,7 +209,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidBody() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -228,7 +228,7 @@ public class UpdateTaskVariableFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTwiceInARowSameTaskVariable() throws Exception
     {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -248,7 +248,7 @@ public class UpdateTaskVariableFullTests extends RestTest
         updatedTaskVariable.assertThat().field("name").is("newName");        
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from another network is not able to update task variables")
     public void updateTaskVariablesByTenantFromAnotherNetwork() throws Exception

@@ -22,7 +22,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
-public class AddTaskVariablesFullTests extends RestTest
+public class AddTaskVariablesTestsBulk3 extends RestTest
 {
     private UserModel userWhoStartsTask, adminUser;
     private SiteModel siteModel;
@@ -46,7 +46,7 @@ public class AddTaskVariablesFullTests extends RestTest
         taskId = taskModel.getId();
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create task variable with name containing symbols")
     public void createTaskVariableWithSymbolsInName() throws Exception
@@ -64,7 +64,7 @@ public class AddTaskVariablesFullTests extends RestTest
              .and().field("type").is(variableModel.getType());
     }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create multiple task variable with name containing symbols")
     public void createMultipleTaskVariableWithSymbolsInName() throws Exception
@@ -90,7 +90,7 @@ public class AddTaskVariablesFullTests extends RestTest
                               .and().field("type").is(variableModel1.getType());                      
     }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create task variable with empty name")
     public void createTaskVariableWithEmptyName() throws Exception
@@ -109,7 +109,7 @@ public class AddTaskVariablesFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid variable name")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void createTaskVariableWithInvalidVariableName() throws Exception
     {            
         restClient.authenticateUser(adminUser).withWorkflowAPI();
@@ -124,7 +124,7 @@ public class AddTaskVariablesFullTests extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create task variable with invalid name")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void createTaskVariableWithInvalidName() throws Exception
     {
         restClient.authenticateUser(adminUser).withWorkflowAPI();
@@ -137,10 +137,10 @@ public class AddTaskVariablesFullTests extends RestTest
         .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unexpected character " + "('''"));        
      }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create task variable with empty name")
-    public void failledCreatingMultipleTaskVariableWithEmptyName() throws Exception
+    public void failedCreatingMultipleTaskVariableWithEmptyName() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
@@ -156,7 +156,7 @@ public class AddTaskVariablesFullTests extends RestTest
                               .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from the same network is able to add task variables")
     public void addTaskVariablesByTenantAdmin() throws Exception
@@ -182,7 +182,7 @@ public class AddTaskVariablesFullTests extends RestTest
              .and().field("type").is(variableModel.getType());
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from the same network is able to add multiple task variables")
     public void addMultipleTaskVariablesByTenantAdmin() throws Exception
@@ -216,7 +216,7 @@ public class AddTaskVariablesFullTests extends RestTest
                               .and().field("type").is(variableModel1.getType());      
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from another network is not able to add task variables")
     public void addTaskVariablesByTenantFromAnotherNetwork() throws Exception
@@ -242,7 +242,7 @@ public class AddTaskVariablesFullTests extends RestTest
                               .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin from another network is not able to add multiple task variables")
     public void addMultipleTaskVariablesByTenantFromAnotherNetwork() throws Exception

@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
  * @author bogdan.bocancea
  *
  */
-public class GetTaskCandidatesFullTests extends  RestTest
+public class GetTaskCandidatesRegressionTests extends  RestTest
 {
     private UserModel userModel, userModel1, userModel2;
     private SiteModel siteModel;
@@ -43,6 +43,71 @@ public class GetTaskCandidatesFullTests extends  RestTest
         dataGroup.addListOfUsersToGroup(group, userModel1, userModel2);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify get task candidates with invalid task id")
+    public void getTaskCandidatesWithInvalidTaskId() throws Exception
+    {
+        taskModel = dataWorkflow.usingUser(userModel)
+                .usingSite(siteModel)
+                .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
+        taskModel.setId("invalid-id");
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalid-id"));
+    }
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify get task candidates with empty task id")
+    public void getTaskCandidatesWithEmptyTaskId() throws Exception
+    {
+        taskModel = dataWorkflow.usingUser(userModel)
+                .usingSite(siteModel)
+                .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
+        taskModel.setId("");
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
+    }
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify get task candidates for completed task")
+    public void getTaskCandidatesForCompletedTask() throws Exception
+    {
+        taskModel = dataWorkflow.usingUser(userModel)
+                .usingSite(siteModel)
+                .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
+
+        restClient.authenticateUser(userModel1).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        dataWorkflow.usingUser(userModel1).taskDone(taskModel);
+
+        restClient.authenticateUser(userModel1).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, taskModel.getId()));
+
+        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, taskModel.getId()));
+    }
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+            description = "Verify get task candidates by non candidate user")
+    public void getTaskCandidatesByNonCandidateUser() throws Exception
+    {
+        UserModel outsider = dataUser.createRandomTestUser();
+        taskModel = dataWorkflow.usingUser(userModel)
+                .usingSite(siteModel)
+                .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
+        restClient.authenticateUser(outsider).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+                .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
+    }
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Check default error model schema for get task candidates")
@@ -59,7 +124,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
                               .stackTraceIs(RestErrorModel.STACKTRACE)
                               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
-    
+
     @Bug(id="MNT-17438")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
@@ -76,7 +141,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
             .entriesListIsNotEmpty()
                 .and().paginationField("count").is("0");
     }
-    
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with max items parameter set to 0")
@@ -93,7 +158,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
                               .stackTraceIs(RestErrorModel.STACKTRACE)
                               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
-    
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with max items parameter")
@@ -109,7 +174,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
             .entriesListIsNotEmpty()
                 .and().paginationField("count").is("1");
     }
-    
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with properties")
@@ -125,7 +190,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
             .field("candidateId").contains(group.getGroupIdentifier()).and()
             .field("candidateType").isNull();
     }
-    
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with invalid properties")
@@ -140,7 +205,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
         candidateModels.getEntries().get(0).onModel().assertThat()
             .fieldsCount().is(0).and();
     }
-    
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by deleted candidate")
@@ -152,9 +217,9 @@ public class GetTaskCandidatesFullTests extends  RestTest
         restClient.authenticateUser(userModel1).withWorkflowAPI()
                               .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+
         dataUser.usingAdmin().deleteUser(userModel1);
-        
+
         restClient.authenticateUser(userModel1).withWorkflowAPI()
             .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
@@ -163,7 +228,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
                               .stackTraceIs(RestErrorModel.STACKTRACE)
                               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
-    
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by deleted group")
@@ -178,9 +243,9 @@ public class GetTaskCandidatesFullTests extends  RestTest
         restClient.authenticateUser(newUser).withWorkflowAPI()
             .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+
         dataGroup.usingAdmin().deleteGroup(deletedGroup);
-        
+
         restClient.authenticateUser(newUser).withWorkflowAPI()
             .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
@@ -188,7 +253,7 @@ public class GetTaskCandidatesFullTests extends  RestTest
                               .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
                               .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-    
+
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by user that was removed from group")
@@ -202,9 +267,9 @@ public class GetTaskCandidatesFullTests extends  RestTest
         restClient.authenticateUser(newUser).withWorkflowAPI()
             .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+
         dataGroup.usingAdmin().removeUserFromGroup(group, newUser);
-        
+
         restClient.authenticateUser(newUser).withWorkflowAPI()
             .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)

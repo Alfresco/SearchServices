@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
 /**
  * @author bogdan.bocancea
  */
-public class UpdateTaskVariableCoreTests extends RestTest
+public class UpdateTaskVariableTestsBulk2 extends RestTest
 {
     private UserModel userModel;
     private SiteModel siteModel;
@@ -39,9 +39,9 @@ public class UpdateTaskVariableCoreTests extends RestTest
         taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
             description = "Update task variable by user who started the process")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void updateTaskVariableByUserWhoStartedProcess() throws Exception
     {
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -59,7 +59,7 @@ public class UpdateTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with symbols in name")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithSymbolsInName() throws Exception
     {
         String symbolName = "<>.,;-'+=%|[]#*&-+";
@@ -76,7 +76,7 @@ public class UpdateTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid task id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidTaskId() throws Exception
     {
         TaskModel invalidTask = new TaskModel(userModel.getUsername());
@@ -90,7 +90,7 @@ public class UpdateTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid scope")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidScope() throws Exception
     {
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -106,7 +106,7 @@ public class UpdateTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid type")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithInvalidType() throws Exception
     {
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
@@ -122,7 +122,7 @@ public class UpdateTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable with symbols in value")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableWithSymbolsInValue() throws Exception
     {
         String symbolValue = "<>.,;-'+=%|[]#*&-+/\\#!@";
@@ -139,7 +139,7 @@ public class UpdateTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable by non assigned user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void updateTaskVariableByNonAssignedUser() throws Exception
     {
         UserModel nonAssigned = dataUser.createRandomTestUser();
@@ -156,9 +156,9 @@ public class UpdateTaskVariableCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable by inexistent user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void updateTaskVariableByInexistentser() throws Exception
+    public void updateTaskVariableByNonexistentUser() throws Exception
     {
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
         taskVariable = restClient.authenticateUser(userModel)

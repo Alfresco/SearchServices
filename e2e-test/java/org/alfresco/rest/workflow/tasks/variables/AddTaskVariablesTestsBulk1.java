@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
  * @author iulia.cojocea
  */
 
-public class AddTaskVariablesSanityTests extends RestTest
+public class AddTaskVariablesTestsBulk1 extends RestTest
 {
     private UserModel userModel, userWhoStartsTask;
     private SiteModel siteModel;
@@ -59,8 +59,8 @@ public class AddTaskVariablesSanityTests extends RestTest
              .and().field("type").is(variableModel.getType());
     }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create non-existing task variable with admin")
     public void createMultipleTaskVariablesWithAdmin() throws Exception
     {
@@ -103,8 +103,8 @@ public class AddTaskVariablesSanityTests extends RestTest
         restClient.withWorkflowAPI().usingTask(taskModel).getTaskVariables().assertThat().entriesListContains("name", variableModel.getName());
     }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create multiple non-existing task variable with involved user")
     public void createMultipleTaskVariableWithInvolvedUser() throws Exception
     {
@@ -144,8 +144,8 @@ public class AddTaskVariablesSanityTests extends RestTest
              .and().field("type").is(variableModel.getType());
     }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create multiple non-existing task variable with task owner")
     public void createMultipleTaskVariableWithTaskOwner() throws Exception
     {
@@ -169,8 +169,8 @@ public class AddTaskVariablesSanityTests extends RestTest
                               .and().field("type").is(variableModel1.getType());
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create non-existing task variable with any user")
     public void createTaskVariableWithRandomUser() throws Exception
     {
@@ -182,8 +182,8 @@ public class AddTaskVariablesSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary("Permission was denied");
     }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Create multiple non-existing task variable with any user")
     public void createMultipleTaskVariableWithRandomUser() throws Exception
     {

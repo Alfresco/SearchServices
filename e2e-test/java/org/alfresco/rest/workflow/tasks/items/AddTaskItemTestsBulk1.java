@@ -21,7 +21,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
-public class AddTaskItemSanityTests extends RestTest
+public class AddTaskItemTestsBulk1 extends RestTest
 {
     private UserModel userModel, userWhoStartsTask, assigneeUser;
     private SiteModel siteModel; 
@@ -96,9 +96,9 @@ public class AddTaskItemSanityTests extends RestTest
                  .assertThat().field("mimeType").is(taskItems.getEntries().get(1).onModel().getMimeType());    
    }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @Bug(id = "MNT-16966")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that in case task item exists the request fails")
     public void createTaskItemThatAlreadyExists() throws Exception
     {
@@ -122,9 +122,9 @@ public class AddTaskItemSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
     
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @Bug(id = "MNT-16966")
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that in case task item exists the request fails")
     public void createMultipleTaskItemThatAlreadyExists() throws Exception
     {
@@ -160,10 +160,10 @@ public class AddTaskItemSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @Test(groups = { TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @Test(groups = { TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Add task item using admin user from same network")
-    public void addTaskItemByAdminSameNetwork() throws JsonToModelConversionException, Exception
+    public void addTaskItemByAdminSameNetwork() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
@@ -190,10 +190,10 @@ public class AddTaskItemSanityTests extends RestTest
                 .and().field("mimeType").is(taskItem.getMimeType());
     }
     
-    @Test(groups = { TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @Test(groups = { TestGroup.NETWORKS,TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Add task item using admin user from same network")
-    public void addMultipleTaskItemByAdminSameNetwork() throws JsonToModelConversionException, Exception
+    public void addMultipleTaskItemByAdminSameNetwork() throws Exception
     {
         UserModel adminUser = dataUser.getAdminUser();
         restClient.authenticateUser(adminUser);
