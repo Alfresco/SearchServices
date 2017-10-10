@@ -133,7 +133,10 @@ public class GetTaskTests extends RestTest
         executionType = ExecutionType.REGRESSION, description = "Verify user who started a task gets the task with empty taskId with Rest API")
     public void starterUserGetsTaskWithEmptyTaskId() throws Exception
     {
-        restClient.authenticateUser(userModel).withWorkflowAPI();
+        UserModel userWhoStartsTask = dataUser.createRandomTestUser();
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userWhoStartsTask);
+
+        restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI();
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}", "");
         RestTaskModelsCollection tasks = restClient.processModels(RestTaskModelsCollection.class, request);
         
