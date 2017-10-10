@@ -37,6 +37,7 @@ public class RemoveTaskItemTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
     public void deleteTaskItem() throws Exception
     {
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
 
@@ -53,6 +54,7 @@ public class RemoveTaskItemTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void deleteTaskItemUsingInvalidTaskId() throws Exception
     {
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
 
@@ -68,6 +70,7 @@ public class RemoveTaskItemTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void deleteTaskItemUsingInvalidItemId() throws Exception
     {
+        taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
         restClient.authenticateUser(adminUser);
         document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
