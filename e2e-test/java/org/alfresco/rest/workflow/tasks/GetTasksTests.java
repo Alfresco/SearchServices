@@ -253,10 +253,12 @@ public class GetTasksTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void whereParameterApplied() throws Exception
     {
-        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("where=(assignee='" + assigneeUser.getUsername() + "')").withWorkflowAPI()
+        UserModel anotherAssignee = dataUser.createRandomTestUser();
+        dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(anotherAssignee);
+        taskModels = restClient.authenticateUser(dataUser.getAdminUser()).withParams("where=(assignee='" + anotherAssignee.getUsername() + "')").withWorkflowAPI()
                 .getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty().and().entriesListContains("assignee", assigneeUser.getUsername()).and().entriesListCountIs(1);
+        taskModels.assertThat().entriesListIsNotEmpty().and().entriesListContains("assignee", anotherAssignee.getUsername()).and().entriesListCountIs(1);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
