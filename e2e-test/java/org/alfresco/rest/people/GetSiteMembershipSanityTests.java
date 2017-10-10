@@ -80,7 +80,7 @@ public class GetSiteMembershipSanityTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to retrieve site membership information of another user")
-    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserCannotRetrieveSiteMembershipInformation() throws JsonToModelConversionException, Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password")).withCoreAPI()

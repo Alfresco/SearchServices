@@ -54,7 +54,7 @@ public class DeleteCommentTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.COMMENTS }, executionType = ExecutionType.SANITY, description = "Verify User gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.COMMENTS, TestGroup.SANITY })
-    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void userIsNotAbleToDeleteCommentIfAuthenticationFails() throws Exception
     {
         restClient.authenticateUser(adminUserModel);

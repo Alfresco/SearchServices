@@ -157,7 +157,7 @@ public class UpdateTaskVariableTestsBulk2 extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Update task variable by inexistent user")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void updateTaskVariableByNonexistentUser() throws Exception
     {
         variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");

@@ -436,7 +436,7 @@ public class AddFavoritesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify the post favorites request when network id is invalid for tenant user")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void addFavoriteSitesWhenNetworkIdIsInvalid() throws JsonToModelConversionException, Exception
+    public void addFavoriteSitesWhenNetworkIdIsInvalid() throws Exception
     {
         UserModel adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUserModel);
