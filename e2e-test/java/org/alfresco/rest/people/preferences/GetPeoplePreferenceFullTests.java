@@ -137,7 +137,7 @@ public class GetPeoplePreferenceFullTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Change one preference for an user then perform get call")
-//    @Bug(id = "ACE-5736")
+    @Bug(id = "REPO-1922")
     public void changePreferenceThenPerformGetPreferenceCall() throws Exception
     {
         UserModel newUser = dataUser.createRandomTestUser();

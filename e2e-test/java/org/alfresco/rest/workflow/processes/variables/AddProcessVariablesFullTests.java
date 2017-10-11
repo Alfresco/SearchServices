@@ -150,7 +150,7 @@ public class AddProcessVariablesFullTests extends RestTest
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
     
-//    @Bug(id = "REPO-1938")
+    @Bug(id = "REPO-1938")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variables is falling in case invalid type prefix is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
