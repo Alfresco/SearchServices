@@ -40,14 +40,14 @@ public class RestGetNetworkForPersonTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         restClient.usingTenant().createTenant(adminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-//        tenantSiteManager = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteManager");
-//        tenantSiteCollaborator = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteCollaborator");
-//        tenantSiteContributor = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteContributor");
-//        tenantSiteConsumer = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteConsumer");
-//        tenantSite = dataSite.usingUser(tenantSiteManager).createPublicRandomSite();
-//        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteCollaborator, tenantSite, UserRole.SiteCollaborator);
-//        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteContributor, tenantSite, UserRole.SiteContributor);
-//        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteConsumer, tenantSite, UserRole.SiteConsumer);
+        tenantSiteManager = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteManager");
+        tenantSiteCollaborator = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteCollaborator");
+        tenantSiteContributor = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteContributor");
+        tenantSiteConsumer = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteConsumer");
+        tenantSite = dataSite.usingUser(tenantSiteManager).createPublicRandomSite();
+        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteCollaborator, tenantSite, UserRole.SiteCollaborator);
+        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteContributor, tenantSite, UserRole.SiteContributor);
+        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteConsumer, tenantSite, UserRole.SiteConsumer);
     }
 
     @Bug(id = "MNT-16904")
