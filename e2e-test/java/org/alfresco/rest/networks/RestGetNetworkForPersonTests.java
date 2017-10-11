@@ -40,14 +40,14 @@ public class RestGetNetworkForPersonTests extends RestTest
         restClient.authenticateUser(adminUserModel);
         restClient.usingTenant().createTenant(adminTenantUser);
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantSiteManager = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteManager");
-        tenantSiteCollaborator = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteCollaborator");
-        tenantSiteContributor = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteContributor");
-        tenantSiteConsumer = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteConsumer");
-        tenantSite = dataSite.usingUser(tenantSiteManager).createPublicRandomSite();
-        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteCollaborator, tenantSite, UserRole.SiteCollaborator);
-        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteContributor, tenantSite, UserRole.SiteContributor);
-        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteConsumer, tenantSite, UserRole.SiteConsumer);
+//        tenantSiteManager = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteManager");
+//        tenantSiteCollaborator = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteCollaborator");
+//        tenantSiteContributor = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteContributor");
+//        tenantSiteConsumer = dataUser.usingUser(adminTenantUser).createUserWithTenant("tenantSiteConsumer");
+//        tenantSite = dataSite.usingUser(tenantSiteManager).createPublicRandomSite();
+//        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteCollaborator, tenantSite, UserRole.SiteCollaborator);
+//        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteContributor, tenantSite, UserRole.SiteContributor);
+//        dataUser.usingUser(tenantSiteManager).addUserToSite(tenantSiteConsumer, tenantSite, UserRole.SiteConsumer);
     }
 
     @Bug(id = "MNT-16904")
@@ -191,10 +191,14 @@ public class RestGetNetworkForPersonTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
     public void verifyPropertiesParameterIsAppliedToGetNetworkRequest() throws Exception
     {
-        restNetworkModel = restClient.authenticateUser(adminTenantUser).withParams("properties=id").withCoreAPI().usingMe().getNetwork();
+        restNetworkModel = restClient.authenticateUser(adminTenantUser).withParams("properties=id,isEnabled,homeNetwork,paidNetwork").withCoreAPI().usingMe().getNetwork();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restNetworkModel.assertThat().field("id").is(adminTenantUser.getDomain().toLowerCase());
-        restNetworkModel.assertThat().fieldsCount().is(1);
+        restNetworkModel.assertThat().field("id").is(adminTenantUser.getDomain().toLowerCase())
+                .assertThat().field("isEnabled").is("true")
+                .assertThat().field("homeNetwork").is("true")
+                .assertThat().field("paidNetwork").is("false")
+                .assertThat().field("quotas").isNull();
+        restNetworkModel.assertThat().fieldsCount().is(4);
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
