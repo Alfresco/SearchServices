@@ -54,7 +54,10 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
         taskModel.setId("invalid-id");
         restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalid-id"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalid-id"))
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .stackTraceIs(RestErrorModel.STACKTRACE)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
@@ -106,23 +109,6 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
         restClient.authenticateUser(outsider).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
                 .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
-    }
-
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Check default error model schema for get task candidates")
-    public void getTaskCandidatesErrorSchemaCheck() throws Exception
-    {
-        taskModel = dataWorkflow.usingUser(userModel)
-                .usingSite(siteModel)
-                .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
-        taskModel.setId("invalid-id");
-        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).getTaskCandidates();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalid-id"))
-                              .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                              .stackTraceIs(RestErrorModel.STACKTRACE)
-                              .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
     @Bug(id="MNT-17438")
@@ -211,16 +197,18 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
             description = "Get task candidates by deleted candidate")
     public void getTaskCandidatesByDeletedCandidate() throws Exception
     {
+        UserModel newUser = dataUser.createRandomTestUser();
+        dataGroup.addListOfUsersToGroup(group, newUser);
         taskModel = dataWorkflow.usingUser(userModel)
                 .usingSite(siteModel)
                 .usingResource(fileModel).createPooledReviewTaskAndAssignTo(group);
-        restClient.authenticateUser(userModel1).withWorkflowAPI()
+        restClient.authenticateUser(newUser).withWorkflowAPI()
                               .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        dataUser.usingAdmin().deleteUser(userModel1);
+        dataUser.usingAdmin().deleteUser(newUser);
 
-        restClient.authenticateUser(userModel1).withWorkflowAPI()
+        restClient.authenticateUser(newUser).withWorkflowAPI()
             .usingTask(taskModel).getTaskCandidates();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
             .assertLastError().containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
