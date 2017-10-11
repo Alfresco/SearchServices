@@ -509,7 +509,7 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         moderatedSite.setId(moderatedSiteId);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.CORE })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify inexistent user is not able to update site membership request")
     public void emptyUserCannotUpdateSiteMembershipRequest() throws Exception

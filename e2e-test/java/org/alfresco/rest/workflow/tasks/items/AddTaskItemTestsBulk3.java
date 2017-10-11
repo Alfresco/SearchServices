@@ -41,7 +41,7 @@ public class AddTaskItemTestsBulk3 extends RestTest
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Add task item using random user.")
     public void addTaskItemByTheUserThatStartedTheProcess() throws Exception
@@ -59,7 +59,7 @@ public class AddTaskItemTestsBulk3 extends RestTest
                 .and().field("mimeType").is(taskItem.getMimeType());
      }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, 
     description = "Add multiple task item using random user.")
     public void addMultipleTaskItemByTheUserThatStartedTheProcess() throws Exception
@@ -92,7 +92,7 @@ public class AddTaskItemTestsBulk3 extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Add task item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void addTaskItemByAdminInOtherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -119,7 +119,7 @@ public class AddTaskItemTestsBulk3 extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Add multiple task item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL, TestGroup.NETWORKS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void addMultipleTaskItemByAdminInOtherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -148,7 +148,7 @@ public class AddTaskItemTestsBulk3 extends RestTest
     
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task item then create it again")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemThenCreateItAgain() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel)
@@ -167,7 +167,7 @@ public class AddTaskItemTestsBulk3 extends RestTest
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete multiple task item then create it again")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL})
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteMultipleTaskItemsThenCreateThemAgain() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel)

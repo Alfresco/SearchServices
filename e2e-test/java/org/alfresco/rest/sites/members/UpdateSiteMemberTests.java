@@ -300,7 +300,7 @@ public class UpdateSiteMemberTests extends RestTest
                 .and().field("role").is(siteManager.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update another site manager to site contributor")
     public void managerUpdateSiteManagerToSiteContributor() throws Exception
@@ -315,7 +315,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteManager.getUsername()).and().field("role").is(siteManager.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update another site manager to site consumer")
     public void managerUpdateSiteManagerToSiteConsumer() throws Exception
@@ -330,7 +330,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteManager.getUsername()).and().field("role").is(siteManager.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site contributor to site collaborator")
     public void managerUpdateSiteContributorToSiteCollaborator() throws Exception
@@ -345,7 +345,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteContributor.getUsername()).and().field("role").is(siteContributor.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site contributor to site consumer")
     public void managerUpdateSiteContributorToSiteConsumer() throws Exception
@@ -360,7 +360,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteContributor.getUsername()).and().field("role").is(siteContributor.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site collaborator to site contributor")
     public void managerUpdateSiteCollaboratorToSiteContributor() throws Exception
@@ -375,7 +375,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteCollaborator.getUsername()).and().field("role").is(siteCollaborator.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site collaborator to site consumer")
     public void managerUpdateSiteCollaboratorToSiteConsumer() throws Exception
@@ -390,7 +390,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteCollaborator.getUsername()).and().field("role").is(siteCollaborator.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site consumer to site collaborator")
     public void managerUpdateSiteConsumerToSiteCollaborator() throws Exception
@@ -405,7 +405,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteConsumer.getUsername()).and().field("role").is(siteConsumer.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site consumer to site contributor")
     public void managerUpdateSiteConsumerToSiteContributor() throws Exception
@@ -420,7 +420,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteConsumer.getUsername()).and().field("role").is(siteConsumer.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update another site manager to site manager")
     public void managerUpdateSiteManagerToSiteManager() throws Exception
@@ -435,7 +435,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteManager.getUsername()).and().field("role").is(siteManager.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site collaborator to site collaborator")
     public void managerUpdateSiteCollaboratorToSiteCollaborator() throws Exception
@@ -450,7 +450,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteCollaborator.getUsername()).and().field("role").is(siteCollaborator.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site contributor to site contributor")
     public void managerUpdateSiteContributorToSiteContributor() throws Exception
@@ -465,7 +465,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteContributor.getUsername()).and().field("role").is(siteContributor.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update site consumer to site consumer")
     public void managerUpdateSiteConsumerToSiteConsumer() throws Exception
@@ -480,7 +480,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteConsumer.getUsername()).and().field("role").is(siteConsumer.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager of a private site is able to downgrade his role")
     public void privateSiteManagerDowngradesRole() throws Exception
@@ -495,7 +495,7 @@ public class UpdateSiteMemberTests extends RestTest
         updatedMember.assertThat().field("id").is(siteManager.getUsername()).and().field("role").is(siteManager.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager of a moderated site is able to downgrade his role")
     public void moderatedSiteManagerDowngradesRole() throws Exception
@@ -512,7 +512,7 @@ public class UpdateSiteMemberTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify the response of updating a site member with empty body at request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
     public void managerCanNotUpdateSiteMemberWithEmptyBody() throws Exception
     {
         restClient.authenticateUser(siteCreator).withCoreAPI();
@@ -529,7 +529,7 @@ public class UpdateSiteMemberTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if manager is able to update a user that has created a site membership request, but it's not a member of the site yet")
     public void managerCanNotUpdateUserWithSiteMembershipRequest() throws Exception

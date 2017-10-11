@@ -108,7 +108,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Check default error model schema for get task candidates")
     public void getTaskCandidatesErrorSchemaCheck() throws Exception
@@ -126,7 +126,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
     }
 
     @Bug(id="MNT-17438")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with skip count parameter")
     public void getTaskCandidatesWithSkipCount() throws Exception
@@ -142,7 +142,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .and().paginationField("count").is("0");
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with max items parameter set to 0")
     public void getTaskCandidatesWithZeroMaxItems() throws Exception
@@ -159,7 +159,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with max items parameter")
     public void getTaskCandidatesWithMaxItems() throws Exception
@@ -175,7 +175,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                 .and().paginationField("count").is("1");
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with properties")
     public void getTaskCandidatesWithProperties() throws Exception
@@ -191,7 +191,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
             .field("candidateType").isNull();
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates with invalid properties")
     public void getTaskCandidatesWithInvalidProperties() throws Exception
@@ -206,7 +206,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
             .fieldsCount().is(0).and();
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by deleted candidate")
     public void getTaskCandidatesByDeletedCandidate() throws Exception
@@ -229,7 +229,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                               .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by deleted group")
     public void getTaskCandidatesByDeletedGroup() throws Exception
@@ -254,7 +254,7 @@ public class GetTaskCandidatesRegressionTests extends  RestTest
                               .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.FULL })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Get task candidates by user that was removed from group")
     public void getTaskCandidatesByUserRemovedFromGroup() throws Exception

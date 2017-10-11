@@ -353,7 +353,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can delete a site member with Contributor role and gets status code 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void adminIsAbleToDeleteSiteMemberWithContributorRole() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel)
@@ -364,7 +364,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can delete site member with Manager role and gets status code 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void aminIsAbleToDeleteSiteMemberWithManagerRole() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel)
@@ -375,7 +375,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can delete site member with Consumer role and gets status code 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void adminIsAbleToDeleteSiteMemberWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel)
@@ -386,7 +386,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can delete a site member with Collaborator role and gets status code 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void adminIsAbleToDeleteSiteMemberWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel)
@@ -397,7 +397,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can delete a site member of moderated site and gets status code 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void adminIsAbleToDeleteModeratedSiteMember() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -410,7 +410,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can delete a site member of private site and gets status code 204")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void adminIsAbleToDeletePrivateSiteMember() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -423,7 +423,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that regular user can not delete admin and gets status code 422")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     public void regularUserIsNotAbleToDeleteASiteMember() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingSite(publicSiteModel)
@@ -437,7 +437,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can not delete a site member twice and gets status code 404 for the second attempt")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @Bug(id="ACE-5447")
     public void adminIsNotAbleToRemoveSiteMemberTwice() throws Exception
     {
@@ -453,7 +453,7 @@ public class RemoveSiteMemberTests extends RestTest
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is not able to remove from site a user that created a member request that was not accepted yet")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.FULL })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @Bug(id="ACE-5447")
     public void adminIsNotAbleToRemoveFromSiteANonExistingMember() throws Exception
     {
