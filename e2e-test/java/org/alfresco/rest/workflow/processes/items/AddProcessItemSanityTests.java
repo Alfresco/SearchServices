@@ -104,7 +104,7 @@ public class AddProcessItemSanityTests extends RestTest
                 .assertThat().entriesListContains("id", processItems.getEntries().get(1).onModel().getId());
     }
 
-//    @Bug(id= "MNT-16966")
+    @Bug(id= "REPO-1927")
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Add process item that already exists")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})

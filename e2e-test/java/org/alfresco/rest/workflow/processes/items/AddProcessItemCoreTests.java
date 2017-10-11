@@ -243,7 +243,7 @@ public class AddProcessItemCoreTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidProcessId"));
     }
 
-//    @Bug(id = "ACE-5683")
+    @Bug(id = "REPO-1937")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process item is falling in case of invalid body item is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

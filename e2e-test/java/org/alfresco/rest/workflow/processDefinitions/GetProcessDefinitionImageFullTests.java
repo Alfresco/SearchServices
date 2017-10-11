@@ -26,7 +26,7 @@ public class GetProcessDefinitionImageFullTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-//    @Bug(id = "REPO-1911")
+    @Bug(id = "REPO-1911")
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition image returns status code 404 when empty processDefinitionId is used")
