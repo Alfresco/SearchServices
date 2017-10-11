@@ -103,7 +103,7 @@ public class GetProcessItemsFullTests extends RestTest
         items.assertThat().entriesListIsEmpty();
     }
 
-//    @Bug(id = "MNT-17438")
+    @Bug(id = "REPO-1989")
     @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Get process items for process with valid skipCount parameter")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION})

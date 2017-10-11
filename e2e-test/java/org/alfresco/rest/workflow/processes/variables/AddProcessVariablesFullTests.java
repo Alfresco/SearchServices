@@ -250,7 +250,7 @@ public class AddProcessVariablesFullTests extends RestTest
                 .assertThat().entriesListContains("value", variableModel.getValue());
     }
 
-//    @Bug(id="REPO-1987")
+    @Bug(id="REPO-1987")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Adding process variables is falling in case invalid name is provided: symbols")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

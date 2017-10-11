@@ -133,7 +133,7 @@ public class GetProcessesFullTests extends RestTest
             .and().entriesListContains("id", task1.getProcessId());
     }
 
-//    @Bug(id = "REPO-1958")
+    @Bug(id = "REPO-1958")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot get processes when using an invalid orderBy parameter")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

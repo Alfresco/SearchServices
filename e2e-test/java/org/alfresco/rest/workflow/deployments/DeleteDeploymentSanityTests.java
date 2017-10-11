@@ -37,7 +37,7 @@ public class DeleteDeploymentSanityTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-    @Bug(id = "MNT-16996")
+    @Bug(id = "REPO-1930")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify admin user deletes a specific deployment using REST API and status code is successful (204)")
     @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.WORKFLOW }, priority = 100)
@@ -102,7 +102,7 @@ public class DeleteDeploymentSanityTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-//    @Bug(id = "MNT-16996")
+    @Bug(id = "REPO-1930")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
             executionType = ExecutionType.SANITY, description = "Verify admin user cannot delete an inexistent deployment using REST API and status code is successful (204)")
     @Test(groups = { TestGroup.REST_API, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.WORKFLOW }, priority = 100)

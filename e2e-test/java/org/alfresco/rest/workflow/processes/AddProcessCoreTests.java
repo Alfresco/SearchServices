@@ -65,7 +65,7 @@ public class AddProcessCoreTests extends RestTest
             .assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"));
     }
 
-//    @Bug(id = "ACE-5671")
+    @Bug(id = "REPO-1936")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify start new process with invalid request body using REST API returns status code is Bad Request (400)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

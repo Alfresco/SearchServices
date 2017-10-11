@@ -43,7 +43,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-//    @Bug(id = "ALF-20187")
+    @Bug(id = "ALF-20187")
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get request returns status code 404 when invalid processDefinitionId is used")
@@ -62,7 +62,7 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-//    @Bug(id = "ALF-20187")
+    @Bug(id = "ALF-20187")
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get request returns status code 404 when empty processDefinitionId is used")

@@ -47,7 +47,7 @@ public class GetProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION, 
             description = "Verify that tenant user cannot get process from another network")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-//    @Bug(id = "MNT-17238")
+    @Bug(id = "REPO-2092")
     public void tenantUserCannotGetProcessFromAnotherNetwork() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
@@ -87,8 +87,8 @@ public class GetProcessCoreTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION, 
             description = "Verify that non network user cannot get process from a network")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-//    @Bug(id = "MNT-17238")
-    public void nonNetworkUserCannotAccessNetworkprocess() throws Exception
+    @Bug(id = "REPO-2092")
+    public void nonNetworkUserCannotAccessNetworkProcess() throws Exception
     {
         UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
@@ -101,5 +101,4 @@ public class GetProcessCoreTests extends RestTest
                   .assertLastError().containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
                   .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
-
 }

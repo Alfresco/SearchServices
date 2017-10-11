@@ -58,7 +58,7 @@ public class GetProcessVariablesFullTests extends RestTest
                 .assertThat().field("value").is(CMISUtil.Priority.Normal.getLevel());
     }
 
-//    @Bug(id = "MNT-17438")
+    @Bug(id = "MNT-17438")
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify get all process variables with valid skip count parameter applied.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

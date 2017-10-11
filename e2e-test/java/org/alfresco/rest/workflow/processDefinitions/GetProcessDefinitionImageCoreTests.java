@@ -66,7 +66,7 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
             executionType = ExecutionType.REGRESSION,
             description = "Verify network user is able to get a process definition image using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS})
-//    @Bug(id = "MNT-17243")
+    @Bug(id = "MNT-17243")
     public void networkUserGetProcessDefinitionImage() throws Exception
     {
         adminTenantUser = UserModel.getAdminTenantUser();
