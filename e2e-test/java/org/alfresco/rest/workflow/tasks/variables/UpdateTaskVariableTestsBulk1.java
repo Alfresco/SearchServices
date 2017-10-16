@@ -1,10 +1,7 @@
 package org.alfresco.rest.workflow.tasks.variables;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -78,33 +75,5 @@ public class UpdateTaskVariableTestsBulk1 extends RestTest
         taskVariable = restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         taskVariable.assertThat().field("value").is("updatedValue");
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Update existing task variable by admin in the same network")    
-    public void updateTaskVariableByAdminInSameNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser1);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
-        RestTaskModel task = restClient.authenticateUser(adminTenantUser1)
-                            .withWorkflowAPI().usingProcess(networkProcess1).getProcessTasks().getOneRandomEntry();
-        
-        variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        taskVariable = restClient.withWorkflowAPI().usingTask(task.onModel())
-                                 .updateTaskVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskVariable.assertThat().field("scope").is(taskVariable.getScope())
-            .and().field("name").is(taskVariable.getName())
-            .and().field("type").is(taskVariable.getType())
-            .and().field("value").is(taskVariable.getValue());
-
-        variableModel.setValue("updatedValue");
-        taskVariable = restClient.withWorkflowAPI().usingTask(task.onModel()).updateTaskVariable(variableModel).and().field("value").is("updatedValue");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

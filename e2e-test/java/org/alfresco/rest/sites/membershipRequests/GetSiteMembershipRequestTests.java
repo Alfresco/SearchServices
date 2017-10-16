@@ -2,13 +2,11 @@ package org.alfresco.rest.sites.membershipRequests;
 
 import org.alfresco.dataprep.SiteService;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteMembershipRequestModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -331,50 +329,4 @@ public class GetSiteMembershipRequestTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
-            description = "Add process item using by the admin in same network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getSiteMembershipRequestByAdminSameNetwork() throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
-        moderatedSite = dataSite.usingUser(adminTenantUser).createModeratedRandomSite();
-        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
-
-        returnedModel = restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().getSiteMembershipRequest(moderatedSite);
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedModel.assertThat().field("id").is(moderatedSite.getId())
-                .and().field("message").is("Please accept me")
-                .and().field("site.title").is(moderatedSite.getTitle())
-                .and().field("site.visibility").is(SiteService.Visibility.MODERATED.toString())
-                .and().field("site.guid").isNotEmpty()
-                .and().field("site.description").is(moderatedSite.getDescription())
-                .and().field("site.preset").is("site-dashboard");
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
-            description = "Add process item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getSiteMembershipRequestByAdminInOtherNetwork() throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser2);
-        moderatedSite = dataSite.usingUser(adminTenantUser2).createModeratedRandomSite();
-
-        restClient.authenticateUser(adminTenantUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(moderatedSite);
-        returnedModel = restClient.authenticateUser(adminTenantUser2).withCoreAPI().usingAuthUser().getSiteMembershipRequest(moderatedSite);
-
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError()
-                .containsErrorKey(RestErrorModel.RELATIONSHIP_NOT_FOUND_ERRORKEY)
-                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, adminTenantUser2.getUsername().toLowerCase(), moderatedSite.getId()))
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
 }

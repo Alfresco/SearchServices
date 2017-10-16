@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
  */
 public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
 {
-    private UserModel adminUser, adminTenantUser;
+    private UserModel adminUser;
     private RestProcessDefinitionModel randomProcessDefinition;
     private RestProcessDefinitionModelsCollection allProcessDefinitions;
 
@@ -76,23 +76,5 @@ public class GetProcessDefinitionStartFormModelCoreTests extends RestTest
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary("no deployed process definition found with id ''");
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify Tenant User gets a model of the start form type definition for network deployments using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void networkUserGetsStartFormModel() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser)
-                .usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        randomProcessDefinition = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry().onModel();
-        restClient.authenticateUser(tenantUser).withWorkflowAPI()
-                .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel()
-                .assertThat().entriesListIsNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

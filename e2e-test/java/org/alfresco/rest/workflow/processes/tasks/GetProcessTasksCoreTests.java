@@ -3,7 +3,6 @@ package org.alfresco.rest.workflow.processes.tasks;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.GroupModel;
@@ -21,14 +20,13 @@ public class GetProcessTasksCoreTests extends RestTest
 {
     private FileModel document, document1, document2;
     private SiteModel siteModel;
-    private UserModel adminUser, userWhoStartsProcess, candidate, anotherAssignee, assignee;
+    private UserModel  userWhoStartsProcess, candidate, anotherAssignee, assignee;
     private ProcessModel process;
     private GroupModel group;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUser = dataUser.getAdminUser();
         userWhoStartsProcess = dataUser.createRandomTestUser();
         candidate = dataUser.createRandomTestUser();
         anotherAssignee = dataUser.createRandomTestUser();
@@ -55,46 +53,6 @@ public class GetProcessTasksCoreTests extends RestTest
                 .usingProcess(processModel).getProcessTasks().assertThat().entriesListIsNotEmpty()
                 .and().entriesListContains("assignee", candidate.getUsername());
         restClient.assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify getProcessTasks using admin from same network with REST API and status code is OK")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getProcessTasksWithAdminFromSameNetwork() throws Exception
-    {
-        UserModel adminTenant = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenant);
-        SiteModel siteModel = dataSite.usingUser(adminTenant).createPublicRandomSite();
-        UserModel tenantAssignee = dataUser.usingUser(adminTenant).createUserWithTenant("uTenant");
-        dataContent.usingUser(adminTenant).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-
-        RestProcessModel processModel = restClient.authenticateUser(tenantAssignee).withWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, CMISUtil.Priority.Normal);
-
-        restClient.authenticateUser(adminTenant).withWorkflowAPI()
-                .usingProcess(processModel).getProcessTasks().assertThat().entriesListIsNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify getProcessTasks using admin from different network with REST API and status code is FORBIDDEN (403)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getProcessTasksWithAdminFromDifferentNetwork() throws Exception
-    {
-        UserModel adminTenant, secondAdminTenant, tenantAssignee;
-        adminTenant = UserModel.getAdminTenantUser();
-        secondAdminTenant = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenant);
-
-        SiteModel siteModel = dataSite.usingUser(adminTenant).createPublicRandomSite();
-        dataContent.usingUser(adminTenant).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        tenantAssignee = dataUser.usingUser(adminTenant).createUserWithTenant("uTenant");
-        RestProcessModel processModel = restClient.authenticateUser(adminTenant).withWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, CMISUtil.Priority.Normal);
-
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(secondAdminTenant);
-        restClient.authenticateUser(secondAdminTenant).withWorkflowAPI()
-                .usingProcess(processModel).getProcessTasks().assertThat().entriesListIsEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                .assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,

@@ -3,7 +3,6 @@ package org.alfresco.rest.favorites;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.SiteService;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModel;
 import org.alfresco.utility.constants.UserRole;
@@ -477,42 +476,5 @@ public class GetFavoriteTests extends RestTest
                 .and().field("target.folder.guid").is(folderModel.getNodeRef())
                 .and().field("target.folder.modifiedBy").is(adminUserModel.getUsername())
                 .and().field("target.folder.id").is(folderModel.getNodeRef());
-    }
-
-    @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify the get favorite request for invalid network id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getFavoriteSiteWithInvalidNetworkId()  throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel);
-        restClient.usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
-        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
-        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
-
-        tenantUser.setDomain("invalidNetwork");
-        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-                .assertLastError()
-                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
-    }
-
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify the get favorite request with tenant user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getFavoriteSiteWithTenantUser()  throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
-        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
-        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
-
-        restClient.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

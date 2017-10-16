@@ -18,7 +18,6 @@ import org.testng.annotations.Test;
 public class AddProcessSanityTests extends RestTest
 {
     private UserModel userWhoStartsProcess, assignee;
-    private UserModel adminTenantUser, tenantUserWhoStartsProcess, tenantAssignee;
     private RestProcessModel addedProcess;
     private RestProcessModelsCollection processes;
 
@@ -42,25 +41,4 @@ public class AddProcessSanityTests extends RestTest
         
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,
-            TestGroup.PROCESSES }, executionType = ExecutionType.SANITY, 
-            description = "Verify network user is able to start new process using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
-    public void networkUserStartsNewProcess() throws JsonToModelConversionException, Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser())
-                .usingTenant().createTenant(adminTenantUser);
-        tenantUserWhoStartsProcess = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("u2Tenant");
-
-        addedProcess = restClient.authenticateUser(tenantUserWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", tenantAssignee, false, Priority.Normal);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        addedProcess.assertThat().field("id").is(addedProcess.getId())
-                    .and().field("startUserId").is(addedProcess.getStartUserId());
-
-        processes = restClient.withWorkflowAPI().getProcesses();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        processes.assertThat().entriesListContains("id", addedProcess.getId());
-    }
 }

@@ -4,10 +4,14 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestTaskModelsCollection;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.GroupModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TaskModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -175,48 +179,6 @@ public class GetTasksTests extends RestTest
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = {  TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
-            executionType = ExecutionType.REGRESSION, description = "Check that for admin network gets tasks only from its network.")
-    public void adminTenantGetsTasksOnlyFromItsNetwork() throws Exception
-    {
-        UserModel adminTenant1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenant1);
-
-        UserModel adminTenant2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenant2);
-
-        UserModel tenantUser1 = dataUser.usingUser(adminTenant1).createUserWithTenant("userTenant1");
-        UserModel tenantUserAssignee1 = dataUser.usingUser(adminTenant1).createUserWithTenant("userTenantAssignee1");
-
-        UserModel tenantUser2 = dataUser.usingUser(adminTenant2).createUserWithTenant("userTenant2");
-        UserModel tenantUserAssignee2 = dataUser.usingUser(adminTenant2).createUserWithTenant("userTenantAssignee2");
-
-        RestProcessModel processOnTenant1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee1, false, Priority.Low);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        RestProcessModel processOnTenant2 = restClient.authenticateUser(tenantUser2).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee2, false, Priority.Normal);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        RestTaskModelsCollection tenantTasks1 = restClient.authenticateUser(adminTenant1).withWorkflowAPI().getTasks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        tenantTasks1.assertThat().entriesListIsNotEmpty()
-                .and().entriesListCountIs(1)
-                .and().entriesListContains("assignee", String.format("userTenantAssignee1@%s", tenantUserAssignee1.getDomain().toLowerCase()))
-                .and().entriesListContains("processId", processOnTenant1.getId())
-                .and().entriesListDoesNotContain("assignee", String.format("userTenantAssignee2@%s", tenantUserAssignee2.getDomain().toLowerCase()))
-                .and().entriesListDoesNotContain("processId", processOnTenant2.getId());
-
-        RestTaskModelsCollection tenantTasks2 = restClient.authenticateUser(adminTenant2).withWorkflowAPI().getTasks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        tenantTasks2.assertThat().entriesListIsNotEmpty()
-                .and().entriesListCountIs(1)
-                .and().entriesListContains("assignee", String.format("userTenantAssignee2@%s", tenantUserAssignee2.getDomain().toLowerCase()))
-                .and().entriesListContains("processId", processOnTenant2.getId())
-                .and().entriesListDoesNotContain("assignee", String.format("userTenantAssignee1@%s", tenantUserAssignee1.getDomain().toLowerCase()))
-                .and().entriesListDoesNotContain("processId", processOnTenant1.getId());
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
             TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Verify the request in case of any user which is not involved.")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
@@ -268,27 +230,5 @@ public class GetTasksTests extends RestTest
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withParams("orderBy=invalidParameter").withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("invalidParameter is not supported");
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,
-            TestGroup.TASKS }, executionType = ExecutionType.REGRESSION, description = "Check that for network enabled only that network tasks are returned.")
-    @Test(groups = {  TestGroup.REST_API, TestGroup.NETWORKS,  TestGroup.REGRESSION })
-    public void networkEnabledTasksReturned() throws Exception
-    {
-        restClient.authenticateUser(adminUser);
-
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser);
-
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("userTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("userTenantAssignee");
-
-        restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-
-        tenantTask = restClient.authenticateUser(tenantUserAssignee).withWorkflowAPI().getTasks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        tenantTask.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee",
-                String.format("userTenantAssignee@%s", tenantUserAssignee.getDomain().toLowerCase()));
-
     }
 }

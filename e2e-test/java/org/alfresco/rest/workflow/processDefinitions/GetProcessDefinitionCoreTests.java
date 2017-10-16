@@ -16,8 +16,8 @@ import org.testng.annotations.Test;
  */
 public class GetProcessDefinitionCoreTests extends RestTest
 {
-    private UserModel adminUser, adminTenantUser;
-    private RestProcessDefinitionModel randomProcessDefinition, returnedProcessDefinition;
+    private UserModel adminUser;
+    private RestProcessDefinitionModel randomProcessDefinition;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -41,38 +41,5 @@ public class GetProcessDefinitionCoreTests extends RestTest
                 .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify network admin is able to get a process definition using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void networkAdminGetProcessDefinition() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser)
-                .usingTenant().createTenant(adminTenantUser);
-        randomProcessDefinition = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
-        returnedProcessDefinition = restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinition();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedProcessDefinition.assertThat().field("name").is(randomProcessDefinition.getName());
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify network user is able to get a process definition using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void networkUserGetProcessDefinition() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser)
-                .usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        randomProcessDefinition = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry().onModel();
-        returnedProcessDefinition = restClient.authenticateUser(tenantUser).withWorkflowAPI()
-                .usingProcessDefinitions(randomProcessDefinition).getProcessDefinition();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedProcessDefinition.assertThat().field("name").is(randomProcessDefinition.getName());
     }
 }

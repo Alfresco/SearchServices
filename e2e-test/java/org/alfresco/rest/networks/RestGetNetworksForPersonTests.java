@@ -1,10 +1,8 @@
 package org.alfresco.rest.networks;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.rest.NetworkDataPrep;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestNetworkModelsCollection;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -14,24 +12,14 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class RestGetNetworksForPersonTests extends RestTest
+public class RestGetNetworksForPersonTests extends NetworkDataPrep
 {
-    private UserModel adminUserModel, secondAdminTenantUser;
-    private UserModel adminTenantUser;
-    private UserModel tenantUser;
-
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel);
-        restClient.usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        secondAdminTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(secondAdminTenantUser);
+        init();
     }
-    
+
     @Bug(id = "MNT-16904")
     @TestRail(section = { TestGroup.REST_API,TestGroup.NETWORKS }, executionType = ExecutionType.SANITY,
             description = "Verify non existing user gets another exisiting network with Rest API and checks the unauthorized status")

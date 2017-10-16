@@ -1,14 +1,9 @@
 package org.alfresco.rest.workflow.tasks.items;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.rest.model.RestItemModelsCollection;
-import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TaskModel;
@@ -22,7 +17,7 @@ import org.testng.annotations.Test;
 
 public class AddTaskItemTestsBulk3 extends RestTest
 {
-    private UserModel userModel, adminUser,userWhoStartsTask, assigneeUser;
+    private UserModel userModel,userWhoStartsTask, assigneeUser;
     private SiteModel siteModel; 
     private FileModel fileModel, fileModel1, document1, document2,document3;
     private TaskModel taskModel;
@@ -32,7 +27,6 @@ public class AddTaskItemTestsBulk3 extends RestTest
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
-        adminUser = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
@@ -89,63 +83,7 @@ public class AddTaskItemTestsBulk3 extends RestTest
                  .assertThat().field("id").is(taskItems.getEntries().get(1).onModel().getId())
                  .assertThat().field("mimeType").is(taskItems.getEntries().get(1).onModel().getMimeType());    
      }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Add task item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addTaskItemByAdminInOtherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
 
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant");
-        UserModel tenantUserAssignee1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenantAssignee");
-
-        siteModel = dataSite.usingUser(adminTenantUser1).createPublicRandomSite();
-        fileModel = dataContent.usingUser(adminTenantUser1).usingSite(siteModel).createContent(DocumentType.XML);
-        RestProcessModel addedProcess = restClient.authenticateUser(tenantUser1).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee1, false, Priority.Normal);
-        RestTaskModel addedTask = restClient.withWorkflowAPI().getTasks().getTaskModelByProcess(addedProcess);                   
-        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingTask(addedTask).addTaskItem(fileModel);
-                         
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
-                  .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);        
-    }
-    
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Add multiple task item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addMultipleTaskItemByAdminInOtherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant");
-        UserModel tenantUserAssignee1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenantAssignee");
-
-        siteModel = dataSite.usingUser(adminTenantUser1).createPublicRandomSite();
-        document1 = dataContent.usingUser(adminTenantUser1).usingSite(siteModel).createContent(DocumentType.XML);
-        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-       
-        RestProcessModel addedProcess = restClient.authenticateUser(tenantUser1).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee1, false, Priority.Normal);
-        RestTaskModel addedTask = restClient.withWorkflowAPI().getTasks().getTaskModelByProcess(addedProcess);                   
-        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingTask(addedTask).addTaskItems(document1, document2);
-                               
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
-                  .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);;
-    }
-    
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete task item then create it again")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})

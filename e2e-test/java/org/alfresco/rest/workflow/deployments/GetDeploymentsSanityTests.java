@@ -16,14 +16,13 @@ import org.testng.annotations.Test;
  */
 public class GetDeploymentsSanityTests extends RestTest
 {
-    private UserModel adminUserModel, adminTenantUser;
+    private UserModel adminUserModel;
     private RestDeploymentModelsCollection deployments;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
-        adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUserModel);
     }
 
@@ -42,14 +41,4 @@ public class GetDeploymentsSanityTests extends RestTest
                 .field("name").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
-        description = "Verify Tenant Admin user gets network deployments using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY, TestGroup.NETWORKS})
-    public void getNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
-    {
-        restClient.usingTenant().createTenant(adminTenantUser);
-        deployments = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getDeployments();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        deployments.assertThat().entriesListIsNotEmpty();
-    }
 }

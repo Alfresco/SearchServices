@@ -249,47 +249,4 @@ public class GetTaskVariablesTests extends RestTest
             .field("scope").isNull().and()
             .field("name").isNull();
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that admin from the same network is able to retrieve network task variables")
-    public void getTaskVariablesByTenantAdmin() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser1);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
-        RestTaskModel task = restClient.authenticateUser(adminTenantUser1)
-                        .withWorkflowAPI().usingProcess(networkProcess1).getProcessTasks().getOneRandomEntry();
-        
-        variableModels = restClient.withWorkflowAPI().usingTask(task.onModel()).getTaskVariables();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        variableModels.assertThat().entriesListIsNotEmpty();
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that admin from another network is not able to retrieve network task variables")
-    public void getTaskVariablesByTenantFromAnotherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2= UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser1);
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser2);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
-        RestTaskModel task = restClient.authenticateUser(adminTenantUser1)
-                        .withWorkflowAPI().usingProcess(networkProcess1).getProcessTasks().getOneRandomEntry();
-        
-        variableModels = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingTask(task.onModel()).getTaskVariables();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-            .stackTraceIs(RestErrorModel.STACKTRACE)
-            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
-    }
 }

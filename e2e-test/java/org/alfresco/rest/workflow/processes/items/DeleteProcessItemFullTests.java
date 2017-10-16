@@ -1,6 +1,5 @@
 package org.alfresco.rest.workflow.processes.items;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
@@ -23,7 +22,7 @@ public class DeleteProcessItemFullTests extends RestTest
 {
     private FileModel document, document2;
     private SiteModel siteModel;
-    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser, adminTenantUser, tenantUser, tenantUserAssignee, adminTenantUser2;
+    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser;
     private ProcessModel processModel;
     private RestItemModelsCollection items;
     private RestItemModel processItem;
@@ -213,57 +212,4 @@ public class DeleteProcessItemFullTests extends RestTest
         restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)
                   .deleteProcessItem(items.getOneRandomEntry());
     }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-              description = "Delete process item using by the admin in same network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void deleteProcessItemByAdminSameNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, CMISUtil.Priority.Normal);
-
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel)
-                  .deleteProcessItem(processItem);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                  .assertThat().entriesListDoesNotContain("name", processItem.getName());
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-              description = "Delete process item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void deleteProcessItemByAdminInOtherNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-
-        adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser2);
-        
-        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, CMISUtil.Priority.Normal);
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)
-                  .deleteProcessItem(processItem);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError()
-                  .containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .containsErrorKey(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
 }

@@ -4,7 +4,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -55,26 +54,4 @@ public class GetDeploymentFullTests extends RestTest
                 .field("deployedAt").isNull().and()
                 .field("name").is(expectedDeployment.getName());
     }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify that network admin user is not able to get a deployment from other network using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void adminDoesNotGetDeploymentFromOtherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        expectedDeployment = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();
-        actualDeployment = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingDeployment(expectedDeployment).getDeployment();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError()
-                    .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, expectedDeployment.getId()))
-                    .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
 }

@@ -1,7 +1,6 @@
 package org.alfresco.rest.workflow.processes.items;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestItemModelsCollection;
 import org.alfresco.rest.model.RestProcessModel;
@@ -22,7 +21,7 @@ public class GetProcessItemsSanityTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsTask, assignee, adminTenantUser, tenantUser, tenantUserAssignee;
+    private UserModel userWhoStartsTask, assignee;
     private RestProcessModel processModel;
     private RestItemModelsCollection items;
 
@@ -56,27 +55,5 @@ public class GetProcessItemsSanityTests extends RestTest
         items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         items.assertThat().entriesListIsNotEmpty();
-    }
-
-    @TestRail(section = {TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
-            description = "Get process items using admin from same network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
-    public void getProcessItemsUsingAdminUserFromSameNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
-
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        items = restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        items.assertThat().entriesListContains("name", document.getName());
     }
 }

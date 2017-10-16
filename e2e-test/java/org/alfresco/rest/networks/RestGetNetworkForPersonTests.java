@@ -1,8 +1,9 @@
 package org.alfresco.rest.networks;
 
-import org.alfresco.rest.RestTest;
+import java.util.ArrayList;
+
+import org.alfresco.rest.NetworkDataPrep;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestNetworkModel;
 import org.alfresco.rest.model.RestNetworkQuotaModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -13,28 +14,16 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-
 /**
  * Tests for /people/{personId}/networks
  */
-public class RestGetNetworkForPersonTests extends RestTest
+public class RestGetNetworkForPersonTests extends NetworkDataPrep
 {
-    UserModel adminUserModel, secondAdminTenantUser;
-    UserModel adminTenantUser;
-    UserModel tenantUser;
-    RestNetworkModel restNetworkModel;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel);
-        restClient.usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        secondAdminTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(secondAdminTenantUser);
+        init();
     }
 
     @Bug(id = "MNT-16904")

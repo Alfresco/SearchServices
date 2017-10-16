@@ -25,7 +25,7 @@ public class AddProcessVariablesFullTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsProcess, assignee, adminUser, adminTenantUser, adminTenantUser2, tenantUser, tenantUserAssignee;
+    private UserModel userWhoStartsProcess, assignee, adminUser;
     private ProcessModel processModel;
     private RestProcessModel restProcessModel;
     private RestProcessVariableModel variableModel, processVariable, variableModel1, variableModel2, variableModel3;
@@ -391,66 +391,5 @@ public class AddProcessVariablesFullTests extends RestTest
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }        
-
-    @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION, 
-            description = "Add process variables using by Admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addProcessVariablesByAdminInOtherNetwork() throws Exception
-    { 
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
-        adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser2);
-        
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document)
-                    .createNewTaskAndAssignTo(tenantUserAssignee);
-
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-        processVariable = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)
-                .addProcessVariable(variableModel);
-
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError()
-                  .containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .containsErrorKey(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,TestGroup.PROCESSES}, executionType = ExecutionType.REGRESSION, 
-            description = "Add multiple process variables using by Admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addMultipleProcessVariablesByAdminInOtherNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
-        adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        dataWorkflow.usingUser(tenantUser).usingSite(siteModel).usingResource(document)
-                    .createNewTaskAndAssignTo(tenantUserAssignee);
-
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingProcess(processModel)
-                  .addProcessVariables(variableModel, variableModel1);
-
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError()
-                  .containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .containsErrorKey(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
 
 }

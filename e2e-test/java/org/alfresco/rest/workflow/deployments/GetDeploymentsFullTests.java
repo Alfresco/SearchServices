@@ -143,21 +143,4 @@ public class GetDeploymentsFullTests extends RestTest
                 .field("name").isNull();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify that network admin user is not able to get a deployment from other network using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void adminDoesNotGetDeploymentsFromOtherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser1);
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        RestDeploymentModel deployment = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();
-        deployments = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().getDeployments();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        deployments.assertThat().entriesListDoesNotContain("id", deployment.getId());
-    }
-
 }

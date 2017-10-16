@@ -432,23 +432,6 @@ public class AddFavoritesTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify the post favorites request when network id is invalid for tenant user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void addFavoriteSitesWhenNetworkIdIsInvalid() throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel);
-        restClient.usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
-        tenantUser.setDomain("invalidNetwork");
-        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-                .assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify the response of favorite a sie with empty body at request")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })

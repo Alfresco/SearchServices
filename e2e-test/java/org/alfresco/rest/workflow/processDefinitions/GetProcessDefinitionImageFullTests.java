@@ -1,7 +1,6 @@
 package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -39,24 +38,5 @@ public class GetProcessDefinitionImageFullTests extends RestTest
         restClient.withWorkflowAPI()
                 .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify Tenant User doesn't get process definition image for another network deployment using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void networkUserIsNotAbleToGetProcessDefinitionImageForAnotherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        RestProcessDefinitionModel randomProcessDefinition = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry().onModel();
-        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI()
-                .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, randomProcessDefinition.getId()));
     }
 }

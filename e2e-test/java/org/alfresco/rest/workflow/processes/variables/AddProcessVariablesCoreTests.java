@@ -4,7 +4,6 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.model.RestProcessVariableCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -23,7 +22,7 @@ public class AddProcessVariablesCoreTests extends RestTest
     private UserModel userWhoStartsProcess, assignee;
     private RestProcessModel processModel;
     private RestProcessVariableModel variableModel, processVariable, variableModel1;
-    private RestProcessVariableCollection processVariableCollection;
+
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception

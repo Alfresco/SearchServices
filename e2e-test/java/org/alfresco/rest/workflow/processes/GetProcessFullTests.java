@@ -29,28 +29,6 @@ public class GetProcessFullTests extends RestTest
         addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify that admin user can get process started by a network user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void adminUserCanGetProcessFromANetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser1);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("utenant1");
-        
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI().addProcess("activitiReview", adminTenantUser1, false, CMISUtil.Priority.High);       
-
-        restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().usingProcess(networkProcess1).getProcess();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        networkProcess1.assertThat().field("processDefinitionId").contains(String.format("@%s%s", tenantUser1.getDomain().toLowerCase(), "@activitiReview:1"))
-            .and().field("startUserId").is(tenantUser1.getEmailAddress().toLowerCase())
-            .and().field("startActivityId").is("start")
-            .and().field("startedAt").isNotEmpty()
-            .and().field("id").is(networkProcess1.getId())
-            .and().field("completed").is(false)
-            .and().field("processDefinitionKey").is("activitiReview");
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Verify user is able to get the process with properties parameter applied using REST API")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

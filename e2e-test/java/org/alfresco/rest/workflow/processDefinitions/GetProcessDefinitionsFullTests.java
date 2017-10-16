@@ -171,23 +171,4 @@ public class GetProcessDefinitionsFullTests extends RestTest
                     .assertThat().entriesListContains("key", "activitiParallelGroupReview");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify Tenant User doesn't get process definitions for another network deployment using REST API")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void networkUserIsNotAbleToGetProcessDefinitionsForAnotherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser1);
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        RestProcessDefinitionModel randomProcessDefinitionTenant1 = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry().onModel();
-        RestProcessDefinitionModelsCollection processDefinitionsTenant2 = restClient.authenticateUser(adminTenantUser2).withWorkflowAPI()
-                .getAllProcessDefinitions();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        processDefinitionsTenant2.assertThat().entriesListDoesNotContain("id", randomProcessDefinitionTenant1.getId());
-    }
-
 }

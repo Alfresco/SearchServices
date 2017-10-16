@@ -3,10 +3,19 @@ package org.alfresco.rest.favorites;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.*;
+import org.alfresco.rest.model.RestCommentModel;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestFavoriteSiteModel;
+import org.alfresco.rest.model.RestPersonFavoritesModel;
+import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
+import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.LinkModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
@@ -17,7 +26,7 @@ import org.testng.annotations.Test;
 
 public class AddFavoriteSiteTests extends RestTest
 {
-    private UserModel userModel, adminUser, adminTenantUser, tenantUser;
+    private UserModel userModel, adminUser;
     private SiteModel publicSite, privateSite, moderatedSite;
     private FileModel document;
     private FolderModel folder;
@@ -474,71 +483,5 @@ public class AddFavoriteSiteTests extends RestTest
         restClient.authenticateUser(adminUser).withCoreAPI().usingAuthUser().addFavoriteSite(site);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, site.getId().split("/")[3]));
-    }
-
-    @Bug(id="MNT-16904")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS, TestGroup.REGRESSION})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION,
-            description = "Verify tenant user is not able to delete favorites using an invalid network ID - status code (401)")
-    public void tenantIsNotAbleToDeleteFavoriteSiteWithInvalidNetworkID() throws  Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        publicSite = dataSite.usingUser(tenantUser).createPublicRandomSite();
-
-        restClient.authenticateUser(tenantUser).withCoreAPI();
-        tenantUser.setDomain("invalidNetwork");
-
-        restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(publicSite);
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-                .assertLastError()
-                .containsSummary(RestErrorModel.AUTHENTICATION_FAILED)
-                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS, TestGroup.REGRESSION})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
-            description = "Verify tenant user is able to add to favorites his site and status code is (201)")
-    public void tenantAddFavoriteSiteValidNetwork() throws  Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        publicSite = dataSite.usingUser(tenantUser).createPublicRandomSite();
-
-        restClient.authenticateUser(tenantUser).withCoreAPI();
-        tenantUser.setDomain(tenantUser.getDomain());
-
-        restClient.withCoreAPI()
-                .usingAuthUser().addSiteToFavorites(publicSite);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        restClient.withCoreAPI().usingAuthUser().getFavorites()
-                .assertThat()
-                .entriesListContains("targetGuid", publicSite.getGuidWithoutVersion());
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS, TestGroup.REGRESSION})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
-            description = "Verify tenant user is able to add to favorites a site created by admin tenant - same network and status code is (201)")
-    public void tenantUserIsAbleToAddFavoriteSiteAddedByAdminSameNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        publicSite = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-
-        restClient.authenticateUser(tenantUser).withCoreAPI();
-        tenantUser.setDomain(adminTenantUser.getDomain());
-
-        restClient.withCoreAPI().usingAuthUser().addFavoriteSite(publicSite);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        restClient.withCoreAPI().usingAuthUser().getFavorites()
-                .assertThat()
-                .entriesListContains("targetGuid", publicSite.getGuidWithoutVersion());
     }
 }

@@ -1,10 +1,8 @@
 package org.alfresco.rest.networks;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.rest.NetworkDataPrep;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestNetworkModel;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -20,24 +18,12 @@ import org.testng.annotations.Test;
 /**
  * Created by Cristina Axinte on 9/26/2016.
  */
-public class RestGetNetworkTests extends RestTest
+public class RestGetNetworkTests extends NetworkDataPrep
 {
-    UserModel adminTenantUser;
-    UserModel adminAnotherTenantUser;
-    UserModel tenantUser;
-    UserModel adminuser;
-
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminuser = dataUser.getAdminUser();
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminuser);
-        restClient.usingTenant().createTenant(adminTenantUser);
-        adminAnotherTenantUser = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminAnotherTenantUser);
-
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
+        init();
     }
 
     @Bug(id = "MNT-16904")
@@ -69,7 +55,7 @@ public class RestGetNetworkTests extends RestTest
     public void adminTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
     {
         restClient.authenticateUser(adminTenantUser);
-        restClient.withCoreAPI().usingNetworks().getNetwork(adminAnotherTenantUser);
+        restClient.withCoreAPI().usingNetworks().getNetwork(secondAdminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
@@ -99,7 +85,7 @@ public class RestGetNetworkTests extends RestTest
     public void userTenantChecksIfAnotherExistingNetworkIsForbidden() throws Exception
     {
         restClient.authenticateUser(tenantUser);
-        restClient.withCoreAPI().usingNetworks().getNetwork(adminAnotherTenantUser);
+        restClient.withCoreAPI().usingNetworks().getNetwork(secondAdminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
@@ -109,10 +95,10 @@ public class RestGetNetworkTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
     public void adminTenantGetsInvalidNetwork() throws Exception
     {
-        restClient.authenticateUser(adminAnotherTenantUser);
-        adminAnotherTenantUser.setDomain("tenant.@%");
+        restClient.authenticateUser(secondAdminTenantUser);
+        secondAdminTenantUser.setDomain("tenant.@%");
 
-        restClient.withCoreAPI().usingNetworks().getNetwork(adminAnotherTenantUser);
+        restClient.withCoreAPI().usingNetworks().getNetwork(secondAdminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                 .containsSummary(String.format(RestErrorModel.UNEXPECTED_TENANT, adminTenantUser.getDomain(), "@"))
@@ -126,7 +112,7 @@ public class RestGetNetworkTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.NETWORKS, TestGroup.REGRESSION })
     public void adminUserGetsExistingNetwork() throws Exception
     {
-        RestNetworkModel restNetworkModel = restClient.authenticateUser(adminuser).withCoreAPI().usingNetworks().getNetwork(adminTenantUser);
+        RestNetworkModel restNetworkModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingNetworks().getNetwork(adminTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restNetworkModel.assertThat().fieldsCount().is("1");
         restNetworkModel.assertThat().field("id").is(adminTenantUser.getDomain())

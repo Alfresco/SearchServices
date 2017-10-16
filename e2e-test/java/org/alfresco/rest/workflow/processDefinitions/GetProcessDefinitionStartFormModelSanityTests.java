@@ -15,14 +15,13 @@ import org.testng.annotations.Test;
  */
 public class GetProcessDefinitionStartFormModelSanityTests extends RestTest
 {
-    private UserModel adminUserModel, adminTenantUser;
+    private UserModel adminUserModel;
     private RestProcessDefinitionModel randomProcessDefinition;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
-        adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUserModel);
     }
 
@@ -32,19 +31,6 @@ public class GetProcessDefinitionStartFormModelSanityTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY })
     public void nonNetworkAdminGetsStartFormModel() throws Exception
     {
-        randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.SANITY,
-            description = "Verify Tenant Admin gets a model of the start form type definition for network deployments using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY, TestGroup.NETWORKS })
-    public void networkAdminGetsStartFormModel() throws Exception
-    {
-        restClient.usingTenant().createTenant(adminTenantUser);
-        restClient.authenticateUser(adminTenantUser);
         randomProcessDefinition = restClient.withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
         restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionStartFormModel().assertThat().entriesListIsNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);

@@ -15,13 +15,12 @@ import org.testng.annotations.Test;
  */
 public class GetProcessDefinitionsSanityTests extends RestTest
 {
-    private UserModel adminUserModel, adminTenantUser;
+    private UserModel adminUserModel;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
-        adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUserModel);
     }
 
@@ -45,16 +44,5 @@ public class GetProcessDefinitionsSanityTests extends RestTest
                 .field("version").is("1").and()
                 .field("graphicNotationDefined").is("true").and()
                 .field("key").is("activitiAdhoc");
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.SANITY, description = "Verify Tenant Admin user gets process definitions for network deployments using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.SANITY, TestGroup.NETWORKS})
-    public void networkAdminGetsProcessDefinitions() throws Exception
-    {
-        restClient.usingTenant().createTenant(adminTenantUser);
-        restClient.authenticateUser(adminTenantUser);
-        restClient.withWorkflowAPI().getAllProcessDefinitions().assertThat().entriesListIsNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

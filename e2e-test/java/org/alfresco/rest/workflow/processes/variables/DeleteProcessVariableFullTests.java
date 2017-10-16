@@ -21,15 +21,13 @@ public class DeleteProcessVariableFullTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsTask, assignee, adminUser;
+    private UserModel userWhoStartsTask, assignee;
     private RestProcessModel restProcessModel;
     private ProcessModel processModel;
-    private RestProcessVariableModel variableModel, updatedVariable;
-
+    private RestProcessVariableModel variableModel;
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUser = dataUser.getAdminUser();
         userWhoStartsTask = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();      
         siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
@@ -195,59 +193,4 @@ public class DeleteProcessVariableFullTests extends RestTest
                   .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, 
-              description = "Verify that admin from the same network is able to delete network process variables")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void deleteProcessVariablesWithAdminFromSameNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel processModel = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .addProcess("activitiAdhoc", tenantUser1, false, Priority.Normal);
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
-                                                     .getProcesses().getProcessModelByProcessDefId(processModel.getId());       
-        restClient.withWorkflowAPI().usingProcess(networkProcess1).addProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().usingProcess(networkProcess1)
-                  .deleteProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withWorkflowAPI().usingProcess(networkProcess1).getProcessVariables()
-                  .assertThat()
-                  .entriesListDoesNotContain("name", variableModel.getName());
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES, TestGroup.NETWORKS }, executionType = ExecutionType.REGRESSION, 
-             description = "Verify that admin from different network is not able to delete network process variables")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void deleteProcessVariablesWithAdminFromDifferentNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel processModel = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                                                  .addProcess("activitiAdhoc", tenantUser1, false, Priority.Normal);
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
-                                                     .getProcesses().getProcessModelByProcessDefId(processModel.getId());
-        restClient.withWorkflowAPI().usingProcess(networkProcess1).addProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        restClient.authenticateUser(adminUser).withWorkflowAPI().usingProcess(networkProcess1)
-                  .deleteProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
-        restClient.assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .containsErrorKey(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
-
-        restClient.authenticateUser(tenantUser1).withWorkflowAPI().usingProcess(networkProcess1).getProcessVariables().assertThat()
-                  .entriesListContains("name", variableModel.getName());
-    }
-
 }

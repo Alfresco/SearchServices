@@ -1,12 +1,9 @@
 package org.alfresco.rest.workflow.tasks.variables;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestProcessModel;
-import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -246,36 +243,5 @@ public class UpdateTaskVariableTestsBulk3 extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedTaskVariable.assertThat().field("scope").is("global");
         updatedTaskVariable.assertThat().field("name").is("newName");        
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that admin from another network is not able to update task variables")
-    public void updateTaskVariablesByTenantFromAnotherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser1);
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser2);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
-        RestTaskModel task = restClient.authenticateUser(adminTenantUser1)
-                            .withWorkflowAPI().usingProcess(networkProcess1).getProcessTasks().getOneRandomEntry();
-        restClient.authenticateUser(adminTenantUser1);
-        RestVariableModel variableModel = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        taskVariable = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().usingTask(task.onModel())
-                                 .addTaskVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI().usingTask(task.onModel())
-                 .updateTaskVariable(taskVariable);
-                        
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
-                              .containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-                              .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                              .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

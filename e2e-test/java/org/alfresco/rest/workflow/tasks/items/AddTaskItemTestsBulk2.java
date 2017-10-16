@@ -3,7 +3,6 @@ package org.alfresco.rest.workflow.tasks.items;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestVariableModel;
 import org.alfresco.utility.model.FileModel;

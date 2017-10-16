@@ -1,6 +1,5 @@
 package org.alfresco.rest.workflow.processes.variables;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
@@ -27,6 +26,7 @@ public class GetProcessVariablesCoreTests extends RestTest
     private RestProcessModel processModel;
     private RestProcessVariableCollection variables;
 
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -36,39 +36,6 @@ public class GetProcessVariablesCoreTests extends RestTest
         siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
         document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
-    }
-
-    @TestRail(section = {TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that admin from the same network is able to retrieve network process variables")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getProcessVariablesWithAdminFromSameNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(admin).usingTenant().createTenant(adminTenantUser1);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel networkProcess1 = restClient.authenticateUser(tenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
-
-        variables = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI().usingProcess(networkProcess1).getProcessVariables();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        variables.assertThat().entriesListIsNotEmpty();
-    }
-
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that admin from different network is not able to retrieve network process variables")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getProcessVariablesWithAdminFromDifferentNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(admin).usingTenant().createTenant(adminTenantUser1);
-        UserModel tenantUser1 = dataUser.usingUser(adminTenantUser1).createUserWithTenant("uTenant1");
-
-        RestProcessModel networkProcess1 = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser1, false, CMISUtil.Priority.High);
-
-        variables = restClient.authenticateUser(admin).withWorkflowAPI().usingProcess(networkProcess1).getProcessVariables();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,

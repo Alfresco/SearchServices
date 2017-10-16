@@ -5,7 +5,6 @@ import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -17,7 +16,7 @@ import org.testng.annotations.Test;
  */
 public class GetProcessDefinitionImageCoreTests extends RestTest
 {
-    private UserModel adminUser, adminTenantUser;
+    private UserModel adminUser;
     private RestProcessDefinitionModel randomProcessDefinition;
 
     @BeforeClass(alwaysRun = true)
@@ -43,41 +42,5 @@ public class GetProcessDefinitionImageCoreTests extends RestTest
                 .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify network admin is able to get a process definition image using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    @Bug(id = "MNT-17243")
-    public void networkAdminGetProcessDefinitionImage() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser)
-                .usingTenant().createTenant(adminTenantUser);
-
-        randomProcessDefinition = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
-                .assertResponseContainsImage();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW,TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify network user is able to get a process definition image using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    @Bug(id = "MNT-17243")
-    public void networkUserGetProcessDefinitionImage() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser)
-                .usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        randomProcessDefinition = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry().onModel();
-        restClient.authenticateUser(tenantUser).withWorkflowAPI()
-                .usingProcessDefinitions(randomProcessDefinition).getProcessDefinitionImage()
-                .assertResponseContainsImage();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }

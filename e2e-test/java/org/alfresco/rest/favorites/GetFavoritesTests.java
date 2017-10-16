@@ -2,7 +2,6 @@ package org.alfresco.rest.favorites;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModel;
 import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
@@ -14,7 +13,6 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -525,24 +523,6 @@ public class GetFavoritesTests extends RestTest
 
         restClient.authenticateUser(userModel).withParams("maxItems= ").withCoreAPI().usingUser(userModel).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, " "));
-    }
-
-    @Bug(id = "MNT-16904")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify the get favorites request when network id is invalid for tenant user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void getFavoriteSitesWhenNetworkIdIsInvalid() throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUserModel);
-        restClient.usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
-
-        tenantUser.setDomain("invalidNetwork");
-        restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().getFavorites();
-        restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED)
-                .assertLastError().containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,

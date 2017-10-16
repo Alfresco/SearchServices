@@ -23,7 +23,7 @@ public class AddProcessVariableCoreTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser, adminTenantUser, adminTenantUser2, tenantUserAssignee;
+    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser;
     private RestProcessModel processModel;
     private RestProcessVariableModel variableModel, processVariable;
 
@@ -183,28 +183,6 @@ public class AddProcessVariableCoreTests extends RestTest
                   .containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT)
                   .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                   .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Add process variable using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addProcessVariableByAdminInOtherNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-
-        adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-
-        restClient.authenticateUser(adminTenantUser2);
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError()
-                  .containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
     }
 
 }

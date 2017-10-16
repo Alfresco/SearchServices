@@ -1,7 +1,6 @@
 package org.alfresco.rest.workflow.processes.items;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -25,7 +24,7 @@ public class AddProcessItemCoreTests extends RestTest
 {
     private FileModel document, document2;
     private SiteModel siteModel;
-    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser, adminTenantUser, tenantUserAssignee, adminTenantUser2, tenantUser;
+    private UserModel userWhoStartsProcess, assignee, adminUser, anotherUser;
     private RestProcessModel processModel;
     private RestItemModel processItem;
     private RestItemModelsCollection processItems;
@@ -114,103 +113,6 @@ public class AddProcessItemCoreTests extends RestTest
 
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError()
                 .containsSummary(String.format(RestErrorModel.ACCESS_INFORMATION_NOT_ALLOWED, processModel.getId()));
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Add process item using by the admin in same network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addProcessItemByAdminSameNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        processItem = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
-
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processItem.assertThat().field("createdAt").isNotEmpty().and().field("size").is("19").and().field("createdBy").is(adminTenantUser.getUsername().toLowerCase()).and()
-                .field("modifiedAt").isNotEmpty().and().field("name").is(document.getName()).and().field("modifiedBy").is(adminTenantUser.getUsername().toLowerCase()).and()
-                .field("id").isNotEmpty().and().field("mimeType").is(document.getFileType().mimeType);
-    }
-    
-    @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Add multiple process items using by the admin in same network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addMultipleProcessItemsByAdminSameNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        document2 = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        processItems = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel).addProcessItems(document, document2);
-
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processItems.getEntries().get(0).onModel().assertThat()
-                    .field("createdAt").isNotEmpty().and()
-                    .field("size").is("19").and()    
-                    .field("createdBy").is(adminTenantUser.getUsername().toLowerCase()).and()
-                    .field("modifiedAt").isNotEmpty().and()
-                    .field("name").is(document.getName()).and()
-                    .field("modifiedBy").is(adminTenantUser.getUsername().toLowerCase()).and()
-                    .field("id").isNotEmpty().and()
-                    .field("mimeType").is(document.getFileType().mimeType);
-        processItems.getEntries().get(1).onModel().assertThat()
-                    .field("createdAt").isNotEmpty().and()
-                    .field("size").is("19").and()    
-                    .field("createdBy").is(adminTenantUser.getUsername().toLowerCase()).and()
-                    .field("modifiedAt").isNotEmpty().and()
-                    .field("name").is(document2.getName()).and()
-                    .field("modifiedBy").is(adminTenantUser.getUsername().toLowerCase()).and()
-                    .field("id").isNotEmpty().and()
-                    .field("mimeType").is(document2.getFileType().mimeType);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Add process item using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addProcessItemByAdminInOtherNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-
-        adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-        restClient.authenticateUser(adminTenantUser2);
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
-    }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Add multiple process items using by admin in other network.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void addMultipleProcessItemsByAdminInOtherNetwork() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-
-        adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-        restClient.authenticateUser(adminTenantUser2);
-        
-        processItems = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItems(document, document2);
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-                  .assertLastError()
-                  .containsSummary(RestErrorModel.PROCESS_RUNNING_IN_ANOTHER_TENANT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 

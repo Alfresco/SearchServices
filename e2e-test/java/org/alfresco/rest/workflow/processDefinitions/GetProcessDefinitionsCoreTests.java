@@ -12,31 +12,12 @@ import org.testng.annotations.Test;
 
 public class GetProcessDefinitionsCoreTests extends RestTest
 {
-    private UserModel adminUserModel;
     private UserModel userModel;
-    private UserModel adminTenantUser;
-    private UserModel tenantUser;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
-        adminTenantUser = UserModel.getAdminTenantUser();
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,
-            description = "Verify get process definitions using any network user for network enabled deployments with REST API status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void networkUserGetsProcessDefinitions() throws Exception
-    {
-        restClient.authenticateUser(adminUserModel).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        restClient.authenticateUser(tenantUser)
-                .withWorkflowAPI()
-                .getAllProcessDefinitions()
-                .assertThat().entriesListIsNotEmpty();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION }, executionType = ExecutionType.REGRESSION,

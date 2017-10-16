@@ -2,7 +2,6 @@ package org.alfresco.rest.sites.membershipRequests;
 
 import org.alfresco.dataprep.SiteService;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteEntry;
 import org.alfresco.rest.model.RestSiteMembershipRequestModel;
@@ -387,36 +386,6 @@ public class AddSiteMembershipRequestTests extends RestTest
         siteMembershipRequests = restClient.withCoreAPI().usingAuthUser().getSiteMembershipRequests();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         siteMembershipRequests.assertThat().entriesListContains("id", anotherModeratedSite.getId());
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
-            description = "Verify create site membership request returns status code 404 when personId is not member of the domain.")
-    public void addSiteMembershipRequestWhenPersonIdIsNotInTheDomain() throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser)
-                .usingTenant().createTenant(adminTenantUser);
-        restClient.authenticateUser(adminTenantUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(publicSite);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, adminTenantUser.getUsername().toLowerCase(), publicSite.getId()));
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
-            description = "Verify create site membership request returns status code 200 with tenant.")
-    public void addSiteMembershipRequestWithTenant() throws Exception
-    {
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser)
-                .usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-
-        SiteModel tenantPublicSite = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
-        siteMembershipRequest = restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(tenantPublicSite);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        siteMembershipRequest.assertThat().field("id").is(tenantPublicSite.getId())
-                .assertThat().field("site").isNotEmpty();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })

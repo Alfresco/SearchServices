@@ -253,27 +253,4 @@ public class GetTaskFormModelTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                 .containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "A"));
     }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS },
-            executionType = ExecutionType.REGRESSION, description = "Verify network admin user gets all task form models inside his network with Rest API and response is successful (200)")
-    public void networkAdminGetsTaskFormModels() throws Exception
-    {
-        taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
-        UserModel adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant1");
-
-        RestProcessModel networkProcess = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
-                .addProcess("activitiReview", tenantUser, false, CMISUtil.Priority.High);
-        RestTaskModel networkTask = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
-                .usingProcess(networkProcess).getProcessTasks().getOneRandomEntry().onModel();
-
-        restClient.authenticateUser(adminUser).withWorkflowAPI().usingTask(networkTask).getTaskFormModel();
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
-
-        returnedCollection = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingTask(networkTask).getTaskFormModel();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListIsNotEmpty();
-    }
 }

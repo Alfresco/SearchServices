@@ -2,7 +2,6 @@ package org.alfresco.rest.workflow.processDefinitions;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestProcessDefinitionModelsCollection;
 import org.alfresco.utility.model.TestGroup;
@@ -64,27 +63,5 @@ public class GetProcessDefinitionFullTests extends RestTest
                 .field("graphicNotationDefined").is(randomProcessDefinition.getGraphicNotationDefined()).and()
                 .field("key").isNull().and()
                 .field("name").is(randomProcessDefinition.getName());
-    }
-
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
-            executionType = ExecutionType.REGRESSION,
-            description = "Verify Network user is not able to get a process definition from another network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.NETWORKS, TestGroup.REGRESSION })
-    public void getProcessDefinitionFromAnotherNetwork() throws Exception
-    {
-        UserModel adminTenantUser1 = UserModel.getAdminTenantUser();
-        UserModel adminTenantUser2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser1);
-        restClient.usingTenant().createTenant(adminTenantUser2);
-
-        randomProcessDefinition = restClient.authenticateUser(adminTenantUser1).withWorkflowAPI()
-                .getAllProcessDefinitions().getOneRandomEntry().onModel();
-        restClient.authenticateUser(adminTenantUser2).withWorkflowAPI()
-                .usingProcessDefinitions(randomProcessDefinition).getProcessDefinition();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, randomProcessDefinition.getId()))
-                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

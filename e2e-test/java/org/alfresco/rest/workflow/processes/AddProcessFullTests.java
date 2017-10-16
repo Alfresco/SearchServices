@@ -7,7 +7,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -33,50 +32,7 @@ public class AddProcessFullTests extends RestTest
     {
         assignee = dataUser.createRandomTestUser();
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify network user cannot start new process with processDefinitionKey from another network using REST API and status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void networkUserCannotStartNewProcessWithProcessDefinitionFromAnotherNetwork() throws JsonToModelConversionException, Exception
-    { 
-        UserModel adminTenant1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenant1);
-        RestProcessDefinitionModel firstProcessDefTenant1 = restClient.authenticateUser(adminTenant1).withWorkflowAPI().getAllProcessDefinitions().getEntries().get(0).onModel();
-        
-        UserModel adminTenant2 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenant2);
-        UserModel assigneeTenant2 = dataUser.usingUser(adminTenant2).createUserWithTenant("assigneeT2");
 
-        String processDefinitionKey = firstProcessDefTenant1.getId().substring(0,firstProcessDefTenant1.getId().indexOf(":"));
-        addedProcess = restClient.authenticateUser(adminTenant2).withWorkflowAPI().addProcess(processDefinitionKey, assigneeTenant2, false, Priority.Normal);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-            .containsErrorKey(String.format(RestErrorModel.NO_WORKFLOW_DEFINITION_FOUND, processDefinitionKey))
-            .containsSummary(String.format(RestErrorModel.NO_WORKFLOW_DEFINITION_FOUND, processDefinitionKey))
-            .stackTraceIs(RestErrorModel.STACKTRACE)
-            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
-    }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Verify network user can start new process with processDefinitionKey from same network using REST API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS})
-    public void networkUserCanStartNewProcessWithProcessDefinitionFromSameNetwork() throws JsonToModelConversionException, Exception
-    { 
-        UserModel adminTenant1 = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(dataUser.getAdminUser()).usingTenant().createTenant(adminTenant1);
-        RestProcessDefinitionModel firstProcessDefTenant1 = restClient.authenticateUser(adminTenant1).withWorkflowAPI().getAllProcessDefinitions().getEntries().get(0).onModel();
-        
-        UserModel processStarterTenant1 = dataUser.usingUser(adminTenant1).createUserWithTenant("startert1");
-        UserModel assigneeTenant1 = dataUser.usingUser(adminTenant1).createUserWithTenant("assigneet1");
-
-        
-        String processDefinitionKey = firstProcessDefTenant1.getKey();
-        addedProcess = restClient.authenticateUser(processStarterTenant1).withWorkflowAPI().addProcess(processDefinitionKey, assigneeTenant1, false, Priority.Normal);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        addedProcess.assertThat().field("processDefinitionId").is(firstProcessDefTenant1.getId())
-            .and().field("startUserId").is(processStarterTenant1.getEmailAddress().toLowerCase())
-            .and().field("processDefinitionKey").is(processDefinitionKey);
-    }
-    
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user cannot start new process with invalid processDefinitionKey using REST API and status code is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

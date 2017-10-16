@@ -3,7 +3,6 @@ package org.alfresco.rest.workflow.processes;
 import java.util.List;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestProcessModel;
@@ -29,7 +28,7 @@ public class GetProcessesCoreTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel adminUser, userWhoStartsTask, assignee, adminTenantUser;
+    private UserModel adminUser, userWhoStartsTask, assignee ;
     private TaskModel task1, task2;
     private ProcessModel process3;
 
@@ -44,23 +43,6 @@ public class GetProcessesCoreTests extends RestTest
         task1 = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);  
         task2 = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(adminUser);
         process3 = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createSingleReviewerTaskAndAssignTo(assignee);
-    }
-
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify admin gets all processes from same network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION, TestGroup.NETWORKS })
-    public void getProcessFromSameNetworkUsingAdmin() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        UserModel tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        UserModel tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-        RestProcessModel process = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-
-        RestProcessModelsCollection tenantProcesses = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        
-        tenantProcesses.assertThat().entriesListContains("id", process.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 

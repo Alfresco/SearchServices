@@ -1,7 +1,6 @@
 package org.alfresco.rest.workflow.processes.variables;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
@@ -24,7 +23,7 @@ public class AddProcessVariableSanityTests extends RestTest
 {
     private FileModel document;
     private SiteModel siteModel;
-    private UserModel userWhoStartsTask, assignee, adminUser, adminTenantUser, tenantUser, tenantUserAssignee;
+    private UserModel userWhoStartsTask, assignee, adminUser;
     private RestProcessModel processModel;
     private RestProcessVariableModel variableModel, processVariable;
 
@@ -75,27 +74,6 @@ public class AddProcessVariableSanityTests extends RestTest
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processVariable.assertThat().field("value").is(newValue);
-    }
-
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
-            description = "Add process variable using admin user from same network")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY, TestGroup.NETWORKS })
-    public void addProcessVariableByAdmin() throws Exception
-    {
-        adminTenantUser = UserModel.getAdminTenantUser();
-        restClient.authenticateUser(adminUser).usingTenant().createTenant(adminTenantUser);
-        tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
-        tenantUserAssignee = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenantAssignee");
-
-        restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", tenantUserAssignee, false, Priority.Normal);
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        
-        processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        processVariable.assertThat().field("name").is(variableModel.getName())
-                        .and().field("type").is(variableModel.getType())
-                        .and().field("value").is(variableModel.getValue());
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
