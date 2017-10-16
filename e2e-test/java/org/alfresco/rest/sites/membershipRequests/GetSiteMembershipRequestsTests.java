@@ -1,10 +1,7 @@
 package org.alfresco.rest.sites.membershipRequests;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestSiteMembershipRequestModel;
-import org.alfresco.rest.model.RestSiteMembershipRequestModelsCollection;
-import org.alfresco.rest.model.RestTaskModel;
+import org.alfresco.rest.model.*;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
@@ -126,12 +123,23 @@ public class GetSiteMembershipRequestsTests extends RestTest
         siteMembershipRequests.assertThat().entriesListContains("id", moderatedSite1.getId())
                 .assertThat().entriesListContains("message", "Please accept me")
                 .assertThat().entriesListCountIs(2);
-        siteMembershipRequests.getEntries().get(0).onModel().getSite()
-                .assertThat().field("visibility").is(moderatedSite1.getVisibility())
-                .assertThat().field("guid").is(moderatedSite1.getGuid())
-                .assertThat().field("description").is(moderatedSite1.getDescription())
-                .assertThat().field("id").is(moderatedSite1.getId())
-                .assertThat().field("title").is(moderatedSite1.getTitle());
+        RestSiteModel firstSite = siteMembershipRequests.getEntries().get(0).onModel().getSite();
+        if (firstSite.getId().equals(moderatedSite1.getId()))
+        {
+            firstSite.assertThat().field("visibility").is(moderatedSite1.getVisibility())
+                    .assertThat().field("guid").is(moderatedSite1.getGuid())
+                    .assertThat().field("description").is(moderatedSite1.getDescription())
+                    .assertThat().field("id").is(moderatedSite1.getId())
+                    .assertThat().field("title").is(moderatedSite1.getTitle());
+        }
+        else
+        {
+            firstSite.assertThat().field("visibility").is(moderatedSite2.getVisibility())
+                    .assertThat().field("guid").is(moderatedSite2.getGuid())
+                    .assertThat().field("description").is(moderatedSite2.getDescription())
+                    .assertThat().field("id").is(moderatedSite2.getId())
+                    .assertThat().field("title").is(moderatedSite2.getTitle());
+        }
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE },
