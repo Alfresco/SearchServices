@@ -41,15 +41,25 @@ public class GetTagsTests extends RestTest
         document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
+        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
+        int noTagsBefore = returnedCollection.getEntries().size();
         tagValue = RandomData.getRandomName("tag");
         tagValue2 = RandomData.getRandomName("tag");
         tagValue3 = RandomData.getRandomName("tag");
         restClient.withCoreAPI().usingResource(document).addTags(tagValue, tagValue2);
         restClient.withCoreAPI().usingResource(folder).addTags(tagValue3);
-        
-        Utility.waitToLoopTime(60);
+
+        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
+        int noTagsAfter = returnedCollection.getEntries().size();
+        int retry = 0;
+        while(noTagsAfter < noTagsBefore + 3 && retry < 60)
+        {
+            Utility.waitToLoopTime(1);
+            returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
+            noTagsAfter = returnedCollection.getEntries().size();
+            retry++;
+        }
     }
-    
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tags using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
@@ -98,19 +108,7 @@ public class GetTagsTests extends RestTest
             .and().entriesListContains("tag", tagValue.toLowerCase())
             .and().entriesListContains("tag", tagValue2.toLowerCase());    
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify Admin user gets tags using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void getTagsWithAdminUser() throws Exception
-    {
-        restClient.authenticateUser(adminUserModel);
-        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());    
-    }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 //    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
@@ -153,7 +151,8 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListContains("tag", tagValue.toLowerCase());
+                .and().entriesListContains("tag", tagValue.toLowerCase())
+                .and().entriesListContains("tag", tagValue2.toLowerCase());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
