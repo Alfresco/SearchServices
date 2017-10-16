@@ -1,6 +1,7 @@
 package org.alfresco.rest.people.preferences;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -41,8 +42,12 @@ public class GetPeoplePreferenceCoreTests extends RestTest
     {
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel("invalidPersonID", "password"))
                 .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
-        restClient.assertLastError().containsSummary("The entity with id: invalidPersonID was not found");
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
+                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidPersonID"))
+                .statusCodeIs(HttpStatus.NOT_FOUND)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE)
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })

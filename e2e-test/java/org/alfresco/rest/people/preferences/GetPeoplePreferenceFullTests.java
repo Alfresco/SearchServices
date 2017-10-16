@@ -36,21 +36,6 @@ public class GetPeoplePreferenceFullTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
-        description = "Check default error schema in case of failure")
-    public void checkDefaultErrorSchema() throws Exception
-    {
-        restClient.authenticateUser(userModel).withCoreAPI().usingUser(new UserModel("invalidPersonID", "password"))
-            .getPersonPreferenceInformation(String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-            .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidPersonID"))
-            .statusCodeIs(HttpStatus.NOT_FOUND)
-            .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-            .stackTraceIs(RestErrorModel.STACKTRACE)
-            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
-     }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.REGRESSION, 
         description = "Check that properties parameter is applied")
     public void propertiesParameterIsAppliedWhenRetrievingPreference() throws Exception
     {
