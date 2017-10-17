@@ -457,9 +457,8 @@ public class WorkflowNetworkProcessesTests extends NetworkDataPrep
     {
         restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", secondTenantUser, false, Priority.Normal);
 
-        RestProcessModelsCollection tenantProcesses = restClient.authenticateUser(tenantUser).withWorkflowAPI().getProcesses();
+        restClient.authenticateUser(tenantUser).withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK); 
-        tenantProcesses.assertThat().entriesListIsEmpty().and().paginationField("count").is("0");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,

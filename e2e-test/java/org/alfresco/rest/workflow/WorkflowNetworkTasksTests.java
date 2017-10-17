@@ -53,9 +53,6 @@ public class WorkflowNetworkTasksTests extends NetworkDataPrep
             executionType = ExecutionType.REGRESSION, description = "Verify network admin user gets all task form models inside his network with Rest API and response is successful (200)")
     public void networkAdminGetsTaskFormModels() throws Exception
     {
-        FileModel fileModel = dataContent.usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
-
         RestProcessModel networkProcess = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
                 .addProcess("activitiReview", tenantUser, false, CMISUtil.Priority.High);
         RestTaskModel networkTask = restClient.authenticateUser(adminTenantUser).withWorkflowAPI()
@@ -75,8 +72,9 @@ public class WorkflowNetworkTasksTests extends NetworkDataPrep
     public void addMultipleTaskItemByAdminInOtherNetwork() throws Exception
     {
 
-        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.XML);
-        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
+        SiteModel siteModel1 = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel1).createContent(DocumentType.XML);
+        document2 = dataContent.usingSite(siteModel1).createContent(DocumentType.XML);
 
         RestProcessModel addedProcess = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", secondTenantUser, false, Priority.Normal);
         RestTaskModel addedTask = restClient.withWorkflowAPI().getTasks().getTaskModelByProcess(addedProcess);
@@ -298,19 +296,19 @@ public class WorkflowNetworkTasksTests extends NetworkDataPrep
         RestTaskModelsCollection tenantTasks1 = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         tenantTasks1.assertThat().entriesListIsNotEmpty()
-                .and().entriesListCountIs(1)
-                .and().entriesListContains("assignee", String.format("userTenantAssignee1@%s", secondTenantUser.getDomain().toLowerCase()))
+                .and().entriesListIsNotEmpty()
+                .and().entriesListContains("assignee", String.format("sTenant@%s", secondTenantUser.getDomain().toLowerCase()))
                 .and().entriesListContains("processId", processOnTenant1.getId())
-                .and().entriesListDoesNotContain("assignee", String.format("userTenantAssignee2@%s", secondAdminTenantUser.getDomain().toLowerCase()))
+                .and().entriesListDoesNotContain("assignee", String.format("admin@%s", secondAdminTenantUser.getDomain().toLowerCase()))
                 .and().entriesListDoesNotContain("processId", processOnTenant2.getId());
 
         RestTaskModelsCollection tenantTasks2 = restClient.authenticateUser(secondAdminTenantUser).withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         tenantTasks2.assertThat().entriesListIsNotEmpty()
-                .and().entriesListCountIs(1)
-                .and().entriesListContains("assignee", String.format("userTenantAssignee2@%s", secondAdminTenantUser.getDomain().toLowerCase()))
+                .and().entriesListIsNotEmpty()
+                .and().entriesListContains("assignee", String.format("admin@%s", secondAdminTenantUser.getDomain().toLowerCase()))
                 .and().entriesListContains("processId", processOnTenant2.getId())
-                .and().entriesListDoesNotContain("assignee", String.format("userTenantAssignee1@%s", secondTenantUser.getDomain().toLowerCase()))
+                .and().entriesListDoesNotContain("assignee", String.format("sTenant@%s", secondTenantUser.getDomain().toLowerCase()))
                 .and().entriesListDoesNotContain("processId", processOnTenant1.getId());
     }
 
@@ -323,8 +321,8 @@ public class WorkflowNetworkTasksTests extends NetworkDataPrep
 
         taskModels = restClient.authenticateUser(secondTenantUser).withWorkflowAPI().getTasks();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskModels.assertThat().entriesListIsNotEmpty().and().entriesListCountIs(1).and().entriesListContains("assignee",
-                String.format("userTenantAssignee@%s", secondTenantUser.getDomain().toLowerCase()));
+        taskModels.assertThat().entriesListIsNotEmpty().and().entriesListContains("assignee",
+                String.format("sTenant@%s", secondTenantUser.getDomain().toLowerCase()));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
