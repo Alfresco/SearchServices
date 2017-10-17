@@ -71,7 +71,6 @@ public class RestGetNetworksForPersonTests extends NetworkDataPrep
     @Test(groups = {TestGroup.REST_API, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void adminTenantUserIsNotAuthorizedToCheckNetworkOfAnotherUser() throws Exception
     {
-        UserModel secondTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("anotherTenant");
         restClient.authenticateUser(secondAdminTenantUser);
         restClient.withCoreAPI().usingAuthUser().getNetworks(secondTenantUser);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);

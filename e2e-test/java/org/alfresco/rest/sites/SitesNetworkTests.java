@@ -14,11 +14,13 @@ import org.testng.annotations.Test;
 
 public class SitesNetworkTests extends NetworkDataPrep
 {
+    protected SiteModel siteModel;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         init();
+        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION, TestGroup.NETWORKS })

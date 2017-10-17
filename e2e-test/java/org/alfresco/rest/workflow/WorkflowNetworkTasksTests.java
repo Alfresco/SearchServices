@@ -36,11 +36,16 @@ public class WorkflowNetworkTasksTests extends NetworkDataPrep
     private RestProcessModel restProcessModel;
     private RestItemModelsCollection itemModels;
     private RestItemModel restTaskItem;
+    protected SiteModel siteModel;
+    protected FileModel document, document2;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         init();
+        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
+        document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION, TestGroup.NETWORKS })

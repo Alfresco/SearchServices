@@ -12,6 +12,7 @@ import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.rest.model.RestProcessVariableCollection;
 import org.alfresco.rest.model.RestProcessVariableModel;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.report.Bug;
@@ -29,11 +30,16 @@ public class WorkflowNetworkProcessesTests extends NetworkDataPrep
     private RestItemModelsCollection processItems;
     private RestProcessVariableModel variableModel, processVariable;
     private RestProcessVariableCollection variables;
+    protected SiteModel siteModel;
+    protected FileModel document, document2;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         init();
+        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
+        document = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.WORKFLOW,
@@ -103,7 +109,7 @@ public class WorkflowNetworkProcessesTests extends NetworkDataPrep
         restClient.authenticateUser(dataUser.getAdminUser()).withWorkflowAPI().usingProcess(networkProcess1).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         networkProcess1.assertThat().field("processDefinitionId").contains(String.format("@%s%s", tenantUser.getDomain().toLowerCase(), "@activitiReview:1"))
-            .and().field("startUserId").is(tenantUser.getEmailAddress().toLowerCase())
+            .and().field("startUserId").is(tenantUser.getEmailAddress().substring(0, 2)+tenantUser.getEmailAddress().substring(2).toLowerCase())
             .and().field("startActivityId").is("start")
             .and().field("startedAt").isNotEmpty()
             .and().field("id").is(networkProcess1.getId())
@@ -131,6 +137,10 @@ public class WorkflowNetworkProcessesTests extends NetworkDataPrep
     public void addMultipleProcessItemsByAdminSameNetwork() throws Exception
     {
         processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", secondTenantUser, false, Priority.Normal);
+
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        document2 = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         processItems = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel).addProcessItems(document, document2);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -172,6 +182,8 @@ public class WorkflowNetworkProcessesTests extends NetworkDataPrep
     {
         processModel = restClient.authenticateUser(tenantUser).withWorkflowAPI().addProcess("activitiAdhoc", secondTenantUser, false, Priority.Normal);
 
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
+        document = dataContent.usingUser(adminTenantUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
         processItem = restClient.authenticateUser(adminTenantUser).withWorkflowAPI().usingProcess(processModel).addProcessItem(document);
 
         restClient.assertStatusCodeIs(HttpStatus.CREATED);

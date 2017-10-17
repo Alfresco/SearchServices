@@ -13,12 +13,13 @@ import org.testng.annotations.Test;
 
 public class FavoritesNetworkTests extends NetworkDataPrep
 {
-    private SiteModel publicSite;
+    private SiteModel publicSite, siteModel;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         init();
+        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.NETWORKS, TestGroup.REGRESSION})
@@ -101,7 +102,6 @@ public class FavoritesNetworkTests extends NetworkDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES,TestGroup.NETWORKS, TestGroup.REGRESSION })
     public void tenantIsNotAbleToDeleteFavoriteSiteWithInvalidNetworkID() throws Exception
     {
-        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
         restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         String domain = tenantUser.getDomain();
         try
@@ -190,7 +190,6 @@ public class FavoritesNetworkTests extends NetworkDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void getFavoriteSiteWithInvalidNetworkId()  throws Exception
     {
-        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
         restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
 
         String domain = tenantUser.getDomain();
@@ -213,7 +212,6 @@ public class FavoritesNetworkTests extends NetworkDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION, TestGroup.NETWORKS })
     public void getFavoriteSiteWithTenantUser()  throws Exception
     {
-        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
         restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
 
         restClient.withCoreAPI().usingAuthUser().getFavorite(siteModel.getGuid());
@@ -242,7 +240,6 @@ public class FavoritesNetworkTests extends NetworkDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES,TestGroup.NETWORKS, TestGroup.REGRESSION })
     public void tenantDeleteFavoriteSiteValidNetwork() throws Exception
     {
-        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
 
         restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
 
@@ -253,6 +250,7 @@ public class FavoritesNetworkTests extends NetworkDataPrep
         restClient.withCoreAPI().usingAuthUser().getFavorites()
                 .assertThat()
                 .entriesListDoesNotContain("targetGuid", siteModel.getGuidWithoutVersion());
+        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
@@ -278,7 +276,6 @@ public class FavoritesNetworkTests extends NetworkDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES,TestGroup.NETWORKS, TestGroup.REGRESSION })
     public void tenantUserIsAbleToDeleteFavoriteSiteAddedByAdminSameNetwork() throws Exception
     {
-        siteModel = dataSite.usingUser(adminTenantUser).createPublicRandomSite();
 
         restClient.authenticateUser(tenantUser).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         tenantUser.setDomain(adminTenantUser.getDomain());
@@ -290,5 +287,6 @@ public class FavoritesNetworkTests extends NetworkDataPrep
         restClient.withCoreAPI().usingAuthUser().getFavorites()
                 .assertThat()
                 .entriesListDoesNotContain("targetGuid", siteModel.getGuidWithoutVersion());
+        siteModel = dataSite.usingUser(tenantUser).createPublicRandomSite();
     }
 }
