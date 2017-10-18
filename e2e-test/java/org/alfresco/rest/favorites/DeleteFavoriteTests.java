@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
 
 public class DeleteFavoriteTests extends RestTest
 {
-    private UserModel adminUserModel, tenantUser, adminTenantUser;
+    private UserModel adminUserModel;
     private SiteModel siteModel;
     private ListUserWithRoles usersWithRoles;
     private FileModel fileModel;

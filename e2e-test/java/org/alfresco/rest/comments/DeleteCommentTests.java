@@ -2,7 +2,6 @@ package org.alfresco.rest.comments;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;

@@ -7,7 +7,6 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,7 @@ import org.testng.annotations.Test;
 
 public class DeleteFavoriteSiteTests extends RestTest
 {
-    private UserModel userModel, adminUserModel, adminTenantUser, tenantUser;
+    private UserModel userModel, adminUserModel;
     private SiteModel siteModel1, siteModel2;
     private DataUser.ListUserWithRoles usersWithRoles;
 
