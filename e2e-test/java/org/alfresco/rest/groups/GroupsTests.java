@@ -46,7 +46,7 @@ public class GroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         //ListGroups:
-        restClient.withCoreAPI().usingParams("&maxItems=10").usingGroups().listGroups()
+        restClient.withCoreAPI().usingParams("orderBy=displayName DESC&maxItems=10").usingGroups().listGroups()
                   .assertThat().entriesListContains("id", "GROUP_"+groupName)
                   .and().entriesListDoesNotContain("zones")
                   .and().paginationField("maxItems").is("10");
