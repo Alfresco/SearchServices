@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
  * @author Cristina Axinte
  *
  */
+@Test(groups = {TestGroup.REQUIRE_TRANSFORMATION})
 public class CreateRenditionTests  extends RestTest
 {
     private UserModel adminUser, user;

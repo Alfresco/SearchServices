@@ -12,6 +12,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
+@Test(groups = {TestGroup.REQUIRE_JMX})
 public class GetAuditTests extends AuditTest
 {
 

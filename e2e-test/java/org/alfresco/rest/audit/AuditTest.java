@@ -15,6 +15,7 @@ import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.JmxBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.jayway.restassured.RestAssured;
 
+@Test(groups = {TestGroup.REQUIRE_JMX})
 public abstract class AuditTest extends RestTest
 {
 

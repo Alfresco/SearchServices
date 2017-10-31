@@ -29,7 +29,7 @@ public class AvatarPeopleSanityTest extends RestTest
         userModel = dataUser.createRandomTestUser();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY, TestGroup.REQUIRE_TRANSFORMATION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Update Avatar for People")
     public void updateGetAvatarForPeople() throws Exception
     {
@@ -43,7 +43,7 @@ public class AvatarPeopleSanityTest extends RestTest
         assertTrue(response.extract().body().asByteArray().length > 0, "Avatar Image not uploaded");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY, TestGroup.REQUIRE_TRANSFORMATION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Remove Avatar for People")
     public void removeGetAvatarForPeople() throws Exception
     {

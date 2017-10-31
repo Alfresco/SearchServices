@@ -138,7 +138,7 @@ public class SharedLinksSanityTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify get sharedLink/content and get/renditions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.REGRESSION })
+    @Test(groups = { TestGroup.REST_API, TestGroup.REGRESSION, TestGroup.REQUIRE_TRANSFORMATION })
     public void testCreateWithExpiryDateAndGetSharedLinkRendition() throws Exception
     {
         sharedLink5 = restClient.authenticateUser(testUser1).withCoreAPI().includePath().usingSharedLinks().createSharedLinkWithExpiryDate(file5, expiryDate);
