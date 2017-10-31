@@ -148,7 +148,7 @@ public class GetTagsTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that file tag is retrieved")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void e () throws Exception
+    public void fileTagIsRetrieved() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
