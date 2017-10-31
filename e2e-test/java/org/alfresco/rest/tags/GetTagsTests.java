@@ -57,7 +57,7 @@ public class GetTagsTests extends RestTest
         int retry = 0;
         while(noTagsAfter < noTagsBefore + 3 && retry < 60)
         {
-            Utility.waitToLoopTime(1);
+            Utility.waitToLoopTime(3);
             returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
             noTagsAfter = returnedCollection.getEntries().size();
             retry++;
@@ -148,7 +148,7 @@ public class GetTagsTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that file tag is retrieved")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void fileTagIsRetrieved() throws Exception
+    public void e () throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
