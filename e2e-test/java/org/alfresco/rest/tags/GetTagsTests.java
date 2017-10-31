@@ -55,9 +55,9 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         int noTagsAfter = returnedCollection.getEntries().size();
         int retry = 0;
-        while(noTagsAfter < noTagsBefore + 3 && retry < 60)
+        while(noTagsAfter < noTagsBefore + 3 && retry < 30)
         {
-            Utility.waitToLoopTime(3);
+            Utility.waitToLoopTime(2);
             returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
             noTagsAfter = returnedCollection.getEntries().size();
             retry++;
