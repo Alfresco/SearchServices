@@ -12,6 +12,7 @@ import org.alfresco.rest.model.RestSyncSetChangesModel;
 import org.alfresco.rest.model.RestSyncSetGetModel;
 import org.alfresco.rest.model.RestSyncSetRequestModel;
 import org.alfresco.rest.requests.privateAPI.Subscriber;
+import org.alfresco.rest.requests.privateAPI.SyncServiceHealthcheck;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -55,8 +56,19 @@ public class SyncServiceAPITests extends RestTest
         siteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).getSite().getGuidWithoutVersion());
 
     }
+
+    @Test(priority = 1)
+    public void testSyncServiceHealthCheck() throws Exception
+    {
+        // Register Device
+        SyncServiceHealthcheck healthCheck = restClient.authenticateUser(adminUserModel).withPrivateAPI().performHealthCheck();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        Assert.assertTrue(healthCheck.getHealthcheck().getActiveMQConnection().getHealthy());
+    }
     
-    public void testTahtNewDevicesAreAbleToSubscribe() throws Exception
+    @Test(priority = 2)
+    public void testNewDeviceSubscription() throws Exception
     {
         // Register Device
         RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers().registerDevice("windows", "2.1");
@@ -76,6 +88,7 @@ public class SyncServiceAPITests extends RestTest
 
     }
  
+    @Test(priority = 3)
     public void testDeviceSubcriptionToNode() throws Exception
     {
         // Register Device
@@ -120,6 +133,7 @@ public class SyncServiceAPITests extends RestTest
                 .isNotNull().assertThat().field("deviceSubscriptionId").is(nodeSubscription.getDeviceSubscriptionId());
     }
  
+    @Test(priority = 4)
     public void testDeviceSubcriptionToMultipleNodes() throws Exception
     {
         // Register Device
@@ -138,7 +152,8 @@ public class SyncServiceAPITests extends RestTest
         Assert.assertTrue(countOfEntries == 3, "Node subscriptions NOT found when expected");
     }
 
-    @Test(enabled=false)
+
+    @Test(priority = 5)
     public void testSyncProcess() throws Exception
     {
         // Register Device
