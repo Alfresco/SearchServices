@@ -690,19 +690,37 @@ public class AlfrescoCMISQParserPluginTest extends LoadCMISData implements Query
 
         assertQ(qurySolr("SELECT D.*, O.* FROM cmis:document AS D JOIN cm:ownable AS O ON D.cmis:objectId = O.cmis:objectId"),
                 expectedDocCount(1));
+        
+        assertQ(qurySolr("SELECT D.*, O.* FROM cmis:document AS D LEFT OUTER JOIN cm:ownable AS O ON D.cmis:objectId = O.cmis:objectId"),
+                expectedDocCount(11));
+        
+        assertQ(qurySolr("SELECT D.*, O.* FROM cmis:folder AS D LEFT OUTER JOIN cm:ownable AS O ON D.cmis:objectId = O.cmis:objectId"),
+                expectedDocCount(11));
+        
+        assertQ(qurySolr("SELECT D.*, O.* FROM cmis:folder AS D JOIN cm:ownable AS O ON D.cmis:objectId = O.cmis:objectId"),
+                expectedDocCount(0));
 
         assertQ(qurySolr("SELECT D.*, O.*, T.* FROM cmis:document AS D JOIN cm:ownable AS O ON D.cmis:objectId = O.cmis:objectId JOIN cm:titled AS T ON T.cmis:objectId = D.cmis:objectId"),
                 expectedDocCount(1));
 
         assertQ(qurySolr("SELECT D.*, O.* FROM cm:ownable O JOIN cmis:document D ON D.cmis:objectId = O.cmis:objectId"),
                 expectedDocCount(1));
+        
+        assertQ(qurySolr("SELECT D.*, O.* FROM cm:ownable O LEFT  JOIN cmis:document D ON D.cmis:objectId = O.cmis:objectId"),
+                expectedDocCount(1));
 
         assertQ(qurySolr("SELECT D.*, F.* FROM cmis:folder F JOIN cmis:document D ON D.cmis:objectId = F.cmis:objectId"),
                 expectedDocCount(0));
+        
+        assertQ(qurySolr("SELECT D.*, F.* FROM cmis:folder F LEFT JOIN cmis:document D ON D.cmis:objectId = F.cmis:objectId"),
+                expectedDocCount(11));
 
         assertQ(qurySolr("SELECT O.*, T.* FROM cm:ownable O JOIN cm:titled T ON O.cmis:objectId = T.cmis:objectId"),
                 expectedDocCount(1));
 
+        assertQ(qurySolr("SELECT O.*, T.* FROM cm:ownable O LEFT JOIN cm:titled T ON O.cmis:objectId = T.cmis:objectId"),
+                expectedDocCount(1));
+        
         assertQ(qurySolr("select o.*, t.* from cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId"),
                 expectedDocCount(1));
 
