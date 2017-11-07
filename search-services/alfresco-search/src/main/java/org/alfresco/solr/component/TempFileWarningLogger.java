@@ -57,18 +57,33 @@ public class TempFileWarningLogger
         {
             for (Path file : stream)
             {
-                if (log.isWarnEnabled())
+                if (log.isDebugEnabled())
                 {
-                    log.warn("Solr suggester temp file found matching file pattern: " + glob + ", path: " + file);
-                    log.warn("Reported first suggester temp file found, others may exist.");
-                    return true;
+                    log.debug("Solr suggester temp file found matching file pattern: " + glob + ", path: " + file);
+                    log.debug("Removing suggester temp files.");
                 }
+                return true;
             }
             return false;
         }
         catch (IOException e)
         {
             throw new RuntimeException("Unable to create directory stream", e);
+        }
+    }
+
+    public void removeFiles()
+    {
+        try(DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob))
+        {
+            for (Path file : stream)
+            {
+                file.toFile().delete();
+            }
+        }
+        catch (IOException e) 
+        {
+            log.debug("Unable to delete temp file", e);
         }
     }
     
