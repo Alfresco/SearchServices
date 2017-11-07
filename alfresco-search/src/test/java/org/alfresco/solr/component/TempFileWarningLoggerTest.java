@@ -21,7 +21,7 @@ package org.alfresco.solr.component;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,7 +84,7 @@ public class TempFileWarningLoggerTest
             
             assertTrue("Should have found matching files", found);
             // Should be a warn-level log message.
-            Mockito.verify(log, atLeastOnce()).warn(Mockito.anyString());
+            Mockito.verify(log, never()).warn(Mockito.anyString());
         }
         finally
         {
@@ -114,4 +114,57 @@ public class TempFileWarningLoggerTest
         // Should be no warn-level log message.
         Mockito.verify(log, Mockito.never()).warn(Mockito.anyString());
     }    
+    
+    @Test
+    public void removeManyFiles() throws IOException 
+    {
+        File f = File.createTempFile("WFSTInputIterator", ".input", path.toFile());
+        File f2 = File.createTempFile("WFSTInputIterator", ".sorted", path.toFile());
+        f.deleteOnExit();
+        f2.deleteOnExit();
+        
+        TempFileWarningLogger warner = new TempFileWarningLogger(log,
+                                                                 "WFSTInputIterator*",
+                                                                 new String[] { "input", "sorted" },
+                                                                 path);
+        boolean found = warner.checkFiles();
+        assertTrue("Should have found matching file", found);
+        assertTrue(f.exists());
+        assertTrue(f2.exists());
+        if(found)
+        {
+            warner.removeFiles();
+        }
+        assertFalse(f.exists());
+        assertFalse(f2.exists());
+        
+        boolean found2 = warner.checkFiles();
+        assertFalse("Should NOT have found a matching file", found2);
+        
+    }
+    @Test
+    public void notToRemoveFilesThatDontMatch() throws IOException 
+    {
+        File f = File.createTempFile("someotherfile", ".input", path.toFile());
+        File f2 = File.createTempFile("someotherfile", ".sorted", path.toFile());
+        f.deleteOnExit();
+        f2.deleteOnExit();
+        
+        TempFileWarningLogger warner = new TempFileWarningLogger(log,
+                                                                 "WFSTInputIterator*",
+                                                                 new String[] { "input", "sorted" },
+                                                                 path);
+
+        
+        assertTrue(f.exists());
+        assertTrue(f2.exists());
+        warner.removeFiles();
+        assertTrue(f.exists());
+        assertTrue(f2.exists());
+        
+        boolean found2 = warner.checkFiles();
+        assertFalse("Should NOT have found a matching file", found2);
+        
+    }
+    
 }
