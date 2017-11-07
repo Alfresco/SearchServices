@@ -152,7 +152,6 @@ public class SyncServiceAPITests extends RestTest
         Assert.assertTrue(countOfEntries == 3, "Node subscriptions NOT found when expected");
     }
 
-
     @Test(priority = 5)
     public void testSyncProcess() throws Exception
     {
