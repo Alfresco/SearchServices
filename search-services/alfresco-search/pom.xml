@@ -60,6 +60,12 @@
             <artifactId>solr-langid</artifactId>
             <version>${solr.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xercesImpl</artifactId>
+                    <groupId>xerces</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -148,7 +154,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>copy-production-config</id>
