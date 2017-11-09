@@ -53,9 +53,8 @@ public class QueriesTest extends RestTest
         /*
          * now making the correct call with a valid term value 
          */
-        RestNodeModelsCollection nodes = restClient.withCoreAPI().usingQueries().usingParams("term=name").findNodes();
+        restClient.withCoreAPI().usingQueries().usingParams("term=name").findNodes();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        nodes.assertThat().entriesListIsNotEmpty();
     }
     
     @TestRail(section = { TestGroup.REST_API,
