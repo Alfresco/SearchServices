@@ -10,7 +10,7 @@ cd "$(dirname "$0")"
 unzip target/alfresco-search-services-$bamboo_maven_version.zip -d target/docker-resources
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="docker-internal.alfresco.com/search-services:$bamboo_maven_version"
+dockerImage="quay.io/alfresco/search-services:$bamboo_maven_version"
 echo "Building $dockerImage from $nicebranch using version $bamboo_maven_version"
 
 docker build -t $dockerImage target/docker-resources
