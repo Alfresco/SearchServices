@@ -10,7 +10,7 @@ COPY alfresco-search-services $DIST_DIR
 
 RUN groupadd solr && useradd -s /bin/bash -g solr solr
 RUN set -x \
-	&& yum install -y ca-certificates openssl-$OPENSSL_VERSION \
+	&& yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
 	&& yum clean all \
 	&& mkdir -p $DIST_DIR/data \
 	&& mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/  \
