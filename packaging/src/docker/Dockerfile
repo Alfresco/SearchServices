@@ -4,15 +4,14 @@ MAINTAINER Gethin James, gethin.james@alfresco.com
 
 ENV DIST_DIR /opt/alfresco-search-services
 ENV LANG C.UTF-8
+ENV OPENSSL_VERSION 1.0.2k-8.el7
 
 COPY alfresco-search-services $DIST_DIR
 
 RUN addgroup solr && adduser -s /bin/bash -D -G solr solr
 RUN set -x \
-	&& apk add --no-cache --virtual .fetch-deps \
-		ca-certificates \
-		vim unzip lsof \
-		bash openssl wget \
+	&& yum install -y ca-certificates openssl-$OPENSSL_VERSION \
+	&& yum clean all \
 	&& mkdir -p $DIST_DIR/data \
 	&& mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/  \
 	&& chown -R solr:solr $DIST_DIR \
