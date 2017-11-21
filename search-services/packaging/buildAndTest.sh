@@ -13,7 +13,7 @@ nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 dockerImage="docker-internal.alfresco.com/search-services:$bamboo_maven_version"
 echo "Building $dockerImage from $nicebranch using version $bamboo_maven_version"
 
-docker build --build-arg solrBranch=$nicebranch --build-arg solrVer=$bamboo_maven_version -t $dockerImage target/docker-resources
+docker build -t $dockerImage target/docker-resources
 
 echo "Running tests"
 docker run --rm "$dockerImage" [ -d /opt/alfresco-search-services/solr ] || (echo "solr dir does not exist" && exit 1)
