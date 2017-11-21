@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
 public class QueriesTest extends RestTest
 {
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.QUERIES }, executionType = ExecutionType.SANITY, description = "Verify GET queries on queries/sites returnes success status code")
+            TestGroup.QUERIES }, executionType = ExecutionType.SANITY, description = "Check basic functionality of GET queries/sites")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getQueriesSites() throws Exception
     {
@@ -65,7 +65,7 @@ public class QueriesTest extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API,
-            TestGroup.QUERIES }, executionType = ExecutionType.SANITY, description = "Verify GET queries on queries/people returnes success status code")
+            TestGroup.QUERIES }, executionType = ExecutionType.SANITY, description = "Check basic functionality of GET queries/people")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.CORE })
     public void getQueriesPeople() throws Exception
     {
@@ -97,7 +97,7 @@ public class QueriesTest extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.QUERIES },
-            executionType = ExecutionType.REGRESSION, description = "Verify GET queries on queries/nodes returnes success status code")
+            executionType = ExecutionType.REGRESSION, description = "Check basic functionality of GET queries/nodes")
     @Test(groups = { TestGroup.REST_API, TestGroup.RATINGS, TestGroup.REGRESSION })
     public void getOnQueriesNodesRoute() throws Exception
     {
