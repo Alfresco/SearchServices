@@ -1,5 +1,5 @@
 # Alfresco Solr Docker image
-FROM quay.io/alfresco/alfresco-base-java
+FROM quay.io/alfresco/alfresco-base-java:0.1.0
 MAINTAINER Gethin James, gethin.james@alfresco.com
 
 ARG solrUrl
