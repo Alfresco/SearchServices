@@ -7,7 +7,7 @@ set -e
 cd "$(dirname "$0")"
 
 # Unzip the package
-unzip alfresco-search-services-$bamboo_maven_version.zip -d target/docker-resources/alfresco-search-services
+unzip target/alfresco-search-services-$bamboo_maven_version.zip -d target/docker-resources
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 dockerImage="docker-internal.alfresco.com/search-services:$bamboo_maven_version"
