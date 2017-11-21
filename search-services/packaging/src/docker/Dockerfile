@@ -8,7 +8,7 @@ ENV OPENSSL_VERSION 1.0.2k-8.el7
 
 COPY alfresco-search-services $DIST_DIR
 
-RUN addgroup solr && adduser -s /bin/bash -D -G solr solr
+RUN groupadd solr && useradd -s /bin/bash -g solr solr
 RUN set -x \
 	&& yum install -y ca-certificates openssl-$OPENSSL_VERSION \
 	&& yum clean all \
