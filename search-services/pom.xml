@@ -12,8 +12,7 @@
     <name>Alfresco Solr Search parent</name>
     <properties>
         <solr.version>6.6.0</solr.version>
-        <alfresco-solr.version>5.3-SNAPSHOT</alfresco-solr.version>
-	<alfresco-solrclient.version>6.4</alfresco-solrclient.version>
+        <alfresco-solrclient.version>6.4</alfresco-solrclient.version>
     </properties>
     <distributionManagement>
         <repository>
@@ -31,32 +30,8 @@
         <url>https://git.alfresco.com/search_discovery/searchservices.git</url>
         <tag>HEAD</tag>
     </scm>
-
-    <build>
-        <plugins>
-            <!-- Configure deployment of releases to Staging area of Nexus -->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>alfresco-internal-staging</serverId>
-                    <nexusUrl>https://artifacts.alfresco.com/nexus</nexusUrl>
-                    <stagingProfileId>${publicrelease.staging.profile}</stagingProfileId>
-                    <stagingDescription>Staging Search Services ${project.version} (${bamboo_buildResultKey} ${bamboo_planRepository_revision})</stagingDescription>
-                    <tags>
-                        <build.number>${bamboo_buildNumber}</build.number>
-                        <build.key>${bamboo_buildKey}</build.key>
-                        <build.revision>${bamboo_planRepository_revision}</build.revision>
-                    </tags>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <modules>
-      <module>alfresco-search</module>
-      <module>packaging</module>
+        <module>alfresco-search</module>
+        <module>packaging</module>
     </modules>
 </project>

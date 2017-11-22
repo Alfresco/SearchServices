@@ -1,16 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.alfresco</groupId>
     <artifactId>alfresco-search-services</artifactId>
     <name>Alfresco Search Services</name>
     <description>Alfresco Search Services Solr distribution zip</description>
     <packaging>jar</packaging>
     <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <project.timestamp>${maven.build.timestamp}</project.timestamp>
-      <project.build.key>${bamboo_fullBuildKey}</project.build.key>
-      <project.revision.key>${bamboo_repository_revision_number}</project.revision.key>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.timestamp>${maven.build.timestamp}</project.timestamp>
+        <project.build.key>${bamboo_fullBuildKey}</project.build.key>
+        <project.revision.key>${bamboo_repository_revision_number}</project.revision.key>
     </properties>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -19,11 +18,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <dependencies>
-      <dependency>
-          <groupId>org.alfresco</groupId>
-          <artifactId>alfresco-search</artifactId>
-          <version>${project.version}</version>
-      </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-search</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-search</artifactId>
@@ -34,103 +33,103 @@
     <build>
         <finalName>alfresco-search-services-${project.version}</finalName>
         <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>properties-maven-plugin</artifactId>
-            <executions>
-                <execution>
-                    <phase>initialize</phase>
-                    <goals>
-                        <goal>read-project-properties</goal>
-                    </goals>
-                    <configuration>
-                        <files>
-                            <file>config.properties</file>
-                        </files>
-                    </configuration>
-                </execution>
-            </executions>
-          </plugin>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-dependency-plugin</artifactId>
-              <executions>
-                  <execution>
-                      <id>unpack-solr-war</id>
-                      <phase>validate</phase>
-                      <goals>
-                          <goal>unpack</goal>
-                      </goals>
-                      <configuration>
-                        <artifactItems>
-                          <artifactItem>
-                            <groupId>org.apache.solr</groupId>
-                            <artifactId>solr</artifactId>
-                            <version>${solr.version}</version>
-                            <type>zip</type>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <excludes>**/*solr.xml</excludes>
-                          </artifactItem>
-                        </artifactItems>
-                      </configuration>
-                  </execution>
-                  <execution>
-                      <id>unpack-solr-config</id>
-                      <phase>validate</phase>
-                      <goals>
-                          <goal>unpack</goal>
-                      </goals>
-                      <configuration>
-                          <artifactItems>
-                              <artifactItem>
-                                  <groupId>org.alfresco</groupId>
-                                  <artifactId>alfresco-search</artifactId>
-                                  <version>${project.version}</version>
-                                  <outputDirectory>${project.build.directory}/alfresco-search</outputDirectory>
-                              </artifactItem>
-                          </artifactItems>
-                      </configuration>
-                  </execution>
-                  <execution>
-                      <id>unpack-solr-libs</id>
-                      <phase>validate</phase>
-                      <goals>
-                          <goal>unpack</goal>
-                      </goals>
-                      <configuration>
-                          <artifactItems>
-                              <artifactItem>
-                                  <groupId>org.alfresco</groupId>
-                                  <artifactId>alfresco-search</artifactId>
-                                  <version>${project.version}</version>
-                                  <classifier>libs</classifier>
-                                  <outputDirectory>${project.build.directory}/solr-libs</outputDirectory>
-                              </artifactItem>
-                          </artifactItems>
-                      </configuration>
-                  </execution>
-                  <execution>
-                      <id>copy</id>
-                      <phase>validate</phase>
-                      <goals>
-                          <goal>copy</goal>
-                      </goals>
-                      <configuration>
-                          <artifactItems>
-                              <artifactItem>
-                                  <groupId>org.alfresco</groupId>
-                                  <artifactId>alfresco-search</artifactId>
-                                  <version>${project.version}</version>
-                                  <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>
-                              </artifactItem>
-                          </artifactItems>
-                          <outputDirectory>${project.build.directory}/wars</outputDirectory>
-                          <overWriteReleases>false</overWriteReleases>
-                          <overWriteSnapshots>true</overWriteSnapshots>
-                      </configuration>
-                  </execution>
-              </executions>
-          </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>config.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-solr-war</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.apache.solr</groupId>
+                                    <artifactId>solr</artifactId>
+                                    <version>${solr.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <excludes>**/*solr.xml</excludes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-solr-config</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-search</artifactId>
+                                    <version>${project.version}</version>
+                                    <outputDirectory>${project.build.directory}/alfresco-search</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-solr-libs</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-search</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>libs</classifier>
+                                    <outputDirectory>${project.build.directory}/solr-libs</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-search</artifactId>
+                                    <version>${project.version}</version>
+                                    <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/wars</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <!-- Set the default solr home directory to solrhome -->
                 <artifactId>maven-antrun-plugin</artifactId>
