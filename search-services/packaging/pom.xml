@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>1.2.0-EA</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <dependencies>
@@ -138,59 +138,59 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <target>
-                                <replace token= "SOLR_SERVER_DIR/solr" value="SOLR_TIP/../solrhome" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr"/>
+                                <replace token="SOLR_SERVER_DIR/solr" value="SOLR_TIP/../solrhome" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr" />
                                 </replace>
-                                <replace token= "%SOLR_SERVER_DIR%\solr" value="%SOLR_TIP%\..\solrhome" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.cmd"/>
+                                <replace token="%SOLR_SERVER_DIR%\solr" value="%SOLR_TIP%\..\solrhome" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token= "HOME/.solr.in.sh" value="SOLR_TIP/../solr.in.sh" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr"/>
+                                <replace token="HOME/.solr.in.sh" value="SOLR_TIP/../solr.in.sh" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr" />
                                 </replace>
-                                <replace token= "\bin\solr.in.cmd" value="\..\solr.in.cmd" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.cmd"/>
+                                <replace token="\bin\solr.in.cmd" value="\..\solr.in.cmd" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token= "SOLR_SSL_OPTS=%SOLR_SSL_OPTS%" value="SOLR_SSL_OPTS=!SOLR_SSL_OPTS!" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.cmd"/>
+                                <replace token="SOLR_SSL_OPTS=%SOLR_SSL_OPTS%" value="SOLR_SSL_OPTS=!SOLR_SSL_OPTS!" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token= "#SOLR_LOGS_DIR=logs" value="${alfresco.search.logs}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh"/>
+                                <replace token="#SOLR_LOGS_DIR=logs" value="${alfresco.search.logs}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token= "REM set SOLR_LOGS_DIR=logs" value="${alfresco.search.logs.win}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.cmd"/>
+                                <replace token="REM set SOLR_LOGS_DIR=logs" value="${alfresco.search.logs.win}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token= "(java9)" value="(java9)${line.separator}${alfresco.gc.logs}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh"/>
+                                <replace token="(java9)" value="(java9)${line.separator}${alfresco.gc.logs}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token= "GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.cmd"/>
+                                <replace token="GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token= "# Anything you add to the SOLR_OPTS" value="${alfresco.search.config}${line.separator}${line.separator}# Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh"/>
+                                <replace token="# Anything you add to the SOLR_OPTS" value="${alfresco.search.config}${line.separator}${line.separator}# Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token= "REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}${line.separator}${line.separator}REM Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.cmd"/>
+                                <replace token="REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}${line.separator}${line.separator}REM Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token= 'REM set SOLR_JAVA_MEM=-Xms512m -Xmx512m' value='set SOLR_JAVA_MEM=-Xms1g -Xmx1g' dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.cmd"/>
+                                <replace token="REM set SOLR_JAVA_MEM=-Xms512m -Xmx512m" value="set SOLR_JAVA_MEM=-Xms1g -Xmx1g" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token= '#SOLR_JAVA_MEM="-Xms512m -Xmx512m"' value='SOLR_JAVA_MEM="-Xms1g -Xmx1g"' dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.sh"/>
+                                <replace token="#SOLR_JAVA_MEM=&quot;-Xms512m -Xmx512m&quot;" value="SOLR_JAVA_MEM=&quot;-Xms1g -Xmx1g&quot;" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token= "${alfresco.search.ssl.need.token}" value="${alfresco.search.ssl.need}" dir="target/solr-${solr.version}">
-                                    <include name="**/server/etc/jetty-ssl.xml"/>
+                                <replace token="${alfresco.search.ssl.need.token}" value="${alfresco.search.ssl.need}" dir="target/solr-${solr.version}">
+                                    <include name="**/server/etc/jetty-ssl.xml" />
                                 </replace>
-                                <replace token= "wantClientAuth" value="wantclientauth" dir="target/solr-${solr.version}">
-                                    <include name="**/server/etc/jetty-ssl.xml"/>
+                                <replace token="wantClientAuth" value="wantclientauth" dir="target/solr-${solr.version}">
+                                    <include name="**/server/etc/jetty-ssl.xml" />
                                 </replace>
-                                <replace token= "STORE_TYPE=JKS" value="STORE_TYPE=JCEKS" dir="target/solr-${solr.version}">
-                                    <include name="**/bin/solr.in.cmd"/>
-                                    <include name="**/bin/solr.in.sh"/>
+                                <replace token="STORE_TYPE=JKS" value="STORE_TYPE=JCEKS" dir="target/solr-${solr.version}">
+                                    <include name="**/bin/solr.in.cmd" />
+                                    <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token= "JKS" value="JCEKS" dir="target/solr-${solr.version}">
-                                    <include name="**/server/etc/jetty-ssl.xml"/>
+                                <replace token="JKS" value="JCEKS" dir="target/solr-${solr.version}">
+                                    <include name="**/server/etc/jetty-ssl.xml" />
                                 </replace>
-                                <chmod file="target/solr-${solr.version}/bin/solr" perm="755"/>
+                                <chmod file="target/solr-${solr.version}/bin/solr" perm="755" />
                             </target>
                         </configuration>
                         <goals>
