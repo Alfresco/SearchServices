@@ -748,7 +748,10 @@ public class AsyncBuildSuggestComponent extends SearchComponent implements SolrC
             return initialSuggester;
         }
         
-        tempFileWarningLogger.checkFiles();
+        if(tempFileWarningLogger.checkFiles())
+        {
+            tempFileWarningLogger.removeFiles();
+        }
 
         RefCounted<SolrIndexSearcher> refCountedSearcher = core.getSearcher();
         try

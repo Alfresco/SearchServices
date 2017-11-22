@@ -13,6 +13,7 @@
     <properties>
         <solr.version>6.6.0</solr.version>
         <alfresco-solr.version>5.3-SNAPSHOT</alfresco-solr.version>
+	<alfresco-solrclient.version>6.4</alfresco-solrclient.version>
     </properties>
     <distributionManagement>
         <repository>
