@@ -1,23 +1,17 @@
 # Alfresco Solr Docker image
-FROM openjdk:8u111-jdk-alpine
+FROM quay.io/alfresco/alfresco-base-java:0.1.0
 MAINTAINER Gethin James, gethin.james@alfresco.com
 
-ARG solrUrl
-ARG solrBranch
-ARG solrVer
-ENV SOLR_URL ${solrUrl:-https://nightlybuilds.alfresco.com/SearchServices/$solrBranch/LATEST/Distribution/alfresco-search-services-$solrVer.zip}
-ENV SOLR_ZIP alfresco-search-services.zip
 ENV DIST_DIR /opt/alfresco-search-services
 ENV LANG C.UTF-8
+ENV OPENSSL_VERSION 1.0.2k-8.el7
 
-RUN addgroup solr && adduser -s /bin/bash -D -G solr solr
+COPY alfresco-search-services $DIST_DIR
+
+RUN groupadd solr && useradd -s /bin/bash -g solr solr
 RUN set -x \
-	&& apk add --no-cache --virtual .fetch-deps \
-		ca-certificates \
-		vim unzip lsof \
-		bash openssl wget \
-	&& wget --no-check-certificate -O "$SOLR_ZIP" "$SOLR_URL" \
-	&& unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP"\
+	&& yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
+	&& yum clean all \
 	&& mkdir -p $DIST_DIR/data \
 	&& mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/  \
 	&& chown -R solr:solr $DIST_DIR \
