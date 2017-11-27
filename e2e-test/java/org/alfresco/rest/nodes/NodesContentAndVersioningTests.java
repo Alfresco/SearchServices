@@ -212,12 +212,17 @@ public class NodesContentAndVersioningTests extends RestTest
         assertEquals(version.getName(),version11.getName());
 
         STEP("5. Retrieve version 2.0 content GET /nodes/{nodeId}/versions/{versionId}/content");
-        RestResponse versionContent = restClient.withCoreAPI().usingNode(file2).getVersionContent("2.0");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
         //verify the content is the same as the uploaded file and check in headers for Content-Disposition to validate the download as attachment and fileName.
-        assertEquals("Sample text.\n", versionContent.getResponse().body().asString());
-        restClient.assertHeaderValueContains("Content-Disposition", "attachment");
-        restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file2.getName()));
+        Utility.sleep(500, 10000, () ->
+        {
+            RestResponse versionContent = restClient.withCoreAPI().usingNode(file2).getVersionContent("2.0");
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+
+            assertEquals("Sample text.\n", versionContent.getResponse().body().asString());
+            restClient.assertHeaderValueContains("Content-Disposition", "attachment");
+            restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file2.getName()));
+        });
+
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
