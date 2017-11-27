@@ -4,10 +4,7 @@ set -e
 [ "$DEBUG" ] && set -x
 
 # set current working directory to the directory of the script
-cd "$(dirname "$0")"
-
-# Unzip the package
-unzip target/alfresco-search-services-$bamboo_maven_version.zip -d target/docker-resources
+cd "$bamboo_working_directory"
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 dockerImage="quay.io/alfresco/search-services:$bamboo_maven_version"
