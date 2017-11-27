@@ -1,12 +1,9 @@
 package org.alfresco.rest.tags.nodes;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestTagModelsCollection;
+import org.alfresco.rest.tags.TagsDataPrep;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser.ListUserWithRoles;
-import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -19,32 +16,17 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class GetNodeTagsTests extends RestTest
+public class GetNodeTagsTests extends TagsDataPrep
 {
-    private UserModel adminUserModel;
-    private SiteModel siteModel;
-    private ListUserWithRoles usersWithRoles;
-    private FileModel document;
-    private RestTagModelsCollection returnedCollection;
     private String tagValue;
     private String tagValue2;
     
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUserModel);
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, 
-                UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);        
-        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        
-        tagValue = RandomData.getRandomName("tag");
-        restClient.withCoreAPI().usingResource(document).addTag(tagValue);
-        
-        tagValue2 = RandomData.getRandomName("tag");
-        restClient.withCoreAPI().usingResource(document).addTag(tagValue2);
+        init();
+        tagValue = documentTagValue;
+        tagValue2 = documentTagValue2;
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
@@ -53,7 +35,7 @@ public class GetNodeTagsTests extends RestTest
     public void siteManagerIsAbleToRetrieveNodeTags() throws Exception
     {        
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        
+
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
@@ -67,7 +49,7 @@ public class GetNodeTagsTests extends RestTest
     public void siteCollaboratorIsAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
-        
+
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
@@ -81,7 +63,7 @@ public class GetNodeTagsTests extends RestTest
     public void siteContributorIsAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
-        
+
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
@@ -95,7 +77,7 @@ public class GetNodeTagsTests extends RestTest
     public void siteConsumerIsAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
-        
+
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
@@ -157,12 +139,10 @@ public class GetNodeTagsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void userWithoutPermissionsTest() throws Exception
     {
-        SiteModel site = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
-        FileModel document = dataContent.usingSite(site).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        String tagValue = RandomData.getRandomName("tag");
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(tagValue);
+        SiteModel moderatedSite = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
+        FileModel moderatedDocument = dataContent.usingSite(moderatedSite).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        restClient.authenticateUser(dataUser.createRandomTestUser()).withCoreAPI().usingResource(document).getNodeTags();
+        restClient.authenticateUser(dataUser.createRandomTestUser()).withCoreAPI().usingResource(moderatedDocument).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
                 .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY)
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
@@ -174,11 +154,11 @@ public class GetNodeTagsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void nonexistentNodeTest() throws Exception
     {
-        FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel badDocument = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         String nodeRef = RandomStringUtils.randomAlphanumeric(10);
-        document.setNodeRef(nodeRef);
+        badDocument.setNodeRef(nodeRef);
 
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getNodeTags();
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(badDocument).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nodeRef));
     }
 
@@ -187,10 +167,10 @@ public class GetNodeTagsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void emptyNodeIdTest() throws Exception
     {
-        FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        document.setNodeRef("");
+        FileModel badDocument = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        badDocument.setNodeRef("");
 
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).getNodeTags();
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(badDocument).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
     }
 
@@ -247,8 +227,7 @@ public class GetNodeTagsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.getPagination().assertThat().field("maxItems").is(100)
                 .and().field("hasMoreItems").is("false")
-                .and().field("totalItems").is(2)
-                .and().field("count").is("1");
+                .and().field("count").isGreaterThan(1);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -261,7 +240,6 @@ public class GetNodeTagsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.getPagination().assertThat().field("maxItems").is(1)
                 .and().field("hasMoreItems").is("true")
-                .and().field("totalItems").is("2")
                 .and().field("count").is("1")
                 .and().field("skipCount").is("0");
     }
@@ -333,7 +311,6 @@ public class GetNodeTagsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.getPagination().assertThat().field("maxItems").is(100)
                 .and().field("hasMoreItems").is("false")
-                .and().field("totalItems").is("2")
                 .and().field("count").is("0")
                 .and().field("skipCount").is("10000");
         returnedCollection.assertThat().entriesListCountIs(0);

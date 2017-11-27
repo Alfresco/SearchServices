@@ -1,69 +1,26 @@
 package org.alfresco.rest.tags;
 
-import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class GetTagsTests extends RestTest
+public class GetTagsTests extends TagsDataPrep
 {
-    private UserModel adminUserModel;
-    private UserModel userModel;
-    private SiteModel siteModel;
-    private ListUserWithRoles usersWithRoles;
-    private RestTagModelsCollection returnedCollection;
-    
-    private String tagValue;
-    private String tagValue2;
-    private String tagValue3;
-    private FileModel document;
-    private FolderModel folder;
-    
-    @BeforeClass(alwaysRun=true)
+
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUserModel);
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-        document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
-
-        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        int noTagsBefore = returnedCollection.getEntries().size();
-        tagValue = RandomData.getRandomName("tag");
-        tagValue2 = RandomData.getRandomName("tag");
-        tagValue3 = RandomData.getRandomName("tag");
-        restClient.withCoreAPI().usingResource(document).addTags(tagValue, tagValue2);
-        restClient.withCoreAPI().usingResource(folder).addTags(tagValue3);
-
-        returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        int noTagsAfter = returnedCollection.getEntries().size();
-        int retry = 0;
-        while(noTagsAfter < noTagsBefore + 3 && retry < 30)
-        {
-            Utility.waitToLoopTime(2);
-            returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-            noTagsAfter = returnedCollection.getEntries().size();
-            retry++;
-        }
+        init();
     }
-    
+
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tags using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void getTagsWithManagerRole() throws Exception
@@ -72,8 +29,8 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());    
+            .and().entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Collaborator role gets tags using REST API and status code is OK (200)")
@@ -84,8 +41,8 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());
+            .and().entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Contributor role gets tags using REST API and status code is OK (200)")
@@ -96,8 +53,8 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());    
+            .and().entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Consumer role gets tags using REST API and status code is OK (200)")
@@ -108,8 +65,8 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());    
+            .and().entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
@@ -154,8 +111,8 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListContains("tag", tagValue.toLowerCase())
-                .and().entriesListContains("tag", tagValue2.toLowerCase());
+                .and().entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -167,7 +124,7 @@ public class GetTagsTests extends RestTest
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListContains("tag", tagValue3.toLowerCase());
+                .and().entriesListContains("tag", folderTagValue.toLowerCase());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -180,8 +137,8 @@ public class GetTagsTests extends RestTest
                 .withParams("maxItems=5000&properties=tag").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListContains("tag", tagValue.toLowerCase())
-                .and().entriesListContains("tag", tagValue2.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase())
                 .and().entriesListDoesNotContain("id");
     }
 

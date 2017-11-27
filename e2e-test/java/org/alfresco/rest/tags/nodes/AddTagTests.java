@@ -1,17 +1,15 @@
 package org.alfresco.rest.tags.nodes;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
+import org.alfresco.rest.tags.TagsDataPrep;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -25,12 +23,8 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/3/2016.
  */
-public class AddTagTests extends RestTest
+public class AddTagTests extends TagsDataPrep
 {
-    private UserModel adminUserModel, userModel;
-    private FileModel document;
-    private SiteModel siteModel;
-    private DataUser.ListUserWithRoles usersWithRoles;
     private String tagValue;
     private RestTagModel returnedModel;
     private RestCommentModel returnedModelComment;
@@ -39,11 +33,7 @@ public class AddTagTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
-                UserRole.SiteContributor);
-        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        init();
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -129,11 +119,13 @@ public class AddTagTests extends RestTest
     public void userIsNotAbleToAddTagIfAuthenticationFails() throws Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        String managerPassword = siteManager.getPassword();
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
         restClient.withCoreAPI().usingResource(document).addTag("tagUnauthorized");
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
                 .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
+        siteManager.setPassword(managerPassword);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -161,14 +153,14 @@ public class AddTagTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void addTagToInexistentNode() throws Exception
     {
-        FileModel document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-
+        String oldNodeRef = document.getNodeRef();
         String nodeRef = RandomStringUtils.randomAlphanumeric(10);
         document.setNodeRef(nodeRef);
 
         restClient.authenticateUser(adminUserModel);
         returnedModel = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nodeRef));
+        document.setNodeRef(oldNodeRef);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
@@ -189,7 +181,6 @@ public class AddTagTests extends RestTest
     public void addTagToATaggedFile() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
-        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         returnedModel = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);

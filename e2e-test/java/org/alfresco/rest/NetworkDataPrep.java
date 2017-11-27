@@ -13,25 +13,13 @@ public abstract class NetworkDataPrep extends RestTest
     protected static RestNetworkModel restNetworkModel;
     protected static String tenantDomain;
     private static boolean isInitialized = false;
-    
-    public void init()
+
+    public void init() throws Exception
     {
-        if(isInitialized)
-        {
-            
-        }
-        else
+        if(!isInitialized)
         {
             isInitialized = true;
-            try
-            {
-                initialization();
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            initialization();
         }
     }
 

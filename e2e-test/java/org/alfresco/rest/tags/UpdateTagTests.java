@@ -1,15 +1,10 @@
 package org.alfresco.rest.tags;
 
-import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -24,23 +19,15 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/4/2016.
  */
-public class UpdateTagTests extends RestTest
+public class UpdateTagTests extends TagsDataPrep
 {
-    private UserModel adminUserModel;
-    private FileModel document;
-    private SiteModel siteModel;
     private RestTagModel oldTag;
-    private DataUser.ListUserWithRoles usersWithRoles;
     private String randomTag = "";
-    private RestTagModel returnedModel;
 
     @BeforeClass(alwaysRun=true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        document = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        init();
     }
 
     @BeforeMethod(alwaysRun=true)
@@ -112,9 +99,11 @@ public class UpdateTagTests extends RestTest
     public void userIsNotAbleToUpdateTagIfAuthenticationFails() throws Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
+        String managerPassword = siteManager.getPassword();
         siteManager.setPassword("wrongPassword");
         restClient.authenticateUser(siteManager);
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
+        siteManager.setPassword(managerPassword);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
                 .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
     }

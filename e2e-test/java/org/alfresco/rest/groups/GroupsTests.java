@@ -6,6 +6,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.utility.RetryOperation;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
@@ -136,15 +138,20 @@ public class GroupsTests extends RestTest
         String groupMembershipBodyCreate = groupMembershipBody.toString();
 
         //MembershipCreation
-        restClient.withCoreAPI().usingGroups().createGroupMembershipUntilIsCreated("GROUP_"+groupName, groupMembershipBodyCreate, userModel.getUsername())
+        restClient.withCoreAPI().usingGroups().createGroupMembership("GROUP_"+groupName, groupMembershipBodyCreate)
                   .assertThat().field("displayName").is(userModel.getUsername())
                   .and().field("id").is(userModel.getUsername())
                   .and().field("memberType").is("PERSON");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         //ListGroupMembership
-        restClient.withCoreAPI().usingGroups().listGroupMemberships("GROUP_"+groupName)
-                  .assertThat().entriesListContains("id", userModel.getUsername());
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        RetryOperation op = new RetryOperation(){
+            public void execute() throws Exception{
+                restClient.withCoreAPI().usingGroups().listGroupMemberships("GROUP_"+groupName)
+                          .assertThat().entriesListContains("id", userModel.getUsername());
+                restClient.assertStatusCodeIs(HttpStatus.OK);
+            }
+        };
+        Utility.sleep(1000, 35000, op);// Allow indexing to complete.
     }
 }
