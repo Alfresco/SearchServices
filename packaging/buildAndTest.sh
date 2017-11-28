@@ -4,13 +4,13 @@ set -e
 [ "$DEBUG" ] && set -x
 
 # set current working directory to the directory of the script
-cd "$(dirname "$0")"
+cd "$bamboo_working_directory"
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="docker-internal.alfresco.com/search-services:$bamboo_maven_version"
+dockerImage="quay.io/alfresco/search-services:$bamboo_maven_version"
 echo "Building $dockerImage from $nicebranch using version $bamboo_maven_version"
 
-docker build --build-arg solrBranch=$nicebranch --build-arg solrVer=$bamboo_maven_version -t $dockerImage src/docker
+docker build -t $dockerImage target/docker-resources
 
 echo "Running tests"
 docker run --rm "$dockerImage" [ -d /opt/alfresco-search-services/solr ] || (echo "solr dir does not exist" && exit 1)

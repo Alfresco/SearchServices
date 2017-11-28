@@ -6,21 +6,33 @@ Alfresco Search Services using Alfresco and Apache Solr
 
 Git:
 
-	git clone https://github.com/Alfresco/SearchServices.git
+<code>
+git clone https://github.com/Alfresco/SearchServices.git
+</code>
 
 ### Use Maven
-1. Build
+Build project:
 
-```
+<code>
 mvn clean install
-```
+</code>
+
+All the resources needed for the docker image will be available under packaging/target/docker-resources/
 
 ### Docker
 To build the docker image:
-```
-cd packaging/src/docker
-docker build --build-arg solrUrl=http://dl.alfresco.com/release/enterprise/SearchServices/1.1.0/alfresco-search-services-1.1.0.zip -t search-services:myimage .
-```
+
+<code>
+cd packaging/target/docker-resources/
+
+docker build -t searchservices:develop .
+</code>
+
+To run the docker image:
+
+<code>
+docker run -p 8983:8983 searchservices:develop
+</code>
 
 ### License
 Copyright (C) 2005 - 2017 Alfresco Software Limited
