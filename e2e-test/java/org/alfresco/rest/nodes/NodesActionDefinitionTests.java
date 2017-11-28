@@ -38,7 +38,7 @@ public class NodesActionDefinitionTests extends RestTest
         ContentModel fileActionDefinitions = new ContentModel();
         fileActionDefinitions.setNodeRef(file.getId());
 
-        RestActionDefinitionModelsCollection restActionDefinitions =  restClient.withParams("autoRename=true").withCoreAPI().usingNode(fileActionDefinitions).getActionDefinitions();
+        RestActionDefinitionModelsCollection restActionDefinitions =  restClient.withCoreAPI().usingNode(fileActionDefinitions).getActionDefinitions();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertFalse(restActionDefinitions.isEmpty());
         restActionDefinitions.assertThat().entriesListContains("name", "copy");
