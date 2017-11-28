@@ -55,7 +55,7 @@ public class TagsDataPrep extends RestTest
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
 
         // Allow indexing to complete.
-        Utility.sleep(1000, 35000, () ->
+        Utility.sleep(1000, 60000, () ->
             {
                 returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
                 returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
