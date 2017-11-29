@@ -48,9 +48,9 @@ public class NodesActionDefinitionTests extends RestTest
        
     }
     
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify actions negative request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY}) 
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION}) 
     public void testActionDefinitionNegative() throws Exception{
 
         NodesBuilder nodesBuilder = restClient.withCoreAPI().usingNode(ContentModel.my()).defineNodes();
