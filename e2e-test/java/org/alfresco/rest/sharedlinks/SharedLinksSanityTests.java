@@ -3,6 +3,7 @@ package org.alfresco.rest.sharedlinks;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestSharedLinksModel;
+import org.alfresco.rest.model.RestSharedLinksModelCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -41,6 +42,8 @@ public class SharedLinksSanityTests extends RestTest
     private RestSharedLinksModel sharedLink4;
     private RestSharedLinksModel sharedLink5;
 
+    private RestSharedLinksModelCollection sharedLinksCollection;
+
     private String expiryDate = "2027-03-23T23:00:00.000+0000";
 
     @BeforeClass(alwaysRun = true)
@@ -65,7 +68,7 @@ public class SharedLinksSanityTests extends RestTest
         file5 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Verify create sharedLinks with and without Path")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Verify create sharedLinks without Path")
     @Test(groups = { TestGroup.REST_API, TestGroup.SANITY })
     public void testCreateAndGetSharedLinks() throws Exception
     {
@@ -89,6 +92,16 @@ public class SharedLinksSanityTests extends RestTest
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.equalTo(sharedLink1.getId()));
         restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.nullValue());
 
+        // Get all shared-links
+        sharedLinksCollection = restClient.withCoreAPI().usingSharedLinks().getSharedLinks();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        sharedLinksCollection.assertThat().entriesListIsNotEmpty();
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify create sharedLinks with Path")
+    @Test(groups = { TestGroup.REST_API, TestGroup.REGRESSION })
+    public void testCreateAndGetSharedLinksWithInclude() throws Exception
+    {
         // Post with includePath
         sharedLink2 = restClient.authenticateUser(testUser1).withCoreAPI().includePath().usingSharedLinks().createSharedLink(file2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
