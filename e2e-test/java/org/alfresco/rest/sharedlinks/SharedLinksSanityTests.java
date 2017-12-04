@@ -4,6 +4,7 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestSharedLinksModel;
 import org.alfresco.rest.model.RestSharedLinksModelCollection;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -92,10 +93,17 @@ public class SharedLinksSanityTests extends RestTest
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.equalTo(sharedLink1.getId()));
         restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.nullValue());
 
-        // Get all shared-links
-        sharedLinksCollection = restClient.withCoreAPI().usingSharedLinks().getSharedLinks();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        sharedLinksCollection.assertThat().entriesListIsNotEmpty();
+        /*
+         * Get all shared-links while allowing indexing to complete and check
+         * that the created shared-link is displayed
+         */
+        Utility.sleep(1000, 30000, () ->
+            {
+                sharedLinksCollection = restClient.withCoreAPI().usingSharedLinks().getSharedLinks();
+                restClient.assertStatusCodeIs(HttpStatus.OK);
+                sharedLinksCollection.assertThat().entriesListContains("id", sharedLink1.getId()).and()
+                                                  .entriesListContains("nodeId", sharedLink1.getNodeId());
+            });
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify create sharedLinks with Path")
