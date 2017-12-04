@@ -15,10 +15,9 @@ import static org.testng.Assert.assertFalse;
 
 public class ActionsTests extends RestTest
 {
-    // TODO: TestGroup.ACTIONS not TestGroup.NODES
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
             description = "Verify actions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
     public void testActionDefinitions() throws Exception
     {
         restClient.authenticateUser(dataContent.getAdminUser());
@@ -35,11 +34,10 @@ public class ActionsTests extends RestTest
         restActionDefinitions.assertThat().entriesListContains("name", "check-out");
         restActionDefinitions.assertThat().entriesListContains("name", "check-in");
     }
-
-    // TODO: TestGroup.ACTIONS not TestGroup.NODES
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+    
+    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.REGRESSION,
             description = "Verify actions error conditions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.REGRESSION})
     public void testActionDefinitionsNegative() throws Exception{
         // Badly formed request -> 400
         {
