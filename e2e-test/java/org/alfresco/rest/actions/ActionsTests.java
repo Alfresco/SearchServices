@@ -1,6 +1,7 @@
 package org.alfresco.rest.actions;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -9,6 +10,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
+import static junit.framework.TestCase.fail;
 import static org.testng.Assert.assertFalse;
 
 public class ActionsTests extends RestTest
@@ -56,9 +58,17 @@ public class ActionsTests extends RestTest
         {
 
             UserModel userUnauthorized = new UserModel("invalid-user", "invalid-pasword");
-            restClient.authenticateUser(userUnauthorized).withCoreAPI().usingActions().listActionDefinitions();
-            restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
-
+            try
+            {
+                restClient.authenticateUser(userUnauthorized).withCoreAPI().usingActions().listActionDefinitions();
+                fail("Expected an empty JSON response exception");
+            }
+            catch (EmptyJsonResponseException e)
+            {
+                // Since there is no JSON for a 401, the processModels directive
+                // will throw the EmptyJsonResponseException
+                restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
+            }
         }
     }
 }
