@@ -29,10 +29,11 @@ public class ActionsTests extends RestTest
         
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertFalse(restActionDefinitions.isEmpty());
-        restActionDefinitions.assertThat().entriesListContains("name", "copy");
-        restActionDefinitions.assertThat().entriesListContains("name", "move");
-        restActionDefinitions.assertThat().entriesListContains("name", "check-out");
-        restActionDefinitions.assertThat().entriesListContains("name", "check-in");
+        restActionDefinitions.assertThat().
+                entriesListContains("name", "copy").
+                and().entriesListContains("name", "move").
+                and().entriesListContains("name", "check-out").
+                and().entriesListContains("name", "check-in");
     }
     
     @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.REGRESSION,
