@@ -8,6 +8,7 @@ import org.alfresco.rest.model.RestSubscriberModel;
 import org.alfresco.rest.model.RestSubscriberModelCollection;
 import org.alfresco.rest.model.RestSyncNodeSubscriptionModel;
 import org.alfresco.rest.model.RestSyncNodeSubscriptionModelCollection;
+import org.alfresco.rest.model.RestSyncServiceHealthCheckModel;
 import org.alfresco.rest.model.RestSyncSetChangesModel;
 import org.alfresco.rest.model.RestSyncSetGetModel;
 import org.alfresco.rest.model.RestSyncSetRequestModel;
@@ -67,7 +68,15 @@ public class SyncServiceAPITests extends RestTest
         Healthcheck healthCheck = restClient.authenticateUser(adminUserModel).withPrivateAPI().doHealthCheck();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         
-        Assert.assertTrue(healthCheck.getHealthcheck().getActiveMQConnection().getHealthy());
+        RestSyncServiceHealthCheckModel syncServiceHealthCheck = healthCheck.getHealthcheck();
+        
+        Assert.assertTrue(syncServiceHealthCheck.getActiveMQConnection().getHealthy());
+        Assert.assertTrue(syncServiceHealthCheck.getDatabaseConnection().getHealthy());
+        Assert.assertTrue(syncServiceHealthCheck.getRepositoryConnection().getHealthy());
+        Assert.assertTrue(syncServiceHealthCheck.getDeadlocks().getHealthy());
+        Assert.assertTrue(syncServiceHealthCheck.getEventsHealthCheck().getHealthy());
+        Assert.assertTrue(syncServiceHealthCheck.getSyncServiceIdCheck().getHealthy());
+        Assert.assertTrue(syncServiceHealthCheck.getVersionCheck().getHealthy());
     }
     
     @Test(priority = 2)
