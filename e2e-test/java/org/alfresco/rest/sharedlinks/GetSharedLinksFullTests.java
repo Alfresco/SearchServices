@@ -36,7 +36,7 @@ public class GetSharedLinksFullTests extends RestTest
     @Bug(id="REPO-2365")
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify that a user with permission can get allowableOperations on sharedLinks")
-    @Test(groups = { TestGroup.REST_API, TestGroup.REGRESSION })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.REGRESSION })
     public void getSharedLinksWithAllowableOperations() throws Exception
     {
         file = dataContent.usingUser(adminUser).usingSite(privateSite).createContent(DocumentType.TEXT_PLAIN);
