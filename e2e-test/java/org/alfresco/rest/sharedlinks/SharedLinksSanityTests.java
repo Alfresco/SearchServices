@@ -1,9 +1,13 @@
 package org.alfresco.rest.sharedlinks;
 
+import static org.testng.Assert.assertEquals;
+
 import javax.json.Json;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestRenditionInfoModel;
+import org.alfresco.rest.model.RestRenditionInfoModelCollection;
 import org.alfresco.rest.model.RestSharedLinksModel;
 import org.alfresco.rest.model.RestSharedLinksModelCollection;
 import org.alfresco.utility.Utility;
@@ -39,6 +43,7 @@ public class SharedLinksSanityTests extends RestTest
     private FileModel file4;
     private FileModel file5;
     private FileModel file6;
+    private FileModel file7;
 
     private RestSharedLinksModel sharedLink1;
     private RestSharedLinksModel sharedLink2;
@@ -46,8 +51,12 @@ public class SharedLinksSanityTests extends RestTest
     private RestSharedLinksModel sharedLink4;
     private RestSharedLinksModel sharedLink5;
     private RestSharedLinksModel sharedLink6;
+    private RestSharedLinksModel sharedLink7;
+    
+    private RestRenditionInfoModel nodeRenditionInfo;
 
     private RestSharedLinksModelCollection sharedLinksCollection;
+    private RestRenditionInfoModelCollection nodeRenditionInfoCollection;
 
     private String expiryDate = "2027-03-23T23:00:00.000+0000";
 
@@ -71,6 +80,7 @@ public class SharedLinksSanityTests extends RestTest
         file3 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
         file4 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
         file5 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
+        file7 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
 
         // Create file6 based on existing resource
         FileModel newFile = FileModel.getFileModelBasedOnTestDataFile("sampleContent.txt");
@@ -204,5 +214,44 @@ public class SharedLinksSanityTests extends RestTest
 
         restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRendition(sharedLink5, "doclib");
         restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Sanity tests for GET /renditions, GET /renditions/{renditionId} and GET /renditions/{renditionId}/content endpoints")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.REQUIRE_TRANSFORMATION })
+    public void testGetSharedLinkRendition() throws Exception
+    {
+        /*
+         * Create shared-link and generate renditions for node "doclib";
+         * rendition is automatically created when creating "pdf" rendition
+         */
+        sharedLink7 = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().createSharedLink(file7);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.withCoreAPI().usingNode(file7).createNodeRendition("pdf");
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+
+        // GET /renditions: wait until all renditions are created and GET all entries
+        Utility.sleep(1000, 30000, () ->
+        {
+            nodeRenditionInfoCollection = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditions(sharedLink7);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+
+            nodeRenditionInfoCollection.assertThat().entriesListCountIs(2);
+            nodeRenditionInfoCollection.getEntryByIndex(0).assertThat().field("id").is("doclib").and()
+                                                                       .field("status").is("CREATED");
+            nodeRenditionInfoCollection.getEntryByIndex(1).assertThat().field("id").is("pdf").and()
+                                                                       .field("status").is("CREATED");
+        });
+
+        // GET /renditions/{renditionId}: get specific rendition information for the file with shared link
+        nodeRenditionInfo = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRendition(sharedLink7, "pdf");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        nodeRenditionInfo.assertThat().field("id").is("pdf").and()
+                                      .field("status").is("CREATED");
+
+        // GET /renditions/{renditionId}/content: get the rendition content for file with shared link
+        restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditionContent(sharedLink7, "pdf");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertHeaderValueContains("Content-Type","application/pdf;charset=UTF-8");
+        Assert.assertTrue(restClient.onResponse().getResponse().body().asInputStream().available() > 0);
     }
 }
