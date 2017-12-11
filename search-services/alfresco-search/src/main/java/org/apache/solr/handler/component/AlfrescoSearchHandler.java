@@ -228,8 +228,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		}
 		Iterable<ContentStream> streams = req.getContentStreams();
 
-		JSONObject json = (JSONObject) req.getContext().get(
-				AbstractQParser.ALFRESCO_JSON);
+		JSONObject json = (JSONObject) req.getContext().get(AbstractQParser.ALFRESCO_JSON);
 
 		if (json == null) {
 			if (streams != null) {
@@ -254,6 +253,9 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 					throw new AlfrescoRuntimeException(
 							"IO Error parsing query parameters", e);
 				}
+			} else if(req.getParams().get(AbstractQParser.ALFRESCO_JSON) != null) {
+				//json is in the params.
+				req.getContext().put(AbstractQParser.ALFRESCO_JSON, new JSONObject(req.getParams().get(AbstractQParser.ALFRESCO_JSON)));
 			}
 		}
 	}
@@ -452,13 +454,10 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 																		// what
 																		// was
 																		// asked
-							if (req.getContext().get(
-									AbstractQParser.ALFRESCO_JSON) != null) {
-								params.set(
-										AbstractQParser.ALFRESCO_JSON,
-										((JSONObject) req.getContext().get(
-												AbstractQParser.ALFRESCO_JSON))
-												.toString());
+							if (req.getContext().get(AbstractQParser.ALFRESCO_JSON) != null) {
+								//This will add the Alfresco JSON as a parameter, overwriting the parameter if it already exists.
+								params.set(AbstractQParser.ALFRESCO_JSON,
+									req.getContext().get(AbstractQParser.ALFRESCO_JSON).toString());
 							}
 							if (rb.requestInfo != null) {
 								// we could try and detect when this is needed,

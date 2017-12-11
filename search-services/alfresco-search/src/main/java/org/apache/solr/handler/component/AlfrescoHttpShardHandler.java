@@ -36,14 +36,7 @@ public class AlfrescoHttpShardHandler extends HttpShardHandler {
    */
   protected QueryRequest makeQueryRequest(final ShardRequest sreq, ModifiableSolrParams params, String shard)
   {
-	  String json = params.get(AbstractQParser.ALFRESCO_JSON);
-      params.remove(AbstractQParser.ALFRESCO_JSON); 
-
       AlfrescoQueryRequest req = new AlfrescoQueryRequest(params, SolrRequest.METHOD.POST);
-      if(json != null)
-      {
-          req.setContentStream(new ContentStreamBase.StringStream(json));
-      }
       return req;
   }
 }
