@@ -98,8 +98,15 @@ public class DistributedAlfrescoSolrJsonTest extends AbstractAlfrescoDistributed
 
         queryResponse = query(getDefaultTestClient(),
                               true,
-                              "{\"authorities\": [ \"jim\" ], \"tenants\": [ \"\" ], \"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
-                              params("q", "t1:world", "qt", "/afts", "fq", "{!afts}AUTHORITY_FILTER_FROM_JSON", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "id asc"));
+                              null, //Send in null JSON string and pass in the ALFRESCO_JSON parameter instead
+                              params("q", "t1:world",
+                                     "ALFRESCO_JSON",  "{\"authorities\": [ \"jim\" ], \"tenants\": [ \"\" ], \"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+                                      "qt", "/afts",
+                                      "fq", "{!afts}AUTHORITY_FILTER_FROM_JSON",
+                                      "shards.qt", "/afts",
+                                      "start", "0",
+                                      "rows", "100",
+                                      "sort", "id asc"));
 
         assertEquals(queryResponse.getResults().getNumFound(), 500);
     }
