@@ -72,9 +72,6 @@ import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.util.DateUtil;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -82,6 +79,10 @@ import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.URLEncoder;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 // TODO error handling, including dealing with a repository that is not responsive (ConnectException in sendRemoteRequest)
 // TODO get text content transform status handling
@@ -489,7 +490,7 @@ public class SOLRAPIClient
             }
 
             Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            JsonParser parser = jsonFactory.createJsonParser(reader);
+            JsonParser parser = jsonFactory.createParser(reader);
             
             JsonToken token = parser.nextValue();
             while (token != null) 
