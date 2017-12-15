@@ -146,7 +146,7 @@ public class AddSiteMembershipRequestTests extends RestTest
         UserModel newMember = dataUser.createRandomTestUser();
         restClient.authenticateUser(newMember).withCoreAPI().usingMe().addSiteMembershipRequest("");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"));
+                .assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })

@@ -441,6 +441,6 @@ public class AddFavoritesTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "", "people/{personId}/favorites", adminUserModel.getUsername());
         restClient.processModel(RestPersonFavoritesModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"));;
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"));
     }
 }

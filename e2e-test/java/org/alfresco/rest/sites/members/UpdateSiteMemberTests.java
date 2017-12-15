@@ -523,8 +523,8 @@ public class UpdateSiteMemberTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "", "sites/{siteId}/members/{personId}", publicSite.getId(), siteCollaborator.getUsername());
         restClient.processModel(RestSiteMemberModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"))
-                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"))
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"))
+                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"))
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }

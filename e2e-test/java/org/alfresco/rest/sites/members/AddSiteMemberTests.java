@@ -417,8 +417,8 @@ public class AddSiteMemberTests extends RestTest
                 publicSiteModel.getId(), restClient.getParameters());
         restClient.processModel(RestSiteMemberModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"))
-                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"))
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"))
+                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"))
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
@@ -463,8 +463,8 @@ public class AddSiteMemberTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, json, "sites/{siteId}/members?{parameters}", publicSiteModel.getId(), restClient.getParameters());
         restClient.processModel(RestSiteMemberModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "N/A (through reference chain: org.alfresco.rest.api.model.SiteMember[\"role\"])"))
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "N/A (through reference chain: org.alfresco.rest.api.model.SiteMember[\"role\"])"))
+                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "N/A"))
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "N/A"))
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }

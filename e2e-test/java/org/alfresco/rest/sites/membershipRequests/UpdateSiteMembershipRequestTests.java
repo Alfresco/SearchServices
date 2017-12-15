@@ -439,8 +439,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                 .assertLastError()
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"))
-                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"))
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"))
+                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"))
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }

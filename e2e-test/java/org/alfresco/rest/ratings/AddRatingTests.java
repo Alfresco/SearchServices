@@ -371,7 +371,7 @@ public class AddRatingTests extends RestTest
 
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"));
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS },
@@ -384,7 +384,8 @@ public class AddRatingTests extends RestTest
 
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("{\"id\":\"\"}");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "N/A (through reference chain: org.alfresco.rest.api.model.NodeRating[\"id\"])"));
+                // The message is shortened for comparison as there is a Java object id in the message (random)
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "N/A"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS },
