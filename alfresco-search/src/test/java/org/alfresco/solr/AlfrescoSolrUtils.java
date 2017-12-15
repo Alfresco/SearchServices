@@ -777,6 +777,7 @@ public class AlfrescoSolrUtils
     public static class TestActChanges {
         private AclChangeSet aclChangeSet;
         private Acl acl;
+        private Acl acl2;
 
         public AclChangeSet getChangeSet() {
             return aclChangeSet;
@@ -785,12 +786,16 @@ public class AlfrescoSolrUtils
         public Acl getFirstAcl() {
             return acl;
         }
+        public Acl getSecondAcl() {
+            return acl2;
+        }
+
 
         public TestActChanges createBasicTestData() {
             aclChangeSet = getAclChangeSet(1);
 
             acl = getAcl(aclChangeSet);
-            Acl acl2 = getAcl(aclChangeSet);
+            acl2 = getAcl(aclChangeSet);
 
             AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
             AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);

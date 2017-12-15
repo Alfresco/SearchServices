@@ -40,8 +40,12 @@ public class AlfrescoJsonQueryRequest extends QueryRequest
 
     public Collection<ContentStream> getContentStreams()
     {
-        List<ContentStream> streams = new ArrayList<ContentStream>();
-        streams.add(new ContentStreamBase.StringStream(json));
-        return streams;
+        if(json != null) {
+            List<ContentStream> streams = new ArrayList<ContentStream>();
+            streams.add(new ContentStreamBase.StringStream(json));
+            return streams;
+        } else {
+            return null;
+        }
     }
 }
