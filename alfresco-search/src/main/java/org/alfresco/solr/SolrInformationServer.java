@@ -21,7 +21,9 @@ package org.alfresco.solr;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADE_FLAG;
@@ -65,8 +67,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOM
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,11 +75,27 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.carrotsearch.hppc.IntArrayList;
 
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
@@ -128,7 +144,12 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.ReaderUtil;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
@@ -146,7 +167,6 @@ import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.common.util.NamedList;
@@ -160,7 +180,6 @@ import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.FieldType;
-import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
@@ -179,8 +198,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
-
-import com.carrotsearch.hppc.IntArrayList;
 
 /**
  * This is the Solr4 implementation of the information server (index).
@@ -2426,9 +2443,11 @@ public class SolrInformationServer implements InformationServer
                                 deleteNode(processor, request, node);
 
                                 SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_UNINDEXED_NODE);
-                                solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
                                 addDocCmd.solrDoc = doc;
-                                processor.processAdd(addDocCmd);
+                                if (recordUnindexedNodes) {
+                                    solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
+                                    processor.processAdd(addDocCmd);
+                                }
 
                                 long end = System.nanoTime();
                                 this.trackerStats.addNodeTime(end - start);
