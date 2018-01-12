@@ -1926,7 +1926,11 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                 null,
                 16,
                 new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
-
+        assertAQueryIsSorted("-eager or -dog",
+                "cm_name desc",
+                null,
+                16,
+                new Integer[] { 3, 13, 4, 14, 11, 7, 8, 2, 10, 15, 5, 6, 16, 12, 9, 1 });
         assertAQueryIsSorted("-eager or -dog",
                 "@name asc",
                 null,
