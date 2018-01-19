@@ -48,7 +48,9 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Filter;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
@@ -524,7 +526,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @return
      * @throws Exception
      */
-    private JettySolrRunner createJetty(String jettyKey) throws Exception
+    private JettySolrRunner createJetty(String jettyKey, boolean basicAuth) throws Exception
     {
         if (jettyContainers.containsKey(jettyKey))
         {
@@ -534,7 +536,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             Path jettySolrHome = testDir.toPath().resolve(jettyKey);
             seedSolrHome(jettySolrHome);
-            JettySolrRunner jetty = createJetty(jettySolrHome.toFile(), null, null, false, getSchemaFile());
+            JettySolrRunner jetty = createJetty(jettySolrHome.toFile(), null, null, false, getSchemaFile(), basicAuth);
             return jetty;
         }
     }
@@ -599,7 +601,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected void createServers(String jettyKey, String[] coreNames, int numShards, Properties additionalProperties) throws Exception
     {
-        JettySolrRunner jsr =  createJetty(jettyKey);
+        boolean basicAuth = additionalProperties != null ? Boolean.parseBoolean(additionalProperties.getProperty("BasicAuth", "false")) : false;
+
+        JettySolrRunner jsr =  createJetty(jettyKey, basicAuth);
         jettyContainers.put(jettyKey, jsr);
 
         Properties properties = new Properties();
@@ -649,7 +653,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
 
             String shardKey = jettyKey+"_shard_"+i;
-            JettySolrRunner j =  createJetty(shardKey);
+            JettySolrRunner j =  createJetty(shardKey, basicAuth);
             //use the first corename specified as the Share template
             addCoreToJetty(shardKey, coreNames[0], shardname, props);
             jettyShards.add(j);
@@ -775,9 +779,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         jettyClients.clear();
     }
 
-    public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride) throws Exception
+    public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride, boolean basicAuth) throws Exception
     {
-        return createJetty(solrHome, dataDir, shardList, sslEnabled, schemaOverride, useExplicitNodeNames);
+        return createJetty(solrHome, dataDir, shardList, sslEnabled, schemaOverride, useExplicitNodeNames, basicAuth);
     }
 
     /**
@@ -792,7 +796,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      * @throws Exception
      */
     public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled,
-            String schemaOverride, boolean explicitCoreNodeName) throws Exception
+            String schemaOverride, boolean explicitCoreNodeName, boolean basicAuth) throws Exception
     {
         Properties props = new Properties();
         if (schemaOverride != null)
@@ -809,8 +813,17 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
         }
         SSLConfig sslConfig = new SSLConfig(sslEnabled, false, null, null, null, null);
-        JettyConfig config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig)
-                .build();
+
+        JettyConfig config = null;
+
+        if(basicAuth) {
+            System.out.println("###### adding basic auth ######");
+            config = JettyConfig.builder().setContext("/solr").withFilter(BasicAuthFilter.class, "/sql/*").stopAtShutdown(true).withSSLConfig(sslConfig).build();
+        } else {
+            System.out.println("###### no basic auth ######");
+            config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig).build();
+        }
+
         JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
         // .stopAtShutdown(true)
         // .withFilters(getExtraRequestFilters())
@@ -1807,6 +1820,43 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         public SolrClient getDefaultClient() {
             return defaultClient;
+        }
+    }
+
+    public static class BasicAuthFilter implements Filter {
+
+        public BasicAuthFilter() {
+
+        }
+
+        public void init(FilterConfig config) {
+
+        }
+
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
+            throws IOException, ServletException  {
+            //Parse the basic auth filter
+            String auth = ((HttpServletRequest)request).getHeader("Authorization");
+            if(auth != null) {
+                auth = auth.replace("Basic ", "");
+                byte[] bytes = Base64.getDecoder().decode(auth);
+                String decodedBytes = new String(bytes);
+                String[] pair = decodedBytes.split(":");
+                String user = pair[0];
+                String password = pair[1];
+                //Just look for the hard coded user and password.
+                if (user.equals("test") && password.equals("pass")) {
+                    filterChain.doFilter(request, response);
+                } else {
+                    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+                }
+            } else {
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+            }
+        }
+
+        public void destroy() {
+
         }
     }
 }
