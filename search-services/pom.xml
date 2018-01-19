@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
     <name>Alfresco Solr Search parent</name>
     <properties>
-        <solr.version>6.7.0-patched</solr.version>
+        <solr.version>6.6.0</solr.version>
         <alfresco-solrclient.version>6.5</alfresco-solrclient.version>
     </properties>
     <distributionManagement>
