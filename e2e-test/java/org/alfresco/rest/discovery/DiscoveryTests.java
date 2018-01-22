@@ -43,8 +43,6 @@ public class DiscoveryTests extends RestTest
         response.getRepository().getVersion().assertThat().field("patch").is(version.charAt(4));
         response.getRepository().getVersion().assertThat().field("schema").is(schema);
         response.getRepository().getEdition().equals(edition);
-        response.getRepository().getLicense().assertThat().field("expiresAt").isNotEmpty().and()
-                             .field("remainingDays").isGreaterThan(0);
         response.getRepository().getStatus().assertThat().field("isReadOnly").is(false);
     }
 }
