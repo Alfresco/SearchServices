@@ -1940,7 +1940,13 @@ public class AlfrescoSolrDataModel implements QueryConstants
          ContextAwareQuery contextAwareQuery = new ContextAwareQuery(luceneQuery, Boolean.TRUE.equals(isFilter) ? null : searchParameters);
          return contextAwareQuery;
      }
-     
+     private PropertyDefinition getPropertyDefinition(String identifier)
+     {
+         return QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI,
+                                                         getNamespaceDAO(),
+                                                         getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                                                         identifier);
+     }
     /**
      *
      * @param potentialProperty String
@@ -1976,9 +1982,17 @@ public class AlfrescoSolrDataModel implements QueryConstants
          Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(potentialProperty);
          String luceneField =  functionContext.getLuceneFieldName(fieldNameAndEnding.getFirst());
 
-         
-         PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, getNamespaceDAO(), getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
-         
+
+         PropertyDefinition propertyDef = getPropertyDefinition(fieldNameAndEnding.getFirst());
+         //Retry scan using luceneField.
+         if(propertyDef == null)
+         {
+             if(luceneField.contains("@"))
+             {
+                 int index = luceneField.lastIndexOf("@");
+                 propertyDef = getPropertyDefinition(luceneField.substring(index +1));
+             }    
+         }
          String solrSortField = null;
          if(propertyDef != null)
          {
