@@ -58,17 +58,9 @@ public class ActionsTests extends RestTest
         {
 
             UserModel userUnauthorized = new UserModel("invalid-user", "invalid-pasword");
-            try
-            {
-                restClient.authenticateUser(userUnauthorized).withCoreAPI().usingActions().listActionDefinitions();
-                fail("Expected an empty JSON response exception");
-            }
-            catch (EmptyJsonResponseException e)
-            {
-                // Since there is no JSON for a 401, the processModels directive
-                // will throw the EmptyJsonResponseException
-                restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
-            }
+            restClient.authenticateUser(userUnauthorized).withCoreAPI().usingActions().listActionDefinitions();
+
+            restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
         }
     }
 
