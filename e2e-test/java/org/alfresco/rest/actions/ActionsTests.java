@@ -2,6 +2,7 @@ package org.alfresco.rest.actions;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.EmptyJsonResponseException;
+import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -70,4 +71,24 @@ public class ActionsTests extends RestTest
             }
         }
     }
+
+    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
+            description = "Sanity test for ACTIONS endpoint GET action-definitions/{actionDefinitionId}")
+    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
+    public void testGetActionDefinitionById() throws Exception
+    {
+        restClient.authenticateUser(dataContent.getAdminUser());
+
+        RestActionDefinitionModel restActionDefinition =  restClient.
+                withCoreAPI().
+                usingActions().
+                getActionDefinitionById("add-features");
+        
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertFalse(restActionDefinition.getId().isEmpty());
+        restActionDefinition.getId().equals("add-features");
+        restActionDefinition.getDescription().equals("This will add an aspect to the matched item.");
+        restActionDefinition.getTitle().equals("Add aspect");
+    }
+
 }
