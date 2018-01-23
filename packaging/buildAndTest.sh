@@ -10,10 +10,10 @@ then
    # set current working directory to the directory of the script
    cd "$bamboo_working_directory"
 
-   tag_version="$bamboo_maven_version"
+   tag_version=`$bamboo_maven_version`
    if ["$bamboo_shortJobName" = "Release"]
    then
-      tag_version="$bamboo_release_version"
+      tag_version=`$bamboo_release_version`
    fi
 
    dockerImage="quay.io/alfresco/search-services:$tag_version"
