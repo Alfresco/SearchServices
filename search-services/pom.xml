@@ -25,9 +25,9 @@
         </snapshotRepository>
     </distributionManagement>
     <scm>
-        <connection>scm:git:https://git.alfresco.com/search_discovery/searchservices.git</connection>
-        <developerConnection>scm:git:https://git.alfresco.com/search_discovery/searchservices.git</developerConnection>
-        <url>https://git.alfresco.com/search_discovery/searchservices.git</url>
+        <connection>scm:git:git@github.com:Alfresco/SearchServices.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/SearchServices.git</developerConnection>
+        <url>https://github.com/Alfresco/SearchServices.git</url>
         <tag>HEAD</tag>
     </scm>
     <modules>
