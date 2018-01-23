@@ -11,7 +11,7 @@ then
    cd "$bamboo_working_directory"
 
    tag_version=`echo "$bamboo_maven_version"`
-   if ["$bamboo_shortJobName" = "Release"]
+   if [ "${bamboo_shortJobName}" = "Release" ]
    then
       tag_version=`echo "$bamboo_release_version"`
    fi
