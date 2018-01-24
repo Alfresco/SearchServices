@@ -18,35 +18,41 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.util.ISO8601DateFormat;
-import org.apache.solr.common.util.Hash;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Acl;
-import java.util.Date;
-import java.util.GregorianCalendar;
+
 
 /*
-* @author Joel
-*/
+ * @author Joel
+ */
 
-public class DateQuarterRouter implements DocRouter
+public class CappedRouter implements DocRouter
 {
-    public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
+
+    private long startRange;
+
+    public CappedRouter(long startRange) {
+        this.startRange = startRange;
+    }
+
+    @Override
+    public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
+        //When routing by DBID range, all acls go to all shards.
         return true;
     }
 
-    public boolean routeNode(int numShards, int shardInstance, Node node, long dbidCap) {
-        if(numShards <= 1) {
-            return true;
+    @Override
+    public boolean routeNode(int shardCount, int shardInstance, Node node, long dbidCap) {
+        long dbid = node.getId();
+
+        if(dbidCap == -1) {
+            dbidCap = Long.MAX_VALUE;
         }
 
-        String ISO8601Date = node.getShardPropertyValue();
-        //TODO: we can parse the string to make this more efficient rather then creating a calendar.
-        Date date = ISO8601DateFormat.parse(ISO8601Date);
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(date);
-        int month = cal.get(cal.MONTH);
-        int year  = cal.get(cal.YEAR);
-        return Math.ceil(((year * 12) + (month+1)) / 3) % numShards == shardInstance;
+        if(dbid >= startRange && dbid < dbidCap) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

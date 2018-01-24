@@ -57,7 +57,7 @@ public class PropertyRouter implements DocRouter
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node)
+    public boolean routeNode(int shardCount, int shardInstance, Node node, long dbidCap)
     {
         if(shardCount <= 1)
         {
@@ -90,7 +90,7 @@ public class PropertyRouter implements DocRouter
         if (shardBy == null || shardBy.isEmpty())
         {
             log.debug("Property not found or regex not matched, so falling back to DBID sharding.");
-            return fallback.routeNode(shardCount,shardInstance,node);
+            return fallback.routeNode(shardCount,shardInstance,node, dbidCap);
         }
 
         return (Math.abs(Hash.murmurhash3_x86_32(shardBy, 0, shardBy.length(), 66)) % shardCount) == shardInstance;
