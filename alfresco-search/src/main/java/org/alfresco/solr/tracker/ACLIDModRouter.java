@@ -37,7 +37,7 @@ public class ACLIDModRouter implements DocRouter
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node) {
+    public boolean routeNode(int shardCount, int shardInstance, Node node, long dbidCap) {
         if(shardCount <= 1) {
             return true;
         }

@@ -28,7 +28,7 @@ public interface Tracker
 
     void maintenance() throws Exception;
 
-    boolean hasMaintenance();
+    boolean hasMaintenance() throws Exception;
 
     Semaphore getWriteLock();
 

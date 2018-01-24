@@ -21,7 +21,6 @@ package org.alfresco.solr.tracker;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 
 import java.util.Properties;
-import java.util.Set;
 
 /*
  * @author Joel

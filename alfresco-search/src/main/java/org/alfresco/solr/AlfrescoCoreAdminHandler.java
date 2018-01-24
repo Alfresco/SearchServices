@@ -252,6 +252,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 case "ACLTXREPORT":
                     actionACLTXREPORT(rsp, params, cname);
                     break;
+                case "CHECKCAP":
+                    checkCap(rsp, params, cname);
+                    break;
                 case "REPORT":
                     actionREPORT(rsp, params, cname);
                     break;
@@ -377,7 +380,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             storeRef = new StoreRef(store);
         }
 
-        return newDefaultCore(coreName,storeRef,templateName,extraProperties,rsp);
+        return newDefaultCore(coreName, storeRef, templateName, extraProperties, rsp);
     }
 
     protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
@@ -774,7 +777,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             AclTracker tracker = trackerRegistry.getTrackerForCore(cname, AclTracker.class);
             Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
             NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildAclTxReport(getTrackerRegistry(), informationServers.get(cname),cname, tracker, acltxid));
+            report.add(cname, buildAclTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, acltxid));
             rsp.add("report", report);
         }
         else
@@ -829,6 +832,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             }
             rsp.add("report", report);
         }
+    }
+
+    private void checkCap(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException
+    {
+        InformationServer informationServer = informationServers.get(cname);
+        long cap = informationServer.getIndexCap();
+        rsp.add("CAP", cap);
     }
 
     private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,

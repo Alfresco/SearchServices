@@ -40,7 +40,7 @@ public class ACLIDMurmurRouter implements DocRouter
     }
 
     @Override
-    public boolean routeNode(int numShards, int shardInstance, Node node) {
+    public boolean routeNode(int numShards, int shardInstance, Node node, long dbidCap) {
         if(numShards <= 1) {
             return true;
         }

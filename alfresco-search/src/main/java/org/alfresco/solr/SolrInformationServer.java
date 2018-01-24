@@ -18,55 +18,6 @@
  */
 package org.alfresco.solr;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADE_FLAG;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DENIED;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_EXCEPTION_MESSAGE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_EXCEPTION_STACK;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_FIELDS;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_FTSSTATUS;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_GEO;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ISNODE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_LID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_NPATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_NULLPROPERTIES;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_OWNER;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PARENT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PARENT_ASSOC_CRC;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PRIMARYASSOCQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PRIMARYASSOCTYPEQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PRIMARYPARENT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PROPERTIES;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_QNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_READER;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SITE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_ACLTXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_ACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_INACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_INTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_TXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_TXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TAG;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TAG_SUGGEST;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TENANT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -181,6 +132,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
 
 import com.carrotsearch.hppc.IntArrayList;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.*;
 
 /**
  * This is the Solr4 implementation of the information server (index).
@@ -1649,6 +1601,88 @@ public class SolrInformationServer implements InformationServer
             processor.processAdd(cmd);
         }
     }
+
+    public void capIndex(long dbid) throws IOException
+    {
+        SolrQueryRequest request = getLocalSolrQueryRequest();
+        UpdateRequestProcessor processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+        AddUpdateCommand cmd = new AddUpdateCommand(request);
+        cmd.overwrite = true;
+        SolrInputDocument input = new SolrInputDocument();
+        input.addField(FIELD_SOLR4_ID, "TRACKER!STATE!CAP");
+        input.addField(FIELD_VERSION, 0);
+        input.addField(FIELD_DBID, -dbid); //Making this negative to ensure it is never confused with node DBID
+        input.addField(FIELD_DOC_TYPE, DOC_TYPE_STATE);
+        cmd.solrDoc = input;
+        processor.processAdd(cmd);
+    }
+
+    public void maintainCap(long dbid) throws IOException {
+        String deleteByQuery = FIELD_DBID+":{"+dbid+" TO *}";
+        deleteByQuery(deleteByQuery);
+    }
+
+    public long nodeCount()
+    {
+        return getDocListSize(FIELD_DOC_TYPE+":"+DOC_TYPE_NODE);
+    }
+
+    public long maxNodeId()
+    {
+        SolrQueryRequest request = null;
+        try
+        {
+            request = this.getLocalSolrQueryRequest();
+            ModifiableSolrParams params = new ModifiableSolrParams(request.getParams());
+            params.set("q", FIELD_DOC_TYPE+":"+DOC_TYPE_NODE);
+            // Sets the rows to zero, because we actually just want the count
+            params.set("rows", 1);
+            params.set("sort", FIELD_DBID + " desc");
+            params.set("fl", FIELD_DBID);
+            SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
+            Iterator<SolrDocument> it = docs.iterator();
+            if(it.hasNext()) {
+                SolrDocument doc = it.next();
+                long dbid = getFieldValueLong(doc, FIELD_DBID);
+                return dbid;
+            } else {
+                return 0;
+            }
+        }
+        finally
+        {
+            if (request != null) { request.close(); }
+        }
+    }
+
+    public long getIndexCap()
+    {
+        SolrQueryRequest request = null;
+        try
+        {
+            request = this.getLocalSolrQueryRequest();
+            ModifiableSolrParams params = new ModifiableSolrParams(request.getParams());
+            params.set("q", FIELD_SOLR4_ID+":TRACKER!STATE!CAP");
+            // Sets the rows to zero, because we actually just want the count
+            params.set("rows", 1);
+            params.set("fl", FIELD_DBID);
+            SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
+            Iterator<SolrDocument> it = docs.iterator();
+            if(it.hasNext()) {
+                SolrDocument doc = it.next();
+                long dbid = getFieldValueLong(doc, FIELD_DBID);
+                return Math.abs(dbid);
+            } else {
+                return -1;
+            }
+        }
+        finally
+        {
+            if (request != null) { request.close(); }
+        }
+    }
+
+
 
     @Override
     public void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException

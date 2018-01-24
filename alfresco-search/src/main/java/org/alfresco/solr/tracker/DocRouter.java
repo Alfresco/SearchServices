@@ -29,5 +29,5 @@ import org.alfresco.solr.client.Acl;
 public interface DocRouter
 {
     public boolean routeAcl(int shardCount, int shardInstance, Acl acl);
-    public boolean routeNode(int shardCount, int shardInstance, Node node);
+    public boolean routeNode(int shardCount, int shardInstance, Node node, long dbidCap);
 }

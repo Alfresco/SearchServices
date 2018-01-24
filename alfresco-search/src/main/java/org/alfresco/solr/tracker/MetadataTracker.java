@@ -72,6 +72,10 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
     private DocRouter docRouter;
     private QName shardProperty;
+    private long targetSize = -1;
+    private long dbidCap = -1;
+    private boolean maintainCap;
+    private long lastCapRun = 0;
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -83,6 +87,15 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         String shardKey = p.getProperty("shard.key");
         if(shardKey != null) {
             shardProperty = getShardProperty(shardKey);
+        }
+
+        if(shardMethod != null && ShardMethodEnum.getShardMethod(shardMethod) == ShardMethodEnum.DB_ID_RANGE)
+        {
+            if(p.containsKey("shard.start")) {
+                //If shard.start is present then we are using capped dbid router.
+                targetSize = Long.parseLong(p.getProperty("shard.targetsize", "50000000"));
+                System.out.println("####### init target size:"+targetSize);
+            }
         }
 
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
@@ -108,6 +121,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     }
 
     public void maintenance() throws Exception {
+        maintainCap();
         purgeTransactions();
         purgeNodes();
         reindexTransactions();
@@ -117,14 +131,53 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         indexNodes();
     }
 
-    public boolean hasMaintenance() {
-        return transactionsToReindex.size() > 0 ||
+    public boolean hasMaintenance() throws Exception {
+        return  aboveCap() ||
+                transactionsToReindex.size() > 0 ||
                 transactionsToIndex.size() > 0 ||
                 transactionsToPurge.size() > 0 ||
                 nodesToReindex.size() > 0 ||
                 nodesToIndex.size() > 0 ||
                 nodesToPurge.size() > 0 ||
                 queriesToReindex.size() > 0;
+    }
+
+    private boolean aboveCap() throws Exception
+    {
+        if(dbidCap > -1)
+        {
+            long currentTime = System.currentTimeMillis();
+            if(currentTime - lastCapRun > 180000) {
+                long indexTop = infoSrv.maxNodeId();
+                if(indexTop > dbidCap)
+                {
+                    maintainCap = true;
+                    return maintainCap;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private void maintainCap() throws Exception
+    {
+        if(maintainCap)
+        {
+            maintainCap = false;
+            this.lastCapRun = System.currentTimeMillis();
+            infoSrv.maintainCap(dbidCap);
+        }
     }
 
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
@@ -147,6 +200,10 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             //We have a new tracker state so do the checks.
             checkRepoAndIndexConsistency(state);
+        }
+
+        if(targetSize > -1) {
+            this.dbidCap = infoSrv.getIndexCap();
         }
 
         checkShutdown();
@@ -593,6 +650,22 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 getWriteLock().acquire();
                 //System.out.println("######## Metadata Tracket Acquiring Write Lock ########");
 
+                 /*
+        * Check to see if we are using the capped router, and if the cap has already been set.
+        */
+
+                System.out.println("######### target size:"+targetSize+":"+dbidCap);
+
+                if(targetSize > -1 && dbidCap == -1)
+                {
+                    long nodeCount = infoSrv.nodeCount();
+                    System.out.println("######### Node count:"+nodeCount);
+                    if(nodeCount > targetSize) {
+                        dbidCap = infoSrv.maxNodeId();
+                        infoSrv.capIndex(dbidCap);
+                    }
+                }
+
                 TrackerState state = getTrackerState();
 
                 //System.out.println("######## Do Track Transactions ########:"+docCount);
@@ -828,7 +901,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             for(Node node : nodes)
             {
 
-                if(docRouter.routeNode(shardCount, shardInstance, node))
+                if(docRouter.routeNode(shardCount, shardInstance, node, dbidCap))
                 {
                     filteredList.add(node);
                 }

@@ -45,7 +45,7 @@ public class DBIDRangeRouter implements DocRouter
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node) {
+    public boolean routeNode(int shardCount, int shardInstance, Node node, long dbidCap) {
         long dbid = node.getId();
         if(dbid >= startRange && dbid < endRange) {
             return true;
