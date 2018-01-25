@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
  *
  * @author mbhave
  */
-@Test(groups = {TestGroup.SYNC_API, TestGroup.REQUIRES_AMP})
+@Test(groups = { TestGroup.SYNC_API, TestGroup.REQUIRES_AMP })
 public class SyncServiceAPITests extends RestTest
 {
     private static Logger LOG = LogFactory.getLogger();
@@ -41,7 +41,7 @@ public class SyncServiceAPITests extends RestTest
     private FolderModel targetFolder2;
 
     private RestSyncNodeSubscriptionModelCollection nodeSubscriptions;
-    
+
     private String clientVersion;
 
     @BeforeClass(alwaysRun = true)
@@ -51,25 +51,24 @@ public class SyncServiceAPITests extends RestTest
         restClient.authenticateUser(adminUserModel);
 
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        
+
         targetFolder1 = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
         targetFolder2 = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
         siteModel.setGuid(restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(siteModel).getSite().getGuidWithoutVersion());
-        
+
         clientVersion = "1.1";
     }
 
     @Test(priority = 1)
     public void testSyncServiceHealthCheck() throws Exception
     {
-        // Register Device
+        // Perform HealthCheck
         Healthcheck healthCheck = restClient.authenticateUser(adminUserModel).withPrivateAPI().doHealthCheck();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+
         RestSyncServiceHealthCheckModel syncServiceHealthCheck = healthCheck.getHealthcheck();
-        
+
         Assert.assertTrue(syncServiceHealthCheck.getActiveMQConnection().getHealthy());
         Assert.assertTrue(syncServiceHealthCheck.getDatabaseConnection().getHealthy());
         Assert.assertTrue(syncServiceHealthCheck.getRepositoryConnection().getHealthy());
@@ -78,39 +77,40 @@ public class SyncServiceAPITests extends RestTest
         Assert.assertTrue(syncServiceHealthCheck.getSyncServiceIdCheck().getHealthy());
         Assert.assertTrue(syncServiceHealthCheck.getVersionCheck().getHealthy());
     }
-    
+
     @Test(priority = 2)
     public void testNewDeviceSubscription() throws Exception
     {
         // Register Device
-        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers().registerDevice("windows", clientVersion);
+        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers()
+                .registerDevice("windows", clientVersion);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.notNullValue());
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.equalTo(deviceSubscription.getId()));
 
         // Get Registered Devices
-        RestSubscriberModelCollection deviceSubscriptions = restClient.authenticateUser(adminUserModel).withParams("maxItems=500").withPrivateAPI().withSubscribers().getSubscribers();
+        RestSubscriberModelCollection deviceSubscriptions = restClient.authenticateUser(adminUserModel).withParams("maxItems=500").withPrivateAPI()
+                .withSubscribers().getSubscribers();
 
         restClient.onResponse().assertThat().body("list.entries.entry", org.hamcrest.Matchers.notNullValue());
         int noOfSubscriptions = deviceSubscriptions.getEntries().size();
         Assert.assertTrue(noOfSubscriptions > 0, "No Device subscriptions found when expected");
-        Assert.assertTrue(deviceSubscriptions.getEntries().get(noOfSubscriptions - 1).onModel().getId().equals(deviceSubscription.getId()),"Not found: " + deviceSubscription.getId());
+        Assert.assertTrue(deviceSubscriptions.getEntries().get(noOfSubscriptions - 1).onModel().getId().equals(deviceSubscription.getId()), "Not found: "
+                + deviceSubscription.getId());
 
     }
- 
+
     @Test(priority = 3)
     public void testDeviceSubcriptionToNode() throws Exception
     {
         // Register Device
-        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers().registerDevice("windows",
-                clientVersion);
+        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers()
+                .registerDevice("windows", clientVersion);
 
         // Subscribe to a node
-        RestSyncNodeSubscriptionModel nodeSubscription = restClient
-                                                            .withPrivateAPI()
-                                                                .withSubscriber(deviceSubscription)
-                                                                .subscribeToNode(targetFolder1.getNodeRefWithoutVersion(), TYPE.BOTH);
+        RestSyncNodeSubscriptionModel nodeSubscription = restClient.withPrivateAPI().withSubscriber(deviceSubscription)
+                .subscribeToNode(targetFolder1.getNodeRefWithoutVersion(), TYPE.BOTH);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         restClient.onResponse().assertThat().body("entry.deviceSubscriptionId", org.hamcrest.Matchers.notNullValue());
@@ -142,17 +142,17 @@ public class SyncServiceAPITests extends RestTest
         subscription.assertThat().field("id").isNotNull().assertThat().field("id").is(nodeSubscription.getId()).assertThat().field("deviceSubscriptionId")
                 .isNotNull().assertThat().field("deviceSubscriptionId").is(nodeSubscription.getDeviceSubscriptionId());
     }
- 
+
     @Test(priority = 4)
     public void testDeviceSubcriptionToMultipleNodes() throws Exception
     {
         // Register Device
-        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers().registerDevice("windows",
-                "1.2");
+        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers()
+                .registerDevice("windows", "1.2");
 
         // Subscribe to a node
-        restClient.withPrivateAPI().withSubscriber(deviceSubscription).subscribeToNodes(siteModel.getGuid(), targetFolder1.getNodeRefWithoutVersion(),
-                targetFolder2.getNodeRefWithoutVersion());
+        restClient.withPrivateAPI().withSubscriber(deviceSubscription)
+                .subscribeToNodes(siteModel.getGuid(), targetFolder1.getNodeRefWithoutVersion(), targetFolder2.getNodeRefWithoutVersion());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         // Get Sync Node Subscriptions
@@ -167,23 +167,18 @@ public class SyncServiceAPITests extends RestTest
     {
         // Register Device
         List<RestSyncSetChangesModel> clientChanges = new LinkedList<>();
-        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel)
-                                                            .withPrivateAPI()
-                                                            .withSubscribers()
-                                                            .registerDevice("windows","1.2");
+        RestSubscriberModel deviceSubscription = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscribers()
+                .registerDevice("windows", "1.2");
 
         // Subscribe to a node
-        RestSyncNodeSubscriptionModel nodeSubscription = restClient.withPrivateAPI()
-                                                            .withSubscriber(deviceSubscription)
-                                                            .subscribeToNode(targetFolder1.getNodeRefWithoutVersion(), TYPE.BOTH);
+        RestSyncNodeSubscriptionModel nodeSubscription = restClient.withPrivateAPI().withSubscriber(deviceSubscription)
+                .subscribeToNode(targetFolder1.getNodeRefWithoutVersion(), TYPE.BOTH);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         // Start Sync
-        RestSyncSetRequestModel syncRequest = restClient.authenticateUser(adminUserModel)
-                                               .withPrivateAPI()
-                                               .withSubscription(nodeSubscription)
-                                               .startSync(nodeSubscription, clientChanges, clientVersion);
-                             
+        RestSyncSetRequestModel syncRequest = restClient.authenticateUser(adminUserModel).withPrivateAPI().withSubscription(nodeSubscription)
+                .startSync(nodeSubscription, clientChanges, clientVersion);
+
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         Assert.assertNotNull(syncRequest.getSyncId(), "Sync Id not expected to be null");
@@ -196,14 +191,14 @@ public class SyncServiceAPITests extends RestTest
 
         // Get Sync Changes
         RestSyncSetGetModel changeSet = restClient.withPrivateAPI().withSubscription(nodeSubscription).getSync(nodeSubscription, syncRequest);
-        
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertNotNull(changeSet.getSyncId(), "Sync Id not expected to be null");
         Assert.assertTrue(changeSet.getSyncId().equals(syncId), "Incorrect SyncId in the response");
         Assert.assertNotNull(changeSet.getMoreChanges(), "MoreChanges expected to be true or false. It's null");
 
         // End Sync
-        restClient.withPrivateAPI().withSubscription(nodeSubscription).endSync(nodeSubscription,syncRequest);
+        restClient.withPrivateAPI().withSubscription(nodeSubscription).endSync(nodeSubscription, syncRequest);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 }
