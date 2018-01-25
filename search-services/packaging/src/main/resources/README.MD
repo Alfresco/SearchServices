@@ -1,5 +1,5 @@
 ## Alfresco Search Services
-Alfresco Search Services ${project.version} using Alfresco ${alfresco-solr.version} and Apache Solr ${solr.version}
+Alfresco Search Services ${project.version} using Apache Solr ${solr.version}
 
 ## Solr 6
 Solr 6 is now available as a drop in replacement for Solr 4 with Alfresco 5.2.
@@ -42,4 +42,4 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
 
-#### Build ${project.build.key} ${project.timestamp} ${project.revision.key}
+#### Build ${project.timestamp} ${project.revision.key}
