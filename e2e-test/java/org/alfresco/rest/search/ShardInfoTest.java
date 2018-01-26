@@ -1,0 +1,70 @@
+/*
+ * Copyright (C) 2005-2018 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.rest.search;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
+import java.util.List;
+
+import org.alfresco.utility.model.TestGroup;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
+
+/**
+ * Shard info end point REST API test.
+ *
+ * @author Tuna Aksoy
+ */
+public class ShardInfoTest extends AbstractSearchTest
+{
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    public void getShardInfoWithAdminAuthority() throws Exception
+    {
+        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        info.assertThat().entriesListIsNotEmpty();
+        RestShardInfoModel shardInfoModel = info.getEntryByIndex(0);
+        assertEquals(shardInfoModel.getTemplate(), "rerank");
+        assertEquals(shardInfoModel.getMode(), "MASTER");
+        assertEquals(shardInfoModel.getShardMethod(), "DB_ID");
+        assertTrue(shardInfoModel.getHasContent());
+        List<RestShardModel> shards = shardInfoModel.getShards();
+        assertNotNull(shards);
+        RestShardModel shard = shards.iterator().next();
+        assertNotNull(shard);
+        List<RestInstanceModel> instances = shard.getInstances();
+        assertNotNull(instances);
+        RestInstanceModel instance = instances.iterator().next();
+        assertNotNull(instance);
+        assertEquals(instance.getBaseUrl(), "/solr/archive");
+        assertEquals(instance.getHost(), "localhost");
+        assertEquals(instance.getPort().intValue(), 8983);
+        assertEquals(instance.getState(), "ACTIVE");
+        assertEquals(instance.getMode(), "MASTER");
+    }
+
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    public void getShardInfoWithoutAdminAuthority() throws Exception
+    {
+        restClient.authenticateUser(dataUser.createRandomTestUser()).withShardInfoAPI().getInfo();
+        restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
