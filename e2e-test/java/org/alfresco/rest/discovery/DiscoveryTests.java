@@ -29,6 +29,7 @@ public class DiscoveryTests extends RestTest
     {
         // Get repository info from admin console
         RestResponse adminConsoleRepoInfo = restClient.authenticateUser(adminModel).withAdminConsole().getAdminConsoleRepoInfo();
+        String id = adminConsoleRepoInfo.getResponse().getBody().path("data.id");
         String edition = adminConsoleRepoInfo.getResponse().getBody().path("data.edition");
         String schema = adminConsoleRepoInfo.getResponse().getBody().path("data.schema");
         String version = adminConsoleRepoInfo.getResponse().getBody().path("data.version");
@@ -42,6 +43,7 @@ public class DiscoveryTests extends RestTest
         response.getRepository().getVersion().assertThat().field("minor").is(version.charAt(2));
         response.getRepository().getVersion().assertThat().field("patch").is(version.charAt(4));
         response.getRepository().getVersion().assertThat().field("schema").is(schema);
+        response.getRepository().getId().equals(id);
         response.getRepository().getEdition().equals(edition);
         response.getRepository().getStatus().assertThat().field("isReadOnly").is(false);
     }
