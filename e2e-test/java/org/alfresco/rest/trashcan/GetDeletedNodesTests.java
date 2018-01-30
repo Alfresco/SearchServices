@@ -19,6 +19,9 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestNodeModelsCollection;
+import org.alfresco.rest.model.RestRenditionInfoModel;
+import org.alfresco.rest.model.RestRenditionInfoModelCollection;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -28,6 +31,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -46,10 +50,13 @@ public class GetDeletedNodesTests extends RestTest
     private UserModel adminUserModel;
     private SiteModel deleteNodesSiteModel;
     private FolderModel deleteNodesFolder1, deleteNodesFolder2, deleteNodesFolder3, deleteNodesFolder4, deleteNodesFolder5;
-    private FileModel file, file1;
+    private FileModel file, file1, file2, file3;
 
     private RestNodeModelsCollection deletedNodes, deletedNodesMaxItem;
     private RestNodeModel node;
+
+    private RestRenditionInfoModelCollection nodeRenditionInfoCollection;
+    private RestRenditionInfoModel nodeRenditionInfo;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws DataPreparationException
@@ -152,5 +159,64 @@ public class GetDeletedNodesTests extends RestTest
         // Checks that the node was removed from trashcan 
         restClient.withCoreAPI().usingTrashcan().findDeletedNode(deleteNodesFolder5);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TRASHCAN }, executionType = ExecutionType.SANITY, description = "Sanity tests for GET /deleted-nodes/{nodeId}/content")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TRASHCAN, TestGroup.SANITY })
+    public void testGetDeletedNodesContent() throws Exception
+    {
+        // Create file2 based on existing resource
+        FileModel newFile = FileModel.getFileModelBasedOnTestDataFile("sampleContent.txt");
+        newFile.setName("sampleContent.txt");
+        file2 = dataContent.usingUser(adminUserModel).usingSite(deleteNodesSiteModel).createContent(newFile);
+
+        // Delete file2 to be moved in trashcan
+        dataContent.usingUser(adminUserModel).usingResource(file2).deleteContent();
+
+        // Make GET /deleted-nodes/{nodeId}/content and check file content
+        restClient.withCoreAPI().usingTrashcan().getDeletedNodeContent(file2);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertHeaderValueContains("Content-Disposition", file2.getName());
+        restClient.onResponse().getResponse().body().asString().contains("Sample text.");
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TRASHCAN }, executionType = ExecutionType.SANITY,
+              description = "Sanity tests for GET /deleted-nodes/{nodeId}/renditions, GET /deleted-nodes/{nodeId}/renditions/{renditionId}, GET /deleted-nodes/{nodeId}/renditions/{renditionId}/content")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TRASHCAN, TestGroup.SANITY })
+    public void testGetDeletedNodesRenditions() throws Exception
+    {
+        // Create file3 based on existing resource
+        file3 = dataContent.usingUser(adminUserModel).usingSite(deleteNodesSiteModel).createContent(DocumentType.TEXT_PLAIN);
+
+        // Create rendition and delete file3 to be moved in trashcan
+        restClient.withCoreAPI().usingNode(file3).createNodeRendition("pdf");
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        dataContent.usingUser(adminUserModel).usingResource(file3).deleteContent();
+
+        // GET /deleted-nodes/{nodeId}/renditions
+        Utility.sleep(1000, 30000, () ->
+        {
+            nodeRenditionInfoCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTrashcan().usingParams("where=(status='CREATED')").getDeletedNodeRenditions(file3);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+
+            // All renditions, created or not are retrieved. List is ordered
+            nodeRenditionInfoCollection.assertThat().entriesListCountIs(2);
+            nodeRenditionInfoCollection.getEntryByIndex(0).assertThat().field("id").is("doclib").and()
+                                                                       .field("status").is("CREATED");
+            nodeRenditionInfoCollection.getEntryByIndex(1).assertThat().field("id").is("pdf").and()
+                                                                       .field("status").is("CREATED");
+        });
+
+        // GET /deleted-nodes/{nodeId}/renditions/{id}
+        nodeRenditionInfo = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTrashcan().getDeletedNodeRendition(file3, "pdf");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        nodeRenditionInfo.assertThat().field("id").is("pdf").and()
+                                      .field("status").is("CREATED");
+
+        // GET /deleted-nodes/{nodeId}/renditions/{id}/content
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingTrashcan().getDeletedNodeRenditionContent(file3, "pdf");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertHeaderValueContains("Content-Type","application/pdf;charset=UTF-8");
+        Assert.assertTrue(restClient.onResponse().getResponse().body().asInputStream().available() > 0);
     }
 }
