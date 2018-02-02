@@ -35,7 +35,7 @@ public class DateQuarterRouter implements DocRouter
         return true;
     }
 
-    public boolean routeNode(int numShards, int shardInstance, Node node, long dbidCap) {
+    public boolean routeNode(int numShards, int shardInstance, Node node) {
         if(numShards <= 1) {
             return true;
         }

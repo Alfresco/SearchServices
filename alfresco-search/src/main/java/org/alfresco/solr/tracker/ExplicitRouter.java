@@ -23,7 +23,7 @@ public class ExplicitRouter implements DocRouter {
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node, long dbidCap) {
+    public boolean routeNode(int shardCount, int shardInstance, Node node) {
 
         if(shardCount <= 1)
         {
@@ -59,6 +59,6 @@ public class ExplicitRouter implements DocRouter {
         {
             log.debug("Shard "+shardInstance+" falling back to DBID routing for node "+node.getNodeRef());
         }
-        return fallback.routeNode(shardCount, shardInstance, node, dbidCap);
+        return fallback.routeNode(shardCount, shardInstance, node);
     }
 }

@@ -47,10 +47,6 @@ public class DocRouterFactory
                     long start = Long.parseLong(pair[0]);
                     long end = Long.parseLong(pair[1]);
                     return new DBIDRangeRouter(start, end);
-                } else if(properties.containsKey("shard.start")) {
-                    log.info("Sharding via DB_ID_RANGE with targetsize");
-                    String startDBID = properties.getProperty("shard.start");
-                    return new CappedRouter(Long.parseLong(startDBID));
                 }
             case ACL_ID:
                 log.info("Sharding via ACL_ID");
