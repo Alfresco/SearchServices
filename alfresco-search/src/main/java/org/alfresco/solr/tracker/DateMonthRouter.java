@@ -58,7 +58,7 @@ public class DateMonthRouter implements DocRouter
     }
 
     @Override
-    public boolean routeNode(int numShards, int shardInstance, Node node, long dbidCap) {
+    public boolean routeNode(int numShards, int shardInstance, Node node) {
         if(numShards <= 1) {
             return true;
         }
@@ -66,7 +66,7 @@ public class DateMonthRouter implements DocRouter
         String ISO8601Date = node.getShardPropertyValue();
 
         if(ISO8601Date == null) {
-            return dbidRouter.routeNode(numShards, shardInstance, node, dbidCap);
+            return dbidRouter.routeNode(numShards, shardInstance, node);
         }
 
         Date date = ISO8601DateFormat.parse(ISO8601Date);

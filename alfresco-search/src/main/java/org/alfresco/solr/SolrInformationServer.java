@@ -890,6 +890,37 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+    @Override
+    public void hardCommit() throws IOException
+    {
+        // avoid multiple commits and warming searchers
+        commitAndRollbackLock.writeLock().lock();
+        try
+        {
+            SolrQueryRequest request = null;
+            UpdateRequestProcessor processor = null;
+            try
+            {
+                request = getLocalSolrQueryRequest();
+                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+                CommitUpdateCommand commitUpdateCommand = new CommitUpdateCommand(request, false);
+                commitUpdateCommand.openSearcher = false;
+                commitUpdateCommand.softCommit = false;
+                commitUpdateCommand.waitSearcher = true;
+                processor.processCommit(commitUpdateCommand);
+            }
+            finally
+            {
+                if(processor != null) {processor.finish();}
+                if(request != null) {request.close();}
+            }
+        }
+        finally
+        {
+            commitAndRollbackLock.writeLock().unlock();
+        }
+    }
+
     public boolean commit(boolean openSearcher) throws IOException
     {
         canUpdate();

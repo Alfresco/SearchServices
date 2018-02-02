@@ -22,6 +22,9 @@ import org.apache.solr.common.util.Hash;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Acl;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
 
 /*
  * @author Joel
@@ -29,13 +32,33 @@ import org.alfresco.solr.client.Acl;
 
 public class DBIDRangeRouter implements DocRouter
 {
-
     private long startRange;
-    private long endRange;
+    private AtomicLong expandableRange;
+    private AtomicBoolean expanded = new AtomicBoolean(false);
 
     public DBIDRangeRouter(long startRange, long endRange) {
         this.startRange = startRange;
-        this.endRange = endRange;
+        this.expandableRange = new AtomicLong(endRange);
+    }
+
+    public void setEndRange(long endRange) {
+        expandableRange.set(endRange);
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded.set(expanded);
+    }
+
+    public long getEndRange() {
+        return expandableRange.longValue();
+    }
+
+    public long getStartRange() {
+        return this.startRange;
+    }
+
+    public boolean getExpanded() {
+        return this.expanded.get();
     }
 
     @Override
@@ -45,9 +68,9 @@ public class DBIDRangeRouter implements DocRouter
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node, long dbidCap) {
+    public boolean routeNode(int shardCount, int shardInstance, Node node) {
         long dbid = node.getId();
-        if(dbid >= startRange && dbid < endRange) {
+        if(dbid >= startRange && dbid < expandableRange.longValue()) {
             return true;
         } else {
             return false;

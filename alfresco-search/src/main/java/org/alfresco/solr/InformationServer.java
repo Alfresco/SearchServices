@@ -55,6 +55,8 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     void commit() throws IOException;
 
+    void hardCommit() throws IOException;
+
     boolean commit(boolean openSearcher) throws IOException;
 
     void indexAclTransaction(AclChangeSet changeSet, boolean overwrite) throws IOException;

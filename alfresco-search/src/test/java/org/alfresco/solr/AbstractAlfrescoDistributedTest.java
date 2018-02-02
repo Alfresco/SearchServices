@@ -37,6 +37,8 @@ import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.SolrIndexSearcher;
+import org.apache.solr.update.AddUpdateCommand;
+import org.apache.solr.update.CommitUpdateCommand;
 import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
@@ -84,7 +86,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     public static Random r;
     private AtomicInteger nodeCnt = new AtomicInteger(0);
     protected boolean useExplicitNodeNames;
-    protected String[] starts = {"0", "100", "200", "300"};
 
     public static Properties DEFAULT_CORE_PROPS = new Properties();
 
@@ -345,6 +346,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     SolrIndexSearcher searcher = refCounted.get();
                     TopDocs topDocs = searcher.search(query, 10);
                     totalCount += topDocs.totalHits;
+                    //System.out.println("####### shard count:"+core.getName()+":"+totalCount);
+                    Thread.sleep(2000);
                 } finally {
                     refCounted.decref();
                 }
@@ -356,8 +359,33 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
     }
 
+    protected void injectDocToShards(long txnId, long aclId, long dbId, String owner) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        for(SolrCore core : cores) {
+            SolrInputDocument doc = new SolrInputDocument();
+            String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbId);
+            doc.addField(FIELD_SOLR4_ID, id);
+            doc.addField(FIELD_VERSION, 0);
+            doc.addField(FIELD_DBID, "" + dbId);
+            doc.addField(FIELD_INTXID, "" + txnId);
+            doc.addField(FIELD_ACLID, "" + aclId);
+            doc.addField(FIELD_OWNER, owner);
 
-
+            AbstractAlfrescoSolrTests.SolrServletRequest solrQueryRequest = null;
+            try
+            {
+                solrQueryRequest = new AbstractAlfrescoSolrTests.SolrServletRequest(core, null);
+                AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
+                addDocCmd.overwrite = true;
+                addDocCmd.solrDoc = doc;
+                core.getUpdateHandler().addDoc(addDocCmd);
+            }
+            finally
+            {
+                solrQueryRequest.close();
+            }
+        }
+    }
 
     /**
      * Gets the cores for the jetty instances
@@ -657,14 +685,9 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             props.put("shard.instance", Integer.toString(i));
             props.put("shard.count", Integer.toString(numShards));
 
-            if("DB_ID_RANGE".equalsIgnoreCase(props.getProperty("shard.method"))) {
-                //Add
-                //If shard.start exists we are doing a different type of sharding
-                if(!props.containsKey("shard.targetsize")) {
-                    props.put("shard.range", ranges[i]);
-                } else {
-                    props.put("shard.start", starts[i]);
-                }
+            if("DB_ID_RANGE".equalsIgnoreCase(props.getProperty("shard.method")))
+            {
+                props.put("shard.range", ranges[i]);
             }
 
             String shardKey = jettyKey+"_shard_"+i;
@@ -1666,6 +1689,19 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return response;
     }
 
+    protected SolrQueryResponse callExpand(AlfrescoCoreAdminHandler coreAdminHandler,
+                                           SolrCore testingCore,
+                                           int value) {
+        SolrQueryRequest request = new LocalSolrQueryRequest(testingCore,
+            params(CoreAdminParams.ACTION, "EXPAND",
+                  CoreAdminParams.CORE, testingCore.getName(),
+                  "add", Integer.toString(value)));
+        SolrQueryResponse response = new SolrQueryResponse();
+        coreAdminHandler.handleCustomAction(request, response);
+        return response;
+    }
+
+
 
 
     protected List<Long> assertCapOnAllShards(String[] starts) throws Exception
@@ -1678,6 +1714,24 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
 
         return caps;
+    }
+
+    public SolrQueryResponse rangeCheck(int shard) {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(jettyShards);
+        SolrCore core = cores.get(shard);
+        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
+        SolrQueryResponse response = callHandler(alfrescoCoreAdminHandler, core, "RANGECHECK");
+        return response;
+    }
+
+    public SolrQueryResponse expand(int shard, int value) {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(jettyShards);
+        SolrCore core = cores.get(shard);
+        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
+        SolrQueryResponse response = callExpand(alfrescoCoreAdminHandler, core, value);
+        return response;
     }
 
     protected long assertCapForCore(AlfrescoCoreAdminHandler coreAdminHandler,

@@ -252,8 +252,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 case "ACLTXREPORT":
                     actionACLTXREPORT(rsp, params, cname);
                     break;
-                case "CHECKCAP":
-                    checkCap(rsp, params, cname);
+                case "RANGECHECK":
+                    rangeCheck(rsp, cname);
+                    break;
+                case "EXPAND":
+                    expand(rsp, params, cname);
                     break;
                 case "REPORT":
                     actionREPORT(rsp, params, cname);
@@ -364,7 +367,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         String shardIds = params.get("shardIds");
 
         Properties properties = extractCustomProperties(params);
-        return newCore(coreName,numShards,storeRef,templateName,replicationFactor,nodeInstance,numNodes,shardIds,properties,rsp);
+        return newCore(coreName, numShards, storeRef, templateName, replicationFactor, nodeInstance, numNodes, shardIds, properties, rsp);
     }
 
     private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse rsp) {
@@ -498,7 +501,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     /**
      * @param rsp
-     * @param params
      * @param storeRef
      * @param template
      * @param coreName
@@ -834,11 +836,140 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private void checkCap(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException
+    private void rangeCheck(SolrQueryResponse rsp,String cname) throws IOException
     {
         InformationServer informationServer = informationServers.get(cname);
-        long cap = informationServer.getIndexCap();
-        rsp.add("CAP", cap);
+
+        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(cname);
+        MetadataTracker metadataTracker = null;
+        for(Tracker tracker : trackers)
+        {
+            if(tracker instanceof MetadataTracker)
+            {
+                metadataTracker = (MetadataTracker)tracker;
+            }
+        }
+
+        DocRouter docRouter = metadataTracker.getDocRouter();
+
+        if(docRouter instanceof DBIDRangeRouter) {
+
+            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter) docRouter;
+            long startRange = dbidRangeRouter.getStartRange();
+            long endRange = dbidRangeRouter.getEndRange();
+
+            long maxNodeId = informationServer.maxNodeId();
+            long nodeCount = informationServer.nodeCount();
+
+            long bestGuess = -1;  // -1 means expansion cannot be done. Either because expansion
+                                 // has already happened or we're above safe range
+
+            long range = endRange - startRange; // We want this many nodes on the server
+            System.out.println("#####Range:" + range);
+
+            long midpoint = startRange + ((long) (range * .5));
+            System.out.println("#####Midpoint:"+midpoint);
+
+            long safe = startRange + ((long) (range * .75));
+            System.out.println("#####Safe:"+safe);
+
+
+            long offset = maxNodeId-startRange;
+            System.out.println("#####offset:"+offset);
+
+            System.out.println("#####max nodeid:"+maxNodeId);
+
+            double density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
+
+            if (!dbidRangeRouter.getExpanded()) {
+                if(maxNodeId <= safe) {
+                    if (maxNodeId >= midpoint) {
+                        System.out.println("#####density:"+density);
+                        if(density >=1) {
+                            //This is fully dense shard. I'm not sure if it's possible to have more nodes on the shards
+                            //then the offset, but if it does happen don't expand.
+                            bestGuess=0;
+                        } else {
+                            //This is a naive prediction which simply multiplies the current density across the entire range.
+                            double predicted = density * range;
+                            long delta = range - ((long) predicted); // We will be short by this much
+                            bestGuess = delta; //Expand by the delta.
+                        }
+                    } else {
+                        bestGuess = 0; // We're below the midpoint so it's to early to make a guess.
+                    }
+                }
+            }
+
+            rsp.add("start", startRange);
+            rsp.add("end", endRange);
+            rsp.add("nodeCount", nodeCount);
+            rsp.add("maxDbid", maxNodeId);
+            rsp.add("density", Math.abs(density));
+            rsp.add("expand", bestGuess);
+            rsp.add("expanded", dbidRangeRouter.getExpanded());
+
+        } else {
+            rsp.add("expand", -1);
+            rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
+            return;
+        }
+    }
+
+    private synchronized void expand(SolrQueryResponse rsp, SolrParams params, String cname)
+        throws IOException
+    {
+        InformationServer informationServer = informationServers.get(cname);
+        //Get the in-memory information from MetaDataTracker
+        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(cname);
+        MetadataTracker metadataTracker = null;
+        for(Tracker tracker : trackers)
+        {
+            if(tracker instanceof MetadataTracker)
+            {
+                metadataTracker = (MetadataTracker)tracker;
+            }
+        }
+
+        DocRouter docRouter = metadataTracker.getDocRouter();
+
+        if(docRouter instanceof DBIDRangeRouter) {
+            long expansion = Long.parseLong(params.get("add"));
+            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
+
+            if(dbidRangeRouter.getExpanded()) {
+                rsp.add("expand", -1);
+                rsp.add("exception", "ERROR: dbid range has already been expanded.");
+                return;
+            }
+
+            long currentEndRange = dbidRangeRouter.getEndRange();
+            long startRange = dbidRangeRouter.getStartRange();
+            long maxNodeId = informationServer.maxNodeId();
+
+            long range = currentEndRange-startRange;
+            long safe = startRange + ((long) (range * .75));
+
+            if(maxNodeId > safe) {
+                rsp.add("expand", -1);
+                rsp.add("exception", "ERROR: Expansion cannot occur if max DBID in the index is more then 75% of range.");
+                return;
+            }
+
+            long newEndRange = expansion+dbidRangeRouter.getEndRange();
+            informationServer.capIndex(newEndRange);
+            informationServer.hardCommit();
+            dbidRangeRouter.setEndRange(newEndRange);
+            dbidRangeRouter.setExpanded(true);
+
+            assert newEndRange == dbidRangeRouter.getEndRange();
+
+            rsp.add("expand", dbidRangeRouter.getEndRange());
+        } else {
+            rsp.add("expand", -1);
+            rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
+            return;
+        }
     }
 
     private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
