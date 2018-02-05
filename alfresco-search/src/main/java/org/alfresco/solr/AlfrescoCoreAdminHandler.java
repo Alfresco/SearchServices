@@ -865,19 +865,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                                  // has already happened or we're above safe range
 
             long range = endRange - startRange; // We want this many nodes on the server
-            System.out.println("##### Range:" + range);
+            //System.out.println("##### Range:" + range);
 
             long midpoint = startRange + ((long) (range * .5));
-            System.out.println("##### Midpoint:"+midpoint);
+            //System.out.println("##### Midpoint:"+midpoint);
 
             long safe = startRange + ((long) (range * .75));
-            System.out.println("##### Safe:"+safe);
+            //System.out.println("##### Safe:"+safe);
 
 
             long offset = maxNodeId-startRange;
-            System.out.println("#####offset:"+offset);
+            //System.out.println("#####offset:"+offset);
 
-            System.out.println("#####max nodeid:"+maxNodeId);
+            //System.out.println("#####max nodeid:"+maxNodeId);
 
             double density = 0;
 
@@ -885,7 +885,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
             }
 
-            System.out.println("#####density:"+density);
+            //System.out.println("#####density:"+density);
 
             if (!dbidRangeRouter.getExpanded())
             {
