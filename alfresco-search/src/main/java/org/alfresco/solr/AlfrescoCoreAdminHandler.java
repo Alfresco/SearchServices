@@ -865,13 +865,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                                  // has already happened or we're above safe range
 
             long range = endRange - startRange; // We want this many nodes on the server
-            System.out.println("#####Range:" + range);
+            System.out.println("##### Range:" + range);
 
             long midpoint = startRange + ((long) (range * .5));
-            System.out.println("#####Midpoint:"+midpoint);
+            System.out.println("##### Midpoint:"+midpoint);
 
             long safe = startRange + ((long) (range * .75));
-            System.out.println("#####Safe:"+safe);
+            System.out.println("##### Safe:"+safe);
 
 
             long offset = maxNodeId-startRange;
@@ -879,23 +879,34 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
             System.out.println("#####max nodeid:"+maxNodeId);
 
-            double density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
+            double density = 0;
 
-            if (!dbidRangeRouter.getExpanded()) {
-                if(maxNodeId <= safe) {
-                    if (maxNodeId >= midpoint) {
-                        System.out.println("#####density:"+density);
-                        if(density >=1) {
+            if(offset > 0) {
+                density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
+            }
+
+            System.out.println("#####density:"+density);
+
+            if (!dbidRangeRouter.getExpanded())
+            {
+                if(maxNodeId <= safe)
+                {
+                    if (maxNodeId >= midpoint)
+                    {
+                        if(density >= 1)
+                        {
                             //This is fully dense shard. I'm not sure if it's possible to have more nodes on the shards
                             //then the offset, but if it does happen don't expand.
                             bestGuess=0;
-                        } else {
-                            //This is a naive prediction which simply multiplies the current density across the entire range.
-                            double predicted = density * range;
-                            long delta = range - ((long) predicted); // We will be short by this much
-                            bestGuess = delta; //Expand by the delta.
                         }
-                    } else {
+                        else
+                        {
+                            double multiplier = range / (density*range); // Extrapolate across the entire range to find the multiplier
+                            bestGuess = (long)(range*multiplier)-range; // This is how much to add
+                        }
+                    }
+                    else
+                    {
                         bestGuess = 0; // We're below the midpoint so it's to early to make a guess.
                     }
                 }

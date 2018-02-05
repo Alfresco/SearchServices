@@ -184,7 +184,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values0.get("nodeCount"), 51);
         assertEquals((long) values0.get("maxDbid"), 60);
         assertEquals((double) values0.get("density"), .85, 0.0);
-        assertEquals((long) values0.get("expand"), 15);
+        assertEquals((long) values0.get("expand"), 17);
         assertEquals((boolean) values0.get("expanded"), false);
 
         System.out.println("_RANGECHECK0:" + values0);
@@ -282,8 +282,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("expand"), 0);
         assertEquals((boolean) values1.get("expanded"), false);
 
-
-        numNodes = 50;
+        numNodes = 35;
         nodes = new ArrayList();
         nodeMetaDatas = new ArrayList();
 
@@ -291,14 +290,14 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
 
         for(int i=0; i<numNodes; i++) {
             int aclIndex = i % numAcls;
-            Node node = getNode((long)i+110, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            Node node = getNode((long)i+120, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "mike", null, false);
             nodeMetaDatas.add(nodeMetaData);
         }
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 111, 100000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 96 , 100000);
 
         response0 = rangeCheck(0);
         values0 = response0.getValues();
@@ -314,18 +313,19 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         response1 = rangeCheck(1);
         values1 = response1.getValues();
         System.out.println("_RANGECHECK1:" + values1);
-        //{start=100,end=200,nodeCount=55,maxDbid=159,density=0.9322033898305084,expand=7,expanded=false}
+        //{start=100,end=200,nodeCount=40,maxDbid=154,density=0.7407407407407407,expand=35,expanded=false}
 
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long) values1.get("end"), 200);
-        assertEquals((long) values1.get("nodeCount"), 55);
-        assertEquals((long) values1.get("maxDbid"), 159);
-        assertEquals((double) values1.get("density"), 0.9322033898305084, 0.0);
-        assertEquals((long) values1.get("expand"), 7);
+        assertEquals((long) values1.get("nodeCount"), 40);
+        assertEquals((long) values1.get("maxDbid"), 154);
+        assertEquals((double) values1.get("density"), 0.7407407407407407, 0.0);
+        assertEquals((long) values1.get("expand"), 35);
         assertEquals((boolean) values1.get("expanded"), false);
 
+
         //expand shard1 by 20
-        expand(1, 20);
+        expand(1, 35);
         waitForShardsCount(new TermQuery(new Term(FIELD_SOLR4_ID, "TRACKER!STATE!CAP")),
             1,
             100000,
@@ -334,12 +334,13 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         response1 = rangeCheck(1);
         values1 = response1.getValues();
         System.out.println("_RANGECHECK1:" + values1);
-        //{start=100,end=220,nodeCount=55,maxDbid=159,density=0.9322033898305084,expand=-1,expanded=true}
+        //{start=100,end=235,nodeCount=40,maxDbid=154,density=0.7407407407407407,expand=-1,expanded=true}
+
         assertEquals((long) values1.get("start"), 100);
-        assertEquals((long) values1.get("end"), 220);
-        assertEquals((long) values1.get("nodeCount"), 55);
-        assertEquals((long) values1.get("maxDbid"), 159);
-        assertEquals((double) values1.get("density"), 0.9322033898305084, 0.0);
+        assertEquals((long) values1.get("end"), 235);
+        assertEquals((long) values1.get("nodeCount"), 40);
+        assertEquals((long) values1.get("maxDbid"), 154);
+        assertEquals((double) values1.get("density"),0.7407407407407407, 0.0);
         assertEquals((long) values1.get("expand"), -1);
         assertEquals((boolean) values1.get("expanded"), true);
 
@@ -351,25 +352,25 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
 
         for(int i=0; i<numNodes; i++) {
             int aclIndex = i % numAcls;
-            Node node = getNode((long)i+210, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            Node node = getNode((long)i+230, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "mike", null, false);
             nodeMetaDatas.add(nodeMetaData);
         }
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 114, 100000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 99, 100000);
 
         response1 = rangeCheck(1);
         values1 = response1.getValues();
         System.out.println("_RANGECHECK1:" + values1);
-        //{start=100,end=220,nodeCount=58,maxDbid=212,density=0.5178571428571429,expand=-1,expanded=true}
+        //{start=100,end=235,nodeCount=43,maxDbid=232,density=0.32575757575757575,expand=-1,expanded=true}
 
         assertEquals((long) values1.get("start"), 100);
-        assertEquals((long) values1.get("end"), 220);
-        assertEquals((long) values1.get("nodeCount"), 58);
-        assertEquals((long) values1.get("maxDbid"), 212);
-        assertEquals((double) values1.get("density"), 0.5178571428571429, 0.0);
+        assertEquals((long) values1.get("end"), 235);
+        assertEquals((long) values1.get("nodeCount"), 43);
+        assertEquals((long) values1.get("maxDbid"), 232);
+        assertEquals((double) values1.get("density"), 0.32575757575757575, 0.0);
         assertEquals((long) values1.get("expand"), -1);
         assertEquals((boolean) values1.get("expanded"), true);
 

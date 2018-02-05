@@ -158,14 +158,13 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         if(docRouter instanceof DBIDRangeRouter)
         {
             DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
-            if(!dbidRangeRouter.getExpanded())
-            {
-                long indexCap = infoSrv.getIndexCap();
-                if(indexCap > 0)
-                {
-                    dbidRangeRouter.setExpanded(true);
-                    dbidRangeRouter.setEndRange(indexCap);
-                }
+            long indexCap = infoSrv.getIndexCap();
+            long endRange = dbidRangeRouter.getEndRange();
+            assert(indexCap == -1 || indexCap >= endRange);
+
+            if(indexCap > endRange) {
+                dbidRangeRouter.setExpanded(true);
+                dbidRangeRouter.setEndRange(indexCap);
             }
         }
 
