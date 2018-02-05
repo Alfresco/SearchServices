@@ -8,6 +8,11 @@
     <baseDirectory>${project.artifactId}</baseDirectory>
     <fileSets>
         <fileSet>
+            <directory>${project.build.outputDirectory}/solr/server/solr-webapp/webapp/img</directory>
+            <outputDirectory>./solr/server/solr-webapp/webapp/img</outputDirectory>
+            <filtered>false</filtered>
+        </fileSet>
+        <fileSet>
             <directory>${project.build.outputDirectory}</directory>
             <outputDirectory>.</outputDirectory>
             <filtered>true</filtered>
@@ -39,7 +44,6 @@
                 <exclude>**/example/**</exclude>
                 <exclude>**/bin/solr.in.sh</exclude>
                 <exclude>**/bin/solr.in.cmd</exclude>
-                
             </excludes>
         </fileSet>
         <!-- Solr config -->
