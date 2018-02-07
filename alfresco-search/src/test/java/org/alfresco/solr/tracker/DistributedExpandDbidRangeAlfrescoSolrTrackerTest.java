@@ -93,6 +93,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long)values0.get("start"), 0);
         assertEquals((long)values0.get("end"), 100);
         assertEquals((long)values0.get("nodeCount"), 0);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long)values0.get("maxDbid"), 0);
         assertEquals((long)values0.get("expand"), 0);
         assertEquals((boolean)values0.get("expanded"), false);
@@ -106,9 +107,10 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         //{start=100,end=200,nodeCount=0,maxDbid=0,density=0.0,expand=0,expanded=false}
         System.out.println("RANGECHECK1:" + values1);
 
-        assertEquals((long)values1.get("start"), 100);
+        assertEquals((long) values1.get("start"), 100);
         assertEquals((long)values1.get("end"), 200);
         assertEquals((long)values1.get("nodeCount"), 0);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long)values1.get("maxDbid"), 0);
         assertEquals((long)values1.get("expand"), 0);
         assertEquals((boolean) values1.get("expanded"), false);
@@ -139,6 +141,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values0.get("start"), 0);
         assertEquals((long) values0.get("end"), 100);
         assertEquals((long) values0.get("nodeCount"), 25);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values0.get("maxDbid"), 24);
         assertEquals((long) values0.get("expand"), 0);
         assertEquals((boolean) values0.get("expanded"), false);
@@ -150,6 +153,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long)values1.get("end"), 200);
         assertEquals((long) values1.get("nodeCount"), 0);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values1.get("maxDbid"), 0);
         assertEquals((long) values1.get("expand"), 0);
         assertEquals((boolean) values1.get("expanded"), false);
@@ -182,6 +186,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values0.get("start"), 0);
         assertEquals((long)values0.get("end"), 100);
         assertEquals((long) values0.get("nodeCount"), 51);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values0.get("maxDbid"), 60);
         assertEquals((double) values0.get("density"), .85, 0.0);
         assertEquals((long) values0.get("expand"), 17);
@@ -194,6 +199,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long)values1.get("end"), 200);
         assertEquals((long) values1.get("nodeCount"), 0);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values1.get("maxDbid"), 0);
         assertEquals((long) values1.get("expand"), 0);
         assertEquals((boolean) values1.get("expanded"), false);
@@ -224,6 +230,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values0.get("start"), 0);
         assertEquals((long) values0.get("end"), 100);
         assertEquals((long) values0.get("nodeCount"), 56);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values0.get("maxDbid"), 76);
         assertEquals((double) values0.get("density"), 0.7368421052631579, 0.0);
         assertEquals((long) values0.get("expand"), -1);
@@ -239,6 +246,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long) values1.get("end"), 200);
         assertEquals((long) values1.get("nodeCount"), 0);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values1.get("maxDbid"), 0);
         assertEquals((long) values1.get("expand"), 0);
         assertEquals((boolean) values1.get("expanded"), false);
@@ -266,6 +274,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values0.get("start"), 0);
         assertEquals((long) values0.get("end"), 100);
         assertEquals((long) values0.get("nodeCount"), 56);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values0.get("maxDbid"), 76);
         assertEquals((double) values0.get("density"), 0.7368421052631579, 0.0);
         assertEquals((long) values0.get("expand"), -1);
@@ -278,6 +287,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long) values1.get("end"), 200);
         assertEquals((long) values1.get("nodeCount"), 5);
+        assertEquals((long)values1.get("minDbid"), 100);
         assertEquals((long) values1.get("maxDbid"), 104);
         assertEquals((long) values1.get("expand"), 0);
         assertEquals((boolean) values1.get("expanded"), false);
@@ -305,6 +315,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values0.get("start"), 0);
         assertEquals((long) values0.get("end"), 100);
         assertEquals((long) values0.get("nodeCount"), 56);
+        assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values0.get("maxDbid"), 76);
         assertEquals((double) values0.get("density"), 0.7368421052631579, 0.0);
         assertEquals((long) values0.get("expand"), -1);
@@ -318,6 +329,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long) values1.get("end"), 200);
         assertEquals((long) values1.get("nodeCount"), 40);
+        assertEquals((long)values1.get("minDbid"), 100);
         assertEquals((long) values1.get("maxDbid"), 154);
         assertEquals((double) values1.get("density"), 0.7407407407407407, 0.0);
         assertEquals((long) values1.get("expand"), 35);
@@ -339,6 +351,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long) values1.get("end"), 235);
         assertEquals((long) values1.get("nodeCount"), 40);
+        assertEquals((long)values1.get("minDbid"), 100);
         assertEquals((long) values1.get("maxDbid"), 154);
         assertEquals((double) values1.get("density"),0.7407407407407407, 0.0);
         assertEquals((long) values1.get("expand"), -1);
@@ -350,7 +363,8 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
 
         bigTxn = getTransaction(0, numNodes);
 
-        for(int i=0; i<numNodes; i++) {
+        for(int i=0; i<numNodes; i++)
+        {
             int aclIndex = i % numAcls;
             Node node = getNode((long)i+230, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
@@ -369,10 +383,13 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long) values1.get("end"), 235);
         assertEquals((long) values1.get("nodeCount"), 43);
+        assertEquals((long)values1.get("minDbid"), 100);
         assertEquals((long) values1.get("maxDbid"), 232);
         assertEquals((double) values1.get("density"), 0.32575757575757575, 0.0);
         assertEquals((long) values1.get("expand"), -1);
         assertEquals((boolean) values1.get("expanded"), true);
+
+        //assert(false);
 
         //Do a reload
     }

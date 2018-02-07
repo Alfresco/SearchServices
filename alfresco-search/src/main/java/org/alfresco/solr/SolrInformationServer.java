@@ -167,6 +167,8 @@ public class SolrInformationServer implements InformationServer
     public static final String SOLR_PORT = "solr.port";
     public static final String SOLR_BASEURL = "solr.baseurl";
 
+    public static String indexCapId = "TRACKER!STATE!CAP";
+
 
     private static final Pattern CAPTURE_SITE = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/site/1\\.0\\}sites/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0}([^/]*)/.*" ); 
     private static final Pattern CAPTURE_TAG = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}taggable/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}([^/]*)/\\{\\}member");
@@ -1635,17 +1637,28 @@ public class SolrInformationServer implements InformationServer
 
     public void capIndex(long dbid) throws IOException
     {
-        SolrQueryRequest request = getLocalSolrQueryRequest();
-        UpdateRequestProcessor processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
-        AddUpdateCommand cmd = new AddUpdateCommand(request);
-        cmd.overwrite = true;
-        SolrInputDocument input = new SolrInputDocument();
-        input.addField(FIELD_SOLR4_ID, "TRACKER!STATE!CAP");
-        input.addField(FIELD_VERSION, 0);
-        input.addField(FIELD_DBID, -dbid); //Making this negative to ensure it is never confused with node DBID
-        input.addField(FIELD_DOC_TYPE, DOC_TYPE_STATE);
-        cmd.solrDoc = input;
-        processor.processAdd(cmd);
+        SolrQueryRequest request = null;
+        UpdateRequestProcessor processor = null;
+
+        try
+        {
+            request = getLocalSolrQueryRequest();
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            AddUpdateCommand cmd = new AddUpdateCommand(request);
+            cmd.overwrite = true;
+            SolrInputDocument input = new SolrInputDocument();
+            input.addField(FIELD_SOLR4_ID, indexCapId);
+            input.addField(FIELD_VERSION, 0);
+            input.addField(FIELD_DBID, -dbid); //Making this negative to ensure it is never confused with node DBID
+            input.addField(FIELD_DOC_TYPE, DOC_TYPE_STATE);
+            cmd.solrDoc = input;
+            processor.processAdd(cmd);
+        }
+        finally
+        {
+            if(processor != null) {processor.finish();}
+            if(request != null) {request.close();}
+        }
     }
 
     public void maintainCap(long dbid) throws IOException {
@@ -1658,7 +1671,15 @@ public class SolrInformationServer implements InformationServer
         return getDocListSize(FIELD_DOC_TYPE+":"+DOC_TYPE_NODE);
     }
 
-    public long maxNodeId()
+    public long maxNodeId() {
+        return topNodeId("desc");
+    }
+
+    public long minNodeId() {
+        return topNodeId("asc");
+    }
+
+    private long topNodeId(String sortDir)
     {
         SolrQueryRequest request = null;
         try
@@ -1668,7 +1689,7 @@ public class SolrInformationServer implements InformationServer
             params.set("q", FIELD_DOC_TYPE+":"+DOC_TYPE_NODE);
             // Sets the rows to zero, because we actually just want the count
             params.set("rows", 1);
-            params.set("sort", FIELD_DBID + " desc");
+            params.set("sort", FIELD_DBID + " "+sortDir);
             params.set("fl", FIELD_DBID);
             SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
             Iterator<SolrDocument> it = docs.iterator();
@@ -1693,8 +1714,7 @@ public class SolrInformationServer implements InformationServer
         {
             request = this.getLocalSolrQueryRequest();
             ModifiableSolrParams params = new ModifiableSolrParams(request.getParams());
-            params.set("q", FIELD_SOLR4_ID+":TRACKER!STATE!CAP");
-            // Sets the rows to zero, because we actually just want the count
+            params.set("q", FIELD_SOLR4_ID+":"+indexCapId);
             params.set("rows", 1);
             params.set("fl", FIELD_DBID);
             SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);

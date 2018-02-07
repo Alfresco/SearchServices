@@ -79,6 +79,8 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     long maxNodeId() throws IOException;
 
+    long minNodeId() throws IOException;
+
     void maintainCap(long nodeId) throws Exception;
 
     void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException;

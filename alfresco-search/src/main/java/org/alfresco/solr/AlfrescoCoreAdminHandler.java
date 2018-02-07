@@ -836,10 +836,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private void rangeCheck(SolrQueryResponse rsp,String cname) throws IOException
+    private DocRouter getDocRouter(String cname)
     {
-        InformationServer informationServer = informationServers.get(cname);
-
         Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(cname);
         MetadataTracker metadataTracker = null;
         for(Tracker tracker : trackers)
@@ -851,6 +849,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
 
         DocRouter docRouter = metadataTracker.getDocRouter();
+        return docRouter;
+    }
+
+
+    private void rangeCheck(SolrQueryResponse rsp,String cname) throws IOException
+    {
+        InformationServer informationServer = informationServers.get(cname);
+
+        DocRouter docRouter = getDocRouter(cname);
 
         if(docRouter instanceof DBIDRangeRouter) {
 
@@ -859,33 +866,25 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             long endRange = dbidRangeRouter.getEndRange();
 
             long maxNodeId = informationServer.maxNodeId();
+            long minNodeId = informationServer.minNodeId();
             long nodeCount = informationServer.nodeCount();
 
             long bestGuess = -1;  // -1 means expansion cannot be done. Either because expansion
                                  // has already happened or we're above safe range
 
             long range = endRange - startRange; // We want this many nodes on the server
-            //System.out.println("##### Range:" + range);
 
             long midpoint = startRange + ((long) (range * .5));
-            //System.out.println("##### Midpoint:"+midpoint);
 
             long safe = startRange + ((long) (range * .75));
-            //System.out.println("##### Safe:"+safe);
-
 
             long offset = maxNodeId-startRange;
-            //System.out.println("#####offset:"+offset);
-
-            //System.out.println("#####max nodeid:"+maxNodeId);
 
             double density = 0;
 
             if(offset > 0) {
                 density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
             }
-
-            //System.out.println("#####density:"+density);
 
             if (!dbidRangeRouter.getExpanded())
             {
@@ -901,7 +900,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         }
                         else
                         {
-                            double multiplier = range / (density*range); // Extrapolate across the entire range to find the multiplier
+                            double multiplier = 1/density;
                             bestGuess = (long)(range*multiplier)-range; // This is how much to add
                         }
                     }
@@ -915,11 +914,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             rsp.add("start", startRange);
             rsp.add("end", endRange);
             rsp.add("nodeCount", nodeCount);
+            rsp.add("minDbid", minNodeId);
             rsp.add("maxDbid", maxNodeId);
             rsp.add("density", Math.abs(density));
             rsp.add("expand", bestGuess);
             rsp.add("expanded", dbidRangeRouter.getExpanded());
-
         } else {
             rsp.add("expand", -1);
             rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
@@ -931,24 +930,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         throws IOException
     {
         InformationServer informationServer = informationServers.get(cname);
-        //Get the in-memory information from MetaDataTracker
-        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(cname);
-        MetadataTracker metadataTracker = null;
-        for(Tracker tracker : trackers)
+        DocRouter docRouter = getDocRouter(cname);
+
+        if(docRouter instanceof DBIDRangeRouter)
         {
-            if(tracker instanceof MetadataTracker)
-            {
-                metadataTracker = (MetadataTracker)tracker;
-            }
-        }
-
-        DocRouter docRouter = metadataTracker.getDocRouter();
-
-        if(docRouter instanceof DBIDRangeRouter) {
             long expansion = Long.parseLong(params.get("add"));
             DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
 
-            if(dbidRangeRouter.getExpanded()) {
+            if(dbidRangeRouter.getExpanded())
+            {
                 rsp.add("expand", -1);
                 rsp.add("exception", "ERROR: dbid range has already been expanded.");
                 return;
@@ -961,7 +951,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             long range = currentEndRange-startRange;
             long safe = startRange + ((long) (range * .75));
 
-            if(maxNodeId > safe) {
+            if(maxNodeId > safe)
+            {
                 rsp.add("expand", -1);
                 rsp.add("exception", "ERROR: Expansion cannot occur if max DBID in the index is more then 75% of range.");
                 return;
@@ -976,7 +967,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             assert newEndRange == dbidRangeRouter.getEndRange();
 
             rsp.add("expand", dbidRangeRouter.getEndRange());
-        } else {
+        }
+        else
+        {
             rsp.add("expand", -1);
             rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
             return;
