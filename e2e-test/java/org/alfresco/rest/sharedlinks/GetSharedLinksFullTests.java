@@ -1,4 +1,4 @@
-package org.alfresco.rest.sharedlinks;
+package org.alfresco.rest.sharedLinks;
 
 import javax.json.Json;
 import javax.json.JsonObject;

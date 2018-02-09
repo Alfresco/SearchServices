@@ -1,4 +1,4 @@
-package org.alfresco.rest.sharedlinks;
+package org.alfresco.rest.sharedLinks;
 
 import static org.testng.Assert.assertEquals;
 
