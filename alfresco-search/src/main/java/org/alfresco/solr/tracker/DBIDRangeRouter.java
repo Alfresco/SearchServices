@@ -35,6 +35,7 @@ public class DBIDRangeRouter implements DocRouter
     private long startRange;
     private AtomicLong expandableRange;
     private AtomicBoolean expanded = new AtomicBoolean(false);
+    private AtomicBoolean initialized = new AtomicBoolean(false);
 
     public DBIDRangeRouter(long startRange, long endRange) {
         this.startRange = startRange;
@@ -47,6 +48,14 @@ public class DBIDRangeRouter implements DocRouter
 
     public void setExpanded(boolean expanded) {
         this.expanded.set(expanded);
+    }
+
+    public void setInitialized(boolean initialized) {
+        this.initialized.set(initialized);
+    }
+
+    public boolean getInitialized() {
+        return this.initialized.get();
     }
 
     public long getEndRange() {
