@@ -908,7 +908,7 @@ public class SolrInformationServer implements InformationServer
                 CommitUpdateCommand commitUpdateCommand = new CommitUpdateCommand(request, false);
                 commitUpdateCommand.openSearcher = false;
                 commitUpdateCommand.softCommit = false;
-                commitUpdateCommand.waitSearcher = true;
+                commitUpdateCommand.waitSearcher = false;
                 processor.processCommit(commitUpdateCommand);
             }
             finally
