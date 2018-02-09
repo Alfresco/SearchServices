@@ -166,6 +166,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 dbidRangeRouter.setExpanded(true);
                 dbidRangeRouter.setEndRange(indexCap);
             }
+
+            dbidRangeRouter.setInitialized(true);
         }
 
         checkShutdown();

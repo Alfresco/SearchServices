@@ -98,8 +98,6 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long)values0.get("expand"), 0);
         assertEquals((boolean)values0.get("expanded"), false);
 
-
-
         System.out.println("RANGECHECK0:"+values0);
 
         SolrQueryResponse response1 = rangeCheck(1);
@@ -107,14 +105,13 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         //{start=100,end=200,nodeCount=0,maxDbid=0,density=0.0,expand=0,expanded=false}
         System.out.println("RANGECHECK1:" + values1);
 
-        assertEquals((long) values1.get("start"), 100);
+        assertEquals((long)values1.get("start"), 100);
         assertEquals((long)values1.get("end"), 200);
         assertEquals((long)values1.get("nodeCount"), 0);
-        assertEquals((long)values0.get("minDbid"), 0);
+        assertEquals((long)values1.get("minDbid"), 0);
         assertEquals((long)values1.get("maxDbid"), 0);
         assertEquals((long)values1.get("expand"), 0);
-        assertEquals((boolean) values1.get("expanded"), false);
-
+        assertEquals((boolean)values1.get("expanded"), false);
 
         int numNodes = 25;
         List<Node> nodes = new ArrayList();

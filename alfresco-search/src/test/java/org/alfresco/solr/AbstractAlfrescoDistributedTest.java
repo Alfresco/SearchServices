@@ -1716,13 +1716,21 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return caps;
     }
 
-    public SolrQueryResponse rangeCheck(int shard) {
-        List<SolrCore> cores = getJettyCores(jettyShards);
-        List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(jettyShards);
-        SolrCore core = cores.get(shard);
-        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
-        SolrQueryResponse response = callHandler(alfrescoCoreAdminHandler, core, "RANGECHECK");
-        return response;
+    public SolrQueryResponse rangeCheck(int shard) throws Exception {
+        while(true) {
+            List<SolrCore> cores = getJettyCores(jettyShards);
+            List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(jettyShards);
+            SolrCore core = cores.get(shard);
+            AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
+            SolrQueryResponse response = callHandler(alfrescoCoreAdminHandler, core, "RANGECHECK");
+            NamedList values = response.getValues();
+            String ex = (String)values.get("exception");
+            if(ex == null || ex.indexOf("not initialized") == -1) {
+                return response;
+            } else {
+                Thread.sleep(1000);
+            }
+        }
     }
 
     public SolrQueryResponse expand(int shard, int value) {

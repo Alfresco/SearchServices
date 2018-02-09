@@ -862,6 +862,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         if(docRouter instanceof DBIDRangeRouter) {
 
             DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter) docRouter;
+
+            if(!dbidRangeRouter.getInitialized())
+            {
+                rsp.add("expand", 0);
+                rsp.add("exception", "DBIDRangeRouter not initialized yet.");
+                return;
+            }
+
             long startRange = dbidRangeRouter.getStartRange();
             long endRange = dbidRangeRouter.getEndRange();
 
@@ -937,10 +945,17 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             long expansion = Long.parseLong(params.get("add"));
             DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
 
+            if(!dbidRangeRouter.getInitialized())
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", "DBIDRangeRouter not initialized yet.");
+                return;
+            }
+
             if(dbidRangeRouter.getExpanded())
             {
                 rsp.add("expand", -1);
-                rsp.add("exception", "ERROR: dbid range has already been expanded.");
+                rsp.add("exception", "dbid range has already been expanded.");
                 return;
             }
 
@@ -971,7 +986,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         else
         {
             rsp.add("expand", -1);
-            rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
+            rsp.add("exception", "Wrong document router type:"+docRouter.getClass().getSimpleName());
             return;
         }
     }
