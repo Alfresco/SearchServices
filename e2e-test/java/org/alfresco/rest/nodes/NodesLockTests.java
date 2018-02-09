@@ -1,14 +1,18 @@
 package org.alfresco.rest.nodes;
 
-import static org.alfresco.utility.report.log.Step.STEP;
-
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
+import org.alfresco.rest.search.RestRequestFilterQueryModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -19,6 +23,8 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import static org.alfresco.utility.report.log.Step.STEP;
 
 public class NodesLockTests extends RestTest
 {
@@ -666,4 +672,90 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
+            description = "Verify that child nodes can be locked differently and unlocked")
+    public void testLockUnlockParentChild() throws Exception
+    {
+        STEP("1. Create user, site, parent node and children nodes.");
+        SiteModel siteLock = dataSite.usingUser(adminUser).createPublicRandomSite();
+        FolderModel parentNode = dataContent.usingUser(adminUser).usingSite(siteLock).createFolder();
+        FileModel childNode1 = dataContent.usingUser(adminUser).usingSite(siteLock).usingResource(parentNode).createContent(DocumentType.TEXT_PLAIN);
+        FileModel childNode2 = dataContent.usingUser(adminUser).usingSite(siteLock).usingResource(parentNode).createContent(DocumentType.TEXT_PLAIN);
+
+        STEP("2. Verify with admin that the file is not locked.");
+        RestNodeModel restNodeResponse = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(parentNode).usingParams("include=isLocked").getNode();
+        restNodeResponse.assertThat().field("isLocked").is(false);
+
+        restNodeResponse = restClient.withCoreAPI().usingNode(childNode1).usingParams("include=isLocked").getNode();
+        restNodeResponse.assertThat().field("isLocked").is(false);
+
+        restNodeResponse = restClient.withCoreAPI().usingNode(childNode2).usingParams("include=isLocked").getNode();
+        restNodeResponse.assertThat().field("isLocked").is(false);
+
+        STEP("3. Lock  childNode1 using mode PERSISTENT with adminUser (POST nodes/{nodeId}/lock).");
+        RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
+        lockBodyModel.setLifetime("PERSISTENT");
+        lockBodyModel.setTimeToExpire(0);
+        lockBodyModel.setType("ALLOW_OWNER_CHANGES");
+        restNodeResponse = restClient.withCoreAPI().usingNode(childNode1).usingParams("include=isLocked").lockNode(lockBodyModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restNodeResponse.assertThat().field("aspectNames").contains("cm:lockable")
+                .assertThat().field("isLocked").is(true)
+                .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
+                .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+
+        STEP("4. Lock childNode2 using mode PERSISTENT with adminUser (POST nodes/{nodeId}/lock).");
+         lockBodyModel = new RestNodeLockBodyModel();
+        lockBodyModel.setLifetime("PERSISTENT");
+        lockBodyModel.setTimeToExpire(0);
+        lockBodyModel.setType("FULL");
+        restNodeResponse = restClient.withCoreAPI().usingNode(childNode2).usingParams("include=isLocked").lockNode(lockBodyModel);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restNodeResponse.assertThat().field("aspectNames").contains("cm:lockable")
+                .assertThat().field("isLocked").is(true)
+                .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
+                .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+
+        STEP("5. Verify that childNode1 and childNode 2 are locked.");
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        RestRequestFilterQueryModel queryFilters = new RestRequestFilterQueryModel();
+        queryFilters.setQuery("cm:lockOwner:\'admin\'");
+        queryReq.setQuery("ASPECT:\'cm:lockable\'");
+        query.setQuery(queryReq);
+        query.setFilterQueries(queryFilters);
+        query.setIncludeRequest(false);
+
+        // Allow indexing to complete.
+        Utility.sleep(1000, 60000, () ->
+        {
+        SearchResponse response = query(query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().entriesListContains("id",childNode1.getNodeRefWithoutVersion());
+        response.assertThat().entriesListContains("id",childNode2.getNodeRefWithoutVersion());
+        });
+
+        STEP("6. Unlock the nodes.");
+        restNodeResponse = restClient.withCoreAPI().usingNode(childNode1).usingParams("include=isLocked").unlockNode();
+        restNodeResponse.assertThat().field("isLocked").is(false);
+
+        restNodeResponse = restClient.withCoreAPI().usingNode(childNode2).usingParams("include=isLocked").unlockNode();
+        restNodeResponse.assertThat().field("isLocked").is(false);
+
+        STEP("7. Verify that childNode1 and childNode2 are not found in the query results.");
+        // Allow indexing to complete.
+        Utility.sleep(1000, 60000, () ->
+        {
+        SearchResponse response = query(query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().entriesListDoesNotContain("id",childNode1.getNodeRefWithoutVersion());
+        response.assertThat().entriesListDoesNotContain("id",childNode2.getNodeRefWithoutVersion());
+        });
+    }
+
+    protected SearchResponse query(SearchRequest query) throws Exception
+    {
+        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
+    }
 }
