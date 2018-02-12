@@ -969,7 +969,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             if(maxNodeId > safe)
             {
                 rsp.add("expand", -1);
-                rsp.add("exception", "ERROR: Expansion cannot occur if max DBID in the index is more then 75% of range.");
+                rsp.add("exception", "Expansion cannot occur if max DBID in the index is more then 75% of range.");
                 return;
             }
 
