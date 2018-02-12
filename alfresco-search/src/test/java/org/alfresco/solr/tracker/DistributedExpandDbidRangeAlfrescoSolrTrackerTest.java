@@ -334,7 +334,12 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
 
 
         //expand shard1 by 20
-        expand(1, 35);
+        SolrQueryResponse expandResponse = expand(1, 35);
+        NamedList expandValues = expandResponse.getValues();
+
+        long expanded = (long)expandValues.get("expand");
+        assertEquals(expanded, 235);
+
         waitForShardsCount(new TermQuery(new Term(FIELD_SOLR4_ID, "TRACKER!STATE!CAP")),
             1,
             100000,

@@ -974,14 +974,23 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             }
 
             long newEndRange = expansion+dbidRangeRouter.getEndRange();
-            informationServer.capIndex(newEndRange);
-            informationServer.hardCommit();
-            dbidRangeRouter.setEndRange(newEndRange);
-            dbidRangeRouter.setExpanded(true);
-
-            assert newEndRange == dbidRangeRouter.getEndRange();
-
-            rsp.add("expand", dbidRangeRouter.getEndRange());
+            try
+            {
+                informationServer.capIndex(newEndRange);
+                informationServer.hardCommit();
+                dbidRangeRouter.setEndRange(newEndRange);
+                dbidRangeRouter.setExpanded(true);
+                assert newEndRange == dbidRangeRouter.getEndRange();
+                rsp.add("expand", dbidRangeRouter.getEndRange());
+                return;
+            }
+            catch(Throwable t)
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", t.getMessage());
+                log.error("exception expanding", t);
+                return;
+            }
         }
         else
         {
