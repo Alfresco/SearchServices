@@ -233,6 +233,12 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((long) values0.get("expand"), -1);
         assertEquals((boolean) values0.get("expanded"), false);
 
+        SolrQueryResponse expandResponse = expand(0, 35);
+        NamedList expandValues = expandResponse.getValues();
+        String ex = (String)expandValues.get("exception");
+        assertEquals(ex, "Expansion cannot occur if max DBID in the index is more then 75% of range.");
+        Number expanded = (Number)expandValues.get("expand");
+        assertEquals(expanded.intValue(), -1);
 
         System.out.println("_RANGECHECK0:" + values0);
 
@@ -334,11 +340,11 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
 
 
         //expand shard1 by 20
-        SolrQueryResponse expandResponse = expand(1, 35);
-        NamedList expandValues = expandResponse.getValues();
+        expandResponse = expand(1, 35);
+        expandValues = expandResponse.getValues();
 
-        long expanded = (long)expandValues.get("expand");
-        assertEquals(expanded, 235);
+        expanded = (Number)expandValues.get("expand");
+        assertEquals(expanded.intValue(), 235);
 
         waitForShardsCount(new TermQuery(new Term(FIELD_SOLR4_ID, "TRACKER!STATE!CAP")),
             1,
