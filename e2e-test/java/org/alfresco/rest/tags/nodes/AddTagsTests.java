@@ -19,6 +19,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/7/2016.
  */
+@Test(groups = {TestGroup.REQUIRE_SOLR})
 public class AddTagsTests extends TagsDataPrep
 {
     private FileModel contributorDoc;

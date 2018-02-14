@@ -23,6 +23,7 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/3/2016.
  */
+@Test(groups = {TestGroup.REQUIRE_SOLR})
 public class AddTagTests extends TagsDataPrep
 {
     private String tagValue;

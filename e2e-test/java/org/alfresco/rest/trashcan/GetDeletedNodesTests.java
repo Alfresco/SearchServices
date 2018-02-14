@@ -180,7 +180,7 @@ public class GetDeletedNodesTests extends RestTest
         restClient.onResponse().getResponse().body().asString().contains("Sample text.");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TRASHCAN }, executionType = ExecutionType.SANITY,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TRASHCAN, TestGroup.REQUIRE_SOLR }, executionType = ExecutionType.SANITY,
               description = "Sanity tests for GET /deleted-nodes/{nodeId}/renditions, GET /deleted-nodes/{nodeId}/renditions/{renditionId}, GET /deleted-nodes/{nodeId}/renditions/{renditionId}/content")
     @Test(groups = { TestGroup.REST_API, TestGroup.TRASHCAN, TestGroup.SANITY })
     public void testGetDeletedNodesRenditions() throws Exception
@@ -196,14 +196,12 @@ public class GetDeletedNodesTests extends RestTest
         // GET /deleted-nodes/{nodeId}/renditions
         Utility.sleep(1000, 30000, () ->
         {
-            nodeRenditionInfoCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTrashcan().usingParams("where=(status='CREATED')").getDeletedNodeRenditions(file3);
+            nodeRenditionInfoCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTrashcan().getDeletedNodeRenditions(file3);
             restClient.assertStatusCodeIs(HttpStatus.OK);
 
-            // All renditions, created or not are retrieved. List is ordered
-            nodeRenditionInfoCollection.assertThat().entriesListCountIs(2);
-            nodeRenditionInfoCollection.getEntryByIndex(0).assertThat().field("id").is("doclib").and()
-                                                                       .field("status").is("CREATED");
-            nodeRenditionInfoCollection.getEntryByIndex(1).assertThat().field("id").is("pdf").and()
+            // Check if renditions are retrieved, created or not. Entries are ordered
+            nodeRenditionInfoCollection.assertThat().entriesListContains("id", "doclib");
+            nodeRenditionInfoCollection.getEntryByIndex(5).assertThat().field("id").is("pdf").and()
                                                                        .field("status").is("CREATED");
         });
 

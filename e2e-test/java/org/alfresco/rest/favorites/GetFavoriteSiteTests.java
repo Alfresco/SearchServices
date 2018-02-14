@@ -176,19 +176,6 @@ public class GetFavoriteSiteTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
-            description = "Verify invalid request returns status 404 when personId is invalid")
-    public void getFavoriteSiteWithInvalidPersonId() throws Exception
-    {
-        UserModel userSpecialChars = dataUser.usingAdmin().createUser(RandomStringUtils.randomAlphabetic(2) + "~!@#$%^&*()_+[]{}|;'d", "password");
-        userSpecialChars.setUsername(RandomStringUtils.randomAlphabetic(2) + "~!%40%23%24%25%5E%26*()_%2B%5B%5D%7B%7D%7C%5C%3B%27%3A%22%2C.%2F%3C%3E");
-
-        restClient.authenticateUser(userModel).withCoreAPI().usingUser(userSpecialChars).getFavoriteSite(siteModel1);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, userSpecialChars.getUsername()));
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify request with empty site id")
     public void getFavoriteSiteWithEmptySiteId() throws Exception
     {

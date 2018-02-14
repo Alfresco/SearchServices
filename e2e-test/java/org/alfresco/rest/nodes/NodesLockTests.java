@@ -672,7 +672,7 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
+    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION, TestGroup.REQUIRE_SOLR })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that child nodes can be locked differently and unlocked")
     public void testLockUnlockParentChild() throws Exception
@@ -728,7 +728,7 @@ public class NodesLockTests extends RestTest
         query.setIncludeRequest(false);
 
         // Allow indexing to complete.
-        Utility.sleep(1000, 180000, () ->
+        Utility.sleep(1000, 60000, () ->
         {
         SearchResponse response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -745,7 +745,7 @@ public class NodesLockTests extends RestTest
 
         STEP("7. Verify that childNode1 and childNode2 are not found in the query results.");
         // Allow indexing to complete.
-        Utility.sleep(1000, 180000, () ->
+        Utility.sleep(1000, 60000, () ->
         {
         SearchResponse response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.OK);

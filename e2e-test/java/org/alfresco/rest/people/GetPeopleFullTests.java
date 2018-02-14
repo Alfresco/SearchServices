@@ -65,22 +65,6 @@ public class GetPeopleFullTests extends RestTest
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets a person with special chars in username with Rest API and response is not found")
-    public void userChecksIfPersonWithSpecilCharsInUsernameIsNotFound() throws Exception
-    {     
-        UserModel userSpecialChars = dataUser.usingAdmin().createUser(RandomStringUtils.randomAlphabetic(2) + "~!@#$%^&*()_+[]{}|\\;':\",./<>", "password");
-        //setting the encoded text for username
-        userSpecialChars.setUsername(RandomStringUtils.randomAlphabetic(2) + "~!%40%23%24%25%5E%26*()_%2B%5B%5D%7B%7D%7C%5C%3B%27%3A%22%2C.%2F%3C%3E");
-
-        personModel = restClient.authenticateUser(managerUser).withCoreAPI().usingUser(userSpecialChars).getPerson();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, userSpecialChars.getUsername()))
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user gets a person with empty personId with Rest API and response is successful")
     public void userGetPersonWithEmptyPersonId() throws Exception
     {

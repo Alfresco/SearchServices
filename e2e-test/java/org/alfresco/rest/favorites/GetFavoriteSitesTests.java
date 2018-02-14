@@ -288,24 +288,6 @@ public class GetFavoriteSitesTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
-            description = "Verify admin gets favorite sites for username with special chars with Rest API and response status is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    public void getFavoriteSitesRequestForPersonIDWithSpecialCharacters() throws Exception
-    {
-        String randomData = RandomData.getRandomAlphanumeric();
-        UserModel userSpecialChars = dataUser.usingAdmin().createUser(randomData + "~!@#$%^&[]{}|\\;':\",./<>", "password");
-        //setting the encoded text for username
-        userSpecialChars.setUsername(randomData + "~!%40%23%24%25%5E%26%5B%5D%7B%7D%7C%5C%3B%27%3A%22%2C.%2F%3C%3E");
-
-        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(userSpecialChars).getFavoriteSites();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, randomData + "~!%40%23%24%25%5E%26%5B%5D%7B%7D%7C%5C%3B%27%3A%22%2C.%2F%3C%3E"))
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can retrieve the last 2 favorite sites")
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
     public void userCanRetrieveLast2FavoriteSites() throws Exception

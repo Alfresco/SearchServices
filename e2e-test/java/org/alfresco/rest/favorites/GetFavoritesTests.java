@@ -452,19 +452,6 @@ public class GetFavoritesTests extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify get favorites using special chars in where parameter for request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
-    public void userIsNotAbleToGetFavoritesWhenUsingSpecialCharsInWhereParameter() throws Exception
-    {
-        userFavorites = restClient.withCoreAPI().usingAuthUser().where().invalidWhereParameter("~!%40%23%24%25%5E%26*()_%2B%5B%5D%7B%7D%7C%5C%3B%27%3A%22%2C.%2F%3C%3E").getFavorites();
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"))
-                .containsErrorKey(RestErrorModel.INVALID_QUERY_ERRORKEY)
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites using AND instead of OR in where parameter for request")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
     public void userIsNotAbleToGetFavoritesWhenUsingANDInWhereParameter() throws Exception

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+@Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetTagTests extends TagsDataPrep
 {
 
