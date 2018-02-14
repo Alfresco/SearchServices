@@ -66,6 +66,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
     public static final String DEFAULT_TEMPLATE = "rerank";
 
+    public static final long RANGE_EXPAND_NOT_READY = 0;
+    public static final long RANGE_EXPAND_NOT_POSSIBLE = -1;
+
     private SolrTrackerScheduler scheduler = null;
     private TrackerRegistry trackerRegistry = null;
     private ConcurrentHashMap<String, InformationServer> informationServers = null;
@@ -859,13 +862,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         DocRouter docRouter = getDocRouter(cname);
 
-        if(docRouter instanceof DBIDRangeRouter) {
-
+        if(docRouter instanceof DBIDRangeRouter)
+        {
             DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter) docRouter;
 
             if(!dbidRangeRouter.getInitialized())
             {
-                rsp.add("expand", 0);
+                rsp.add("expand", RANGE_EXPAND_NOT_READY);
                 rsp.add("exception", "DBIDRangeRouter not initialized yet.");
                 return;
             }
@@ -890,7 +893,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
             double density = 0;
 
-            if(offset > 0) {
+            if(offset > 0)
+            {
                 density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
             }
 
@@ -904,7 +908,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         {
                             //This is fully dense shard. I'm not sure if it's possible to have more nodes on the shards
                             //then the offset, but if it does happen don't expand.
-                            bestGuess=0;
+                            bestGuess = RANGE_EXPAND_NOT_READY;
                         }
                         else
                         {
@@ -914,7 +918,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     }
                     else
                     {
-                        bestGuess = 0; // We're below the midpoint so it's to early to make a guess.
+                        bestGuess = RANGE_EXPAND_NOT_READY; // We're below the midpoint so it's to early to make a guess.
                     }
                 }
             }
@@ -927,9 +931,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             rsp.add("density", Math.abs(density));
             rsp.add("expand", bestGuess);
             rsp.add("expanded", dbidRangeRouter.getExpanded());
-        } else {
-            rsp.add("expand", -1);
-            rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
+        }
+        else
+        {
+            rsp.add("expand", RANGE_EXPAND_NOT_POSSIBLE);
+            rsp.add("exception", "Wrong document router type:"+docRouter.getClass().getSimpleName());
             return;
         }
     }
@@ -947,14 +953,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
             if(!dbidRangeRouter.getInitialized())
             {
-                rsp.add("expand", -1);
+                rsp.add("expand", RANGE_EXPAND_NOT_READY);
                 rsp.add("exception", "DBIDRangeRouter not initialized yet.");
                 return;
             }
 
             if(dbidRangeRouter.getExpanded())
             {
-                rsp.add("expand", -1);
+                rsp.add("expand", RANGE_EXPAND_NOT_POSSIBLE);
                 rsp.add("exception", "dbid range has already been expanded.");
                 return;
             }
@@ -968,7 +974,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
             if(maxNodeId > safe)
             {
-                rsp.add("expand", -1);
+                rsp.add("expand", RANGE_EXPAND_NOT_POSSIBLE);
                 rsp.add("exception", "Expansion cannot occur if max DBID in the index is more then 75% of range.");
                 return;
             }
@@ -986,7 +992,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             }
             catch(Throwable t)
             {
-                rsp.add("expand", -1);
+                rsp.add("expand", RANGE_EXPAND_NOT_POSSIBLE);
                 rsp.add("exception", t.getMessage());
                 log.error("exception expanding", t);
                 return;
@@ -994,7 +1000,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
         else
         {
-            rsp.add("expand", -1);
+            rsp.add("expand", RANGE_EXPAND_NOT_POSSIBLE);
             rsp.add("exception", "Wrong document router type:"+docRouter.getClass().getSimpleName());
             return;
         }
