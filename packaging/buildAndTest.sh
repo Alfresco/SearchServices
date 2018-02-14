@@ -5,7 +5,7 @@ set -e
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 
-if [ "${nicebranch}" = "master"] || [ ${nicebranch:0:6} = "release" ]
+if [ "${nicebranch}" = "master" || "${nicebranch:0:6}" = "release" ]
 then
    # set current working directory to the directory of the script
    cd "$bamboo_working_directory"
