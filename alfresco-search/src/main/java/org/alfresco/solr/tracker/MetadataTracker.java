@@ -95,6 +95,10 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         // Testing purposes only
     }
 
+    public DocRouter getDocRouter() {
+        return this.docRouter;
+    }
+
     @Override
     protected void doTrack() throws AuthenticationException, IOException, JSONException, EncoderException
     {
@@ -117,8 +121,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         indexNodes();
     }
 
-    public boolean hasMaintenance() {
-        return transactionsToReindex.size() > 0 ||
+    public boolean hasMaintenance() throws Exception {
+        return  transactionsToReindex.size() > 0 ||
                 transactionsToIndex.size() > 0 ||
                 transactionsToPurge.size() > 0 ||
                 nodesToReindex.size() > 0 ||
@@ -126,6 +130,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 nodesToPurge.size() > 0 ||
                 queriesToReindex.size() > 0;
     }
+
+
 
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
     {
@@ -147,6 +153,21 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             //We have a new tracker state so do the checks.
             checkRepoAndIndexConsistency(state);
+        }
+
+        if(docRouter instanceof DBIDRangeRouter)
+        {
+            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
+            long indexCap = infoSrv.getIndexCap();
+            long endRange = dbidRangeRouter.getEndRange();
+            assert(indexCap == -1 || indexCap >= endRange);
+
+            if(indexCap > endRange) {
+                dbidRangeRouter.setExpanded(true);
+                dbidRangeRouter.setEndRange(indexCap);
+            }
+
+            dbidRangeRouter.setInitialized(true);
         }
 
         checkShutdown();
@@ -592,6 +613,10 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             {
                 getWriteLock().acquire();
                 //System.out.println("######## Metadata Tracket Acquiring Write Lock ########");
+
+                 /*
+        * Check to see if we are using the capped router, and if the cap has already been set.
+        */
 
                 TrackerState state = getTrackerState();
 
