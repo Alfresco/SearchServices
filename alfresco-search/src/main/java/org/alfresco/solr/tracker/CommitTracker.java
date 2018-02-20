@@ -82,7 +82,7 @@ public class CommitTracker extends AbstractTracker
         lastSearcherOpened = lastCommit = System.currentTimeMillis();
     }
 
-    public boolean hasMaintenance()
+    public boolean hasMaintenance() throws Exception
     {
         return (metadataTracker.hasMaintenance() || aclTracker.hasMaintenance());
     }
