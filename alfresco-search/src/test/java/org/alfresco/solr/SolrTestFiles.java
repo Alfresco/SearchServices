@@ -27,6 +27,6 @@ public interface SolrTestFiles
     public final String TEST_FILES_LOCATION = "target/test-classes/test-files";
     public final String TEST_SOLR_COLLECTION = TEST_FILES_LOCATION + "/collection1";
     public final String TEST_SOLR_CONF = TEST_SOLR_COLLECTION + "/conf/";
-    public final String RERANK_CONF = "src/main/resources/solr/instance/templates/rerank/conf/";
+    public final String TEMPLATE_CONF = "src/main/resources/solr/instance/templates/%s/conf/";
     
 }
