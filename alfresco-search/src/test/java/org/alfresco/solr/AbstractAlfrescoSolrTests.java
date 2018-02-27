@@ -43,6 +43,7 @@ import org.apache.chemistry.opencmis.commons.impl.json.JSONArray;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONObject;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -151,8 +152,13 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         properties.put("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
         if("schema.xml".equalsIgnoreCase(schema))
         {
-            //currently this is hard coded to use the rerank production schema.
-            FileUtils.copyFile(Paths.get(RERANK_CONF + schema).toFile(), Paths.get(TEST_SOLR_CONF + schema).toFile());
+            String templateName = "rerank";
+            String templateNameSystemProperty = System.getProperty("templateName");
+            if (StringUtils.isNotBlank(templateNameSystemProperty))
+            {
+                templateName = templateNameSystemProperty;
+            }
+            FileUtils.copyFile(Paths.get(String.format(TEMPLATE_CONF, templateName) + schema).toFile(), Paths.get(TEST_SOLR_CONF + schema).toFile());
         }
         
         // The local test solrconfig with RAMDirectoryFactory and lockType of single.
