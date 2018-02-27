@@ -80,7 +80,10 @@ public class MimetypeGroupingQParserPlugin extends QParserPlugin
                     grouped = new ArrayList<>();
                     reverseMappings.put(vals[2], grouped);
                 }
-                grouped.add(vals[1]);
+                if (!grouped.contains(vals[1]))
+                {
+                    grouped.add(vals[1]);
+                }
             }
         }
         catch (FileNotFoundException e1)

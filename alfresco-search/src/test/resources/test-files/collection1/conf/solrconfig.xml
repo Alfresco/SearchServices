@@ -473,16 +473,23 @@
 
     <queryParser name="alfrescoReRank" class="org.alfresco.solr.query.AlfrescoReRankQParserPlugin"/>
     <queryParser name="afts" class="org.alfresco.solr.query.AlfrescoFTSQParserPlugin"/>
+
+    <!--
+    <queryParser name="afts" class="org.alfresco.solr.query.AlfrescoFTSQParserPlugin">
+       <str name="rerankPhase">SINGLE_PASS</str>
+    </queryParser>
+    -->
+
     <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
 
     <xi:include href="solrconfig_insight.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
         <xi:fallback/>
     </xi:include>
-    <!--
+
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
         <str name="mapping">conf/mime_types.csv</str>
     </queryParser>
-    -->
+
     <queryParser name="contentSize" class="org.alfresco.solr.query.ContentSizeGroupingQParserPlugin" >
         <int name="scale">1</int>
         <int name="buckets">10</int>
