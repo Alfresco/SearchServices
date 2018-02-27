@@ -1273,6 +1273,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
         assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), 1);
         assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), "mimetype():document", 1);
+        assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), "mimetype():\"text/plain\"", 1);
         assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), "contentSize():[0 TO 100]", 0);
         assertAQueryHasNumberOfDocs("TYPE:" + ContentModel.TYPE_CONTENT.toString(), "contentSize():[100 TO 1000]", 1);
 
@@ -2122,7 +2123,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                   "*[count(//doc)=1]");	
     	  
     	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"apple * 20150911100000.txt\""), null),
-                  "*[count(//doc)=0]");	
+                  "*[count(//doc)=1]");	
     	 
     	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"hello.txt\""), null),
                   "*[count(//doc)=2]");	
@@ -2131,6 +2132,16 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                   "*[count(//doc)=1]");	
     	  
     	  assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"Test1.hello.txt\""), null),
-                  "*[count(//doc)=1]");	
+                  "*[count(//doc)=1]");
+
+    	  /*
+      assertQ(areq(params("rows", "20", "qt", "/afts", "q", "\"AnalystName Craig\""), null), "*[count(//doc)=1]");
+
+      assertQ(areq(params("rows", "20", "qt", "/afts", "q", "\"AnalystName\" AND \"AnalystName Craig\""), null), "*[count(//doc)=1]");
+
+      assertQ(areq(params("rows", "20", "qt", "/afts", "q", "\"AnalystName\" AND !\"AnalystName Craig\""), null), "*[count(//doc)=1]");
+
+      assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:name:\"BASF*.txt\""), null), "*[count(//doc)=4]");
+      */
     }
 }
