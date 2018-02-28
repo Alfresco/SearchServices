@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr.query;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
@@ -77,12 +76,9 @@ import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.Pair;
 import org.alfresco.util.SearchLanguageConversion;
 import org.antlr.misc.OrderedHashSet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.lucene.search.*;
-import org.apache.solr.client.solrj.SolrRequest;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.commongrams.CommonGramsFilter;
@@ -100,8 +96,19 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.MultiTermQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.RegexpQuery;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper.TopTermsSpanBooleanQueryRewrite;
 import org.apache.lucene.search.spans.SpanNearQuery;
@@ -111,9 +118,11 @@ import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.apache.solr.analysis.TokenizerChain;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -127,7 +136,6 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
-import org.apache.solr.update.DocumentBuilder;
 import org.apache.solr.update.UpdateShardHandlerConfig;
 import org.jaxen.saxpath.SAXPathException;
 import org.jaxen.saxpath.base.XPathReader;
@@ -5072,6 +5080,17 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 {
                 default:
                 case DEFAULT:
+                    addLocaleSpecificMLOrTextAttribute(pDef, queryText, subQueryBuilder, analysisMode, luceneFunction,
+                            booleanQuery, locale, expandedFieldName, tokenisationMode, IndexTokenisationMode.TRUE);
+
+                    if (ContentModel.PROP_NAME.equals(pDef.getName()))
+                    {
+                        setLowercaseExpandedTerms(false);
+                        addLocaleSpecificMLOrTextAttribute(pDef, queryText, subQueryBuilder, analysisMode, luceneFunction,
+                                booleanQuery, locale, expandedFieldName, tokenisationMode, IndexTokenisationMode.FALSE);
+                    }
+
+                    break;
                 case TOKENISE:
                     addLocaleSpecificMLOrTextAttribute(pDef, queryText, subQueryBuilder, analysisMode, luceneFunction,
                             booleanQuery, locale, expandedFieldName, tokenisationMode, IndexTokenisationMode.TRUE);
