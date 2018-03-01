@@ -17,50 +17,21 @@
     <distributionManagement>
         <repository>
             <id>alfresco-internal</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-releases/</url>
         </repository>
         <snapshotRepository>
             <id>alfresco-internal-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
     <scm>
-        <connection>scm:git:https://git.alfresco.com/search_discovery/searchservices.git</connection>
-        <developerConnection>scm:git:https://git.alfresco.com/search_discovery/searchservices.git</developerConnection>
-        <url>https://git.alfresco.com/search_discovery/searchservices.git</url>
+        <connection>scm:git:git@github.com:Alfresco/SearchServices.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/SearchServices.git</developerConnection>
+        <url>https://github.com/Alfresco/SearchServices.git</url>
         <tag>1.1.0</tag>
     </scm>
-    <repositories>
-      <repository>
-          <id>internal-staging</id>
-          <url>https://artifacts.alfresco.com/nexus/content/groups/staging</url>
-      </repository>
-    </repositories>
-    <build>
-        <plugins>
-            <!-- Configure deployment of releases to Staging area of Nexus -->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>alfresco-internal-staging</serverId>
-                    <nexusUrl>https://artifacts.alfresco.com/nexus</nexusUrl>
-                    <stagingProfileId>${publicrelease.staging.profile}</stagingProfileId>
-                    <stagingDescription>Staging Search Services ${project.version} (${bamboo_buildResultKey} ${bamboo_planRepository_revision})</stagingDescription>
-                    <tags>
-                        <build.number>${bamboo_buildNumber}</build.number>
-                        <build.key>${bamboo_buildKey}</build.key>
-                        <build.revision>${bamboo_planRepository_revision}</build.revision>
-                    </tags>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <modules>
-      <module>alfresco-search</module>
-      <module>packaging</module>
+        <module>alfresco-search</module>
+        <module>packaging</module>
     </modules>
 </project>
