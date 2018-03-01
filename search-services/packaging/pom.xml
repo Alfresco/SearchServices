@@ -8,7 +8,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.timestamp>${maven.build.timestamp}</project.timestamp>
-        <project.build.key>${bamboo_fullBuildKey}</project.build.key>
         <project.revision.key>${bamboo_repository_revision_number}</project.revision.key>
     </properties>
     <parent>
@@ -198,6 +197,58 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+               <!-- DO NOT CHANGE THE FORMATTING FOR THIS PLUGIN CONFIGURATION -->
+               <groupId>com.google.code.maven-replacer-plugin</groupId>
+               <artifactId>replacer</artifactId>
+               <executions>
+                  <execution>
+                     <id>alter-index.css</id>
+                     <phase>prepare-package</phase>
+                     <goals>
+                        <goal>replace</goal>
+                     </goals>
+                     <configuration>
+                        <file>${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/css/angular/index.css</file>
+                        <replacements>
+                           <replacement>
+                              <token>property\.png \); }</token>
+                              <value>property.png ); }
+#content #index #versions .alfresco span { background-image: url( ../../img/alfresco-ico.png ); }</value>
+                           </replacement>
+                        </replacements>
+                     </configuration>
+                  </execution>
+                  <execution>
+                     <id>alter-index.html</id>
+                     <phase>prepare-package</phase>
+                     <goals>
+                        <goal>replace</goal>
+                     </goals>
+                     <configuration>
+                        <file>${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/partials/index.html</file>
+                        <replacements>
+                           <replacement>
+                              <token>&lt;li class="solr solr_spec_version"&gt;</token>
+                              <value>
+              &lt;li class="alfresco"&gt;&lt;dl class="clearfix"&gt;
+                &lt;dt&gt;&lt;span&gt;Search Services&lt;/span&gt;&lt;/dt&gt;
+                  &lt;dd&gt;\${project.version}&lt;/dd&gt;
+              &lt;/dl&gt;&lt;/li&gt;
+
+              &lt;li&gt;&lt;dl class="clearfix"&gt;
+                &lt;dt&gt;&lt;span&gt;&lt;/span&gt;&lt;/dt&gt;
+                  &lt;dd&gt;\${project.revision.key} - \${project.timestamp}&lt;/dd&gt;
+              &lt;/dl&gt;&lt;/li&gt;
+
+              &lt;li class="solr solr_spec_version"&gt;
+                              </value>
+                           </replacement>
+                        </replacements>
+                     </configuration>
+                  </execution>
+               </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
