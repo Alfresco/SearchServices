@@ -1,35 +1,25 @@
-version: '2'
+version: '3'
 services:
-  repo:
+  platform:
     image: docker-internal.alfresco.com/platform:5.2.1-SNAPSHOT
     environment:
-         JAVA_OPTS : "-Dsolr.host=solr6  -Dsolr.port=8983 -Dsolr.secureComms=none
-         -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
+      JAVA_TOOL_OPTIONS: "-Dsolr.host=search -Dsolr.port=8983 -Dsolr.secureComms=none -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
     ports:
-          - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
-          - "5005:5005" #Java debugging
-          - "8082:8080" #Browser port
-  share:
-    image: docker-internal.alfresco.com/share:5.2.d
-    ports:
-      - "8081:8080"
-    environment:
-      - "REPO_HOST=repo:8080"
-    depends_on:
-          - repo
-  solr6:
-    image: docker-internal.alfresco.com/search-services:1.1.0-SNAPSHOT
+      - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
+      - "5005:5005" #Java debugging
+      - "8081:8080" #Browser port for Alfresco
+      - "8082:8080" #Browser port for Share
+      - "8084:8080" #Browser port for API Explorer
+  search:
+    image: quay.io/alfresco/search-services:${project.version}
     environment:
       #Solr needs to know how to register itself with Alfresco
-      SOLR_ALFRESCO_HOST: repo
+      SOLR_ALFRESCO_HOST: platform
       SOLR_ALFRESCO_PORT: 8080
       #Alfresco needs to know how to call solr
-      SOLR_SOLR_HOST: solr6
+      SOLR_SOLR_HOST: search
       SOLR_SOLR_PORT: 8983
-
       #Create the default alfresco and archive cores
-      SOLR_CREATE_ALFRESCO_DEFAULTS : alfresco,archive
-    depends_on:
-          - repo
+      SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
     ports:
-      - "8083:8983" #Browser port
+      - "8083:8983" #Browser port for Solr
