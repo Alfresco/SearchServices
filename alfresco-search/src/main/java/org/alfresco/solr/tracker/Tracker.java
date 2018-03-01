@@ -18,9 +18,9 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.TrackerState;
-
 import java.util.concurrent.Semaphore;
+
+import org.alfresco.solr.TrackerState;
 
 public interface Tracker
 {
@@ -28,7 +28,7 @@ public interface Tracker
 
     void maintenance() throws Exception;
 
-    boolean hasMaintenance();
+    boolean hasMaintenance() throws Exception;
 
     Semaphore getWriteLock();
 
@@ -43,4 +43,15 @@ public interface Tracker
     void invalidateState();
 
     TrackerState getTrackerState();
+
+    Type getType();
+
+    enum Type{
+        Model,
+        Content,
+        ACL,
+        Cascade,
+        Commit,
+        MetaData
+    }
 }

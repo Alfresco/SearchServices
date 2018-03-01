@@ -5,10 +5,9 @@ import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
@@ -30,6 +29,7 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
+import org.apache.lucene.document.Document;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
@@ -37,6 +37,8 @@ import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.SolrIndexSearcher;
+import org.apache.solr.update.AddUpdateCommand;
+import org.apache.solr.update.CommitUpdateCommand;
 import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
@@ -53,7 +55,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 
 /**
@@ -253,6 +255,16 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
+    public void waitForDocCountAllShards(Query query, int count, long waitMillis) throws Exception
+    {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        long begin = System.currentTimeMillis();
+        for (SolrCore core : cores) {
+            waitForDocCountCore(core, query, count, waitMillis, begin);
+        }
+    }
+
+
     /**
      * Delele by query on all Clients
      * @param q
@@ -334,6 +346,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     SolrIndexSearcher searcher = refCounted.get();
                     TopDocs topDocs = searcher.search(query, 10);
                     totalCount += topDocs.totalHits;
+                    //System.out.println("####### shard count:"+core.getName()+":"+totalCount);
+                    Thread.sleep(2000);
                 } finally {
                     refCounted.decref();
                 }
@@ -343,6 +357,34 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
         }
         throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
+    }
+
+    protected void injectDocToShards(long txnId, long aclId, long dbId, String owner) throws Exception {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        for(SolrCore core : cores) {
+            SolrInputDocument doc = new SolrInputDocument();
+            String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbId);
+            doc.addField(FIELD_SOLR4_ID, id);
+            doc.addField(FIELD_VERSION, 0);
+            doc.addField(FIELD_DBID, "" + dbId);
+            doc.addField(FIELD_INTXID, "" + txnId);
+            doc.addField(FIELD_ACLID, "" + aclId);
+            doc.addField(FIELD_OWNER, owner);
+
+            AbstractAlfrescoSolrTests.SolrServletRequest solrQueryRequest = null;
+            try
+            {
+                solrQueryRequest = new AbstractAlfrescoSolrTests.SolrServletRequest(core, null);
+                AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
+                addDocCmd.overwrite = true;
+                addDocCmd.solrDoc = doc;
+                core.getUpdateHandler().addDoc(addDocCmd);
+            }
+            finally
+            {
+                solrQueryRequest.close();
+            }
+        }
     }
 
     /**
@@ -357,6 +399,18 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             jettySolrRunner.getCoreContainer().getCores().forEach(aCore -> cores.add(aCore));
         }
         return cores;
+    }
+
+    protected List<AlfrescoCoreAdminHandler> getAdminHandlers(Collection<JettySolrRunner> runners)
+    {
+        List<AlfrescoCoreAdminHandler> coreAdminHandlers = new ArrayList();
+        for (JettySolrRunner jettySolrRunner : runners)
+        {
+            CoreContainer coreContainer = jettySolrRunner.getCoreContainer();
+            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
+            coreAdminHandlers.add(coreAdminHandler);
+        }
+        return coreAdminHandlers;
     }
 
     /**
@@ -621,6 +675,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
 
         String[] ranges = {"0-100", "100-200", "200-300", "300-400"};
+
         for (int i = 0; i < numShards; i++)
         {
             Properties props = new Properties();
@@ -630,8 +685,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             props.put("shard.instance", Integer.toString(i));
             props.put("shard.count", Integer.toString(numShards));
 
-            if("DB_ID_RANGE".equalsIgnoreCase(props.getProperty("shard.method"))) {
-                //Add
+            if("DB_ID_RANGE".equalsIgnoreCase(props.getProperty("shard.method")))
+            {
                 props.put("shard.range", ranges[i]);
             }
 
@@ -1579,7 +1634,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         Properties coreProperties = new Properties();
         coreProperties.setProperty("name", coreName);
         coreProperties.setProperty("shard", "${shard:}");
-        coreProperties.setProperty("collection", "${collection:"+coreName+"}");
+        coreProperties.setProperty("collection", "${collection:" + coreName + "}");
         coreProperties.setProperty("config", "${solrconfig:solrconfig.xml}");
         coreProperties.setProperty("schema", "${schema:schema.xml}");
         coreProperties.setProperty("coreNodeName", "${coreNodeName:}");
@@ -1632,6 +1687,166 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SolrQueryResponse response = new SolrQueryResponse();
         coreAdminHandler.handleCustomAction(request, response);
         return response;
+    }
+
+    protected SolrQueryResponse callExpand(AlfrescoCoreAdminHandler coreAdminHandler,
+                                           SolrCore testingCore,
+                                           int value) {
+        SolrQueryRequest request = new LocalSolrQueryRequest(testingCore,
+            params(CoreAdminParams.ACTION, "EXPAND",
+                  CoreAdminParams.CORE, testingCore.getName(),
+                  "add", Integer.toString(value)));
+        SolrQueryResponse response = new SolrQueryResponse();
+        coreAdminHandler.handleCustomAction(request, response);
+        return response;
+    }
+
+
+
+
+    protected List<Long> assertCapOnAllShards(String[] starts) throws Exception
+    {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        List<Long> caps = new ArrayList();
+        List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(jettyShards);
+        for (int i=0; i<cores.size(); i++) {
+            caps.add(assertCapForCore(alfrescoCoreAdminHandlers.get(i), cores.get(i), Long.parseLong(starts[i])));
+        }
+
+        return caps;
+    }
+
+    public SolrQueryResponse rangeCheck(int shard) throws Exception {
+        while(true) {
+            List<SolrCore> cores = getJettyCores(jettyShards);
+            List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(jettyShards);
+            SolrCore core = cores.get(shard);
+            AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
+            SolrQueryResponse response = callHandler(alfrescoCoreAdminHandler, core, "RANGECHECK");
+            NamedList values = response.getValues();
+            String ex = (String)values.get("exception");
+            if(ex == null || ex.indexOf("not initialized") == -1) {
+                return response;
+            } else {
+                Thread.sleep(1000);
+            }
+        }
+    }
+
+    public SolrQueryResponse expand(int shard, int value) {
+        List<SolrCore> cores = getJettyCores(jettyShards);
+        List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(jettyShards);
+        SolrCore core = cores.get(shard);
+        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
+        SolrQueryResponse response = callExpand(alfrescoCoreAdminHandler, core, value);
+        return response;
+    }
+
+    protected long assertCapForCore(AlfrescoCoreAdminHandler coreAdminHandler,
+                                    SolrCore core,
+                                    long start)
+        throws IOException
+    {
+        //Get the cap from the index
+        long cap = -1;
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        Set<String> fields = new HashSet();
+        fields.add(FIELD_DBID);
+        try {
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+
+            TopDocs topDocs = searcher.search(new TermQuery(new Term(FIELD_SOLR4_ID, "TRACKER!STATE!CAP")), 10);
+            ScoreDoc doc = topDocs.scoreDocs[0];
+            Document document = searcher.doc(doc.doc, fields);
+            cap = Math.abs(getFieldValueLong(document, FIELD_DBID));
+        } finally {
+            refCounted.decref();
+        }
+
+        System.out.println("####### got cap:"+cap);
+
+        //Check that the max DBID in the core matches the cap.
+
+        long maxDBID = -1;
+        Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
+        try {
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+
+            TopDocs topDocs = searcher.search(query,
+                                              1,
+                                              new Sort(new SortField(FIELD_DBID, SortField.Type.LONG, true)));
+            System.out.println("####### hits:"+topDocs.totalHits+":"+query);
+
+            ScoreDoc doc = topDocs.scoreDocs[0];
+            Document document = searcher.doc(doc.doc, fields);
+            maxDBID = getFieldValueLong(document, FIELD_DBID);
+        } finally {
+            refCounted.decref();
+        }
+
+        System.out.println("####### got max DBID:"+maxDBID);
+
+
+        if(maxDBID != cap) {
+            throw new IOException("Max DBID should equal cap:"+maxDBID+" != "+cap);
+        }
+
+        long minDBID = -1;
+        try {
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+
+            TopDocs topDocs = searcher.search(query,
+                                              1,
+                                              new Sort(new SortField(FIELD_DBID, SortField.Type.LONG, false)));
+            ScoreDoc doc = topDocs.scoreDocs[0];
+            Document document = searcher.doc(doc.doc, fields);
+            minDBID = getFieldValueLong(document, FIELD_DBID);
+        } finally {
+            refCounted.decref();
+        }
+
+        System.out.println("####### got min DBID:"+minDBID);
+
+        if(minDBID != start) {
+            throw new IOException("Min DBID should equal start:"+minDBID+" != "+start);
+        }
+
+
+        SolrQueryResponse response = callHandler(coreAdminHandler, core, "CHECKCAP");
+        NamedList values = response.getValues();
+        long checkCap =  (long)values.get("CAP");
+        if(checkCap != cap)
+        {
+            throw new IOException("The admin handler returned bad cap:"+checkCap+":"+cap);
+        }
+
+        return cap;
+
+    }
+
+    private String getFieldValueString(Document doc, String fieldName)
+    {
+        IndexableField field = doc.getField(fieldName);
+        String value = null;
+        if (field != null)
+        {
+            value = field.stringValue();
+        }
+        return value;
+    }
+
+
+    private long getFieldValueLong(Document doc, String fieldName)
+    {
+        return Long.parseLong(getFieldValueString(doc, fieldName));
+    }
+
+    protected void assertCHECKCAPAction(long[] caps) throws Exception
+    {
+
     }
 
     /**
