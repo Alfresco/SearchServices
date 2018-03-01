@@ -19,7 +19,11 @@
 package org.alfresco.solr.tracker;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -62,7 +66,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private static final int DEFAULT_NODE_BATCH_SIZE = 10;
     private int transactionDocsBatchSize = DEFAULT_TRANSACTION_DOCS_BATCH_SIZE;
     private int nodeBatchSize = DEFAULT_NODE_BATCH_SIZE;
-    private int maxTransactionDocumentIdCacheSize = 700000;
     private ConcurrentLinkedQueue<Long> transactionsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> transactionsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> transactionsToPurge = new ConcurrentLinkedQueue<Long>();
@@ -76,8 +79,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer);
-        //System.out.println("####### MetadatTracker() ########");
+        super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
         String shardKey = p.getProperty("shard.key");
@@ -92,7 +94,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     
     MetadataTracker()
     {
-        // Testing purposes only
+        super(Tracker.Type.MetaData);
+    }
+
+    public DocRouter getDocRouter() {
+        return this.docRouter;
     }
 
     @Override
@@ -117,8 +123,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         indexNodes();
     }
 
-    public boolean hasMaintenance() {
-        return transactionsToReindex.size() > 0 ||
+    public boolean hasMaintenance() throws Exception {
+        return  transactionsToReindex.size() > 0 ||
                 transactionsToIndex.size() > 0 ||
                 transactionsToPurge.size() > 0 ||
                 nodesToReindex.size() > 0 ||
@@ -126,6 +132,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 nodesToPurge.size() > 0 ||
                 queriesToReindex.size() > 0;
     }
+
+
 
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
     {
@@ -147,6 +155,21 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             //We have a new tracker state so do the checks.
             checkRepoAndIndexConsistency(state);
+        }
+
+        if(docRouter instanceof DBIDRangeRouter)
+        {
+            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
+            long indexCap = infoSrv.getIndexCap();
+            long endRange = dbidRangeRouter.getEndRange();
+            assert(indexCap == -1 || indexCap >= endRange);
+
+            if(indexCap > endRange) {
+                dbidRangeRouter.setExpanded(true);
+                dbidRangeRouter.setEndRange(indexCap);
+            }
+
+            dbidRangeRouter.setInitialized(true);
         }
 
         checkShutdown();
@@ -592,6 +615,10 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             {
                 getWriteLock().acquire();
                 //System.out.println("######## Metadata Tracket Acquiring Write Lock ########");
+
+                 /*
+        * Check to see if we are using the capped router, and if the cap has already been set.
+        */
 
                 TrackerState state = getTrackerState();
 
@@ -1062,26 +1089,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    private boolean transactionDocumentIdProcessed(Set<Long> transactionDocumentIdSet, Long id) throws IOException
-    {
-        if(transactionDocumentIdSet.contains(id))
-        {
-            return true;
-        }
-        else
-        {
-            if(infoSrv.isInIndex(Long.toString(id))) {
-                return true;
-            }
-            else
-            {
-                transactionDocumentIdSet.add(id);
-                return false;
-            }
-        }
-
-    }
-
     public static QName getShardProperty(String field) {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
@@ -1093,8 +1100,4 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         return propertyDef.getName();
     }
-
-
-
-
 }

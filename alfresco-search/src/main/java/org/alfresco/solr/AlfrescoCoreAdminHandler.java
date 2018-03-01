@@ -252,6 +252,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 case "ACLTXREPORT":
                     actionACLTXREPORT(rsp, params, cname);
                     break;
+                case "RANGECHECK":
+                    rangeCheck(rsp, cname);
+                    break;
+                case "EXPAND":
+                    expand(rsp, params, cname);
+                    break;
                 case "REPORT":
                     actionREPORT(rsp, params, cname);
                     break;
@@ -361,7 +367,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         String shardIds = params.get("shardIds");
 
         Properties properties = extractCustomProperties(params);
-        return newCore(coreName,numShards,storeRef,templateName,replicationFactor,nodeInstance,numNodes,shardIds,properties,rsp);
+        return newCore(coreName, numShards, storeRef, templateName, replicationFactor, nodeInstance, numNodes, shardIds, properties, rsp);
     }
 
     private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse rsp) {
@@ -377,7 +383,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             storeRef = new StoreRef(store);
         }
 
-        return newDefaultCore(coreName,storeRef,templateName,extraProperties,rsp);
+        return newDefaultCore(coreName, storeRef, templateName, extraProperties, rsp);
     }
 
     protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
@@ -495,7 +501,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     /**
      * @param rsp
-     * @param params
      * @param storeRef
      * @param template
      * @param coreName
@@ -774,7 +779,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             AclTracker tracker = trackerRegistry.getTrackerForCore(cname, AclTracker.class);
             Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
             NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildAclTxReport(getTrackerRegistry(), informationServers.get(cname),cname, tracker, acltxid));
+            report.add(cname, buildAclTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, acltxid));
             rsp.add("report", report);
         }
         else
@@ -828,6 +833,170 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 }
             }
             rsp.add("report", report);
+        }
+    }
+
+    private DocRouter getDocRouter(String cname)
+    {
+        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(cname);
+        MetadataTracker metadataTracker = null;
+        for(Tracker tracker : trackers)
+        {
+            if(tracker instanceof MetadataTracker)
+            {
+                metadataTracker = (MetadataTracker)tracker;
+            }
+        }
+
+        DocRouter docRouter = metadataTracker.getDocRouter();
+        return docRouter;
+    }
+
+
+    private void rangeCheck(SolrQueryResponse rsp,String cname) throws IOException
+    {
+        InformationServer informationServer = informationServers.get(cname);
+
+        DocRouter docRouter = getDocRouter(cname);
+
+        if(docRouter instanceof DBIDRangeRouter) {
+
+            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter) docRouter;
+
+            if(!dbidRangeRouter.getInitialized())
+            {
+                rsp.add("expand", 0);
+                rsp.add("exception", "DBIDRangeRouter not initialized yet.");
+                return;
+            }
+
+            long startRange = dbidRangeRouter.getStartRange();
+            long endRange = dbidRangeRouter.getEndRange();
+
+            long maxNodeId = informationServer.maxNodeId();
+            long minNodeId = informationServer.minNodeId();
+            long nodeCount = informationServer.nodeCount();
+
+            long bestGuess = -1;  // -1 means expansion cannot be done. Either because expansion
+                                 // has already happened or we're above safe range
+
+            long range = endRange - startRange; // We want this many nodes on the server
+
+            long midpoint = startRange + ((long) (range * .5));
+
+            long safe = startRange + ((long) (range * .75));
+
+            long offset = maxNodeId-startRange;
+
+            double density = 0;
+
+            if(offset > 0) {
+                density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
+            }
+
+            if (!dbidRangeRouter.getExpanded())
+            {
+                if(maxNodeId <= safe)
+                {
+                    if (maxNodeId >= midpoint)
+                    {
+                        if(density >= 1)
+                        {
+                            //This is fully dense shard. I'm not sure if it's possible to have more nodes on the shards
+                            //then the offset, but if it does happen don't expand.
+                            bestGuess=0;
+                        }
+                        else
+                        {
+                            double multiplier = 1/density;
+                            bestGuess = (long)(range*multiplier)-range; // This is how much to add
+                        }
+                    }
+                    else
+                    {
+                        bestGuess = 0; // We're below the midpoint so it's to early to make a guess.
+                    }
+                }
+            }
+
+            rsp.add("start", startRange);
+            rsp.add("end", endRange);
+            rsp.add("nodeCount", nodeCount);
+            rsp.add("minDbid", minNodeId);
+            rsp.add("maxDbid", maxNodeId);
+            rsp.add("density", Math.abs(density));
+            rsp.add("expand", bestGuess);
+            rsp.add("expanded", dbidRangeRouter.getExpanded());
+        } else {
+            rsp.add("expand", -1);
+            rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
+            return;
+        }
+    }
+
+    private synchronized void expand(SolrQueryResponse rsp, SolrParams params, String cname)
+        throws IOException
+    {
+        InformationServer informationServer = informationServers.get(cname);
+        DocRouter docRouter = getDocRouter(cname);
+
+        if(docRouter instanceof DBIDRangeRouter)
+        {
+            long expansion = Long.parseLong(params.get("add"));
+            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
+
+            if(!dbidRangeRouter.getInitialized())
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", "DBIDRangeRouter not initialized yet.");
+                return;
+            }
+
+            if(dbidRangeRouter.getExpanded())
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", "dbid range has already been expanded.");
+                return;
+            }
+
+            long currentEndRange = dbidRangeRouter.getEndRange();
+            long startRange = dbidRangeRouter.getStartRange();
+            long maxNodeId = informationServer.maxNodeId();
+
+            long range = currentEndRange-startRange;
+            long safe = startRange + ((long) (range * .75));
+
+            if(maxNodeId > safe)
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", "Expansion cannot occur if max DBID in the index is more then 75% of range.");
+                return;
+            }
+
+            long newEndRange = expansion+dbidRangeRouter.getEndRange();
+            try
+            {
+                informationServer.capIndex(newEndRange);
+                informationServer.hardCommit();
+                dbidRangeRouter.setEndRange(newEndRange);
+                dbidRangeRouter.setExpanded(true);
+                assert newEndRange == dbidRangeRouter.getEndRange();
+                rsp.add("expand", dbidRangeRouter.getEndRange());
+                return;
+            }
+            catch(Throwable t)
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", t.getMessage());
+                log.error("exception expanding", t);
+                return;
+            }
+        }
+        else
+        {
+            rsp.add("expand", -1);
+            rsp.add("exception", "Wrong document router type:"+docRouter.getClass().getSimpleName());
+            return;
         }
     }
 

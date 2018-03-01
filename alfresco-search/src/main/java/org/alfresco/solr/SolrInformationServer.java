@@ -21,7 +21,9 @@ package org.alfresco.solr;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADE_FLAG;
@@ -65,8 +67,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOM
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,11 +75,27 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.carrotsearch.hppc.IntArrayList;
 
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
@@ -128,7 +144,12 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.ReaderUtil;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
@@ -146,7 +167,6 @@ import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.common.util.NamedList;
@@ -160,7 +180,6 @@ import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.FieldType;
-import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
@@ -179,8 +198,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
-
-import com.carrotsearch.hppc.IntArrayList;
 
 /**
  * This is the Solr4 implementation of the information server (index).
@@ -214,6 +231,8 @@ public class SolrInformationServer implements InformationServer
     public static final String SOLR_HOST = "solr.host";
     public static final String SOLR_PORT = "solr.port";
     public static final String SOLR_BASEURL = "solr.baseurl";
+
+    public static String indexCapId = "TRACKER!STATE!CAP";
 
 
     private static final Pattern CAPTURE_SITE = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/site/1\\.0\\}sites/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0}([^/]*)/.*" ); 
@@ -267,6 +286,7 @@ public class SolrInformationServer implements InformationServer
     private String hostName;
     
     private String baseUrl;
+    Properties props;
 
     private long cleanContentTxnFloor = -1; // All transactions below this floor have had the content completed.
     private long cleanCascadeTxnFloor = -1;
@@ -313,7 +333,7 @@ public class SolrInformationServer implements InformationServer
         contentStreamLimit = Integer.parseInt(p.getProperty("alfresco.contentStreamLimit", "10000000"));
         
         // build base URL - host and port have to come from configuration.
-        Properties props = AlfrescoSolrDataModel.getCommonConfig();
+        props = AlfrescoSolrDataModel.getCommonConfig();
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
 
         String portNumber =  ConfigUtil.locateProperty(SOLR_PORT, props.getProperty(SOLR_PORT));
@@ -938,6 +958,37 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+    @Override
+    public void hardCommit() throws IOException
+    {
+        // avoid multiple commits and warming searchers
+        commitAndRollbackLock.writeLock().lock();
+        try
+        {
+            SolrQueryRequest request = null;
+            UpdateRequestProcessor processor = null;
+            try
+            {
+                request = getLocalSolrQueryRequest();
+                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+                CommitUpdateCommand commitUpdateCommand = new CommitUpdateCommand(request, false);
+                commitUpdateCommand.openSearcher = false;
+                commitUpdateCommand.softCommit = false;
+                commitUpdateCommand.waitSearcher = false;
+                processor.processCommit(commitUpdateCommand);
+            }
+            finally
+            {
+                if(processor != null) {processor.finish();}
+                if(request != null) {request.close();}
+            }
+        }
+        finally
+        {
+            commitAndRollbackLock.writeLock().unlock();
+        }
+    }
+
     public boolean commit(boolean openSearcher) throws IOException
     {
         canUpdate();
@@ -1361,7 +1412,13 @@ public class SolrInformationServer implements InformationServer
             @SuppressWarnings("rawtypes")
             NamedList values = rsp.getValues();
             SolrDocumentList response = (SolrDocumentList)values.get(RESPONSE_DEFAULT_IDS);
-            
+
+            if (response == null)
+            {
+                log.error("No response when getting the tracker state");
+                return state;
+            }
+
             // We can find either or both docs here.
             for(int i = 0; i < response.getNumFound(); i++)
             {
@@ -1649,6 +1706,106 @@ public class SolrInformationServer implements InformationServer
             processor.processAdd(cmd);
         }
     }
+
+    public void capIndex(long dbid) throws IOException
+    {
+        SolrQueryRequest request = null;
+        UpdateRequestProcessor processor = null;
+
+        try
+        {
+            request = getLocalSolrQueryRequest();
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            AddUpdateCommand cmd = new AddUpdateCommand(request);
+            cmd.overwrite = true;
+            SolrInputDocument input = new SolrInputDocument();
+            input.addField(FIELD_SOLR4_ID, indexCapId);
+            input.addField(FIELD_VERSION, 0);
+            input.addField(FIELD_DBID, -dbid); //Making this negative to ensure it is never confused with node DBID
+            input.addField(FIELD_DOC_TYPE, DOC_TYPE_STATE);
+            cmd.solrDoc = input;
+            processor.processAdd(cmd);
+        }
+        finally
+        {
+            if(processor != null) {processor.finish();}
+            if(request != null) {request.close();}
+        }
+    }
+
+    public void maintainCap(long dbid) throws IOException {
+        String deleteByQuery = FIELD_DBID+":{"+dbid+" TO *}";
+        deleteByQuery(deleteByQuery);
+    }
+
+    public long nodeCount()
+    {
+        return getDocListSize(FIELD_DOC_TYPE+":"+DOC_TYPE_NODE);
+    }
+
+    public long maxNodeId() {
+        return topNodeId("desc");
+    }
+
+    public long minNodeId() {
+        return topNodeId("asc");
+    }
+
+    private long topNodeId(String sortDir)
+    {
+        SolrQueryRequest request = null;
+        try
+        {
+            request = this.getLocalSolrQueryRequest();
+            ModifiableSolrParams params = new ModifiableSolrParams(request.getParams());
+            params.set("q", FIELD_DOC_TYPE+":"+DOC_TYPE_NODE);
+            // Sets the rows to zero, because we actually just want the count
+            params.set("rows", 1);
+            params.set("sort", FIELD_DBID + " "+sortDir);
+            params.set("fl", FIELD_DBID);
+            SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
+            Iterator<SolrDocument> it = docs.iterator();
+            if(it.hasNext()) {
+                SolrDocument doc = it.next();
+                long dbid = getFieldValueLong(doc, FIELD_DBID);
+                return dbid;
+            } else {
+                return 0;
+            }
+        }
+        finally
+        {
+            if (request != null) { request.close(); }
+        }
+    }
+
+    public long getIndexCap()
+    {
+        SolrQueryRequest request = null;
+        try
+        {
+            request = this.getLocalSolrQueryRequest();
+            ModifiableSolrParams params = new ModifiableSolrParams(request.getParams());
+            params.set("q", FIELD_SOLR4_ID+":"+indexCapId);
+            params.set("rows", 1);
+            params.set("fl", FIELD_DBID);
+            SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
+            Iterator<SolrDocument> it = docs.iterator();
+            if(it.hasNext()) {
+                SolrDocument doc = it.next();
+                long dbid = getFieldValueLong(doc, FIELD_DBID);
+                return Math.abs(dbid);
+            } else {
+                return -1;
+            }
+        }
+        finally
+        {
+            if (request != null) { request.close(); }
+        }
+    }
+
+
 
     @Override
     public void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException
@@ -2419,9 +2576,11 @@ public class SolrInformationServer implements InformationServer
                                 deleteNode(processor, request, node);
 
                                 SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_UNINDEXED_NODE);
-                                solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
                                 addDocCmd.solrDoc = doc;
-                                processor.processAdd(addDocCmd);
+                                if (recordUnindexedNodes) {
+                                    solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
+                                    processor.processAdd(addDocCmd);
+                                }
 
                                 long end = System.nanoTime();
                                 this.trackerStats.addNodeTime(end - start);
@@ -4116,6 +4275,12 @@ public class SolrInformationServer implements InformationServer
     public SolrContentStore getSolrContentStore()
     {
         return solrContentStore;
+    }
+
+
+    public Properties getProps()
+    {
+        return props;
     }
     
 }

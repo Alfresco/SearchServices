@@ -18,10 +18,11 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.repo.index.shard.ShardMethodEnum;
-
 import java.util.Properties;
-import java.util.Set;
+
+import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * @author Joel
@@ -29,26 +30,41 @@ import java.util.Set;
 
 public class DocRouterFactory
 {
+    protected final static Logger log = LoggerFactory.getLogger(DocRouterFactory.class);
+
     public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
 
         switch(method) {
             case DB_ID:
+                log.info("Sharding via DB_ID");
                 return new DBIDRouter();
             case DB_ID_RANGE:
-                String range = properties.getProperty("shard.range");
-                String[] rangeParts = range.split("-");
-                long startRange = Long.parseLong(rangeParts[0].trim());
-                long endRange = Long.parseLong(rangeParts[1].trim());
-                return new DBIDRangeRouter(startRange, endRange);
+                //
+                if(properties.containsKey("shard.range"))
+                {
+                    log.info("Sharding via DB_ID_RANGE");
+                    String[] pair =properties.getProperty("shard.range").split("-");
+                    long start = Long.parseLong(pair[0]);
+                    long end = Long.parseLong(pair[1]);
+                    return new DBIDRangeRouter(start, end);
+                }
             case ACL_ID:
+                log.info("Sharding via ACL_ID");
                 return new ACLIDMurmurRouter();
             case MOD_ACL_ID:
+                log.info("Sharding via MOD_ACL_ID");
                 return new ACLIDModRouter();
             case DATE:
+                log.info("Sharding via DATE");
                 return new DateMonthRouter(properties.getProperty("shard.date.grouping", "1"));
             case PROPERTY:
+                log.info("Sharding via PROPERTY");
                 return new PropertyRouter(properties.getProperty("shard.regex", ""));
+            case EXPLICIT_ID:
+                log.info("Sharding via EXPLICIT_ID");
+                return new ExplicitRouter();
             default:
+                log.info("Sharding via DB_ID (default)");
                 return new DBIDRouter();
         }
     }

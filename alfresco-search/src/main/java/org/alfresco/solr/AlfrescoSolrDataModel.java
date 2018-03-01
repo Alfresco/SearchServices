@@ -98,7 +98,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.LegacyNumericUtils;
-import org.apache.lucene.util.NumericUtils;
 import org.apache.lucene.util.Version;
 import org.apache.solr.core.CoreDescriptorDecorator;
 import org.apache.solr.core.SolrResourceLoader;
@@ -1197,7 +1196,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-    private String getFieldForNonText(PropertyDefinition propertyDefinition)
+    public String getFieldForNonText(PropertyDefinition propertyDefinition)
     {
         StringBuilder builder = new StringBuilder();
         QName qName = propertyDefinition.getDataType().getName();
@@ -1313,6 +1312,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
        
     }
 
+    public boolean removeModel(QName modelQName)
+    {
+    	modelErrors.remove(modelQName);
+    	dictionaryDAO.removeModel(modelQName); 
+    	return true;
+    }
     
     private Set<String> validateModel(M2Model model)
     {
@@ -1380,7 +1385,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
 
         // parse cmis syntax
-        CapabilityJoin joinSupport = (mode == CMISQueryMode.CMS_STRICT) ? CapabilityJoin.NONE : CapabilityJoin.INNERONLY;
+        CapabilityJoin joinSupport = (mode == CMISQueryMode.CMS_STRICT) ? CapabilityJoin.NONE : CapabilityJoin.INNERANDOUTER;
         CmisFunctionEvaluationContext functionContext = getCMISFunctionEvaluationContext(mode, cmisVersion, alternativeDictionary);
         
         CMISDictionaryService cmisDictionary = getCMISDictionary(alternativeDictionary, cmisVersion);
@@ -1394,10 +1399,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
             if (selectorGroups.size() == 0)
             {
                 throw new UnsupportedOperationException("No selectors");
-            }
-            if (selectorGroups.size() > 1)
-            {
-                throw new UnsupportedOperationException("Advanced join is not supported");
             }
         }
         return queryModelQuery;
@@ -1938,7 +1939,13 @@ public class AlfrescoSolrDataModel implements QueryConstants
          ContextAwareQuery contextAwareQuery = new ContextAwareQuery(luceneQuery, Boolean.TRUE.equals(isFilter) ? null : searchParameters);
          return contextAwareQuery;
      }
-     
+     private PropertyDefinition getPropertyDefinition(String identifier)
+     {
+         return QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI,
+                                                         getNamespaceDAO(),
+                                                         getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                                                         identifier);
+     }
     /**
      *
      * @param potentialProperty String
@@ -1974,9 +1981,17 @@ public class AlfrescoSolrDataModel implements QueryConstants
          Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(potentialProperty);
          String luceneField =  functionContext.getLuceneFieldName(fieldNameAndEnding.getFirst());
 
-         
-         PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, getNamespaceDAO(), getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
-         
+
+         PropertyDefinition propertyDef = getPropertyDefinition(fieldNameAndEnding.getFirst());
+         //Retry scan using luceneField.
+         if(propertyDef == null)
+         {
+             if(luceneField.contains("@"))
+             {
+                 int index = luceneField.lastIndexOf("@");
+                 propertyDef = getPropertyDefinition(luceneField.substring(index +1));
+             }    
+         }
          String solrSortField = null;
          if(propertyDef != null)
          {
