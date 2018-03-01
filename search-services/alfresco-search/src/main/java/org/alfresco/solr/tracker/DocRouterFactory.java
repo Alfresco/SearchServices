@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-import java.util.Set;
 
 /*
  * @author Joel
@@ -40,12 +39,15 @@ public class DocRouterFactory
                 log.info("Sharding via DB_ID");
                 return new DBIDRouter();
             case DB_ID_RANGE:
-                String range = properties.getProperty("shard.range");
-                String[] rangeParts = range.split("-");
-                long startRange = Long.parseLong(rangeParts[0].trim());
-                long endRange = Long.parseLong(rangeParts[1].trim());
-                log.info("Sharding via DB_ID_RANGE");
-                return new DBIDRangeRouter(startRange, endRange);
+                //
+                if(properties.containsKey("shard.range"))
+                {
+                    log.info("Sharding via DB_ID_RANGE");
+                    String[] pair =properties.getProperty("shard.range").split("-");
+                    long start = Long.parseLong(pair[0]);
+                    long end = Long.parseLong(pair[1]);
+                    return new DBIDRangeRouter(start, end);
+                }
             case ACL_ID:
                 log.info("Sharding via ACL_ID");
                 return new ACLIDMurmurRouter();

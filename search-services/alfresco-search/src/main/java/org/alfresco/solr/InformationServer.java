@@ -58,6 +58,8 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     void commit() throws IOException;
 
+    void hardCommit() throws IOException;
+
     boolean commit(boolean openSearcher) throws IOException;
 
     void indexAclTransaction(AclChangeSet changeSet, boolean overwrite) throws IOException;
@@ -71,6 +73,18 @@ public interface InformationServer extends InformationServerCollectionProvider
     void deleteByAclId(Long aclId) throws IOException;
 
     void deleteByNodeId(Long nodeId) throws IOException;
+
+    void capIndex(long nodeId) throws IOException;
+
+    long getIndexCap() throws IOException;
+
+    long nodeCount() throws IOException;
+
+    long maxNodeId() throws IOException;
+
+    long minNodeId() throws IOException;
+
+    void maintainCap(long nodeId) throws Exception;
 
     void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException;
     
