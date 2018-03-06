@@ -2,6 +2,7 @@ package org.alfresco.rest.tags.nodes;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.rest.tags.TagsDataPrep;
 import org.alfresco.utility.constants.UserRole;
@@ -12,6 +13,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -121,5 +123,31 @@ public class AddTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED).assertLastError()
                 .containsSummary(RestErrorModel.AUTHENTICATION_FAILED);
         siteManager.setPassword(managerPassword);
+    }
+    
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify include count parameter")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void getTagsUsingCountParam() throws Exception
+    {
+        FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        String tagName = RandomData.getRandomName("tag");
+        restClient.authenticateUser(adminUserModel);
+        returnedModel = restClient.withCoreAPI().usingResource(file).addTag(RandomData.getRandomName("tag"));
+        file.setNodeRef(returnedModel.getId());
+        RestTagModelsCollection tagsWithIncludeParamCount = restClient.withParams("include=count").withCoreAPI().getTags();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        
+        for (RestTagModel tagModel : tagsWithIncludeParamCount.getEntries())
+        {
+            if (tagModel != null && tagModel.getTag() != null)
+            {
+                if (tagModel.getTag().equals(tagName))
+                {
+                    Assert.assertEquals(tagModel.getCount().intValue(), 1);
+                }
+            }
+        }
+       
     }
 }
