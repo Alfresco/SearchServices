@@ -132,11 +132,9 @@ public class AddTagsTests extends TagsDataPrep
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         String tagName = RandomData.getRandomName("tag");
-        restClient.authenticateUser(adminUserModel);
-        returnedModel = restClient.withCoreAPI().usingResource(file).addTag(RandomData.getRandomName("tag"));
+        returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addTag(RandomData.getRandomName("tag"));
         RestTagModelsCollection tagsWithIncludeParamCount = restClient.withParams("include=count").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
         for (RestTagModel tagModel : tagsWithIncludeParamCount.getEntries())
         {
             if (tagModel != null && tagModel.getTag() != null)
