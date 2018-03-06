@@ -134,7 +134,6 @@ public class AddTagsTests extends TagsDataPrep
         String tagName = RandomData.getRandomName("tag");
         restClient.authenticateUser(adminUserModel);
         returnedModel = restClient.withCoreAPI().usingResource(file).addTag(RandomData.getRandomName("tag"));
-        file.setNodeRef(returnedModel.getId());
         RestTagModelsCollection tagsWithIncludeParamCount = restClient.withParams("include=count").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         
