@@ -1,5 +1,7 @@
 package org.alfresco.rest.sites.membershipRequests;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.*;
 import org.alfresco.utility.constants.UserRole;
@@ -15,14 +17,18 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * Tests for getSiteMembershipRequests (get /people/{personId}/site-membership-requests) RestAPI call
+ * Tests for
+ * GET /people/{personId}/site-membership-requests
+ * GET /site-membership-requests
+ * POST /sites/{siteId}/site-membership-requests/{inviteeId}/approve
+ * POST /sites/{siteId}/site-membership-requests/{inviteeId}/reject
  * 
  * @author Cristina Axinte
  */
 
 public class GetSiteMembershipRequestsTests extends RestTest
 {
-    UserModel siteManager, newMember, adminUser, regularUser;
+    UserModel siteManager, newMember, adminUser, regularUser, testUser, testUser1;
     DataUser.ListUserWithRoles usersWithRoles;
     SiteModel moderatedSite1, moderatedSite2;
     RestSiteMembershipRequestModelsCollection siteMembershipRequests;
@@ -34,6 +40,11 @@ public class GetSiteMembershipRequestsTests extends RestTest
         siteManager = dataUser.createRandomTestUser();
         newMember = dataUser.createRandomTestUser();
         regularUser = dataUser.createRandomTestUser();
+
+        testUser = dataUser.createRandomTestUser("testUser");
+        testUser.setUserRole(UserRole.SiteConsumer);
+        testUser1 = dataUser.createRandomTestUser("testUser1");
+        testUser1.setUserRole(UserRole.SiteConsumer);
         
         moderatedSite1 = dataSite.usingUser(siteManager).createModeratedRandomSite();
         moderatedSite2 = dataSite.usingUser(siteManager).createModeratedRandomSite();
@@ -375,5 +386,36 @@ public class GetSiteMembershipRequestsTests extends RestTest
                 .assertThat().entriesListContains("id", moderatedSite2.getId());
         RestSiteMembershipRequestModel siteMembershipRequest = siteMembershipRequests.getOneRandomEntry().onModel();
         siteMembershipRequest.assertThat().fieldsCount().is(1);
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
+    @TestRail(section = { TestGroup.REST_API,
+            TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Sanity test for endpoints: GET /site-membership-requests, POST /sites/{siteId}/site-membership-requests/{inviteeId}/approve, POST /sites/{siteId}/site-membership-requests/{inviteeId}/reject")
+    public void approveRejectSiteMembership() throws Exception
+    {
+        STEP("1. Make membership requests for 2 users on moderatedSite.");
+        restClient.authenticateUser(testUser).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite1);
+        restClient.authenticateUser(testUser1).withCoreAPI().usingMe().addSiteMembershipRequest(moderatedSite1);
+
+        STEP("2. Get site memberships and filter using username and siteId ");
+        RestSitePersonMembershipRequestModelsCollection membership = restClient.authenticateUser(siteManager)
+                .withParams("where=(personId='" + testUser.getUsername() + "' AND siteId='" + moderatedSite1.getId() + "')").withCoreAPI()
+                .usingSite(moderatedSite1).getSiteMemberships();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        membership.getEntryByIndex(0).getSite().assertThat().field("id").is(moderatedSite1.getId());
+        membership.getEntryByIndex(0).getPersonModel().assertThat().field("id").is(testUser.getUsername());
+
+        STEP("3. Approve site membership for one of the users. Check that the user is now a member of the site");
+        restClient.authenticateUser(siteManager).withCoreAPI().usingSite(moderatedSite1).approveSiteMembership(testUser);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.withCoreAPI().usingSite(moderatedSite1).getSiteMember(testUser).assertThat().field("id").is(testUser.getUsername()).and().field("role")
+                .is(testUser.getUserRole());
+
+        STEP("4. Reject site membership for the second user. Check that the user is not a member of the site");
+        restClient.authenticateUser(siteManager).withCoreAPI().usingSite(moderatedSite1).rejectSiteMembership(testUser1);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        RestSiteMemberModelsCollection memberList = restClient.withCoreAPI().usingSite(moderatedSite1).getSiteMembers();
+        memberList.assertThat().entriesListDoesNotContain("id", testUser1.getUsername());
     }
 }
