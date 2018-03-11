@@ -552,7 +552,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     protected Transactions getSomeTransactions(BoundedDeque<Transaction> txnsFound, Long fromCommitTime, long timeStep,
                 int maxResults, long endTime) throws AuthenticationException, IOException, JSONException, EncoderException
     {
-        //System.out.println("###################### getSomeTransactions ####### "+fromCommitTime+":"+endTime);
 
         long actualTimeStep = timeStep;
 
@@ -562,15 +561,16 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         // step forward in time until we find something or hit the time bound
         // max id unbounded
         Long startTime = fromCommitTime == null ? Long.valueOf(0L) : fromCommitTime;
+        log.info("####= getSomeTransactions ####### "+startTime.longValue()+" : "+endTime);
+
         do
         {
             transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
+            log.info("####= fetched transactions ######### " + startTime.longValue() + ":" + transactions.getTransactions().size());
             startTime += actualTimeStep;
-
         } while (((transactions.getTransactions().size() == 0) && (startTime < endTime))
                     || ((transactions.getTransactions().size() > 0) && alreadyFoundTransactions(txnsFound, transactions)));
 
-        //System.out.println("############ done with transactions ######### " + startTime + ":" + endTime + ":" + transactions.getTransactions().size());
 
         return transactions;
     }
@@ -599,6 +599,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
 
                 Long fromCommitTime = getTxFromCommitTime(txnsFound, state.getLastGoodTxCommitTimeInIndex());
+
+                log.info("####= from commit time ######### " + fromCommitTime.longValue());
+
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                                                    state.getTimeToStopIndexing());
 
