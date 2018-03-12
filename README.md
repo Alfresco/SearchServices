@@ -34,6 +34,24 @@ To run the docker image:
 docker run -p 8983:8983 searchservices:develop
 </code>
 
+docker-compose files can be used to start up Search Services with Alfresco and Share. There are two docker-composes file available. Depending on the version you want to start either change to 5.x or 6.x. E.g.
+
+<code>
+cd packaging/target/docker-resources/6.x
+
+docker-compose up 
+</code>
+
+This will start up Alfresco, Postgres, Share and SearchServices. You can access the applications using the following URLs:
+
+ * Alfresco: http://localhost:8081/alfresco
+ * Share: http://localhost:8082/share
+ * Solr: http://localhost:8083/solr
+ 
+If you start instead version 5.x. You can also access the API Explorer:
+
+ * API Explorer: http://localhost:8084/api-explorer
+
 ### License
 Copyright (C) 2005 - 2017 Alfresco Software Limited
 

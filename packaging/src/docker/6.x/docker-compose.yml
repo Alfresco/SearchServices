@@ -13,20 +13,11 @@ services:
               -Dsolr.secureComms=none
               -Dsolr.base.url=/solr
               -Dindex.subsystem.name=solr6
-              -Dalfresco.restApi.basicAuthScheme=true
-              -Dimap.server.enabled=true
-              -Dftp.enabled=true
-              -Dftp.dataPortFrom=30000
-              -Dftp.dataPortTo=30099
               "
       ports:
           - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
           - "5005:5005" #Java debugging
           - "8081:8080" #Browser port for Alfresco
-#          - "445:445"
-          - "143:143"
-          - "21:21"
-          - "30000-30099:30000-30099"
 
   share:
       image: quay.io/alfresco/alfresco-full-share:${SHARE_TAG}
@@ -46,7 +37,7 @@ services:
           - 5432:5432
 
   search:
-    image: quay.io/alfresco/search-services:${project.version}
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}
     environment:
         #Solr needs to know how to register itself with Alfresco
         - SOLR_ALFRESCO_HOST=alfresco

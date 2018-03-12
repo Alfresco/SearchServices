@@ -1,6 +1,6 @@
 # Alfresco Search Services ${project.version} Docker Image
 
-FROM quay.io/alfresco/alfresco-base-java:0.1.0
+FROM quay.io/alfresco/alfresco-base-java:8
 LABEL creator="Gethin James" maintainer="Alfresco Search Services Team"
 
 ENV DIST_DIR /opt/alfresco-search-services
