@@ -49,8 +49,8 @@ public class GetDeletedNodesTests extends RestTest
 {
     private UserModel adminUserModel;
     private SiteModel deleteNodesSiteModel;
-    private FolderModel deleteNodesFolder1, deleteNodesFolder2, deleteNodesFolder3, deleteNodesFolder4, deleteNodesFolder5;
-    private FileModel file, file1, file2, file3;
+    private FolderModel deleteNodesFolder1, deleteNodesFolder2, deleteNodesFolder3, deleteNodesFolder4, deleteNodesFolder5, getDeleteNodesFolder6;
+    private FileModel file, file1, file2, file3, file4;
 
     private RestNodeModelsCollection deletedNodes, deletedNodesMaxItem;
     private RestNodeModel node;
@@ -216,5 +216,30 @@ public class GetDeletedNodesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Type","application/pdf;charset=UTF-8");
         Assert.assertTrue(restClient.onResponse().getResponse().body().asInputStream().available() > 0);
+    }
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TRASHCAN, TestGroup.REQUIRE_SOLR}, executionType = ExecutionType.SANITY,
+            description = "Sanity test to verify Range request header on GET /deleted-nodes/{nodeId}/renditions/{renditionId}/content endpoint")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TRASHCAN, TestGroup.SANITY})
+    public void testGetDeletedNodesRenditionsandVerifyRangeRequestheader() throws Exception
+    {
+        // Create file4 based on existing resource
+        file4 = dataContent.usingUser(adminUserModel).usingSite(deleteNodesSiteModel).createContent(DocumentType.TEXT_PLAIN);
+
+        // Create rendition and delete file4 to be moved in trashcan
+        restClient.withCoreAPI().usingNode(file4).createNodeRendition("pdf");
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        dataContent.usingUser(adminUserModel).usingResource(file4).deleteContent();
+
+        // GET /deleted-nodes/{nodeId}/renditions/{id}/content and verify range request header
+        Utility.sleep(1000, 30000, () ->
+        {
+            restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
+            restClient.authenticateUser(adminUserModel).withCoreAPI().usingTrashcan().getDeletedNodeRenditionContent(file4, "pdf");
+            restClient.assertStatusCodeIs(HttpStatus.PARTIAL_CONTENT);
+            restClient.assertHeaderValueContains("Content-Type", "application/pdf;charset=UTF-8");
+            restClient.assertHeaderValueContains("content-range", "bytes 1-10");
+            restClient.assertHeaderValueContains("content-length", String.valueOf(10));
+        });
     }
 }

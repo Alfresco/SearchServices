@@ -44,6 +44,7 @@ public class SharedLinksSanityTests extends RestTest
     private FileModel file5;
     private FileModel file6;
     private FileModel file7;
+    private FileModel file8;
 
     private RestSharedLinksModel sharedLink1;
     private RestSharedLinksModel sharedLink2;
@@ -52,7 +53,7 @@ public class SharedLinksSanityTests extends RestTest
     private RestSharedLinksModel sharedLink5;
     private RestSharedLinksModel sharedLink6;
     private RestSharedLinksModel sharedLink7;
-    
+    private RestSharedLinksModel sharedLink8;
     private RestRenditionInfoModel nodeRenditionInfo;
 
     private RestSharedLinksModelCollection sharedLinksCollection;
@@ -81,7 +82,7 @@ public class SharedLinksSanityTests extends RestTest
         file4 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
         file5 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
         file7 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
-
+        file8 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(DocumentType.TEXT_PLAIN);
         // Create file6 based on existing resource
         FileModel newFile = FileModel.getFileModelBasedOnTestDataFile("sampleContent.txt");
         newFile.setName("sampleContent.txt");
@@ -253,5 +254,25 @@ public class SharedLinksSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Type","application/pdf;charset=UTF-8");
         Assert.assertTrue(restClient.onResponse().getResponse().body().asInputStream().available() > 0);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Sanity tests for Range reuest header on   GET shared-links/{sharedId}/renditions/{renditionId}/content endpoints")
+    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.REQUIRE_TRANSFORMATION })
+    public void testGetVerifyRangeReguestOnSharedLinks() throws Exception
+    {
+        sharedLink8 = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().createSharedLink(file8);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        restClient.withCoreAPI().usingNode(file8).createNodeRendition("pdf");
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+
+        // GET /renditions/{renditionId}/content: get the Range request header for file with shared links endpoints.
+        Utility.sleep(1000, 30000, () ->
+        {
+            restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
+            restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditionContent(sharedLink8, "pdf");
+            restClient.assertStatusCodeIs(HttpStatus.PARTIAL_CONTENT);
+            restClient.assertHeaderValueContains("Content-Type","application/pdf;charset=UTF-8");
+            restClient.assertHeaderValueContains("content-range", "bytes 1-10");
+        });
     }
 }

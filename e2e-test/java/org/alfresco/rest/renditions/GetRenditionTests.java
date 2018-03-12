@@ -2,6 +2,8 @@ package org.alfresco.rest.renditions;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;
@@ -31,12 +33,14 @@ public class GetRenditionTests extends RestTest
 {
     private UserModel user;
     private SiteModel site;
+    private FileModel file1;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         user = dataUser.createRandomTestUser();
         site = dataSite.usingUser(user).createPublicRandomSite();
+        file1 = dataContent.usingUser(user).usingSite(site).createContent(DocumentType.TEXT_PLAIN);
     }
 
     @Bug(id = "REPO-2449", status = Status.FIXED)
@@ -132,5 +136,23 @@ public class GetRenditionTests extends RestTest
         Assert.assertTrue(restResponse.getResponse().body().asInputStream().available() > 0);
     }
 
+    @Test(groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY,
+            description = "Verify the Range request header using GET /nodes/{nodeId}/renditions/{renditionId}/content")
+    public void getVerifyRangeRequestHeader() throws Exception
+    {
+        STEP("1. Create thumbnail on file");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file1).createNodeRendition("pdf");
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+
+        STEP("2. Make GET rendition content using content-range header");
+        Utility.sleep(1000, 30000, () -> {
+            restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
+            restClient.authenticateUser(user).withCoreAPI().usingNode(file1).getNodeRenditionContent("pdf");
+            restClient.assertStatusCodeIs(HttpStatus.PARTIAL_CONTENT);
+            restClient.assertHeaderValueContains("content-range", "bytes 1-10");
+            restClient.assertHeaderValueContains("content-length", String.valueOf(10));
+        });
+    }
 }
 
