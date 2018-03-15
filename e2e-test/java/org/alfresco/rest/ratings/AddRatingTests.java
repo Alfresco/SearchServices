@@ -371,7 +371,7 @@ public class AddRatingTests extends RestTest
 
         restClient.authenticateUser(adminUser).withCoreAPI().usingResource(document).addInvalidRating("");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"));
+                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.RATINGS },
