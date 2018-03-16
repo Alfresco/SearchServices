@@ -51,7 +51,7 @@ public class SolrSearchInFolderTests extends CmisTest
                 .createFile(subFile3)
                 .createFile(subFile4);
         // wait for solr index
-        Utility.waitToLoopTime(30);
+        Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
     
     @AfterClass(alwaysRun = true)
