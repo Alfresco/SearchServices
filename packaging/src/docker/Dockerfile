@@ -1,10 +1,10 @@
 # Alfresco Search Services ${project.version} Docker Image
 
-FROM quay.io/alfresco/alfresco-base-java:8
+FROM quay.io/alfresco/alfresco-base-java:8u161-oracle-centos-7
 LABEL creator="Gethin James" maintainer="Alfresco Search Services Team"
 
 ENV DIST_DIR /opt/alfresco-search-services
-ENV SOLR_ZIP alfresco-search-services-${project.version}.zip
+ENV SOLR_ZIP ${project.build.finalName}.zip
 ENV LANG C.UTF-8
 ENV OPENSSL_VERSION 1.0.2k-8.el7
 
@@ -21,13 +21,13 @@ RUN set -x \
    && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ \
    && chown -R solr:solr $DIST_DIR \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
-   && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=/opt/alfresco-search-services/data -Dsolr.solr.model.dir=/opt/alfresco-search-services/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
+   && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$DIST_DIR/data -Dsolr.solr.model.dir=$DIST_DIR/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
 
 WORKDIR $DIST_DIR
 
-VOLUME /opt/alfresco-search-services/data
-VOLUME /opt/alfresco-search-services/solrhome
+VOLUME $DIST_DIR/data
+VOLUME $DIST_DIR/solrhome
 
 EXPOSE 8983
 USER solr
-CMD [ "/opt/alfresco-search-services/solr/bin/solr", "start", "-f" ]
+CMD $DIST_DIR/solr/bin/solr start -f
