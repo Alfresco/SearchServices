@@ -1,7 +1,5 @@
 package org.alfresco.rest.sharedLinks;
 
-import static org.testng.Assert.assertEquals;
-
 import javax.json.Json;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;

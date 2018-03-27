@@ -121,7 +121,7 @@ public class SearchAPATHTest extends AbstractSearchTest
     {
         SearchRequest searchQuery = new SearchRequest();
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("name:*");
+        queryReq.setQuery("name:cars*");
         searchQuery.setQuery(queryReq);
         
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
@@ -151,7 +151,7 @@ public class SearchAPATHTest extends AbstractSearchTest
          */
         searchQuery = new SearchRequest();
         queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("name:*");
+        queryReq.setQuery("name:cars*");
         searchQuery.setQuery(queryReq);
         facetFields = new RestRequestFacetFieldsModel();
         list.remove(0);
