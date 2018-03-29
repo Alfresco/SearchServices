@@ -41,7 +41,7 @@ import org.testng.annotations.Test;
 public class ShardInfoTest extends AbstractSearchTest
 {
     @Bug(id="DELENG-1", status=Bug.Status.OPENED)
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException, EmptyRestModelCollectionException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
@@ -78,7 +78,7 @@ public class ShardInfoTest extends AbstractSearchTest
     }
 
     @Bug(id="DELENG-1", status=Bug.Status.OPENED)
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithoutAdminAuthority() throws Exception
     {
         restClient.authenticateUser(dataUser.createRandomTestUser()).withShardInfoAPI().getInfo();

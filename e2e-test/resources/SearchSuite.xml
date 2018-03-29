@@ -7,10 +7,29 @@
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
     </listeners>
  
-    <test name="Search">
-        <packages>
-            <package name="org.alfresco.rest.search"/>
-        </packages>
+    <test name="SearchFaceted">
+        <classes>
+            <class name="org.alfresco.rest.search.FacetIntervalSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetRangeSearchTest"/>
+            <class name="org.alfresco.rest.search.PivotFacetedSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetedSearchTest"/>
+        </classes>
     </test>
-
+    
+    <test name="SearchFeatures">
+        <classes>
+            <class name="org.alfresco.rest.search.FingerPrintTest"/>
+            <class name="org.alfresco.rest.search.SearchAPATHTest"/>
+            <class name="org.alfresco.rest.search.SearchHighLightTest"/>
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest"/>
+            <class name="org.alfresco.rest.search.SearchTest"/>
+            <class name="org.alfresco.rest.search.StatsSearchTest"/>
+        </classes>
+    </test>
+    
+   <test name="SearchPrivateAPIs">
+        <classes>
+            <class name="org.alfresco.rest.search.ShardInfoTest"/>
+        </classes>
+    </test>
 </suite>
