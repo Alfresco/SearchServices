@@ -125,7 +125,42 @@ public abstract class AbstractTracker implements Tracker
      * @throws Throwable
      */
     protected abstract void doTrack() throws Throwable;
-    
+
+
+    private boolean assertTrackerStateRemainsNull() {
+
+        /*
+        * This assertion is added to accommodate DistributedAlfrescoSolrTrackerRaceTest.
+        * The sleep is needed to allow the test case to add a txn into the queue before
+        * the tracker makes its call to pull transactions from the test repo client.
+        */
+
+        try
+        {
+            Thread.sleep(5000);
+        }
+        catch(Exception e)
+        {
+
+        }
+
+
+        /*
+        *  This ensures that getTrackerState does not have the side effect of setting the
+        *  state instance variable. This allows classes outside of the tracker framework
+        *  to safely call getTrackerState without interfering with the trackers design.
+        */
+
+        getTrackerState();
+
+
+        if(state == null) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
     /**
      * Template method - subclasses must implement the {@link Tracker}-specific indexing
      * by implementing the abstract method {@link #doTrack()}.
@@ -141,17 +176,26 @@ public abstract class AbstractTracker implements Tracker
         try
         {
             runLock.acquire();
+
+            if(state==null && Boolean.parseBoolean(System.getProperty("alfresco.test", "false")))
+            {
+                assert(assertTrackerStateRemainsNull());
+            }
+
             log.info("... Running " + this.getClass().getSimpleName() + " for core [" + coreName + "].");
 
-            if(state == null)
+            if(this.state == null)
             {
-                getTrackerState();
-                state.setRunning(true);
+                /*
+                * Set the global state for the tracker here.
+                */
+                this.state = getTrackerState();
+                this.state.setRunning(true);
             }
             else
             {
                 continueState();
-                state.setRunning(true);
+                this.state.setRunning(true);
             }
 
             infoSrv.registerTrackerThread();
@@ -216,22 +260,21 @@ public abstract class AbstractTracker implements Tracker
         state.incrementTrackerCycles();
     }
 
-    public void invalidateState()
+    public synchronized void invalidateState()
     {
         state = null;
     }
     
     @Override
-    public TrackerState getTrackerState()
+    public synchronized TrackerState getTrackerState()
     {
-        if(state != null)
+        if(this.state != null)
         {
-           return state;
+           return this.state;
         }
         else
         {
-            state = this.infoSrv.getTrackerInitialState();
-            return state;
+            return this.infoSrv.getTrackerInitialState();
         }
     }
     
