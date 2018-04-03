@@ -98,6 +98,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     @Override
     protected void doTrack() throws AuthenticationException, IOException, JSONException, EncoderException
     {
+
         // MetadataTracker must wait until ModelTracker has run
         ModelTracker modelTracker = this.infoSrv.getAdminHandler().getTrackerRegistry().getModelTracker();
 
@@ -129,7 +130,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
     {
-        //System.out.println("########################### MetadataTracker.trackRepository ##########");
         checkShutdown();
 
         if(!isMaster && isSlave)
@@ -220,7 +220,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
                 long firstTxId = firstTransaction.getId();
                 long firstTransactionCommitTime = firstTransaction.getCommitTimeMs();
-                //System.out.println("###### First txn:"+firstTxId+" : "+firstTransactionCommitTime);
                 int setSize = this.infoSrv.getTxDocsSize(""+firstTxId, ""+firstTransactionCommitTime);
                 
                 if (setSize == 0)
@@ -552,7 +551,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     protected Transactions getSomeTransactions(BoundedDeque<Transaction> txnsFound, Long fromCommitTime, long timeStep,
                 int maxResults, long endTime) throws AuthenticationException, IOException, JSONException, EncoderException
     {
-        //System.out.println("###################### getSomeTransactions ####### "+fromCommitTime+":"+endTime);
 
         long actualTimeStep = timeStep;
 
@@ -570,7 +568,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         } while (((transactions.getTransactions().size() == 0) && (startTime < endTime))
                     || ((transactions.getTransactions().size() > 0) && alreadyFoundTransactions(txnsFound, transactions)));
 
-        //System.out.println("############ done with transactions ######### " + startTime + ":" + endTime + ":" + transactions.getTransactions().size());
 
         return transactions;
     }
@@ -591,18 +588,20 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             try
             {
                 getWriteLock().acquire();
-                //System.out.println("######## Metadata Tracket Acquiring Write Lock ########");
 
-                TrackerState state = getTrackerState();
+                /*
+                * We acquire the tracker state again here and set it globally. This is because the
+                * tracker state could have been invalidated due to a rollback by the CommitTracker.
+                * In this case the state will revert to the last transaction state record in the index.
+                */
 
-                //System.out.println("######## Do Track Transactions ########:"+docCount);
+                this.state = getTrackerState();
 
 
                 Long fromCommitTime = getTxFromCommitTime(txnsFound, state.getLastGoodTxCommitTimeInIndex());
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                                                    state.getTimeToStopIndexing());
 
-                //System.out.println("######## get some! ########:"+transactions.getTransactions().size());
 
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions, state);
 
@@ -618,17 +617,13 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
                 ArrayList<Transaction> txBatch = new ArrayList<>();
                 for (Transaction info : transactions.getTransactions()) {
-                    //System.out.println("############## Transaction:"+ info.getId());
                     boolean isInIndex = (infoSrv.txnInIndex(info.getId(), true) && info.getCommitTimeMs() <= state.getLastIndexedTxCommitTime());
                     if (isInIndex) {
-                        //System.out.println("################## Transaction Found In Index:"+info.getId());
                         txnsFound.add(info);
                     } else {
-                        //System.out.println("################## New Transaction:"+info.getId());
                         // Make sure we do not go ahead of where we started - we will check the holes here
                         // correctly next time
                         if (info.getCommitTimeMs() > state.getTimeToStopIndexing()) {
-                            //System.out.println("################## We are upToDate:"+state.getTimeToStopIndexing());
                             upToDate = true;
                             break;
                         }
@@ -692,7 +687,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             finally
             {
                 getWriteLock().release();
-                //System.out.println("######## Metadata Tracket Releasing Write Lock ########:"+getWriteLock().availablePermits());
             }
         }
         while ((transactions.getTransactions().size() > 0) && (upToDate == false));
