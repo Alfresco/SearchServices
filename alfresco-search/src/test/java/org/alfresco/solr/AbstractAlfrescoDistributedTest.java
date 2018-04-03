@@ -1,6 +1,5 @@
 package org.alfresco.solr;
 
-import com.carrotsearch.ant.tasks.junit4.dependencies.com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
@@ -1685,6 +1684,19 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             this.numShards = numShards;
             this.solrcoreProperties = solrcoreProperties;
         }
+
+        /**
+         * Creates the jetty servers with the specified number of shards and sensible defaults.
+         * @param numShards
+         */
+        public JettyServerRule(int numShards, AbstractAlfrescoDistributedTest testClass)
+        {
+            this.serverName = testClass.getClass().getSimpleName();
+            coreNames = new String[]{DEFAULT_TEST_CORENAME};
+            this.numShards = numShards;
+            this.solrcoreProperties = new Properties();
+        }
+
 
         @Override
         protected void before() throws Throwable
