@@ -1,5 +1,6 @@
 package org.alfresco.solr;
 
+import com.carrotsearch.ant.tasks.junit4.dependencies.com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
@@ -84,7 +85,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
  * @since solr 1.5
  * @author Michael Suzuki 
  */
-@ThreadLeakLingering(linger = 2000)
+@ThreadLeakLingering(linger = 5000)
 public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 {
     // TODO: this shouldn't be static. get the random when you need it to avoid

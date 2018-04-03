@@ -642,15 +642,18 @@ public class AclTracker extends AbstractTracker
             try
             {
                 getWriteLock().acquire();
-                //System.out.println("############# AclTracker acquire lock ################");
 
-                TrackerState state = getTrackerState();
+                /*
+                * We acquire the tracker state again here and set it globally. This is because the
+                * tracker state could have been invalidated due to a rollback by the CommitTracker.
+                * In this case the state will revert to the last transaction state record in the index.
+                */
+
+                this.state = getTrackerState();
 
                 Long fromCommitTime = getChangeSetFromCommitTime(changeSetsFound, state.getLastGoodChangeSetCommitTimeInIndex());
                 aclChangeSets = getSomeAclChangeSets(changeSetsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                         state.getTimeToStopIndexing());
-
-                //System.out.println("############# Changesets ################:"+aclChangeSets.getAclChangeSets().size());
 
 
                 setLastChangeSetIdAndCommitTimeInTrackerState(aclChangeSets, state);
