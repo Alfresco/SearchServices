@@ -39,5 +39,5 @@ then
    
    echo "Docker SUCCESS"
 else
-    echo "Only building and publishing docker images from master or release branhes. Skipping for ${nicebranch}"
+    echo "Only building and publishing docker images from master or release branches. Skipping for '${nicebranch}'"
 fi
