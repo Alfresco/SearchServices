@@ -10,13 +10,15 @@ then
    # set current working directory to the directory of the script
    cd "$bamboo_working_directory"
 
+   docker_registry="quay.io/alfresco/search-services"
    tag_version=`echo "$bamboo_maven_version"`
    if [ "${bamboo_shortJobName}" = "Release" ]
    then
       tag_version=`echo "$bamboo_release_version"`
+      docker_registry="alfresco/alfresco-search-services"
    fi
 
-   dockerImage="quay.io/alfresco/search-services:$tag_version"
+   dockerImage="$docker_registry:$tag_version"
    echo "Building $dockerImage from $nicebranch using version $tag_version"
 
    docker build -t $dockerImage packaging/target/docker-resources
@@ -37,5 +39,5 @@ then
    
    echo "Docker SUCCESS"
 else
-    echo "Only building and publishing docker images from master. Skipping for ${nicebranch}"
+    echo "Only building and publishing docker images from master or release branches. Skipping for '${nicebranch}'"
 fi
