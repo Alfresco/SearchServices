@@ -176,14 +176,14 @@
 		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF NOT IN('aspect folder text subfolder-1', 'aspect folder text subfolder-2')" expectedResults="1" />
 		<query value="SELECT * FROM tas:tasFolderAspect where tas:TextPropertyAF LIKE 'aspect folder text subfolder%'" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF = '11'" expectedResults="1" />
-		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt;&gt; '10'" expectedResults="3" />
-		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt; '11'" expectedResults="2" />
-		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt;= '11'" expectedResults="3" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt;&gt; '10'" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt; '11'" expectedResults="1" />
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &lt;= '11'" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &gt;= '11'" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &gt; '11'" expectedResults="1" />
 		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF &gt; '12'" expectedResults="0" />
 		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF IN('11', '12', '13')" expectedResults="2" />
-		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF NOT IN('11', '12', '83')" expectedResults="2" />	
+		<query value="SELECT * FROM tas:tasFolderAspect where tas:IntPropertyAF NOT IN('11', '12', '83')" expectedResults="1" />	
 		<query value="SELECT * FROM tas:tasContentAspect" expectedResults="6" />
 		<query value="SELECT * FROM tas:tasFolderAspect" expectedResults="4" />
 		<query value="SELECT * FROM tas:tasContentAspect where IN_FOLDER('NODE_REF[f1]')" expectedResults="4" />
