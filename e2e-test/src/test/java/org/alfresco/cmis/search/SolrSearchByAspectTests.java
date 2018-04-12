@@ -37,7 +37,7 @@ public class SolrSearchByAspectTests extends CmisTest
         this.testData.createUsers(dataUser);
         this.testData.createSitesStructure(dataSite, dataContent, dataUser);
         // wait for solr index
-        Utility.waitToLoopTime(30);
+        Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
 
     @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },

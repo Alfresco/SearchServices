@@ -59,4 +59,9 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
     {
         LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
+    
+    public Integer getSolrWaitTimeInSeconds()
+    {
+        return cmisApi.cmisProperties.envProperty().getSolrWaitTimeInSeconds();
+    }
 }
