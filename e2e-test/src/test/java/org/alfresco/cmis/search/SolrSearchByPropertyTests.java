@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 
 public class SolrSearchByPropertyTests extends CmisTest
 {
-    XMLTestData testData;
+    private XMLTestData testData;
 
     @BeforeClass(alwaysRun = true)
     public void deployCustomModel() throws TestConfigurationException
@@ -24,7 +24,7 @@ public class SolrSearchByPropertyTests extends CmisTest
     }
     
     @AfterClass(alwaysRun = true)
-    public void cleanupEnvironment() throws Exception
+    public void cleanupEnvironment()
     {
         testData.cleanup(dataContent);
     }

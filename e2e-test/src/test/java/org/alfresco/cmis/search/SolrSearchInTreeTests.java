@@ -18,11 +18,10 @@ import org.testng.annotations.Test;
 
 public class SolrSearchInTreeTests extends CmisTest
 {
-    UserModel testUser;
-    SiteModel testSite;
-    FolderModel parentFolder, subFolder1, subFolder2, subFolder3;
-    FileModel subFile1, subFile2, subFile3, subFile4, subFile5, subFile6;
-    XMLTestData testData;
+    private UserModel testUser;
+    private SiteModel testSite;
+    private FolderModel parentFolder, subFolder1, subFolder2, subFolder3;
+    private FileModel subFile1, subFile2, subFile3, subFile4, subFile5, subFile6;
     
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception
@@ -59,7 +58,7 @@ public class SolrSearchInTreeTests extends CmisTest
     }
     
     @AfterClass(alwaysRun = true)
-    public void cleanupEnvironment() throws Exception
+    public void cleanupEnvironment()
     {
         dataContent.deleteSite(testSite);
     }

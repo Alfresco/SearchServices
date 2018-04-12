@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 
 public class SolrSearchByPathTests extends CmisTest
 {
-    XMLTestData testData;
+    private XMLTestData testData;
 
     @BeforeClass(alwaysRun = true)
     public void readTestDataFile()
@@ -22,7 +22,7 @@ public class SolrSearchByPathTests extends CmisTest
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanupEnvironment() throws Exception
+    public void cleanupEnvironment()
     {
         testData.cleanup(dataContent);
     }
