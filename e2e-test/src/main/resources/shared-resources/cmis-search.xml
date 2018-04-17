@@ -1,0 +1,22 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="SearchSuite" verbose="6" preserve-order="true">
+
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+    </listeners>
+
+    <test name="Search">
+        <classes>
+            <class name="org.alfresco.cmis.search.SolrSearchByAspectTests" />
+            <class name="org.alfresco.cmis.search.SolrSearchByIdTests" />
+            <class name="org.alfresco.cmis.search.SolrSearchByPathTests" />
+            <class name="org.alfresco.cmis.search.SolrSearchByPropertyTests" />
+            <class name="org.alfresco.cmis.search.SolrSearchInFolderTests" />
+            <class name="org.alfresco.cmis.search.SolrSearchInTreeTests" />
+            <class name="org.alfresco.cmis.search.SorlSearchSimpleQueryTests" />
+        </classes>
+    </test>
+
+</suite>
