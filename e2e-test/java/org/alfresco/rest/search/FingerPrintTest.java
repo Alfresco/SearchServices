@@ -35,7 +35,7 @@ import org.testng.annotations.Test;
 public class FingerPrintTest extends AbstractSearchTest
 {
     private FileModel file1,file2,file3,file4;
-    @BeforeClass
+    @BeforeClass(alwaysRun=true)
     public void indexSimilarFile() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
