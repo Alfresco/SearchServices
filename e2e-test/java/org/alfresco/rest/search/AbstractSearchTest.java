@@ -29,7 +29,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.BeforeClass;
 
 /**
  * Abstract Search test class that contains useful methods
@@ -56,7 +56,7 @@ public class AbstractSearchTest extends RestTest
     
     protected FileModel file, file2, file3, file4;
     
-    @BeforeSuite(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
