@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Alfresco Software Limited.
+ * Copyright (C) 2018 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -89,7 +89,7 @@ public class AbstractSearchTest extends RestTest
         
         file2 = new FileModel("cars.txt", "cars" + title, description, FileType.TEXT_PLAIN, "The landrover discovery is not a sports car ");
         
-        file3 = new FileModel("alfresco.txt", "alfresco" + title, description, FileType.TEXT_PLAIN, "Alfresco text file for search ");
+        file3 = new FileModel("alfresco.txt", "alfresco " + title, "alfresco " + description, FileType.TEXT_PLAIN, "Alfresco text file for search ");
         
         file4 = new FileModel(unique_searchString, "unique" + title, description, FileType.TEXT_PLAIN, "Unique text file for search ");
         

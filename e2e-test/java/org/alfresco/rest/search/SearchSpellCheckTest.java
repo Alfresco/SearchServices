@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Alfresco Software Limited.
+ * Copyright (C) 2018 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -78,6 +78,7 @@ public class SearchSpellCheckTest extends AbstractSearchTest
         nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
         nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("alfresco");
     }
+
     @Test
     /**
      * Perform alternative way by setting the value in spellcheck object.
@@ -103,6 +104,7 @@ public class SearchSpellCheckTest extends AbstractSearchTest
         searchReq.setSpellcheck(spellCheck);
         assertResponse(query(searchReq));
     }   
+
     @Test
     public void searchWithSpellcheckerAndCorrectSpelling() throws Exception
     {
@@ -113,7 +115,7 @@ public class SearchSpellCheckTest extends AbstractSearchTest
         searchReq.setQuery(queryReq);
         searchReq.setSpellcheck(new RestRequestSpellcheckModel());
         SearchResponse res = query(searchReq);
-        Assert.assertNull(res.getContext());
+        Assert.assertNull(res.getContext().getSpellCheck());
         res.assertThat().entriesListIsNotEmpty();
     }
 }
