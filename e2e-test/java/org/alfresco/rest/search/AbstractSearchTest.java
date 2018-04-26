@@ -102,7 +102,7 @@ public class AbstractSearchTest extends RestTest
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
         
-        Utility.waitToLoopTime(60, "Wait For Index");
+        waitForIndexing();
     }
     
     /**

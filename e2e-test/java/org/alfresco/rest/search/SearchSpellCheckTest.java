@@ -19,6 +19,8 @@
 package org.alfresco.rest.search;
 
 import org.alfresco.rest.model.RestRequestSpellcheckModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.TestGroup;
 import org.junit.Assert;
 import org.testng.annotations.Test;
@@ -30,6 +32,8 @@ import org.testng.annotations.Test;
  */
 public class SearchSpellCheckTest extends AbstractSearchTest
 {
+   protected FileModel file = new FileModel("alfesco.txt", "alfesco", "alfesco", FileType.TEXT_PLAIN, "alfesco text file for search ");
+   
     /**
      * Perform the below query 
      * {
@@ -61,25 +65,48 @@ public class SearchSpellCheckTest extends AbstractSearchTest
      * 
      * @throws Exception
      */
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
-    public void searchMissSpelled() throws Exception
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=1)
+    public void testSearchMissSpelled() throws Exception
     {        
+        // Name
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:alfrezco");
+        queryReq.setUserQuery("alfrezco");
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
+        assertResponse(query(searchReq));
+        
+        // Title
         queryReq.setQuery("cm:title:alfrezco");
         queryReq.setUserQuery("alfrezco");
         searchReq.setQuery(queryReq);
         searchReq.setSpellcheck(new RestRequestSpellcheckModel());
         assertResponse(query(searchReq));
+        
+        // Description
+        queryReq.setQuery("cm:description:alfrezco");
+        queryReq.setUserQuery("alfrezco");
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
+        assertResponse(query(searchReq));
+        
+        // Content
+        queryReq.setQuery("cm:content:alfrezco");
+        queryReq.setUserQuery("alfrezco");
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
+        assertResponse(query(searchReq));
     }
+    
     private void assertResponse(SearchResponse nodes) throws Exception
     {
         nodes.assertThat().entriesListIsNotEmpty();
         nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
         nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("alfresco");
+        nodes.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
     }
 
-    @Test
     /**
      * Perform alternative way by setting the value in spellcheck object.
      * 
@@ -92,7 +119,8 @@ public class SearchSpellCheckTest extends AbstractSearchTest
      * }
      * @throws Exception
      */
-    public void searchMissSpelledVersion2() throws Exception
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=2)
+    public void testSearchMissSpelledVersion2() throws Exception
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -105,8 +133,8 @@ public class SearchSpellCheckTest extends AbstractSearchTest
         assertResponse(query(searchReq));
     }   
 
-    @Test
-    public void searchWithSpellcheckerAndCorrectSpelling() throws Exception
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=3)
+    public void testSearchWithSpellcheckerAndCorrectSpelling() throws Exception
     {
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -117,5 +145,36 @@ public class SearchSpellCheckTest extends AbstractSearchTest
         SearchResponse res = query(searchReq);
         Assert.assertNull(res.getContext().getSpellCheck());
         res.assertThat().entriesListIsNotEmpty();
+    }
+    
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=4)
+    public void testSpellCheckType() throws Exception
+    {        
+       try
+       {
+        // Create a file with mis-spelt name, expect spellcheck type = didYouMean
+        dataContent.usingUser(userModel).usingSite(siteModel).createContent(file);
+        
+        waitForIndexing();
+        
+        // Search
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:alfesco");
+        queryReq.setUserQuery("alfesco");
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
+        SearchResponse nodes = query(searchReq);
+        
+        nodes.assertThat().entriesListIsNotEmpty();
+        nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
+        nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("alfresco");
+        nodes.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
+       }
+       finally
+       {
+           // Delete this file, else it will cause incorrect results for other spell-check tests when rerunning on the same environment
+           dataContent.usingUser(userModel).usingSite(siteModel).usingResource(file).deleteContent();
+       }
     }
 }
