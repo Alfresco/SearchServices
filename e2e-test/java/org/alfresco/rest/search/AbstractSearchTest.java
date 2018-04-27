@@ -21,7 +21,6 @@ package org.alfresco.rest.search;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.builder.NodesBuilder;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
