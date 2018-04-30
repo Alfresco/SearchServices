@@ -42,32 +42,28 @@ import org.testng.annotations.BeforeClass;
  */
 public class AbstractSearchTest extends RestTest
 {
+    
     protected static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
-    protected static final String SEARCH_SITE_PUBLIC = RandomData.getRandomName("SiteSearch");
-    protected static final String SEARCH_USER1 = "UserSearch1";
-    protected static final String SEARCH_USER2 = "UserSearch2";
-    protected static String unique_searchString;
-            
-    UserModel userModel, adminUserModel, userModel2;
+    UserModel userModel, adminUserModel;
     SiteModel siteModel;
     UserModel searchedUser;
     NodesBuilder nodesBuilder;
-    
     protected FileModel file, file2, file3, file4;
+
+    protected static String unique_searchString;
     
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
-        userModel = dataUser.createRandomTestUser(SEARCH_USER1);
-        userModel2 = dataUser.createRandomTestUser(SEARCH_USER2);
+        userModel = dataUser.createRandomTestUser("UserSearch");
                 
-        siteModel = new SiteModel(RandomData.getRandomName(SEARCH_SITE_PUBLIC));
-        siteModel.setVisibility(Visibility.PUBLIC);
+        siteModel = new SiteModel(RandomData.getRandomName("SiteSearch"));
+        siteModel.setVisibility(Visibility.PRIVATE);
         
         siteModel = dataSite.usingUser(userModel).createSite(siteModel);
         
-        unique_searchString = siteModel.getTitle(); //userModel.getUsername();
+        unique_searchString = siteModel.getTitle();
 
         /*
          * Create the following file structure for preconditions : 
@@ -75,6 +71,7 @@ public class AbstractSearchTest extends RestTest
          *        |-- pangram.txt
          *        |-- cars.txt
          *        |-- alfresco.txt
+         *        |-- <uniqueFileName>
          */
         nodesBuilder = restClient.authenticateUser(userModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
         FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
@@ -141,7 +138,7 @@ public class AbstractSearchTest extends RestTest
      */
     protected SearchResponse query(SearchRequest query) throws Exception
     {
-        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
+        return restClient.authenticateUser(userModel).withSearchAPI().search(query);        
     }
     protected SearchRequest createQuery(String term)
     {
