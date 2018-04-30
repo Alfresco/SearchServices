@@ -61,11 +61,7 @@ import org.testng.annotations.Test;
  */
 public class FacetRangeSearchTest extends AbstractSearchTest
 {
-    @Override
-    public void dataPreparation() throws Exception
-    {
-        //Skip setup
-    }
+
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
               description = "Check facet intervals mandatory fields")
