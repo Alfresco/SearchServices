@@ -48,7 +48,6 @@ public class AbstractSearchTest extends RestTest
     UserModel userModel, adminUserModel;
     SiteModel siteModel;
     UserModel searchedUser;
-    NodesBuilder nodesBuilder;
     protected FileModel file, file2, file3, file4;
 
     protected static String unique_searchString;
@@ -64,7 +63,7 @@ public class AbstractSearchTest extends RestTest
         
         siteModel = dataSite.usingUser(userModel).createSite(siteModel);
         
-        unique_searchString = siteModel.getTitle();
+        unique_searchString = siteModel.getTitle().replace("SiteSearch", "Unique");
 
         /*
          * Create the following file structure for preconditions : 
@@ -74,7 +73,7 @@ public class AbstractSearchTest extends RestTest
          *        |-- alfresco.txt
          *        |-- <uniqueFileName>
          */
-        nodesBuilder = restClient.authenticateUser(userModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
+
         FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
         dataContent.usingUser(userModel).usingSite(siteModel).createFolder(folder);
         
@@ -88,18 +87,14 @@ public class AbstractSearchTest extends RestTest
         
         file3 = new FileModel("alfresco.txt", "alfresco", "alfresco", FileType.TEXT_PLAIN, "Alfresco text file for search ");
         
-        file4 = new FileModel(unique_searchString, "unique" + title, description, FileType.TEXT_PLAIN, "Unique text file for search ");
-        
-        ContentModel cm = new ContentModel();
-        cm.setCmisLocation(folder.getCmisLocation());
-        cm.setName(folder.getName());
+        file4 = new FileModel(unique_searchString + ".txt", "uniquee" + title, description, FileType.TEXT_PLAIN, "Unique text file for search ");
         
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file2);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
         
-        waitForIndexing(unique_searchString, true);
+        waitForIndexing(file4.getName(), true);
     }
     
     /**
@@ -115,7 +110,7 @@ public class AbstractSearchTest extends RestTest
         queryReq.setLanguage("afts");
         queryReq.setQuery(term);
         SearchRequest query = new SearchRequest(queryReq);
-        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
+        return restClient.authenticateUser(userModel).withSearchAPI().search(query);
     }
     /**
      * Helper method which create an http post request to Search API end point.
@@ -128,7 +123,7 @@ public class AbstractSearchTest extends RestTest
     {
         SearchRequest query = new SearchRequest(queryReq);
         query.setHighlight(highlight);
-        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
+        return restClient.authenticateUser(userModel).withSearchAPI().search(query);
     }
     /**
      * Helper method which create an http post request to Search API end point.

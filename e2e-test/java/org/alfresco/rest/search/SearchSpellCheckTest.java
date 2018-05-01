@@ -32,7 +32,6 @@ import org.testng.annotations.Test;
  */
 public class SearchSpellCheckTest extends AbstractSearchTest
 {
-   protected FileModel file = new FileModel("alfesco.txt", "alfesco", "alfesco", FileType.TEXT_PLAIN, "alfesco text file for search ");
    
     /**
      * Perform the below query 
@@ -149,32 +148,25 @@ public class SearchSpellCheckTest extends AbstractSearchTest
     
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=4)
     public void testSpellCheckType() throws Exception
-    {        
-       try
-       {
+    {
         // Create a file with mis-spelt name, expect spellcheck type = didYouMean
+        FileModel file = new FileModel(unique_searchString + "-1.txt", "uniquee" + "uniquee", "uniquee", FileType.TEXT_PLAIN, "Unique text file for search ");
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(file);
-        
+
         waitForIndexing(file.getName(), true);
         
         // Search
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:name:alfesco");
-        queryReq.setUserQuery("alfesco");
+        queryReq.setQuery("cm:title:uniquee");
+        queryReq.setUserQuery("uniquee");
         searchReq.setQuery(queryReq);
         searchReq.setSpellcheck(new RestRequestSpellcheckModel());
         SearchResponse nodes = query(searchReq);
         
         nodes.assertThat().entriesListIsNotEmpty();
         nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
-        nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("alfresco");
+        nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("unique");
         nodes.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
-       }
-       finally
-       {
-           // Delete this file, else it will cause incorrect results for other spell-check tests when rerunning on the same environment
-           dataContent.usingUser(userModel).usingSite(siteModel).usingResource(file).deleteContent();
-       }
     }
 }
