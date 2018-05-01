@@ -86,9 +86,5 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     {      
       LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
-    
-    public void waitForIndexing()
-    {
-        Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Index");
-    }
+
 }

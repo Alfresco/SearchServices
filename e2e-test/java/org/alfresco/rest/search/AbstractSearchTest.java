@@ -21,6 +21,7 @@ package org.alfresco.rest.search;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.builder.NodesBuilder;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
@@ -98,7 +99,7 @@ public class AbstractSearchTest extends RestTest
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
         
-        waitForIndexing();
+        waitForIndexing(unique_searchString, true);
     }
     
     /**
@@ -151,5 +152,49 @@ public class AbstractSearchTest extends RestTest
     protected SearchRequest carsQuery()
     {
         return createQuery("cars");
+    }
+    
+    /**
+     * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
+     * @param userQuery: string to search for, unique search string will guarantee accurate results
+     * @param expectedInResults, true if entry is expected in the results set
+     * @return true (indexing is finished) if search returns appropriate results
+     * @throws Exception
+     */
+    public boolean waitForIndexing(String userQuery, Boolean expectedInResults) throws Exception
+    {
+        Boolean found = false;
+        Boolean resultAsExpected = false;
+
+        SearchRequest searchRequest = createQuery(userQuery);
+        SearchResponse response = query(searchRequest);
+
+        // Repeat search until the element is found or Timeout is hit
+        for (int searchCount = 1; searchCount <= 3; searchCount++)
+        {
+            if (searchCount > 1)
+            {
+                // Wait for the solr indexing.
+                Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
+            }
+
+            if (response.getEntries().size() >= 1)
+            {
+                found = true;
+            }
+            else
+            {
+                found = false;
+            }
+
+            // Loop again if result is not as expected: To cater for solr lag: eventual consistency
+            resultAsExpected = (expectedInResults.equals(found));
+            if (resultAsExpected)
+            {
+                break;
+            }
+        }
+
+        return resultAsExpected;
     }
 }

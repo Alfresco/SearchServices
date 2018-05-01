@@ -155,7 +155,7 @@ public class SearchSpellCheckTest extends AbstractSearchTest
         // Create a file with mis-spelt name, expect spellcheck type = didYouMean
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(file);
         
-        waitForIndexing();
+        waitForIndexing(file.getName(), true);
         
         // Search
         SearchRequest searchReq = new SearchRequest();
