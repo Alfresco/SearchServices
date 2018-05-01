@@ -120,9 +120,11 @@ public class SearchAPATHTest extends AbstractSearchTest
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
     public void searchLevel2() throws Exception
     {
+        String queryString = "name:"+ "cars";
+        
         SearchRequest searchQuery = new SearchRequest();
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("name:cars*");
+        queryReq.setQuery(queryString);
         searchQuery.setQuery(queryReq);
         
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
@@ -153,7 +155,7 @@ public class SearchAPATHTest extends AbstractSearchTest
          */
         searchQuery = new SearchRequest();
         queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("name:cars*");
+        queryReq.setQuery(queryString);
         searchQuery.setQuery(queryReq);
         facetFields = new RestRequestFacetFieldsModel();
         list.remove(0);
