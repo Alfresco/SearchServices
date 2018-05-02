@@ -85,5 +85,4 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     {      
       LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
-
 }
