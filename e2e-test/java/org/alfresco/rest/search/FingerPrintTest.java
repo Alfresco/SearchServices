@@ -18,13 +18,9 @@
  */
 package org.alfresco.rest.search;
 
-import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -42,13 +38,6 @@ public class FingerPrintTest extends AbstractSearchTest
     @BeforeClass(alwaysRun=true)
     public void indexSimilarFile() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        userModel = dataUser.createRandomTestUser();
-        
-        siteModel = new SiteModel(RandomData.getRandomName("SiteSearch"));
-        siteModel.setVisibility(Visibility.PRIVATE);
-        
-        siteModel = dataSite.usingUser(userModel).createSite(siteModel);
         
         /*
          * Create the following file structure for preconditions : 
@@ -59,7 +48,7 @@ public class FingerPrintTest extends AbstractSearchTest
          *        |-- dog.txt
          */
         
-        FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
+        FolderModel folder = new FolderModel("The quick brown fox jumps over");
         dataContent.usingUser(userModel).usingSite(siteModel).createFolder(folder);
         
         file1 = new FileModel("pangram-banana.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy banana");
