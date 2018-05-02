@@ -19,12 +19,17 @@
 package org.alfresco.rest.search.sql;
 
 import static org.junit.Assert.assertNotNull;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.dataprep.SiteService.Visibility;
@@ -34,7 +39,9 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -48,54 +55,98 @@ public class SearchSQLTest extends AbstractSearchTest
     SiteModel siteModel;
     FileModel document;
     String connectionString;
-    
+    private Connection con;
+    private Statement stmt;
+    private ResultSet rs;
+    List<String> sites;
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         
-        connectionString = properties.getFullServerUrl() + "/alfresco/api/-default-/public/search/versions/1";
-        
+        connectionString = properties.getFullServerUrl() + "/alfresco/api/-default-/public/search/versions/1/sql";
+        //Prepare users, one with full access and one with limited access.
         adminUser = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser("UserSearch");
-        managerUser = dataUser.createRandomTestUser("UserSearchMgr");
-        
-        //Create site 
-        adminUser = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUser);
-                
+        managerUser = dataUser.createRandomTestUser("UserSearch");
+        //Create a private site 
         siteModel = new SiteModel(RandomData.getRandomName("SiteSearch"));
         siteModel.setVisibility(Visibility.PRIVATE);
-        
-        siteModel = dataSite.usingUser(userModel).createSite(siteModel);
+        siteModel = dataSite.usingUser(managerUser).createSite(siteModel);
+        //Allow tracker to index.
     }
-
+    
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10})
-    public void queryTest() throws SQLException
+    public void queryPublicSiteWithSimpleUser() throws SQLException
     {
-        String sql = "select SITE, CM_OWNER from alfresco group by SITE,CM_OWNER";
-        Properties props = new Properties();
-        props.put("user", adminUser.getUsername());
-        props.put("password", adminUser.getPassword());
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try 
+        String sql = "select SITE,CM_OWNER from alfresco group by SITE,CM_OWNER";
+        rs = executeSql(userModel.getUsername(), userModel.getPassword(), sql);
+        while (rs.next())
         {
-            con = DriverManager.getConnection(connectionString, props);
-            stmt = con.createStatement();
-            rs = stmt.executeQuery(sql);
-            int i=0;
-            while (rs.next())
-            {
-                ++i;
-                assertNotNull(rs.getString("SITE"));
-            }
-        } 
-        finally 
+            assertNotNull(rs.getString("SITE"));
+            //Check for the private site which was created
+            assertNotNull(rs.getString("CM_OWNER"));
+        }
+    }
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10})
+    public void queryMyCreatedPrivateSite() throws SQLException
+    {
+        String sql = "select SITE from alfresco where SITE ='" + siteModel.getTitle() + "'";
+        rs = executeSql(managerUser.getUsername(), managerUser.getPassword(), sql);
+        while (rs.next())
+        {
+            assertNotNull(rs.getString("SITE"));
+            assertTrue(siteModel.getTitle().equalsIgnoreCase(rs.getString("SITE")));
+        }
+    }
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10})
+    public void queryPrivateSiteWithSuperUser() throws SQLException
+    {
+        String sql = "select SITE from alfresco where SITE ='" + siteModel.getTitle() + "'";
+        rs = executeSql(adminUser.getUsername(), adminUser.getPassword(), sql);
+        while (rs.next())
+        {
+            assertNotNull(rs.getString("SITE"));
+            assertTrue(siteModel.getTitle().equalsIgnoreCase(rs.getString("SITE")));
+        }
+    }
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10})
+    public void queryPrivateSiteWithSimpleUser() throws SQLException
+    {
+        String sql = "select SITE from alfresco where SITE = '" + siteModel.getTitle() +"'";
+        rs = executeSql(userModel.getUsername(), userModel.getPassword(), sql);
+        assertFalse(rs.next());
+    }
+    @AfterMethod
+    public void close()
+    {
+        sites = null;
+        try
         {
             rs.close();
             stmt.close();
             con.close();
         }
+        catch (SQLException e)
+        {
+            // TODO: handle exception
+        }
+    }
+    @BeforeMethod
+    public void prep()
+    {
+        sites = new ArrayList<String>();
+    }
+    private Connection getConnection(String username, String password) throws SQLException
+    {
+        Properties props = new Properties();
+        props.put("user", username);
+        props.put("password", password);
+        return DriverManager.getConnection(connectionString, props);
+    }
+    private ResultSet executeSql(String username, String password, String sql) throws SQLException
+    {
+        con = getConnection(username, password);
+        stmt = con.createStatement();
+        return stmt.executeQuery(sql);
     }
 }
