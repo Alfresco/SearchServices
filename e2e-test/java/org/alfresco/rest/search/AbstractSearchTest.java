@@ -37,6 +37,7 @@ import org.testng.annotations.BeforeClass;
  *      <li>Preparing search requests.
  *
  * @author Michael Suzuki
+ * @author Meenal Bhave
  *
  */
 public class AbstractSearchTest extends RestTest
@@ -162,7 +163,7 @@ public class AbstractSearchTest extends RestTest
         SearchRequest searchRequest = createQuery(userQuery);
         SearchResponse response = query(searchRequest);
 
-        // Repeat search until the element is found or Timeout is hit
+        // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 1; searchCount <= 3; searchCount++)
         {
             if (searchCount > 1)
