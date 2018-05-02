@@ -28,7 +28,7 @@ import org.testng.annotations.Test;
 /**
  * Search end point Public API test with spell checking enabled.
  * @author Michael Suzuki
- *5
+ * @author Meenal Bhave
  */
 public class SearchSpellCheckTest extends AbstractSearchTest
 {

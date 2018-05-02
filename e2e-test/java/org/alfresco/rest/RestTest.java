@@ -7,7 +7,6 @@ import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataDiscussion;
 import org.alfresco.utility.data.DataGroup;

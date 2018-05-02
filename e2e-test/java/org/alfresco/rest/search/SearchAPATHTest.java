@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Alfresco Software Limited.
+ * Copyright (C) 2018 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
