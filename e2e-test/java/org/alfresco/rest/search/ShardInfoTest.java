@@ -41,7 +41,7 @@ import org.testng.annotations.Test;
 public class ShardInfoTest extends AbstractSearchTest
 {
     @Bug(id="DELENG-1", status=Bug.Status.OPENED)
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException, EmptyRestModelCollectionException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
@@ -70,7 +70,8 @@ public class ShardInfoTest extends AbstractSearchTest
             RestInstanceModel instance = instances.iterator().next();
             assertNotNull(instance);
             baseUrls.contains(instance.getBaseUrl());
-            assertEquals(instance.getHost(), "localhost");
+            // TODO: Ideally Solr Host and Port should be Parameterised
+            assertEquals(instance.getHost(), "search");
             assertEquals(instance.getPort().intValue(), 8983);
             assertEquals(instance.getState(), "ACTIVE");
             assertEquals(instance.getMode(), "MASTER");
@@ -78,7 +79,7 @@ public class ShardInfoTest extends AbstractSearchTest
     }
 
     @Bug(id="DELENG-1", status=Bug.Status.OPENED)
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithoutAdminAuthority() throws Exception
     {
         restClient.authenticateUser(dataUser.createRandomTestUser()).withShardInfoAPI().getInfo();

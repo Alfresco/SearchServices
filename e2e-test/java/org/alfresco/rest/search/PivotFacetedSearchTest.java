@@ -60,12 +60,15 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         pivotModelList.add(pivots);
         query.setPivots(pivotModelList);
 
-        SearchResponse response = query(query);
+        query(query);
+        
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "pivot key"));
 
         pivots.setKey("none_like_this");
-        response = query(query);
+        
+        query(query);
+        
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                   .assertLastError().containsSummary("invalid argument was received")
                     .containsSummary("Pivot parameter none_like_this does not reference");

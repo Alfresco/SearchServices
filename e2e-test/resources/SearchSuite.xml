@@ -1,0 +1,35 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="SearchSuite" verbose="6" preserve-order="true">
+
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+    </listeners>
+ 
+    <test name="SearchFaceted">
+        <classes>
+            <class name="org.alfresco.rest.search.FacetIntervalSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetRangeSearchTest"/>
+            <class name="org.alfresco.rest.search.PivotFacetedSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetedSearchTest"/>
+        </classes>
+    </test>
+    
+    <test name="SearchFeatures">
+        <classes>
+            <class name="org.alfresco.rest.search.FingerPrintTest"/>
+            <class name="org.alfresco.rest.search.SearchAPATHTest"/>
+            <class name="org.alfresco.rest.search.SearchHighLightTest"/>
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest"/>
+            <class name="org.alfresco.rest.search.SearchTest"/>
+            <class name="org.alfresco.rest.search.StatsSearchTest"/>
+        </classes>
+    </test>
+    
+   <test name="SearchPrivateAPIs">
+        <classes>
+            <class name="org.alfresco.rest.search.ShardInfoTest"/>
+        </classes>
+    </test>
+</suite>
