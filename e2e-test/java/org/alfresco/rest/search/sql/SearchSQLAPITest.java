@@ -19,6 +19,7 @@ import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.utility.model.TestGroup;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
+import org.hamcrest.Matchers;
 
 /**
  * Tests for /sql end point Search API.
@@ -72,8 +73,8 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("result-set", org.hamcrest.Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("result-set.docs", org.hamcrest.Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs", Matchers.notNullValue());
     }
 
     /**
@@ -125,8 +126,8 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("result-set", org.hamcrest.Matchers.nullValue());
-        restClient.onResponse().assertThat().body("list.entries", org.hamcrest.Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
         
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql(sql);
@@ -136,8 +137,8 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("result-set", org.hamcrest.Matchers.nullValue());
-        restClient.onResponse().assertThat().body("list.entries", org.hamcrest.Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
         
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql(sql);
@@ -147,8 +148,8 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("result-set", org.hamcrest.Matchers.nullValue());
-        restClient.onResponse().assertThat().body("list.entries", org.hamcrest.Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
     }
     
     /**
@@ -204,11 +205,11 @@ public class SearchSQLAPITest extends AbstractSearchTest
         
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("result-set", org.hamcrest.Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("result-set.docs", org.hamcrest.Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.SITE", org.hamcrest.Matchers.equalToIgnoringCase("SITE"));
-        restClient.onResponse().assertThat().body("result-set.docs[0].isMetadata", org.hamcrest.Matchers.is(true));
-        restClient.onResponse().assertThat().body("result-set.docs[0].fields[0]", org.hamcrest.Matchers.equalToIgnoringCase("SITE"));
+        restClient.onResponse().assertThat().body("result-set", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.SITE", Matchers.equalToIgnoringCase("SITE"));
+        restClient.onResponse().assertThat().body("result-set.docs[0].isMetadata", Matchers.is(true));
+        restClient.onResponse().assertThat().body("result-set.docs[0].fields[0]", Matchers.equalToIgnoringCase("SITE"));
     }
 
     /**
@@ -277,13 +278,13 @@ public class SearchSQLAPITest extends AbstractSearchTest
         
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("result-set", org.hamcrest.Matchers.nullValue());
-        restClient.onResponse().assertThat().body("list.entries", org.hamcrest.Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", org.hamcrest.Matchers.equalToIgnoringCase("aliases"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", org.hamcrest.Matchers.equalToIgnoringCase("{\"SITE\":\"SITE\",\"cm_owner\":\"CM_OWNER\"}"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].label", org.hamcrest.Matchers.equalToIgnoringCase("isMetadata"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", org.hamcrest.Matchers.is("true"));        
-        restClient.onResponse().assertThat().body("list.entries.entry[0][2].label", org.hamcrest.Matchers.equalToIgnoringCase("fields"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][2].value", org.hamcrest.Matchers.equalToIgnoringCase("[\"SITE\",\"cm_owner\"]"));
+        restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("aliases"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase("{\"SITE\":\"SITE\",\"cm_owner\":\"CM_OWNER\"}"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][1].label", Matchers.equalToIgnoringCase("isMetadata"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", Matchers.is("true"));        
+        restClient.onResponse().assertThat().body("list.entries.entry[0][2].label", Matchers.equalToIgnoringCase("fields"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][2].value", Matchers.equalToIgnoringCase("[\"SITE\",\"cm_owner\"]"));
     }
 }
