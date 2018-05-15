@@ -128,7 +128,7 @@ public class SearchSQLAPITest extends AbstractSearchTest
 
         restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
         restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
-        
+
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql(sql);
         sqlRequest.setLocales(locales);
@@ -139,7 +139,7 @@ public class SearchSQLAPITest extends AbstractSearchTest
 
         restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
         restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
-        
+
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql(sql);
         sqlRequest.setLocales(locales);
@@ -286,5 +286,62 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", Matchers.is("true"));        
         restClient.onResponse().assertThat().body("list.entries.entry[0][2].label", Matchers.equalToIgnoringCase("fields"));
         restClient.onResponse().assertThat().body("list.entries.entry[0][2].value", Matchers.equalToIgnoringCase("[\"SITE\",\"cm_owner\"]"));
+    }
+    
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 05)
+    public void testIncludeMetadataFalse() throws Exception
+    {
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(sql);
+        sqlRequest.setFormat("solr"); //Format solr
+        sqlRequest.setIncludeMetadata(false);
+
+        restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restClient.onResponse().assertThat().body("result-set", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].isMetadata", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].fields", Matchers.nullValue());
+
+        sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(sql);
+        sqlRequest.setIncludeMetadata(false);
+        sqlRequest.setFormat("json"); // Format json
+
+        restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.not("aliases"));
+
+        
+        sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(sql);
+        sqlRequest.setIncludeMetadata(false); //Format not set
+
+        restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.not("aliases"));
+        
+        sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(sql);
+        sqlRequest.setFormat(solrFormat); // IncludeMetadata = false when not specified
+        
+        restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restClient.onResponse().assertThat().body("result-set", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].isMetadata", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].fields", Matchers.nullValue());
     }
 }
