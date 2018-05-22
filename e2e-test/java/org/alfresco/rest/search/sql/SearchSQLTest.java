@@ -58,11 +58,13 @@ public class SearchSQLTest extends AbstractSearchTest
     private Statement stmt;
     private ResultSet rs;
     List<String> sites;
+    
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        
-        connectionString = properties.getFullServerUrl() + "/alfresco/api/-default-/public/search/versions/1/sql";
+        connectionString = String.format("jdbc:alfresco://%s:%s?collection=alfresco", 
+                                         properties.getServer(),
+                                         properties.getPort());
         //Prepare users, one with full access and one with limited access.
         adminUser = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser("UserSearch");
