@@ -61,11 +61,7 @@ import org.testng.annotations.Test;
  */
 public class FacetRangeSearchTest extends AbstractSearchTest
 {
-    @Override
-    public void dataPreparation() throws Exception
-    {
-        //Skip setup
-    }
+
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
               description = "Check facet intervals mandatory fields")
@@ -76,7 +72,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         ranges.add(facetRangeModel);
         query.setRanges(ranges);
-        SearchResponse response = query(query);
+        query(query);
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "field"));
@@ -84,21 +80,27 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setField("content.size");
         ranges.add(facetRangeModel);
         query.setRanges(ranges);
-        response = query(query);
+
+        query(query);
+        
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "start"));
         facetRangeModel.setStart("0");
         ranges.clear();
         ranges.add(facetRangeModel);
         query.setRanges(ranges);
-        response = query(query);
+        
+        query(query);
+        
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "end"));
         facetRangeModel.setEnd("400");
         query.setRanges(ranges);
         ranges.clear();
         ranges.add(facetRangeModel);
-        response = query(query);
+        
+        query(query);
+        
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "gap"));
         

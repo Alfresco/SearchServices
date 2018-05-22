@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Alfresco Software Limited.
+ * Copyright (C) 2018 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,9 +36,6 @@ import org.testng.annotations.Test;
 public class FacetedSearchTest extends AbstractSearchTest
 {
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION,
-              description = "Checks facet queries for the Search api")
     /**
      * Perform the below facet query.
      * {
@@ -89,13 +86,16 @@ public class FacetedSearchTest extends AbstractSearchTest
      * }}
      * @throws Exception
      */
+	
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH,
+            TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION, description = "Checks facet queries for the Search api")
     public void searchWithQueryFaceting() throws Exception
-    {        
+    {
         SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cars");
         query.setQuery(queryReq);
-        
 
         List<FacetQuery> facets = new ArrayList<FacetQuery>();
         facets.add(new FacetQuery("content.size:[0 TO 102400]", "small"));
@@ -109,9 +109,11 @@ public class FacetedSearchTest extends AbstractSearchTest
         query.setFacetFields(facetFields);
         query.setIncludeRequest(true);
         
-        SearchResponse response =  query(query);
+        SearchResponse response = query(query);
+        
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facetQueries").isNotEmpty();
+        
         FacetFieldBucket facet = response.getContext().getFacetQueries().get(0);
         facet.assertThat().field("label").contains("small").and().field("count").isGreaterThan(0);
         facet.assertThat().field("label").contains("small").and().field("filterQuery").is("content.size:[0 TO 102400]");
@@ -173,52 +175,53 @@ public class FacetedSearchTest extends AbstractSearchTest
     public void searchQueryFacetingWithGroup() throws Exception
     {
         SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cars");
         query.setQuery(queryReq);
 
         List<FacetQuery> facets = new ArrayList<FacetQuery>();
         facets.add(new FacetQuery("content.size:[0 TO 102400]", "small", "foo"));
-        facets.add(new FacetQuery("content.size:[102400 TO 1048576]", "medium","foo"));
-        facets.add(new FacetQuery("content.size:[1048576 TO 16777216]", "large","foo"));
+        facets.add(new FacetQuery("content.size:[102400 TO 1048576]", "medium", "foo"));
+        facets.add(new FacetQuery("content.size:[1048576 TO 16777216]", "large", "foo"));
         query.setFacetQueries(facets);
-        
+
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         List<RestRequestFacetFieldModel> list = new ArrayList<>();
         list.add(new RestRequestFacetFieldModel("'content.size'"));
         facetFields.setFacets(list);
-        
         query.setFacetFields(facetFields);
-        SearchResponse response =  query(query);
-        //We don't expect to see the FacetQueries if group is being used.
+        
+        SearchResponse response = query(query);
+        
+        // We don't expect to see the FacetQueries if group is being used.
         Assert.assertTrue(response.getContext().getFacetQueries() == null);
-        //Validate the facet field structure is correct.
+        // Validate the facet field structure is correct.
         Assert.assertFalse(response.getContext().getFacets().isEmpty());
         Assert.assertEquals(response.getContext().getFacets().get(0).getLabel(), "foo");
-        
+
         RestGenericBucketModel bucket = response.getContext().getFacets().get(0).getBuckets().get(0);
         bucket.assertThat().field("label").isNotEmpty();
-        Assert.assertEquals( bucket.getMetrics().get(0).getType(), "count");
-        Assert.assertNotEquals( bucket.getMetrics().get(0).getValue(), "");
+        Assert.assertEquals(bucket.getMetrics().get(0).getType(), "count");
+        Assert.assertNotEquals(bucket.getMetrics().get(0).getValue(), "");
         bucket.assertThat().field("filterQuery").isNotEmpty();
         response.getContext().getFacets().get(0).getBuckets().forEach(action -> {
             switch (action.getLabel())
             {
-            case "small":
-                Assert.assertEquals(action.getFilterQuery(), "content.size:[0 TO 102400]");
-                break;
-            case "medium":
-                Assert.assertEquals(action.getFilterQuery(), "content.size:[102400 TO 1048576]");
-                break;
-            case "large":
-                Assert.assertEquals(action.getFilterQuery(), "content.size:[1048576 TO 16777216]");
-                break;
+                case "small":
+                    Assert.assertEquals(action.getFilterQuery(), "content.size:[0 TO 102400]");
+                    break;
+                case "medium":
+                    Assert.assertEquals(action.getFilterQuery(), "content.size:[102400 TO 1048576]");
+                    break;
+                case "large":
+                    Assert.assertEquals(action.getFilterQuery(), "content.size:[1048576 TO 16777216]");
+                    break;
 
-            default:
-                throw new TestException("Unexpected value returned");
+                default:
+                    throw new TestException("Unexpected value returned");
             }
         });
-        
+
     }
     
     @Test
@@ -235,29 +238,34 @@ public class FacetedSearchTest extends AbstractSearchTest
     public void searchWithFactedFields() throws Exception
     {
         SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("*");
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery(unique_searchString);
         query.setQuery(queryReq);
+
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel>facets = new ArrayList<RestRequestFacetFieldModel>();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<RestRequestFacetFieldModel>();
         facets.add(new RestRequestFacetFieldModel("cm:mimetype"));
         facets.add(new RestRequestFacetFieldModel("modifier"));
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
-        SearchResponse response =  query(query);
+
+        SearchResponse response = query(query);
+
         Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
         Assert.assertNull(response.getContext().getFacetQueries());
         Assert.assertNull(response.getContext().getFacets());
+
         RestResultBucketsModel model = response.getContext().getFacetsFields().get(0);
         Assert.assertEquals(model.getLabel(), "modifier");
-        
+
         model.assertThat().field("label").is("modifier");
         FacetFieldBucket bucket1 = model.getBuckets().get(0);
-        bucket1.assertThat().field("label").is("System");
-        bucket1.assertThat().field("display").is("System");
-        bucket1.assertThat().field("filterQuery").is("modifier:\"System\"");
-        bucket1.assertThat().field("count").is(684);
+        bucket1.assertThat().field("label").is(userModel.getUsername());
+        bucket1.assertThat().field("display").is(userModel.getUsername() + " FirstName LN-" + userModel.getUsername());
+        bucket1.assertThat().field("filterQuery").is("modifier:\"" + userModel.getUsername() + "\"");
+        bucket1.assertThat().field("count").is(1);
     }
+    
     @Test
     /**
      * Test that items returned are in the format of generic facets.
@@ -274,29 +282,31 @@ public class FacetedSearchTest extends AbstractSearchTest
     public void searchWithFactedFieldsFacetFormatV2() throws Exception
     {
         SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("*");
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery(unique_searchString);
         query.setQuery(queryReq);
         query.setFacetFormat("V2");
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel>facets = new ArrayList<RestRequestFacetFieldModel>();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<RestRequestFacetFieldModel>();
         facets.add(new RestRequestFacetFieldModel("cm:mimetype"));
         facets.add(new RestRequestFacetFieldModel("modifier"));
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
-        SearchResponse response =  query(query);
+
+        SearchResponse response = query(query);
+
         Assert.assertNull(response.getContext().getFacetsFields());
         Assert.assertNull(response.getContext().getFacetQueries());
         Assert.assertFalse(response.getContext().getFacets().isEmpty());
         RestGenericFacetResponseModel model = response.getContext().getFacets().get(0);
         Assert.assertEquals(model.getLabel(), "modifier");
-        
+
         model.assertThat().field("label").is("modifier");
         RestGenericBucketModel bucket1 = model.getBuckets().get(0);
-        bucket1.assertThat().field("label").is("System");
-        bucket1.assertThat().field("display").isNull();
-        bucket1.assertThat().field("filterQuery").is("modifier:\"System\"");
-        bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=684}}]");
+        bucket1.assertThat().field("label").is(userModel.getUsername());
+        bucket1.assertThat().field("display").is(userModel.getUsername() + " FirstName LN-" + userModel.getUsername());
+        bucket1.assertThat().field("filterQuery").is("modifier:\"" + userModel.getUsername() + "\"");
+        bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
     }
     
 }

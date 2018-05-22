@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Alfresco Software Limited.
+ * Copyright (C) 2018 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,7 +18,6 @@
  */
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
@@ -34,34 +33,37 @@ import org.testng.annotations.Test;
  */
 public class FingerPrintTest extends AbstractSearchTest
 {
-    private FileModel file1,file2,file3,file4;
-    @BeforeClass
+    private FileModel file1, file2, file3, file4;
+
+    @BeforeClass(alwaysRun = true)
     public void indexSimilarFile() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        userModel = dataUser.createRandomTestUser();
-        siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
+
         /*
-         * Create the following file structure for preconditions : 
-         *   |- folder
-         *        |-- fox.txt
+         * Create the following file structure in the same Site  : In addition to the preconditions created in dataPreparation
+         * |- folder
+         *    |-- pangram-banana.txt
+         *    |-- pangram-taco.txt
+         *    |-- pangram-cat.txt
+         *    |-- dog.txt
          */
-        nodesBuilder = restClient.authenticateUser(userModel).withCoreAPI().usingNode(ContentModel.my()).defineNodes();
-        FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
+
+        FolderModel folder = new FolderModel("The quick brown fox jumps over");
         dataContent.usingUser(userModel).usingSite(siteModel).createFolder(folder);
+
         file1 = new FileModel("pangram-banana.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy banana");
         file2 = new FileModel("pangram-taco.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog that ate the taco");
         file3 = new FileModel("pangram-cat.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy cat");
         file4 = new FileModel("dog.txt", FileType.TEXT_PLAIN, "The quick brown fox ate the lazy dog");
-        ContentModel cm = new ContentModel();
-        cm.setCmisLocation(folder.getCmisLocation());
-        cm.setName(folder.getName());
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(cm).createContent(file1);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(cm).createContent(file2);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(cm).createContent(file3);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(cm).createContent(file4);
-        Thread.sleep(35000);//Allow indexing to complete.
+
+        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file1);
+        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file2);
+        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
+        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
+
+        waitForIndexing(file4.getName(), true);
     }
+
     /**
      * Search similar document based on document finger print.
      * The data prep should have loaded 2 files which one is similar
@@ -70,7 +72,7 @@ public class FingerPrintTest extends AbstractSearchTest
      * 
      * @throws Exception
      */
-    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1})
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     public void search() throws Exception
     {
         String uuid = file1.getNodeRefWithoutVersion();
@@ -79,46 +81,50 @@ public class FingerPrintTest extends AbstractSearchTest
         SearchResponse response = query(fingerprint);
         int count = response.getEntries().size();
         Assert.assertTrue(count > 1);
-        for(SearchNodeModel m :response.getEntries())
+        for (SearchNodeModel m : response.getEntries())
         {
             String match = m.getModel().getName();
             switch (match)
             {
-            case "pangram.txt":
-                break;
-            case "pangram-banana.txt":
-                break;
-            case "pangram-taco.txt":
-                break;
-            case "pangram-cat.txt":
-                break;
-            default:
-                throw new AssertionError("Not a match to an expected file: " +  m.getModel().getName());
+                case "pangram.txt":
+                    break;
+                case "pangram-banana.txt":
+                    break;
+                case "pangram-taco.txt":
+                    break;
+                case "pangram-cat.txt":
+                    break;
+                default:
+                    throw new AssertionError("Not a match to an expected file: " + m.getModel().getName());
             }
             m.getModel().assertThat().field("name").isNot("dog.txt");
             m.getModel().assertThat().field("name").isNot("cars.txt");
         }
     }
-    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1})
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     public void searchSimilar() throws Exception
     {
         String uuid = file2.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
-        // In the response eneity there is a score of each doc, change below threshold to bring more like or less.
-        String fingerprint = String.format("FINGERPRINT:%s_68", uuid); 
+
+        // In the response entity there is a score of each doc, change below threshold to bring more like or less.
+        String fingerprint = String.format("FINGERPRINT:%s_68", uuid);
         SearchResponse response = query(fingerprint);
+
         int count = response.getEntries().size();
         Assert.assertTrue(count > 1);
-        for(SearchNodeModel m :response.getEntries())
+
+        for (SearchNodeModel m : response.getEntries())
         {
             switch (m.getModel().getName())
             {
-            case "pangram.txt":
-                break;
-            case "pangram-taco.txt":
-                break;
-            default:
-               throw new AssertionError("Not a match to an expected file: " +  m.getModel().getName());
+                case "pangram.txt":
+                    break;
+                case "pangram-taco.txt":
+                    break;
+                default:
+                    throw new AssertionError("Not a match to an expected file: " + m.getModel().getName());
             }
             m.getModel().assertThat().field("name").isNot("pangram-banana.txt");
             m.getModel().assertThat().field("name").isNot("pangram-cat.txt");
@@ -126,7 +132,8 @@ public class FingerPrintTest extends AbstractSearchTest
             m.getModel().assertThat().field("name").isNot("cars.txt");
         }
     }
-    @Test(groups= {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1})
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     public void searchSimilar67Percent() throws Exception
     {
         String uuid = file2.getNodeRefWithoutVersion();
@@ -135,18 +142,18 @@ public class FingerPrintTest extends AbstractSearchTest
         SearchResponse response = query(fingerprint);
         int count = response.getEntries().size();
         Assert.assertTrue(count > 1);
-        for(SearchNodeModel m :response.getEntries())
+        for (SearchNodeModel m : response.getEntries())
         {
             switch (m.getModel().getName())
             {
-            case "pangram.txt":
-                break;
-            case "pangram-taco.txt":
-                break;
-            case "pangram-cat.txt":
-                break;
-            default:
-               throw new AssertionError("Not a match to an expected file: " +  m.getModel().getName());
+                case "pangram.txt":
+                    break;
+                case "pangram-taco.txt":
+                    break;
+                case "pangram-cat.txt":
+                    break;
+                default:
+                    throw new AssertionError("Not a match to an expected file: " + m.getModel().getName());
             }
             m.getModel().assertThat().field("name").isNot("pangram-banana.txt");
             m.getModel().assertThat().field("name").isNot("dog.txt");
