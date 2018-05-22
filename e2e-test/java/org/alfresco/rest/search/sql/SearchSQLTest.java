@@ -20,7 +20,6 @@ package org.alfresco.rest.search.sql;
 
 import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.sql.Connection;
@@ -122,9 +121,18 @@ public class SearchSQLTest extends AbstractSearchTest
         sites = null;
         try
         {
-            rs.close();
-            stmt.close();
-            con.close();
+            if(rs != null)
+            {
+                rs.close();
+            }
+            if(stmt != null)
+            {
+                stmt.close();
+            }
+            if(con != null)
+            {
+                con.close();
+            }
         }
         catch (SQLException e)
         {
