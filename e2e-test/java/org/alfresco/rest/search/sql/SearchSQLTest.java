@@ -117,6 +117,8 @@ public class SearchSQLTest extends AbstractSearchTest
         rs = executeSql(userModel.getUsername(), userModel.getPassword(), sql);
         assertFalse(rs.next());
     }
+
+    
     @AfterMethod
     public void close()
     {
