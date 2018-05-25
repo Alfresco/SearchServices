@@ -18,8 +18,6 @@
  */
 package org.alfresco.rest.search.sql;
 
-import static org.testng.Assert.*;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,9 +31,9 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.junit.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
+import org.testng.Assert;
 
 /**
  * Search SQL end point test via JDBC.
@@ -76,7 +74,7 @@ public class SearchSQLViaJDBCTest extends AbstractSearchTest
         {
             // User can see the Public Site created by other user
             Assert.assertNotNull(rs.getString("SITE"));
-            assertTrue(publicSite.getTitle().equalsIgnoreCase(rs.getString("SITE")));
+            Assert.assertTrue(publicSite.getTitle().equalsIgnoreCase(rs.getString("SITE")));
             
             Assert.assertNotNull(rs.getString("CM_OWNER"));
             Assert.assertTrue(rs.getString("CM_OWNER").contains(adminUserModel.getUsername()));
@@ -144,10 +142,10 @@ public class SearchSQLViaJDBCTest extends AbstractSearchTest
 
         // Appropriate error is retrieved when SQL is incorrect
         ResultSet rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
-        assertNull(rs);
+        Assert.assertNull(rs);
 
         String error = sqlRequest.getErrorDetails();
         Assert.assertNotNull(error);
-        Assert.assertTrue("Error shown: " + error + " Error expected: " + expectedError, error.contains(expectedError));
+        Assert.assertTrue(error.contains(expectedError), "Error shown: " + error + " Error expected: " + expectedError);
     }
 }
