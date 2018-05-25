@@ -576,7 +576,7 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.onResponse().assertThat().body("error.briefSummary", Matchers.containsString("Was expecting one of"));
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API }, priority = 13)
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.NOT_INSIGHT_ENGINE }, priority = 13)
     public void testErrorForSQLAPIWithASS() throws Exception
     {
         String acsVersion = serverHealth.getAlfrescoVersion();
