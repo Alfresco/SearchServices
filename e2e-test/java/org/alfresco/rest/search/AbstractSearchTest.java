@@ -18,8 +18,11 @@
  */
 package org.alfresco.rest.search;
 
+import javax.naming.AuthenticationException;
+
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestResponse;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
@@ -27,6 +30,7 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 
 /**
@@ -44,9 +48,9 @@ public class AbstractSearchTest extends RestTest
 {
     
     protected static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
-    UserModel userModel, adminUserModel;
-    SiteModel siteModel;
-    UserModel searchedUser;
+    protected UserModel userModel, adminUserModel;
+    protected SiteModel siteModel;
+    protected UserModel searchedUser;    
     protected FileModel file, file2, file3, file4;
 
     protected static String unique_searchString;
@@ -135,6 +139,7 @@ public class AbstractSearchTest extends RestTest
     {
         return restClient.authenticateUser(userModel).withSearchAPI().search(query);        
     }
+    
     protected SearchRequest createQuery(String term)
     {
         SearchRequest query = new SearchRequest();
@@ -148,8 +153,14 @@ public class AbstractSearchTest extends RestTest
         return createQuery("cars");
     }
     
+    protected RestResponse searchSql(SearchSqlRequest searchSqlRequest) throws Exception
+    {
+        return restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(searchSqlRequest);        
+    }
+    
     /**
      * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
+     * 
      * @param userQuery: string to search for, unique search string will guarantee accurate results
      * @param expectedInResults, true if entry is expected in the results set
      * @return true (indexing is finished) if search returns appropriate results
@@ -159,6 +170,7 @@ public class AbstractSearchTest extends RestTest
     {
         Boolean found = false;
         Boolean resultAsExpected = false;
+        String expectedStatusCode = HttpStatus.OK.toString();
 
         SearchRequest searchRequest = createQuery(userQuery);
         SearchResponse response = query(searchRequest);
@@ -172,20 +184,27 @@ public class AbstractSearchTest extends RestTest
                 Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
             }
 
-            if (response.getEntries().size() >= 1)
+            if (restClient.getStatusCode().matches(expectedStatusCode))
             {
-                found = true;
+                if (response.getEntries().size() >= 1)
+                {
+                    found = true;
+                }
+                else
+                {
+                    found = false;
+                }
+
+                // Loop again if result is not as expected: To cater for solr lag: eventual consistency
+                resultAsExpected = (expectedInResults.equals(found));
+                if (resultAsExpected)
+                {
+                    break;
+                }
             }
             else
             {
-                found = false;
-            }
-
-            // Loop again if result is not as expected: To cater for solr lag: eventual consistency
-            resultAsExpected = (expectedInResults.equals(found));
-            if (resultAsExpected)
-            {
-                break;
+                throw new AuthenticationException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode);
             }
         }
 
