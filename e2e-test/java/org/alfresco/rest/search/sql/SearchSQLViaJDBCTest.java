@@ -47,7 +47,7 @@ public class SearchSQLViaJDBCTest extends AbstractSearchTest
     SearchSQLJDBC searchSql;
     SearchSqlJDBCRequest sqlRequest = new SearchSqlJDBCRequest();
 
-    @AfterMethod
+    @AfterMethod(alwaysRun=true)
     public void cleanUp() throws SQLException
     {
         restClient.withSearchSqlViaJDBC().clearSearchQuery(sqlRequest);
