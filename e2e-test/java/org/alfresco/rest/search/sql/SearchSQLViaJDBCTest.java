@@ -150,4 +150,44 @@ public class SearchSQLViaJDBCTest extends AbstractSearchTest
         // Record set is null
         Assert.assertNull(rs);
     }
+
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 06)
+    public void testQuerySelectStar() throws SQLException
+    {
+        // Select * query with limit clause
+        String sql = "select * from alfresco limit 5";
+        sqlRequest.setSql(sql);
+        sqlRequest.setAuthUser(userModel);
+
+        // Select * with limit clause works: No error is retrieved
+        ResultSet rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
+        Assert.assertNotNull(rs);
+        Assert.assertNull(sqlRequest.getErrorDetails());
+
+        while (rs.next())
+        {
+            // Field values are retrieved
+            Assert.assertNotNull(rs.getString("PATH"));
+            Assert.assertNotNull(rs.getString("DBID"));
+            Assert.assertNotNull(rs.getString("cm_name"));
+        }
+
+        // Select * query Without limit clause: No error is retrieved
+        sql = "select * from alfresco";
+        sqlRequest.setSql(sql);
+        sqlRequest.setAuthUser(userModel);
+
+        // No error is retrieved when SQL is incorrect
+        rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
+        Assert.assertNotNull(rs);
+        Assert.assertNull(sqlRequest.getErrorDetails());
+
+        while (rs.next())
+        {
+            // Field values are retrieved
+            Assert.assertNotNull(rs.getString("PATH"));
+            Assert.assertNotNull(rs.getString("DBID"));
+            Assert.assertNotNull(rs.getString("cm_name"));
+        }
+    }
 }
