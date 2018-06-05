@@ -599,4 +599,31 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
         restClient.assertStatusCodeIs(expectedStatus);
     }
+    
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 14)
+    public void testSelectStar() throws Exception
+    {
+        // Select * with Limit, json format
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql("select * from alfresco");
+        sqlRequest.setLimit(1);
+
+        RestResponse response = searchSql(sqlRequest);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.maxItems", Matchers.equalTo(1));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("PATH"));
+
+        // Select * with Limit, solr format: Also covered in JDBC
+        sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql("select * from alfresco");
+        sqlRequest.setFormat("solr");
+        sqlRequest.setIncludeMetadata(true);
+        sqlRequest.setLimit(1);
+
+        response = searchSql(sqlRequest);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.PATH", Matchers.notNullValue());
+    }
 }
