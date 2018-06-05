@@ -142,10 +142,12 @@ public class SearchSQLViaJDBCTest extends AbstractSearchTest
 
         // Appropriate error is retrieved when SQL is incorrect
         ResultSet rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
-        Assert.assertNull(rs);
 
         String error = sqlRequest.getErrorDetails();
         Assert.assertNotNull(error);
         Assert.assertTrue(error.contains(expectedError), "Error shown: " + error + " Error expected: " + expectedError);
+        
+        // Record set is null
+        Assert.assertNull(rs);
     }
 }
