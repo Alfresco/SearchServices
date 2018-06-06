@@ -22,7 +22,7 @@ public class SolrSearchByIdTests extends CmisTest
         dataContent.deployContentModel("shared-resources/model/tas-model.xml");
         cmisApi.authenticateUser(dataUser.getAdminUser());
     }
-    
+
     @AfterClass(alwaysRun = true)
     public void cleanupEnvironment()
     {
