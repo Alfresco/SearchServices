@@ -81,6 +81,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.carrotsearch.hppc.LongHashSet;
+import com.carrotsearch.hppc.cursors.LongCursor;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -780,44 +782,43 @@ public class SolrInformationServer implements InformationServer
             //System.out.println("################ Transaction floor:"+txnFloor);
 
             //Find the next N transactions
-            collector = TopFieldCollector.create(new Sort(new SortField(FIELD_INTXID, SortField.Type.LONG)),
-                                                                   rows,
-                                                                   null,
-                                                                   false,
-                                                                   false,
-                                                                   false);
+            //Query for dirty or new nodes
+            termQuery1 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.Dirty.toString()));
+            termQuery2 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.New.toString()));
+            clause1 = new BooleanClause(termQuery1, BooleanClause.Occur.SHOULD);
+            clause2 = new BooleanClause(termQuery2, BooleanClause.Occur.SHOULD);
+            builder = new BooleanQuery.Builder();
+            builder.add(clause1);
+            builder.add(clause2);
+            orQuery = builder.build();
 
-            delegatingCollector = new TxnFloorFilter(txnFloor, cleanContentCache);
-            delegatingCollector.setLastDelegate(collector);
-            TermQuery txnQuery = new TermQuery(new Term(FIELD_DOC_TYPE, DOC_TYPE_TX));
-            searcher.search(txnQuery, delegatingCollector);
-            TopDocs docs = collector.topDocs();
-            //System.out.println("############### Next N transactions ################:" + docs.totalHits);
+            //The TxnCollector collects the transaction ids from the matching documents
+            //The txnIds are limited to a range >= the txnFloor and < an arbitrary transaction ceiling.
+            TxnCollector txnCollector = new TxnCollector(txnFloor);
+            searcher.search(orQuery, txnCollector);
+            LongHashSet txnSet = txnCollector.getTxnSet();
+            //System.out.println("############### Next N transactions ################:" + txnSet.size());
 
-            if (collector.getTotalHits() == 0)
+            if(txnSet.size() == 0)
             {
-                //No new transactions to consider
+                //This should really never be the case, at a minimum the transaction floor should be collected.
                 return docIds;
             }
 
-            leaves = searcher.getTopReaderContext().leaves();
             FieldType fieldType = searcher.getSchema().getField(FIELD_INTXID).getType();
             builder = new BooleanQuery.Builder();
 
-            for (ScoreDoc scoreDoc : docs.scoreDocs)
+            Iterator<LongCursor> it = txnSet.iterator();
+            while (it.hasNext())
             {
-                index = ReaderUtil.subIndex(scoreDoc.doc, leaves);
-                context = leaves.get(index);
-                longs = context.reader().getNumericDocValues(FIELD_INTXID);
-                long txnID = longs.get(scoreDoc.doc - context.docBase);
-
+                LongCursor cursor = it.next();
+                long txnID = cursor.value;
                 //Build up the query for the filter of transactions we need to pull the dirty content for.
                 TermQuery txnIDQuery = new TermQuery(new Term(FIELD_INTXID, fieldType.readableToIndexed(Long.toString(txnID))));
                 builder.add(new BooleanClause(txnIDQuery, BooleanClause.Occur.SHOULD));
             }
 
             BooleanQuery txnFilterQuery = builder.build();
-
 
             //Get the docs with dirty content for the transactions gathered above.
 
@@ -4053,6 +4054,45 @@ public class SolrInformationServer implements InformationServer
             {
                 this.leafDelegate.collect(doc);
             }
+        }
+    }
+
+    class TxnCollector extends DelegatingCollector
+    {
+
+        private NumericDocValues currentLongs;
+        private long txnFloor;
+        private long txnCeil;
+        private LongHashSet txnSet = new LongHashSet(1000);
+
+
+        public TxnCollector(long txnFloor)
+        {
+            this.txnFloor = txnFloor;
+            this.txnCeil = txnFloor+500;
+        }
+
+        public void doSetNextReader(LeafReaderContext context) throws IOException
+        {
+            super.doSetNextReader(context);
+            currentLongs = context.reader().getNumericDocValues(FIELD_INTXID);
+        }
+
+        public void collect(int doc) throws IOException
+        {
+            long txnId = currentLongs.get(doc);
+
+            //System.out.println("########### Floor Filter #############:"+doc+":"+txnId);
+
+            if(txnId >= txnFloor && txnId < txnCeil)
+            {
+                txnSet.add(txnId);
+
+            }
+        }
+
+        public LongHashSet getTxnSet() {
+            return txnSet;
         }
     }
 
