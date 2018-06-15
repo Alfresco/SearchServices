@@ -4074,8 +4074,11 @@ public class SolrInformationServer implements InformationServer
 
         public void doSetNextReader(LeafReaderContext context) throws IOException
         {
-            super.doSetNextReader(context);
             currentLongs = context.reader().getNumericDocValues(FIELD_INTXID);
+        }
+
+        public boolean needsScores() {
+            return false;
         }
 
         public void collect(int doc) throws IOException
