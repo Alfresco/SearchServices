@@ -75,10 +75,11 @@ public class DiscoveryTests extends RestTest
         assertTrue(modules.contains("alfresco-saml-repo"));
         assertTrue(modules.contains("org_alfresco_device_sync_repo"));
         assertTrue(modules.contains("org_alfresco_mm_repo"));
+        assertTrue(modules.contains("org.alfresco.module.TransformationServer"));
 
         // Check that all installed modules are in INSTALLED state
         List<String> modulesStates = restClient.onResponse().getResponse().jsonPath().getList("entry.repository.modules.installState", String.class);
-        assertEquals(Collections.frequency(modulesStates, "INSTALLED"), 10);
+        assertEquals(Collections.frequency(modulesStates, "INSTALLED"), 11);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.DISCOVERY, TestGroup.SANITY, TestGroup.CORE })
