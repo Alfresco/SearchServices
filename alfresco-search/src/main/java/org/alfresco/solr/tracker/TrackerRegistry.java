@@ -61,7 +61,7 @@ public class TrackerRegistry
     public <T extends Tracker> T getTrackerForCore(String coreName, Class<T> trackerClass)
     {
         Map<Class<? extends Tracker>, Tracker> coreTrackers = this.trackers.get(coreName);
-        return (T) coreTrackers.get(trackerClass);
+        return null == coreTrackers ? null : (T) coreTrackers.get(trackerClass);
     }
     
     public synchronized void register(String coreName, Tracker tracker)
