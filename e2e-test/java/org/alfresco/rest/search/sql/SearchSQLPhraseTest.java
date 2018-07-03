@@ -44,22 +44,22 @@ public class SearchSQLPhraseTest extends AbstractSearchTest
         super.dataPreparation();
 
         // Create files with different phrases
-        fileBanana = new FileModel(unique_searchString + "-1.txt", "phrase searching", "", FileType.TEXT_PLAIN, "banana");
+        fileBanana = new FileModel(unique_searchString + "-1.txt", "banana", "phrase searching", FileType.TEXT_PLAIN, "banana");
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(fileBanana);
 
-        fileYellowBanana = new FileModel(unique_searchString + "-2.txt", "phrase searching", "", FileType.TEXT_PLAIN, "yellow banana");
+        fileYellowBanana = new FileModel(unique_searchString + "-2.txt", "yellow banana", "phrase searching", FileType.TEXT_PLAIN, "yellow banana");
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(fileYellowBanana);
 
-        fileBigYellowBanana = new FileModel(unique_searchString + "-3.txt", "phrase searching", "", FileType.TEXT_PLAIN, "big yellow banana");
+        fileBigYellowBanana = new FileModel(unique_searchString + "-3.txt", "big yellow banana", "phrase searching", FileType.TEXT_PLAIN, "big yellow banana");
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(fileBigYellowBanana);
 
-        fileBigBananaBoat = new FileModel(unique_searchString + "-4.txt", "", "phrase searching", FileType.TEXT_PLAIN, "big boat");
+        fileBigBananaBoat = new FileModel(unique_searchString + "-4.txt", "big boat", "phrase searching", FileType.TEXT_PLAIN, "big boat");
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(fileBigBananaBoat);
 
-        fileYellowBananaBigBoat = new FileModel(unique_searchString + "-5.txt", "", "phrase searching", FileType.TEXT_PLAIN, "yellow banana big boat");
+        fileYellowBananaBigBoat = new FileModel(unique_searchString + "-5.txt", "yellow banana big boat", "phrase searching", FileType.TEXT_PLAIN, "yellow banana big boat");
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(fileYellowBananaBigBoat);
 
-        fileBigYellowBoat = new FileModel(unique_searchString + "-6.txt", "", "phrase searching", FileType.TEXT_PLAIN, "big yellow boat");
+        fileBigYellowBoat = new FileModel(unique_searchString + "-6.txt", "big yellow boat", "phrase searching", FileType.TEXT_PLAIN, "big yellow boat");
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(fileBigYellowBoat);
 
         waitForIndexing(fileBigYellowBoat.getName(), true);
@@ -129,45 +129,14 @@ public class SearchSQLPhraseTest extends AbstractSearchTest
         String firstResultFileName = fileYellowBanana.getName();
         String firstResultContent = fileYellowBanana.getContent();
         
-        Integer i = 1;
+        Integer i = 0;
         while (rs.next())
         {
             // Field values are retrieved
             Assert.assertNotNull(rs.getString("cm_name"));
             Assert.assertNotNull(rs.getString("cm_content"));
             
-            if(i == 1)
-            {
-                Assert.assertEquals(rs.getString("cm_name"), firstResultFileName);
-                Assert.assertEquals(rs.getString("cm_content"), firstResultContent);
-            }
-            
-            i++;
-        }
-        
-        Assert.assertEquals(i, expectedCount);
-        
-     // yellow banana big boat: 6 results expected        
-        sql = "select cm_name, cm_content from alfresco where cm_content = '(yellow banana big boat)'";
-        sqlRequest.setSql(sql);
-        sqlRequest.setAuthUser(userModel);
-
-        rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
-        Assert.assertNotNull(rs);
-        Assert.assertNull(sqlRequest.getErrorDetails());
-
-        expectedCount = 6;
-        firstResultFileName = fileYellowBananaBigBoat.getName();
-        firstResultContent = fileYellowBananaBigBoat.getContent();
-        
-        i = 1;
-        while (rs.next())
-        {
-            // Field values are retrieved
-            Assert.assertNotNull(rs.getString("cm_name"));
-            Assert.assertNotNull(rs.getString("cm_content"));
-            
-            if(i == 1)
+            if(i == 0)
             {
                 Assert.assertEquals(rs.getString("cm_name"), firstResultFileName);
                 Assert.assertEquals(rs.getString("cm_content"), firstResultContent);
@@ -191,14 +160,14 @@ public class SearchSQLPhraseTest extends AbstractSearchTest
         firstResultFileName = fileYellowBananaBigBoat.getName();
         firstResultContent = fileYellowBananaBigBoat.getContent();
         
-        i = 1;
+        i = 0;
         while (rs.next())
         {
             // Field values are retrieved
             Assert.assertNotNull(rs.getString("cm_name"));
             Assert.assertNotNull(rs.getString("cm_content"));
             
-            if(i == 1)
+            if(i == 0)
             {
                 Assert.assertEquals(rs.getString("cm_name"), firstResultFileName);
                 Assert.assertEquals(rs.getString("cm_content"), firstResultContent);
@@ -221,14 +190,14 @@ public class SearchSQLPhraseTest extends AbstractSearchTest
         expectedCount = 4;
         firstResultFileName = fileBigBananaBoat.getName();
         firstResultContent = fileBigBananaBoat.getContent();
-        i = 1;
+        i = 0;
         while (rs.next())
         {
             // Field values are retrieved
             Assert.assertNotNull(rs.getString("cm_name"));
             Assert.assertNotNull(rs.getString("cm_content"));
             
-            if(i == 1)
+            if(i == 0)
             {
                 Assert.assertEquals(rs.getString("cm_name"), firstResultFileName);
                 Assert.assertEquals(rs.getString("cm_content"), firstResultContent);
