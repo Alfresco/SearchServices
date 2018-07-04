@@ -15,6 +15,11 @@
 package org.alfresco.rest.search.sql;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.AbstractSearchTest;
@@ -37,7 +42,9 @@ import org.hamcrest.Matchers;
 public class SearchSQLPhraseTest extends AbstractSearchTest
 {
     FileModel fileBanana, fileYellowBanana, fileBigYellowBanana, fileBigBananaBoat, fileYellowBananaBigBoat, fileBigYellowBoat;
-    
+
+    List expectedContent = new ArrayList<String>();
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -65,58 +72,90 @@ public class SearchSQLPhraseTest extends AbstractSearchTest
         waitForIndexing(fileBigYellowBoat.getName(), true);
     }
 
+    @SuppressWarnings("unchecked")
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 1)
     public void testPhraseQueries() throws Exception
     {
         // yellow banana: 5 results expected
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql("select cm_name, cm_content from alfresco where cm_content = '(yellow banana)'");
+        sqlRequest.setSql("select cm_content from alfresco where cm_content = '(yellow banana)'");
         sqlRequest.setLimit(10);
 
         RestResponse response = searchSql(sqlRequest);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(5));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("cm_content"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase(fileYellowBanana.getContent()));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].label", Matchers.equalToIgnoringCase("cm_name"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", Matchers.equalToIgnoringCase(fileYellowBanana.getName()));
+
+        // Set Expected Result
+        expectedContent = new ArrayList<String>();
+        expectedContent.add(Arrays.asList(fileBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBananaBigBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBoat.getContent()));
+
+        // Check Result count matches
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(expectedContent.size()));
+        
+        // Check Results match
+        Collection<Map<String, String>> actualResult = response.getResponse().body().jsonPath().get("list.entries.entry.value");       
+        Assert.assertTrue(actualResult.containsAll(expectedContent), "Phrase Search Results are not as expected");
 
         // yellow banana big boat: 6 results expected
         sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql("select cm_name, cm_content from alfresco where cm_content = '(yellow banana big boat)'");
+        sqlRequest.setSql("select cm_content from alfresco where cm_content = '(yellow banana big boat)'");
         sqlRequest.setLimit(10);
 
         response = searchSql(sqlRequest);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(6));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("cm_content"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase(fileYellowBananaBigBoat.getContent()));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].label", Matchers.equalToIgnoringCase("cm_name"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", Matchers.equalToIgnoringCase(fileYellowBananaBigBoat.getName()));
+
+        // Set Expected Result
+        expectedContent = new ArrayList<String>();
+        expectedContent.add(Arrays.asList(fileBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBananaBigBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigBananaBoat.getContent()));
+
+        // Check Result count matches
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(expectedContent.size()));
+        
+        // Check Results match
+        actualResult = response.getResponse().body().jsonPath().get("list.entries.entry.value");       
+        Assert.assertTrue(actualResult.containsAll(expectedContent), "Phrase Search Results are not as expected");
 
         // yellow banana big boat: 4 results expected
         sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql("select cm_name, cm_content from alfresco where cm_content = '(big boat)'");
+        sqlRequest.setSql("select cm_content from alfresco where cm_content = '(big boat)'");
         sqlRequest.setLimit(10);
 
         response = searchSql(sqlRequest);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(4));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("cm_content"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase(fileBigBananaBoat.getContent()));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].label", Matchers.equalToIgnoringCase("cm_name"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", Matchers.equalToIgnoringCase(fileBigBananaBoat.getName()));
+        
+        // Set Expected Result
+        expectedContent = new ArrayList<String>();
+        expectedContent.add(Arrays.asList(fileBigYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBananaBigBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigBananaBoat.getContent()));
+
+        // Check Result count matches
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(expectedContent.size()));
+        
+        // Check Results match
+        actualResult = response.getResponse().body().jsonPath().get("list.entries.entry.value");       
+        Assert.assertTrue(actualResult.containsAll(expectedContent), "Phrase Search Results are not as expected");
     }
 
+    @SuppressWarnings("unchecked")
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 2)
     public void testPhraseQueriesViaJDBC() throws Exception
     {
         // yellow banana: 5 results expected
         SearchSqlJDBCRequest sqlRequest = new SearchSqlJDBCRequest();
-        String sql = "select cm_name, cm_content from alfresco where cm_content = '(yellow banana)'";
+        String sql = "select cm_content from alfresco where cm_content = '(yellow banana)'";
         sqlRequest.setSql(sql);
         sqlRequest.setAuthUser(userModel);
 
@@ -124,31 +163,62 @@ public class SearchSQLPhraseTest extends AbstractSearchTest
         Assert.assertNotNull(rs);
         Assert.assertNull(sqlRequest.getErrorDetails());
 
-        // Set expected Results
-        Integer expectedCount = 5;
-        String firstResultFileName = fileYellowBanana.getName();
-        String firstResultContent = fileYellowBanana.getContent();
+        // Set Expected Result
+        expectedContent = new ArrayList<String>();
+        expectedContent.add(Arrays.asList(fileBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBananaBigBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBoat.getContent()));
         
         Integer i = 0;
+        List actualContent = new ArrayList<String>();
+
         while (rs.next())
         {
             // Field values are retrieved
-            Assert.assertNotNull(rs.getString("cm_name"));
             Assert.assertNotNull(rs.getString("cm_content"));
-            
-            if(i == 0)
-            {
-                Assert.assertEquals(rs.getString("cm_name"), firstResultFileName);
-                Assert.assertEquals(rs.getString("cm_content"), firstResultContent);
-            }
-            
+            actualContent.add(Arrays.asList(rs.getString("cm_content")));
             i++;
         }
+
+        Assert.assertTrue(i == expectedContent.size());
+        Assert.assertTrue(actualContent.containsAll(expectedContent), "Phrase Search Results are not as expected");
         
-        Assert.assertEquals(i, expectedCount);
+        // yellow banana big boat: 6 results expected
+        sql = "select cm_content from alfresco where cm_content = '(yellow banana big boat)'";
+        sqlRequest.setSql(sql);
+        sqlRequest.setAuthUser(userModel);
+
+        rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
+        Assert.assertNotNull(rs);
+        Assert.assertNull(sqlRequest.getErrorDetails());
         
-        // yellow banana big boat: 6 results expected        
-        sql = "select cm_name, cm_content from alfresco where cm_content = '(yellow banana big boat)'";
+        // Set Expected Result
+        expectedContent = new ArrayList<String>();
+        expectedContent.add(Arrays.asList(fileBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBananaBigBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigBananaBoat.getContent()));
+
+        i = 0;
+        actualContent = new ArrayList<String>();
+
+        while (rs.next())
+        {
+            // Field values are retrieved
+            Assert.assertNotNull(rs.getString("cm_content"));
+            actualContent.add(Arrays.asList(rs.getString("cm_content")));
+            i++;
+        }
+
+        Assert.assertTrue(i == expectedContent.size());
+        Assert.assertTrue(actualContent.containsAll(expectedContent), "Phrase Search Results are not as expected");
+
+        // big boat: 4 results expected
+        sql = "select cm_content from alfresco where cm_content = '(big boat)'";
         sqlRequest.setSql(sql);
         sqlRequest.setAuthUser(userModel);
 
@@ -156,56 +226,25 @@ public class SearchSQLPhraseTest extends AbstractSearchTest
         Assert.assertNotNull(rs);
         Assert.assertNull(sqlRequest.getErrorDetails());
 
-        expectedCount = 6;
-        firstResultFileName = fileYellowBananaBigBoat.getName();
-        firstResultContent = fileYellowBananaBigBoat.getContent();
-        
+        // Set Expected Result
+        expectedContent = new ArrayList<String>();
+        expectedContent.add(Arrays.asList(fileBigYellowBanana.getContent()));
+        expectedContent.add(Arrays.asList(fileYellowBananaBigBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigYellowBoat.getContent()));
+        expectedContent.add(Arrays.asList(fileBigBananaBoat.getContent()));
+
         i = 0;
+        actualContent = new ArrayList<String>();
+
         while (rs.next())
         {
             // Field values are retrieved
-            Assert.assertNotNull(rs.getString("cm_name"));
             Assert.assertNotNull(rs.getString("cm_content"));
-            
-            if(i == 0)
-            {
-                Assert.assertEquals(rs.getString("cm_name"), firstResultFileName);
-                Assert.assertEquals(rs.getString("cm_content"), firstResultContent);
-            }
-            
+            actualContent.add(Arrays.asList(rs.getString("cm_content")));
             i++;
         }
-        
-        Assert.assertEquals(i, expectedCount);
-        
-        // big boat: 4 results expected        
-        sql = "select cm_name, cm_content from alfresco where cm_content = '(big boat)'";
-        sqlRequest.setSql(sql);
-        sqlRequest.setAuthUser(userModel);
 
-        rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
-        Assert.assertNotNull(rs);
-        Assert.assertNull(sqlRequest.getErrorDetails());
-
-        expectedCount = 4;
-        firstResultFileName = fileBigBananaBoat.getName();
-        firstResultContent = fileBigBananaBoat.getContent();
-        i = 0;
-        while (rs.next())
-        {
-            // Field values are retrieved
-            Assert.assertNotNull(rs.getString("cm_name"));
-            Assert.assertNotNull(rs.getString("cm_content"));
-            
-            if(i == 0)
-            {
-                Assert.assertEquals(rs.getString("cm_name"), firstResultFileName);
-                Assert.assertEquals(rs.getString("cm_content"), firstResultContent);
-            }
-            
-            i++;
-        }
-        
-        Assert.assertEquals(i, expectedCount);
+        Assert.assertTrue(i == expectedContent.size());
+        Assert.assertTrue(actualContent.containsAll(expectedContent), "Phrase Search Results are not as expected");
     }
 }
