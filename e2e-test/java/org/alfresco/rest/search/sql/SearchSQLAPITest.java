@@ -626,4 +626,29 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].aliases.PATH", Matchers.notNullValue());
     }
+    
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 15)
+    public void testDistinct() throws Exception
+    {
+        // Select distinct site: json format
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql("select distinct Site from alfresco");
+        sqlRequest.setLimit(10);
+
+        RestResponse response = searchSql(sqlRequest);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.maxItems", Matchers.equalTo(10));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("site"));
+
+        // Select distinct cm_name: solr format
+        sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql("select distinct cm_name from alfresco limit 5");
+        sqlRequest.setFormat("solr");
+
+        response = searchSql(sqlRequest);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.notNullValue());
+    }
 }

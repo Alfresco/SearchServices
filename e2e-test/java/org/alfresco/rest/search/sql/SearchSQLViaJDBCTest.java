@@ -190,4 +190,24 @@ public class SearchSQLViaJDBCTest extends AbstractSearchTest
             Assert.assertNotNull(rs.getString("cm_name"));
         }
     }
+    
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 07)
+    public void testQuerySelectDistinct() throws SQLException
+    {
+        // Select distinct query with limit clause
+        String sql = "select distinct cm_name from alfresco limit 5";
+        sqlRequest.setSql(sql);
+        sqlRequest.setAuthUser(adminUserModel);
+
+        // Select distinct with limit clause works: No error is retrieved
+        ResultSet rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
+        Assert.assertNotNull(rs);
+        Assert.assertNull(sqlRequest.getErrorDetails());
+
+        while (rs.next())
+        {
+            // Field values are retrieved
+            Assert.assertNotNull(rs.getString("cm_name"));
+        }
+    }
 }
