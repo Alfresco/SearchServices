@@ -66,12 +66,23 @@ public class SolrCoreLoadRegistration {
     {
         TrackerRegistry trackerRegistry = adminHandler.getTrackerRegistry();
         Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
+        //Prepare cores
+        SolrResourceLoader loader = core.getLatestSchema().getResourceLoader();
+        SolrKeyResourceLoader keyResourceLoader = new SolrKeyResourceLoader(loader);
+        SOLRAPIClientFactory clientFactory = new SOLRAPIClientFactory();
+        SOLRAPIClient repositoryClient = clientFactory.getSOLRAPIClient(props, keyResourceLoader,
+                AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
+        //Start content store
+        SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
+        SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
+        props.putAll(srv.getProps());
+        adminHandler.getInformationServers().put(coreName, srv);
 
+        log.info("Starting to track " + coreName);
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))
         {
             SolrTrackerScheduler scheduler = adminHandler.getScheduler();
-            SolrResourceLoader loader = core.getLatestSchema().getResourceLoader();
-            SolrKeyResourceLoader keyResourceLoader = new SolrKeyResourceLoader(loader);
             if (trackerRegistry.hasTrackersForCore(coreName))
             {
                 log.info("Trackers for " + coreName+ " is already registered, shutting them down.");
@@ -80,17 +91,7 @@ public class SolrCoreLoadRegistration {
                 adminHandler.getInformationServers().remove(coreName);
             }
 
-            SOLRAPIClientFactory clientFactory = new SOLRAPIClientFactory();
-            SOLRAPIClient repositoryClient = clientFactory.getSOLRAPIClient(props, keyResourceLoader,
-                    AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
-                    AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
-            //Start content store
-            SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
-            SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
-            props.putAll(srv.getProps());
-            adminHandler.getInformationServers().put(coreName, srv);
-
-            log.info("Starting to track " + coreName);
+      
 
             ModelTracker mTracker = null;
             // Prevents other threads from registering the ModelTracker at the same time
