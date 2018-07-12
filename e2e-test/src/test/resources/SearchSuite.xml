@@ -1,0 +1,23 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="SearchSuite" verbose="6" preserve-order="true">
+
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
+        <listener class-name="org.alfresco.test.FailedTestListener"></listener>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+    </listeners>
+
+    <test name="Unit">
+        <classes>
+            <class name="org.alfresco.service.search.unit.SetupTest" />
+        </classes>
+    </test>
+
+    <test name="E2E-InsightEngine">
+        <classes>
+            <class name="org.alfresco.service.search.e2e.insightEngine.sql.CustomModelTest" />
+        </classes>
+    </test>
+
+</suite>

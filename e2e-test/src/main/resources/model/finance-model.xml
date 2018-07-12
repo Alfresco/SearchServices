@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="finance:Finance">
+    <author>Administrator</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="Finance" prefix="finance"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>
+        <type name="finance:Receipt">
+            <title>Receipt</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="finance:ReceiptValue">
+                    <title>ReceiptValue</title>
+                    <type>d:double</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="finance:ReceiptNo">
+                    <title>ReceiptNo</title>
+                    <type>d:long</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="finance:Expense">
+            <title>Expense</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="finance:No">
+                    <title>No</title>
+                    <type>d:long</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="finance:Emp">
+                    <title>Emp</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="finance:amount">
+                    <title>Amount</title>
+                    <type>d:double</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="finance:Title">
+                    <title>Title</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+    </types>
+    <aspects>
+        <aspect name="finance:ParkEx">
+            <title>Parking Expense</title>
+            <properties>
+                <property name="finance:Location">
+                    <title>Location</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>

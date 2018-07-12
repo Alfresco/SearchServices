@@ -1,0 +1,32 @@
+/target/
+/test-output/
+/.settings/
+bin/
+report.html
+*.log
+test-output*
+*.class
+
+# Eclipse
+.classpath
+.settings
+.project
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+target
+*.log
+*.log.*
+
+
+# Package Files #
+*.jar
+*.war
+*.ear
