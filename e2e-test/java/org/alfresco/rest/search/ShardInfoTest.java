@@ -40,7 +40,7 @@ import org.testng.annotations.Test;
  */
 public class ShardInfoTest extends AbstractSearchTest
 {
-    @Bug(id="DELENG-1", status=Bug.Status.OPENED)
+    @Bug(id="DELENG-1", status=Bug.Status.FIXED)
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException, EmptyRestModelCollectionException
     {
@@ -78,7 +78,7 @@ public class ShardInfoTest extends AbstractSearchTest
         }
     }
 
-    @Bug(id="DELENG-1", status=Bug.Status.OPENED)
+    @Bug(id="DELENG-1", status=Bug.Status.FIXED)
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithoutAdminAuthority() throws Exception
     {
