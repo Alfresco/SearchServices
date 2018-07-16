@@ -1,7 +1,7 @@
 # Setup
 The automated test project requires a running instance of ACS Repo and Search Services at the least.
 To run Insight Engine tests, minimum version of Repo is ACS 6.0, additionally running instance of Insight Engine would be necessary too.
-For more details see: [Search-Discovery] (https://git.alfresco.com/search_discovery).
+For more details about the related projects or their deployment see: [Search-Discovery] (https://git.alfresco.com/search_discovery).
 
 # Prerequisites
 Java 1.8

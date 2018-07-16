@@ -6,13 +6,11 @@
       <artifactId>alfresco-super-pom</artifactId>
       <version>8</version>
    </parent>
-    <groupId>Search-Analytics-e2e-test</groupId>
-    <artifactId>Search-Analytics-e2e-test</artifactId>
+    <groupId>search-analytics-e2e-test</groupId>
+    <artifactId>search-analytics-e2e-test</artifactId>
     <name>Search Analytics E2E Tests</name>
     <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
     <properties>
-<!--         <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>    --> 
         <tas.utility.version>1.0.29-SNAPSHOT</tas.utility.version>
         <tas.rest.api.version>5.2.0-12-SNAPSHOT</tas.rest.api.version>
         <tas.cmis.api.version>5.2.0-3-SNAPSHOT</tas.cmis.api.version>
@@ -26,10 +24,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-<!--                 <configuration>
-                  <source>1.8</source>
-                  <target>1.8</target>
-                </configuration> -->
           </plugin>
           <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -98,11 +92,6 @@
          <artifactId>lombok</artifactId>
          <version>1.16.10</version>
          <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.rest-assured</groupId>
-        <artifactId>rest-assured</artifactId>
-        <version>3.0.6</version>
       </dependency>
     </dependencies>
 </project>
