@@ -111,7 +111,7 @@ public class SetupTest extends AbstractSearchServiceE2E
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(customFile, properties, VersioningState.MAJOR).assertThat()
                 .existsInRepo();
 
-        waitForIndexing(customFile.getName(), true);
+        Assert.assertTrue("New content could not be found", waitForIndexing(customFile.getName(), true));
     }
 
     // Test sql API can be used

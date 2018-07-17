@@ -8,7 +8,7 @@
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
     </listeners>
 
-    <test name="Unit">
+    <test name="Smoke">
         <classes>
             <class name="org.alfresco.service.search.unit.SetupTest" />
         </classes>
