@@ -111,11 +111,11 @@ public class SetupTest extends AbstractSearchServiceE2E
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(customFile, properties, VersioningState.MAJOR).assertThat()
                 .existsInRepo();
 
-        Assert.assertTrue("New content could not be found", waitForIndexing(customFile.getName(), true));
+        Assert.assertTrue("New content could not be found", waitForIndexing("cm:name:" + customFile.getName(), true));
     }
 
     // Test sql API can be used
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void testSQLAPICanBeUsed() throws Exception
     {
         // Select distinct site: json format
@@ -130,7 +130,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     }
     
     // Test sql can be executed via jdbc
-    @Test(priority = 4)
+    @Test(priority = 5)
     public void testSQLViaJDBC() throws Exception
     {
         SiteModel publicSite = new SiteModel(RandomData.getRandomName("SiteSearch"));

@@ -104,6 +104,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         Boolean found = false;
         Boolean resultAsExpected = false;
         String expectedStatusCode = HttpStatus.OK.toString();
+        Integer retryCount = 3;
         
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -114,7 +115,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         SearchResponse response = restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
 
         // Repeat search until the query results are as expected or Search Retry count is hit
-        for (int searchCount = 1; searchCount <= 3; searchCount++)
+        for (int searchCount = 1; searchCount <= retryCount; searchCount++)
         {
             if (searchCount > 1)
             {
