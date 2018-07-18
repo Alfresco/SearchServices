@@ -106,30 +106,27 @@ public class CachedDocTransformer extends DocTransformer
                        {
                            String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
                            Collection<Object> values = cachedDoc.getFieldValues(fieldName);
-                           ArrayList<Object> newValues = new ArrayList<Object>(values.size());
-                           for(Object value : values)
-                           {
-                               if(value instanceof String)
-                               {
-                                   String stringValue = (String) value;
-                                   int start = stringValue.lastIndexOf('\u0000');
-                                   if(start == -1)
-                                   {
-                                        newValues.add(stringValue);
+
+                           //Guard against null pointer in case data model field name does not match up with cachedDoc field name.
+                           if(values != null) {
+                               ArrayList<Object> newValues = new ArrayList<Object>(values.size());
+                               for (Object value : values) {
+                                   if (value instanceof String) {
+                                       String stringValue = (String) value;
+                                       int start = stringValue.lastIndexOf('\u0000');
+                                       if (start == -1) {
+                                           newValues.add(stringValue);
+                                       } else {
+                                           newValues.add(stringValue.substring(start + 1));
+                                       }
+                                   } else {
+                                       newValues.add(value);
                                    }
-                                   else
-                                   {
-                                       newValues.add(stringValue.substring(start+1));
-                                   }
+
                                }
-                               else
-                               {
-                                   newValues.add(value);
-                               }
-                               
+                               doc.removeFields(alfrescoFieldName);
+                               doc.addField(alfrescoFieldName, newValues);
                            }
-                           doc.removeFields(alfrescoFieldName);
-                           doc.addField(alfrescoFieldName, newValues);
                        }
                    }
                    else
