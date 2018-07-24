@@ -75,9 +75,30 @@ public class DiscoveryTests extends RestTest
         assertTrue(modules.contains("alfresco-saml-repo"));
         assertTrue(modules.contains("org_alfresco_device_sync_repo"));
         assertTrue(modules.contains("org_alfresco_mm_repo"));
+        assertTrue(modules.contains("org.alfresco.module.TransformationServer"));
 
         // Check that all installed modules are in INSTALLED state
         List<String> modulesStates = restClient.onResponse().getResponse().jsonPath().getList("entry.repository.modules.installState", String.class);
-        assertEquals(Collections.frequency(modulesStates, "INSTALLED"), 10);
+        assertEquals(Collections.frequency(modulesStates, "INSTALLED"), 11);
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.DISCOVERY, TestGroup.SANITY, TestGroup.CORE })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.DISCOVERY }, executionType = ExecutionType.SANITY,
+            description = "Sanity tests for GET /discovery endpoint")
+    public void getDefaultRepositoryInstalledModules() throws Exception
+    {
+        // Get repository info using Discovery API
+        restClient.authenticateUser(userModel).withDiscoveryAPI().getRepositoryInfo();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        // Check that all modules are present
+        List<String> modules = restClient.onResponse().getResponse().jsonPath().getList("entry.repository.modules.id", String.class);
+        assertTrue(modules.contains("alfresco-aos-module"));
+        assertTrue(modules.contains("org.alfresco.integrations.google.docs"));
+        assertTrue(modules.contains("alfresco-share-services"));
+
+        // Check that all installed modules are in INSTALLED state
+        List<String> modulesStates = restClient.onResponse().getResponse().jsonPath().getList("entry.repository.modules.installState", String.class);
+        assertEquals(Collections.frequency(modulesStates, "INSTALLED"), 3);
     }
 }
