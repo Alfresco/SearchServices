@@ -651,6 +651,8 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.onResponse().assertThat().body("result-set.docs[0].aliases.PRIMARYPARENT", Matchers.notNullValue());
         restClient.onResponse().assertThat().body("result-set.docs[0].aliases.ASPECT", Matchers.notNullValue());
         restClient.onResponse().assertThat().body("result-set.docs[0].aliases.QNAME", Matchers.notNullValue());
+        
+        // Test that cm_content and any other random field does not appear in the response
         restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_content", Matchers.nullValue());
         restClient.onResponse().assertThat().body("result-set.docs[0].aliases.RandomNonExistentField", Matchers.nullValue());
     }
