@@ -21,6 +21,7 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.hamcrest.Matchers;
 
@@ -624,7 +625,34 @@ public class SearchSQLAPITest extends AbstractSearchTest
         response = searchSql(sqlRequest);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_name", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_created", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_creator", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_modified", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_modifier", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_owner", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.OWNER", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.TYPE", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.LID", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.DBID", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_title", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_description", Matchers.notNullValue());
+
+        // This type of assertion is required because of a '.' in the field name
+        Assert.assertTrue(response.getResponse().body().jsonPath().get("result-set.docs[0].aliases").toString().contains("cm_content.size=cm_content.size"));
+        Assert.assertTrue(response.getResponse().body().jsonPath().get("result-set.docs[0].aliases").toString().contains("cm_content.mimetype=cm_content.mimetype"));
+        Assert.assertTrue(response.getResponse().body().jsonPath().get("result-set.docs[0].aliases").toString().contains("cm_content.encoding=cm_content.encoding"));
+        Assert.assertTrue(response.getResponse().body().jsonPath().get("result-set.docs[0].aliases").toString().contains("cm_content.locale=cm_content.locale"));
+
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_lockOwner", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.SITE", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.PARENT", Matchers.notNullValue());
         restClient.onResponse().assertThat().body("result-set.docs[0].aliases.PATH", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.PRIMARYPARENT", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.ASPECT", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.QNAME", Matchers.notNullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.cm_content", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.RandomNonExistentField", Matchers.nullValue());
     }
     
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 15)
