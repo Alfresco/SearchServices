@@ -563,9 +563,17 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 return createReaderSetQuery(queryText);
             } else if (field.equals(FIELD_AUTHORITY))
             {
+                /*
+                * ACL DOCUMENTATION STARTS HERE
+                * This creates the query that applies the ACL filter
+                */
                 return createAuthorityQuery(queryText);
             } else if (field.equals(FIELD_AUTHORITYSET))
             {
+                /*
+                * ACL DOCUMENTATION STARTS HERE
+                * This creates the query that applies the ACL filter
+                */
                 return createAuthoritySetQuery(queryText);
             } else if (field.equals(FIELD_DENIED))
             {
