@@ -1440,7 +1440,23 @@ public class SolrInformationServer implements InformationServer
 
         /*
         * Choose the max between the last commit time in the index and the last time the tracker started.
-        * Hole retention is applied to both.        *
+        * Hole retention is applied to both.
+        *
+        * This logic is very tricky and very important to understand.
+        *
+        * state.getLastGoodTxCommitTimeInIndex() is used to determine where to start pulling transactions from the repo on the
+        * current tracker run.
+        *
+        * If we simply take the current value of  state.getLastIndexedTxCommitTime() we have the following problem:
+        *
+        * If no data is added to the repo for a long period of time state.getLastIndexedTxCommitTime() never moves forward. This causes the
+        * loop inside MetadataTracker.getSomeTransactions() to hammer the repo as the time between state.getLastIndexedTxCommitTime()
+        * and state.setTimeToStopIndexing increases.
+        *
+        * To resolve this we choose the max between the last commit time in the index and the last time the tracker started. In theory
+        * if we start looking for transactions after the last tracker was started (and apply hole retention), we should never miss a
+        * transaction. Or atleast ensure that principal behind hole retention is respected. This theory should be closely looked at if
+        * the trackers ever lose data.
         */
 
         timeBeforeWhichThereCanBeNoTxHolesInIndex = Math.max(timeBeforeWhichThereCanBeNoTxHolesInIndex, lastStartTimeWhichThereCanBeNoTxHolesInIndex);
