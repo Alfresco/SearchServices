@@ -108,6 +108,21 @@ public class SolrAuthoritySetQuery extends AbstractAuthoritySetQuery implements 
         }
     }
 
+    /*
+    *  ACL PostFilter
+    *
+    *  The getFilterCollector function returns a DelegatingCollector
+    *  which is used to filter the documents that match the query.
+    *
+    *  A delegating collector wraps the TopDocs Collector which gathers the top documents that
+    *  match a query. A delegating can filter the documents before "delegating" to the TopDocs
+    *  collector. This filtering process is where the ACL logic is applied.
+    *
+    *  The getFilterCollector method sets up the data structures needed to apply the acl rules.
+    *  These data structures are then passed to the access control collectors.
+    *
+    */
+
     public DelegatingCollector getFilterCollector(IndexSearcher searcher)
     {
 
@@ -136,7 +151,19 @@ public class SolrAuthoritySetQuery extends AbstractAuthoritySetQuery implements 
 
         try
         {
+
+            /*
+            *  Collect the ACLID's that match the authorities.
+            *  This is done by querying the ACL records in the index. See the method for more
+            *  documentation on this query.
+            */
+
             HybridBitSet aclSet = getACLSet(auths, QueryConstants.FIELD_READER, solrIndexSearcher);
+
+            /*
+            * Collect the documents that the user owns.
+            */
+
             BitsFilter ownerFilter = getOwnerFilter(auths, solrIndexSearcher);
 
             if (globalReaders.contains(PermissionService.OWNER_AUTHORITY))
@@ -251,6 +278,11 @@ public class SolrAuthoritySetQuery extends AbstractAuthoritySetQuery implements 
 		}
     }
 
+
+    /*
+    *  The AccessControlCollector applies that ACL logic given aclIds and ownerFilter
+    */
+
     class AccessControlCollector extends DelegatingCollector
     {
         private HybridBitSet aclIds;
@@ -275,6 +307,12 @@ public class SolrAuthoritySetQuery extends AbstractAuthoritySetQuery implements 
             this.fieldValues = DocValuesCache.getNumericDocValues(QueryConstants.FIELD_ACLID, context.reader());
             this.ownerDocs = ownerFilter.getBitSets().get(context.ord);
         }
+
+        /*
+        * The collect method is applied to each document that matches the
+        * query. The document's aclId must be in the set of aclId's passed into the collector,
+        * or the documents id must be in the ownerDocs.
+        */
 
         public void collect(int doc) throws IOException
         {
