@@ -845,7 +845,10 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         }catch(Exception e) {
             logger.error(e);
         } finally {
-            executorService.shutdown();
+            if (executorService != null)
+            {
+                executorService.shutdown();
+            }
         }
         return fingerPrint;
     }
