@@ -139,22 +139,25 @@ public class Solr4X509ServletFilter extends X509ServletFilterBase
     private void findCores(File dir, List<File> cores)
     {
         File[] files = dir.listFiles();
-        for(File file : files)
+        if (files != null)
         {
-            if(file.isDirectory())
+            for (File file : files)
             {
-                findCores(file, cores);
-            }
-            else
-            {
-                if("core.properties".equals(file.getName()))
+                if (file.isDirectory())
                 {
-                    if (logger.isDebugEnabled())
+                    findCores(file, cores);
+                }
+                else
+                {
+                    if ("core.properties".equals(file.getName()))
                     {
-                        logger.debug("Found core:" + dir.getAbsolutePath());
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Found core:" + dir.getAbsolutePath());
+                        }
+                        
+                        cores.add(dir);
                     }
-
-                    cores.add(dir);
                 }
             }
         }
@@ -167,49 +170,51 @@ public class Solr4X509ServletFilter extends X509ServletFilterBase
     private void collectSecureComms(File base, Set<String> secureCommsSet) throws IOException
     {
         File[] files = base.listFiles();
-
-        for(File file : files)
+        if (files != null)
         {
-            if(file.isDirectory())
+            for (File file : files)
             {
-                collectSecureComms(file, secureCommsSet);
-            }
-            else
-            {
-
-                if (logger.isDebugEnabled())
+                if (file.isDirectory())
                 {
-                    logger.debug("scanning file:" + file.getAbsolutePath());
+                    collectSecureComms(file, secureCommsSet);
                 }
-
-                if ("solrcore.properties".equals(file.getName()))
+                else
                 {
-                    FileReader propReader = null;
-                    Properties props = new Properties();
-                    try
+                    
+                    if (logger.isDebugEnabled())
                     {
-                        propReader = new FileReader(file);
-                        props.load(propReader);
-                        String prop = props.getProperty(SECURE_COMMS);
-
-                        if (prop != null)
-                        {
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Found alfresco.secureComms in:" + file.getAbsolutePath() + " : " + prop);
-                            }
-                            secureCommsSet.add(prop);
-                        }
-                        else
-                        {
-                            secureCommsSet.add("none");
-                        }
+                        logger.debug("scanning file:" + file.getAbsolutePath());
                     }
-                    finally
+                    
+                    if ("solrcore.properties".equals(file.getName()))
                     {
-                        if (propReader != null)
+                        FileReader propReader = null;
+                        Properties props = new Properties();
+                        try
                         {
-                            propReader.close();
+                            propReader = new FileReader(file);
+                            props.load(propReader);
+                            String prop = props.getProperty(SECURE_COMMS);
+                            
+                            if (prop != null)
+                            {
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Found alfresco.secureComms in:" + file.getAbsolutePath() + " : " + prop);
+                                }
+                                secureCommsSet.add(prop);
+                            }
+                            else
+                            {
+                                secureCommsSet.add("none");
+                            }
+                        }
+                        finally
+                        {
+                            if (propReader != null)
+                            {
+                                propReader.close();
+                            }
                         }
                     }
                 }

@@ -142,30 +142,34 @@ public class ModelTracker extends AbstractTracker implements Tracker
 
             };
             // List XML files
-            for (File file : alfrescoModelDir.listFiles(filter))
+            File[] files = alfrescoModelDir.listFiles(filter);
+            if (files != null)
             {
-                InputStream modelStream = null;
-                M2Model model;
-                try
+                for (File file : files)
                 {
-                    modelStream = new FileInputStream(file);
-                    model = M2Model.createModel(modelStream);
-                }
-                catch (IOException e)
-                {
-                    throw new AlfrescoRuntimeException("File not found: " + file, e);
-                }
-                finally
-                {
-                    if (modelStream != null)
+                    InputStream modelStream = null;
+                    M2Model model;
+                    try
                     {
-                        try { modelStream.close(); } catch (Exception e) {}
+                        modelStream = new FileInputStream(file);
+                        model = M2Model.createModel(modelStream);
                     }
-                }
-                // Model successfully loaded
-                for (M2Namespace namespace : model.getNamespaces())
-                {
-                    modelMap.put(namespace.getUri(), model);
+                    catch (IOException e)
+                    {
+                        throw new AlfrescoRuntimeException("File not found: " + file, e);
+                    }
+                    finally
+                    {
+                        if (modelStream != null)
+                        {
+                            try { modelStream.close(); } catch (Exception e) {}
+                        }
+                    }
+                    // Model successfully loaded
+                    for (M2Namespace namespace : model.getNamespaces())
+                    {
+                        modelMap.put(namespace.getUri(), model);
+                    }
                 }
             }
         }
