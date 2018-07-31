@@ -207,7 +207,10 @@ public class Solr4X509ServletFilter extends X509ServletFilterBase
                     }
                     finally
                     {
-                        propReader.close();
+                        if (propReader != null)
+                        {
+                            propReader.close();
+                        }
                     }
                 }
             }

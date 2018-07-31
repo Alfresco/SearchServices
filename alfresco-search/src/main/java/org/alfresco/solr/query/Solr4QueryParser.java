@@ -878,8 +878,14 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 NamedList fingerprint = (NamedList) dataResponse.get("fingerprint");
                 return (Collection)fingerprint.get("MINHASH");
             } finally {
-                closeableHttpClient.close();
-                solrClient.close();
+                if (closeableHttpClient != null)
+                {
+                    closeableHttpClient.close();
+                }
+                if (solrClient != null)
+                {
+                    solrClient.close();
+                }
             }
         }
 
