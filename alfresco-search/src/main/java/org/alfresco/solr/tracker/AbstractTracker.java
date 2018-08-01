@@ -180,11 +180,6 @@ public abstract class AbstractTracker implements Tracker
 
         try
         {
-            /*
-            * The runLock ensures that for each tracker type (metadata, content, commit, cascade) only one tracker will
-            * be running at a time.
-            */
-
             runLock.acquire();
 
             if(state==null && Boolean.parseBoolean(System.getProperty("alfresco.test", "false")))

@@ -82,29 +82,15 @@ public abstract class AbstractAuthoritySetQuery extends Query
         return authorities.hashCode();
     }
 
-
-    /*
-    *  This method collects the bitset of documents that match the authorities.
-    */
-
     protected HybridBitSet getACLSet(String[] auths, String field, SolrIndexSearcher searcher) throws IOException
     {
-        /*
-        * Build a query that matches the authorities with a field in the ACL records in the index.
-        */
-
     	BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
         for(String current : auths)
         {
         	queryBuilder.add(new TermQuery(new Term(field, current)), BooleanClause.Occur.SHOULD);
         }
 
-
-        /*
-        *   Collect a docset containing the ACL records that match the query.
-        *   This query will be in the filter cache. Ideally it would remain cached throughout the users session.
-        */
-
+        //NOTE: this query will be in the filter cache. Ideally it would remain cached throughout the users session.
         DocSet docSet = searcher.getDocSet(queryBuilder.build());
 
         DocIterator iterator = docSet.iterator();
@@ -115,12 +101,6 @@ public abstract class AbstractAuthoritySetQuery extends Query
 
         //TODO : makes this configurable. For some systems this is huge and for others not big enough.
         HybridBitSet hybridBitSet = new HybridBitSet(60000000);
-
-        /*
-        * Collect the ACLID's from the matching acl records.
-        * This is done in a separate step so the initial ACL query can be cached in the FilterCache
-        * The initial ACL query may be expensive if the number of authorities is very large.
-        */
 
         List<LeafReaderContext> leaves = searcher.getTopReaderContext().leaves();
         LeafReaderContext context = leaves.get(0);

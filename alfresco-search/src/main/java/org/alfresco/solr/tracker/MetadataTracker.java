@@ -143,15 +143,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         if(!isMaster && isSlave)
         {
             // Dynamic registration
-            /*
-            * This section allows Solr's master/slave setup to be used with dynamic shard registration.
-            * In this scenario the slave is polling a "tracking" Solr node. The code below calls
-            * the repo to register the state of the node without pulling any real transactions from the repo.
-            *
-            * This allows the repo to register the replica so that it will be included in queries. But the slave Solr node
-            * will pull its data from a "tracking" Solr node using Solr's master/slave replication, rather then tracking the repository.
-            *
-            */
             
             ShardState shardstate = getShardState();
             client.getTransactions(0L, null, 0L, null, 0, shardstate);
@@ -619,11 +610,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             try
             {
-                /*
-                * This write lock is used to lock out the Commit Tracker. The ensures that the MetaDataTracker will
-                * not be indexing content while commits or rollbacks are occurring.
-                */
-
                 getWriteLock().acquire();
 
                 /*
@@ -634,26 +620,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
                 this.state = getTrackerState();
 
-
-                /*
-                *  The fromCommitTime tells getSomeTransactions() where to start, this actually fairly straight forward.
-                *
-                *  What makes this code so tricky to understand is the state.getTimeToStopIndexing().
-                *
-                *  There are two scenarios to keep in mind:
-                *
-                *  1) Full re-index: In this scenario the state.getTimeToStopIndexing() will never stop the indexing.
-                *
-                *  2) Up-to-date indexing: This is where state.getTimeToStopIndexing() gets interesting. In this scenario
-                *  the Solr index is already up to date with the repo and it is tracking new transactions. The state.getTimeToStopIndexing()
-                *  in this scenario causes the getSomeTransactions() call to stop returning results if it finds a transaction
-                *  beyond a specific point in time. This will break out of this loop and end the tracker run.
-                *
-                *  The next time the metadata tracker runs the "continueState()" method applies the "hole retention"
-                *  to state.getLastGoodTxCommitTimeInIndex(). This causes the state.getLastGoodTxCommitTimeInIndex() to scan
-                *  for prior transactions that might have been missed.
-                *
-                */
 
                 Long fromCommitTime = getTxFromCommitTime(txnsFound, state.getLastGoodTxCommitTimeInIndex());
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
@@ -674,22 +640,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
                 ArrayList<Transaction> txBatch = new ArrayList<>();
                 for (Transaction info : transactions.getTransactions()) {
-
-                    /*
-                    *  isInIndex is used to ensure transactions that are being re-pulled due to "hole retention" are not re-indexed if
-                    *  they have already been indexed.
-                    *
-                    *  The logic in infoSrv.txnInIndex() first checks an in-memory LRUcache for the txnId. If it doesn't find it in the cache
-                    *  it checks the index. The LRUCache is only needed for txnId's that have been indexed but are not yet visible in the index for
-                    *  one of two reasons:
-                    *
-                    *  1) The commit tracker has not yet committed the transaction.
-                    *  2) The txnId has been committed to the index but the new searcher has not yet been warmed.
-                    *
-                    *  This means that to ensure txnId's are not needlessly reprocessed during hole retention, the LRUCache must be large
-                    *  enough to cover the time between when a txnId is indexed and when it becomes visible.
-                    */
-
                     boolean isInIndex = (infoSrv.txnInIndex(info.getId(), true) && info.getCommitTimeMs() <= state.getLastIndexedTxCommitTime());
                     if (isInIndex) {
                         txnsFound.add(info);
