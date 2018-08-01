@@ -81,9 +81,8 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
                 rerankPhase = RerankPhase.valueOf(arg.toString());
             }
 
-            /*
-            * This turns on the postFilter
-            */
+            //First check the System property.
+            //Then check solrcore.properties, defaulting to the postFilter.
 
             postfilter = Boolean.parseBoolean(System.getProperty("alfresco.postfilter",
                                                                  req.getCore().getCoreDescriptor().getCoreProperty("alfresco.postfilter",
@@ -110,11 +109,7 @@ public class AlfrescoFTSQParserPlugin extends QParserPlugin
 
                 if(authset && postfilter)
                 {
-                    /*
-                    * The cost of 200 turns on the postfilter inside Solr
-                    * The postfilter query pulls out all the post filters in the
-                    * query and applies them.
-                    */
+                    //Return the PostFilter
                     return new PostFilterQuery(200, query);
                 }
 

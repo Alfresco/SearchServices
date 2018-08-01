@@ -131,18 +131,6 @@ public class CommitTracker extends AbstractTracker
 
             //See if we need a rollback
             if(metadataTracker.getRollback() || aclTracker.getRollback()) {
-
-                /*
-                * The metadataTracker and aclTracker will return true if an unhandled exception has occurred during indexing.
-                *
-                * The doRollback method rolls the index back to the state that it was in at the last commit. This will undo
-                * all the work that has been done by other trackers after the last commit.
-                *
-                * The state of the other trackers is then set to null so the trackers will initialize their state from
-                * the index, rather then the in-memory state. This keeps the trackers in-sync with index if their work is
-                * rolled back.
-                */
-
                 doRollback();
                 return;
             }
