@@ -21,14 +21,19 @@
  */
 package org.alfresco.solr;
 
-import org.apache.commons.io.FileUtils;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.core.CoreContainer;
-import org.apache.solr.core.SolrCore;
-
-import java.io.*;
-import java.util.*;
 
 /**
  * Methods taken from AlfrescoCoreAdminHandler that deal with I/O resources
@@ -126,7 +131,10 @@ public class HandlerOfResources {
                 properties.putAll(extraProperties);
             }
 
-            properties.store(new FileOutputStream(config), "Generated from Solr");
+            try (FileOutputStream fileOutputStream = new FileOutputStream(config))
+            {
+                properties.store(fileOutputStream, "Generated from Solr");
+            }
         } // FileInputStream is closed
         catch (IOException e)
         {

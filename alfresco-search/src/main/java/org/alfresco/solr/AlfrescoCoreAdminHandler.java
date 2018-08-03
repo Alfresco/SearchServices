@@ -19,13 +19,49 @@
 
 package org.alfresco.solr;
 
+import static org.alfresco.solr.HandlerOfResources.extractCustomProperties;
+import static org.alfresco.solr.HandlerOfResources.getSafeBoolean;
+import static org.alfresco.solr.HandlerOfResources.getSafeLong;
+import static org.alfresco.solr.HandlerOfResources.openResource;
+import static org.alfresco.solr.HandlerOfResources.updatePropertiesFile;
+import static org.alfresco.solr.HandlerOfResources.updateSharedProperties;
+import static org.alfresco.solr.HandlerReportBuilder.addCoreSummary;
+import static org.alfresco.solr.HandlerReportBuilder.buildAclReport;
+import static org.alfresco.solr.HandlerReportBuilder.buildAclTxReport;
+import static org.alfresco.solr.HandlerReportBuilder.buildNodeReport;
+import static org.alfresco.solr.HandlerReportBuilder.buildTrackerReport;
+import static org.alfresco.solr.HandlerReportBuilder.buildTxReport;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
-import org.alfresco.solr.tracker.*;
+import org.alfresco.solr.tracker.AclTracker;
+import org.alfresco.solr.tracker.DBIDRangeRouter;
+import org.alfresco.solr.tracker.DocRouter;
+import org.alfresco.solr.tracker.IndexHealthReport;
+import org.alfresco.solr.tracker.MetadataTracker;
+import org.alfresco.solr.tracker.SolrTrackerScheduler;
+import org.alfresco.solr.tracker.Tracker;
+import org.alfresco.solr.tracker.TrackerRegistry;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -43,15 +79,6 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
-import static org.alfresco.solr.HandlerOfResources.*;
-import static org.alfresco.solr.HandlerReportBuilder.*;
 
 public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 {
@@ -540,7 +567,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         properties.setProperty("alfresco.stores", storeRef.toString());
 
         //Potentially override the defaults
-        properties.load(new FileInputStream(config));
+        try (FileInputStream fileInputStream = new FileInputStream(config))
+        {
+            properties.load(fileInputStream);
+        }
 
         //Don't override these
         properties.setProperty("alfresco.template", templateName);
@@ -559,8 +589,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             properties.putAll(extraProperties);
         }
 
-        properties.store(new FileOutputStream(config), null);
-        
+        try (FileOutputStream fileOutputStream = new FileOutputStream(config))
+        {
+            properties.store(fileOutputStream, null);
+        }
+
         SolrCore core = coreContainer.create(coreName, newCore.toPath(), new HashMap<String, String>(), false);
         rsp.add("core", core.getName());
     }
