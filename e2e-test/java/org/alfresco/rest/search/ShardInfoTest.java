@@ -29,7 +29,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.report.Bug;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
