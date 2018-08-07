@@ -62,11 +62,6 @@
     <dependencies>
         <dependency>
             <groupId>org.alfresco.tas</groupId>
-            <artifactId>utility</artifactId>
-            <version>${tas.utility.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco.tas</groupId>
             <artifactId>restapi-test</artifactId>
             <version>${tas.rest.api.version}</version>
         </dependency>
@@ -85,8 +80,27 @@
          <artifactId>alfresco-rm-automation-community-rest-api</artifactId>
          <version>${rm.version}</version>
          <classifier>tests</classifier>
+         <exclusions>
+         <exclusion>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>cmis-test</artifactId>
+         </exclusion>
+         <exclusion>
+         	<groupId>org.alfresco.tas</groupId>
+            <artifactId>restapi-test</artifactId>
+         </exclusion>
+         <exclusion>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>utility</artifactId>
+         </exclusion>                  
+         </exclusions>
          <scope>test</scope>
       </dependency>
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>utility</artifactId>
+            <version>${tas.utility.version}</version>
+        </dependency>      
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
