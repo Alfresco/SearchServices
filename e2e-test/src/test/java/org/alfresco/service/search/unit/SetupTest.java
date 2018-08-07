@@ -24,6 +24,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -71,7 +72,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     }
 
     // Test CMIS API works
-    @Test(priority = 1)
+    @Test(priority = 1, groups = { TestGroup.SANITY })
     public void testCMISFileCreation() throws Exception
     {
         // Create document in a folder in a collaboration site
@@ -80,7 +81,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     }
 
     // Test Custom Model: Music can be used
-    @Test(priority = 2)
+    @Test(priority = 2, groups = { TestGroup.SANITY })
     public void testModelMusicCanBeUsed() throws Exception
     {
         // Create document of custom type
@@ -96,7 +97,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     }
 
     // Test Custom Model: Finance can be used
-    @Test(priority = 3)
+    @Test(priority = 3, groups = { TestGroup.SANITY })
     public void testModelFinanceCanBeUsed() throws Exception
     {
         // Create document of custom type
@@ -115,7 +116,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     }
 
     // Test sql API can be used
-    @Test(priority = 4)
+    @Test(priority = 4, groups = { TestGroup.SANITY, TestGroup.INSIGHT_10 })
     public void testSQLAPICanBeUsed() throws Exception
     {
         // Select distinct site: json format
@@ -130,7 +131,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     }
     
     // Test sql can be executed via jdbc
-    @Test(priority = 5)
+    @Test(priority = 5, groups = { TestGroup.SANITY, TestGroup.INSIGHT_10 })
     public void testSQLViaJDBC() throws Exception
     {
         SiteModel publicSite = new SiteModel(RandomData.getRandomName("SiteSearch"));
