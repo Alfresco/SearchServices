@@ -10,8 +10,9 @@
 echo `basename $0` called on `date` with arguments: "$@"
 set -exu
 
+POM_VERSION=$(grep version pom.xml | grep -v -e '<?xml|~'| head -n 1 |awk -F '[><]' '{print $3}')
 RELEASE_FOLDER=/data/releases/SearchServices/${bamboo_release_version}
-DISTRIBUTION_NAME=alfresco-search-services-${bamboo_release_version}.zip
+DISTRIBUTION_NAME=alfresco-search-services-${POM_VERSION}.zip
 DISTRIBUTION_ZIP_PATH=${RELEASE_FOLDER}/${DISTRIBUTION_NAME}
 DISTRIBUTION_ZIP_SCAN_PATH=${RELEASE_FOLDER}/scan
 CLEANUP="${1:-do-not-clean}"
@@ -19,6 +20,7 @@ CLEANUP="${1:-do-not-clean}"
 if [ ${CLEANUP} = "clean" ]; then
     echo "Cleaning up scan folder..."
     ssh tomcat@pbam01.alfresco.com rm -rf ${DISTRIBUTION_ZIP_SCAN_PATH}
+    ssh tomcat@pbam01.alfresco.com rm -rf ${DISTRIBUTION_ZIP_PATH}
 else
     echo "Copy distribution to release area..."
     ssh tomcat@pbam01.alfresco.com mkdir -p ${RELEASE_FOLDER}
