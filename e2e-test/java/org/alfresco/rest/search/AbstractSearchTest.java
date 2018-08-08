@@ -182,6 +182,9 @@ public class AbstractSearchTest extends RestTest
             {
                 // Wait for the solr indexing.
                 Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
+
+                // Repeat Search
+                response = query(searchRequest);
             }
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
