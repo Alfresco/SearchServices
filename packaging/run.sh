@@ -6,17 +6,18 @@
 #  uniquely identify your desired docker-compose.yml file
 #
 # Usage: 
-#  $ run.sh <docker-resource-folder> <filter-flag> [clean: optional] [debug: optional] 
+#  $ run.sh <docker-resource-folder> <filter-flag> [clean: optional] [debug: optional] <alfresco-endpoint>
 #    * <docker-resource-folder>:  defaults to 'target'
 #    * <filter-flag>: can be 5.x or 6.x (defaults to 6.x) - it can be used to filder differed compose files
 #    * clean: will clean all running docker images on machine it will not start alfresco.
+#    * <alfresco-endpoint>: the url of alfresco endpoint
 #
 # Examples:
 #  $ run.sh (this will run with detauls settings, the same as running $ run.sh target 6.x clean)
-#  $ run.sh target 5.x clean
-#  $ run.sh target 6.x clean debug  
+#  $ run.sh target 5.x clean - it will kill the container only
 #  $ run.sh target docker-resources/docker-compose.yml
 #  $ run.sh target docker-resources/docker-compose.yml no-clean debug
+#  $ run.sh target docker-resources/docker-compose.yml no-clean no-debug http://localhost:8082/alfresco
 
 echo `basename $0` called on `date` with arguments: "$@"
 
@@ -39,8 +40,8 @@ function wait_for_alfresco_to_start {
     TIMEOUT=2000
     t0=`date +%s`
 
-    echo "Waiting for Alfresco to start in docker container: http://localhost:8081/alfresco"
-    until $(curl --output /dev/null --silent --head --fail http://localhost:8081/alfresco) || [ "$COUNTER" -eq "$TIMEOUT" ]; do
+    echo "Waiting for Alfresco to start in docker container: ${ALFRESCO_ENDPOINT}"
+    until $(curl --output /dev/null --silent --head --fail ${ALFRESCO_ENDPOINT}) || [ "$COUNTER" -eq "$TIMEOUT" ]; do
         printf '.'
         sleep $WAIT_INTERVAL
         COUNTER=$(($COUNTER+$WAIT_INTERVAL))
@@ -49,7 +50,7 @@ function wait_for_alfresco_to_start {
     if (("$COUNTER" < "$TIMEOUT")) ; then
         t1=`date +%s`
         delta=$((($t1 - $t0)/60))
-        echo "Alfresco Started in $delta minutes"
+        echo "Alfresco Started in $delta minutes: ${ALFRESCO_ENDPOINT}"
     else
         echo "Waited $COUNTER seconds"
         echo "Alfresco Could not start in time."
