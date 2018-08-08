@@ -76,8 +76,3 @@ function start_alfresco(){
 set -ex
 
 start_alfresco
-
-
-
-
-
