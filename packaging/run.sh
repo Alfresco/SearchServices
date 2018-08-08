@@ -6,24 +6,24 @@
 #  uniquely identify your desired docker-compose.yml file
 #
 # Usage: 
-#  $ run.sh <docker-resource-folder> <filter-flag> [clean: optional] [debug: optional] <alfresco-endpoint>
+#  $ run.sh <docker-resource-folder> <clean-or-not> <filter-flag> <debug-or-not> <alfresco-endpoint>
 #    * <docker-resource-folder>:  defaults to 'target'
-#    * <filter-flag>: can be 5.x or 6.x (defaults to 6.x) - it can be used to filder differed compose files
 #    * clean: will clean all running docker images on machine it will not start alfresco.
+#    * <filter-flag>: can be 5.x or 6.x (defaults to 6.x) - it can be used to filter differed compose files
 #    * <alfresco-endpoint>: the url of alfresco endpoint
 #
 # Examples:
-#  $ run.sh (this will run with detauls settings, the same as running $ run.sh target 6.x clean)
-#  $ run.sh target 5.x clean - it will kill the container only
-#  $ run.sh target docker-resources/docker-compose.yml
-#  $ run.sh target docker-resources/docker-compose.yml no-clean debug
-#  $ run.sh target docker-resources/docker-compose.yml no-clean no-debug http://localhost:8082/alfresco
+#  $ run.sh - it will use latest docker-compose from this branch
+#  $ run.sh target clean - it will clean the containers using the latest docker-compose from this branch
+#  $ run.sh target clean 5.x - it will clean the containers using the 5.x. docker-compose file 
+#  $ run.sh target up 5.x - will start alfresco using the 5.x docker-compose file
+#  $ run.sh target up docker-resources/docker-compose.yml debug
 
 echo `basename $0` called on `date` with arguments: "$@"
 
 DOCKER_RESOURCES_PATH="${1:-target}"
-FILTER_FLAG="${2:-docker-resources/docker-compose.yml}" #5.x, 6.x or even docker-resources/docker-compose.yml (for release branches)
-CLEANUP="${3:-no-clean}"
+CLEANUP="${2:-no-clean}"
+FILTER_FLAG="${3:-docker-resources/docker-compose.yml}" #5.x, 6.x or even docker-resources/docker-compose.yml (for release branches)
 DOCKER_COMPOSE_FILE=$(find ${DOCKER_RESOURCES_PATH} -name "docker-compose.yml" -type f -exec realpath {} \;| grep ${FILTER_FLAG})
 DEBUG="${4:-no-debug}"
 ALFRESCO_ENDPOINT="${5:-http://localhost:8081/alfresco}"
@@ -85,3 +85,4 @@ else
     cleanup_containers
     start_alfresco
 fi
+
