@@ -18,6 +18,8 @@
 #  $ run.sh target docker-resources/docker-compose.yml
 #  $ run.sh target docker-resources/docker-compose.yml no-clean debug
 
+echo `basename $0` called on `date` with arguments: "$@"
+
 DOCKER_RESOURCES_PATH="${1:-target}"
 FILTER_FLAG="${2:-6.x}" #5.x, 6.x or even docker-resources/docker-compose.yml (for release branches)
 CLEANUP="${3:-clean}"
