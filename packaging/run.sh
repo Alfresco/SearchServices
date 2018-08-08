@@ -22,8 +22,8 @@ echo `basename $0` called on `date` with arguments: "$@"
 
 DOCKER_RESOURCES_PATH="${1:-target}"
 FILTER_FLAG="${2:-6.x}" #5.x, 6.x or even docker-resources/docker-compose.yml (for release branches)
-CLEANUP="${3:-clean}"
-DOCKER_COMPOSE_FILE=$(find ${DOCKER_RESOURCES_PATH} -name "docker-compose.yml" -type f | grep ${FILTER_FLAG})
+CLEANUP="${3:-no-clean}"
+DOCKER_COMPOSE_FILE=$(find ${DOCKER_RESOURCES_PATH} -name "docker-compose.yml" -type f -exec realpath {} \;| grep ${FILTER_FLAG})
 DEBUG="${4:-no-debug}"
 ALFRESCO_ENDPOINT="${5:-http://localhost:8081/alfresco}"
 
@@ -59,21 +59,7 @@ function wait_for_alfresco_to_start() {
 
 function cleanup_containers(){
     cd  ${DOCKER_RESOURCES_PATH} && docker-compose kill
-    cd  ${DOCKER_RESOURCES_PATH} && docker-compose rm -fv
-    
-    RUNNING_CONTAINERS=$(docker ps -q)
-    if [[ "$RUNNING_CONTAINERS" = "" ]] ; then
-        echo "No Running Containers on cleanup - OK"
-    else
-        docker kill $RUNNING_CONTAINERS
-    fi
-
-    ALL_CONTAINERS=$(docker ps -a -q)
-    if [[ "$ALL_CONTAINERS" = "" ]] ; then
-        echo "No Dangling Containers shown on cleanup - OK"
-    else
-        docker rm -fv $ALL_CONTAINERS
-    fi
+    cd  ${DOCKER_RESOURCES_PATH} && docker-compose rm -fv    
 }
 function start_alfresco(){    
     # update the basicAuthScheme https://issues.alfresco.com/jira/browse/REPO-2575
