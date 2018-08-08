@@ -4,6 +4,7 @@ set -e
 [ "$DEBUG" ] && set -x
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
+DOCKER_RESOURCES_PATH="${1:-packaging/target/docker-resources}"
 
 if [ "${nicebranch}" = "master" ] || [ "${nicebranch#release}" != "${nicebranch}" ]
 then
@@ -19,7 +20,7 @@ then
    dockerImage="quay.io/alfresco/search-services:$tag_version"
    echo "Building $dockerImage from $nicebranch using version $tag_version"
 
-   docker build -t $dockerImage packaging/target/docker-resources
+   docker build -t $dockerImage ${DOCKER_RESOURCES_PATH}
 
    echo "Running tests"
    docker run --rm "$dockerImage" [ -d /opt/alfresco-search-services/solr ] || (echo "solr dir does not exist" && exit 1)
