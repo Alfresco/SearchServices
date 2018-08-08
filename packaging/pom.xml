@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>paulb-x-1.1.0</version>
+        <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <dependencies>
