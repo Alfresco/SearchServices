@@ -23,7 +23,7 @@ echo `basename $0` called on `date` with arguments: "$@"
 
 DOCKER_RESOURCES_PATH="${1:-target}"
 CLEANUP="${2:-no-clean}"
-FILTER_FLAG="${3:-docker-resources/docker-compose.yml}" #5.x, 6.x or even docker-resources/docker-compose.yml (for release branches)
+FILTER_FLAG="${3:-docker-compose.yml}" #5.x, 6.x or even docker-resources/docker-compose.yml (for release branches)
 DOCKER_COMPOSE_FILE=$(find ${DOCKER_RESOURCES_PATH} -name "docker-compose.yml" -type f -exec realpath {} \;| grep ${FILTER_FLAG})
 DEBUG="${4:-no-debug}"
 ALFRESCO_ENDPOINT="${5:-http://localhost:8081/alfresco}"
