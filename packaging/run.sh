@@ -9,7 +9,7 @@
 #  $ run.sh <docker-resource-folder> <filter-flag> [clean: optional] [debug: optional] 
 #    * <docker-resource-folder>:  defaults to 'target'
 #    * <filter-flag>: can be 5.x or 6.x (defaults to 6.x) - it can be used to filder differed compose files
-#    * clean: will clean docker container that is running, is optional parameter
+#    * clean: will clean all running docker images on machine it will not start alfresco.
 #
 # Examples:
 #  $ run.sh (this will run with detauls settings, the same as running $ run.sh target 6.x clean)
@@ -23,6 +23,8 @@ FILTER_FLAG="${2:-6.x}" #5.x, 6.x or even docker-resources/docker-compose.yml (f
 CLEANUP="${3:-clean}"
 DOCKER_COMPOSE_FILE=$(find ${DOCKER_RESOURCES_PATH} -name "docker-compose.yml" -type f -exec realpath {} \; | grep ${FILTER_FLAG})
 DEBUG="${4:-no-debug}"
+ALFRESCO_ENDPOINT="${5:-http://localhost:8081/alfresco}"
+
 
 # exit if docker-compose not found
 [ ! -n "${DOCKER_COMPOSE_FILE}" ] && echo "docker-compose.yml file NOT FOUND in folder: '${DOCKER_RESOURCES_PATH}' using this filter flag: '${FILTER_FLAG}'"  && exit 1
@@ -53,12 +55,25 @@ function wait_for_alfresco_to_start() {
     fi
 }
 
-function start_alfresco(){
-    if [ ${CLEANUP} = "clean" ]; then
-        cd  ${DOCKER_RESOURCES_PATH} && docker-compose kill
-        cd  ${DOCKER_RESOURCES_PATH} && docker-compose rm -fv
+function cleanup_containers(){
+    cd  ${DOCKER_RESOURCES_PATH} && docker-compose kill
+    cd  ${DOCKER_RESOURCES_PATH} && docker-compose rm -fv
+    
+    RUNNING_CONTAINERS=$(docker ps -q)
+    if [[ "$RUNNING_CONTAINERS" = "" ]] ; then
+        echo "No Running Containers on cleanup - OK"
+    else
+        docker kill $RUNNING_CONTAINERS
     fi
 
+    ALL_CONTAINERS=$(docker ps -a -q)
+    if [[ "$ALL_CONTAINERS" = "" ]] ; then
+        echo "No Dangling Containers shown on cleanup - OK"
+    else
+        docker rm -fv $ALL_CONTAINERS
+    fi
+}
+function start_alfresco(){    
     # update the basicAuthScheme https://issues.alfresco.com/jira/browse/REPO-2575
     sed -ie "s/-Dindex.subsystem.name=solr6/-Dindex.subsystem.name=solr6 -Dalfresco.restApi.basicAuthScheme=true/g" ${DOCKER_COMPOSE_FILE}
 
@@ -75,4 +90,10 @@ function start_alfresco(){
 
 set -ex
 
-start_alfresco
+if [ ${CLEANUP} = "clean" ]; then
+    cleanup_containers
+else    
+    cleanup_containers
+    start_alfresco
+fi
+
