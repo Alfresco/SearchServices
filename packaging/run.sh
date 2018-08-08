@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # About:
 #  Run docker-compose using appropriate docker-resources generated in target
 #  The script is using the 'find' tool to search for a particular docker-compose.yml file
@@ -33,7 +33,7 @@ ALFRESCO_ENDPOINT="${5:-http://localhost:8081/alfresco}"
 
 DOCKER_RESOURCES_PATH=`dirname ${DOCKER_COMPOSE_FILE}` 
 
-function wait_for_alfresco_to_start() { 
+function wait_for_alfresco_to_start { 
     WAIT_INTERVAL=1
     COUNTER=0
     TIMEOUT=2000
@@ -57,11 +57,11 @@ function wait_for_alfresco_to_start() {
     fi
 }
 
-function cleanup_containers(){
+function cleanup_containers {
     cd  ${DOCKER_RESOURCES_PATH} && docker-compose kill
     cd  ${DOCKER_RESOURCES_PATH} && docker-compose rm -fv    
 }
-function start_alfresco(){    
+function start_alfresco {    
     # update the basicAuthScheme https://issues.alfresco.com/jira/browse/REPO-2575
     sed -ie "s/-Dindex.subsystem.name=solr6/-Dindex.subsystem.name=solr6 -Dalfresco.restApi.basicAuthScheme=true/g" ${DOCKER_COMPOSE_FILE}
 
