@@ -7,10 +7,7 @@ nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 DOCKER_RESOURCES_PATH="${1:-packaging/target/docker-resources}"
 
 if [ "${nicebranch}" = "master" ] || [ "${nicebranch#release}" != "${nicebranch}" ]
-then
-   # set current working directory to the directory of the script
-   cd "$bamboo_working_directory"
-
+then   
    tag_version=`echo "$bamboo_maven_version"`
    if [ "${bamboo_shortJobName}" = "Release" ]
    then
