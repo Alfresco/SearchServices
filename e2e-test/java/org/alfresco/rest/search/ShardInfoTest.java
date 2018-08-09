@@ -29,7 +29,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.report.Bug;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
@@ -40,7 +39,6 @@ import org.testng.annotations.Test;
  */
 public class ShardInfoTest extends AbstractSearchTest
 {
-    @Bug(id="DELENG-1", status=Bug.Status.FIXED)
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException, EmptyRestModelCollectionException
     {
@@ -78,7 +76,6 @@ public class ShardInfoTest extends AbstractSearchTest
         }
     }
 
-    @Bug(id="DELENG-1", status=Bug.Status.FIXED)
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithoutAdminAuthority() throws Exception
     {
