@@ -2,8 +2,7 @@
 
 <suite name="SearchSuite" verbose="6" preserve-order="true">
 
-    <listeners>
-        <listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
+    <listeners>        
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
     </listeners>
 
