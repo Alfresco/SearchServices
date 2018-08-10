@@ -18,9 +18,11 @@ Search Services 1.2.0 or above or Insight Engine 1.0.0 or above
     
 2. Solr Healthcheck can be performed using solr admin console at:
 
+```
     <protocol>://<repo-host-ip>:<solr-port>/solr/#
 
     e.g. http://localhost:8983/solr/#
+```
 
 # Compile the project
 `mvn clean install -DskipTests`

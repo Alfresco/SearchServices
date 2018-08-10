@@ -1,111 +1,73 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-super-pom</artifactId>
       <version>8</version>
    </parent>
-    <groupId>search-analytics-e2e-test</groupId>
-    <artifactId>search-analytics-e2e-test</artifactId>
-    <name>Search Analytics E2E Tests</name>
-    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
-    <properties>
-        <tas.utility.version>1.0.29</tas.utility.version>
-        <tas.rest.api.version>5.2.0-12-SNAPSHOT</tas.rest.api.version>
-        <tas.cmis.api.version>5.2.0-3-SNAPSHOT</tas.cmis.api.version>
-        <rm.version>2.6.0</rm.version>
-        <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
-        <test.exclude></test.exclude>
-        <test.include></test.include>
-    </properties>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-          </plugin>
-          <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <suiteXmlFiles>
-                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
-                    </suiteXmlFiles>
-                    <excludedGroups>
-                         ${test.exclude}
-                    </excludedGroups>
-                    <groups>
-                         ${test.include}
-                    </groups>
-                </configuration>
-          </plugin>
-          <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>1.5</version>
-                <configuration>
-                    <resourceBundles>
-                        <resourceBundle>org.alfresco.tas:utility:${tas.utility.version}</resourceBundle>
-                    </resourceBundles>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                    </execution>
-                </executions>
-          </plugin>
-        </plugins>
-    </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>restapi-test</artifactId>
-            <version>${tas.rest.api.version}</version>
-        </dependency>
-         <dependency>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>cmis-test</artifactId>
-            <version>${tas.cmis.api.version}</version>
-        </dependency>
+   <groupId>search-analytics-e2e-test</groupId>
+   <artifactId>search-analytics-e2e-test</artifactId>
+   <name>Search Analytics E2E Tests</name>
+   <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
+   <properties>
+      <tas.rest.api.version>5.2.0-12-SNAPSHOT</tas.rest.api.version>
+      <tas.cmis.api.version>5.2.0-3-SNAPSHOT</tas.cmis.api.version>
+      <rm.version>2.6.0</rm.version>
+      <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
+      <test.exclude></test.exclude>
+      <test.include></test.include>
+   </properties>
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <suiteXmlFiles>
+                  <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+               </suiteXmlFiles>
+               <excludedGroups>${test.exclude}</excludedGroups>
+               <groups>${test.include}</groups>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+   <dependencies>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>restapi-test</artifactId>
+         <version>${tas.rest.api.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>cmis-test</artifactId>
+         <version>${tas.cmis.api.version}</version>
+         <scope>test</scope>
+      </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-rm-automation-enterprise-rest-api</artifactId>
          <version>${rm.version}</version>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-rm-automation-community-rest-api</artifactId>
          <version>${rm.version}</version>
          <classifier>tests</classifier>
-         <exclusions>
-         <exclusion>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>cmis-test</artifactId>
-         </exclusion>
-         <exclusion>
-         	<groupId>org.alfresco.tas</groupId>
-            <artifactId>restapi-test</artifactId>
-         </exclusion>
-         <exclusion>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>utility</artifactId>
-         </exclusion>                  
-         </exclusions>
          <scope>test</scope>
-      </dependency>
-        <dependency>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>utility</artifactId>
-            <version>${tas.utility.version}</version>
-        </dependency>      
+      </dependency>  
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
          <version>1.16.10</version>
-         <scope>provided</scope>
+         <scope>test</scope>
       </dependency>
-    </dependencies>
+   </dependencies>
 </project>
