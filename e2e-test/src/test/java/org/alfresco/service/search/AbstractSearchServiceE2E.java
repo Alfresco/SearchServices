@@ -7,11 +7,6 @@ package org.alfresco.service.search;
  * agreement is prohibited.
  */
 
-import static lombok.AccessLevel.PROTECTED;
-
-
-import javax.naming.AuthenticationException;
-
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.RestProperties;
@@ -25,7 +20,10 @@ import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.network.ServerHealth;
+import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.chemistry.opencmis.client.api.Session;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,6 +32,7 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeSuite;
 
 import lombok.Getter;
+import static lombok.AccessLevel.PROTECTED;
 
 /**
  * @author meenal bhave
@@ -82,13 +81,121 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
 
         try
         {
-            dataContent.usingAdmin().deployContentModel("model/music-model.xml");
-            dataContent.usingAdmin().deployContentModel("model/finance-model.xml");
+            deployCustomModel("model/music-model.xml");
+            deployCustomModel("model/finance-model.xml");
         }
         catch (Exception e)
         {
             LOG.warn("Error Loading Custom Model", e);
         }
+    }
+
+    public boolean deployCustomModel(String path)
+    {
+        Boolean modelDeployed = false;
+
+        if ((path != null) && (path.endsWith("-model.xml")))
+        {
+            try
+            {
+                dataContent.usingAdmin().deployContentModel(path);
+                modelDeployed = true;
+            }
+            catch (Exception e)
+            {
+                LOG.warn("Error Loading Custom Model", e);
+            }
+        }
+        return modelDeployed;
+    }
+    
+    public boolean deactivateCustomModel(String fileName)
+    {
+        Boolean modelDeactivated = false;
+
+        try
+        {
+            FileModel customModel = getCustomModel(fileName);
+
+            // Deactivate the model if found
+            if (customModel != null)
+            {
+
+                cmisApi.authenticateUser(dataUser.getAdminUser()).usingResource(customModel).updateProperty("cm:modelActive", false);
+
+                modelDeactivated = true;
+            }
+        }
+        catch (Exception e)
+        {
+            LOG.warn("Error Deactivating Custom Model", e);
+        }
+        return modelDeactivated;
+    }
+
+    public boolean deleteCustomModel(String fileName)
+    {
+        Boolean modelDeleted = false;
+
+        try
+        {
+            FileModel customModel = getCustomModel(fileName);
+
+            // Delete the model if found
+            if (customModel != null)
+            {
+                // cmisApi.authenticateUser(dataUser.getAdminUser()).usingResource(customModel).deleteContent();
+                dataContent.usingAdmin().usingResource(customModel).deleteContent();
+                restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingTrashcan().deleteNodeFromTrashcan(customModel);
+
+                modelDeleted = true;
+            }
+            else
+            {
+                LOG.error("Custom Content Model [{}] is not available under [/Data Dictionary/Models/] location", fileName);
+            }
+        }
+        catch (Exception e)
+        {
+            LOG.error("Custom Content Model [{}] is not available under [/Data Dictionary/Models/] location", fileName);
+        }
+
+        return modelDeleted;
+    }
+
+    private FileModel getCustomModel(String fileName)
+    {
+        FileModel customModel = null;
+
+        try
+        {
+            if ((fileName != null) && (fileName.endsWith("-model.xml")))
+
+            {
+                Session session = contentService.getCMISSession(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword());
+
+                CmisObject modelInRepo = session.getObjectByPath(String.format("/Data Dictionary/Models/%s", fileName));
+
+                if (modelInRepo != null)
+                {
+                    customModel = new FileModel(modelInRepo.getName());
+                    customModel.setNodeRef(modelInRepo.getId());
+                    customModel.setNodeRef(customModel.getNodeRefWithoutVersion());
+                    customModel.setCmisLocation(String.format("/Data Dictionary/Models/%s", fileName));
+                    LOG.info("Custom Model file: " + customModel.getCmisLocation());
+                }
+                else
+                {
+                    LOG.info("Custom Content Model [{}] is not available under [/Data Dictionary/Models/] location", fileName);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LOG.warn("Error Getting Custom Model: " + fileName, e);
+        }
+
+        return customModel;
     }
 
     /**
@@ -99,10 +206,10 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
      * @return true (indexing is finished) if search returns appropriate results
      * @throws Exception
      */
-    public boolean waitForIndexing(String userQuery, Boolean expectedInResults) throws Exception
+    public boolean waitForIndexing(String userQuery, boolean expectedInResults) throws Exception
     {
-        Boolean found = false;
-        Boolean resultAsExpected = false;
+        boolean found = false;
+        boolean resultAsExpected = false;
         String expectedStatusCode = HttpStatus.OK.toString();
         Integer retryCount = 3;
         
@@ -111,17 +218,11 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         queryReq.setQuery(userQuery);
         query.setQuery(queryReq);
 
-        // Using adminUser just to confirm that the content is indexed
-        SearchResponse response = restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
-
         // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 1; searchCount <= retryCount; searchCount++)
         {
-            if (searchCount > 1)
-            {
-                // Wait for the solr indexing.
-                Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
-            }
+            // Using adminUser just to confirm that the content is indexed
+            SearchResponse response = restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(query);
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
             {
@@ -135,15 +236,20 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
                 }
 
                 // Loop again if result is not as expected: To cater for solr lag: eventual consistency
-                resultAsExpected = (expectedInResults.equals(found));
+                resultAsExpected = (expectedInResults == found);
                 if (resultAsExpected)
                 {
                     break;
                 }
+                else
+                {
+                 // Wait for the solr indexing.
+                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
+                }
             }
             else
             {
-                throw new AuthenticationException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode);
+                throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode);
             }
         }
 

@@ -2,22 +2,32 @@
 
 <suite name="SearchSuite" verbose="6" preserve-order="true">
 
-    <listeners>
-        <listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
-        <listener class-name="org.alfresco.test.FailedTestListener"></listener>
-        <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
-    </listeners>
+	<listeners>
+		<listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+	</listeners>
 
-    <test name="Smoke">
-        <classes>
-            <class name="org.alfresco.service.search.unit.SetupTest" />
-        </classes>
-    </test>
+	<test name="Smoke">
+		<groups>
+			<run>
+				<include name="sanity" />
+				<include name="ASS_1.0.0" />
+				<exclude name="InsightEngine_1.0.0" />
+			</run>
+		</groups>
+		<classes>
+			<class name="org.alfresco.service.search.unit.SetupTest" />
+		</classes>
+	</test>
 
-    <test name="E2E-InsightEngine">
-        <classes>
-            <class name="org.alfresco.service.search.e2e.insightEngine.sql.CustomModelTest" />
-        </classes>
-    </test>
+	<test name="E2E-SearchServices">
+		<groups>
+			<run>
+				<include name="ASS_1.0.0" />
+				<exclude name="InsightEngine_1.0.0" />
+			</run>
+		</groups>
+		<classes>
+		</classes>
+	</test>
 
 </suite>

@@ -92,8 +92,10 @@ public class SetupTest extends AbstractSearchServiceE2E
         properties.put("music:genre", "pop");
         properties.put("music:lyricist", "Me");
 
-        cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(customFile, properties, VersioningState.MAJOR).assertThat()
-                .existsInRepo();
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
+                .usingResource(testFolder)
+                .createFile(customFile, properties, VersioningState.MAJOR)
+                .assertThat().existsInRepo();
     }
 
     // Test Custom Model: Finance can be used
@@ -109,8 +111,10 @@ public class SetupTest extends AbstractSearchServiceE2E
         properties.put("finance:ReceiptNo", 1);
         properties.put("finance:ReceiptValue", 30);
 
-        cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(customFile, properties, VersioningState.MAJOR).assertThat()
-                .existsInRepo();
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
+                .usingResource(testFolder)
+                .createFile(customFile, properties, VersioningState.MAJOR)
+                .assertThat().existsInRepo();
 
         Assert.assertTrue("New content could not be found", waitForIndexing("cm:name:" + customFile.getName(), true));
     }
@@ -126,8 +130,8 @@ public class SetupTest extends AbstractSearchServiceE2E
 
         RestResponse response = restClient.authenticateUser(testUser).withSearchSqlAPI().searchSql(sqlRequest);
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertNotNull(response);
+        Assert.assertTrue("Check ACS Version is 6.0 or above and if Insight Engine is running. Response received is: " + response.getStatusCode(), HttpStatus.OK.toString().matches(response.getStatusCode()));
     }
     
     // Test sql can be executed via jdbc
@@ -146,14 +150,21 @@ public class SetupTest extends AbstractSearchServiceE2E
 
         ResultSet rs = restClient.withSearchSqlViaJDBC().executeQueryViaJDBC(sqlRequest);
 
-        while (rs.next())
+        if (rs != null)
         {
-            // User can see the Public Site created by other user
-            Assert.assertNotNull(rs.getString("SITE"));
-            Assert.assertTrue(publicSite.getTitle().equalsIgnoreCase(rs.getString("SITE")));
-            
-            Assert.assertNotNull(rs.getString("CM_OWNER"));
-            Assert.assertTrue(rs.getString("CM_OWNER").contains(testUser.getUsername()));
+            while (rs.next())
+            {
+                // User can see the Public Site created by other user
+                Assert.assertNotNull(rs.getString("SITE"));
+                Assert.assertTrue(publicSite.getTitle().equalsIgnoreCase(rs.getString("SITE")));
+
+                Assert.assertNotNull(rs.getString("CM_OWNER"));
+                Assert.assertTrue(rs.getString("CM_OWNER").contains(testUser.getUsername()));
+            }
+        }
+        else
+        {
+            Assert.fail("Result Set is null, Check ACS Version is 6.0 or above and if Insight Engine is running");
         }
     }
 }
