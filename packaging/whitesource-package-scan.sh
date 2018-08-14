@@ -15,7 +15,7 @@ nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 if [ "${nicebranch}" = "master" ] || [ "${nicebranch#release}" != "${nicebranch}" ]
 then  
     POM_VERSION=$(grep version pom.xml | grep -v -e '<?xml|~'| head -n 1 |awk -F '[><]' '{print $3}')
-    RELEASE_FOLDER=/data/releases/SearchServices/${bamboo_release_version}
+    RELEASE_FOLDER=/data/releases/SearchServices/${POM_VERSION}
     DISTRIBUTION_NAME=alfresco-search-services-${POM_VERSION}.zip
     DISTRIBUTION_ZIP_PATH=${RELEASE_FOLDER}/${DISTRIBUTION_NAME}
     DISTRIBUTION_ZIP_SCAN_PATH=${RELEASE_FOLDER}/scan
@@ -23,8 +23,7 @@ then
 
     if [ ${CLEANUP} = "clean" ]; then
         echo "Cleaning up scan folder..."
-        ssh tomcat@pbam01.alfresco.com rm -rf ${DISTRIBUTION_ZIP_SCAN_PATH}
-        ssh tomcat@pbam01.alfresco.com rm -rf ${DISTRIBUTION_ZIP_PATH}
+        ssh -q tomcat@pbam01.alfresco.com [[ -d ${RELEASE_FOLDER} ]] && ssh tomcat@pbam01.alfresco.com rm -rf ${RELEASE_FOLDER} || echo "Nothing to cleanup"                
     else
         echo "Copy distribution to release area..."
         ssh tomcat@pbam01.alfresco.com mkdir -p ${RELEASE_FOLDER}
