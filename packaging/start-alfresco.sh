@@ -67,7 +67,7 @@ function cleanup_containers {
 function build_image_if_not_exist {
     cd ${DOCKER_RESOURCES_PATH} && docker-compose pull search 2>err        
     if [[ `cat ${DOCKER_RESOURCES_PATH}/err` = *"not found"* ]] ; then                
-        cd $__DIR && sh buildAndTest.sh .
+        cd $__DIR && sh buildAndTest.sh . no-push
     fi
 }
 
