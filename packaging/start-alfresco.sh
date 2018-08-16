@@ -20,6 +20,7 @@
 #  $ run.sh target up docker-resources/docker-compose.yml debug
 
 echo `basename $0` called on `date` with arguments: "$@"
+__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 DOCKER_RESOURCES_PATH="${1:-target}"
 CLEANUP="${2:-no-clean}"
@@ -62,6 +63,14 @@ function cleanup_containers {
     cd  ${DOCKER_RESOURCES_PATH} && docker-compose kill
     cd  ${DOCKER_RESOURCES_PATH} && docker-compose rm -fv    
 }
+
+function build_image_if_not_exist {
+    cd ${DOCKER_RESOURCES_PATH} && docker-compose pull search 2>err        
+    if [[ `cat ${DOCKER_RESOURCES_PATH}/err` = *"not found"* ]] ; then                
+        cd $__DIR && sh buildAndTest.sh .
+    fi
+}
+
 function start_alfresco {    
     # update the basicAuthScheme https://issues.alfresco.com/jira/browse/REPO-2575
     sed -ie "s/-Dindex.subsystem.name=solr6/-Dindex.subsystem.name=solr6 -Dalfresco.restApi.basicAuthScheme=true/g" ${DOCKER_COMPOSE_FILE}
@@ -77,12 +86,12 @@ function start_alfresco {
     fi    
 }
 
-set -ex
+set -x
 
 if [ ${CLEANUP} = "clean" ]; then
     cleanup_containers
 else    
     cleanup_containers
+    build_image_if_not_exist
     start_alfresco
 fi
-
