@@ -5,7 +5,7 @@ set -e
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 DOCKER_RESOURCES_PATH="${1:-packaging/target/docker-resources}"
-PUSH_IMAGE="${2:yes}"
+PUSH_IMAGE="${2:-yes}"
 
 if [ "${nicebranch}" = "master" ] || [ "${nicebranch#release}" != "${nicebranch}" ]
 then   
