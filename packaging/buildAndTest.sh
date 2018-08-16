@@ -5,6 +5,7 @@ set -e
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 DOCKER_RESOURCES_PATH="${1:-packaging/target/docker-resources}"
+PUSH_IMAGE="${2:-yes}"
 
 if [ "${nicebranch}" = "master" ] || [ "${nicebranch#release}" != "${nicebranch}" ]
 then   
@@ -30,8 +31,10 @@ then
    docker run --rm "$dockerImage" [ -e /opt/alfresco-search-services/solrhome/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
    docker run --rm "$dockerImage" /opt/alfresco-search-services/solr/bin/solr start
 
-   echo "Publishing $dockerImage..."
-   docker push "$dockerImage"
+   if [ ${PUSH_IMAGE} = "yes" ]; then
+        echo "Publishing $dockerImage..."
+        docker push "$dockerImage"
+   fi 
    
    echo "Docker SUCCESS"
 else
