@@ -6,41 +6,69 @@ Alfresco Search Services using Alfresco and Apache Solr
 
 Git:
 
-<code>
+```bash
 git clone https://github.com/Alfresco/SearchServices.git
-</code>
+```
 
 ### Use Maven
 Build project:
 
-<code>
+```bash
 mvn clean install
-</code>
+```
 
 All the resources needed for the docker image will be available under packaging/target/docker-resources/
+
+### Start Alfresco Search Services from source
+To run Alfresco Search Services locally first build the zip file using:
+
+```bash
+mvn clean install
+```
+
+Extract the zip file and launch Alfresco Search Services using:
+
+```bash
+cd packaging/target
+unzip alfresco-search-services-*.zip
+cd alfresco-search-services/solr
+./bin/solr start -Dcreate.alfresco.defaults=alfresco,archive
+```
+
+If you also start an ACS instance then index will be populated.  By default Alfresco Search Services runs on port 8983, but this can be set by supplying e.g. `-p 8083` to the "solr start" command.
+
+To set up remote debugging (on port 5005) start Alfresco Search Services with the following command and then connect using your IDE:
+
+```bash
+./bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+```
+
+To stop Alfresco Search Services:
+
+```bash
+./bin/solr stop
+```
 
 ### Docker
 To build the docker image:
 
-<code>
+```bash
 cd packaging/target/docker-resources/
-
 docker build -t searchservices:develop .
-</code>
+```
 
 To run the docker image:
 
-<code>
+```bash
 docker run -p 8983:8983 searchservices:develop
-</code>
+```
 
 docker-compose files can be used to start up Search Services with Alfresco and Share. There are two docker-composes files available. Depending on the version you want to start either change to 5.x or 6.x. E.g.
 
-<code>
+```bash
 cd packaging/target/docker-resources/6.x
-
-docker-compose up 
-</code>
+docker-compose up
+```
 
 This will start up Alfresco, Postgres, Share and SearchServices. You can access the applications using the following URLs:
 
