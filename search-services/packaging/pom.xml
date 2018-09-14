@@ -52,7 +52,7 @@
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <version>1.4.1</version>
+                <version>1.3.0</version><!-- 1.4.0 gives class not found issues with "CachedFileEntry": https://github.com/maven-download-plugin/maven-download-plugin/issues/80 -->
                 <executions>
                     <execution>
                         <id>unpack-solr-war</id>
