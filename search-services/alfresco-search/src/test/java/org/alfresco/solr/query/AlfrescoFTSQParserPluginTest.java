@@ -209,6 +209,8 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
 
     private void checkDataType() throws Exception {
         assertAQuery("d\\:double:\"5.6\"", 1);
+        assertAQuery("d\\:int:\"1\"", 1);
+        assertAQuery("d\\:float:\"3.4\"", 1);
         assertAQuery("d\\:content:\"fox\"", 1);
         assertAQuery("d\\:content:\"fox\"", 1, Locale.US, null, null);
     }
