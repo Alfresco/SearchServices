@@ -1531,6 +1531,18 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         else
         {
             isNumeric = (schemaField.getType().getNumericType() != null);
+            if(isNumeric)
+            {
+                //Check to see if queryText is numeric or else it will fail.
+                try
+                {
+                    Integer.valueOf(queryText);
+                }
+                catch (NumberFormatException e)
+                {
+                    return new TermQuery(new Term("_dummy_", "_miss_"));
+                }
+            }
         }
 
         // Use the analyzer to get all the tokens, and then build a TermQuery,
