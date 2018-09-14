@@ -1531,12 +1531,12 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         else
         {
             isNumeric = (schemaField.getType().getNumericType() != null);
-            if(isNumeric)
+            if (isNumeric)
             {
                 //Check to see if queryText is numeric or else it will fail.
                 try
                 {
-                    Integer.valueOf(queryText);
+                    Double.valueOf(queryText);
                 }
                 catch (NumberFormatException e)
                 {
