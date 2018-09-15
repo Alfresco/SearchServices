@@ -160,8 +160,32 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         // Check we are tracking the correct repository
         TrackerState state = super.getTrackerState();
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("## trackRepository() state details: \n  getLastIndexedTxId: " + state
+                    .getLastIndexedTxId() + " \n getLastChangeSetCommitTimeOnServer: " + state
+                    .getLastChangeSetCommitTimeOnServer() + " \n getLastChangeSetIdOnServer: " + state
+                    .getLastChangeSetIdOnServer() + " \n getLastChangeSetIdOnServer: " + state
+                    .getLastChangeSetIdOnServer() + " \n getLastGoodChangeSetCommitTimeInIndex: " + state
+                    .getLastGoodChangeSetCommitTimeInIndex() + " \n getLastGoodTxCommitTimeInIndex: " + state
+                    .getLastGoodTxCommitTimeInIndex() + " \n getLastIndexedChangeSetCommitTime: " + state
+                    .getLastIndexedChangeSetCommitTime() + " \n getLastIndexedChangeSetId: " + state
+                    .getLastIndexedChangeSetId() + " \n getLastIndexedChangeSetIdBeforeHoles: " + state
+                    .getLastIndexedChangeSetIdBeforeHoles() + " \n getLastIndexedTxCommitTime: " + state
+                    .getLastIndexedTxCommitTime() + " \n getLastTxCommitTimeOnServer: " + state
+                    .getLastTxCommitTimeOnServer() + " \n getTimeBeforeWhichThereCanBeNoHoles: " + state
+                    .getTimeBeforeWhichThereCanBeNoHoles() + " \n getTimeToStopIndexing: " + state
+                    .getTimeToStopIndexing() + " \n getTrackerCycles: " + state
+                    .getTrackerCycles());
+        }
+
         if(state.getTrackerCycles() == 0)
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("## TrackerCycles is 0, running checkRepoAndIndexConsistency(state)");
+            }
             //We have a new tracker state so do the checks.
             checkRepoAndIndexConsistency(state);
         }
@@ -191,7 +215,26 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ShardState getShardState()
     {
         TrackerState state = super.getTrackerState();
-       
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("## getShardState() state details: \n  getLastIndexedTxId: " + state
+                    .getLastIndexedTxId() + " \n getLastChangeSetCommitTimeOnServer: " + state
+                    .getLastChangeSetCommitTimeOnServer() + " \n getLastChangeSetIdOnServer: " + state
+                    .getLastChangeSetIdOnServer() + " \n getLastChangeSetIdOnServer: " + state
+                    .getLastChangeSetIdOnServer() + " \n getLastGoodChangeSetCommitTimeInIndex: " + state
+                    .getLastGoodChangeSetCommitTimeInIndex() + " \n getLastGoodTxCommitTimeInIndex: " + state
+                    .getLastGoodTxCommitTimeInIndex() + " \n getLastIndexedChangeSetCommitTime: " + state
+                    .getLastIndexedChangeSetCommitTime() + " \n getLastIndexedChangeSetId: " + state
+                    .getLastIndexedChangeSetId() + " \n getLastIndexedChangeSetIdBeforeHoles: " + state
+                    .getLastIndexedChangeSetIdBeforeHoles() + " \n getLastIndexedTxCommitTime: " + state
+                    .getLastIndexedTxCommitTime() + " \n getLastTxCommitTimeOnServer: " + state
+                    .getLastTxCommitTimeOnServer() + " \n getTimeBeforeWhichThereCanBeNoHoles: " + state
+                    .getTimeBeforeWhichThereCanBeNoHoles() + " \n getTimeToStopIndexing: " + state
+                    .getTimeToStopIndexing() + " \n getTrackerCycles: " + state
+                    .getTrackerCycles());
+        }
+
         ShardState shardstate =  ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
@@ -634,8 +677,26 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
                 this.state = getTrackerState();
 
+                if (log.isDebugEnabled())
+                {
+                    log.debug("## trackTransactions() state details: \n  getLastIndexedTxId: " + this.state
+                            .getLastIndexedTxId() + "\n  getLastChangeSetCommitTimeOnServer: " + this.state
+                            .getLastChangeSetCommitTimeOnServer() + " \n getLastChangeSetIdOnServer: " + this.state
+                            .getLastChangeSetIdOnServer() + " \n getLastChangeSetIdOnServer: " + this.state
+                            .getLastChangeSetIdOnServer() + " \n getLastGoodChangeSetCommitTimeInIndex: " + this.state
+                            .getLastGoodChangeSetCommitTimeInIndex() + " \n getLastGoodTxCommitTimeInIndex: " + this.state
+                            .getLastGoodTxCommitTimeInIndex() + " \n getLastIndexedChangeSetCommitTime: " + this.state
+                            .getLastIndexedChangeSetCommitTime() + " \n getLastIndexedChangeSetId: " + this.state
+                            .getLastIndexedChangeSetId() + " \n getLastIndexedChangeSetIdBeforeHoles: " + this.state
+                            .getLastIndexedChangeSetIdBeforeHoles() + " \n getLastIndexedTxCommitTime: " + this.state
+                            .getLastIndexedTxCommitTime() + " \n getLastTxCommitTimeOnServer: " + this.state
+                            .getLastTxCommitTimeOnServer() + " \n getTimeBeforeWhichThereCanBeNoHoles: " + this.state
+                            .getTimeBeforeWhichThereCanBeNoHoles() + " \n getTimeToStopIndexing: " + this.state
+                            .getTimeToStopIndexing() + " \n getTrackerCycles: " + this.state
+                            .getTrackerCycles());
+                }
 
-                /*
+                    /*
                 *  The fromCommitTime tells getSomeTransactions() where to start, this actually fairly straight forward.
                 *
                 *  What makes this code so tricky to understand is the state.getTimeToStopIndexing().

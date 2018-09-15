@@ -278,12 +278,42 @@ public abstract class AbstractTracker implements Tracker
     @Override
     public synchronized TrackerState getTrackerState()
     {
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("## Getting tracker state...");
+        }
+
         if(this.state != null)
         {
+            if (log.isDebugEnabled())
+            {
+
+                log.debug("## State is not null...");
+                log.debug("## getTrackerState() state details: \n  getLastIndexedTxId: " + this.state
+                        .getLastIndexedTxId() + " \n getLastChangeSetCommitTimeOnServer: " + this.state
+                        .getLastChangeSetCommitTimeOnServer() + " \n getLastChangeSetIdOnServer: " + this.state
+                        .getLastChangeSetIdOnServer() + " \n getLastChangeSetIdOnServer: " + this.state
+                        .getLastChangeSetIdOnServer() + " \n getLastGoodChangeSetCommitTimeInIndex: " + this.state
+                        .getLastGoodChangeSetCommitTimeInIndex() + " \n getLastGoodTxCommitTimeInIndex: " + this.state
+                        .getLastGoodTxCommitTimeInIndex() + " \n getLastIndexedChangeSetCommitTime: " + this.state
+                        .getLastIndexedChangeSetCommitTime() + " \n getLastIndexedChangeSetId: " + this.state
+                        .getLastIndexedChangeSetId() + " \n getLastIndexedChangeSetIdBeforeHoles: " + this.state
+                        .getLastIndexedChangeSetIdBeforeHoles() + " \n getLastIndexedTxCommitTime: " + this.state
+                        .getLastIndexedTxCommitTime() + " \n getLastTxCommitTimeOnServer: " + this.state
+                        .getLastTxCommitTimeOnServer() + " \n getTimeBeforeWhichThereCanBeNoHoles: " + this.state
+                        .getTimeBeforeWhichThereCanBeNoHoles() + " \n getTimeToStopIndexing: " + this.state
+                        .getTimeToStopIndexing() + " \n getTrackerCycles: " + this.state
+                        .getTrackerCycles());
+            }
            return this.state;
         }
         else
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("## State is null, returning initial state");
+            }
             return this.infoSrv.getTrackerInitialState();
         }
     }
