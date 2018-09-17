@@ -1407,6 +1407,7 @@ public class SolrInformationServer implements InformationServer
     @Override
     public TrackerState getTrackerInitialState()
     {
+        log.info("####= Getting initial tracker state");
         SolrQueryRequest request = null;
         try
         {
@@ -1433,14 +1434,20 @@ public class SolrInformationServer implements InformationServer
             }
 
             // We can find either or both docs here.
+            log.info("####= tracker state records:"+response.getNumFound());
+
             for(int i = 0; i < response.getNumFound(); i++)
             {
                 SolrDocument current = response.get(i);
                 // ACLTX
                 if(current.getFieldValue(FIELD_S_ACLTXCOMMITTIME) != null)
                 {
+                    log.info("####= FIELD_S_ACLTXCOMMITTIME:"+getFieldValueLong(current, FIELD_S_ACLTXCOMMITTIME));
+                    log.info("####= FIELD_S_ACLTXID:"+getFieldValueLong(current, FIELD_S_ACLTXID));
+
                     if (state.getLastIndexedChangeSetCommitTime() == 0)
                     {
+
                         state.setLastIndexedChangeSetCommitTime(getFieldValueLong(current, FIELD_S_ACLTXCOMMITTIME));
                     }
 
@@ -1453,6 +1460,9 @@ public class SolrInformationServer implements InformationServer
                 // TX
                 if(current.getFieldValue(FIELD_S_TXCOMMITTIME) != null)
                 {
+                    log.info("####= FIELD_S_TXCOMMITTIME:"+getFieldValueLong(current, FIELD_S_TXCOMMITTIME));
+                    log.info("####= FIELD_S_TXID):"+getFieldValueLong(current, FIELD_S_TXID));
+
                     if (state.getLastIndexedTxCommitTime() == 0)
                     {
                         state.setLastIndexedTxCommitTime(getFieldValueLong(current, FIELD_S_TXCOMMITTIME));
@@ -1467,6 +1477,8 @@ public class SolrInformationServer implements InformationServer
             //System.out.println("################### STATE QUERY RESPONSE ######### "+response.size()+":"+state.getLastIndexedTxCommitTime()+":"+this.getClass().toString());
 
 
+            log.info("####= holeRetention:"+holeRetention);
+
             long startTime = System.currentTimeMillis();
             state.setLastStartTime(startTime);
             state.setTimeToStopIndexing(startTime - lag);
@@ -1474,11 +1486,13 @@ public class SolrInformationServer implements InformationServer
 
             long timeBeforeWhichThereCanBeNoTxHolesInIndex = state.getLastIndexedTxCommitTime() - holeRetention;
             state.setLastGoodTxCommitTimeInIndex(timeBeforeWhichThereCanBeNoTxHolesInIndex > 0 ? timeBeforeWhichThereCanBeNoTxHolesInIndex : 0);
+            log.info("####= getLastGoodTxCommitTimeInIndex:"+state.getLastGoodTxCommitTimeInIndex());
 
             long timeBeforeWhichThereCanBeNoChangeSetHolesInIndex = state.getLastIndexedChangeSetCommitTime()
                         - holeRetention;
             state.setLastGoodChangeSetCommitTimeInIndex(timeBeforeWhichThereCanBeNoChangeSetHolesInIndex > 0 ? timeBeforeWhichThereCanBeNoChangeSetHolesInIndex : 0);
-            
+            log.info("####= getLastGoodChangeSetCommitTimeInIndex:" + state.getLastGoodChangeSetCommitTimeInIndex());
+
             return state;
            
         }
