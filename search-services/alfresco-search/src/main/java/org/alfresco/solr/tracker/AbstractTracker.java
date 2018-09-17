@@ -305,6 +305,7 @@ public abstract class AbstractTracker implements Tracker
                         .getTimeBeforeWhichThereCanBeNoHoles() + " \n getTimeToStopIndexing: " + this.state
                         .getTimeToStopIndexing() + " \n getTrackerCycles: " + this.state
                         .getTrackerCycles());
+                
             }
            return this.state;
         }
