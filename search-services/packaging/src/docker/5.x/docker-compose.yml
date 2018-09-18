@@ -1,0 +1,25 @@
+version: '3'
+services:
+  platform:
+    image: docker-internal.alfresco.com/platform:${ALFRESCO_TAG}
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dsolr.host=search -Dsolr.port=8983 -Dsolr.secureComms=none -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
+    ports:
+      - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
+      - "5005:5005" #Java debugging
+      - "8081:8080" #Browser port for Alfresco
+      - "8082:8080" #Browser port for Share
+      - "8084:8080" #Browser port for API Explorer
+  search:
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}
+    environment:
+      #Solr needs to know how to register itself with Alfresco
+      SOLR_ALFRESCO_HOST: platform
+      SOLR_ALFRESCO_PORT: 8080
+      #Alfresco needs to know how to call solr
+      SOLR_SOLR_HOST: search
+      SOLR_SOLR_PORT: 8983
+      #Create the default alfresco and archive cores
+      SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
+    ports:
+      - "8083:8983" #Browser port for Solr
