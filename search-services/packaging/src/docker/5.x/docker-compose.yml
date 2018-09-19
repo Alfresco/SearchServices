@@ -1,7 +1,7 @@
 version: '3'
 services:
   platform:
-    image: docker-internal.alfresco.com/platform:5.2.1-SNAPSHOT
+    image: docker-internal.alfresco.com/platform:${ALFRESCO_TAG}
     environment:
       JAVA_TOOL_OPTIONS: "-Dsolr.host=search -Dsolr.port=8983 -Dsolr.secureComms=none -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
     ports:
@@ -11,7 +11,7 @@ services:
       - "8082:8080" #Browser port for Share
       - "8084:8080" #Browser port for API Explorer
   search:
-    image: quay.io/alfresco/search-services:${project.version}
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}
     environment:
       #Solr needs to know how to register itself with Alfresco
       SOLR_ALFRESCO_HOST: platform
