@@ -459,7 +459,7 @@ public class AlfrescoLukeRequestHandler extends RequestHandlerBase {
 	// Just get a document with the term in it, the first one will do!
 	// Is there a better way to do this? Shouldn't actually be very costly
 	// to do it this way.
-	private static Document getFirstLiveDoc(Terms terms, LeafReader reader)
+	protected static Document getFirstLiveDoc(Terms terms, LeafReader reader)
 			throws IOException {
 		PostingsEnum postingsEnum = null;
 		TermsEnum termsEnum = terms.iterator();
