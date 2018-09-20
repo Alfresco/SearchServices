@@ -56,7 +56,7 @@ public class TrackerRegistryTest
         registerTrackers(CORE_NAME);
     }
 
-    
+
     @Test
     public void testGetCoreNames()
     {
