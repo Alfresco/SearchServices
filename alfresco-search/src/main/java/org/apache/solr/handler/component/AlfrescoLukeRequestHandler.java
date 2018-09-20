@@ -461,19 +461,14 @@ public class AlfrescoLukeRequestHandler extends RequestHandlerBase {
 	// to do it this way.
 	private static Document getFirstLiveDoc(Terms terms, LeafReader reader)
 			throws IOException {
-		PostingsEnum postingsEnum = null;
 		TermsEnum termsEnum = terms.iterator();
-		BytesRef text;
 		// Deal with the chance that the first bunch of terms are in deleted
 		// documents. Is there a better way?
-		for (int idx = 0; idx < 1000 && postingsEnum == null; ++idx) {
-			text = termsEnum.next();
-			if (text == null) { // Ran off the end of the terms enum without
-								// finding any live docs with that field in
-								// them.
+		for (int idx = 0; idx < 1000; ++idx) {
+			if (termsEnum.next() == null) { // Ran off the end of the terms enum without finding any live docs with that field in them.
 				return null;
 			}
-			postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.NONE);
+			PostingsEnum postingsEnum = termsEnum.postings(null, PostingsEnum.NONE);
 			final Bits liveDocs = reader.getLiveDocs();
 			if (postingsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
 				if (liveDocs != null && liveDocs.get(postingsEnum.docID())) {
