@@ -21,7 +21,12 @@ package org.alfresco.solr.component;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,17 +35,11 @@ import java.nio.file.Paths;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-
-@RunWith(MockitoJUnitRunner.class)
 public class TempFileWarningLoggerTest
 {
-    private @Mock Logger log;
+    private Logger log;
     private Path path;
     
     @Before
@@ -48,8 +47,10 @@ public class TempFileWarningLoggerTest
     {
         path = Paths.get(System.getProperty("java.io.tmpdir"));
         
-        // Simulate warn-level logging
-        Mockito.when(log.isWarnEnabled()).thenReturn(true);
+        // Simulate warn-level logging (Although currently we only log debug messages).
+        log = mock(Logger.class, withSettings().lenient());
+        when(log.isWarnEnabled()).thenReturn(true);
+        when(log.isErrorEnabled()).thenReturn(true);
     }
     
     @Test
@@ -84,7 +85,7 @@ public class TempFileWarningLoggerTest
             
             assertTrue("Should have found matching files", found);
             // Should be a warn-level log message.
-            Mockito.verify(log, never()).warn(Mockito.anyString());
+            verify(log, never()).warn(anyString());
         }
         finally
         {
@@ -112,7 +113,7 @@ public class TempFileWarningLoggerTest
         
         assertFalse("Should NOT have found matching file", found);
         // Should be no warn-level log message.
-        Mockito.verify(log, Mockito.never()).warn(Mockito.anyString());
+        verify(log, never()).warn(anyString());
     }    
     
     @Test
