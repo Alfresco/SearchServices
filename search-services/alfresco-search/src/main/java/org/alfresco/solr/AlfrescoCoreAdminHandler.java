@@ -85,7 +85,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     protected static final Logger log = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
     
     private static final String ARG_ACLTXID = "acltxid";
-    private static final String ARG_TXID = "txid";
+    protected static final String ARG_TXID = "txid";
     private static final String ARG_ACLID = "aclid";
     private static final String ARG_NODEID = "nodeid";
     private static final String ARG_QUERY = "query";
@@ -1218,6 +1218,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public TrackerRegistry getTrackerRegistry()
     {
         return trackerRegistry;
+    }
+
+    protected void setTrackerRegistry(TrackerRegistry trackerRegistry)
+    {
+        this.trackerRegistry = trackerRegistry;
     }
 
     public SolrTrackerScheduler getScheduler()
