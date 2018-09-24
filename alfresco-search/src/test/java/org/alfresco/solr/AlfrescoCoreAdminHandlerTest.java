@@ -18,8 +18,6 @@
  */
 package org.alfresco.solr;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.ARG_TXID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -91,9 +89,6 @@ public class AlfrescoCoreAdminHandlerTest
         alfrescoCoreAdminHandler.getInformationServers().put(CORE_NAME, informationServer);
 
         when(req.getParams()).thenReturn(params);
-        when(trackerRegistry.getCoreNames()).thenReturn(newHashSet(CORE_NAME));
-        // Requesting the tracker with a null core name throws a NPE.
-        when(trackerRegistry.getTrackerForCore(eq(null), any(Class.class))).thenThrow(NullPointerException.class);
     }
 
     /** Check that a transaction report can be generated. */
