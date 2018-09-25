@@ -85,7 +85,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     protected static final Logger log = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
     
     private static final String ARG_ACLTXID = "acltxid";
-    private static final String ARG_TXID = "txid";
+    protected static final String ARG_TXID = "txid";
     private static final String ARG_ACLID = "aclid";
     private static final String ARG_NODEID = "nodeid";
     private static final String ARG_QUERY = "query";
@@ -783,27 +783,16 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             throw new AlfrescoRuntimeException("No txid parameter set");
         }
+        if (cname == null)
+        {
+            throw new AlfrescoRuntimeException("No cname parameter set");
+        }
 
-        if (cname != null)
-        {
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname, MetadataTracker.class);
-            Long txid = Long.valueOf(params.get(ARG_TXID));
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, txid));
-            rsp.add("report", report);
-        }
-        else
-        {
-            Long txid = Long.valueOf(params.get(ARG_TXID));
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            for (String coreName : trackerRegistry.getCoreNames())
-            {
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname,
-                            MetadataTracker.class);
-                report.add(coreName, buildTxReport(getTrackerRegistry(), informationServers.get(coreName), coreName, tracker, txid));
-            }
-            rsp.add("report", report);
-        }
+        MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname, MetadataTracker.class);
+        Long txid = Long.valueOf(params.get(ARG_TXID));
+        NamedList<Object> report = new SimpleOrderedMap<Object>();
+        report.add(cname, buildTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, txid));
+        rsp.add("report", report);
     }
 
     private void actionACLTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname)
@@ -1218,6 +1207,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public TrackerRegistry getTrackerRegistry()
     {
         return trackerRegistry;
+    }
+
+    protected void setTrackerRegistry(TrackerRegistry trackerRegistry)
+    {
+        this.trackerRegistry = trackerRegistry;
     }
 
     public SolrTrackerScheduler getScheduler()
