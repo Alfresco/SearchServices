@@ -1407,6 +1407,7 @@ public class SolrInformationServer implements InformationServer
     @Override
     public TrackerState getTrackerInitialState()
     {
+        log.debug("### Getting Tracker Inital State ###");
         SolrQueryRequest request = null;
         try
         {
@@ -1464,8 +1465,8 @@ public class SolrInformationServer implements InformationServer
                 }
             }
 
-            //System.out.println("################### STATE QUERY RESPONSE ######### "+response.size()+":"+state.getLastIndexedTxCommitTime()+":"+this.getClass().toString());
-
+            log.debug("##### STATE QUERY RESPONSE ######### "+ response.size() + " : " + 
+            state.getLastIndexedTxCommitTime() + " : " + this.getClass().toString());
 
             long startTime = System.currentTimeMillis();
             state.setLastStartTime(startTime);
@@ -1478,7 +1479,7 @@ public class SolrInformationServer implements InformationServer
             long timeBeforeWhichThereCanBeNoChangeSetHolesInIndex = state.getLastIndexedChangeSetCommitTime()
                         - holeRetention;
             state.setLastGoodChangeSetCommitTimeInIndex(timeBeforeWhichThereCanBeNoChangeSetHolesInIndex > 0 ? timeBeforeWhichThereCanBeNoChangeSetHolesInIndex : 0);
-            
+            log.debug("Return state: " + this.getClass().toString() + " : " + state.toString());
             return state;
            
         }
@@ -1839,6 +1840,7 @@ public class SolrInformationServer implements InformationServer
     @Override
     public void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException
     {
+        log.debug("## Start indexing a node ###");
         SolrQueryRequest request = null;
         UpdateRequestProcessor processor = null;
         try
@@ -1893,10 +1895,7 @@ public class SolrInformationServer implements InformationServer
                     // else, the node has moved on to a later transaction, and it will be indexed later
                 }
 
-                if(log.isDebugEnabled())
-                {
-                    log.debug(".. deleting");
-                }
+                log.debug(".. deleting node " + node.getId());
                 deleteNode(processor, request, node);
             }
 
@@ -1967,7 +1966,7 @@ public class SolrInformationServer implements InformationServer
             				// Make sure any unindexed or error doc is removed.
             				if (log.isDebugEnabled())
             				{
-            					log.debug(".. deleting node " + node.getId());
+            					log.debug("... deleting node " + node.getId());
             				}
             				deleteNode(processor, request, node);
 
@@ -2474,6 +2473,7 @@ public class SolrInformationServer implements InformationServer
     @Override
     public void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, AuthenticationException, JSONException
     {
+        log.debug("### index nodes start ###");
         SolrQueryRequest request = null;
         UpdateRequestProcessor processor = null;
         try
@@ -2540,7 +2540,7 @@ public class SolrInformationServer implements InformationServer
 
                 if(log.isDebugEnabled())
                 {
-                    log.debug(".. deleting");
+                    log.debug(".... deleting");
                 }
                 DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
                 String query = this.cloud.getQuery(FIELD_DBID, OR, deletedNodeIds, shardDeletedNodeIds, shardUpdatedNodeIds, unknownNodeIds);
@@ -2550,7 +2550,7 @@ public class SolrInformationServer implements InformationServer
 
             if (!updatedNodeIds.isEmpty() || !unknownNodeIds.isEmpty() || !shardUpdatedNodeIds.isEmpty())
             {
-                log.info(".. updating");
+                log.info(".... updating");
                 NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
                 List<Long> nodeIds = new LinkedList<>();
                 nodeIds.addAll(updatedNodeIds);
@@ -2563,7 +2563,7 @@ public class SolrInformationServer implements InformationServer
 
                 NEXT_NODE: for (NodeMetaData nodeMetaData : nodeMetaDatas)
                 {
-                    //System.out.println("####################### NodeMetaData:"+ nodeMetaData.getId());
+                    log.debug("####################### NodeMetaData:"+ nodeMetaData.getId());
                     long start = System.nanoTime();
 
                     Node node = nodeIdsToNodes.get(nodeMetaData.getId());
@@ -2626,7 +2626,7 @@ public class SolrInformationServer implements InformationServer
                         // Make sure any unindexed or error doc is removed.
                         if (log.isDebugEnabled())
                         {
-                            log.debug(".. deleting node " + node.getId());
+                            log.debug(".... deleting node " + node.getId());
                         }
                         deleteNode(processor, request, node);
 
