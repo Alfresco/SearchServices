@@ -26,12 +26,17 @@
 
 package org.alfresco.solr;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class was moved from org.alfresco.solr.tracker.CoreTracker 
  * The data in this class is relevant for a particular Solr index.
  */
 public class TrackerState
 {
+    private Logger log = LoggerFactory.getLogger(TrackerState.class);
+    
     private volatile long lastChangeSetIdOnServer;
 
     private volatile long lastChangeSetCommitTimeOnServer;
@@ -230,12 +235,16 @@ public class TrackerState
         this.lastGoodTxCommitTimeInIndex = lastGoodTxCommitTimeInIndex;
     }
     
-    public int getTrackerCycles() {
+    public int getTrackerCycles() 
+    {
         return this.trackerCycles;
     }
 
-    public void incrementTrackerCycles() {
+    public synchronized void incrementTrackerCycles() 
+    {
+        log.debug("incrementTrackerCycles from :" + trackerCycles);
         this.trackerCycles++;
+        log.debug("incremented TrackerCycles to :" + trackerCycles);
     }
     
     public long getTimeBeforeWhichThereCanBeNoHoles()
