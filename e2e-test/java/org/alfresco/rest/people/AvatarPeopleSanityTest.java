@@ -37,8 +37,12 @@ public class AvatarPeopleSanityTest extends RestTest
         restClient.authenticateUser(userModel);
         ValidatableResponse response = restClient.withCoreAPI().usingAuthUser()
                 .uploadAvatarContent(restProperties.envProperty().getFullServerUrl(), avatarFile).statusCode(200);
-        restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().downloadAvatarContent();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        // Renditions are async
+        Utility.sleep(200, 2000, () ->
+        {
+            restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().downloadAvatarContent();
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+        });
         assertNotNull(response.extract().body().asByteArray());
         assertTrue(response.extract().body().asByteArray().length > 0, "Avatar Image not uploaded");
     }
