@@ -1496,8 +1496,13 @@ public class SolrInformationServer implements InformationServer
         state.setTimeToStopIndexing(startTime - lag);
         state.setTimeBeforeWhichThereCanBeNoHoles(startTime - holeRetention);
 
+        log.info("## in continueState()... 'getLastIndexedTxCommitTime' is currently: " + state.getLastIndexedTxCommitTime());
+
         long timeBeforeWhichThereCanBeNoTxHolesInIndex = state.getLastIndexedTxCommitTime() - holeRetention;
         long lastStartTimeWhichThereCanBeNoTxHolesInIndex = lastStartTime - holeRetention;
+
+        log.info("## timeBeforeWhichThereCanBeNoTxHolesInIndex: " + timeBeforeWhichThereCanBeNoTxHolesInIndex);
+        log.info("## lastStartTimeWhichThereCanBeNoTxHolesInIndex: " + lastStartTimeWhichThereCanBeNoTxHolesInIndex);
 
         /*
         * Choose the max between the last commit time in the index and the last time the tracker started.
@@ -1522,7 +1527,11 @@ public class SolrInformationServer implements InformationServer
 
         timeBeforeWhichThereCanBeNoTxHolesInIndex = Math.max(timeBeforeWhichThereCanBeNoTxHolesInIndex, lastStartTimeWhichThereCanBeNoTxHolesInIndex);
 
+        log.info("## timeBeforeWhichThereCanBeNoTxHolesInIndex is now: " + timeBeforeWhichThereCanBeNoTxHolesInIndex);
+
+        log.info("## setting setLastGoodTxCommitTimeInIndex...");
         state.setLastGoodTxCommitTimeInIndex(timeBeforeWhichThereCanBeNoTxHolesInIndex > 0 ? timeBeforeWhichThereCanBeNoTxHolesInIndex : 0);
+        log.info("## LastGoodTxCommitTimeInIndex is now set to: " + state.getLastGoodTxCommitTimeInIndex());
 
         long timeBeforeWhichThereCanBeNoChangeSetHolesInIndex = state.getLastIndexedChangeSetCommitTime() - holeRetention;
         long lastStartTimeWhichThereCanBeNoChangeSetHolesInIndex = lastStartTime - holeRetention;
