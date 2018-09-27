@@ -265,8 +265,11 @@ public abstract class AbstractTracker implements Tracker
         this.rollback = rollback;
     }
 
-    private void continueState() {
+    private void continueState() 
+    {
         infoSrv.continueState(state);
+        log.debug("## Continue state and increment cycle: " + state.getTrackerCycles() + " : " 
+                  + this.getClass().getName());
         state.incrementTrackerCycles();
     }
 
@@ -278,12 +281,15 @@ public abstract class AbstractTracker implements Tracker
     @Override
     public synchronized TrackerState getTrackerState()
     {
+        log.debug(String.format("## getting tracker state for %s", this.coreName));
         if(this.state != null)
         {
-           return this.state;
+            log.debug(String.format("## %s tracker state is not null: %s ##", this.coreName, state.toString())); 
+            return this.state;
         }
         else
         {
+            log.debug(String.format("## %s getTrackerInitialState %s",this.coreName, state.toString())); 
             return this.infoSrv.getTrackerInitialState();
         }
     }
