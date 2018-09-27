@@ -283,7 +283,8 @@ public class TrackerState
                     + ", timeToStopIndexing=" + timeToStopIndexing 
                     + ", lastGoodChangeSetCommitTimeInIndex=" + lastGoodChangeSetCommitTimeInIndex 
                     + ", lastGoodTxCommitTimeInIndex=" + lastGoodTxCommitTimeInIndex 
-                    + ", timeBeforeWhichThereCanBeNoHoles=" + timeBeforeWhichThereCanBeNoHoles + "]";
+                    + ", timeBeforeWhichThereCanBeNoHoles=" + timeBeforeWhichThereCanBeNoHoles
+                    + ",trackerCycles= " + trackerCycles + " ]";
     }
 
     public boolean isCheckedFirstAclTransactionTime()
