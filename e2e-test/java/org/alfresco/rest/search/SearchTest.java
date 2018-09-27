@@ -18,9 +18,13 @@
  */
 package org.alfresco.rest.search;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
@@ -69,6 +73,31 @@ public class SearchTest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         response.getContext().assertThat().field("request").isNotEmpty();
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH,
+            TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION, description = "Checks that only restricted fields appear in the response")
+    public void searchWithFields() throws Exception
+    {
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("alfresco");
+        query.setQuery(queryReq);
+
+        // Restrict to fields
+        List<String> fields = new ArrayList<String>();
+        fields.add("parentId");
+        query.setFields(fields);
+
+        query(query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        // Only Field parentId is included in the response
+        restClient.onResponse().assertThat().body("list.entries.entry[0].parentId", Matchers.notNullValue());
+        // Usual Fields such as 'name, id' aren't included in the response
+        restClient.onResponse().assertThat().body("list.entries.entry[0].name", Matchers.nullValue());
+        restClient.onResponse().assertThat().body("list.entries.entry[0].id", Matchers.nullValue());
     }
 
 }
