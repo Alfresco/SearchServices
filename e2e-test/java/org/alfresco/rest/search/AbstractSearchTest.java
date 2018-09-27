@@ -166,23 +166,17 @@ public class AbstractSearchTest extends RestTest
      * @return true (indexing is finished) if search returns appropriate results
      * @throws Exception
      */
-    public boolean waitForIndexing(String userQuery, Boolean expectedInResults) throws Exception
+    public boolean waitForIndexing(String userQuery, boolean expectedInResults) throws Exception
     {
-        Boolean found = false;
-        Boolean resultAsExpected = false;
+        boolean found = false;
+        boolean resultAsExpected = false;
         String expectedStatusCode = HttpStatus.OK.toString();
-
-        SearchRequest searchRequest = createQuery(userQuery);
-        SearchResponse response = query(searchRequest);
 
         // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 1; searchCount <= 3; searchCount++)
         {
-            if (searchCount > 1)
-            {
-                // Wait for the solr indexing.
-                Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
-            }
+            SearchRequest searchRequest = createQuery(userQuery);
+            SearchResponse response = query(searchRequest);
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
             {
@@ -196,10 +190,15 @@ public class AbstractSearchTest extends RestTest
                 }
 
                 // Loop again if result is not as expected: To cater for solr lag: eventual consistency
-                resultAsExpected = (expectedInResults.equals(found));
+                resultAsExpected = (expectedInResults == found);
                 if (resultAsExpected)
                 {
                     break;
+                }
+                else
+                {
+                 // Wait for the solr indexing.
+                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
                 }
             }
             else
