@@ -75,9 +75,8 @@ public class SearchTest extends AbstractSearchTest
         response.getContext().assertThat().field("request").isNotEmpty();
     }
     
+    // Test that when fields parameter is set, only restricted fields appear in the response
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH,
-            TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION, description = "Checks that only restricted fields appear in the response")
     public void searchWithFields() throws Exception
     {
         SearchRequest query = new SearchRequest();
@@ -85,7 +84,7 @@ public class SearchTest extends AbstractSearchTest
         queryReq.setQuery("alfresco");
         query.setQuery(queryReq);
 
-        // Restrict to fields
+        // Restrict to fields: parentId
         List<String> fields = new ArrayList<String>();
         fields.add("parentId");
         query.setFields(fields);
