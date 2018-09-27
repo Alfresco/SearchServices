@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TrackerState
 {
-    private Logger log = LoggerFactory.getLogger(TrackerState.class);
+    private static final Logger log = LoggerFactory.getLogger(TrackerState.class);
     
     private volatile long lastChangeSetIdOnServer;
 
