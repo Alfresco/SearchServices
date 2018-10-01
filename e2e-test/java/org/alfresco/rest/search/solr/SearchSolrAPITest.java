@@ -35,7 +35,7 @@ import junit.framework.Assert;
  */
 public class SearchSolrAPITest extends AbstractSearchTest
 {
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API }, priority = 01)
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_112 }, priority = 01)
     public void testGetSolrConfig() throws Exception
     {
         RestTextResponse response = restClient.authenticateUser(adminUserModel).withSolrAPI().getConfig();
@@ -55,7 +55,7 @@ public class SearchSolrAPITest extends AbstractSearchTest
         // restClient.onResponse().assertThat().body("config.requestHandler",Matchers.notNullValue());
     }
     
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API }, priority = 02)
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_112 }, priority = 02)
     public void testEditSolrConfig() throws Exception
     {
         String expectedError = "solrconfig editing is not enabled due to disable.configEdit";
@@ -87,7 +87,7 @@ public class SearchSolrAPITest extends AbstractSearchTest
         // response.assertThat().body("error.msg", Matchers.contains(expectedError));
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API }, priority = 03)
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_112 }, priority = 03)
     public void testGetSolrConfigOverlay() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withSolrAPI().getConfigOverlay();
@@ -96,7 +96,7 @@ public class SearchSolrAPITest extends AbstractSearchTest
         restClient.onResponse().assertThat().content(Matchers.containsString("overlay"));
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API }, priority = 04)
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_112 }, priority = 04)
     public void testGetSolrConfigParams() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withSolrAPI().getConfigParams();
@@ -105,7 +105,7 @@ public class SearchSolrAPITest extends AbstractSearchTest
         restClient.onResponse().assertThat().content(Matchers.containsString("response"));
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API }, priority = 05)
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_112 }, priority = 05)
     public void testGetSolrSelect() throws Exception
     {
         String queryParams = "{!xmlparser v='<!DOCTYPE a SYSTEM \"http://localhost:4444/executed\"><a></a>'}";
