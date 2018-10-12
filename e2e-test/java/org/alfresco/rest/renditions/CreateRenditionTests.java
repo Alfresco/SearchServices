@@ -19,6 +19,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Handles tests related to POST api-explorer/#!/renditions
  * @author Cristina Axinte
@@ -90,8 +92,12 @@ public class CreateRenditionTests  extends RestTest
         
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("doclib");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
-        
-        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilIsCreated("doclib")
-            .assertThat().field("status").is("CREATED");
+
+        // Renditions are async
+        Utility.sleep(500, 60000, () ->
+        {
+            restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilIsCreated("doclib")
+                    .assertThat().field("status").is("CREATED");
+        }
     }
 }
