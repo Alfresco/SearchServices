@@ -117,8 +117,8 @@ public class NodesContentAndVersioningTests extends RestTest
     }
 
 
-    @Ignore("This test takes around 30 minutes to complete so it will be ignored by default.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
+    // This test takes around 30 minutes to complete so it will be ignored by default
+    @Test(enabled=false, groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES },
                 executionType = ExecutionType.REGRESSION, description = "Verify that the node content is streamed directly to the client and not buffered in memory.")
     public void verifyUploadDownloadLargeFileUsingRestAPI() throws Exception
