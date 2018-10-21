@@ -19,21 +19,34 @@
 
 package org.alfresco.solr.servlet;
 
+import org.alfresco.web.scripts.servlet.X509ServletFilterBase;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.apache.solr.core.SolrResourceLoader;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.servlet.ServletContext;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 
-import javax.management.*;
-import javax.servlet.ServletContext;
-
-import org.alfresco.web.scripts.servlet.X509ServletFilterBase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.solr.core.SolrResourceLoader;
-
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -50,6 +63,21 @@ public class Solr4X509ServletFilter extends X509ServletFilterBase
     private static Log logger = LogFactory.getLog(Solr4X509ServletFilter.class);
 
     static final int NOT_FOUND_HTTPS_PORT_NUMBER = -1;
+
+    private Function<ObjectName, Integer> extractPortNumber = name ->
+    {
+        try
+        {
+            return ofNullable(mxServer().getAttribute(name, "Port"))
+                    .map(Number.class::cast)
+                    .map(Number::intValue)
+                    .orElse(NOT_FOUND_HTTPS_PORT_NUMBER);
+        } catch(final Exception exception)
+        {
+            logger.error("Error getting https port from MBean " + name, exception);
+            return NOT_FOUND_HTTPS_PORT_NUMBER;
+        }
+    };
 
     @Override
     protected boolean checkEnforce(ServletContext context) throws IOException
@@ -240,21 +268,6 @@ public class Solr4X509ServletFilter extends X509ServletFilterBase
             return Optional.empty();
         }
     }
-
-    private Function<ObjectName, Integer> extractPortNumber = name ->
-    {
-        try
-        {
-            return ofNullable(mxServer().getAttribute(name, "Port"))
-                    .map(Number.class::cast)
-                    .map(Number::intValue)
-                    .orElse(NOT_FOUND_HTTPS_PORT_NUMBER);
-        } catch(final Exception exception)
-        {
-            logger.error("Error getting https port from MBean " + name, exception);
-            return NOT_FOUND_HTTPS_PORT_NUMBER;
-        }
-    };
 
     MBeanServer mxServer()
     {
