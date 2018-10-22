@@ -9,10 +9,12 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,35 +28,28 @@ import java.util.List;
 @Test(groups = {TestGroup.REQUIRE_TRANSFORMATION, TestGroup.RENDITIONS_REGRESSION})
 public class AvailableRenditionTests extends RenditionIntegrationTests
 {
+    /** List of parameters used as an input to supportedRenditionTest - fileName, nodeId, renditionId, expectedMimeType **/
+    private List<Object[]> renditionsToTest;
 
-    /**
-     *  Check that a particular rendition can be created for the file and that it has the expected Mime type
-     */
-    @Test(dataProvider = "RenditionTestDataProvider", groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY,
-            description = "Verify renditions created for a selection of test files via POST nodes/{nodeId}/renditions")
-    public void supportedRenditionTest(String fileName, String renditionId, String expectedMimeType, String nodeId) throws Exception
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
     {
-        checkRendition(fileName, nodeId, renditionId, expectedMimeType);
-    }
+        super.dataPreparation();
 
-    @DataProvider(name = "RenditionTestDataProvider")
-    protected Iterator<Object[]> renditionTestDataProvider() throws Exception
-    {
+        // Upload files and get available renditions for each file
         List<String> toTest = Arrays.asList("doc", "xls", "ppt", "docx", "xlsx", "pptx", "msg", "pdf", "png", "gif", "jpg");
-
         List<Object[]> renditionsForFiles = new LinkedList<>();
-
         for (String extensions : toTest)
         {
             String sourceFile = "quick/quick." + extensions;
             renditionsForFiles.addAll(uploadFileAndGetAvailableRenditions(sourceFile));
         }
 
-        return renditionsForFiles.iterator();
+        renditionsToTest = Collections.unmodifiableList(renditionsForFiles);
     }
+
     /**
-     * Upload a source file, get all supported renditions for it.
+     * Upload a source file and get all supported renditions for it.
      */
     private List<Object[]> uploadFileAndGetAvailableRenditions(String sourceFile) throws Exception
     {
@@ -74,11 +69,36 @@ public class AvailableRenditionTests extends RenditionIntegrationTests
             String renditionId = renditionInfo.getId();
             String targetMimeType = renditionInfo.getContent().getMimeType();
 
-            renditionsForFile.add(new Object[]{sourceFile, renditionId, targetMimeType, fileNode.getId()});
+            renditionsForFile.add(new Object[]{sourceFile, fileNode.getId(), renditionId, targetMimeType});
 
         }
 
         return renditionsForFile;
+    }
+
+    /**
+     *  Check that a particular rendition can be created for the file and that it has the expected Mime type
+     */
+    @Test(dataProvider = "RenditionTestDataProvider", groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
+    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY,
+            description = "Verify renditions created for a selection of test files via POST nodes/{nodeId}/renditions")
+    public void supportedRenditionTest(String fileName, String nodeId, String renditionId, String expectedMimeType) throws Exception
+    {
+        checkRendition(fileName, nodeId, renditionId, expectedMimeType);
+    }
+
+    @DataProvider(name = "RenditionTestDataProvider")
+    protected Iterator<Object[]> renditionTestDataProvider() throws Exception
+    {
+        return renditionsToTest.iterator();
+    }
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
+    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY,
+            description = "Verify that there are some available renditions.")
+    public void renditionsAvailableTest()
+    {
+        Assert.assertFalse(renditionsToTest.isEmpty(), "No available renditions were reported for any of the test files.");
     }
 
     @Test(dataProvider = "UnsupportedRenditionTestDataProvider",groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
