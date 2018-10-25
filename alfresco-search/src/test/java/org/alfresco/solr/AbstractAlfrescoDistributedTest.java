@@ -1,12 +1,12 @@
 package org.alfresco.solr;
 
-import com.carrotsearch.ant.tasks.junit4.dependencies.com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
@@ -31,9 +31,6 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.common.util.ContentStream;
-import org.apache.solr.common.util.ContentStreamBase;
-import org.apache.lucene.document.Document;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
@@ -42,7 +39,6 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
-import org.apache.solr.update.CommitUpdateCommand;
 import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
@@ -952,6 +948,25 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return sdoc;
     }
 
+    protected void index(SolrClient client, int shardId, Object... fields) throws Exception
+    {
+        SolrInputDocument doc = new SolrInputDocument();
+        addFields(doc, fields);
+        indexDoc(client, shardId, doc);
+    }
+
+    /**
+     * Indexes the document in both the client, and a selected shard
+     */
+    protected void indexDoc(SolrClient client, int shardId, SolrInputDocument doc)
+        throws IOException, SolrServerException
+    {
+        client.add(doc);
+        int which = shardId;
+        SolrClient clientShard = clientShards.get(which);
+        clientShard.add(doc);
+    }
+    
     protected void index(SolrClient client, boolean andShards, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
