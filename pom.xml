@@ -11,10 +11,11 @@
     <packaging>pom</packaging>
     <name>Alfresco Solr Search parent</name>
     <properties>
-        <solr.version>6.6.5</solr.version>
+        <solr.version>6.6.5-patched</solr.version>
         <alfresco-solrclient.version>6.7</alfresco-solrclient.version>
         <!-- The location to download the solr zip file from. -->
-        <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip>
+        <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
+        <solr.zip>https://nexus.alfresco.com/nexus/service/local/repositories/internal-releases/content/org/apache/solr/solr/${solr.version}/${solr.version}.zip</solr.zip>
     </properties>
     <distributionManagement>
         <repository>
