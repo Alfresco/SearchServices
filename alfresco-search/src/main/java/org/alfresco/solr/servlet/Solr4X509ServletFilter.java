@@ -72,7 +72,8 @@ public class Solr4X509ServletFilter extends X509ServletFilterBase
                     .map(Number.class::cast)
                     .map(Number::intValue)
                     .orElse(NOT_FOUND_HTTPS_PORT_NUMBER);
-        } catch(final Exception exception)
+        }
+        catch(final Exception exception)
         {
             logger.error("Error getting https port from MBean " + name, exception);
             return NOT_FOUND_HTTPS_PORT_NUMBER;
@@ -262,7 +263,8 @@ public class Solr4X509ServletFilter extends X509ServletFilterBase
             return connectors
                     .stream()
                     .findFirst();
-        } catch (final Exception exception)
+        }
+        catch (final Exception exception)
         {
             logger.error("Error getting the Connector MBean.", exception);
             return Optional.empty();
