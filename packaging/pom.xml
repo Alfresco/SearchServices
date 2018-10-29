@@ -134,20 +134,6 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>delete-solr.xml</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target name="Delete Apache solr.xml config files">
-                                <delete>
-                                    <fileset dir="${project.build.directory}" includes="**/solr.xml" />
-                                </delete>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <phase>prepare-package</phase>
                         <configuration>
                             <target>
