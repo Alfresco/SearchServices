@@ -30,7 +30,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>6.25</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.15</dependency.alfresco-data-model.version>
     </properties>
 
     <dependencies>
@@ -68,8 +68,8 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
+            <artifactId>mockito-core</artifactId>
+            <version>2.23.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
