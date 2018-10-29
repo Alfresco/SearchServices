@@ -96,7 +96,8 @@ public class Solr4X509ServletFilterTest
         try
         {
             mxServer = cut.mxServer();
-        } catch (final NoSuchElementException exception)
+        }
+        catch (final NoSuchElementException exception)
         {
             mxServer = MBeanServerFactory.createMBeanServer("A_DOMAIN");
         }
@@ -108,7 +109,8 @@ public class Solr4X509ServletFilterTest
         try
         {
             cut.mxServer().unregisterMBean(cut.connectorMBeanName().get());
-        } catch (final Exception exception) {
+        }
+        catch (final Exception exception) {
             // Ignore
         }
     }
