@@ -11,11 +11,13 @@
     <packaging>pom</packaging>
     <name>Alfresco Solr Search parent</name>
     <properties>
-        <solr.version>6.6.5-patched</solr.version>
-        <alfresco-solrclient.version>6.7</alfresco-solrclient.version>
+        <solr.version>6.6.5</solr.version>
+        <alfresco-solrclient.version>6.10</alfresco-solrclient.version>
         <!-- The location to download the solr zip file from. -->
         <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
-        <solr.zip>https://nexus.alfresco.com/nexus/service/local/repositories/internal-releases/content/org/apache/solr/solr/${solr.version}/${solr.version}.zip</solr.zip>
+        <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
+        <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/${solr.version}-patched/solr-${solr.version}-patched.zip</solr.zip>
+        <solr.directory>${project.build.directory}/solr-${solr.version}-patched</solr.directory>
     </properties>
     <distributionManagement>
         <repository>
