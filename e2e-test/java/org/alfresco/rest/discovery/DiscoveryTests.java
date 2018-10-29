@@ -75,7 +75,7 @@ public class DiscoveryTests extends RestTest
         assertTrue(modules.contains("alfresco-saml-repo"));
         assertTrue(modules.contains("org_alfresco_device_sync_repo"));
         // The MM does not support new RenditionService2
-//        assertTrue(modules.contains("org_alfresco_mm_repo"));
+        assertTrue(modules.contains("org_alfresco_mm_repo"));
         assertTrue(modules.contains("org.alfresco.module.TransformationServer"));
 
         // Check that all installed modules are in INSTALLED state
