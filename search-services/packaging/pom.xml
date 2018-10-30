@@ -69,25 +69,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>delete-solr.xml</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target name="Delete Apache solr.xml config files">
-                                <delete>
-                                    <fileset dir="${project.build.directory}" includes="**/solr.xml" />
-                                </delete>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -156,59 +137,59 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <target>
-                                <replace token="SOLR_SERVER_DIR/solr" value="SOLR_TIP/../solrhome" dir="target/solr-${solr.version}">
+                                <replace token="SOLR_SERVER_DIR/solr" value="SOLR_TIP/../solrhome" dir="${solr.directory}">
                                     <include name="**/bin/solr" />
                                 </replace>
-                                <replace token="%SOLR_SERVER_DIR%\solr" value="%SOLR_TIP%\..\solrhome" dir="target/solr-${solr.version}">
+                                <replace token="%SOLR_SERVER_DIR%\solr" value="%SOLR_TIP%\..\solrhome" dir="${solr.directory}">
                                     <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token="HOME/.solr.in.sh" value="SOLR_TIP/../solr.in.sh" dir="target/solr-${solr.version}">
+                                <replace token="HOME/.solr.in.sh" value="SOLR_TIP/../solr.in.sh" dir="${solr.directory}">
                                     <include name="**/bin/solr" />
                                 </replace>
-                                <replace token="\bin\solr.in.cmd" value="\..\solr.in.cmd" dir="target/solr-${solr.version}">
+                                <replace token="\bin\solr.in.cmd" value="\..\solr.in.cmd" dir="${solr.directory}">
                                     <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token="SOLR_SSL_OPTS=%SOLR_SSL_OPTS%" value="SOLR_SSL_OPTS=!SOLR_SSL_OPTS!" dir="target/solr-${solr.version}">
+                                <replace token="SOLR_SSL_OPTS=%SOLR_SSL_OPTS%" value="SOLR_SSL_OPTS=!SOLR_SSL_OPTS!" dir="${solr.directory}">
                                     <include name="**/bin/solr.cmd" />
                                 </replace>
-                                <replace token="#SOLR_LOGS_DIR=logs" value="${alfresco.search.logs}" dir="target/solr-${solr.version}">
+                                <replace token="#SOLR_LOGS_DIR=logs" value="${alfresco.search.logs}" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token="REM set SOLR_LOGS_DIR=logs" value="${alfresco.search.logs.win}" dir="target/solr-${solr.version}">
+                                <replace token="REM set SOLR_LOGS_DIR=logs" value="${alfresco.search.logs.win}" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token="(java9)" value="(java9)${line.separator}${alfresco.gc.logs}" dir="target/solr-${solr.version}">
+                                <replace token="(java9)" value="(java9)${line.separator}${alfresco.gc.logs}" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token="GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="target/solr-${solr.version}">
+                                <replace token="GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token="# Anything you add to the SOLR_OPTS" value="${alfresco.search.config}${line.separator}${line.separator}# Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
+                                <replace token="# Anything you add to the SOLR_OPTS" value="${alfresco.search.config}${line.separator}${line.separator}# Anything you add to the SOLR_OPTS" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token="REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}${line.separator}${line.separator}REM Anything you add to the SOLR_OPTS" dir="target/solr-${solr.version}">
+                                <replace token="REM Anything you add to the SOLR_OPTS" value="${alfresco.search.config.win}${line.separator}${line.separator}REM Anything you add to the SOLR_OPTS" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token="REM set SOLR_JAVA_MEM=-Xms512m -Xmx512m" value="set SOLR_JAVA_MEM=-Xms1g -Xmx1g" dir="target/solr-${solr.version}">
+                                <replace token="REM set SOLR_JAVA_MEM=-Xms512m -Xmx512m" value="set SOLR_JAVA_MEM=-Xms1g -Xmx1g" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.cmd" />
                                 </replace>
-                                <replace token="#SOLR_JAVA_MEM=&quot;-Xms512m -Xmx512m&quot;" value="SOLR_JAVA_MEM=&quot;-Xms1g -Xmx1g&quot;" dir="target/solr-${solr.version}">
+                                <replace token="#SOLR_JAVA_MEM=&quot;-Xms512m -Xmx512m&quot;" value="SOLR_JAVA_MEM=&quot;-Xms1g -Xmx1g&quot;" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token="${alfresco.search.ssl.need.token}" value="${alfresco.search.ssl.need}" dir="target/solr-${solr.version}">
+                                <replace token="${alfresco.search.ssl.need.token}" value="${alfresco.search.ssl.need}" dir="${solr.directory}">
                                     <include name="**/server/etc/jetty-ssl.xml" />
                                 </replace>
-                                <replace token="wantClientAuth" value="wantclientauth" dir="target/solr-${solr.version}">
+                                <replace token="wantClientAuth" value="wantclientauth" dir="${solr.directory}">
                                     <include name="**/server/etc/jetty-ssl.xml" />
                                 </replace>
-                                <replace token="STORE_TYPE=JKS" value="STORE_TYPE=JCEKS" dir="target/solr-${solr.version}">
+                                <replace token="STORE_TYPE=JKS" value="STORE_TYPE=JCEKS" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.cmd" />
                                     <include name="**/bin/solr.in.sh" />
                                 </replace>
-                                <replace token="JKS" value="JCEKS" dir="target/solr-${solr.version}">
+                                <replace token="JKS" value="JCEKS" dir="${solr.directory}">
                                     <include name="**/server/etc/jetty-ssl.xml" />
                                 </replace>
-                                <chmod file="target/solr-${solr.version}/bin/solr" perm="755" />
+                                <chmod file="${solr.directory}/bin/solr" perm="755" />
                             </target>
                         </configuration>
                         <goals>
@@ -229,7 +210,7 @@
                         <goal>replace</goal>
                      </goals>
                      <configuration>
-                        <file>${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/css/angular/index.css</file>
+                        <file>${solr.directory}/server/solr-webapp/webapp/css/angular/index.css</file>
                         <replacements>
                            <replacement>
                               <token>property\.png \); }</token>
@@ -246,7 +227,7 @@
                         <goal>replace</goal>
                      </goals>
                      <configuration>
-                        <file>${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/partials/index.html</file>
+                        <file>${solr.directory}/server/solr-webapp/webapp/partials/index.html</file>
                         <replacements>
                            <replacement>
                               <token>&lt;li class="solr solr_spec_version"&gt;</token>
