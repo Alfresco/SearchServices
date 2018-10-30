@@ -18,18 +18,21 @@
  */
 package org.alfresco.solr.tracker;
 
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Properties;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.quartz.CronTrigger;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,10 +92,9 @@ public class SolrTrackerScheduler
     public void schedule(Tracker tracker, String coreName, Properties props)
     {
         String jobName = this.getJobName(tracker, coreName);
-        JobDetail job = new JobDetail(jobName, SOLR_JOB_GROUP, TrackerJob.class);
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put(TrackerJob.JOBDATA_TRACKER_KEY, tracker);
-        job.setJobDataMap(jobDataMap);
+        JobDetail job = JobBuilder.newJob(TrackerJob.class).withIdentity(jobName, SOLR_JOB_GROUP).setJobData(jobDataMap).build();
         Trigger trigger;
         try
         {
@@ -121,13 +123,9 @@ public class SolrTrackerScheduler
                 cron = props.getProperty("alfresco.cron",DEFAULT_CRON);
                 break;
             }
-            trigger = new CronTrigger(jobName, SOLR_JOB_GROUP, cron);
+            trigger = TriggerBuilder.newTrigger().withIdentity(jobName, SOLR_JOB_GROUP).withSchedule(CronScheduleBuilder.cronSchedule(cron)).build();
             log.info("Scheduling job " + jobName);
             scheduler.scheduleJob(job, trigger);
-        }
-        catch (ParseException e)
-        {
-            logError("Tracker", e);
         }
         catch (SchedulerException e)
         {   
@@ -171,14 +169,14 @@ public class SolrTrackerScheduler
         String jobName = this.getJobName(tracker, coreName);
         JobDetail detail = null;
         try {
-            detail = this.scheduler.getJobDetail(jobName, SOLR_JOB_GROUP);
+            detail = this.scheduler.getJobDetail(new JobKey(jobName, SOLR_JOB_GROUP));
             if (detail != null)
             {
                 Tracker jobTracker = (Tracker) detail.getJobDataMap().get(TrackerJob.JOBDATA_TRACKER_KEY);
                 //If this is the exact tracker instance that was scheduled, then delete it.
                 if (tracker == jobTracker)
                 {
-                    this.scheduler.deleteJob(jobName, SOLR_JOB_GROUP);
+                    this.scheduler.deleteJob(new JobKey(jobName, SOLR_JOB_GROUP));
                 }
             }
 
@@ -190,7 +188,7 @@ public class SolrTrackerScheduler
     public void deleteTrackerJob(String coreName, Tracker tracker) throws SchedulerException
     {
         String jobName = this.getJobName(tracker, coreName);
-        this.scheduler.deleteJob(jobName, SOLR_JOB_GROUP);
+        this.scheduler.deleteJob(new JobKey(jobName, SOLR_JOB_GROUP));
     }
 
     public boolean isShutdown() throws SchedulerException
@@ -205,6 +203,6 @@ public class SolrTrackerScheduler
 
     public int getJobsCount() throws SchedulerException
     {
-        return this.scheduler.getJobNames(SOLR_JOB_GROUP).length;
+        return this.scheduler.getJobKeys(GroupMatcher.jobGroupEquals(SOLR_JOB_GROUP)).size();
     }
 }
