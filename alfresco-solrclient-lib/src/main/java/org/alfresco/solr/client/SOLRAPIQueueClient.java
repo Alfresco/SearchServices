@@ -26,10 +26,6 @@
 
 package org.alfresco.solr.client;
 
-import java.io.*;
-import java.net.ConnectException;
-import java.util.*;
-
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.httpclient.Response;
 import org.alfresco.repo.dictionary.NamespaceDAO;
@@ -38,6 +34,12 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.JSONException;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
+import java.util.*;
 
 // TODO error handling, including dealing with a repository that is not responsive (ConnectException in sendRemoteRequest)
 // TODO get text content transform status handling
@@ -296,15 +298,61 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         if(nodeIds != null) {
             for (long nodeId : nodeIds) {
                 NodeMetaData nodeMetaData = nodeMetaDataMap.get(nodeId);
+                this.processNodeMetadata(nodeMetaData, params);
                 nodeMetaDatas.add(nodeMetaData);
             }
         } else {
             Long fromId = params.getFromNodeId();
             NodeMetaData nodeMetaData = nodeMetaDataMap.get(fromId);
+            this.processNodeMetadata(nodeMetaData,params);
             nodeMetaDatas.add(nodeMetaData);
         }
 
         return nodeMetaDatas;
+    }
+
+    private void processNodeMetadata(NodeMetaData nodeMetaData, NodeMetaDataParameters params)
+    {
+        if (!params.isIncludeAclId())
+        {
+            nodeMetaData.setAclId(0);
+        }
+        if (!params.isIncludeAspects())
+        {
+            nodeMetaData.setAspects(null);
+        }
+        if (!params.isIncludeProperties())
+        {
+            nodeMetaData.setProperties(null);
+        }
+        if (!params.isIncludeChildAssociations())
+        {
+            nodeMetaData.setChildAssocs(null);
+        }
+        if (!params.isIncludeParentAssociations())
+        {
+            nodeMetaData.setParentAssocs(null);
+        }
+        if (!params.isIncludeChildIds())
+        {
+            nodeMetaData.setChildIds(null);
+        }
+        if (!params.isIncludePaths())
+        {
+            nodeMetaData.setPaths(null);
+        }
+        if (!params.isIncludeOwner())
+        {
+            nodeMetaData.setOwner(null);
+        }
+        if (!params.isIncludeNodeRef())
+        {
+            nodeMetaData.setNodeRef(null);
+        }
+        if (!params.isIncludeTxnId())
+        {
+            nodeMetaData.setTxnId(0);
+        }
     }
 
     public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
