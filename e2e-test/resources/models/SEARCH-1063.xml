@@ -20,7 +20,8 @@
                     <type>d:text</type>
                     <mandatory>false</mandatory>
                     <index enabled="true">
-                        <tokenised>TRUE</tokenised>
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
                         <facetable>false</facetable>
                     </index>
                 </property>
@@ -29,7 +30,8 @@
                     <type>d:text</type>
                     <mandatory>false</mandatory>
                     <index enabled="true">
-                        <tokenised>TRUE</tokenised>
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
                         <facetable>false</facetable>
                     </index>
                 </property>

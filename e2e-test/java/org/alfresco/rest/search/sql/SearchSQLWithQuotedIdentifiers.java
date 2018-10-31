@@ -70,7 +70,6 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
         file = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Some text content.");
 
         final CustomObjectTypeProperties attributes = new CustomObjectTypeProperties();
-//        attributes.addProperty(PropertyIds.NAME, file.getName());
         attributes.addProperty("1:name", songName);
         attributes.addProperty("1:genre", genre);
 
