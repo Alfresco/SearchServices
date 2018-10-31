@@ -26,6 +26,10 @@
 
 package org.alfresco.solr.client;
 
+import java.io.*;
+import java.net.ConnectException;
+import java.util.*;
+
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.httpclient.Response;
 import org.alfresco.repo.dictionary.NamespaceDAO;
@@ -34,12 +38,6 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.JSONException;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.ConnectException;
-import java.util.*;
 
 // TODO error handling, including dealing with a repository that is not responsive (ConnectException in sendRemoteRequest)
 // TODO get text content transform status handling
@@ -311,6 +309,14 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         return nodeMetaDatas;
     }
 
+    /**
+     * This method is meant to use the input node metadata parameters to return only the appropriate metadata from the input node.
+     * So if a metadata is not requested in the parameters, it will be removed from the input node metadata object.
+     * This allow a behaviour of the test SOLRAPI closer to the real APIs where a metadata is returned only when asked.
+     * 
+     * @param nodeMetaData - node metadata to process
+     * @param params - parameters that regulate the return of such metadata
+     */
     private void processNodeMetadata(NodeMetaData nodeMetaData, NodeMetaDataParameters params)
     {
         if (!params.isIncludeAclId())
