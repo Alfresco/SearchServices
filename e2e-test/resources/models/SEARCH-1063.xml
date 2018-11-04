@@ -22,7 +22,7 @@
         <namespace uri="1" prefix="1"/>
         <namespace uri="123" prefix="123"/>
         <namespace uri="1_2_3" prefix="1_2_3"/>
-        <namespace uri="1-2-3" prefix="1-23"/>
+        <namespace uri="1-2-3" prefix="1-2-3"/>
         <namespace uri="1-2_3" prefix="1-2_3"/>
     </namespaces>
     <data-types/>
@@ -81,8 +81,6 @@
                         <facetable>false</facetable>
                     </index>
                 </property>
-            </properties>
-            <properties>
                 <property name="123:voice_type">
                     <title>Voice Type</title>
                     <type>d:text</type>
@@ -98,11 +96,12 @@
             <overrides/>
             <mandatory-aspects/>
         </type>
+
         <type name="1_2_3:bassist">
             <title>Bassist</title>
             <parent>cm:content</parent>
             <properties>
-                <property name="1_23:name">
+                <property name="1_2_3:name">
                     <title>Name</title>
                     <type>d:text</type>
                     <mandatory>false</mandatory>
@@ -140,7 +139,7 @@
             <title>Sax</title>
             <parent>cm:content</parent>
             <properties>
-                <property name="1-2-3:name">
+                <property name="1-2_3:name">
                     <title>Name</title>
                     <type>d:text</type>
                     <mandatory>false</mandatory>

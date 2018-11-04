@@ -148,7 +148,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
                     .usingResource(testFolder)
                     .createCustomContent(
                         file5,
-                        "D:1-2_3_saxophonist",
+                        "D:1-2_3:saxophonist",
                         new CustomObjectTypeProperties()
                                 .addProperty("1-2_3:name", saxophonistName));
 
