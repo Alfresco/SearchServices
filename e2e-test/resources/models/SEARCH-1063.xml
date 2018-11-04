@@ -6,7 +6,24 @@
         <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
     </imports>
     <namespaces>
+        <!--
+            Namespaces declarations.
+            Note that the model defines several URIs that, strictly speaking, are not valid from a formal syntax
+            perspective [1] [2].
+            However, within the scope of this model they act as "a string of characters that unambiguously identifies a
+            particular resource" and therefore, they can be used within the Alfresco Data Model.
+
+            The model providers a set of namespaces (and corresponding types) for testing several combinations of
+            digits, underscores and hyphens.
+            ______________
+            [1] https://www.ietf.org/rfc/rfc3986.txt,  Section 3
+            [2] https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Generic_syntax
+        -->
         <namespace uri="1" prefix="1"/>
+        <namespace uri="123" prefix="123"/>
+        <namespace uri="1_2_3" prefix="1_2_3"/>
+        <namespace uri="1-2-3" prefix="1-23"/>
+        <namespace uri="1-2_3" prefix="1-2_3"/>
     </namespaces>
     <data-types/>
     <constraints/>
@@ -16,7 +33,7 @@
             <parent>cm:content</parent>
             <properties>
                 <property name="1:name">
-                    <title>name</title>
+                    <title>Name</title>
                     <type>d:text</type>
                     <mandatory>false</mandatory>
                     <index enabled="true">
@@ -26,7 +43,105 @@
                     </index>
                 </property>
                 <property name="1:genre">
-                    <title>genre</title>
+                    <title>Genre</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="1:co-producer">
+                    <title>Producer</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="123:artist">
+            <title>Artist</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="123:name">
+                    <title>Name</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <properties>
+                <property name="123:voice_type">
+                    <title>Voice Type</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="1_2_3:bassist">
+            <title>Bassist</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="1_23:name">
+                    <title>Name</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="1-2-3:drummer">
+            <title>Drummer</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="1-2-3:name">
+                    <title>Name</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <stored>true</stored>
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="1-2_3:saxophonist">
+            <title>Sax</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="1-2-3:name">
+                    <title>Name</title>
                     <type>d:text</type>
                     <mandatory>false</mandatory>
                     <index enabled="true">
