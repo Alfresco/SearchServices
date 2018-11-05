@@ -142,7 +142,7 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n  }, executionType = ExecutionType.REGRESSION,
             description = "Checks the \"include\" request parameter does not support the 'notValid' option")
-    public void searchQuery_includeInvalid_shouldReturnBadResponse()
+    public void searchQuery_includeInvalid_shouldReturnBadResponse() throws Exception
     {
         String query = "fox";
         String notValidInclude = "notValid";
