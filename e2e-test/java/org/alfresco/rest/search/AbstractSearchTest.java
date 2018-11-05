@@ -18,8 +18,6 @@
  */
 package org.alfresco.rest.search;
 
-import javax.naming.AuthenticationException;
-
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
@@ -32,6 +30,8 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+
+import javax.naming.AuthenticationException;
 
 /**
  * Abstract Search test class that contains useful methods
@@ -129,15 +129,23 @@ public class AbstractSearchTest extends RestTest
         return restClient.authenticateUser(userModel).withSearchAPI().search(query);
     }
     /**
+     * 
      * Helper method which create an http post request to Search API end point.
-     * @param term String search term
+     * Executes the given search request without throwing checked exceptions (a {@link RuntimeException} will be thrown in case).
+     * @param query the search request.
      * @return {@link SearchResponse} response.
-     * @throws Exception if error
      * 
      */
     protected SearchResponse query(SearchRequest query) throws Exception
     {
-        return restClient.authenticateUser(userModel).withSearchAPI().search(query);        
+        try
+        {
+            return restClient.authenticateUser(userModel).withSearchAPI().search(query);
+        }
+        catch (final Exception exception)
+        {
+            throw new RuntimeException(exception);
+        }
     }
     
     protected SearchRequest createQuery(String term)
@@ -148,6 +156,7 @@ public class AbstractSearchTest extends RestTest
         query.setQuery(queryReq);
         return query;
     }
+
     protected SearchRequest carsQuery()
     {
         return createQuery("cars");
