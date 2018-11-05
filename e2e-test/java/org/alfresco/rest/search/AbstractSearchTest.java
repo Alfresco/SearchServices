@@ -139,7 +139,22 @@ public class AbstractSearchTest extends RestTest
     {
         return restClient.authenticateUser(userModel).withSearchAPI().search(query);        
     }
-    
+
+    /**
+     * Executes an SQL Query using "solr" as output format.
+     *
+     * @param sql the SQL statement.
+     */
+    protected void executeSqlAsSolr(String sql) throws Exception
+    {
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(sql);
+        sqlRequest.setFormat("solr");
+
+        restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
     protected SearchRequest createQuery(String term)
     {
         SearchRequest query = new SearchRequest();
