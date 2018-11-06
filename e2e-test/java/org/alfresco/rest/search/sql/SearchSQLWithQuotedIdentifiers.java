@@ -161,6 +161,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
     {
         executeSqlAsSolr("select cm_name, `1_name`, `1_genre`, `1_co-producer` from alfresco where TYPE='1:song' and SITE='" + testSite.getId() + "'");
 
+        restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.equalTo(file.getName()));
         restClient.onResponse().assertThat().body("result-set.docs[0].1_name", Matchers.equalTo(songName));
         restClient.onResponse().assertThat().body("result-set.docs[0].1_genre", Matchers.equalTo(genre));
@@ -173,6 +174,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
     {
         executeSqlAsSolr("select cm_name, `123_name`, `123_voice_type` from alfresco where TYPE='123:artist' and SITE='" + testSite.getId() + "'");
 
+        restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.equalTo(file2.getName()));
         restClient.onResponse().assertThat().body("result-set.docs[0].123_name", Matchers.equalTo(artistName));
         restClient.onResponse().assertThat().body("result-set.docs[0].123_voice_type", Matchers.equalTo(voiceType));
@@ -184,6 +186,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
     {
         executeSqlAsSolr("select cm_name, `1_2_3_name` from alfresco where TYPE='1_2_3:bassist' and SITE='" + testSite.getId() + "'");
 
+        restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.equalTo(file3.getName()));
         restClient.onResponse().assertThat().body("result-set.docs[0].1_2_3_name", Matchers.equalTo(bassistName));
     }
@@ -194,6 +197,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
     {
         executeSqlAsSolr("select cm_name, `1-2-3_name` from alfresco where TYPE='1-2-3:drummer' and SITE='" + testSite.getId() + "'");
 
+        restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.equalTo(file4.getName()));
         restClient.onResponse().assertThat().body("result-set.docs[0].1-2-3_name", Matchers.equalTo(drummerName));
     }
@@ -204,6 +208,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
     {
         executeSqlAsSolr("select cm_name, `1-2_3_name` from alfresco where TYPE='1-2_3:saxophonist' and SITE='" + testSite.getId() + "'");
 
+        restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.equalTo(file5.getName()));
         restClient.onResponse().assertThat().body("result-set.docs[0].1-2_3_name", Matchers.equalTo(saxophonistName));
     }
