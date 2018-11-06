@@ -82,8 +82,8 @@ public class SearchAPATHTest extends AbstractSearchTest
      */
     public void searchLevel0() throws Exception
     {
-        final SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
-        final SearchResponse response =  query(searchQuery);
+        SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
+        SearchResponse response =  query(searchQuery);
 
         List<FacetFieldBucket> buckets = getBuckets(response);
         Assert.assertEquals(2, buckets.size());
@@ -94,8 +94,8 @@ public class SearchAPATHTest extends AbstractSearchTest
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
     public void searchLevel0andIncludeSubLevel1() throws Exception
     {
-        final SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
-        final SearchResponse response =  query(searchQuery);
+        SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
+        SearchResponse response =  query(searchQuery);
 
         List<FacetFieldBucket> buckets = getBuckets(response);
         Assert.assertEquals(4, buckets.size());
@@ -106,23 +106,23 @@ public class SearchAPATHTest extends AbstractSearchTest
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
     public void searchLevel2() throws Exception
     {
-        final String queryString = "name:cars";
+        String queryString = "name:cars";
 
-        final SearchRequest l1Request = searchRequestWithAPATHFacet(queryString, "1/");
-        final SearchResponse l1Response = query(l1Request);
+        SearchRequest l1Request = searchRequestWithAPATHFacet(queryString, "1/");
+        SearchResponse l1Response = query(l1Request);
 
-        final String l2Prefix = getFirstBucket(l1Response).getLabel().replaceFirst("^1/", "2/");
+        String l2Prefix = getFirstBucket(l1Response).getLabel().replaceFirst("^1/", "2/");
 
-        final SearchRequest l2Request = searchRequestWithAPATHFacet(queryString, l2Prefix);
-        final SearchResponse l2Response = query(l2Request);
+        SearchRequest l2Request = searchRequestWithAPATHFacet(queryString, l2Prefix);
+        SearchResponse l2Response = query(l2Request);
 
-        final FacetFieldBucket bucket = getFirstBucket(l2Response);
+        FacetFieldBucket bucket = getFirstBucket(l2Response);
         bucket.assertThat().field("label").contains(l2Prefix);
 
-        final String l3Prefix = bucket.getLabel().replaceFirst("^2/", "3/");
+        String l3Prefix = bucket.getLabel().replaceFirst("^2/", "3/");
 
-        final SearchRequest l3Request = searchRequestWithAPATHFacet(queryString, l3Prefix);
-        final SearchResponse l3response = query(l3Request);
+        SearchRequest l3Request = searchRequestWithAPATHFacet(queryString, l3Prefix);
+        SearchResponse l3response = query(l3Request);
 
         List<FacetFieldBucket> buckets = getBuckets(l3response);
         Assert.assertEquals(3, buckets.size());
@@ -137,15 +137,15 @@ public class SearchAPATHTest extends AbstractSearchTest
      * @param facetPrefix the facet prefix.
      * @return a new {@link SearchRequest} for this test case.
      */
-    private SearchRequest searchRequestWithAPATHFacet(final String queryString, final String facetPrefix)
+    private SearchRequest searchRequestWithAPATHFacet(String queryString, String facetPrefix)
     {
-        final SearchRequest searchRequest = new SearchRequest();
+        SearchRequest searchRequest = new SearchRequest();
 
-        final RestRequestQueryModel query = new RestRequestQueryModel();
+        RestRequestQueryModel query = new RestRequestQueryModel();
         query.setQuery(queryString);
         searchRequest.setQuery(query);
 
-        final RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         facetFields.setFacets(Collections.singletonList(new RestRequestFacetFieldModel("APATH", facetPrefix)));
         searchRequest.setFacetFields(facetFields);
 
