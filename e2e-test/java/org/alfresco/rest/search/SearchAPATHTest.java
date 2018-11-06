@@ -158,7 +158,7 @@ public class SearchAPATHTest extends AbstractSearchTest
      * @param response the results of a query execution.
      * @return the first bucket included in the search response.
      */
-    protected FacetFieldBucket getFirstBucket(SearchResponse response)
+    private FacetFieldBucket getFirstBucket(SearchResponse response)
     {
         return getBuckets(response).iterator().next();
     }
@@ -170,17 +170,16 @@ public class SearchAPATHTest extends AbstractSearchTest
      * @param response the results of a query execution.
      * @return the getBuckets included in the search response.
      */
-    protected List<FacetFieldBucket> getBuckets(SearchResponse response)
+    private List<FacetFieldBucket> getBuckets(SearchResponse response)
     {
-        Assert.assertNotNull(response.getContext().getFacetsFields());
+        List<RestResultBucketsModel> facetFields = response.getContext().getFacetsFields();
+        Assert.assertNotNull(facetFields);
+        Assert.assertFalse(facetFields.isEmpty());
 
-        response.getContext().getFacetsFields().stream().iterator().next().getBuckets();
+        List<FacetFieldBucket> buckets = facetFields.iterator().next().getBuckets();
+        Assert.assertNotNull(buckets);
+        Assert.assertFalse(buckets.isEmpty());
 
-        Assert.assertTrue(response.getContext().getFacetsFields().size() > 0);
-
-        Assert.assertNotNull(response.getContext().getFacetsFields().iterator().next().getBuckets());
-        Assert.assertTrue(response.getContext().getFacetsFields().iterator().next().getBuckets().size() > 0);
-
-        return response.getContext().getFacetsFields().iterator().next().getBuckets();
+        return buckets;
     }
 }
