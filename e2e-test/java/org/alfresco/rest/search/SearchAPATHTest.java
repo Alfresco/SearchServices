@@ -62,7 +62,7 @@ public class SearchAPATHTest extends AbstractSearchTest
      *   },
      *   "context": {
      *      "facetsFields": [{
-     *         "buckets": [
+     *         "getBuckets": [
      *            {
      *               "count": 913,
      *               "label": "0/5c09534f-3ca2-4272-bc25-064a7c1762b4"
@@ -84,8 +84,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         final SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
         final SearchResponse response =  query(searchQuery);
 
-        buckets(response, 2)
-                .forEach(bucket -> bucket.assertThat().field("label").contains("0/"));
+        getBuckets(response).forEach(bucket -> bucket.assertThat().field("label").contains("0/"));
     }
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
@@ -94,7 +93,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         final SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
         final SearchResponse response =  query(searchQuery);
 
-        bucket(response).assertThat().field("label").contains("1/");
+        getFirstBucket(response).assertThat().field("label").contains("1/");
     }
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
@@ -105,12 +104,12 @@ public class SearchAPATHTest extends AbstractSearchTest
         final SearchRequest l1Request = searchRequestWithAPATHFacet(queryString, "1/");
         final SearchResponse l1Response = query(l1Request);
 
-        final String l2Prefix = bucket(l1Response).getLabel().replaceFirst("^1/", "2/");
+        final String l2Prefix = getFirstBucket(l1Response).getLabel().replaceFirst("^1/", "2/");
 
         final SearchRequest l2Request = searchRequestWithAPATHFacet(queryString, l2Prefix);
         final SearchResponse l2Response = query(l2Request);
 
-        final FacetFieldBucket bucket = bucket(l2Response);
+        final FacetFieldBucket bucket = getFirstBucket(l2Response);
         bucket.assertThat().field("label").contains(l2Prefix);
 
         final String l3Prefix = bucket.getLabel().replaceFirst("^2/", "3/");
@@ -118,7 +117,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         final SearchRequest l3Request = searchRequestWithAPATHFacet(queryString, l3Prefix);
         final SearchResponse l3response = query(l3Request);
 
-        bucket(l3response).assertThat().field("label").contains(l3Prefix);
+        getFirstBucket(l3response).assertThat().field("label").contains(l3Prefix);
     }
 
     /**
@@ -149,9 +148,9 @@ public class SearchAPATHTest extends AbstractSearchTest
      * @param response the results of a query execution.
      * @return the first bucket included in the search response.
      */
-    private FacetFieldBucket bucket(final SearchResponse response)
+    protected FacetFieldBucket getFirstBucket(SearchResponse response)
     {
-        return buckets(response, 1).iterator().next();
+        return getBuckets(response).iterator().next();
     }
 
     /**
@@ -159,15 +158,18 @@ public class SearchAPATHTest extends AbstractSearchTest
      * The method also makes sure the buckets list is not empty in the input response.
      *
      * @param response the results of a query execution.
-     * @return the buckets included in the search response.
+     * @return the getBuckets included in the search response.
      */
-    private List<FacetFieldBucket> buckets(final SearchResponse response, final int minExpectedSize)
+    protected List<FacetFieldBucket> getBuckets(SearchResponse response)
     {
         Assert.assertNotNull(response.getContext().getFacetsFields());
-        Assert.assertTrue(response.getContext().getFacetsFields().size() >= 1);
+
+        response.getContext().getFacetsFields().stream().iterator().next().getBuckets();
+
+        Assert.assertTrue(response.getContext().getFacetsFields().size() > 0);
 
         Assert.assertNotNull(response.getContext().getFacetsFields().iterator().next().getBuckets());
-        Assert.assertTrue(response.getContext().getFacetsFields().iterator().next().getBuckets().size() >= minExpectedSize);
+        Assert.assertTrue(response.getContext().getFacetsFields().iterator().next().getBuckets().size() > 0);
 
         return response.getContext().getFacetsFields().iterator().next().getBuckets();
     }
