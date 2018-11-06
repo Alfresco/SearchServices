@@ -18,6 +18,7 @@
  */
 package org.alfresco.rest.search;
 
+
 import java.util.Collections;
 import java.util.List;
 
@@ -84,7 +85,10 @@ public class SearchAPATHTest extends AbstractSearchTest
         final SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
         final SearchResponse response =  query(searchQuery);
 
-        getBuckets(response).forEach(bucket -> bucket.assertThat().field("label").contains("0/"));
+        List<FacetFieldBucket> buckets = getBuckets(response);
+        Assert.assertEquals(2, buckets.size());
+
+        buckets.forEach(bucket -> bucket.assertThat().field("label").contains("0/"));
     }
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
@@ -92,6 +96,9 @@ public class SearchAPATHTest extends AbstractSearchTest
     {
         final SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
         final SearchResponse response =  query(searchQuery);
+
+        List<FacetFieldBucket> buckets = getBuckets(response);
+        Assert.assertEquals(4, buckets.size());
 
         getFirstBucket(response).assertThat().field("label").contains("1/");
     }
@@ -116,6 +123,9 @@ public class SearchAPATHTest extends AbstractSearchTest
 
         final SearchRequest l3Request = searchRequestWithAPATHFacet(queryString, l3Prefix);
         final SearchResponse l3response = query(l3Request);
+
+        List<FacetFieldBucket> buckets = getBuckets(l3response);
+        Assert.assertEquals(3, buckets.size());
 
         getFirstBucket(l3response).assertThat().field("label").contains(l3Prefix);
     }
