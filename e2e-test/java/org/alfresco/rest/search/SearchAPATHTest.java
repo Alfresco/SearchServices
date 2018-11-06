@@ -63,7 +63,7 @@ public class SearchAPATHTest extends AbstractSearchTest
      *   },
      *   "context": {
      *      "facetsFields": [{
-     *         "getBuckets": [
+     *         "buckets": [
      *            {
      *               "count": 913,
      *               "label": "0/5c09534f-3ca2-4272-bc25-064a7c1762b4"
