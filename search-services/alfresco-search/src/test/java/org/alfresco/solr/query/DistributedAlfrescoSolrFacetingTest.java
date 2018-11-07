@@ -72,7 +72,7 @@ import static org.hamcrest.core.Is.is;
         putHandleDefaults();
 
         QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
-            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "fl", "score,id", "facet", "true",
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
                 "facet.field", "{http://www.alfresco.org/model/content/1.0}content", "facet.limit", "2",
                 "facet.overrequest.count", "0", "facet.overrequest.ratio", "1"));
 
