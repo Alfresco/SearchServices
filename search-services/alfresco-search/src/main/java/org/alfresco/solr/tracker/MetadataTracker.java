@@ -605,6 +605,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
             startTime += actualTimeStep;
+            log.debug("# looking for more txns: " + startTime);
 
         } while (((transactions.getTransactions().size() == 0) && (startTime < endTime))
                     || ((transactions.getTransactions().size() > 0) && alreadyFoundTransactions(txnsFound, transactions)));
