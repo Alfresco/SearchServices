@@ -401,6 +401,7 @@ public class SOLRAPIClient
     
     public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults, ShardState shardState) throws AuthenticationException, IOException, JSONException, EncoderException
     {
+        log.debug("### get transactions ###");
         URLCodec encoder = new URLCodec();
         
         StringBuilder url = new StringBuilder(GET_TRANSACTIONS_URL);
@@ -427,6 +428,7 @@ public class SOLRAPIClient
         }
         if(shardState != null)
         {
+            log.debug("### Shard state exists ###");
             args.append(args.length() == 0 ? "?" : "&");
             args.append(encoder.encode("baseUrl")).append("=").append(encoder.encode(shardState.getShardInstance().getBaseUrl()));
             args.append("&").append(encoder.encode("hostName")).append("=").append(encoder.encode(shardState.getShardInstance().getHostName()));
@@ -475,7 +477,7 @@ public class SOLRAPIClient
         }
         
         url.append(args);
-        
+        log.debug("### GetRequest: " + url.toString());
         GetRequest req = new GetRequest(url.toString());
         Response response = null;
         List<Transaction> transactions = new ArrayList<Transaction>();
@@ -488,7 +490,6 @@ public class SOLRAPIClient
             {
                 throw new AlfrescoRuntimeException("GetTransactions return status is " + response.getStatus());
             }
-
             Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
             JsonParser parser = jsonFactory.createParser(reader);
             
@@ -540,12 +541,13 @@ public class SOLRAPIClient
         }
         finally
         {
+            log.debug("## end getTransactions");
             if(response != null)
             {
                 response.release();
             }
         }
-
+        log.debug("### Transactions found maxTxnCommitTime: " + maxTxnCommitTime );
         return new Transactions(transactions, maxTxnCommitTime, maxTxnIdOnServer);
     }
     
