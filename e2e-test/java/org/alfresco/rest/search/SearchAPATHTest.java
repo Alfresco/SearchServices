@@ -125,7 +125,7 @@ public class SearchAPATHTest extends AbstractSearchTest
         SearchResponse l3response = query(l3Request);
 
         List<FacetFieldBucket> buckets = getBuckets(l3response);
-        Assert.assertTrue(buckets.size() >= 1);
+        Assert.assertEquals(1, buckets.size());
 
         getFirstBucket(l3response).assertThat().field("label").contains(l3Prefix);
     }
