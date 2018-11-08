@@ -18,12 +18,13 @@
  */
 package org.alfresco.rest.search;
 
+
+import java.util.Collections;
+import java.util.List;
+
 import org.alfresco.utility.model.TestGroup;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Tests the search functionality using an ancestor path.
@@ -32,7 +33,7 @@ import java.util.List;
  * so that we can return all the child elements of our target path.
  * A search on root/rootCategory/classifiable should return Regions, Languages
  * as they are the child elements of the given path.
- * 
+ *
  * @author Michael Suzuki
  *
  */
@@ -77,94 +78,108 @@ public class SearchAPATHTest extends AbstractSearchTest
      *      "consistency": {"lastTxId": 89}
      *   }
      *}}
-     * 
+     *
      */
     public void searchLevel0() throws Exception
     {
-        SearchRequest searchQuery = new SearchRequest();
-        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("name:*");
-        searchQuery.setQuery(queryReq);
-        
-        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel> list = new ArrayList<>();
-        list.add(new RestRequestFacetFieldModel("APATH","0"));
-        facetFields.setFacets(list);
-        searchQuery.setFacetFields(facetFields);
+        SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
         SearchResponse response =  query(searchQuery);
-        RestResultBucketsModel fresponse = response.getContext().getFacetsFields().get(0);
-        fresponse.assertThat().field("buckets").isNotEmpty();
-        Assert.assertEquals(2,fresponse.getBuckets().size());
-        fresponse.getBuckets().get(0).assertThat().field("label").contains("0/");
-        fresponse.getBuckets().get(1).assertThat().field("label").is("0/");
+
+        List<FacetFieldBucket> buckets = getBuckets(response);
+        Assert.assertEquals(2, buckets.size());
+
+        buckets.forEach(bucket -> bucket.assertThat().field("label").contains("0/"));
     }
+
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
     public void searchLevel0andIncludeSubLevel1() throws Exception
     {
-        SearchRequest searchQuery = new SearchRequest();
-        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery("name:*");
-        searchQuery.setQuery(queryReq);
-        
-        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel> list = new ArrayList<>();
-        list.add(new RestRequestFacetFieldModel("APATH","1"));
-        facetFields.setFacets(list);
-        searchQuery.setFacetFields(facetFields);
+        SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
         SearchResponse response =  query(searchQuery);
-        RestResultBucketsModel fresponse = response.getContext().getFacetsFields().get(0);
-        Assert.assertEquals(4,fresponse.getBuckets().size());
-        fresponse.getBuckets().get(0).assertThat().field("label").contains("1/");
+
+        List<FacetFieldBucket> buckets = getBuckets(response);
+        Assert.assertEquals(4, buckets.size());
+
+        getFirstBucket(response).assertThat().field("label").contains("1/");
     }
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
     public void searchLevel2() throws Exception
     {
-        String queryString = "name:"+ "cars";
-        
-        SearchRequest searchQuery = new SearchRequest();
-        RestRequestQueryModel queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery(queryString);
-        searchQuery.setQuery(queryReq);
-        
+        String queryString = "name:cars";
+
+        SearchRequest l1Request = searchRequestWithAPATHFacet(queryString, "1/");
+        SearchResponse l1Response = query(l1Request);
+
+        String l2Prefix = getFirstBucket(l1Response).getLabel().replaceFirst("^1/", "2/");
+
+        SearchRequest l2Request = searchRequestWithAPATHFacet(queryString, l2Prefix);
+        SearchResponse l2Response = query(l2Request);
+
+        FacetFieldBucket bucket = getFirstBucket(l2Response);
+        bucket.assertThat().field("label").contains(l2Prefix);
+
+        String l3Prefix = bucket.getLabel().replaceFirst("^2/", "3/");
+
+        SearchRequest l3Request = searchRequestWithAPATHFacet(queryString, l3Prefix);
+        SearchResponse l3response = query(l3Request);
+
+        List<FacetFieldBucket> buckets = getBuckets(l3response);
+        Assert.assertEquals(1, buckets.size());
+
+        getFirstBucket(l3response).assertThat().field("label").contains(l3Prefix);
+    }
+
+    /**
+     * Creates a new {@link SearchRequest} for this test case.
+     *
+     * @param queryString the query string.
+     * @param facetPrefix the facet prefix.
+     * @return a new {@link SearchRequest} for this test case.
+     */
+    private SearchRequest searchRequestWithAPATHFacet(String queryString, String facetPrefix)
+    {
+        SearchRequest searchRequest = new SearchRequest();
+
+        RestRequestQueryModel query = new RestRequestQueryModel();
+        query.setQuery(queryString);
+        searchRequest.setQuery(query);
+
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel> list = new ArrayList<>();
-        list.add(new RestRequestFacetFieldModel("APATH","1/"));
-        facetFields.setFacets(list);
-        searchQuery.setFacetFields(facetFields);
-        
-        SearchResponse response =  query(searchQuery);
-        
-        RestResultBucketsModel fresponse = response.getContext().getFacetsFields().get(0);
-        String path = fresponse.getBuckets().get(0).getLabel().replace("1/", "2/");
-        list.remove(0);
-        list.add(new RestRequestFacetFieldModel("APATH", path));
-        
-        facetFields.setFacets(list);
-        searchQuery.setFacetFields(facetFields);
-        response =  query(searchQuery);
-        fresponse = response.getContext().getFacetsFields().get(0);
-        Assert.assertTrue(fresponse.getBuckets().size() >= 1);
-        fresponse.getBuckets().get(0).assertThat().field("label").contains("2/");
-        fresponse.getBuckets().get(0).assertThat().field("label").contains(path);
-        /**
-         * To return the contents of the path and its sub directory change the prefix
-         * Below 2/path/path -> will return whats in path/path only
-         * if 3/path/path -> will return contents from path/path/path
-         * @throws Exception
-         */
-        searchQuery = new SearchRequest();
-        queryReq =  new RestRequestQueryModel();
-        queryReq.setQuery(queryString);
-        searchQuery.setQuery(queryReq);
-        facetFields = new RestRequestFacetFieldsModel();
-        list.remove(0);
-        list.add(new RestRequestFacetFieldModel("APATH",path.replace("2/", "3/")));
-        facetFields.setFacets(list);
-        searchQuery.setFacetFields(facetFields);
-        response =  query(searchQuery);
-        fresponse = response.getContext().getFacetsFields().get(0);
-        Assert.assertTrue(fresponse.getBuckets().size() >= 1);
-        fresponse.getBuckets().get(0).assertThat().field("label").contains("3/");
+        facetFields.setFacets(Collections.singletonList(new RestRequestFacetFieldModel("APATH", facetPrefix)));
+        searchRequest.setFacetFields(facetFields);
+
+        return searchRequest;
+    }
+
+    /**
+     * Extracts the first bucket from the given response.
+     *
+     * @param response the results of a query execution.
+     * @return the first bucket included in the search response.
+     */
+    private FacetFieldBucket getFirstBucket(SearchResponse response)
+    {
+        return getBuckets(response).iterator().next();
+    }
+
+    /**
+     * Extracts the buckets from the given response.
+     * The method also makes sure the buckets list is not empty in the input response.
+     *
+     * @param response the results of a query execution.
+     * @return the getBuckets included in the search response.
+     */
+    private List<FacetFieldBucket> getBuckets(SearchResponse response)
+    {
+        List<RestResultBucketsModel> facetFields = response.getContext().getFacetsFields();
+        Assert.assertNotNull(facetFields);
+        Assert.assertFalse(facetFields.isEmpty());
+
+        List<FacetFieldBucket> buckets = facetFields.iterator().next().getBuckets();
+        Assert.assertNotNull(buckets);
+        Assert.assertFalse(buckets.isEmpty());
+
+        return buckets;
     }
 }
