@@ -183,20 +183,21 @@ public class SearchTest extends AbstractSearchTest
         restClient.onResponse().assertThat().body("list.entries.entry[0].id", Matchers.nullValue());
     }
     
-    @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
     public void searchSpecialCharacters() throws Exception
-    {        
+    {
         // Create a file with Special Characters
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
-        FileModel file = new FileModel(specialCharfileName, "è¥äæ§ç§-åæ¬¯¸" + "è¥äæ§ç§-åæ¬¯¸", "è¥äæ§ç§-åæ¬¯¸", FileType.TEXT_PLAIN, "Text file with Special Characters: " + specialCharfileName);
+        FileModel file = new FileModel(specialCharfileName, "è¥äæ§ç§-åæ¬¯¸" + "è¥äæ§ç§-åæ¬¯¸", "è¥äæ§ç§-åæ¬¯¸", FileType.TEXT_PLAIN,
+                "Text file with Special Characters: " + specialCharfileName);
         dataContent.usingUser(userModel).usingSite(siteModel).createContent(file);
 
         waitForIndexing(file.getName(), true);
-        
+
         // Search
         SearchRequest searchReq = createQuery("name:'" + specialCharfileName + "'");
         SearchResponse nodes = query(searchReq);
-        
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
 
