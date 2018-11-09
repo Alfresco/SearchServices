@@ -90,8 +90,12 @@ public class CreateRenditionTests  extends RestTest
         
         restClient.authenticateUser(user).withCoreAPI().usingNode(document).createNodeRendition("doclib");
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
-        
-        restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilIsCreated("doclib")
-            .assertThat().field("status").is("CREATED");
+
+        // Renditions are async
+        Utility.sleep(500, 60000, () ->
+        {
+            restClient.withCoreAPI().usingNode(document).getNodeRenditionUntilIsCreated("doclib")
+                    .assertThat().field("status").is("CREATED");
+        });
     }
 }

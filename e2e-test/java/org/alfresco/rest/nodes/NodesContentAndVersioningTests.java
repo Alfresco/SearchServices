@@ -10,6 +10,8 @@ import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
@@ -19,6 +21,7 @@ import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestVersionModel;
 import org.alfresco.rest.model.RestVersionModelsCollection;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
+import org.alfresco.util.TempFileProvider;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -30,6 +33,7 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -110,6 +114,37 @@ public class NodesContentAndVersioningTests extends RestTest
         STEP("4. Retrieve the nodes and verify that the content type is the expected one (GET nodes/{nodeId}).");
         restClient.withCoreAPI().usingNode(utf8File).getNodeContent().assertThat().contentType(utf8Type);
         restClient.withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
+    }
+
+
+    // This test takes around 30 minutes to complete so it will be ignored by default
+    @Test(enabled=false, groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES },
+                executionType = ExecutionType.REGRESSION, description = "Verify that the node content is streamed directly to the client and not buffered in memory.")
+    public void verifyUploadDownloadLargeFileUsingRestAPI() throws Exception
+    {
+        Integer largeFileSizeBytes = Integer.MAX_VALUE;
+        String largeFileName = "largeFile.tmp";
+        String tempFolderPath = TempFileProvider.getTempDir().getAbsolutePath();
+
+        STEP("1. Create a folder and a large file");
+        FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
+        createRandomFileInDirectory(tempFolderPath, largeFileName, largeFileSizeBytes);
+
+        STEP("2. Using multipart data upload for the large file (POST nodes/{nodeId}/children).");
+        File largeFile = new File(tempFolderPath, largeFileName);
+        FileModel largeFileModel = new FileModel(largeFileName, FileType.UNDEFINED);
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", largeFile);
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        largeFileModel.setNodeRef(fileNode.getId());
+
+        STEP("3. Retrieve the content of the node without running out of memory (GET nodes/{nodeId}/content).");
+        RestResponse nodeContent = restClient.withCoreAPI().usingNode(largeFileModel).getNodeContent();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        assertEquals(Integer.valueOf(nodeContent.getResponse().getHeader("Content-Length")), largeFileSizeBytes);
+
+        largeFile.delete();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
@@ -261,5 +296,14 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.PARTIAL_CONTENT);
         restClient.assertHeaderValueContains("content-range", "bytes 1-10");
         restClient.assertHeaderValueContains("content-length", String.valueOf(10));
+    }
+
+
+    private void createRandomFileInDirectory(String path, String fileName, int size) throws IOException {
+        String fullPath = new File(path, fileName).getPath();
+
+        RandomAccessFile file = new RandomAccessFile(fullPath,"rw");
+        file.setLength(size);
+        file.close();
     }
 }

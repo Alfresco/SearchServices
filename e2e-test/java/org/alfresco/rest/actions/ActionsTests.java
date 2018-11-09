@@ -1,11 +1,9 @@
 package org.alfresco.rest.actions;
 
-import static junit.framework.Assert.fail;
 import static org.testng.Assert.assertFalse;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.rest.model.RestNodeModel;
@@ -102,6 +100,30 @@ public class ActionsTests extends RestTest
 
             restClient.assertStatusCodeIs(HttpStatus.OK);
             fileModel.assertThat().field("aspectNames").contains("cm:versionable");
+        });
+    }
+
+    @TestRail (section = { TestGroup.REST_API, TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
+            description = "Sanity test for POST /action-executions")
+    @Test (groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY })
+    public void executeActionWithoutParam() throws Exception
+    {
+        JSONObject response = restClient.authenticateUser(adminUser).withCoreAPI().usingActions().executeAction
+                ("check-out", document);
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+
+        assertFalse(response.getString("id").isEmpty());
+
+        /*
+         * Get all node properties and check that action was executed and
+         * cm:checkedOut aspect was added
+         */
+        Utility.sleep(500, 20000, () -> {
+            RestNodeModel fileModel = restClient.authenticateUser(adminUser).withCoreAPI().usingNode(document)
+                                                .getNode();
+
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            fileModel.assertThat().field("aspectNames").contains("cm:checkedOut");
         });
     }
 

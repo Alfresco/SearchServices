@@ -32,4 +32,18 @@
             <class name="org.alfresco.rest.search.ShardInfoTest"/>
         </classes>
     </test>
+
+	<test name="SolrAPIs">
+		<classes>
+			<class name="org.alfresco.rest.search.solr.SearchSolrAPITest" />
+		</classes>
+	</test>
+	
+	<test name="InsightEngine">
+        <classes>
+            <class name="org.alfresco.rest.search.sql.SearchSQLAPITest"/>
+            <class name="org.alfresco.rest.search.sql.SearchSQLPhraseTest"/>
+            <class name="org.alfresco.rest.search.sql.SearchSQLViaJDBCTest"/>
+        </classes>
+    </test>
 </suite>
