@@ -147,7 +147,20 @@ public class AbstractSearchTest extends RestTest
             throw new RuntimeException(exception);
         }
     }
-    
+
+    /**
+     * Executes an SQL Query using "solr" as output format.
+     *
+     * @param sql the SQL statement.
+     */
+    protected RestResponse executeSqlAsSolr(String sql) throws Exception
+    {
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(sql);
+        sqlRequest.setFormat("solr");
+        return searchSql(sqlRequest);
+    }
+
     protected SearchRequest createQuery(String term)
     {
         SearchRequest query = new SearchRequest();
