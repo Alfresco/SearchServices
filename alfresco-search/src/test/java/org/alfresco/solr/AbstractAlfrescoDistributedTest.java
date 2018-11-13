@@ -325,7 +325,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 throw new Exception("Expecting "+count+" docs on shard "+shardNumber+" , found "+topDocs.totalHits);
             }
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
     }
 
@@ -346,15 +349,22 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             totalCount = 0;
             for (SolrCore core : cores) {
                 RefCounted<SolrIndexSearcher> refCounted = null;
+                boolean refCountedDecremented = false;
                 try {
                     refCounted = core.getSearcher();
+                    
                     SolrIndexSearcher searcher = refCounted.get();
                     TopDocs topDocs = searcher.search(query, 10);
                     totalCount += topDocs.totalHits;
                     //System.out.println("####### shard count:"+core.getName()+":"+totalCount);
+                    refCounted.decref();
+                    refCountedDecremented = true;
                     Thread.sleep(2000);
                 } finally {
-                    refCounted.decref();
+                    if(refCounted!=null && !refCountedDecremented)
+                    {
+                        refCounted.decref();
+                    }
                 }
             }
             if (totalCount == count) {
@@ -472,7 +482,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
             finally
             {
-                refCounted.decref();
+                if (refCounted != null)
+                {
+                    refCounted.decref();
+                }
             }
         }
 
@@ -505,7 +518,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
             finally
             {
-                refCounted.decref();
+                if (refCounted != null)
+                {
+                    refCounted.decref();
+                }
             }
         }
 
@@ -534,7 +550,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
         finally
         {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         if(totalCount != count) {
@@ -555,18 +574,24 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         while(new Date().getTime() < timeout)
         {
             RefCounted<SolrIndexSearcher> refCounted = null;
+            boolean refCountedDecremented = false;
             try {
                 refCounted = core.getSearcher();
                 SolrIndexSearcher searcher = refCounted.get();
                 TopDocs topDocs = searcher.search(query, 10);
                 totalHits = topDocs.totalHits;
+                refCounted.decref();
+                refCountedDecremented = true;
                 if (topDocs.totalHits == expectedNumFound) {
                     return;
                 } else {
                     Thread.sleep(500 * increment++);
                 }
             } finally {
-                refCounted.decref();
+                if(refCounted!=null && !refCountedDecremented)
+                {
+                    refCounted.decref();
+                }
             }
         }
         throw new Exception("Core:Wait error expected "+expectedNumFound+" found "+totalHits+" : "+query.toString());
@@ -1825,7 +1850,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             Document document = searcher.doc(doc.doc, fields);
             cap = Math.abs(getFieldValueLong(document, FIELD_DBID));
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         System.out.println("####### got cap:"+cap);
@@ -1834,6 +1862,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         long maxDBID = -1;
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
+        refCounted = null;
         try {
             refCounted = core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
@@ -1847,7 +1876,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             Document document = searcher.doc(doc.doc, fields);
             maxDBID = getFieldValueLong(document, FIELD_DBID);
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         System.out.println("####### got max DBID:"+maxDBID);
@@ -1858,6 +1890,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
 
         long minDBID = -1;
+        refCounted = null;
         try {
             refCounted = core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
@@ -1869,7 +1902,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             Document document = searcher.doc(doc.doc, fields);
             minDBID = getFieldValueLong(document, FIELD_DBID);
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         System.out.println("####### got min DBID:"+minDBID);
