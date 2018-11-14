@@ -2,6 +2,8 @@ package org.alfresco.rest.actions;
 
 import static org.testng.Assert.assertFalse;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionDefinitionModel;
@@ -86,7 +88,8 @@ public class ActionsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
     public void executeAction() throws Exception
     {
-        JSONObject response = restClient.authenticateUser(adminUser).withCoreAPI().usingActions().executeAction("add-features", document, "aspect-name", "cm:versionable");
+        JSONObject response = restClient.authenticateUser(adminUser).withCoreAPI().usingActions().executeAction
+                ("add-features", document, ImmutableMap.of("aspect-name", "cm:versionable"));
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         assertFalse(response.getString("id").isEmpty());
