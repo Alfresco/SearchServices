@@ -104,13 +104,16 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     @Override
     protected void doTrack() throws AuthenticationException, IOException, JSONException, EncoderException
     {
-
+        log.debug("### MetadataTracker doTrack ###");
         // MetadataTracker must wait until ModelTracker has run
         ModelTracker modelTracker = this.infoSrv.getAdminHandler().getTrackerRegistry().getModelTracker();
-
         if (modelTracker != null && modelTracker.hasModels())
         {
             trackRepository();
+        }
+        else
+        {
+            invalidateState();
         }
     }
 
@@ -138,6 +141,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
     {
+        log.debug("####### MetadataTracker trackRepository Start #######");
         checkShutdown();
 
         if(!isMaster && isSlave)
@@ -160,6 +164,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         // Check we are tracking the correct repository
         TrackerState state = super.getTrackerState();
+<<<<<<< HEAD
+=======
+        log.debug("####### MetadataTracker check CYCLE #######");
+        log.debug(String.format("%s ### state: %s", coreName, state.toString()));
+>>>>>>> a18998a... Implement fix to tracker not indexing correctly when data model is still loading
         if(state.getTrackerCycles() == 0)
         {
             //We have a new tracker state so do the checks.
