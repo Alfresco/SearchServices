@@ -93,11 +93,6 @@ public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
 
         }
 
-        @AfterClass(alwaysRun = true) public void deleteModel()
-        {
-                deleteCustomModel("facetable-aspect-model.xml");
-        }
-
         @Test(priority = 1, groups = { TestGroup.INSIGHT_10 }) public void testGroupByFacetableModel() throws Exception
         {
                 SearchSqlRequest sqlRequest = new SearchSqlRequest();
