@@ -8,15 +8,11 @@ import org.alfresco.utility.model.*;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.hamcrest.Matchers;
-import org.junit.Before;
 import org.springframework.http.HttpStatus;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
