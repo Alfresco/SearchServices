@@ -24,27 +24,8 @@
     <data-types/>
     <constraints/>
     <types>
-        <type name="csm:content">
-            <title>Contents</title>
-            <parent>cm:content</parent>
-            <archive>true</archive>
-            <properties>
-                <property name="csm:content">
-                    <type>d:content</type>
-                    <mandatory>false</mandatory>
-                    <index enabled="true">
-                        <atomic>true</atomic>
-                        <stored>false</stored>
-                        <tokenised>TRUE</tokenised>
-                    </index>
-                </property>
-            </properties>
-            <associations/>
-            <overrides/>
-            <mandatory-aspects/>
-        </type>
-    </types>
 
+    </types>
     <aspects>
         <aspect name="csm:author">
             <title>Author</title>
@@ -57,6 +38,34 @@
                         <atomic>true</atomic>
                         <stored>false</stored>
                         <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+        <aspect name="csm:nontexttypes">
+            <title>Weight</title>
+            <properties>
+                <property name="csm:exists">
+                    <title>Exists</title>
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="csm:quantity">
+                    <title>Quantity</title>
+                    <type>d:int</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
                         <facetable>true</facetable>
                     </index>
                 </property>
