@@ -21,7 +21,7 @@ public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
     protected SiteModel testSite;
     private UserModel testUser;
     private FolderModel testFolder;
-    
+
     private String filename1;
     private String filename2;
     private String filename3;
@@ -41,9 +41,8 @@ public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
     private int quantity2;
     private int quantity3;
 
-
     @BeforeClass(alwaysRun = true)
-    public void initDataModel() throws Exception
+    public void setupEnvironment() throws Exception
     {
 
         serverHealth.assertServerIsOnline();
@@ -107,7 +106,6 @@ public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
         cmisApi.authenticateUser(testUser).usingResource(customFile2).updateProperty("csm:quantity", quantity2);
         cmisApi.authenticateUser(testUser).usingResource(customFile2).updateProperty("csm:exists", exists);
 
-
         FileModel customFile3 = new FileModel(filename3, FileType.TEXT_PLAIN, filecontent3);
         properties = new HashMap<String, Object>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
@@ -122,8 +120,6 @@ public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
         cmisApi.authenticateUser(testUser).usingResource(customFile3).updateProperty("csm:author", author1);
         cmisApi.authenticateUser(testUser).usingResource(customFile3).updateProperty("csm:quantity", quantity2);
         cmisApi.authenticateUser(testUser).usingResource(customFile3).updateProperty("csm:exists", exists);
-
-
 
         FileModel customFile4 = new FileModel(filename4, FileType.TEXT_PLAIN, filecontent4);
         properties = new HashMap<String, Object>();
@@ -185,7 +181,7 @@ public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
 
     }
 
-    @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
+    @Test(priority = 2, groups = { TestGroup.INSIGHT_11 })
     public void testGroupByTextInteger() throws Exception
     {
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
@@ -207,7 +203,7 @@ public class CustoModelGroupByFacetableTest extends AbstractSearchServiceE2E
 
     }
 
-    @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
+    @Test(priority = 3, groups = { TestGroup.INSIGHT_11 })
     public void testGroupByBoolAggregation() throws Exception
     {
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
