@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="csm:csm">
+    <author>Administrator admin user</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <!--
+            Namespaces declarations.
+            Note that the model defines several URIs that, strictly speaking, are not valid from a formal syntax
+            perspective [1] [2].
+            However, within the scope of this model they act as "a string of characters that unambiguously identifies a
+            particular resource" and therefore, they can be used within the Alfresco Data Model.
+
+            The model providers a set of namespaces (and corresponding types) for testing several combinations of
+            digits, underscores and hyphens.
+            ______________
+            [1] https://www.ietf.org/rfc/rfc3986.txt,  Section 3
+            [2] https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Generic_syntax
+        -->
+        <namespace uri="csm" prefix="csm"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>
+
+    </types>
+    <aspects>
+        <aspect name="csm:author">
+            <title>Author</title>
+            <properties>
+                <property name="csm:author">
+                    <title>Author</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+        <aspect name="csm:nontexttypes">
+            <title>Weight</title>
+            <properties>
+                <property name="csm:exists">
+                    <title>Exists</title>
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="csm:quantity">
+                    <title>Quantity</title>
+                    <type>d:int</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>
