@@ -23,6 +23,9 @@ RUN set -x \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
    && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$DIST_DIR/data -Dsolr.solr.model.dir=$DIST_DIR/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
 
+COPY search_config_setup.sh $DIST_DIR/solr/bin/
+RUN chmod +x $DIST_DIR/solr/bin/search_config_setup.sh
+
 WORKDIR $DIST_DIR
 
 VOLUME $DIST_DIR/data
@@ -30,4 +33,4 @@ VOLUME $DIST_DIR/solrhome
 
 EXPOSE 8983
 USER solr
-CMD $DIST_DIR/solr/bin/solr start -f
+CMD $DIST_DIR/solr/bin/search_config_setup.sh "$DIST_DIR/solr/bin/solr start -f"
