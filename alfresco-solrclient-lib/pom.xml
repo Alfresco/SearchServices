@@ -30,7 +30,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.23</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.24</dependency.alfresco-data-model.version>
     </properties>
 
     <dependencies>
