@@ -104,13 +104,16 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     @Override
     protected void doTrack() throws AuthenticationException, IOException, JSONException, EncoderException
     {
-
+        log.debug("### MetadataTracker doTrack ###");
         // MetadataTracker must wait until ModelTracker has run
         ModelTracker modelTracker = this.infoSrv.getAdminHandler().getTrackerRegistry().getModelTracker();
-
         if (modelTracker != null && modelTracker.hasModels())
         {
             trackRepository();
+        }
+        else
+        {
+            invalidateState();
         }
     }
 
@@ -138,6 +141,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
     {
+        log.debug("####### MetadataTracker trackRepository Start #######");
         checkShutdown();
 
         if(!isMaster && isSlave)
@@ -160,6 +164,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         // Check we are tracking the correct repository
         TrackerState state = super.getTrackerState();
+        log.debug("####### MetadataTracker check CYCLE #######");
+        log.debug(String.format("%s ### state: %s", coreName, state.toString()));
         if(state.getTrackerCycles() == 0)
         {
             //We have a new tracker state so do the checks.
@@ -591,7 +597,20 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         Transactions transactions;
         // step forward in time until we find something or hit the time bound
         // max id unbounded
-        Long startTime = fromCommitTime == null ? Long.valueOf(0L) : fromCommitTime;
+        Long startTime = fromCommitTime == null  ? 0L : fromCommitTime;
+        log.debug(String.format("#### %s MetadataTracker getSomeTransactions start time: %d end: %d",
+                  this.coreName, 
+                  startTime,
+                  endTime));
+        if(startTime == 0)
+        {
+            return client.getTransactions(startTime,
+                                          null,
+                                          startTime + actualTimeStep, 
+                                          null, 
+                                          maxResults, 
+                                          shardstate);
+        }
         do
         {
             transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
@@ -656,13 +675,16 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 */
 
                 Long fromCommitTime = getTxFromCommitTime(txnsFound, state.getLastGoodTxCommitTimeInIndex());
+                log.debug("#### Check txnsFound : " + txnsFound.size());
+                log.debug("======= fromCommitTime: " + fromCommitTime);
+
+                log.debug("#### Get txn from commit time: " + fromCommitTime);
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                                                    state.getTimeToStopIndexing());
 
-
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions, state);
 
-                log.info("Scanning transactions ...");
+                log.debug("Scanning transactions ...");
                 if (transactions.getTransactions().size() > 0) {
                     log.info(".... from " + transactions.getTransactions().get(0));
                     log.info(".... to " + transactions.getTransactions().get(transactions.getTransactions().size() - 1));
@@ -761,10 +783,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             {
                 getWriteLock().release();
             }
+        
         }
         while ((transactions.getTransactions().size() > 0) && (upToDate == false));
 
-        log.info("total number of docs with metadata updated: " + totalUpdatedDocs);
+        log.debug("total number of docs with metadata updated: " + totalUpdatedDocs);
     }
 
     private void setLastTxCommitTimeAndTxIdInTrackerState(Transactions transactions, TrackerState state)

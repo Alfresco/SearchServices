@@ -20,15 +20,14 @@ package org.alfresco.solr.tracker;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
@@ -40,12 +39,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.impl.matchers.GroupMatcher;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -114,10 +115,10 @@ public class SolrTrackerSchedulerTest
     
     private void checkCronExpression(String exp) throws SchedulerException
     {
-        for (String jobName : this.trackerScheduler.scheduler.getJobNames(SolrTrackerScheduler.SOLR_JOB_GROUP)) 
+        for (JobKey jobKey : this.trackerScheduler.scheduler.getJobKeys(GroupMatcher.jobGroupEquals(SolrTrackerScheduler.SOLR_JOB_GROUP))) 
         {
-            Trigger[] triggers = this.trackerScheduler.scheduler.getTriggersOfJob(jobName,SolrTrackerScheduler.SOLR_JOB_GROUP);
-            CronTrigger t = (CronTrigger) triggers[0];
+            List<? extends Trigger> triggers = this.trackerScheduler.scheduler.getTriggersOfJob(jobKey);
+            CronTrigger t = (CronTrigger) triggers.get(0);
             String cronExp = t.getCronExpression();
             Assert.assertEquals(exp, cronExp);
         }
@@ -157,7 +158,7 @@ public class SolrTrackerSchedulerTest
         AclTracker aclTracker = new AclTracker();
         this.trackerScheduler.deleteTrackerJobs(CORE_NAME,
                     Arrays.asList(new Tracker[] { contentTracker, metadataTracker, aclTracker }));
-        verify(spiedQuartzScheduler, times(3)).deleteJob(anyString(), eq(SolrTrackerScheduler.SOLR_JOB_GROUP));
+        verify(spiedQuartzScheduler, times(3)).deleteJob(any(JobKey.class));
     }
 
     @Test
@@ -165,7 +166,7 @@ public class SolrTrackerSchedulerTest
     {
         ModelTracker modelTracker = new ModelTracker();
         this.trackerScheduler.deleteTrackerJob(CORE_NAME, modelTracker);
-        verify(spiedQuartzScheduler).deleteJob(anyString(), eq(SolrTrackerScheduler.SOLR_JOB_GROUP));
+        verify(spiedQuartzScheduler).deleteJob(any(JobKey.class));
     }
 
     @Test
@@ -177,11 +178,11 @@ public class SolrTrackerSchedulerTest
 
         //Try deleting the same class but a different instance. It not possible.
         this.trackerScheduler.deleteJobForTrackerInstance(CORE_NAME, cascadeTracker2);
-        verify(spiedQuartzScheduler, never()).deleteJob(anyString(), eq(SolrTrackerScheduler.SOLR_JOB_GROUP));
+        verify(spiedQuartzScheduler, never()).deleteJob(any(JobKey.class));
 
         //No try deleting the exact instance of the tracker class
         this.trackerScheduler.deleteJobForTrackerInstance(CORE_NAME, cascadeTracker);
-        verify(spiedQuartzScheduler, times(1)).deleteJob(anyString(), eq(SolrTrackerScheduler.SOLR_JOB_GROUP));
+        verify(spiedQuartzScheduler, times(1)).deleteJob(any(JobKey.class));
 
     }
 
