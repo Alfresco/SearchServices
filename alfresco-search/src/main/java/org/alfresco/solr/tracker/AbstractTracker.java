@@ -193,13 +193,15 @@ public abstract class AbstractTracker implements Tracker
             }
 
             log.info("... Running " + this.getClass().getSimpleName() + " for core [" + coreName + "].");
-
+            
             if(this.state == null)
             {
                 /*
                 * Set the global state for the tracker here.
                 */
                 this.state = getTrackerState();
+                log.debug("##### Setting tracker global state.");
+                log.debug("State set: " + this.state.toString());
                 this.state.setRunning(true);
             }
             else
