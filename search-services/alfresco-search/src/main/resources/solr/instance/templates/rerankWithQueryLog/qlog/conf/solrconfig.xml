@@ -1861,5 +1861,12 @@
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
   <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
 
+  <!-- Handler for liveliness probe. -->
+  <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
+    <lst name="invariants">
+      <str name="qt">/afts</str><!-- Delegate to the AFTS handler. -->
+      <str name="q">*</str> <!-- Query to perform. -->
+    </lst>
+  </requestHandler>
 
 </config>
