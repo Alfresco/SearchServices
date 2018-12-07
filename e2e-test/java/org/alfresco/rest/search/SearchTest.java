@@ -18,6 +18,15 @@
  */
 package org.alfresco.rest.search;
 
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.testng.AssertJUnit.assertEquals;
+import static java.util.Collections.reverse;
+import static java.util.Arrays.asList;
+
 import junit.framework.Assert;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.utility.model.FileModel;
@@ -31,12 +40,7 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import java.util.stream.Collectors;
 
 /**
  * Search end point Public API test.
@@ -81,6 +85,97 @@ public class SearchTest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         response.getContext().assertThat().field("request").isNotEmpty();
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+            description = "Tests a search request containing a sort clause.")
+    public void searchWithOneSortClause() throws Exception
+    {
+        // Tests the ascending order first
+        List<String> expectedOrder = asList("alfresco.txt", "cars.txt", "pangram.txt");
+
+        SearchRequest searchRequest = createQuery("cm_name:alfresco\\.txt cm_name:cars\\.txt cm_name:pangram\\.txt");
+        searchRequest.addSortClause("FIELD", "name", true);
+
+        RestRequestFilterQueryModel filters = new RestRequestFilterQueryModel();
+        filters.setQuery("SITE:'" + siteModel.getId() + "'");
+        searchRequest.setFilterQueries(filters);
+
+        SearchResponse responseWithAscendingOrder = query(searchRequest);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        assertEquals(
+                expectedOrder,
+                responseWithAscendingOrder.getEntries().stream()
+                    .map(SearchNodeModel::getModel)
+                    .map(SearchNodeModel::getName)
+                    .collect(Collectors.toList()));
+
+        // Reverts the expected order...
+        reverse(expectedOrder);
+
+        // ...and test the descending order
+        searchRequest.getSort().clear();
+        searchRequest.addSortClause("FIELD", "name", false);
+
+        SearchResponse responseWithDescendingOrder = query(searchRequest);
+        assertEquals(
+                expectedOrder,
+                responseWithDescendingOrder.getEntries().stream()
+                        .map(SearchNodeModel::getModel)
+                        .map(SearchNodeModel::getName)
+                        .collect(Collectors.toList()));
+    }
+
+    /**
+     * Tests the query execution with two sort clauses.
+     * The first clause has always the same value for all matches so the test makes sure the request is correctly
+     * processed and the returned order is determined by the second clause.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+            description = "Tests a search request containing a sort clause.")
+    public void searchWithTwoSortClauses() throws Exception
+    {
+        // Tests the ascending order first
+        List<String> expectedOrder = asList("alfresco.txt", "cars.txt", "pangram.txt");
+
+        SearchRequest searchRequest = createQuery("cm_name:alfresco\\.txt cm_name:cars\\.txt cm_name:pangram\\.txt");
+        searchRequest.addSortClause("FIELD", "name", true);
+        searchRequest.addSortClause("FIELD", "createdByUser.id", true);
+
+        RestRequestFilterQueryModel filters = new RestRequestFilterQueryModel();
+        filters.setQuery("SITE:'" + siteModel.getId() + "'");
+        searchRequest.setFilterQueries(filters);
+
+        SearchResponse responseWithAscendingOrder = query(searchRequest);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        assertEquals(
+                expectedOrder,
+                responseWithAscendingOrder.getEntries().stream()
+                        .map(SearchNodeModel::getModel)
+                        .map(SearchNodeModel::getName)
+                        .collect(Collectors.toList()));
+
+        // Reverts the expected order...
+        reverse(expectedOrder);
+
+        // ...and test the descending order
+        searchRequest.getSort().clear();
+        searchRequest.addSortClause("FIELD", "name", false);
+        searchRequest.addSortClause("FIELD", "createdByUser.id", true);
+
+        SearchResponse responseWithDescendingOrder = query(searchRequest);
+        assertEquals(
+                expectedOrder,
+                responseWithDescendingOrder.getEntries().stream()
+                        .map(SearchNodeModel::getModel)
+                        .map(SearchNodeModel::getName)
+                        .collect(Collectors.toList()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n }) @TestRail(section = {
