@@ -74,7 +74,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -143,7 +143,6 @@ import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.TrackerStats;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
-import org.apache.calcite.avatica.proto.Common;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -210,11 +209,14 @@ import org.springframework.util.FileCopyUtils;
 public class SolrInformationServer implements InformationServer
 {
     private final static Log LOGGER = new Log(SolrInformationServer.class);
+    private final static long TWO_MINUTES = 120000;
 
     private static final String NO_SITE = "_REPOSITORY_";
     private static final String SHARED_FILES = "_SHARED_FILES_";
 
     private static final Set<String> REQUEST_ONLY_ID_FIELD = new HashSet<>(Collections.singletonList(FIELD_SOLR4_ID));
+
+    private static final String INDEX_CAP_ID = "TRACKER!STATE!CAP";
 
     private static final Pattern CAPTURE_SITE = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/application/1\\.0\\}company\\_home/\\{http\\://www\\.alfresco\\.org/model/site/1\\.0\\}sites/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0}([^/]*)/.*" );
     private static final Pattern CAPTURE_TAG = Pattern.compile("^/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}taggable/\\{http\\://www\\.alfresco\\.org/model/content/1\\.0\\}([^/]*)/\\{\\}member");
@@ -244,8 +246,6 @@ public class SolrInformationServer implements InformationServer
     public static final String SOLR_PORT = "solr.port";
     public static final String SOLR_BASEURL = "solr.baseurl";
 
-    private static final String INDEX_CAP_ID = "TRACKER!STATE!CAP";
-
     /* 4096 is 2 to the power of (6*2), and we do this because the precision step for the long is 6,
      * and the transactions are long
      */
@@ -274,31 +274,29 @@ public class SolrInformationServer implements InformationServer
     private boolean skipDescendantDocsForSpecificAspects;
     private final Set<QName> typesForSkippingDescendantDocs = new HashSet<>();
     private final Set<QName> aspectsForSkippingDescendantDocs = new HashSet<>();
-    private String skippingDocsQueryString;
     private final SOLRAPIClient repositoryClient;
-    private boolean isSkippingDocsInitialized;
-
-    protected enum FTSStatus {New, Dirty, Clean}
-
     private final ConcurrentLRUCache<String, Boolean> isIdIndexCache = new ConcurrentLRUCache<>(60*60*100, 60*60*50);
     private final ReentrantReadWriteLock activeTrackerThreadsLock = new ReentrantReadWriteLock();
     private final HashSet<Long> activeTrackerThreads = new HashSet<>();
     private final ReentrantReadWriteLock commitAndRollbackLock = new ReentrantReadWriteLock();
-
-    private final int port;
-    private final String baseUrl;
-
     private final String hostName;
     private final Properties props;
-
-    private long cleanContentTxnFloor = -1; // All transactions below this floor have had the content completed.
-    private long cleanCascadeTxnFloor = -1;
-
     private final LRU txnIdCache = new LRU(250000);
     private final LRU aclChangeSetCache = new LRU(250000);
     private final Map<Long, Long> cleanContentCache = Collections.synchronizedMap(new LRU(250000));
     private final LRU cleanCascadeCache = new LRU(250000);
     private final Set<Object> locks = new HashSet<>();
+
+    private final int port;
+    private final String baseUrl;
+
+    private String skippingDocsQueryString;
+    private boolean isSkippingDocsInitialized;
+
+    protected enum FTSStatus {New, Dirty, Clean}
+
+    private long cleanContentTxnFloor = -1; // All transactions below this floor have had the content completed.
+    private long cleanCascadeTxnFloor = -1;
 
     @FunctionalInterface
     private interface DefinitionExistChecker
@@ -354,7 +352,6 @@ public class SolrInformationServer implements InformationServer
         port = portNumber(props);
         baseUrl = baseUrl(props);
     }
-
 
     @Override
     public AlfrescoCoreAdminHandler getAdminHandler()
@@ -667,7 +664,6 @@ public class SolrInformationServer implements InformationServer
             refCounted = this.core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
 
-
             /*
             *  Below is the code for purging the cleanContentCache.
             *  The cleanContentCache is an in-memory LRU cache of the transactions that have already
@@ -687,7 +683,6 @@ public class SolrInformationServer implements InformationServer
             *  cleanContentCache that is more then 20 minutes old.
             *
             */
-
             long purgeTime = System.currentTimeMillis();
             if(purgeTime - cleanContentLastPurged > 120000)
             {
@@ -696,7 +691,8 @@ public class SolrInformationServer implements InformationServer
                 {
                     Entry<Long, Long> entry = entries.next();
                     long txnTime = entry.getValue();
-                    if (purgeTime - txnTime > 1200000) {
+                    if (purgeTime - txnTime > 1200000)
+                    {
                         //Purge the clean content cache of records more then 20 minutes old.
                         entries.remove();
                     }
@@ -707,8 +703,6 @@ public class SolrInformationServer implements InformationServer
             long txnFloor = -1;
 
             // This query gets lowest txnID that has dirty content.
-            //System.out.println("############### finding the transaction floor ################");
-
             TermQuery termQuery1 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.Dirty.toString()));
             TermQuery termQuery2 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.New.toString()));
             BooleanClause clause1 = new BooleanClause(termQuery1, BooleanClause.Occur.SHOULD);
@@ -769,10 +763,8 @@ public class SolrInformationServer implements InformationServer
             FieldType fieldType = searcher.getSchema().getField(FIELD_INTXID).getType();
             builder = new BooleanQuery.Builder();
 
-            Iterator<LongCursor> it = txnSet.iterator();
-            while (it.hasNext())
+            for (LongCursor cursor : txnSet)
             {
-                LongCursor cursor = it.next();
                 long txnID = cursor.value;
                 //Build up the query for the filter of transactions we need to pull the dirty content for.
                 TermQuery txnIDQuery = new TermQuery(new Term(FIELD_INTXID, fieldType.readableToIndexed(Long.toString(txnID))));
@@ -804,13 +796,11 @@ public class SolrInformationServer implements InformationServer
             IntArrayList docList = docListCollector.getDocs();
             int size = docList.size();
 
-            Set<String> fields = new HashSet<String>();
-
-            fields.add(FIELD_SOLR4_ID);
-            List<Long> processedTxns = new ArrayList<Long>();
-            for (int i = 0; i < size; ++i) {
+            List<Long> processedTxns = new ArrayList<>();
+            for (int i = 0; i < size; ++i)
+            {
                 int doc = docList.get(i);
-                Document document = searcher.doc(doc, fields);
+                Document document = searcher.doc(doc, REQUEST_ONLY_ID_FIELD);
                 index = ReaderUtil.subIndex(doc, leaves);
                 context = leaves.get(index);
                 longs = context.reader().getNumericDocValues(FIELD_INTXID);
@@ -839,10 +829,7 @@ public class SolrInformationServer implements InformationServer
         }
         finally
         {
-            if (refCounted != null)
-            {
-                refCounted.decref();
-            }
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
     }
 
@@ -1164,10 +1151,7 @@ public class SolrInformationServer implements InformationServer
         }
         finally
         {
-            if (refCounted != null)
-            {
-                refCounted.decref();
-            }
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
 
         return coreSummary;
@@ -1195,7 +1179,7 @@ public class SolrInformationServer implements InformationServer
 
     private List<SolrIndexSearcher> getRegisteredSearchers()
     {
-        List<SolrIndexSearcher> searchers = new ArrayList<SolrIndexSearcher>();
+        List<SolrIndexSearcher> searchers = new ArrayList<>();
         for (Entry<String, SolrInfoMBean> entry : core.getInfoRegistry().entrySet())
         {
             if (entry.getValue() != null)
@@ -1258,12 +1242,9 @@ public class SolrInformationServer implements InformationServer
             IntArrayList docList = docListCollector.getDocs();
             int size = docList.size();
 
-            Set<String> fields = new HashSet<String>();
-
-            fields.add(FIELD_SOLR4_ID);
             for (int i = 0; i < size; ++i) {
                 int doc = docList.get(i);
-                Document document = searcher.doc(doc, fields);
+                Document document = searcher.doc(doc, REQUEST_ONLY_ID_FIELD);
                 IndexableField id = document.getField(FIELD_SOLR4_ID);
                 String idString = id.stringValue();
 
@@ -1272,16 +1253,12 @@ public class SolrInformationServer implements InformationServer
                     idString = idString.substring(PREFIX_ERROR.length());
                 }
 
-                //System.out.println("############## Error Doc:"+idString);
                 errorDocIds.add(Long.valueOf(idString));
             }
         }
         finally
         {
-            if (refCounted != null)
-            {
-                refCounted.decref();
-            }
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
         return errorDocIds;
     }
@@ -1329,7 +1306,7 @@ public class SolrInformationServer implements InformationServer
     @Override
     public <T> ISimpleOrderedMap<T> getSimpleOrderedMapInstance()
     {
-        return new SolrSimpleOrderedMap<T>();
+        return new SolrSimpleOrderedMap<>();
     }
 
     @Override
@@ -1406,7 +1383,6 @@ public class SolrInformationServer implements InformationServer
             state.setLastGoodChangeSetCommitTimeInIndex(timeBeforeWhichThereCanBeNoChangeSetHolesInIndex > 0 ? timeBeforeWhichThereCanBeNoChangeSetHolesInIndex : 0);
 
             return state;
-
         }
     }
 
@@ -1512,7 +1488,6 @@ public class SolrInformationServer implements InformationServer
      * @param tenant      The tenant that will be added to the authority.
      * @return The new authority information
      */
-    // TODO: inverti IF
     private String addTenantToAuthority(String authority, String tenant)
     {
         switch (AuthorityType.getAuthorityType(authority))
@@ -1520,15 +1495,9 @@ public class SolrInformationServer implements InformationServer
             case GROUP:
             case EVERYONE:
             case GUEST:
-                if (tenant.length() == 0)
-                {
-                    // Default tenant matches 4.0
+                if (tenant.length() != 0) {
+                    return authority + "@" + tenant;
                 }
-                else
-                {
-                    authority = authority + "@" + tenant;
-                }
-                break;
             default:
                 break;
         }
@@ -1560,8 +1529,11 @@ public class SolrInformationServer implements InformationServer
             cmd.solrDoc = input;
             processor.processAdd(cmd);
             putAclTransactionState(processor, request, changeSet);
-        } finally {
-            if (processor != null) {
+        }
+        finally
+        {
+            if (processor != null)
+            {
                 processor.finish();
             }
         }
@@ -1573,7 +1545,7 @@ public class SolrInformationServer implements InformationServer
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
             SolrDocument aclState = getState(request, "TRACKER!STATE!ACLTX");
-            AclChangeSet maxAclChangeSet = null;
+            AclChangeSet maxAclChangeSet;
             if (aclState != null)
             {
                 long id = this.getFieldValueLong(aclState, FIELD_S_ACLTXID);
@@ -1611,7 +1583,7 @@ public class SolrInformationServer implements InformationServer
         this.cleanCascadeCache.remove(txnId);
     }
     
-    public void putAclTransactionState(UpdateRequestProcessor processor, SolrQueryRequest request, AclChangeSet changeSet) throws IOException
+    private void putAclTransactionState(UpdateRequestProcessor processor, SolrQueryRequest request, AclChangeSet changeSet) throws IOException
     {
         String version;
         SolrDocument aclState = getState(request, "TRACKER!STATE!ACLTX");
@@ -1679,7 +1651,7 @@ public class SolrInformationServer implements InformationServer
 
     public void maintainCap(long dbid) throws IOException
     {
-        String deleteByQuery = FIELD_DBID+":{"+dbid+" TO *}";
+        String deleteByQuery = FIELD_DBID + ":{" + dbid + " TO *}";
         deleteByQuery(deleteByQuery);
     }
 
@@ -1702,22 +1674,18 @@ public class SolrInformationServer implements InformationServer
     {
         try (SolrQueryRequest request = this.getLocalSolrQueryRequest())
         {
-            ModifiableSolrParams params = new ModifiableSolrParams(request.getParams());
-            params.set(CommonParams.Q, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE);
-            params.set(CommonParams.ROWS, 1);
-            params.set(CommonParams.SORT, FIELD_DBID + " " + sortDir);
-            params.set(CommonParams.FL, FIELD_DBID);
+            ModifiableSolrParams params =
+                    new ModifiableSolrParams(request.getParams())
+                            .set(CommonParams.Q, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE)
+                            .set(CommonParams.ROWS, 1)
+                            .set(CommonParams.SORT, FIELD_DBID + " " + sortDir)
+                            .set(CommonParams.FL, FIELD_DBID);
+
             SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
-            Iterator<SolrDocument> it = docs.iterator();
-            if (it.hasNext())
-            {
-                SolrDocument doc = it.next();
-                return getFieldValueLong(doc, FIELD_DBID);
-            }
-            else
-            {
-                return 0;
-            }
+            return docs.stream()
+                    .findFirst()
+                    .map(doc -> getFieldValueLong(doc, FIELD_DBID))
+                    .orElse(0L);
         }
     }
 
@@ -1725,24 +1693,19 @@ public class SolrInformationServer implements InformationServer
     {
         try (SolrQueryRequest request = this.getLocalSolrQueryRequest())
         {
-            ModifiableSolrParams params = new ModifiableSolrParams(request.getParams());
-            params.set(CommonParams.Q, FIELD_SOLR4_ID + ":" + INDEX_CAP_ID);
-            params.set(CommonParams.ROWS, 1);
-            params.set(CommonParams.FL, FIELD_DBID);
+            ModifiableSolrParams params =
+                    new ModifiableSolrParams(request.getParams())
+                            .set(CommonParams.Q, FIELD_SOLR4_ID + ":" + INDEX_CAP_ID)
+                            .set(CommonParams.ROWS, 1)
+                            .set(CommonParams.FL, FIELD_DBID);
 
             SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
 
-            // TODO: Prende solo il primo
-            Iterator<SolrDocument> it = docs.iterator();
-            if (it.hasNext())
-            {
-                SolrDocument doc = it.next();
-                long dbid = getFieldValueLong(doc, FIELD_DBID);
-                return Math.abs(dbid);
-            } else
-                {
-                return -1;
-            }
+            return docs.stream()
+                    .findFirst()
+                    .map(doc -> getFieldValueLong(doc, FIELD_DBID))
+                    .map(Math::abs)
+                    .orElse(-1L);
         }
     }
 
@@ -1780,7 +1743,7 @@ public class SolrInformationServer implements InformationServer
                     nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
                 }
                 
-                NodeMetaData nodeMetaData = null;
+                NodeMetaData nodeMetaData;
                 if (!nodeMetaDatas.isEmpty())
                 {
                     nodeMetaData = nodeMetaDatas.get(0);
@@ -1791,7 +1754,7 @@ public class SolrInformationServer implements InformationServer
                         	 try
                              {
                                  //Lock the node to ensure that no other trackers work with this node until this code completes.
-                                 if(!spinLock(nodeMetaData.getId(), 120000))
+                                 if(!spinLock(nodeMetaData.getId()))
                                  {
                                      //We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
                                      throw new Exception("Unable to acquire lock on nodeId:"+nodeMetaData.getId());
@@ -1822,7 +1785,7 @@ public class SolrInformationServer implements InformationServer
 
             	try
             	{
-            		if(!spinLock(nodeId, 120000))
+            		if(!spinLock(nodeId))
             		{
             			//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
             			throw new Exception("Unable to acquire lock on nodeId:"+nodeId);
@@ -1844,14 +1807,16 @@ public class SolrInformationServer implements InformationServer
             				this.cleanContentCache.remove(nodeMetaData.getTxnId());
             			}
 
-
-            			if ((node.getStatus() == SolrApiNodeStatus.UPDATED) || (node.getStatus() == SolrApiNodeStatus.UNKNOWN)) {
+            			if ((node.getStatus() == SolrApiNodeStatus.UPDATED) || (node.getStatus() == SolrApiNodeStatus.UNKNOWN))
+            			{
             				// check index control
             				Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
             				StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
-            				if (pValue != null) {
-            					Boolean isIndexed = Boolean.valueOf(pValue.getValue());
-            					if (!isIndexed.booleanValue()) {
+            				if (pValue != null)
+            				{
+            					boolean isIndexed = Boolean.valueOf(pValue.getValue());
+            					if (!isIndexed)
+            					{
                                     LOGGER.debug("Clearing unindexed");
 
                                     deleteNode(processor, request, node);
@@ -1927,7 +1892,6 @@ public class SolrInformationServer implements InformationServer
             if(request != null) {request.close();}
         }
     }
-    
 
     private void updateDescendantDocs(NodeMetaData parentNodeMetaData, boolean overwrite,
                 SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack) 
@@ -2035,7 +1999,7 @@ public class SolrInformationServer implements InformationServer
 
         		try
         		{
-        			if(!spinLock(childId, 120000))
+        			if(!spinLock(childId))
         			{
         				//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
         				throw new IOException("Unable to acquire lock on nodeId:"+childId);
@@ -2093,13 +2057,10 @@ public class SolrInformationServer implements InformationServer
             searcher.search(booleanQuery, collector);
             docList = collector.getDocs();
             int size = docList.size();
-            Set set = new HashSet();
-            set.add(FIELD_SOLR4_ID);
-
             for(int i=0; i<size; i++)
             {
                 int docId = docList.get(i);
-                Document document = searcher.doc(docId, set);
+                Document document = searcher.doc(docId, REQUEST_ONLY_ID_FIELD);
                 IndexableField indexableField = document.getField(FIELD_SOLR4_ID);
                 String id = indexableField.stringValue();
                 TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
@@ -2108,10 +2069,7 @@ public class SolrInformationServer implements InformationServer
         }
         finally
         {
-            if (refCounted != null)
-            {
-                refCounted.decref();
-            }
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
 
         for (Long childId : childIds)
@@ -2146,7 +2104,7 @@ public class SolrInformationServer implements InformationServer
                     long nodeId = nodeMetaData.getId();
                     try
                     {
-                        if(!spinLock(nodeId, 120000))
+                        if(!spinLock(nodeId))
                         {
                             throw new IOException("Unable to acquire spinlock on: " + nodeId);
                         }
@@ -2196,14 +2154,13 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-
     public List<NodeMetaData> getCascadeNodes(List<Long> txnIds) throws AuthenticationException, IOException, JSONException
     {
         List<FieldInstance> list = AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(ContentModel.PROP_CASCADE_TX).getFields();
         FieldInstance fieldInstance = list.get(0);
 
         RefCounted<SolrIndexSearcher> refCounted = null;
-        IntArrayList docList = null;
+        IntArrayList docList;
         Set<Long> childIds = new HashSet<>();
 
         try
@@ -2214,7 +2171,7 @@ public class SolrInformationServer implements InformationServer
             SchemaField schemaField = searcher.getSchema().getField(field);
             FieldType fieldType = schemaField.getType();
             BooleanQuery.Builder builder = new BooleanQuery.Builder();
-            BooleanQuery booleanQuery = null;
+            BooleanQuery booleanQuery;
 
             for(Long l : txnIds)
             {
@@ -2231,13 +2188,10 @@ public class SolrInformationServer implements InformationServer
             searcher.search(booleanQuery, collector);
             docList = collector.getDocs();
             int size = docList.size();
-            Set set = new HashSet();
-            set.add(FIELD_SOLR4_ID);
-
             for(int i=0; i<size; i++)
             {
                 int docId = docList.get(i);
-                Document document = searcher.doc(docId, set);
+                Document document = searcher.doc(docId, REQUEST_ONLY_ID_FIELD);
                 IndexableField indexableField = document.getField(FIELD_SOLR4_ID);
                 String id = indexableField.stringValue();
                 TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
@@ -2246,10 +2200,7 @@ public class SolrInformationServer implements InformationServer
         }
         finally
         {
-            if (refCounted != null)
-            {
-                refCounted.decref();
-            }
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
 
         List<NodeMetaData> allNodeMetaDatas = new ArrayList<>();
@@ -2306,15 +2257,13 @@ public class SolrInformationServer implements InformationServer
     @Override
     public void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, JSONException
     {
-        SolrQueryRequest request = null;
         UpdateRequestProcessor processor = null;
-        try
+        try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            request = getLocalSolrQueryRequest();
             processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
 
             Map<Long, Node> nodeIdsToNodes = new HashMap<>();
-            EnumMap<SolrApiNodeStatus, List<Long>> nodeStatusToNodeIds = new EnumMap<SolrApiNodeStatus, List<Long>>(SolrApiNodeStatus.class);
+            EnumMap<SolrApiNodeStatus, List<Long>> nodeStatusToNodeIds = new EnumMap<>(SolrApiNodeStatus.class);
             categorizeNodes(nodes, nodeIdsToNodes, nodeStatusToNodeIds);
             List<Long> deletedNodeIds = mapNullToEmptyList(nodeStatusToNodeIds.get(SolrApiNodeStatus.DELETED));
             List<Long> shardDeletedNodeIds = mapNullToEmptyList(nodeStatusToNodeIds.get(SolrApiNodeStatus.NON_SHARD_DELETED));
@@ -2351,22 +2300,19 @@ public class SolrInformationServer implements InformationServer
                         // it will be indexed later
                         continue;
                     }
-                    if (nodeMetaData != null)
+
+                    try {
+                        //Lock the node to ensure that no other trackers work with this node until this code completes.
+                        if (!spinLock(nodeMetaData.getId()))
+                        {
+                            //We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
+                            throw new Exception("Unable to acquire lock on nodeId:" + nodeMetaData.getId());
+                        }
+                        solrContentStore.removeDocFromContentStore(nodeMetaData);
+                    }
+                    finally
                     {
-                    	try
-                    	{
-                    		//Lock the node to ensure that no other trackers work with this node until this code completes.
-                    		if(!spinLock(nodeMetaData.getId(), 120000))
-                    		{
-                    			//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
-                    			throw new Exception("Unable to acquire lock on nodeId:"+nodeMetaData.getId());
-                    		}
-                    		solrContentStore.removeDocFromContentStore(nodeMetaData);
-                    	}
-                    	finally
-                    	{
-                    		unlock(nodeMetaData.getId());
-                    	}
+                        unlock(nodeMetaData.getId());
                     }
                 }
 
@@ -2388,21 +2334,21 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setNodeIds(nodeIds);
 
                 // Fetches bulk metadata
-                List<NodeMetaData> nodeMetaDatas =  repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+                List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
 
-                NEXT_NODE: for (NodeMetaData nodeMetaData : nodeMetaDatas)
+                NEXT_NODE:
+                for (NodeMetaData nodeMetaData : nodeMetaDatas)
                 {
                     long start = System.nanoTime();
 
                     Node node = nodeIdsToNodes.get(nodeMetaData.getId());
                     long nodeId = node.getId();
-                    try
-                    {
+                    try {
                         //Lock the node to ensure that no other trackers work with this node until this code completes.
-                        if(!spinLock(nodeId, 120000))
+                        if (!spinLock(nodeId))
                         {
                             //We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
-                            throw new Exception("Unable to acquire lock on nodeId:"+nodeId);
+                            throw new Exception("Unable to acquire lock on nodeId:" + nodeId);
                         }
 
                         if (nodeMetaData.getTxnId() > node.getTxnId())
@@ -2412,9 +2358,10 @@ public class SolrInformationServer implements InformationServer
                             continue;
                         }
 
-                        if(nodeIdsToNodes.get(nodeMetaData.getId()).getStatus() == SolrApiNodeStatus.NON_SHARD_UPDATED)
+                        if (nodeIdsToNodes.get(nodeMetaData.getId()).getStatus() == SolrApiNodeStatus.NON_SHARD_UPDATED)
                         {
-                            if(nodeMetaData.getProperties().get(ContentModel.PROP_CASCADE_TX) != null) {
+                            if (nodeMetaData.getProperties().get(ContentModel.PROP_CASCADE_TX) != null)
+                            {
                                 indexNonShardCascade(nodeMetaData);
                             }
 
@@ -2429,15 +2376,16 @@ public class SolrInformationServer implements InformationServer
                         StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
                         if (pValue != null)
                         {
-                            Boolean isIndexed = Boolean.valueOf(pValue.getValue());
-                            if (!isIndexed.booleanValue())
+                            boolean isIndexed = Boolean.valueOf(pValue.getValue());
+                            if (!isIndexed)
                             {
                                 LOGGER.debug("Clearing unindexed");
                                 deleteNode(processor, request, node);
 
                                 SolrInputDocument doc = createNewDoc(nodeMetaData, DOC_TYPE_UNINDEXED_NODE);
                                 addDocCmd.solrDoc = doc;
-                                if (recordUnindexedNodes) {
+                                if (recordUnindexedNodes)
+                                {
                                     solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
                                     processor.processAdd(addDocCmd);
                                 }
@@ -2465,11 +2413,10 @@ public class SolrInformationServer implements InformationServer
                     }
                 }
             }
-
         }
         catch (Exception e)
         {
-            LOGGER .error("SolrInformationServer problem.", e);
+            LOGGER.error("SolrInformationServer problem.", e);
             // Bulk version failed, so do one at a time.
             for (Node node : nodes)
             {
@@ -2478,13 +2425,14 @@ public class SolrInformationServer implements InformationServer
         }
         finally
         {
-            if(processor != null) {processor.finish();}
-            if(request != null) {request.close();}
+            if (processor != null)
+            {
+                processor.finish();
+            }
         }
-
     }
 
-    public void cascadeNodes(List<NodeMetaData> nodeMetaDatas, boolean overwrite) throws IOException, AuthenticationException, JSONException
+    public void cascadeNodes(List<NodeMetaData> nodeMetaDatas, boolean overwrite) throws IOException, JSONException
     {
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
@@ -2499,12 +2447,14 @@ public class SolrInformationServer implements InformationServer
                 }
             }
         } catch (Exception e) {
+            LOGGER.error("Cascade Nodes Bulk version failed", e);
             // Bulk version failed, so do one at a time.
-
+            /*
             for (NodeMetaData node : nodeMetaDatas)
             {
-                //TODO Add a cascadeNode method
+                //Add a cascadeNode method
             }
+            */
         }
         finally
         {
@@ -2514,7 +2464,6 @@ public class SolrInformationServer implements InformationServer
             }
         }
     }
-
 
     private void addToNewDocAndCache(NodeMetaData nodeMetaData, SolrInputDocument newDoc) throws IOException
     {
@@ -2530,7 +2479,6 @@ public class SolrInformationServer implements InformationServer
         addPropertiesToDoc(properties, isContentIndexedForNode, newDoc, cachedDoc, transformContent);
         // Now that the new doc is fully updated and ready to go to the Solr index, cache it.
         solrContentStore.storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), newDoc);
-        
     }
 
     private void addFieldsToDoc(NodeMetaData nodeMetaData, SolrInputDocument doc)
@@ -2593,7 +2541,6 @@ public class SolrInformationServer implements InformationServer
         {
             doc.addField(FIELD_OWNER, nodeMetaData.getOwner());
         }
-        
 
         StringBuilder qNameBuffer = new StringBuilder(64);
         StringBuilder assocTypeQNameBuffer = new StringBuilder(64);
@@ -2627,13 +2574,8 @@ public class SolrInformationServer implements InformationServer
             doc.addField(FIELD_ASSOCTYPEQNAME, assocTypeQNameBuffer.toString());
             doc.addField(FIELD_QNAME, qNameBuffer.toString());
         }
-      
     }
 
-    /**
-     * @param nodeMetaData
-     * @param doc
-     */
     private void updateAncestorRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         doc.removeField(FIELD_ANCESTOR);
@@ -2646,10 +2588,6 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    /**
-     * @param nodeMetaData
-     * @param doc
-     */
     private void updateNamePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         doc.removeField(FIELD_NPATH);
@@ -2684,10 +2622,6 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    /**
-     * @param nodeMetaData
-     * @param doc
-     */
     private void updatePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         doc.removeField(FIELD_PATH);
@@ -2695,7 +2629,6 @@ public class SolrInformationServer implements InformationServer
         doc.removeField(FIELD_TAG);
         doc.removeField(FIELD_TAG_SUGGEST);
         doc.removeField(FIELD_APATH);
-
 
         boolean repoOnly = true;
         for (Pair<String, QName> path : nodeMetaData.getPaths())
@@ -2723,7 +2656,6 @@ public class SolrInformationServer implements InformationServer
                 doc.addField(FIELD_TAG, tag);
                 doc.addField(FIELD_TAG_SUGGEST, tag);
             }
-
         }
 
         if(repoOnly)
@@ -2774,8 +2706,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     static void addPropertiesToDoc(Map<QName, PropertyValue> properties, boolean isContentIndexedForNode, 
-                SolrInputDocument newDoc, SolrInputDocument cachedDoc, boolean transformContentFlag) 
-                throws IOException
+                SolrInputDocument newDoc, SolrInputDocument cachedDoc, boolean transformContentFlag)
     {
         for (QName propertyQName : properties.keySet())
         {
@@ -2890,8 +2821,8 @@ public class SolrInformationServer implements InformationServer
                         .get(ContentModel.PROP_IS_CONTENT_INDEXED);
             if (pValue != null)
             {
-                Boolean isIndexed = Boolean.valueOf(pValue.getValue());
-                if ((isIndexed != null) && (isIndexed.booleanValue() == false))
+                boolean isIndexed = Boolean.valueOf(pValue.getValue());
+                if (!isIndexed)
                 {
                     isContentIndexed = false;
                 }
@@ -2899,11 +2830,7 @@ public class SolrInformationServer implements InformationServer
         }
         return isContentIndexed;
     }
-    
-    /**
-     * @param list List<Long>
-     * @return List<Long>
-     */
+
     private List<Long> mapNullToEmptyList(List<Long> list)
     {
         return list == null ? Collections.emptyList() : list;
@@ -2915,13 +2842,8 @@ public class SolrInformationServer implements InformationServer
         for (Node node : nodes)
         {
             nodeIdsToNodes.put(node.getId(), node);
-            
-            List<Long> nodeIds = nodeStatusToNodeIds.get(node.getStatus());
-            if (nodeIds == null)
-            {
-                nodeIds = new LinkedList<>();
-                nodeStatusToNodeIds.put(node.getStatus(), nodeIds);
-            }
+
+            List<Long> nodeIds = nodeStatusToNodeIds.computeIfAbsent(node.getStatus(), k -> new LinkedList<>());
             nodeIds.add(node.getId());
         }
     }
@@ -3008,7 +2930,6 @@ public class SolrInformationServer implements InformationServer
     
     private static void addContentPropertyToDocUsingCache(SolrInputDocument newDoc, SolrInputDocument cachedDoc, 
                 QName propertyQName, ContentPropertyValue contentPropertyValue, boolean transformContentFlag)
-                    throws IOException
     {
         addContentPropertyMetadata(newDoc, propertyQName, contentPropertyValue, AlfrescoSolrDataModel.ContentFieldType.DOCID);
         addContentPropertyMetadata(newDoc, propertyQName, contentPropertyValue, AlfrescoSolrDataModel.ContentFieldType.SIZE);
@@ -3016,7 +2937,7 @@ public class SolrInformationServer implements InformationServer
         addContentPropertyMetadata(newDoc, propertyQName, contentPropertyValue, AlfrescoSolrDataModel.ContentFieldType.MIMETYPE);
         addContentPropertyMetadata(newDoc, propertyQName, contentPropertyValue, AlfrescoSolrDataModel.ContentFieldType.ENCODING);
         
-        if (false == transformContentFlag) 
+        if (!transformContentFlag)
         {
             // Marks it as Clean so we do not get the actual content
             markFTSStatus(newDoc,  FTSStatus.Clean);
@@ -3087,7 +3008,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try
         {
-            if(!spinLock(dbId, 120000))
+            if(!spinLock(dbId))
             {
                 throw new Exception("Unable to acquire spinlock for node:"+dbId);
             }
@@ -3207,7 +3128,7 @@ public class SolrInformationServer implements InformationServer
             {
                 // Get and copy content
                 byte[] bytes = FileCopyUtils.copyToByteArray(new BoundedInputStream(ris, contentStreamLimit));
-                textContent = new String(bytes, "UTF8");
+                textContent = new String(bytes, StandardCharsets.UTF_8);
             }
         }
         finally
@@ -3376,7 +3297,6 @@ public class SolrInformationServer implements InformationServer
         return false;
     }
 
-
     public void updateTransaction(Transaction txn) throws IOException
     {
         canUpdate();
@@ -3431,7 +3351,6 @@ public class SolrInformationServer implements InformationServer
                 For backwards compat reasons adding 3 new stored fields. 2 of these fields are duplicate data but there are needed so that
                 we can properly update the transaction record for ACE-4284.
             */
-
             //This fields will be used to update the transaction record
             //They will only be on the record until the cascading updates for this transaction are processed
             input.addField(FIELD_S_TXID, info.getId());
@@ -3503,14 +3422,7 @@ public class SolrInformationServer implements InformationServer
             return maxTransaction;
         }
     }
-    
-    /**
-     * Puts the latest transaction state onto the index
-     * @param processor UpdateRequestProcessor
-     * @param request SolrQueryRequest
-     * @param tx Transaction
-     * @throws IOException
-     */
+
     private void putTransactionState(UpdateRequestProcessor processor, SolrQueryRequest request, Transaction tx) throws IOException
     {
         String version;
@@ -3552,22 +3464,20 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public boolean isInIndex(String id) throws IOException
+    public boolean isInIndex(String id)
     {
         Boolean found = isIdIndexCache.get(id);
         if(found != null)
         {
             return found;
         }
-        else
+
+        boolean isInIndex = isInIndexImpl(id);
+        if(isInIndex)
         {
-            boolean isInIndex = isInIndexImpl(id);
-            if(isInIndex)
-            {
-                isIdIndexCache.put(id, Boolean.TRUE);
-            }
-            return isInIndex;
+            isIdIndexCache.put(id, Boolean.TRUE);
         }
+        return isInIndex;
     }
 
     private boolean isInIndexImpl(String ids)
@@ -3577,8 +3487,9 @@ public class SolrInformationServer implements InformationServer
             SolrRequestHandler handler = core.getRequestHandler(REQUEST_HANDLER_GET);
             SolrQueryResponse rsp = new SolrQueryResponse();
 
-            ModifiableSolrParams newParams = new ModifiableSolrParams(request.getParams());
-            newParams.set("ids", ids);
+            ModifiableSolrParams newParams =
+                    new ModifiableSolrParams(request.getParams())
+                            .set("ids", ids);
             request.setParams(newParams);
 
             handler.handleRequest(request, rsp);
@@ -3599,7 +3510,7 @@ public class SolrInformationServer implements InformationServer
             refCounted = this.core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
 
-            Collector collector = null;
+            Collector collector;
 
             TopFieldCollector topFieldCollector = TopFieldCollector.create(new Sort(new SortField(FIELD_TXID, SortField.Type.LONG)),
                                                                             num,
@@ -3629,10 +3540,8 @@ public class SolrInformationServer implements InformationServer
             {
                 Transaction transaction = new Transaction();
                 Document doc = searcher.doc(scoreDoc.doc, fields);
-                List<IndexableField> ifields = doc.getFields();
 
                 IndexableField txID = doc.getField(FIELD_S_TXID);
-                //System.out.println("############### Cascade Document:"+doc);
                 long txnID = txID.numericValue().longValue();
                 cleanCascadeCache.put(txnID, null);
                 transaction.setId(txnID);
@@ -3647,10 +3556,7 @@ public class SolrInformationServer implements InformationServer
         }
         finally
         {
-            if (refCounted != null)
-            {
-                refCounted.decref();
-            }
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
     }
 
@@ -3660,36 +3566,24 @@ public class SolrInformationServer implements InformationServer
         {
             return true;
         }
-        else
+
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        try
         {
-            RefCounted<SolrIndexSearcher> refCounted = null;
-            try
+            if(populateCache)
             {
-                if(populateCache)
-                {
-                    txnIdCache.put(txnId, null); // Safe to add this here because we reset this on rollback.
-                }
-                refCounted = core.getSearcher();
-                SolrIndexSearcher searcher = refCounted.get();
-                FieldType fieldType = searcher.getSchema().getField(FIELD_TXID).getType();
-                TermQuery q = new TermQuery(new Term(FIELD_TXID, fieldType.readableToIndexed(Long.toString(txnId))));
-                TopDocs topDocs = searcher.search(q, 1);
-                if (topDocs.totalHits > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                txnIdCache.put(txnId, null); // Safe to add this here because we reset this on rollback.
             }
-            finally
-            {
-                if (refCounted != null)
-                {
-                    refCounted.decref();
-                }
-            }
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+            FieldType fieldType = searcher.getSchema().getField(FIELD_TXID).getType();
+            TermQuery q = new TermQuery(new Term(FIELD_TXID, fieldType.readableToIndexed(Long.toString(txnId))));
+            TopDocs topDocs = searcher.search(q, 1);
+            return topDocs.totalHits > 0;
+        }
+        finally
+        {
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
     }
 
@@ -3699,36 +3593,24 @@ public class SolrInformationServer implements InformationServer
         {
             return true;
         }
-        else
+
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        try
         {
-            RefCounted<SolrIndexSearcher> refCounted = null;
-            try
+            if(populateCache)
             {
-                if(populateCache)
-                {
-                    aclChangeSetCache.put(changeSetId, null); // Safe to add this here because we reset this on rollback.
-                }
-                refCounted = core.getSearcher();
-                SolrIndexSearcher searcher = refCounted.get();
-                FieldType fieldType = searcher.getSchema().getField(FIELD_ACLTXID).getType();
-                TermQuery q = new TermQuery(new Term(FIELD_ACLTXID, fieldType.readableToIndexed(Long.toString(changeSetId))));
-                TopDocs topDocs = searcher.search(q, 1);
-                if (topDocs.totalHits > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                aclChangeSetCache.put(changeSetId, null); // Safe to add this here because we reset this on rollback.
             }
-            finally
-            {
-                if (refCounted != null)
-                {
-                    refCounted.decref();
-                }
-            }
+            refCounted = core.getSearcher();
+            SolrIndexSearcher searcher = refCounted.get();
+            FieldType fieldType = searcher.getSchema().getField(FIELD_ACLTXID).getType();
+            TermQuery q = new TermQuery(new Term(FIELD_ACLTXID, fieldType.readableToIndexed(Long.toString(changeSetId))));
+            TopDocs topDocs = searcher.search(q, 1);
+            return topDocs.totalHits > 0;
+        }
+        finally
+        {
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
     }
 
@@ -3777,7 +3659,6 @@ public class SolrInformationServer implements InformationServer
             {
                 activeTrackerThreadsLock.writeLock().unlock();
             }
-           
         }
         finally
         {
@@ -3791,11 +3672,7 @@ public class SolrInformationServer implements InformationServer
         activeTrackerThreadsLock.readLock().lock();
         try
         {
-            if(activeTrackerThreads.contains(Thread.currentThread().getId()))
-            {
-                return;
-            }
-            else
+            if (!activeTrackerThreads.contains(Thread.currentThread().getId()))
             {
                 throw new TrackerStateException("The trackers work was rolled back by another tracker error");
             }
@@ -3804,12 +3681,8 @@ public class SolrInformationServer implements InformationServer
         {
             activeTrackerThreadsLock.readLock().unlock();
         }
-        
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.solr.InformationServer#registerTrackerThread()
-     */
     @Override
     public void registerTrackerThread()
     {
@@ -3879,10 +3752,7 @@ public class SolrInformationServer implements InformationServer
         }
         finally
         {
-            if (refCounted != null)
-            {
-                refCounted.decref();
-            }
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
     }
 
@@ -3973,39 +3843,8 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    class TxnFloorFilter extends DelegatingCollector
-    {
-        private NumericDocValues currentLongs;
-        private long txnFloor;
-        private Map txnCache;
-
-
-        public TxnFloorFilter(long txnFloor, Map txnCache)
-        {
-            this.txnCache = txnCache;
-            this.txnFloor = txnFloor;
-        }
-
-        public void doSetNextReader(LeafReaderContext context) throws IOException
-        {
-            super.doSetNextReader(context);
-            currentLongs = context.reader().getNumericDocValues(FIELD_INTXID);
-        }
-
-        public void collect(int doc) throws IOException
-        {
-            long txnId = currentLongs.get(doc);
-
-            if(txnId >= txnFloor)
-            {
-                this.leafDelegate.collect(doc);
-            }
-        }
-    }
-
     class TxnCollector extends DelegatingCollector
     {
-
         private NumericDocValues currentLongs;
         private long txnFloor;
         private long txnCeil;
@@ -4022,11 +3861,12 @@ public class SolrInformationServer implements InformationServer
             currentLongs = context.reader().getNumericDocValues(FIELD_INTXID);
         }
 
-        public boolean needsScores() {
+        public boolean needsScores()
+        {
             return false;
         }
 
-        public void collect(int doc) throws IOException
+        public void collect(int doc)
         {
             long txnId = currentLongs.get(doc);
             if(txnId >= txnFloor && txnId < txnCeil)
@@ -4036,12 +3876,13 @@ public class SolrInformationServer implements InformationServer
             }
         }
 
-        LongHashSet getTxnSet() {
+        LongHashSet getTxnSet()
+        {
             return txnSet;
         }
     }
 
-    class LRU extends LinkedHashMap
+    class LRU extends LinkedHashMap<Long,Long>
     {
         private int maxSize;
 
@@ -4055,7 +3896,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private boolean spinLock(Object id, long spinForMillis)
+    private boolean spinLock(Object id)
     {
         long startTime = System.currentTimeMillis();
         while(!lock(id))
@@ -4069,7 +3910,7 @@ public class SolrInformationServer implements InformationServer
                 // I don't think we are concerned with this exception.
             }
 
-            if(System.currentTimeMillis() - startTime > spinForMillis)
+            if(System.currentTimeMillis() - startTime > TWO_MINUTES)
             {
                 //Spinning for too long
                 return false;
@@ -4130,7 +3971,8 @@ public class SolrInformationServer implements InformationServer
                     try
                     {
                         return Integer.parseInt(value);
-                    } catch (NumberFormatException exception) {
+                    } catch (NumberFormatException exception)
+                    {
                         LOGGER.error("Failed to find a valid solr.port number, the default value is in shared.properties");
                         throw exception;
                     } })
