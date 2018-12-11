@@ -140,18 +140,7 @@ import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.LeafCollector;
-import org.apache.lucene.search.LegacyNumericRangeQuery;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopFieldCollector;
+import org.apache.lucene.search.*;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -801,18 +790,7 @@ public class SolrInformationServer implements InformationServer
                 cleanContentLastPurged = purgeTime;
             }
 
-            long txnFloor = -1;
-
-            // This query gets lowest txnID that has dirty content.
-            TermQuery termQuery1 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.Dirty.toString()));
-            TermQuery termQuery2 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.New.toString()));
-            BooleanClause clause1 = new BooleanClause(termQuery1, BooleanClause.Occur.SHOULD);
-            BooleanClause clause2 = new BooleanClause(termQuery2, BooleanClause.Occur.SHOULD);
-            BooleanQuery.Builder builder = new BooleanQuery.Builder();
-            builder.add(clause1);
-            builder.add(clause2);
-            BooleanQuery orQuery = builder.build();
-
+            long txnFloor;
             Sort sort = new Sort(new SortField(FIELD_INTXID, SortField.Type.LONG));
             sort = sort.rewrite(searcher);
             TopFieldCollector collector = TopFieldCollector.create(sort,
@@ -824,7 +802,7 @@ public class SolrInformationServer implements InformationServer
 
             DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
-            searcher.search(orQuery, delegatingCollector);
+            searcher.search(dirtyOrNewContentQuery(), delegatingCollector);
 
             if(collector.getTotalHits() == 0)
             {
@@ -839,20 +817,10 @@ public class SolrInformationServer implements InformationServer
             txnFloor = longs.get(scoreDocs[0].doc - context.docBase);
 
             //Find the next N transactions
-            //Query for dirty or new nodes
-            termQuery1 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.Dirty.toString()));
-            termQuery2 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.New.toString()));
-            clause1 = new BooleanClause(termQuery1, BooleanClause.Occur.SHOULD);
-            clause2 = new BooleanClause(termQuery2, BooleanClause.Occur.SHOULD);
-            builder = new BooleanQuery.Builder();
-            builder.add(clause1);
-            builder.add(clause2);
-            orQuery = builder.build();
-
             //The TxnCollector collects the transaction ids from the matching documents
             //The txnIds are limited to a range >= the txnFloor and < an arbitrary transaction ceiling.
             TxnCollector txnCollector = new TxnCollector(txnFloor);
-            searcher.search(orQuery, txnCollector);
+            searcher.search(dirtyOrNewContentQuery(), txnCollector);
             LongHashSet txnSet = txnCollector.getTxnSet();
 
             if(txnSet.size() == 0)
@@ -862,7 +830,7 @@ public class SolrInformationServer implements InformationServer
             }
 
             FieldType fieldType = searcher.getSchema().getField(FIELD_INTXID).getType();
-            builder = new BooleanQuery.Builder();
+            BooleanQuery.Builder builder = new BooleanQuery.Builder();
 
             for (LongCursor cursor : txnSet)
             {
@@ -875,22 +843,10 @@ public class SolrInformationServer implements InformationServer
             BooleanQuery txnFilterQuery = builder.build();
 
             //Get the docs with dirty content for the transactions gathered above.
-
-            TermQuery statusQuery1 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.Dirty.toString()));
-            TermQuery statusQuery2 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.New.toString()));
-            BooleanClause statusClause1 = new BooleanClause(statusQuery1, BooleanClause.Occur.SHOULD);
-            BooleanClause statusClause2 = new BooleanClause(statusQuery2, BooleanClause.Occur.SHOULD);
-            BooleanQuery.Builder builder1 = new BooleanQuery.Builder();
-            builder1.add(statusClause1);
-            builder1.add(statusClause2);
-            BooleanQuery statusQuery = builder1.build();
-
             DocListCollector docListCollector = new DocListCollector();
-
-
             BooleanQuery.Builder builder2 = new BooleanQuery.Builder();
 
-            builder2.add(statusQuery, BooleanClause.Occur.MUST);
+            builder2.add(dirtyOrNewContentQuery(), BooleanClause.Occur.MUST);
             builder2.add(new QueryWrapperFilter(txnFilterQuery), BooleanClause.Occur.MUST);
 
             searcher.search(builder2.build(), docListCollector);
@@ -932,6 +888,18 @@ public class SolrInformationServer implements InformationServer
         {
             ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
+    }
+
+    private Query dirtyOrNewContentQuery()
+    {
+        TermQuery statusQuery1 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.Dirty.toString()));
+        TermQuery statusQuery2 = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.New.toString()));
+        BooleanClause statusClause1 = new BooleanClause(statusQuery1, BooleanClause.Occur.SHOULD);
+        BooleanClause statusClause2 = new BooleanClause(statusQuery2, BooleanClause.Occur.SHOULD);
+        BooleanQuery.Builder builder1 = new BooleanQuery.Builder();
+        builder1.add(statusClause1);
+        builder1.add(statusClause2);
+        return builder1.build();
     }
 
     private String getFieldValueString(SolrDocument doc, String fieldName)
