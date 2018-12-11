@@ -870,7 +870,7 @@ public class SolrInformationServer implements InformationServer
             UpdateRequestProcessor processor = null;
             try (SolrQueryRequest request = getLocalSolrQueryRequest())
             {
-                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
                 processor.processCommit(new CommitUpdateCommand(request, false));
             }
             finally
@@ -897,7 +897,7 @@ public class SolrInformationServer implements InformationServer
             UpdateRequestProcessor processor = null;
             try (SolrQueryRequest request = getLocalSolrQueryRequest())
             {
-                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
                 CommitUpdateCommand commitUpdateCommand = new CommitUpdateCommand(request, false);
                 commitUpdateCommand.openSearcher = false;
                 commitUpdateCommand.softCommit = false;
@@ -925,7 +925,7 @@ public class SolrInformationServer implements InformationServer
         boolean searcherOpened = false;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
             CommitUpdateCommand command = new CommitUpdateCommand(request, false);
             if (openSearcher)
             {
@@ -1008,7 +1008,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
             DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
             delDocCmd.setQuery(query);
             processor.processDelete(delDocCmd);
@@ -1322,7 +1322,7 @@ public class SolrInformationServer implements InformationServer
         {
             TrackerState state = new TrackerState();
             SolrRequestHandler handler = core.getRequestHandler(REQUEST_HANDLER_GET);
-            SolrQueryResponse rsp = new SolrQueryResponse();
+            SolrQueryResponse rsp = newSolrQueryResponse();
 
             ModifiableSolrParams newParams = new ModifiableSolrParams(request.getParams());
             newParams.set("ids", "TRACKER!STATE!ACLTX,TRACKER!STATE!TX");
@@ -1438,7 +1438,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             for (AclReaders aclReaders : aclReaderList)
             {
@@ -1516,7 +1516,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
             AddUpdateCommand cmd = new AddUpdateCommand(request);
             cmd.overwrite = overwrite;
             SolrInputDocument input = new SolrInputDocument();
@@ -1544,7 +1544,7 @@ public class SolrInformationServer implements InformationServer
     {
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            SolrDocument aclState = getState(request, "TRACKER!STATE!ACLTX");
+            SolrDocument aclState = getState(core, request, "TRACKER!STATE!ACLTX");
             AclChangeSet maxAclChangeSet;
             if (aclState != null)
             {
@@ -1560,21 +1560,24 @@ public class SolrInformationServer implements InformationServer
             return maxAclChangeSet;
         }
     }
-    
-    private SolrDocument getState(SolrQueryRequest request, String id)
+
+    SolrDocument getState(SolrCore core, SolrQueryRequest request, String id)
     {
         ModifiableSolrParams newParams =
                 new ModifiableSolrParams(request.getParams())
                         .set(CommonParams.ID, id);
         request.setParams(newParams);
 
-        SolrRequestHandler handler = core.getRequestHandler(REQUEST_HANDLER_GET);
-        SolrQueryResponse rsp = new SolrQueryResponse();
-        handler.handleRequest(request, rsp);
-        
-        @SuppressWarnings("rawtypes")
-        NamedList values = rsp.getValues();
+        SolrQueryResponse response = newSolrQueryResponse();
+        core.getRequestHandler(REQUEST_HANDLER_GET).handleRequest(request, response);
+
+        NamedList values = response.getValues();
         return (SolrDocument)values.get(RESPONSE_DEFAULT_ID);
+    }
+
+    SolrQueryResponse newSolrQueryResponse()
+    {
+        return new SolrQueryResponse();
     }
 
     public void dirtyTransaction(long txnId)
@@ -1586,7 +1589,7 @@ public class SolrInformationServer implements InformationServer
     private void putAclTransactionState(UpdateRequestProcessor processor, SolrQueryRequest request, AclChangeSet changeSet) throws IOException
     {
         String version;
-        SolrDocument aclState = getState(request, "TRACKER!STATE!ACLTX");
+        SolrDocument aclState = getState(core, request, "TRACKER!STATE!ACLTX");
         if (aclState != null)
         {
             long aclTxCommitTime = this.getFieldValueLong(aclState, FIELD_S_ACLTXCOMMITTIME);
@@ -1629,7 +1632,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
             AddUpdateCommand cmd = new AddUpdateCommand(request);
             cmd.overwrite = true;
             SolrInputDocument input = new SolrInputDocument();
@@ -1717,7 +1720,7 @@ public class SolrInformationServer implements InformationServer
         try
         {
             request = getLocalSolrQueryRequest();
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
             long start = System.nanoTime();
 
             if ((node.getStatus() == SolrApiNodeStatus.DELETED)
@@ -1754,12 +1757,7 @@ public class SolrInformationServer implements InformationServer
                         	 try
                              {
                                  //Lock the node to ensure that no other trackers work with this node until this code completes.
-                                 if(!spinLock(nodeMetaData.getId()))
-                                 {
-                                     //We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
-                                     throw new Exception("Unable to acquire lock on nodeId:"+nodeMetaData.getId());
-                                 }
-
+                                 spinLock(nodeMetaData.getId());
                                  solrContentStore.removeDocFromContentStore(nodeMetaData);
                              }
                              finally
@@ -1785,11 +1783,8 @@ public class SolrInformationServer implements InformationServer
 
             	try
             	{
-            		if(!spinLock(nodeId))
-            		{
-            			//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
-            			throw new Exception("Unable to acquire lock on nodeId:"+nodeId);
-            		}
+            		spinLock(nodeId);
+
             		NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
             		nmdp.setFromNodeId(node.getId());
             		nmdp.setToNodeId(node.getId());
@@ -1859,7 +1854,7 @@ public class SolrInformationServer implements InformationServer
                 {
                     request = getLocalSolrQueryRequest();
                 }
-                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+                processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
             }
 
             deleteNode(processor, request, node);
@@ -1999,11 +1994,7 @@ public class SolrInformationServer implements InformationServer
 
         		try
         		{
-        			if(!spinLock(childId))
-        			{
-        				//We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
-        				throw new IOException("Unable to acquire lock on nodeId:"+childId);
-        			}
+        			spinLock(childId);
 
         			LOGGER.debug("Cascade update child doc {}", childId);
 
@@ -2104,12 +2095,10 @@ public class SolrInformationServer implements InformationServer
                     long nodeId = nodeMetaData.getId();
                     try
                     {
-                        if(!spinLock(nodeId))
-                        {
-                            throw new IOException("Unable to acquire spinlock on: " + nodeId);
-                        }
+                        spinLock(nodeId);
 
                         LOGGER.debug("Cascade update child doc {}", childId);
+
                         // Gets the document that we have from the content store and updates it
                         String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
                         SolrInputDocument cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(fixedTenantDomain, nodeMetaData.getId());
@@ -2260,7 +2249,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             Map<Long, Node> nodeIdsToNodes = new HashMap<>();
             EnumMap<SolrApiNodeStatus, List<Long>> nodeStatusToNodeIds = new EnumMap<>(SolrApiNodeStatus.class);
@@ -2301,13 +2290,10 @@ public class SolrInformationServer implements InformationServer
                         continue;
                     }
 
-                    try {
-                        //Lock the node to ensure that no other trackers work with this node until this code completes.
-                        if (!spinLock(nodeMetaData.getId()))
-                        {
-                            //We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
-                            throw new Exception("Unable to acquire lock on nodeId:" + nodeMetaData.getId());
-                        }
+                    try
+                    {
+                        spinLock(nodeMetaData.getId());
+
                         solrContentStore.removeDocFromContentStore(nodeMetaData);
                     }
                     finally
@@ -2343,13 +2329,9 @@ public class SolrInformationServer implements InformationServer
 
                     Node node = nodeIdsToNodes.get(nodeMetaData.getId());
                     long nodeId = node.getId();
-                    try {
-                        //Lock the node to ensure that no other trackers work with this node until this code completes.
-                        if (!spinLock(nodeId))
-                        {
-                            //We haven't acquired the lock in over 2 minutes. This really shouldn't happen unless something has gone wrong.
-                            throw new Exception("Unable to acquire lock on nodeId:" + nodeId);
-                        }
+                    try
+                    {
+                        spinLock(nodeId);
 
                         if (nodeMetaData.getTxnId() > node.getTxnId())
                         {
@@ -2437,7 +2419,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             for (NodeMetaData nodeMetaData : nodeMetaDatas)
             {
@@ -3008,13 +2990,10 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try
         {
-            if(!spinLock(dbId))
-            {
-                throw new Exception("Unable to acquire spinlock for node:"+dbId);
-            }
+            spinLock(dbId);
 
             request = getLocalSolrQueryRequest();
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse()); 
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             SolrInputDocument doc = solrContentStore.retrieveDocFromSolrContentStore(tenant, dbId);
             if (doc == null)
@@ -3303,7 +3282,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             AddUpdateCommand cmd = new AddUpdateCommand(request);
             cmd.overwrite = true;
@@ -3335,7 +3314,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             AddUpdateCommand cmd = new AddUpdateCommand(request);
             cmd.overwrite = overwrite;
@@ -3379,7 +3358,7 @@ public class SolrInformationServer implements InformationServer
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
             StringPropertyValue stringPropertyValue = (StringPropertyValue) nodeMetaData.getProperties().get(ContentModel.PROP_CASCADE_TX);
             List<FieldInstance> fieldInstances = AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(ContentModel.PROP_CASCADE_TX).getFields();
             FieldInstance fieldInstance = fieldInstances.get(0);
@@ -3406,7 +3385,7 @@ public class SolrInformationServer implements InformationServer
     {
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
-            SolrDocument txState = getState(request, "TRACKER!STATE!TX");
+            SolrDocument txState = getState(core, request, "TRACKER!STATE!TX");
             Transaction maxTransaction;
             if (txState != null)
             {
@@ -3426,7 +3405,7 @@ public class SolrInformationServer implements InformationServer
     private void putTransactionState(UpdateRequestProcessor processor, SolrQueryRequest request, Transaction tx) throws IOException
     {
         String version;
-        SolrDocument txState = getState(request, "TRACKER!STATE!TX");
+        SolrDocument txState = getState(core, request, "TRACKER!STATE!TX");
         if (txState != null)
         {
             long txCommitTime = this.getFieldValueLong(txState, FIELD_S_TXCOMMITTIME);
@@ -3485,7 +3464,7 @@ public class SolrInformationServer implements InformationServer
         try (SolrQueryRequest request = getLocalSolrQueryRequest())
         {
             SolrRequestHandler handler = core.getRequestHandler(REQUEST_HANDLER_GET);
-            SolrQueryResponse rsp = new SolrQueryResponse();
+            SolrQueryResponse rsp = newSolrQueryResponse();
 
             ModifiableSolrParams newParams =
                     new ModifiableSolrParams(request.getParams())
@@ -3644,7 +3623,7 @@ public class SolrInformationServer implements InformationServer
                 UpdateRequestProcessor processor = null;
                 try (SolrQueryRequest request = getLocalSolrQueryRequest())
                 {
-                    processor = this.core.getUpdateProcessingChain(null).createProcessor(request, new SolrQueryResponse());
+                    processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
                     processor.processRollback(new RollbackUpdateCommand(request));
                 }
                 finally
@@ -3896,6 +3875,27 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+    private void spinLock(Object id) throws IOException
+    {
+        long startTime = System.currentTimeMillis();
+        while(!locks.add(id))
+        {
+            try
+            {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e)
+            {
+                // I don't think we are concerned with this exception.
+            }
+
+            if(System.currentTimeMillis() - startTime > 120000)
+            {
+                throw new IOException("Unable to acquire lock on nodeId " + id + " after " + 120000 + " msecs.");
+            }
+        }
+    }
+    /*
     private boolean spinLock(Object id)
     {
         long startTime = System.currentTimeMillis();
@@ -3918,7 +3918,7 @@ public class SolrInformationServer implements InformationServer
         }
 
         return true;
-    }
+    }*/
 
     private synchronized boolean lock(Object id)
     {
