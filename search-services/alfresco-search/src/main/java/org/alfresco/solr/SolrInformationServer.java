@@ -1510,36 +1510,25 @@ public class SolrInformationServer implements InformationServer
         this.cleanContentCache.remove(txnId);
         this.cleanCascadeCache.remove(txnId);
     }
-    
+
+    private String version(SolrDocument stateDoc, String txCommitTimeField, String txIdField, long commitTime, long id)
+    {
+        if (stateDoc == null) return "0";
+
+        long txCommitTime = getFieldValueLong(stateDoc, txCommitTimeField);
+        long txId = getFieldValueLong(stateDoc, txIdField);
+
+        return (commitTime >= txCommitTime && id > txId) ? this.getFieldValueString(stateDoc, FIELD_VERSION) : null;
+    }
+
     private void putAclTransactionState(UpdateRequestProcessor processor, SolrQueryRequest request, AclChangeSet changeSet) throws IOException
     {
-        String version;
         SolrDocument aclState = getState(core, request, "TRACKER!STATE!ACLTX");
-        if (aclState != null)
-        {
-            long aclTxCommitTime = this.getFieldValueLong(aclState, FIELD_S_ACLTXCOMMITTIME);
-            long aclTxId = this.getFieldValueLong(aclState, FIELD_S_ACLTXID);
-            // Acl change sets are ordered by commit time and tie-broken by id
-            if (changeSet.getCommitTimeMs() > aclTxCommitTime
-                    || changeSet.getCommitTimeMs() == aclTxCommitTime && changeSet.getId() > aclTxId)
-            {
-                // Uses optimistic concurrency 
-                version = this.getFieldValueString(aclState, FIELD_VERSION);
-            }
-            else
-            {
-                version = null;  // Should not update in this case
-            }
-        }
-        else
-        {
-            version = "0";
-        }
+        String version = version(aclState, FIELD_S_ACLTXCOMMITTIME, FIELD_S_ACLTXID, changeSet.getCommitTimeMs(), changeSet.getId());
         
         if (version != null)
         {
-            AddUpdateCommand cmd = new AddUpdateCommand(request);
-            cmd.overwrite = true;
+
             SolrInputDocument input = new SolrInputDocument();
             input.addField(FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX");
             input.addField(FIELD_VERSION, version);
@@ -1547,6 +1536,9 @@ public class SolrInformationServer implements InformationServer
             input.addField(FIELD_S_INACLTXID, changeSet.getId());
             input.addField(FIELD_S_ACLTXCOMMITTIME, changeSet.getCommitTimeMs());
             input.addField(FIELD_DOC_TYPE, DOC_TYPE_STATE);
+
+            AddUpdateCommand cmd = new AddUpdateCommand(request);
+            cmd.overwrite = true;
             cmd.solrDoc = input;
             processor.processAdd(cmd);
         }
@@ -1559,13 +1551,15 @@ public class SolrInformationServer implements InformationServer
         try (SolrQueryRequest request = newSolrQueryRequest())
         {
             processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
-            AddUpdateCommand cmd = new AddUpdateCommand(request);
-            cmd.overwrite = true;
+
             SolrInputDocument input = new SolrInputDocument();
             input.addField(FIELD_SOLR4_ID, INDEX_CAP_ID);
             input.addField(FIELD_VERSION, 0);
             input.addField(FIELD_DBID, -dbid); //Making this negative to ensure it is never confused with node DBID
             input.addField(FIELD_DOC_TYPE, DOC_TYPE_STATE);
+
+            AddUpdateCommand cmd = new AddUpdateCommand(request);
+            cmd.overwrite = true;
             cmd.solrDoc = input;
             processor.processAdd(cmd);
         }
@@ -2954,32 +2948,11 @@ public class SolrInformationServer implements InformationServer
 
     private void putTransactionState(UpdateRequestProcessor processor, SolrQueryRequest request, Transaction tx) throws IOException
     {
-        String version;
         SolrDocument txState = getState(core, request, "TRACKER!STATE!TX");
-        if (txState != null)
-        {
-            long txCommitTime = this.getFieldValueLong(txState, FIELD_S_TXCOMMITTIME);
-            long txId = this.getFieldValueLong(txState, FIELD_S_TXID);
-            // Transactions are ordered by commit time and tie-broken by tx id
-            if (tx.getCommitTimeMs() > txCommitTime || tx.getCommitTimeMs() == txCommitTime && tx.getId() > txId)
-            {
-                // Uses optimistic concurrency 
-                version = this.getFieldValueString(txState, FIELD_VERSION);
-            }
-            else
-            {
-                version = null; // Should not update in this case
-            }
-        }
-        else
-        {
-            version = "0";
-        }
+        String version = version(txState, FIELD_S_TXCOMMITTIME, FIELD_S_TXID, tx.getCommitTimeMs(), tx.getId());
         
         if (version != null)
         {
-            AddUpdateCommand cmd = new AddUpdateCommand(request);
-            cmd.overwrite = true;
             SolrInputDocument input = new SolrInputDocument();
             input.addField(FIELD_SOLR4_ID, "TRACKER!STATE!TX");
             input.addField(FIELD_VERSION, version);
@@ -2987,6 +2960,9 @@ public class SolrInformationServer implements InformationServer
             input.addField(FIELD_S_INTXID, tx.getId());
             input.addField(FIELD_S_TXCOMMITTIME, tx.getCommitTimeMs());
             input.addField(FIELD_DOC_TYPE, DOC_TYPE_STATE);
+
+            AddUpdateCommand cmd = new AddUpdateCommand(request);
+            cmd.overwrite = true;
             cmd.solrDoc = input;
             processor.processAdd(cmd);
         }
