@@ -296,13 +296,13 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         if(nodeIds != null) {
             for (long nodeId : nodeIds) {
                 NodeMetaData nodeMetaData = nodeMetaDataMap.get(nodeId);
-                this.processNodeMetadata(nodeMetaData, params);
+                this.removeUnrequestedMetadata(nodeMetaData, params);
                 nodeMetaDatas.add(nodeMetaData);
             }
         } else {
             Long fromId = params.getFromNodeId();
             NodeMetaData nodeMetaData = nodeMetaDataMap.get(fromId);
-            this.processNodeMetadata(nodeMetaData,params);
+            this.removeUnrequestedMetadata(nodeMetaData,params);
             nodeMetaDatas.add(nodeMetaData);
         }
 
@@ -317,7 +317,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
      * @param nodeMetaData - node metadata to process
      * @param params - parameters that regulate the return of such metadata
      */
-    private void processNodeMetadata(NodeMetaData nodeMetaData, NodeMetaDataParameters params)
+    private void removeUnrequestedMetadata(NodeMetaData nodeMetaData, NodeMetaDataParameters params)
     {
         if (!params.isIncludeAclId())
         {
