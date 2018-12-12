@@ -255,4 +255,19 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
 
         return resultAsExpected;
     }
+
+    /**
+     * Run a search and return the response
+     * @param queryString: string to search for, unique search string will guarantee accurate results
+     * @return the search response from the API
+     * @throws Exception
+     */
+    public SearchResponse query(String queryString) throws Exception
+    {
+        SearchRequest searchRequest = new SearchRequest();
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(queryString);
+        searchRequest.setQuery(queryModel);
+        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(searchRequest);
+    }
 }
