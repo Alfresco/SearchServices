@@ -1922,5 +1922,12 @@
   <searchComponent name="consistencyComponent"     class="org.alfresco.solr.component.ConsistencyComponent" />
   <searchComponent name="fingerprint" class="org.alfresco.solr.component.FingerPrintComponent"/>
 
+  <!-- Handler for liveliness probe. -->
+  <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
+    <lst name="invariants">
+      <str name="qt">/afts</str><!-- Delegate to the AFTS handler. -->
+      <str name="q">*</str> <!-- Query to perform. -->
+    </lst>
+  </requestHandler>
 
 </config>
