@@ -77,6 +77,8 @@ public class CascadeTrackerTest extends AbstractAlfrescoSolrTests
      * |- a top level folder
      * |---- a child folder
      * |------ a file
+     *
+     * the entire hierarchy is owned by a user called "mike".
      */
     @Before
     public void indexTestData() throws Exception
