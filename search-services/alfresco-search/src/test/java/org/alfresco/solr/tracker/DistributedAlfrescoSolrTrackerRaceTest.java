@@ -117,6 +117,5 @@ public class DistributedAlfrescoSolrTrackerRaceTest extends AbstractAlfrescoDist
 
     }
 
-
 }
 
