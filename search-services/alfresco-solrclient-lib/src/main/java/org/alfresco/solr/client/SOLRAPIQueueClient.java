@@ -296,15 +296,69 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         if(nodeIds != null) {
             for (long nodeId : nodeIds) {
                 NodeMetaData nodeMetaData = nodeMetaDataMap.get(nodeId);
+                this.removeUnrequestedMetadata(nodeMetaData, params);
                 nodeMetaDatas.add(nodeMetaData);
             }
         } else {
             Long fromId = params.getFromNodeId();
             NodeMetaData nodeMetaData = nodeMetaDataMap.get(fromId);
+            this.removeUnrequestedMetadata(nodeMetaData,params);
             nodeMetaDatas.add(nodeMetaData);
         }
 
         return nodeMetaDatas;
+    }
+
+    /**
+     * This method is meant to use the input node metadata parameters to return only the appropriate metadata from the input node.
+     * So if a metadata is not requested in the parameters, it will be removed from the input node metadata object.
+     * This allow a behaviour of the test SOLRAPI closer to the real APIs where a metadata is returned only when asked.
+     * 
+     * @param nodeMetaData - node metadata to process
+     * @param params - parameters that regulate the return of such metadata
+     */
+    private void removeUnrequestedMetadata(NodeMetaData nodeMetaData, NodeMetaDataParameters params)
+    {
+        if (!params.isIncludeAclId())
+        {
+            nodeMetaData.setAclId(0);
+        }
+        if (!params.isIncludeAspects())
+        {
+            nodeMetaData.setAspects(null);
+        }
+        if (!params.isIncludeProperties())
+        {
+            nodeMetaData.setProperties(null);
+        }
+        if (!params.isIncludeChildAssociations())
+        {
+            nodeMetaData.setChildAssocs(null);
+        }
+        if (!params.isIncludeParentAssociations())
+        {
+            nodeMetaData.setParentAssocs(null);
+        }
+        if (!params.isIncludeChildIds())
+        {
+            nodeMetaData.setChildIds(null);
+        }
+        if (!params.isIncludePaths())
+        {
+            nodeMetaData.setPaths(null);
+        }
+        if (!params.isIncludeOwner())
+        {
+            nodeMetaData.setOwner(null);
+        }
+        if (!params.isIncludeNodeRef())
+        {
+            nodeMetaData.setNodeRef(null);
+        }
+        if (!params.isIncludeTxnId())
+        {
+            nodeMetaData.setTxnId(0);
+        }
     }
 
     public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
