@@ -3,6 +3,7 @@ package org.alfresco.rest.discovery;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -65,21 +66,18 @@ public class DiscoveryTests extends RestTest
 
         // Check that all modules are present
         List<String> modules = restClient.onResponse().getResponse().jsonPath().getList("entry.repository.modules.id", String.class);
-        assertTrue(modules.contains("alfresco-aos-module"));
-        assertTrue(modules.contains("org.alfresco.integrations.google.docs"));
-        assertTrue(modules.contains("org_alfresco_integrations_S3Connector"));
-        assertTrue(modules.contains("org_alfresco_module_xamconnector"));
-        assertTrue(modules.contains("org.alfresco.module.KofaxAddon"));
-        assertTrue(modules.contains("alfresco-content-connector-for-salesforce-repo"));
-        assertTrue(modules.contains("alfresco-share-services"));
-        assertTrue(modules.contains("alfresco-saml-repo"));
-        assertTrue(modules.contains("org_alfresco_device_sync_repo"));
-        assertTrue(modules.contains("org_alfresco_mm_repo"));
-        assertTrue(modules.contains("org.alfresco.module.TransformationServer"));
+        List<String> expectedModules = Arrays.asList("alfresco-aos-module", "org.alfresco.integrations.google.docs",
+                "org_alfresco_integrations_S3Connector", "org_alfresco_module_xamconnector",
+                "org.alfresco.module.KofaxAddon", "alfresco-content-connector-for-salesforce-repo",
+                "alfresco-share-services", "alfresco-saml-repo", "org_alfresco_device_sync_repo",
+                "org_alfresco_mm_repo", "org.alfresco.module.TransformationServer", "alfresco-glacier-connector-repo");
+
+        expectedModules.forEach(module ->
+                assertTrue(modules.contains(module), String.format("Expected module %s is not installed", module)));
 
         // Check that all installed modules are in INSTALLED state
         List<String> modulesStates = restClient.onResponse().getResponse().jsonPath().getList("entry.repository.modules.installState", String.class);
-        assertEquals(Collections.frequency(modulesStates, "INSTALLED"), 11);
+        assertEquals(Collections.frequency(modulesStates, "INSTALLED"), expectedModules.size());
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.DISCOVERY, TestGroup.SANITY, TestGroup.CORE })
