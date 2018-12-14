@@ -20,7 +20,9 @@ package org.alfresco.solr.component;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
+
+import com.google.common.collect.BiMap;
 
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
@@ -81,7 +83,7 @@ public class RewriteFacetCountsComponent extends SearchComponent
         
         copyAnalytics(rb, "facet_counts", "facet_fields");
         
-        HashMap<String, String> mappings = (HashMap<String, String>)rb.rsp.getValues().get("_stats_field_mappings_");
+        Map<String, String> mappings = (Map<String, String>) rb.rsp.getValues().get("_stats_field_mappings_");
         if(mappings != null)
         {
             for(String key : mappings.keySet())
@@ -127,11 +129,13 @@ public class RewriteFacetCountsComponent extends SearchComponent
 
 
     /**
+     * TODO
+     *
      * @param rb
      */
     private void rewritePivotFields(ResponseBuilder rb, String ... sections)
     {
-        HashMap<String, String> mappings = (HashMap<String, String>)rb.rsp.getValues().get("_pivot_mappings_");
+        Map<String, String> mappings = (Map<String, String>) rb.rsp.getValues().get("_pivot_mappings_");
         if(mappings != null)
         {
             NamedList<Object>  found = (NamedList<Object>) rb.rsp.getValues();
@@ -185,51 +189,49 @@ public class RewriteFacetCountsComponent extends SearchComponent
         }
     }
 
+    /** TODO */
     private void processRanges(ResponseBuilder rb, SimpleOrderedMap ranges) {
 
-    	HashMap<String, String> mappings = (HashMap<String, String>)rb.rsp.getValues().get("_range_mappings_");
+    	BiMap<String, String> mappings = (BiMap<String, String>)rb.rsp.getValues().get("_range_mappings_");
     	if(mappings != null)
     	{
-    		HashMap<String, String> reverse = getReverseLookUp(mappings);
-    	
-    			for(int i = 0; i < ranges.size(); i++)
-    			{
-    				String name = ranges.getName(i);
-    				String newName = reverse.get(name);
-    				if(newName != null)
-    				{
-    					ranges.setName(i, newName);
-    				}
-    			}
-    		
+            for(int i = 0; i < ranges.size(); i++)
+            {
+                String name = ranges.getName(i);
+                String newName = mappings.inverse().get(name);
+                if(newName != null)
+                {
+                    ranges.setName(i, newName);
+                }
+            }
     	}
     }
 
 	/**
+     * TODO
+     *
      * @param rb
      */
     private void rewrite(ResponseBuilder rb, String mappingName, String ... sections)
     {
-        HashMap<String, String> mappings = (HashMap<String, String>)rb.rsp.getValues().get(mappingName);
+        BiMap<String, String> mappings = (BiMap<String, String>) rb.rsp.getValues().get(mappingName);
         if(mappings != null)
         {
-            HashMap<String, String> reverse = getReverseLookUp(mappings);
-     
             NamedList<Object>  found = (NamedList<Object>) rb.rsp.getValues();
-            for(String section : sections)
+            for (String section : sections)
             {
-                found = (NamedList<Object>)found.get(section);
-                if(found == null)
+                found = (NamedList<Object>) found.get(section);
+                if (found == null)
                 {
                     return;
                 }
             }
-            
-            for(int i = 0; i < found.size(); i++)
+            // This found already contains the private buckets
+            for (int i = 0; i < found.size(); i++)
             {
                 String name = found.getName(i);
-                String newName = reverse.get(name);
-                if(newName != null)
+                String newName = mappings.inverse().get(name);
+                if (newName != null)
                 {
                     found.setName(i, newName);
                 }
@@ -237,18 +239,6 @@ public class RewriteFacetCountsComponent extends SearchComponent
             
           
         }
-    }
-
-    
-    private HashMap<String, String> getReverseLookUp(HashMap<String, String> map)
-    {
-        HashMap<String, String> reverse = new HashMap<String, String>();
-        for(String key : map.keySet())
-        {
-            String value = map.get(key);
-            reverse.put(value,  key);
-        }
-        return reverse;
     }
 
     /* (non-Javadoc)
