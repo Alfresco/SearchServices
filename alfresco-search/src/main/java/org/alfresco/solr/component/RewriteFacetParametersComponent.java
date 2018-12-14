@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -43,12 +42,12 @@ import org.apache.solr.request.SolrQueryRequest;
 
 
 /**
- * @author Andy
+ * Update facet parameters to reference Solr fields rather than ACS properties.
  *
+ * @author Andy
  */
 public class RewriteFacetParametersComponent extends SearchComponent
 {
-
     /* (non-Javadoc)
      * @see org.apache.solr.handler.component.SearchComponent#prepare(org.apache.solr.handler.component.ResponseBuilder)
      */
@@ -71,7 +70,6 @@ public class RewriteFacetParametersComponent extends SearchComponent
          
          req.setParams(fixed);
     }
-
     
     /**
      * Prevents users from requesting a large number of rows by
@@ -178,16 +176,17 @@ public class RewriteFacetParametersComponent extends SearchComponent
      */
     private SolrParams fixFacetParams(ModifiableSolrParams fixed, SolrParams params, ResponseBuilder rb)
     {
-        BiMap<String, String> fieldMappings = HashBiMap.create();
-        BiMap<String, String> dateMappings = HashBiMap.create();
-        BiMap<String, String> rangeMappings = HashBiMap.create();
-        BiMap<String, String> pivotMappings = HashBiMap.create();
-        BiMap<String, String> intervalMappings = HashBiMap.create();
+        // Use BiMaps so that these can be quickly inverted in RewriteFacetCountsComponent.
+        Map<String, String> fieldMappings = HashBiMap.create();
+        Map<String, String> dateMappings = HashBiMap.create();
+        Map<String, String> rangeMappings = HashBiMap.create();
+        Map<String, String> pivotMappings = HashBiMap.create();
+        Map<String, String> intervalMappings = HashBiMap.create();
         
-        BiMap<String, String> statsFieldMappings = HashBiMap.create();
-        BiMap<String, String> statsFacetMappings = HashBiMap.create();
+        Map<String, String> statsFieldMappings = HashBiMap.create();
+        Map<String, String> statsFacetMappings = HashBiMap.create();
        
-        BiMap<String, String> functionMappings = HashBiMap.create();
+        Map<String, String> functionMappings = HashBiMap.create();
         
         List<String> fieldFacets = rewriteFacetFieldList(fixed, params, "facet.field", fieldMappings, rb.req);
         rewriteFacetFieldList(fixed, params, "facet.date", dateMappings, rb.req);
@@ -206,7 +205,7 @@ public class RewriteFacetParametersComponent extends SearchComponent
         rewriteFacetFieldOptions(fixed, params, "facet.sort", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.limit", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.offset", fieldMappings);
-        rewriteMinCountFacetFieldOption(fixed, params, "facet.mincount", fieldMappings, fieldFacets);
+        rewriteMincountFacetFieldOption(fixed, params, "facet.mincount", fieldMappings, fieldFacets);
         rewriteFacetFieldOptions(fixed, params, "facet.missing", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.method", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.enum.cache.minDF", fieldMappings);
@@ -221,7 +220,7 @@ public class RewriteFacetParametersComponent extends SearchComponent
         rewriteFacetFieldOptions(fixed, params, "facet.range.method", rangeMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.range.limit", rangeMappings);
 
-        rewriteMinCountFacetFieldOption(fixed, params, "facet.pivot.mincount", pivotMappings, pivotFacets);
+        rewriteMincountFacetFieldOption(fixed, params, "facet.pivot.mincount", pivotMappings, pivotFacets);
         rewriteFacetFieldOptions(fixed, params, "facet.sort", pivotMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.limit", pivotMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.offset", pivotMappings);
@@ -251,16 +250,16 @@ public class RewriteFacetParametersComponent extends SearchComponent
 
 
     /**
-     * TODO
-     * @param fixed ModifiableSolrParams
-     * @param params SolrParams
-     * @param string
-     * @param facetFunctionMappings
+     * Populate a map with the mappings from functions in the query to functions including the Solr filter handler.
+     *
+     * @param fixed The updated params object.
+     * @param params The original params object.
+     * @param paramName The name of the parameter (e.g. "facet.field").
+     * @param facetFunctionMappings The map to update.
      */
-    private void mapFacetFunctions(ModifiableSolrParams fixed, SolrParams params, String string, Map<String, String> facetFunctionMappings)
+    private void mapFacetFunctions(ModifiableSolrParams fixed, SolrParams params, String paramName, Map<String, String> facetFunctionMappings)
     {
-        
-        String[] facetFieldsOrig = params.getParams(string);
+        String[] facetFieldsOrig = params.getParams(paramName);
         if(facetFieldsOrig != null)
         {
             for(String facetFields : facetFieldsOrig)
@@ -285,7 +284,6 @@ public class RewriteFacetParametersComponent extends SearchComponent
                             facetFunctionMappings.put(field,  function);
                         }
                     }
-
                 }
             }   
         }
@@ -342,12 +340,26 @@ public class RewriteFacetParametersComponent extends SearchComponent
         }
     }
 
-    /** TODO */
-    private void rewriteMinCountFacetFieldOption(ModifiableSolrParams fixed, SolrParams params, String paramName,
-                BiMap<String, String> fieldMappings, List<String> facetNames)
+    /**
+     * Ensure the mincount for all given facets is at least 1 to prevent exposing sensitive buckets to users without permission.
+     *
+     * @param fixed The updated params object.
+     * @param params The original params object.
+     * @param paramName The name of the mincount parameter to rewrite (e.g. "facet.mincount" or "facet.pivot.mincount").
+     * @param fieldMappings A list of mappings from Alfresco property names to Solr field names.
+     * @param facetNames The list of all fields for this facet type.
+     *
+     * Note: Set to protected to allow unit testing.
+     */
+    protected void rewriteMincountFacetFieldOption(ModifiableSolrParams fixed, SolrParams params, String paramName,
+                Map<String, String> fieldMappings, List<String> facetNames)
     {
+        rewriteFacetFieldOptions(fixed, params, paramName, fieldMappings);
+
         // Ensure that the min count is at least 1.
         List<String> found = new ArrayList<>();
+
+        // Update any existing mincount entries for facets.
         Map<String, Integer> updatedValues = new HashMap<>();
         for (Iterator<String> it = fixed.getParameterNamesIterator(); it.hasNext(); /**/)
         {
@@ -356,38 +368,31 @@ public class RewriteFacetParametersComponent extends SearchComponent
             {
                 if (name.endsWith("." + paramName))
                 {
-                    String source = name.substring(2, name.length() - paramName.length() - 1);
-                    if(fieldMappings.containsKey(source))
+                    String facetName = name.substring(2, name.length() - paramName.length() - 1);
+                    if(fieldMappings.containsKey(facetName))
                     {
-                        source = fieldMappings.get(source);
+                        facetName = fieldMappings.get(facetName);
                     }
 
+                    // If mincount is set then it must be an integer.
                     int value = Integer.valueOf(fixed.get(name));
-                    updatedValues.put("f." + paramName, Math.max(value, 1));
-                    found.add(source);
+                    // Don't directly edit the params while we're iterating through the entries.
+                    updatedValues.put("f." + facetName + "." + paramName, Math.max(value, 1));
+                    found.add(facetName);
                 }
             }
         }
+        // Now we've finished iterating, update the fixed parameters.
         for (Map.Entry<String, Integer> entry : updatedValues.entrySet())
         {
             fixed.set(entry.getKey(), entry.getValue());
         }
+
+        // Add a mincount entry for any facets that didn't already have one.
         if (facetNames != null)
         {
             for (String facetName : facetNames)
             {
-//                if (fieldMappings.containsValue(facetName))
-//                {
-//                    facetName = fieldMappings.inverse().get(facetName);
-//                }
-//                if(facetName.startsWith("{!"))
-//                {
-//                    int index = facetName.indexOf("}");
-//                    if((index > 0) && (index < (facetName.length() - 1)))
-//                    {
-//                        facetName = facetName.substring(index+1);
-//                    }
-//                }
                 if (!found.contains(facetName))
                 {
                     fixed.set("f." + facetName + "." + paramName, 1);
@@ -395,17 +400,15 @@ public class RewriteFacetParametersComponent extends SearchComponent
                 }
             }
         }
-        // Fall through to the original method.
-        rewriteFacetFieldOptions(fixed, params, paramName, fieldMappings);
     }
 
     /**
-     * TODO
+     * Update any existing facet parameters to use the Solr field names.
      *
-     * @param fixed
-     * @param params
-     * @param paramName
-     * @param fieldMappings
+     * @param fixed The updated params object.
+     * @param params The original params object.
+     * @param paramName The name of the mincount parameter to rewrite (e.g. "facet.mincount" or "facet.pivot.mincount").
+     * @param fieldMappings A list of mappings from Alfresco property names to Solr field names.
      */
     private void rewriteFacetFieldOptions(ModifiableSolrParams fixed, SolrParams params, String paramName, Map<String, String> fieldMappings)
     {
@@ -416,7 +419,6 @@ public class RewriteFacetParametersComponent extends SearchComponent
             {
                 if(name.endsWith("."+paramName))
                 {
-
                     String source = name.substring(2, name.length() - paramName.length() - 1);
                     if(fieldMappings.containsKey(source))
                     {
@@ -426,16 +428,11 @@ public class RewriteFacetParametersComponent extends SearchComponent
                     {
                         fixed.set(name, params.getParams(name));
                     }
-
-
-                }
-                else
-                {
-                    fixed.set(name, params.getParams(name));
                 }
             }       
         }
     }
+
     /**
      * Tokenizes a string based on comma's except for the ones in single or double
      * qoutes.
@@ -453,16 +450,17 @@ public class RewriteFacetParametersComponent extends SearchComponent
         
     }
     /**
-     * TODO
+     * Update the facet fields to use Solr field names rather than ACS property names.
      *
-     * @param fixed
-     * @param params
-     * @param paramName
-     * @param fieldMappings
-     * @param req
+     * @param fixed The updated params object.
+     * @param params The original params object.
+     * @param paramName The name of the mincount parameter to rewrite (e.g. "facet.mincount" or "facet.pivot.mincount").
+     * @param fieldMappings A list of mappings from Alfresco property names to Solr field names.
+     * @param req The original request.
      * @return An array of the facet field names.
      */
-    private List<String> rewriteFacetFieldList(ModifiableSolrParams fixed, SolrParams params, String paramName, Map<String, String> fieldMappings, SolrQueryRequest req)
+    private List<String> rewriteFacetFieldList(ModifiableSolrParams fixed, SolrParams params, String paramName,
+                Map<String, String> fieldMappings, SolrQueryRequest req)
     {
         String shardPurpose = req.getParams().get(ShardParams.SHARDS_PURPOSE);
         boolean isRefinementRequest = (shardPurpose!=null)?(shardPurpose.equals(String.valueOf(ShardRequest.PURPOSE_REFINE_FACETS))) || (shardPurpose.equals(String.valueOf(ShardRequest.PURPOSE_REFINE_PIVOT_FACETS))):false;
