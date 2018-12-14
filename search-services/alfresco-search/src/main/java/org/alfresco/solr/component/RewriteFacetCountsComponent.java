@@ -129,9 +129,10 @@ public class RewriteFacetCountsComponent extends SearchComponent
 
 
     /**
-     * TODO
+     * Update pivot fields in the response to reference ACS properties rather than Solr fields.
      *
-     * @param rb
+     * @param rb The response builder.
+     * @param sections The names of the sections in the response to update.
      */
     private void rewritePivotFields(ResponseBuilder rb, String ... sections)
     {
@@ -189,28 +190,27 @@ public class RewriteFacetCountsComponent extends SearchComponent
         }
     }
 
-    /** TODO */
+    /**
+     * Update the returned ranges to reference ACS properties rather than Solr fields.
+     *
+     * @param rb The response builder.
+     * @param ranges The ranges to update.
+     */
     private void processRanges(ResponseBuilder rb, SimpleOrderedMap ranges) {
 
-    	BiMap<String, String> mappings = (BiMap<String, String>)rb.rsp.getValues().get("_range_mappings_");
+    	BiMap<String, String> mappings = (BiMap<String, String>) rb.rsp.getValues().get("_range_mappings_");
     	if(mappings != null)
     	{
-            for(int i = 0; i < ranges.size(); i++)
-            {
-                String name = ranges.getName(i);
-                String newName = mappings.inverse().get(name);
-                if(newName != null)
-                {
-                    ranges.setName(i, newName);
-                }
-            }
-    	}
+            updateToACSNaming(mappings, ranges);
+        }
     }
 
 	/**
-     * TODO
+     * Update the returned facet sections to reference ACS properties rather than Solr fields.
      *
-     * @param rb
+     * @param rb the response builder.
+     * @param mappingName The name of the mapping definition created in {@link RewriteFacetParametersComponent}.
+     * @param sections The names of the sections to be updated.
      */
     private void rewrite(ResponseBuilder rb, String mappingName, String ... sections)
     {
@@ -227,17 +227,26 @@ public class RewriteFacetCountsComponent extends SearchComponent
                 }
             }
             // This found already contains the private buckets
-            for (int i = 0; i < found.size(); i++)
+            updateToACSNaming(mappings, found);
+        }
+    }
+
+    /**
+     * Update entries in a list to reference ACS properties rather than Solr fields.
+     *
+     * @param mappings The mapping from ACS properties to Solr fields.
+     * @param propertyList The list to update.
+     */
+    private void updateToACSNaming(BiMap<String, String> mappings, NamedList<Object> propertyList)
+    {
+        for (int i = 0; i < propertyList.size(); i++)
+        {
+            String name = propertyList.getName(i);
+            String newName = mappings.inverse().get(name);
+            if (newName != null)
             {
-                String name = found.getName(i);
-                String newName = mappings.inverse().get(name);
-                if (newName != null)
-                {
-                    found.setName(i, newName);
-                }
+                propertyList.setName(i, newName);
             }
-            
-          
         }
     }
 
