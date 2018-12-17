@@ -22,7 +22,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
@@ -39,6 +38,7 @@ import org.junit.Test;
 
 /**
  * @author Joel
+ * @author Andrea Gazzarini
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
@@ -84,27 +84,31 @@ public class DistributedAlfrescoSolrTrackerRaceTest extends AbstractAlfrescoDist
         indexTransaction(txn, asList(errorNode, folderNode, fileNode), asList(errorMetaData, folderMetaData, fileMetaData));
         indexAclChangeSet(aclChangeSet, asList(acl, acl2), asList(aclReaders, aclReaders2));
 
-        System.out.println(backdatedCommitTimeMs + ":" + txnCommitTimeMs);
-
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
-        /*
-        * Query the index for the content
-        */
-        //This acl should have one record in each core with DBID sharding
+        // This ACL should have one record in each core with DBID sharding
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
+
+        // We should have 2 document in totals (1 folder and 1 file)
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 100000);
+
+        // There should be 1 with the folder node identifier.
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(folderNode.getId()))), 1, 80000);
+
+        // There should be 1 with the file node identifier.
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, 80000);
 
-        //This will run the query on the control client and the cluster and compare the result.
-        query(getDefaultTestClient(), true, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
-            params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
+        // and last but not least, the error node shouldn't be in the index.
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(errorNode.getId()))), 0, 80000);
 
+        // This will run the same query on the control client and the cluster and compare the result.
+        query(getDefaultTestClient(),
+                true,
+                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+                params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
     }
-
 }
-
