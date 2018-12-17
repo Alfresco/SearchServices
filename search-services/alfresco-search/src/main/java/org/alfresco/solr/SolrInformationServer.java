@@ -1632,7 +1632,7 @@ public class SolrInformationServer implements InformationServer
 
         RefCounted<SolrIndexSearcher> refCounted = null;
         IntArrayList docList;
-        Set<Long> childIds = new HashSet<>();
+        Set<Long> parentNodesId = new HashSet<>();
 
         try
         {
@@ -1666,7 +1666,7 @@ public class SolrInformationServer implements InformationServer
                 IndexableField indexableField = document.getField(FIELD_SOLR4_ID);
                 String id = indexableField.stringValue();
                 TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-                childIds.add(ids.dbId);
+                parentNodesId.add(ids.dbId);
             }
         }
         finally
@@ -1676,22 +1676,18 @@ public class SolrInformationServer implements InformationServer
 
         List<NodeMetaData> allNodeMetaDatas = new ArrayList<>();
 
-        for (Long childId : childIds)
+        for (Long parentNodeId : parentNodesId)
         {
             NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
-            nmdp.setFromNodeId(childId);
-            nmdp.setToNodeId(childId);
+            nmdp.setFromNodeId(parentNodeId);
+            nmdp.setToNodeId(parentNodeId);
             nmdp.setIncludeAclId(false);
-            nmdp.setIncludeAspects(false);
             nmdp.setIncludeChildAssociations(false);
             nmdp.setIncludeChildIds(true);
-            nmdp.setIncludeNodeRef(false);
             nmdp.setIncludeOwner(false);
             nmdp.setIncludeParentAssociations(false);
-            // We only care about the path and ancestors (which is included) for this case
             nmdp.setIncludePaths(true);
             nmdp.setIncludeProperties(false);
-            nmdp.setIncludeType(false);
             nmdp.setIncludeTxnId(true);
             // Gets only one
             List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
@@ -1717,7 +1713,7 @@ public class SolrInformationServer implements InformationServer
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Cascade Nodes Bulk version failed", e);
+            LOGGER.error("Exception while processing cascading updates from the parent nodes", e);
             // Bulk version failed, so do one at a time.
             /*
             for (NodeMetaData node : nodeMetaDatas)
