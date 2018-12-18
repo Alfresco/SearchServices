@@ -5281,6 +5281,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             }
         }
 
+
+        // * is returned by stringField but it is not correct in case of range queries.
+        if (firstString.equals("*")){
+            firstString = null;
+        }
+
+        if (lastString.equals("*")){
+            lastString = null;
+        }
+
         TermRangeQuery query = new TermRangeQuery(fieldInstance.getField(),
                 firstString == null ? null : new BytesRef(firstString),
                 lastString == null ? null : new BytesRef(lastString), includeLower, includeUpper);
