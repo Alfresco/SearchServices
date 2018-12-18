@@ -5283,11 +5283,11 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
 
 
         // * is returned by stringField but it is not correct in case of range queries.
-        if (firstString.equals("*")){
+        if (firstString != null && firstString.equals("*")){
             firstString = null;
         }
 
-        if (lastString.equals("*")){
+        if (lastString != null && lastString.equals("*")){
             lastString = null;
         }
 
