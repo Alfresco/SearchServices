@@ -20,9 +20,12 @@ import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
 import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 
+/**
+ * https://issues.alfresco.com/jira/browse/SEARCH-1359
+ * @author elia
+ *
+ */
 public class AFTSRangeQueryTest extends AbstractAlfrescoSolrTests {
-
-
 
     @BeforeClass
     public static void beforeClass() throws Exception
@@ -96,7 +99,7 @@ public class AFTSRangeQueryTest extends AbstractAlfrescoSolrTests {
     }
 
     @Test
-    public void testRangeQueries() throws Exception
+    public void testRangeQueriesNonTokenised() throws Exception
     {
         // test on cm:ratingScheme that is non tokenised.
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:ratingScheme:[n TO *]"), null), "*[count(//doc)=2]");
