@@ -356,7 +356,15 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     SolrIndexSearcher searcher = refCounted.get();
                     TopDocs topDocs = searcher.search(query, 10);
                     totalCount += topDocs.totalHits;
-                    //System.out.println("####### shard count:"+core.getName()+":"+totalCount);
+                    /*
+                    * it's preferrable to immediately call the decref and not potentially after 2 seconds,
+                    * there are multiple components accessing and incrementing the searcher reference around
+                    * (Tracker, Solr itself).
+                    * Keeping a reference count +1 for 2 seconds when not necessary could cause nasty side effects
+                    * (I verified that during debugging core closures in tests)
+                    * To keep it simple is recommended to not use directly the searcher but use SolrJ clients
+                    * to query: see https://issues.alfresco.com/jira/browse/SEARCH-1364
+                    * */
                     refCounted.decref();
                     refCountedDecremented = true;
                     Thread.sleep(2000);
