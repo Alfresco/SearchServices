@@ -18,6 +18,11 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.client.*;
@@ -28,19 +33,12 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * @author Joel
+ * @author Andrea Gazzarini
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
@@ -55,20 +53,19 @@ public class DistributedAlfrescoSolrTrackerRaceTest extends AbstractAlfrescoDist
     {
         putHandleDefaults();
 
-
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
         Acl acl = getAcl(aclChangeSet);
         Acl acl2 = getAcl(aclChangeSet);
 
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
-        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
+        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, singletonList("jim"), singletonList("phil"), null);
 
         Transaction txn = getTransaction(0, 2);
         long txnCommitTimeMs = txn.getCommitTimeMs();
 
-        //Subtract from the commit time to go beyond hole retention
-        long backdatedCommitTimeMs = txnCommitTimeMs-(4600000);
+        // Subtract from the commit time to go beyond hole retention
+        long backdatedCommitTimeMs = txnCommitTimeMs - 4600000;
         txn.setCommitTimeMs(backdatedCommitTimeMs);
 
         //Next create two nodes to update for the transaction
@@ -76,25 +73,16 @@ public class DistributedAlfrescoSolrTrackerRaceTest extends AbstractAlfrescoDist
         Node fileNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node errorNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
 
-
-        //Next create the NodeMetaData for each node. TODO: Add more metadata
+        // Next, create the node metadata for each node.
+        // Note: the error node metadata will cause an exception.
         NodeMetaData folderMetaData = getNodeMetaData(folderNode, txn, acl, "mike", null, false);
         NodeMetaData fileMetaData   = getNodeMetaData(fileNode, txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
-        //The errorNodeMetaData will cause an exception.
         NodeMetaData errorMetaData   = getNodeMetaData(errorNode, txn, acl, "lisa", ancestors(folderMetaData.getNodeRef()), true);
 
-        //Index the transaction, nodes, and nodeMetaDatas.
-        //Note that the content is automatically created by the test framework.
-        indexTransaction(txn,
-            list(errorNode, folderNode, fileNode),
-            list(errorMetaData, folderMetaData, fileMetaData));
-
-
-        indexAclChangeSet(aclChangeSet,
-            list(acl, acl2),
-            list(aclReaders, aclReaders2));
-
-        System.out.println(backdatedCommitTimeMs + ":" + txnCommitTimeMs);
+        // Index the transaction, nodes, and nodeMetaDatas.
+        // Note that the content is automatically created by the test framework.
+        indexTransaction(txn, asList(errorNode, folderNode, fileNode), asList(errorMetaData, folderMetaData, fileMetaData));
+        indexAclChangeSet(aclChangeSet, asList(acl, acl2), asList(aclReaders, aclReaders2));
 
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
@@ -102,20 +90,25 @@ public class DistributedAlfrescoSolrTrackerRaceTest extends AbstractAlfrescoDist
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
-        /*
-        * Query the index for the content
-        */
-        //This acl should have one record in each core with DBID sharding
+        // This ACL should have one record in each core with DBID sharding
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
+
+        // We should have 2 document in totals (1 folder and 1 file)
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 100000);
+
+        // There should be 1 with the folder node identifier.
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(folderNode.getId()))), 1, 80000);
+
+        // There should be 1 with the file node identifier.
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, 80000);
 
+        // and last but not least, the error node shouldn't be in the index.
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(errorNode.getId()))), 0, 80000);
 
-        //This will run the query on the control client and the cluster and compare the result.
-        query(getDefaultTestClient(), true, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
-            params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
-
+        // This will run the same query on the control client and the cluster and compare the result.
+        query(getDefaultTestClient(),
+                true,
+                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
+                params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
     }
-
 }
-
