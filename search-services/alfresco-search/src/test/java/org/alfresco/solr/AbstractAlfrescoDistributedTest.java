@@ -334,23 +334,28 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     /**
      * Waits until all the shards reach the desired count, or errors.
-     * @param query
-     * @param count
-     * @param waitMillis
-     * @param start
-     * @throws Exception
+     *
+     * @param query the query that will be executed for getting the expected results.
+     * @param count the expected results cardinality.
+     * @param waitMillis how many msecs the test will wait before one try and another.
+     * @param start the current timestamp, in msecs.
+     *
+     * @throws Exception in case the count check fails.
      */
     public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception
     {
         List<SolrCore> cores = getJettyCores(jettyShards);
         long timeOut = start+waitMillis;
         int totalCount = 0;
-        while (System.currentTimeMillis() < timeOut) {
+        while (System.currentTimeMillis() < timeOut)
+        {
             totalCount = 0;
-            for (SolrCore core : cores) {
+            for (SolrCore core : cores)
+            {
                 RefCounted<SolrIndexSearcher> refCounted = null;
                 boolean refCountedDecremented = false;
-                try {
+                try
+                {
                     refCounted = core.getSearcher();
                     
                     SolrIndexSearcher searcher = refCounted.get();
@@ -368,14 +373,18 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                     refCounted.decref();
                     refCountedDecremented = true;
                     Thread.sleep(2000);
-                } finally {
+                }
+                finally
+                {
                     if(refCounted!=null && !refCountedDecremented)
                     {
                         refCounted.decref();
                     }
                 }
             }
-            if (totalCount == count) {
+
+            if (totalCount == count)
+            {
                 return;
             }
         }
