@@ -291,22 +291,22 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<NodeMetaData> resultNodeMetaDatas = new ArrayList();
         List<Long> nodeIds = params.getNodeIds();
         if(nodeIds != null) {
             for (long nodeId : nodeIds) {
-                NodeMetaData nodeMetaData = nodeMetaDataMap.get(nodeId);
-                this.removeUnrequestedMetadata(nodeMetaData, params);
-                nodeMetaDatas.add(nodeMetaData);
+                NodeMetaData fullNodeMetadata = nodeMetaDataMap.get(nodeId);
+                NodeMetaData requestedMetadata = this.getOnlyRequestedMetadata(fullNodeMetadata, params);
+                resultNodeMetaDatas.add(requestedMetadata);
             }
         } else {
             Long fromId = params.getFromNodeId();
-            NodeMetaData nodeMetaData = nodeMetaDataMap.get(fromId);
-            this.removeUnrequestedMetadata(nodeMetaData,params);
-            nodeMetaDatas.add(nodeMetaData);
+            NodeMetaData fullNodeMetadata = nodeMetaDataMap.get(fromId);
+            NodeMetaData requestedMetadata = this.getOnlyRequestedMetadata(fullNodeMetadata, params);
+            resultNodeMetaDatas.add(requestedMetadata);
         }
 
-        return nodeMetaDatas;
+        return resultNodeMetaDatas;
     }
 
     /**
@@ -317,48 +317,64 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
      * @param nodeMetaData - node metadata to process
      * @param params - parameters that regulate the return of such metadata
      */
-    private void removeUnrequestedMetadata(NodeMetaData nodeMetaData, NodeMetaDataParameters params)
+    private NodeMetaData getOnlyRequestedMetadata(NodeMetaData nodeMetaData, NodeMetaDataParameters params)
     {
-        if (!params.isIncludeAclId())
+        NodeMetaData paramFiltered = new NodeMetaData();
+        paramFiltered.setId(nodeMetaData.getId());
+
+        if (params.isIncludeType())
         {
-            nodeMetaData.setAclId(0);
+            paramFiltered.setType(nodeMetaData.getType());
         }
-        if (!params.isIncludeAspects())
+        if (params.isIncludeAclId())
         {
-            nodeMetaData.setAspects(null);
+            paramFiltered.setAclId(nodeMetaData.getAclId());
         }
-        if (!params.isIncludeProperties())
+        if (params.isIncludeAspects())
         {
-            nodeMetaData.setProperties(null);
+            paramFiltered.setAspects(nodeMetaData.getAspects());
         }
-        if (!params.isIncludeChildAssociations())
+        if (params.isIncludeProperties())
         {
-            nodeMetaData.setChildAssocs(null);
+            paramFiltered.setProperties(nodeMetaData.getProperties());
         }
-        if (!params.isIncludeParentAssociations())
+        if (params.isIncludeChildAssociations())
         {
-            nodeMetaData.setParentAssocs(null);
+            paramFiltered.setChildAssocs(nodeMetaData.getChildAssocs());
         }
-        if (!params.isIncludeChildIds())
+        if (params.isIncludeParentAssociations())
         {
-            nodeMetaData.setChildIds(null);
+            paramFiltered.setParentAssocs(nodeMetaData.getParentAssocs());
+            paramFiltered.setParentAssocsCrc(nodeMetaData.getParentAssocsCrc());
         }
-        if (!params.isIncludePaths())
+        if (params.isIncludeChildIds())
         {
-            nodeMetaData.setPaths(null);
+            paramFiltered.setChildIds(nodeMetaData.getChildIds());
         }
-        if (!params.isIncludeOwner())
+        if (params.isIncludePaths())
         {
-            nodeMetaData.setOwner(null);
+            paramFiltered.setPaths(nodeMetaData.getPaths());
+            paramFiltered.setNamePaths(nodeMetaData.getNamePaths());
         }
-        if (!params.isIncludeNodeRef())
+        if (params.isIncludeOwner())
         {
-            nodeMetaData.setNodeRef(null);
+            paramFiltered.setOwner(nodeMetaData.getOwner());
         }
-        if (!params.isIncludeTxnId())
+        if (params.isIncludeNodeRef())
         {
-            nodeMetaData.setTxnId(0);
+            paramFiltered.setNodeRef(nodeMetaData.getNodeRef());
         }
+        if (params.isIncludeTxnId())
+        {
+            paramFiltered.setTxnId(nodeMetaData.getTxnId());
+        }
+        
+        /* Default metadata? they are not included in the parameters*/
+        paramFiltered.setAncestors(nodeMetaData.getAncestors());
+        paramFiltered.setAncestorPaths(nodeMetaData.getAncestorPaths());
+        paramFiltered.setTenantDomain(nodeMetaData.getTenantDomain());
+        
+        return paramFiltered;
     }
 
     public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
