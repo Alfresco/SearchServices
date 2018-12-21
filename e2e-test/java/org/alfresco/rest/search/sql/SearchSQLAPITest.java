@@ -681,4 +681,71 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.notNullValue());
     }
+
+    /** Check that a filter query can affect which results are included. */
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_11 }, priority = 16)
+    public void testFilterQuery() throws Exception
+    {
+        UserModel userPerm = dataUser.createRandomTestUser("UserSearchPerm");
+
+        dataUser.addUserToSite(userPerm, siteModel, UserRole.SiteContributor);
+
+        String siteSQL = "select SITE, CM_OWNER from alfresco where SITE='" + siteModel.getId() + "'";
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(siteSQL);
+
+        // Add a filter query to only include results from inside the site (i.e. all results).
+        String[] filterQuery = { "SITE:'" + siteModel.getId() + "'" };
+        sqlRequest.setFilterQuery(filterQuery);
+
+        // Results expected for query as User does has access to the private site
+        restClient.authenticateUser(userPerm).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.greaterThan(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.greaterThan(0));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("SITE"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase("[\"" + siteModel.getId() + "\"]"));
+
+        // Now try instead removing everything from the site (i.e. all results).
+        String[] inverseFilterQuery = { "-SITE:'" + siteModel.getId() + "'" };
+        sqlRequest.setFilterQuery(inverseFilterQuery);
+
+        restClient.authenticateUser(userPerm).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.is(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.is(0));
+        restClient.onResponse().assertThat().body("list.pagination.hasMoreItems", Matchers.is(false));
+        restClient.onResponse().assertThat().body("list.entries", Matchers.empty());
+    }
+
+    /** Check that the combination of multiple filter queries produce the intersection of results. */
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_11 }, priority = 17)
+    public void testCombiningFilterQueries() throws Exception
+    {
+        UserModel userPerm = dataUser.createRandomTestUser("UserSearchPerm");
+        dataUser.addUserToSite(userPerm, siteModel, UserRole.SiteContributor);
+
+        String siteSQL = "select cm_name from alfresco where SITE='" + siteModel.getId() + "'";
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(siteSQL);
+
+        // Add a filter query to only include results from inside the site (i.e. all results).
+        String[] filterQueries = { "-cm_name:'cars'", "-cm_name:'pangram'" };
+        sqlRequest.setFilterQuery(filterQueries);
+
+        // Results expected for query as User does has access to the private site
+        restClient.authenticateUser(userPerm).withSearchSqlAPI().searchSql(sqlRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.greaterThan(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.greaterThan(0));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("cm_name"));
+        // Check that pangram.txt and cars.txt were both filtered out.
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value",
+                    Matchers.not(Matchers.equalToIgnoringCase("pangram.txt")));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value",
+                    Matchers.not(Matchers.equalToIgnoringCase("cars.txt")));
+    }
 }

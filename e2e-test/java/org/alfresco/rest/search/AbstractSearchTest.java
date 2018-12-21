@@ -96,7 +96,7 @@ public class AbstractSearchTest extends RestTest
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file2);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
-        
+
         waitForIndexing(file4.getName(), true);
     }
     
@@ -190,7 +190,6 @@ public class AbstractSearchTest extends RestTest
      */
     public boolean waitForIndexing(String userQuery, boolean expectedInResults) throws Exception
     {
-        boolean found = false;
         boolean resultAsExpected = false;
         String expectedStatusCode = HttpStatus.OK.toString();
 
@@ -202,14 +201,7 @@ public class AbstractSearchTest extends RestTest
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
             {
-                if (response.getEntries().size() >= 1)
-                {
-                    found = true;
-                }
-                else
-                {
-                    found = false;
-                }
+                boolean found = !response.getEntries().isEmpty();
 
                 // Loop again if result is not as expected: To cater for solr lag: eventual consistency
                 resultAsExpected = (expectedInResults == found);
