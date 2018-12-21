@@ -28,7 +28,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.List;
 import java.util.Map;
 
-import com.carrotsearch.ant.tasks.junit4.dependencies.com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import com.sun.xml.xsom.impl.scd.Iterators;
 
 import org.apache.lucene.util.LuceneTestCase;
@@ -92,7 +92,7 @@ public class RewriteFacetParametersComponentTest
 
     /** Check that if no mincount is supplied for a field facet then it gets defaulted to 1. */
     @Test
-    public void rewriteMincountFacetFieldOption_MincountMissing()
+    public void rewriteMincountFacetFieldOption_mincountMissing_shouldSetGenericMinCountToOne()
     {
         // There are no existing facet parameters.
         ModifiableSolrParams fixed = new ModifiableSolrParams();
@@ -100,55 +100,110 @@ public class RewriteFacetParametersComponentTest
 
         Map<String, String> fieldMappings = ImmutableMap.of("NAME",
                     "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name");
-        List<String> facetNames = asList("{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name");
-
+        
         // Call the method under test.
-        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings, facetNames);
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
 
         // Check that the mincount is set to 1.
-        String actual = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name.facet.mincount");
+        String actual = fixed.get("facet.mincount");
         assertEquals("Expected the existing mincount to be preserved.", "1", actual);
     }
 
     /** Check that if the mincount is set as 0 then it is updated to be 1. */
     @Test
-    public void rewriteMincountFacetFieldOption_MincountSetZero()
+    public void rewriteMincountFacetFieldOption_mincountSetZero_shouldSetMincountToOne()
     {
         ModifiableSolrParams fixed = new ModifiableSolrParams();
         // The user has tried to set the mincount to zero.
-        when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount").iterator());
-        when(mockParams.getParams("f.NAME.facet.mincount")).thenReturn(new String[]{"0"});
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
+        when(mockParams.getParams("facet.mincount")).thenReturn(new String[]{"0"});
 
-        Map<String, String> fieldMappings = ImmutableMap.of("NAME",
-                    "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name");
-        List<String> facetNames = asList("{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name");
+        Map<String, String> fieldMappings = ImmutableMap.of(
+            "NAME",
+            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name","CONTENT",
+            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content");
 
         // Call the method under test.
-        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings, facetNames);
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
 
-        // Check that the mincount is kept as 2 and the field name is converted to the format stored by Solr.
-        String actual = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name.facet.mincount");
-        assertEquals("Expected the existing mincount to be preserved.", "1", actual);
+        // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
+        String actualCount = fixed.get("facet.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualCount);
+    }
+
+    @Test
+    public void rewriteMincountFacetFieldOption_perFieldMincountSetZero_shouldSetPerFieldMincountAndMincountToOne()
+    {
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        // The user has tried to set the mincount to zero.
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
+        when(mockParams.getParams("f.NAME.facet.mincount")).thenReturn(new String[]{"0"});
+        when(mockParams.getParams("f.CONTENT.facet.mincount")).thenReturn(new String[]{"0"});
+
+        Map<String, String> fieldMappings = ImmutableMap.of(
+            "NAME",
+            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name","CONTENT",
+            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content");
+
+        // Call the method under test.
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
+
+        // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
+        String actualNameCount = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name.facet.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualNameCount);
+        String actualContentCount = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content.facet.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualContentCount);
+        String actualCount = fixed.get("facet.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualCount);
+    }
+    
+    /** Check that if the mincount is set as 0 then it is updated to be 1. */
+    @Test
+    public void rewriteMincountFacetFieldOption_perFieldMincountSetZero_shouldSetPerFieldMincountToOne()
+    {
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        // The user has tried to set the mincount to zero.
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
+        when(mockParams.getParams("f.NAME.facet.mincount")).thenReturn(new String[]{"0"});
+        when(mockParams.getParams("f.CONTENT.facet.mincount")).thenReturn(new String[]{"0"});
+
+        Map<String, String> fieldMappings = ImmutableMap.of(
+            "NAME",
+                    "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name","CONTENT",
+            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content");
+
+        // Call the method under test.
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
+
+        // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
+        String actualNameCount = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name.facet.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualNameCount);
+        String actualContentCount = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content.facet.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualContentCount);
     }
 
     /** Check that if the user supplies a mincount of 2 then this is not changed. */
     @Test
-    public void rewriteMincountFacetFieldOption_MincountSetTwo()
+    public void rewriteMincountFacetFieldOption_perFieldMincountSetTwo_shouldKeepIt()
     {
         ModifiableSolrParams fixed = new ModifiableSolrParams();
-        // The user has set the mincount to 2.
-        when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount").iterator());
+        // The user has tried to set the mincount to zero.
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
         when(mockParams.getParams("f.NAME.facet.mincount")).thenReturn(new String[]{"2"});
+        when(mockParams.getParams("f.CONTENT.facet.mincount")).thenReturn(new String[]{"0"});
 
-        Map<String, String> fieldMappings = ImmutableMap.of("NAME",
-                    "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name");
-        List<String> facetNames = asList("{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name");
+        Map<String, String> fieldMappings = ImmutableMap.of(
+            "NAME",
+            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name","CONTENT",
+            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content");
 
         // Call the method under test.
-        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings, facetNames);
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
 
         // Check that the mincount is kept as 2 and the field name is converted to the format stored by Solr.
-        String actual = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name.facet.mincount");
-        assertEquals("Expected the existing mincount to be preserved.", "2", actual);
+        String actualNameCount = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name.facet.mincount");
+        assertEquals("Expected the mincount to be 2.", "2", actualNameCount);
+        String actualContentCount = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content.facet.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualContentCount);
     }
 }
