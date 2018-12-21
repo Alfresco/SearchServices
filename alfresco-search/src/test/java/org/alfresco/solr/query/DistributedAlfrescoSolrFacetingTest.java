@@ -80,4 +80,117 @@ import static org.hamcrest.core.Is.is;
         FacetField facetField = facetFields.get(0);
         Assert.assertThat(facetField.toString(), is(expectedFacetField));
     }
+
+    @Test
+    public void fieldFaceting_mincountMissing_shoulReturnFacetsMincountOne() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+        String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
+        String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}content","facet.field", "{http://www.alfresco.org/model/content/1.0}name"));
+
+        List<FacetField> facetFields = queryResponse.getFacetFields();
+        FacetField contentFacetField = facetFields.get(0);
+        Assert.assertThat(contentFacetField.toString(), is(expectedContentFacetField));
+        FacetField nameFacetField = facetFields.get(1);
+        Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
+    }
+    @Test
+    public void fieldFaceting_mincountSetZero_shoulReturnFacetsMincountOne() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+        String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
+        String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}content",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}name",
+                "facet.mincount", "0"));
+
+        List<FacetField> facetFields = queryResponse.getFacetFields();
+        FacetField contentFacetField = facetFields.get(0);
+        Assert.assertThat(contentFacetField.toString(), is(expectedContentFacetField));
+        FacetField nameFacetField = facetFields.get(1);
+        Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
+    }
+
+    @Test
+    public void fieldFaceting_perFieldMincountSetZero_shoulReturnFacetsMincountOne() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+        String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
+        String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}content",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}name",
+                "f.{http://www.alfresco.org/model/content/1.0}content.facet.mincount", "0",
+                "f.{http://www.alfresco.org/model/content/1.0}name.facet.mincount", "0"));
+
+        List<FacetField> facetFields = queryResponse.getFacetFields();
+        FacetField contentFacetField = facetFields.get(0);
+        Assert.assertThat(contentFacetField.toString(), is(expectedContentFacetField));
+        FacetField nameFacetField = facetFields.get(1);
+        Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
+    }
+    @Test
+    public void fieldFaceting_perFieldMincountSetTwo_shoulReturnFacetsMincountTwo() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+        String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4)]";
+        String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}content",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}name",
+                "f.{http://www.alfresco.org/model/content/1.0}content.facet.mincount", "2",
+                "f.{http://www.alfresco.org/model/content/1.0}name.facet.mincount", "0"));
+
+        List<FacetField> facetFields = queryResponse.getFacetFields();
+        FacetField contentFacetField = facetFields.get(0);
+        Assert.assertThat(contentFacetField.toString(), is(expectedContentFacetField));
+        FacetField nameFacetField = facetFields.get(1);
+        Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
+    }
+
+    private void indexSampleDocumentsForFacetingMincount() throws Exception
+    {
+        index(getDefaultTestClient(), 0, "id", "1", "suggest", "a", "_version_", "0",
+            "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contentone",
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nameone");
+        index(getDefaultTestClient(), 0, "id", "2", "suggest", "a", "_version_", "0",
+            "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+        index(getDefaultTestClient(), 0, "id", "3", "suggest", "a", "_version_", "0",
+            "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+        index(getDefaultTestClient(), 1, "id", "4", "suggest", "a", "_version_", "0",
+            "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+        index(getDefaultTestClient(), 1, "id", "5", "suggest", "a", "_version_", "0",
+            "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+        index(getDefaultTestClient(), 1, "id", "6", "suggest", "c", "_version_", "0",
+            "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contentthree",
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "namethree");
+        commit(getDefaultTestClient(), true);
+    }
 }
