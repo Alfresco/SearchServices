@@ -328,7 +328,7 @@ public class RewriteFacetParametersComponent extends SearchComponent
         for(Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
         {
             String name = it.next();
-            if(name.equals("fq") || name.startsWith("f.") || name.equals("facet.field") || name.equals("facet.date") || name.equals("facet.range") || name.equals("facet.pivot") || name.equals("facet.interval")|| name.endsWith("facet.mincount")|| name.startsWith("stats."))
+            if(name.equals("fq") || name.startsWith("f.") || name.equals("facet.field") || name.equals("facet.date") || name.equals("facet.range") || name.startsWith("facet.pivot") || name.equals("facet.interval")|| name.endsWith("facet.mincount")|| name.startsWith("stats."))
             {
                 // Already done 
                 continue;
@@ -375,7 +375,12 @@ public class RewriteFacetParametersComponent extends SearchComponent
             fixed.set(updatedParameterValues.getKey(), updatedParameterValues.getValue());
         }
 
-        fixed.set(paramName, 1);
+        String paramValue = params.get(paramName);
+        int value = 0;
+        if(paramValue!=null){
+            value = Integer.valueOf(paramValue);
+        }
+        fixed.set(paramName, Math.max(value, 1));
     }
 
     /**

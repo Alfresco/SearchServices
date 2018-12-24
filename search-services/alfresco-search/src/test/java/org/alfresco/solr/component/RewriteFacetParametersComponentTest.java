@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,8 +99,7 @@ public class RewriteFacetParametersComponentTest
         ModifiableSolrParams fixed = new ModifiableSolrParams();
         when(mockParams.getParameterNamesIterator()).thenReturn(Iterators.empty());
 
-        Map<String, String> fieldMappings = ImmutableMap.of("NAME",
-                    "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name");
+        Map<String, String> fieldMappings = new HashMap<>();
         
         // Call the method under test.
         rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
@@ -115,20 +115,35 @@ public class RewriteFacetParametersComponentTest
     {
         ModifiableSolrParams fixed = new ModifiableSolrParams();
         // The user has tried to set the mincount to zero.
-        when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
-        when(mockParams.getParams("facet.mincount")).thenReturn(new String[]{"0"});
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.mincount").iterator());
+        when(mockParams.get("facet.mincount")).thenReturn("0");
 
-        Map<String, String> fieldMappings = ImmutableMap.of(
-            "NAME",
-            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}name","CONTENT",
-            "{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content");
-
+        Map<String, String> fieldMappings = new HashMap<>();
+        
         // Call the method under test.
         rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
 
         // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
         String actualCount = fixed.get("facet.mincount");
         assertEquals("Expected the mincount to be 1.", "1", actualCount);
+    }
+
+    @Test
+    public void rewriteMincountFacetFieldOption_mincountSetTwo_shouldKeepIt()
+    {
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        // The user has tried to set the mincount to zero.
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.mincount").iterator());
+        when(mockParams.get("facet.mincount")).thenReturn("2");
+
+        Map<String, String> fieldMappings = new HashMap<>();
+
+        // Call the method under test.
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings);
+
+        // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
+        String actualCount = fixed.get("facet.mincount");
+        assertEquals("Expected the mincount to be 2.", "2", actualCount);
     }
 
     @Test
@@ -206,4 +221,60 @@ public class RewriteFacetParametersComponentTest
         String actualContentCount = fixed.get("f.{!afts key=SEARCH.FACET_FIELDS.LOCATION}text@s____@{http://www.alfresco.org/model/content/1.0}content.facet.mincount");
         assertEquals("Expected the mincount to be 1.", "1", actualContentCount);
     }
+
+    
+    @Test
+    public void rewriteMincountFacetPivotOption_mincountMissing_shouldSetPivotMinCountToOne()
+    {
+        // There are no existing facet parameters.
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        when(mockParams.getParameterNamesIterator()).thenReturn(Iterators.empty());
+
+        Map<String, String> fieldMappings = new HashMap<>();
+
+        // Call the method under test.
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.pivot.mincount", fieldMappings);
+
+        // Check that the mincount is set to 1.
+        String actual = fixed.get("facet.pivot.mincount");
+        assertEquals("Expected the existing mincount to be preserved.", "1", actual);
+    }
+
+    /** Check that if the mincount is set as 0 then it is updated to be 1. */
+    @Test
+    public void rewriteMincountFacetPivotOption_mincountSetZero_shouldSetMincountToOne()
+    {
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        // The user has tried to set the mincount to zero.
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.pivot.mincount").iterator());
+        when(mockParams.get("facet.pivot.mincount")).thenReturn("0");
+
+        Map<String, String> fieldMappings = new HashMap<>();
+
+        // Call the method under test.
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.pivot.mincount", fieldMappings);
+
+        // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
+        String actualCount = fixed.get("facet.pivot.mincount");
+        assertEquals("Expected the mincount to be 1.", "1", actualCount);
+    }
+
+    @Test
+    public void rewriteMincountFacetPivotOption_mincountSetTwo_shouldKeepIt()
+    {
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        // The user has tried to set the mincount to zero.
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.pivot.mincount").iterator());
+        when(mockParams.get("facet.pivot.mincount")).thenReturn("2");
+
+        Map<String, String> fieldMappings = new HashMap<>();
+
+        // Call the method under test.
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.pivot.mincount", fieldMappings);
+
+        // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
+        String actualCount = fixed.get("facet.pivot.mincount");
+        assertEquals("Expected the mincount to be 2.", "2", actualCount);
+    }
+    
 }
