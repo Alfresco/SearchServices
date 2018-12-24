@@ -22,7 +22,9 @@ import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.PivotField;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.util.NamedList;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,7 +84,7 @@ import static org.hamcrest.core.Is.is;
     }
 
     @Test
-    public void fieldFaceting_mincountMissing_shoulReturnFacetsMincountOne() throws Exception
+    public void fieldFaceting_mincountMissing_shouldReturnFacetsMincountOne() throws Exception
     {
         indexSampleDocumentsForFacetingMincount();
         String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
@@ -101,8 +103,46 @@ import static org.hamcrest.core.Is.is;
         FacetField nameFacetField = facetFields.get(1);
         Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
     }
+
     @Test
-    public void fieldFaceting_mincountSetZero_shoulReturnFacetsMincountOne() throws Exception
+    public void pivotFaceting_mincountMissing_shouldReturnFacetsMincountOne() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+       
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.pivot", "{http://www.alfresco.org/model/content/1.0}content,{http://www.alfresco.org/model/content/1.0}name"));
+
+        NamedList<List<PivotField>> facetPivot = queryResponse.getFacetPivot();
+        
+        List<PivotField> firstLevelValues = facetPivot.getVal(0);
+        Assert.assertThat(firstLevelValues.size(), is(2));
+        PivotField firstLevelPivot0 = firstLevelValues.get(0);
+        Assert.assertThat(firstLevelPivot0.getValue(), is("contenttwo"));
+        Assert.assertThat(firstLevelPivot0.getCount(), is(4));
+        
+        List<PivotField> firstLevelPivot0Children = firstLevelPivot0.getPivot();
+        Assert.assertThat(firstLevelPivot0Children.size(), is(1));
+        PivotField secondLevelPivot0 = firstLevelPivot0Children.get(0);
+        Assert.assertThat(secondLevelPivot0.getValue(), is("nametwo"));
+        Assert.assertThat(secondLevelPivot0.getCount(), is(4));
+
+        PivotField firstLevelPivot1 = firstLevelValues.get(1);
+        Assert.assertThat(firstLevelPivot1.getValue(), is("contentone"));
+        Assert.assertThat(firstLevelPivot1.getCount(), is(1));
+        
+        List<PivotField> firstLevelPivot1Children = firstLevelPivot1.getPivot();
+        Assert.assertThat(firstLevelPivot1Children.size(), is(1));
+        PivotField secondLevelPivot1 = firstLevelPivot1Children.get(0);
+        Assert.assertThat(secondLevelPivot1.getValue(), is("nameone"));
+        Assert.assertThat(secondLevelPivot1.getCount(), is(1));
+    }
+    
+    @Test
+    public void fieldFaceting_mincountSetZero_shouldReturnFacetsMincountOne() throws Exception
     {
         indexSampleDocumentsForFacetingMincount();
         String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
@@ -123,6 +163,94 @@ import static org.hamcrest.core.Is.is;
         FacetField nameFacetField = facetFields.get(1);
         Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
     }
+
+    @Test
+    public void pivotFaceting_mincountSetZero_shouldReturnFacetsMincountOne() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.pivot", "{http://www.alfresco.org/model/content/1.0}content,{http://www.alfresco.org/model/content/1.0}name","facet.pivot.mincount","0"));
+
+        NamedList<List<PivotField>> facetPivot = queryResponse.getFacetPivot();
+
+        List<PivotField> firstLevelValues = facetPivot.getVal(0);
+        Assert.assertThat(firstLevelValues.size(), is(2));
+        PivotField firstLevelPivot0 = firstLevelValues.get(0);
+        Assert.assertThat(firstLevelPivot0.getValue(), is("contenttwo"));
+        Assert.assertThat(firstLevelPivot0.getCount(), is(4));
+
+        List<PivotField> firstLevelPivot0Children = firstLevelPivot0.getPivot();
+        Assert.assertThat(firstLevelPivot0Children.size(), is(1));
+        PivotField secondLevelPivot0 = firstLevelPivot0Children.get(0);
+        Assert.assertThat(secondLevelPivot0.getValue(), is("nametwo"));
+        Assert.assertThat(secondLevelPivot0.getCount(), is(4));
+
+        PivotField firstLevelPivot1 = firstLevelValues.get(1);
+        Assert.assertThat(firstLevelPivot1.getValue(), is("contentone"));
+        Assert.assertThat(firstLevelPivot1.getCount(), is(1));
+
+        List<PivotField> firstLevelPivot1Children = firstLevelPivot1.getPivot();
+        Assert.assertThat(firstLevelPivot1Children.size(), is(1));
+        PivotField secondLevelPivot1 = firstLevelPivot1Children.get(0);
+        Assert.assertThat(secondLevelPivot1.getValue(), is("nameone"));
+        Assert.assertThat(secondLevelPivot1.getCount(), is(1));
+    }
+
+    @Test
+    public void fieldFaceting_mincountSetTwo_shouldReturnFacetsOriginalMincount() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+        String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4)]";
+        String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4)]";
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}content",
+                "facet.field", "{http://www.alfresco.org/model/content/1.0}name",
+                "facet.mincount", "2"));
+
+        List<FacetField> facetFields = queryResponse.getFacetFields();
+        FacetField contentFacetField = facetFields.get(0);
+        Assert.assertThat(contentFacetField.toString(), is(expectedContentFacetField));
+        FacetField nameFacetField = facetFields.get(1);
+        Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
+    }
+
+    @Test
+    public void pivotFaceting_mincountSetTwo_shouldReturnFacetsOriginalMincount() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.pivot", "{http://www.alfresco.org/model/content/1.0}content,{http://www.alfresco.org/model/content/1.0}name","facet.pivot.mincount","2"));
+
+        NamedList<List<PivotField>> facetPivot = queryResponse.getFacetPivot();
+
+        List<PivotField> firstLevelValues = facetPivot.getVal(0);
+        Assert.assertThat(firstLevelValues.size(), is(1));
+        PivotField firstLevelPivot0 = firstLevelValues.get(0);
+        Assert.assertThat(firstLevelPivot0.getValue(), is("contenttwo"));
+        Assert.assertThat(firstLevelPivot0.getCount(), is(4));
+
+        List<PivotField> firstLevelPivot0Children = firstLevelPivot0.getPivot();
+        Assert.assertThat(firstLevelPivot0Children.size(), is(1));
+        PivotField secondLevelPivot0 = firstLevelPivot0Children.get(0);
+        Assert.assertThat(secondLevelPivot0.getValue(), is("nametwo"));
+        Assert.assertThat(secondLevelPivot0.getCount(), is(4));
+    }
+    
 
     @Test
     public void fieldFaceting_perFieldMincountSetZero_shoulReturnFacetsMincountOne() throws Exception
