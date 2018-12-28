@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.HashBiMap;
 
@@ -54,21 +55,26 @@ public class RewriteFacetParametersComponent extends SearchComponent
     @Override
     public void prepare(ResponseBuilder rb) throws IOException
     {
-         SolrQueryRequest req = rb.req;
-         SolrParams params = req.getParams();
-         
-         ModifiableSolrParams fixed = new ModifiableSolrParams();
-         fixFilterQueries(fixed, params, rb);
-         fixFacetParams(fixed, params, rb);
-         copyOtherQueryParams(fixed, params);
-         fixRows(fixed, params, rb);
-         
-         if(fixed.get(CommonParams.SORT) != null)
-         {
-             fixed.remove(CommonParams.RQ);
-         }
-         
-         req.setParams(fixed);
+        SolrQueryRequest req = rb.req;
+        SolrParams params = req.getParams();
+
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        ModifiableSolrParams allParamsWithFix = new ModifiableSolrParams(params);
+        fixFilterQueries(fixed, params, rb);
+        fixFacetParams(fixed, params, rb);
+        fixRows(fixed, params, rb);
+        if (fixed.get(CommonParams.SORT) != null)
+        {
+            fixed.remove(CommonParams.RQ);
+        }
+        
+        Set<String> fixedParameterNames = fixed.getParameterNames();
+        for (String fixedParam : fixedParameterNames)
+        {
+            allParamsWithFix.set(fixedParam, fixed.getParams(fixedParam));
+        }
+
+        req.setParams(allParamsWithFix);
     }
     
     /**
@@ -316,28 +322,6 @@ public class RewriteFacetParametersComponent extends SearchComponent
         	}
         }
         return false;
-    }
-
-
-    /**
-     * @param fixed
-     * @param params
-     */
-    private void copyOtherQueryParams(ModifiableSolrParams fixed, SolrParams params)
-    {
-        for(Iterator<String> it = params.getParameterNamesIterator(); it.hasNext(); /**/)
-        {
-            String name = it.next();
-            if(name.equals("fq") || name.startsWith("f.") || name.equals("facet.field") || name.equals("facet.date") || name.equals("facet.range") || name.startsWith("facet.pivot") || name.equals("facet.interval")|| name.endsWith("facet.mincount")|| name.startsWith("stats."))
-            {
-                // Already done 
-                continue;
-            }    
-            else
-            {
-                fixed.set(name, params.getParams(name));
-            }
-        }
     }
 
     /**
