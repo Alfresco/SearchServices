@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ABSOLUTE} %t %-5p %30.30c %x - %m%n" />
+        </layout>
+    </appender>
+
+    <!-- ##### ALL ALFRESCO MESSAGES ##### -->
+    <!--
+        <category name="org.apache.solr">
+            <priority value="INFO"/>
+        </category>
+    -->
+
+    <!-- ##### METADATA TRACKER MESSAGES ##### -->
+    <!--
+        <category name="org.alfresco.solr.tracker.MetadataTracker">
+            <priority value="DEBUG"/>
+        </category>
+    -->
+    <!-- ##### ALL SOLR MESSAGES ##### -->
+    <!--
+        <category name="org.apache.solr">
+            <priority value="INFO"/>
+        </category>
+    -->
+
+    <!-- ##### ONLY SOLR QUERIES ##### -->
+    <!--
+        <category name="org.apache.solr.core.SolrCore.Request">
+            <priority value="DEBUG"/>
+        </category>
+    -->
+
+    <root>
+        <priority value="ERROR"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</log4j:configuration>
