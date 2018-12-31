@@ -63,10 +63,6 @@ public class RewriteFacetParametersComponent extends SearchComponent
         fixFilterQueries(fixed, params, rb);
         fixFacetParams(fixed, params, rb);
         fixRows(fixed, params, rb);
-        if (fixed.get(CommonParams.SORT) != null)
-        {
-            fixed.remove(CommonParams.RQ);
-        }
         
         Set<String> fixedParameterNames = fixed.getParameterNames();
         for (String fixedParam : fixedParameterNames)
@@ -74,6 +70,11 @@ public class RewriteFacetParametersComponent extends SearchComponent
             allParamsWithFix.set(fixedParam, fixed.getParams(fixedParam));
         }
 
+        if (allParamsWithFix.get(CommonParams.SORT) != null)
+        {
+            allParamsWithFix.remove(CommonParams.RQ);
+        }
+        
         req.setParams(allParamsWithFix);
     }
     
