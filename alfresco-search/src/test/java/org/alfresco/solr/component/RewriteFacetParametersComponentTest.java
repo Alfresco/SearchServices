@@ -58,6 +58,7 @@ public class RewriteFacetParametersComponentTest
     public void setUp()
     {
         initMocks(this);
+        when(mockRequest.getParams()).thenReturn(mockParams);
     }
 
     /**
@@ -102,7 +103,7 @@ public class RewriteFacetParametersComponentTest
         // There are no existing facet parameters.
         ModifiableSolrParams fixed = new ModifiableSolrParams();
         when(mockParams.getParameterNamesIterator()).thenReturn(Iterators.empty());
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = new HashMap<>();
         
@@ -123,7 +124,7 @@ public class RewriteFacetParametersComponentTest
         // The user has tried to set the mincount to zero.
         when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.mincount").iterator());
         when(mockParams.get("facet.mincount")).thenReturn("0");
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
         
         Map<String, String> fieldMappings = new HashMap<>();
         
@@ -137,13 +138,33 @@ public class RewriteFacetParametersComponentTest
     }
 
     @Test
+    public void rewriteShardedRequestParameters_mincountSetZero_shouldKeepMincountToZero()
+    {
+        ModifiableSolrParams fixed = new ModifiableSolrParams();
+        // The user has tried to set the mincount to zero.
+        when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.mincount").iterator());
+        when(mockParams.get("facet.mincount")).thenReturn("0");
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+
+        Map<String, String> fieldMappings = new HashMap<>();
+
+        // Call the method under test.
+        rewriteFacetParametersComponent.rewriteMincountFacetFieldOption(fixed, mockParams, "facet.mincount", fieldMappings,
+            mockRequest);
+
+        // Check that the mincount is set to 1 and the field name is converted to the format stored by Solr.
+        String actualCount = fixed.get("facet.mincount");
+        assertEquals("Expected no fixed value", null, actualCount);
+    }
+
+    @Test
     public void rewriteMincountFacetFieldOption_mincountSetTwo_shouldKeepIt()
     {
         ModifiableSolrParams fixed = new ModifiableSolrParams();
         // The user has tried to set the mincount to zero.
         when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.mincount").iterator());
         when(mockParams.get("facet.mincount")).thenReturn("2");
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = new HashMap<>();
 
@@ -164,7 +185,7 @@ public class RewriteFacetParametersComponentTest
         when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
         when(mockParams.getParams("f.NAME.facet.mincount")).thenReturn(new String[]{"0"});
         when(mockParams.getParams("f.CONTENT.facet.mincount")).thenReturn(new String[]{"0"});
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = ImmutableMap.of(
             "NAME",
@@ -193,7 +214,7 @@ public class RewriteFacetParametersComponentTest
         when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
         when(mockParams.getParams("f.NAME.facet.mincount")).thenReturn(new String[]{"0"});
         when(mockParams.getParams("f.CONTENT.facet.mincount")).thenReturn(new String[]{"0"});
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = ImmutableMap.of(
             "NAME",
@@ -220,7 +241,7 @@ public class RewriteFacetParametersComponentTest
         when(mockParams.getParameterNamesIterator()).thenReturn(asList("f.NAME.facet.mincount","f.CONTENT.facet.mincount").iterator());
         when(mockParams.getParams("f.NAME.facet.mincount")).thenReturn(new String[]{"2"});
         when(mockParams.getParams("f.CONTENT.facet.mincount")).thenReturn(new String[]{"0"});
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = ImmutableMap.of(
             "NAME",
@@ -245,7 +266,7 @@ public class RewriteFacetParametersComponentTest
         // There are no existing facet parameters.
         ModifiableSolrParams fixed = new ModifiableSolrParams();
         when(mockParams.getParameterNamesIterator()).thenReturn(Iterators.empty());
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = new HashMap<>();
 
@@ -266,7 +287,7 @@ public class RewriteFacetParametersComponentTest
         // The user has tried to set the mincount to zero.
         when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.pivot.mincount").iterator());
         when(mockParams.get("facet.pivot.mincount")).thenReturn("0");
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = new HashMap<>();
 
@@ -286,7 +307,7 @@ public class RewriteFacetParametersComponentTest
         // The user has tried to set the mincount to zero.
         when(mockParams.getParameterNamesIterator()).thenReturn(asList("facet.pivot.mincount").iterator());
         when(mockParams.get("facet.pivot.mincount")).thenReturn("2");
-        when(mockRequest.getParams().get(ShardParams.SHARDS_PURPOSE)).thenReturn(String.valueOf(ShardRequest.PURPOSE_GET_FACETS));
+        when(mockParams.get(ShardParams.SHARDS_PURPOSE)).thenReturn(null);
 
         Map<String, String> fieldMappings = new HashMap<>();
 
