@@ -204,8 +204,6 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
         RestGenericFacetResponseModel rangeResponse = bucket.getFacets().get(0);
         rangeResponse.assertThat().field("type").is("range");
-        assertTrue(rangeResponse.getBuckets().size()>0);
-
     }
 
     private void assertPivotResponse(SearchResponse response, String field, String alabel) throws Exception
