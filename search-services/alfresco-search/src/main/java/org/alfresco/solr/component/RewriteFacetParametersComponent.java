@@ -211,7 +211,7 @@ public class RewriteFacetParametersComponent extends SearchComponent
         rewriteFacetFieldOptions(fixed, params, "facet.sort", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.limit", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.offset", fieldMappings);
-        rewriteMincountFacetFieldOption(fixed, params, "facet.mincount", fieldMappings);
+        rewriteMincountFacetFieldOption(fixed, params, "facet.mincount", fieldMappings,rb.req);
         rewriteFacetFieldOptions(fixed, params, "facet.missing", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.method", fieldMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.enum.cache.minDF", fieldMappings);
@@ -226,7 +226,7 @@ public class RewriteFacetParametersComponent extends SearchComponent
         rewriteFacetFieldOptions(fixed, params, "facet.range.method", rangeMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.range.limit", rangeMappings);
 
-        rewriteMincountFacetFieldOption(fixed, params, "facet.pivot.mincount", pivotMappings);
+        rewriteMincountFacetFieldOption(fixed, params, "facet.pivot.mincount", pivotMappings, rb.req);
         rewriteFacetFieldOptions(fixed, params, "facet.sort", pivotMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.limit", pivotMappings);
         rewriteFacetFieldOptions(fixed, params, "facet.offset", pivotMappings);
@@ -331,40 +331,49 @@ public class RewriteFacetParametersComponent extends SearchComponent
      * @param params The original params object.
      * @param paramName The name of the mincount parameter to rewrite (e.g. "facet.mincount" or "facet.pivot.mincount").
      * @param fieldMappings A list of mappings from Alfresco property names to Solr field names.
-     * @param facetNames The list of all fields for this facet type.
-     *
-     * Note: Set to protected to allow unit testing.
+     * @param req The Solr request
      */
-    protected void rewriteMincountFacetFieldOption(ModifiableSolrParams fixed, SolrParams params, String paramName,
-                Map<String, String> fieldMappings)
+    protected void rewriteMincountFacetFieldOption(ModifiableSolrParams fixed, SolrParams params, String paramName, Map<String, String> fieldMappings, SolrQueryRequest req)
     {
         rewriteFacetFieldOptions(fixed, params, paramName, fieldMappings);
 
-        // Update any existing mincount entries for facets.
-        Map<String, Integer> updatedValues = new HashMap<>();
-        for (Iterator<String> renamedParameters = fixed.getParameterNamesIterator(); renamedParameters.hasNext(); )
+        String shardPurpose = req.getParams().get(ShardParams.SHARDS_PURPOSE);
+        boolean isInitialDistributedRequest = (shardPurpose==null);
+        /*
+        * After the initial Search request, in case of Sharding the Solr node will build additional http requests to the other shards.
+        * These requests may have specific parameters rewritten by Solr internally.
+        * It's not recommended to rewrite them, because some side effect may happen.
+        * Only the initial request parameters may be rewritten.
+        * */
+        if(isInitialDistributedRequest)
         {
-            String solrParameter = renamedParameters.next();
-            if (solrParameter.endsWith("." + paramName))
+            // Update any existing mincount entries for facets.
+            Map<String, Integer> updatedValues = new HashMap<>();
+            for (Iterator<String> renamedParameters = fixed.getParameterNamesIterator(); renamedParameters.hasNext(); )
             {
-                // If mincount is set then renamedParameters must be an integer.
-                int value = Integer.valueOf(fixed.get(solrParameter));
-                // Don't directly edit the params while we're iterating through the entries.
-                updatedValues.put(solrParameter, Math.max(value, 1));
+                String solrParameter = renamedParameters.next();
+                if (solrParameter.endsWith("." + paramName))
+                {
+                    // If mincount is set then renamedParameters must be an integer.
+                    int value = Integer.valueOf(fixed.get(solrParameter));
+                    // Don't directly edit the params while we're iterating through the entries.
+                    updatedValues.put(solrParameter, Math.max(value, 1));
+                }
             }
-        }
-        // Now we've finished iterating, update the fixed parameters.
-        for (Map.Entry<String, Integer> updatedParameterValues : updatedValues.entrySet())
-        {
-            fixed.set(updatedParameterValues.getKey(), updatedParameterValues.getValue());
-        }
+            // Now we've finished iterating, update the fixed parameters.
+            for (Map.Entry<String, Integer> updatedParameterValues : updatedValues.entrySet())
+            {
+                fixed.set(updatedParameterValues.getKey(), updatedParameterValues.getValue());
+            }
 
-        String paramValue = params.get(paramName);
-        int value = 0;
-        if(paramValue!=null){
-            value = Integer.valueOf(paramValue);
+            String paramValue = params.get(paramName);
+            int value = 0;
+            if (paramValue != null)
+            {
+                value = Integer.valueOf(paramValue);
+            }
+            fixed.set(paramName, Math.max(value, 1));
         }
-        fixed.set(paramName, Math.max(value, 1));
     }
 
     /**
