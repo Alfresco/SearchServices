@@ -240,7 +240,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             state.setCheckedFirstTransactionTime(true);
             log.info("No transactions found - no verification required");
 
-            firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -252,7 +252,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         
         if (!state.isCheckedFirstTransactionTime())
         {
-            firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -285,7 +285,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             if (firstTransactions == null)
             {
-                firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+                firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
             }
             
             setLastTxCommitTimeAndTxIdInTrackerState(firstTransactions, state);
@@ -1049,7 +1049,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
-        Transactions firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+        Transactions firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
         if(firstTransactions.getTransactions().size() > 0)
         {
             Transaction firstTransaction = firstTransactions.getTransactions().get(0);
