@@ -201,8 +201,8 @@ public class RewriteFacetParametersComponent extends SearchComponent
         rewriteFacetFieldList(fixed, params, "facet.pivot", pivotMappings, rb.req);
         rewriteFacetFieldList(fixed, params, "facet.interval", intervalMappings, rb.req);
 
-        List<String> fieldStats = rewriteFacetFieldList(fixed, params, "stats.field", statsFieldMappings, rb.req);
-        List<String> facetStats = rewriteFacetFieldList(fixed, params, "stats.facet", statsFacetMappings, rb.req);
+        rewriteFacetFieldList(fixed, params, "stats.field", statsFieldMappings, rb.req);
+        rewriteFacetFieldList(fixed, params, "stats.facet", statsFacetMappings, rb.req);
         
         mapFacetFunctions(fixed, params, "facet.field", functionMappings);
         
