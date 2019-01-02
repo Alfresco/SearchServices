@@ -24,6 +24,7 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.PivotField;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.RangeFacet;
 import org.apache.solr.common.util.NamedList;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -299,26 +300,130 @@ import static org.hamcrest.core.Is.is;
         Assert.assertThat(nameFacetField.toString(), is(expectedNameFacetField));
     }
 
+    @Test
+    public void rangeFaceting_mincountMissing_shouldReturnFacetsMincountOne() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.range", "{http://www.alfresco.org/model/content/1.0}created",
+                "facet.range.start", "2000-01-02T00:00:00Z",
+                "facet.range.end", "2020-01-02T00:00:00Z",
+                "facet.range.gap", "+100DAY"));
+        
+        //facet.distrib.mco=true
+        List<RangeFacet> facetRanges = queryResponse.getFacetRanges();
+        assertThat(facetRanges.size(),is(1));
+        RangeFacet createdDateRangeFacet = facetRanges.get(0);
+        List<RangeFacet.Count> createdDateCounts = createdDateRangeFacet.getCounts();
+        
+        assertThat(createdDateCounts.size(),is(4));
+        assertThat(createdDateCounts.get(0).getValue(),is("2014-10-15T00:00:00Z"));
+        assertThat(createdDateCounts.get(0).getCount(),is(2));
+
+        assertThat(createdDateCounts.get(1).getValue(),is("2015-01-23T00:00:00Z"));
+        assertThat(createdDateCounts.get(1).getCount(),is(1));
+
+        assertThat(createdDateCounts.get(2).getValue(),is("2015-11-19T00:00:00Z"));
+        assertThat(createdDateCounts.get(2).getCount(),is(1));
+
+        assertThat(createdDateCounts.get(3).getValue(),is("2016-12-23T00:00:00Z"));
+        assertThat(createdDateCounts.get(3).getCount(),is(1));
+    }
+
+    @Test
+    public void rangeFaceting_mincountSetZero_shouldReturnFacetsMincountOne() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.range", "{http://www.alfresco.org/model/content/1.0}created",
+                "facet.range.start", "2000-01-02T00:00:00Z",
+                "facet.range.end", "2020-01-02T00:00:00Z",
+                "facet.range.gap", "+100DAY",
+                "facet.mincount", "0"));
+
+        //facet.distrib.mco=true
+        List<RangeFacet> facetRanges = queryResponse.getFacetRanges();
+        assertThat(facetRanges.size(),is(1));
+        RangeFacet createdDateRangeFacet = facetRanges.get(0);
+        List<RangeFacet.Count> createdDateCounts = createdDateRangeFacet.getCounts();
+
+        assertThat(createdDateCounts.size(),is(4));
+        assertThat(createdDateCounts.get(0).getValue(),is("2014-10-15T00:00:00Z"));
+        assertThat(createdDateCounts.get(0).getCount(),is(2));
+
+        assertThat(createdDateCounts.get(1).getValue(),is("2015-01-23T00:00:00Z"));
+        assertThat(createdDateCounts.get(1).getCount(),is(1));
+
+        assertThat(createdDateCounts.get(2).getValue(),is("2015-11-19T00:00:00Z"));
+        assertThat(createdDateCounts.get(2).getCount(),is(1));
+
+        assertThat(createdDateCounts.get(3).getValue(),is("2016-12-23T00:00:00Z"));
+        assertThat(createdDateCounts.get(3).getCount(),is(1));
+    }
+
+    @Test
+    public void rangeFaceting_mincountSetTwo_shouldReturnFacetsMincountTwo() throws Exception
+    {
+        indexSampleDocumentsForFacetingMincount();
+
+        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        putHandleDefaults();
+
+        QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
+            params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "0", "fl", "score,id", "facet", "true",
+                "facet.range", "{http://www.alfresco.org/model/content/1.0}created",
+                "facet.range.start", "2000-01-02T00:00:00Z",
+                "facet.range.end", "2020-01-02T00:00:00Z",
+                "facet.range.gap", "+100DAY",
+                "facet.mincount", "2"));
+
+        //facet.distrib.mco=true
+        List<RangeFacet> facetRanges = queryResponse.getFacetRanges();
+        assertThat(facetRanges.size(),is(1));
+        RangeFacet createdDateRangeFacet = facetRanges.get(0);
+        List<RangeFacet.Count> createdDateCounts = createdDateRangeFacet.getCounts();
+
+        assertThat(createdDateCounts.size(),is(1));
+        assertThat(createdDateCounts.get(0).getValue(),is("2014-10-15T00:00:00Z"));
+        assertThat(createdDateCounts.get(0).getCount(),is(2));
+    }
+
     private void indexSampleDocumentsForFacetingMincount() throws Exception
     {
         index(getDefaultTestClient(), 0, "id", "1", "suggest", "a", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contentone",
-            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nameone");
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nameone",
+            "datetime@sd@{http://www.alfresco.org/model/content/1.0}created", "2015-01-02T00:00:00Z");
         index(getDefaultTestClient(), 0, "id", "2", "suggest", "a", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
-            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo",
+            "datetime@sd@{http://www.alfresco.org/model/content/1.0}created", "2015-01-02T00:00:00Z");
         index(getDefaultTestClient(), 0, "id", "3", "suggest", "a", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
-            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo",
+            "datetime@sd@{http://www.alfresco.org/model/content/1.0}created", "2015-02-01T00:00:00Z");
         index(getDefaultTestClient(), 1, "id", "4", "suggest", "a", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
-            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo",
+            "datetime@sd@{http://www.alfresco.org/model/content/1.0}created", "2016-02-01T00:00:00Z");
         index(getDefaultTestClient(), 1, "id", "5", "suggest", "a", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contenttwo",
-            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo");
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "nametwo",
+            "datetime@sd@{http://www.alfresco.org/model/content/1.0}created", "2017-02-01T00:00:00Z");
         index(getDefaultTestClient(), 1, "id", "6", "suggest", "c", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contentthree",
-            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "namethree");
+            "text@s____@{http://www.alfresco.org/model/content/1.0}name", "namethree",
+            "datetime@sd@{http://www.alfresco.org/model/content/1.0}created", "2017-02-01T00:00:00Z");
         commit(getDefaultTestClient(), true);
     }
 }
