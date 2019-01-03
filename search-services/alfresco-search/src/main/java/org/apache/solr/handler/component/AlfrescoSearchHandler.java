@@ -476,7 +476,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 								// this behavior since it did not work this way
 								// prior to 5.1
 								if (req.getCore().getSolrConfig().luceneMatchVersion
-										.onOrAfter(Version.LUCENE_5_1_0)) {
+										.onOrAfter(Version.LATEST)) {
 									String reqPath = (String) req.getContext()
 											.get(PATH);
 									if (!"/select".equals(reqPath)) {
