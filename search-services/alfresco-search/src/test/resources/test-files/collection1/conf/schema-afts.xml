@@ -84,12 +84,10 @@
 
         <!-- Cross-locale -->
         <!-- Include word splitting -->
-
-        <fieldType name="text___" class="solr.TextField" positionIncrementGap="100">
-            <analyzer>
+        <fieldType name="text___" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
+            <analyzer type="index">
                 <tokenizer class="solr.ICUTokenizerFactory"/>
-                <!-- <tokenizer class="org.apache.solr.analysis.WhitespaceTokenizerFactory" /> -->
-                <filter class="org.apache.solr.analysis.WordDelimiterFilterFactory"
+                <filter class="org.apache.solr.analysis.WordDelimiterGraphFilterFactory"
                         generateWordParts="1"
                         generateNumberParts="1"
                         catenateWords="1"
@@ -101,6 +99,27 @@
                         stemEnglishPossessive="1"/>
                 <filter class="solr.ICUFoldingFilterFactory"/>
             </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.ICUTokenizerFactory"/>
+                <filter class="org.apache.solr.analysis.WordDelimiterGraphFilterFactory"
+                        generateWordParts="1"
+                        generateNumberParts="1"
+                        catenateWords="1"
+                        catenateNumbers="1"
+                        catenateAll="1"
+                        splitOnCaseChange="1"
+                        splitOnNumerics="1"
+                        preserveOriginal="1"
+                        stemEnglishPossessive="1"/>
+                <filter class="solr.ICUFoldingFilterFactory"/>
+                <filter class="solr.SynonymGraphFilterFactory"
+                        synonyms="lang/synonyms_en.txt"
+                        ignoreCase="true"
+                        expand="true"/>
+                <filter class="org.alfresco.repo.search.impl.lucene.analysis.SynonymAwareStopFilterFactory"
+                        words="lang/stopwords_en.txt"
+                        ignoreCase="true"/>
+            </analyzer>
         </fieldType>
 
 
@@ -111,32 +130,32 @@
         <!--                                                                                                     -->
 
         <!-- English -->
-        <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
+        <!--
+            Stopwords and Synonyms are used exclusively at query-time.
+            This is because doing that, we will be later to change/remove those filters at runtime,
+            without reindexing the entire corpus.
+        -->
+        <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
             <analyzer type="index">
                 <tokenizer class="solr.StandardTokenizerFactory"/>
-                <!-- in this example, we will only use synonyms at query time
-                <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
-                -->
                 <filter class="solr.ICUFoldingFilterFactory"/>
                 <filter class="solr.EnglishPossessiveFilterFactory"/>
                 <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-                <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
-                    <filter class="solr.EnglishMinimalStemFilterFactory"/>
-                -->
-                <filter class="solr.PorterStemFilterFactory"/>
-                <filter class="solr.CommonGramsFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>
+                <filter class="solr.EnglishMinimalStemFilterFactory"/>
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.StandardTokenizerFactory"/>
-                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
                 <filter class="solr.ICUFoldingFilterFactory"/>
                 <filter class="solr.EnglishPossessiveFilterFactory"/>
                 <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-                <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
-                    <filter class="solr.EnglishMinimalStemFilterFactory"/>
-                -->
-                <filter class="solr.PorterStemFilterFactory"/>
-                <filter class="solr.CommonGramsQueryFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>
+                <filter class="solr.EnglishMinimalStemFilterFactory"/>
+                <filter class="solr.SynonymGraphFilterFactory"
+                        synonyms="lang/synonyms_en.txt"
+                        ignoreCase="true"
+                        expand="true"/>
+                <filter class="org.alfresco.repo.search.impl.lucene.analysis.SynonymAwareStopFilterFactory"
+                        words="lang/stopwords_en.txt"
+                        ignoreCase="true"/>
             </analyzer>
         </fieldType>
 
