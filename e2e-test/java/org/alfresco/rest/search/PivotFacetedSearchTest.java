@@ -18,8 +18,8 @@
  */
 package org.alfresco.rest.search;
 
-import static org.junit.Assert.assertTrue;
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -167,6 +167,9 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
     public void searchWithRangePivoting() throws Exception
     {
         SearchRequest query = carsQuery();
+        
+        String endDate = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")); //the car document is created at runtime, so to include it in range facets end date must be now
 
         Pagination pagination = new Pagination();
         pagination.setMaxItems(2);
@@ -181,7 +184,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         facetRangeModel.setField("created");
         facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
-        facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
+        facetRangeModel.setEnd(endDate);
         facetRangeModel.setGap("+280DAY");
         facetRangeModel.setLabel("aRange");
         List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
