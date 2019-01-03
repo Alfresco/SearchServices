@@ -1,0 +1,37 @@
+########### ENGLISH SYNONYMS
+# This file lists several scenarios where synonyms could be applied for improving the
+# search effectiveness.
+# Important: the current Alfresco configuration lowecases the input stream before the Synonyms management plays its role;
+# that's the reason why in this file all terms, concepts, are in lowercase.
+# Making such assumption introduces some optimization but at the same time it requires the synonyms maintainer to be
+# careful about *not* using capitalized letters.
+# The alternative, much expensive in terms of computation but definitely more "end-user-friendly", is to declare the ignoreCase
+# attribute as "false" (you can also remove the attribute from the field definition, as "false" is its default value)
+###########
+
+### FUNCTIONAL SCENARIO: ACRONYMS
+### EX. 1: SYNONYM CHAIN WITH TWO MEMBERS
+
+Alfresco Content Services,ACS
+Enterprise Content Management,ECM
+Business Process Management,BPM
+Alfresco Governance Services,AGS
+Out of warranty,OOW
+USA,United States of America
+
+### EX. 2: SYNONYM CHAIN WITH THREE MEMBERS
+Multimedia Messaging Service,Multimedia Text Message,MMS
+
+### FUNCTIONAL SCENARIO: CONCEPTS
+### EX. 1: SINGLE-TERM CONCEPTS WITH SYNONYNMS
+simkaart,simcard,sim
+
+### EX. 2: MULTI-TERM CONCEPTS WITH SYNONYMS
+# This has been already covered in the acronyms section. An acronym is a synonym for a multi-term concept.
+Library Management System,Integrated Library System
+
+### EX. 3: MULTI-TERM CONCEPTS WITHOUT SYNONYMS
+# In this case, we have compound concepts we would like to manage as a whole, but we don't have any synonyms.
+# As you can see, we can just double their definition therefore forcing the creation of a "dummy" synonym which is the concept itself
+Cash management,Cash management
+Change management,Change management
