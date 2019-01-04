@@ -25,10 +25,14 @@ Multimedia Messaging Service,Multimedia Text Message,MMS
 ### FUNCTIONAL SCENARIO: CONCEPTS
 ### EX. 1: SINGLE-TERM CONCEPTS WITH SYNONYNMS
 simkaart,simcard,sim
+quick,fast,rapid,speedy
+lazy,bone idle
+
 
 ### EX. 2: MULTI-TERM CONCEPTS WITH SYNONYMS
 # This has been already covered in the acronyms section. An acronym is a synonym for a multi-term concept.
 Library Management System,Integrated Library System
+brown fox jumped,leaping reynard,springer
 
 ### EX. 3: MULTI-TERM CONCEPTS WITHOUT SYNONYMS
 # In this case, we have compound concepts we would like to manage as a whole, but we don't have any synonyms.
