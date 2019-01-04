@@ -15,6 +15,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.embedded.JettyConfig;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.embedded.SSLConfig;
@@ -332,6 +333,35 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
     }
 
+    private String fixTermQuery(String query)
+    {
+        int i = query.lastIndexOf(":");
+        String[] operands =  {query.substring(0, i), query.substring(i+1)};
+
+        String s1 = operands[0].replaceAll("\\:", "\\\\:")
+                .replaceAll("\\{", "\\\\{")
+                .replaceAll("\\}", "\\\\}");
+
+        return s1 + ":" + operands[1] + " ";
+    }
+
+    /**
+     *
+     * @param query
+     * @return
+     */
+    private SolrQuery luceneToSolrQuery(Query query)
+    {
+        String[] terms = query.toString().split(" ");
+        String solrQueryString = new String();
+        for (String t : terms)
+        {
+            solrQueryString += fixTermQuery(t);
+        }
+
+        return new SolrQuery("{!lucene}" + solrQueryString);
+    }
+
     /**
      * Waits until all the shards reach the desired count, or errors.
      *
@@ -344,43 +374,34 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      */
     public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception
     {
-        List<SolrCore> cores = getJettyCores(jettyShards);
+        waitForShardsCount(luceneToSolrQuery(query), count, waitMillis, start);
+    }
+
+
+    public void waitForShardsCount(SolrQuery query, int count, long waitMillis, long start) throws Exception
+    {
+        List<SolrClient> clients = getClusterClients();
         long timeOut = start+waitMillis;
         int totalCount = 0;
         while (System.currentTimeMillis() < timeOut)
         {
             totalCount = 0;
-            for (SolrCore core : cores)
+            for (SolrClient client : clients)
             {
-                RefCounted<SolrIndexSearcher> refCounted = null;
-                boolean refCountedDecremented = false;
-                try
-                {
-                    refCounted = core.getSearcher();
-                    
-                    SolrIndexSearcher searcher = refCounted.get();
-                    TopDocs topDocs = searcher.search(query, 10);
-                    totalCount += topDocs.totalHits;
-                    /*
-                    * it's preferrable to immediately call the decref and not potentially after 2 seconds,
-                    * there are multiple components accessing and incrementing the searcher reference around
-                    * (Tracker, Solr itself).
-                    * Keeping a reference count +1 for 2 seconds when not necessary could cause nasty side effects
-                    * (I verified that during debugging core closures in tests)
-                    * To keep it simple is recommended to not use directly the searcher but use SolrJ clients
-                    * to query: see https://issues.alfresco.com/jira/browse/SEARCH-1364
-                    * */
-                    refCounted.decref();
-                    refCountedDecremented = true;
-                    Thread.sleep(2000);
-                }
-                finally
-                {
-                    if(refCounted!=null && !refCountedDecremented)
-                    {
-                        refCounted.decref();
-                    }
-                }
+                QueryResponse response = client.query(query);
+                long topDocsNumber = response.getResults().getNumFound();
+                totalCount += topDocsNumber;
+                /*
+                 * it's preferrable to immediately call the decref and not potentially after 2 seconds,
+                 * there are multiple components accessing and incrementing the searcher reference around
+                 * (Tracker, Solr itself).
+                 * Keeping a reference count +1 for 2 seconds when not necessary could cause nasty side effects
+                 * (I verified that during debugging core closures in tests)
+                 * To keep it simple is recommended to not use directly the searcher but use SolrJ clients
+                 * to query: see https://issues.alfresco.com/jira/browse/SEARCH-1364
+                 * */
+
+                Thread.sleep(2000);
             }
 
             if (totalCount == count)
