@@ -170,9 +170,13 @@
                        synonyms="lang/synonyms_en.txt"
                        ignoreCase="true"
                        expand="true"/>
-               <filter class="org.alfresco.repo.search.impl.lucene.analysis.SynonymAwareStopFilterFactory"
+        <!--
+           Stopwords filter has been commented waiting for SEARCH-1373
+
+                <filter class="org.alfresco.repo.search.impl.lucene.analysis.SynonymAwareStopFilterFactory"
                        words="lang/stopwords_en.txt"
                        ignoreCase="true"/>
+        -->
            </analyzer>
        </fieldType>
 

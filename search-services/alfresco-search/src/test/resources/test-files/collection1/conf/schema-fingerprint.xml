@@ -105,11 +105,11 @@
         <!-- Cross-locale -->
         <!-- Include word splitting -->
 
-        <fieldType name="text___" class="solr.TextField" positionIncrementGap="100">
-            <analyzer>
+        <!-- Include word splitting -->
+        <fieldType name="text___" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
+            <analyzer type="index">
                 <tokenizer class="solr.ICUTokenizerFactory"/>
-                <!-- <tokenizer class="org.apache.solr.analysis.WhitespaceTokenizerFactory" /> -->
-                <filter class="org.apache.solr.analysis.WordDelimiterFilterFactory"
+                <filter class="org.apache.solr.analysis.WordDelimiterGraphFilterFactory"
                         generateWordParts="1"
                         generateNumberParts="1"
                         catenateWords="1"
@@ -120,6 +120,24 @@
                         preserveOriginal="1"
                         stemEnglishPossessive="1"/>
                 <filter class="solr.ICUFoldingFilterFactory"/>
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.ICUTokenizerFactory"/>
+                <filter class="org.apache.solr.analysis.WordDelimiterGraphFilterFactory"
+                        generateWordParts="1"
+                        generateNumberParts="1"
+                        catenateWords="1"
+                        catenateNumbers="1"
+                        catenateAll="1"
+                        splitOnCaseChange="1"
+                        splitOnNumerics="1"
+                        preserveOriginal="1"
+                        stemEnglishPossessive="1"/>
+                <filter class="solr.ICUFoldingFilterFactory"/>
+                <filter class="solr.SynonymGraphFilterFactory"
+                        synonyms="lang/synonyms_en.txt"
+                        ignoreCase="true"
+                        expand="true"/>
             </analyzer>
         </fieldType>
 
@@ -154,9 +172,13 @@
                         synonyms="lang/synonyms_en.txt"
                         ignoreCase="true"
                         expand="true"/>
-                <filter class="org.alfresco.repo.search.impl.lucene.analysis.SynonymAwareStopFilterFactory"
-                        words="lang/stopwords_en.txt"
-                        ignoreCase="true"/>
+                <!--
+                   Stopwords filter has been commented waiting for SEARCH-
+
+                        <filter class="org.alfresco.repo.search.impl.lucene.analysis.SynonymAwareStopFilterFactory"
+                               words="lang/stopwords_en.txt"
+                               ignoreCase="true"/>
+                -->
             </analyzer>
         </fieldType>
 
