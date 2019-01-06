@@ -802,7 +802,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
     {
         if (((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
                 || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
-                && !identifierProperties.contains(propertyDefinition.getName()))
+                && !isIdentifierTextProperty(propertyDefinition.getName()))
         {
             indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
             if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
