@@ -91,13 +91,10 @@ public class SolrCoreLoadRegistration {
                 adminHandler.getInformationServers().remove(coreName);
             }
 
-      
-
-            ModelTracker mTracker = null;
             // Prevents other threads from registering the ModelTracker at the same time
-            synchronized (trackerRegistry)
+            synchronized (SolrCoreLoadRegistration.class)
             {
-                mTracker = trackerRegistry.getModelTracker();
+                ModelTracker mTracker = trackerRegistry.getModelTracker();
                 if (mTracker == null)
                 {
                     log.debug("Creating ModelTracker when registering trackers for core " + coreName);
@@ -125,14 +122,16 @@ public class SolrCoreLoadRegistration {
 
             core.addCloseHook(new CloseHook() {
                 @Override
-                public void preClose(SolrCore core) {
+                public void preClose(SolrCore core)
+                {
                     log.info("Shutting down " + core.getName());
                     SolrCoreLoadRegistration.shutdownTrackers(core.getName(), trackers, scheduler);
                 }
 
                 @Override
-                public void postClose(SolrCore core) {
-
+                public void postClose(SolrCore core)
+                {
+                    // Nothing to be done here
                 }
             });
         }
