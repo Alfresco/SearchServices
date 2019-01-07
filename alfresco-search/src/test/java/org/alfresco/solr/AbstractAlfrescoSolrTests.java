@@ -18,16 +18,15 @@
  */
 package org.alfresco.solr;
 
+import static java.util.Arrays.stream;
+import static java.util.Optional.ofNullable;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,6 +40,7 @@ import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.tracker.Tracker;
+import org.alfresco.util.Pair;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONArray;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONObject;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
@@ -49,6 +49,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
@@ -95,7 +96,8 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     static AlfrescoCoreAdminHandler admin;
     private static Log log = LogFactory.getLog(AbstractAlfrescoSolrTests.class);
 
-    protected static SolrConfig solrConfig;
+    private static SolrConfig solrConfig;
+
     /**
      * Harness initialized by initTestHarness.
      * <p/>
@@ -112,15 +114,17 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      * For use in test methods as needed.
      * </p>
      */
-    protected static TestHarness.LocalRequestFactory lrf;
+    private static TestHarness.LocalRequestFactory lrf;
     protected static AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
     protected static NodeRef testRootNodeRef;
     protected static NodeRef testNodeRef;
     protected static NodeRef testBaseFolderNodeRef;
     protected static NodeRef testFolder00NodeRef;
     protected static Date ftsTestDate;
+
     /**
      * Creates a Solr Alfresco test harness.
+     *
      * @param schema
      * @throws Exception
      */
@@ -369,7 +373,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             {
                 JSONObject item = (JSONObject) doc;
                 BigInteger val = (BigInteger) item.get("DBID");
-                Assert.assertEquals(dbids[count].intValue(), val.intValue());
+                assertEquals(dbids[count].intValue(), val.intValue());
                 count++;
             }
         }
@@ -594,64 +598,120 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     {
         assertU(delQ("*:*"));
     }
-    protected void assertAQuery(String queryString,Integer count)throws IOException,ParseException 
+
+    /**
+     * Asserts that the given query produces the expected results cardinality.
+     *
+     * @param queryString the query string.
+     * @param expectedCount the expected count.
+     * @throws IOException in case of I/O failure while querying Solr.
+     * @throws ParseException in case of the input query text parsing failure.
+     */
+    protected void assertAQuery(String queryString, int expectedCount) throws IOException,ParseException
     {
-        assertAQuery(queryString, count, null, null, null);
+        assertAQuery(queryString, expectedCount, null, null, null);
     }
-    protected void assertAQuery(String queryString,
-            Integer count,
+
+    /**
+     * Asserts that the given query produces the expected results cardinality.
+     *
+     * @param queryString the query string.
+     * @param expectedCount the expected count.
+     * @param locale the locale.
+     * @param textAttributes additional (text) search parameters.
+     * @param allAttributes additional search parameters.
+     * @param fieldNames the target field names.
+     * @throws IOException in case of I/O failure while querying Solr.
+     * @throws ParseException in case of the input query text parsing failure.
+     */
+    protected void assertAQuery(
+            String queryString,
+            int expectedCount,
             Locale locale,
             String[] textAttributes,
             String[] allAttributes,
-            String... name)throws IOException,ParseException
-{
-        SolrServletRequest solrQueryRequest = null;
-        RefCounted<SolrIndexSearcher>refCounted = null;
-        try
+            String... fieldNames) throws IOException, ParseException
+    {
+        RefCounted<SolrIndexSearcher> refCounted = null;
+        try (SolrServletRequest solrQueryRequest = new SolrServletRequest(h.getCore(), null))
         {
-            solrQueryRequest = new SolrServletRequest(h.getCore(), null);
             refCounted = h.getCore().getSearcher();
             SolrIndexSearcher solrIndexSearcher = refCounted.get();
             SearchParameters searchParameters = new SearchParameters();
             searchParameters.setQuery(queryString);
-            if (locale != null)
-            {
-                searchParameters.addLocale(locale);
-            }
-            
-            if (textAttributes != null)
-            {
-                for (String textAttribute : textAttributes)
-            {
-                    searchParameters.addTextAttribute(textAttribute);
-            }
-        }
-        if (allAttributes != null)
-        {
-            for (String allAttribute : allAttributes)
-            {
-                searchParameters.addAllAttribute(allAttribute);
-            }
-        }
-        
-        Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
-        log.debug("####### Query ######:"+query);
-        TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
 
-        if (count != null)
-        {
-            if (docs.totalHits != count)
-            {
-                throw new IOException("FAILED: " + fixQueryString(queryString, name)+" ; "+docs.totalHits);
-            }
+            ofNullable(locale).ifPresent(searchParameters::addLocale);
+
+            ofNullable(textAttributes)
+                    .map(Arrays::stream)
+                    .ifPresent(stream -> stream.forEach(searchParameters::addAllAttribute));
+
+            ofNullable(allAttributes)
+                    .map(Arrays::stream)
+                    .ifPresent(stream -> stream.forEach(searchParameters::addAllAttribute));
+
+            Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
+
+            log.debug("Query:" + query);
+
+            // 100 is a "no-meaning" value higher than all expected results
+            // this value is here just to have some debugging information about the query/doc explain,
+            // in case the actual results are higher than the expected
+            TopDocs docs = solrIndexSearcher.search(query, 100);
+
+            assertEquals(withExplain("Query " + fixQueryString(queryString, fieldNames), docs, solrIndexSearcher, query), expectedCount, docs.totalHits);
         }
-    }
         finally
         {
-            refCounted.decref();
-            solrQueryRequest.close();
+            ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
     }
+
+    /**
+     * If the DEBUG log level has been enabled, this method enrich a base error message with the (failed) query explain.
+     *
+     * @param baseMessage the base message.
+     * @param docs the top docs (search matches)
+     * @param searcher the Solr searcher instance.
+     * @param query the Lucene query.
+     * @return the input base message plus the query explain.
+     */
+    private String withExplain(String baseMessage, TopDocs docs, SolrIndexSearcher searcher, Query query)
+    {
+        StringBuilder builder = new StringBuilder(baseMessage);
+
+        if (!log.isDebugEnabled()) {
+            return baseMessage;
+        }
+
+        try
+        {
+            return builder.append("\n")
+                    .append(stream(docs.scoreDocs)
+                                .map(doc -> doc.doc)
+                                .map(docid -> explain(searcher, query, docid))
+                                .map(idAndEplain -> "ID: " + idAndEplain.getFirst() + "\nEXPLAIN: " + idAndEplain.getSecond())
+                                .collect(Collectors.joining("\n")))
+                    .toString();
+        }
+        catch (Exception exception)
+        {
+            return baseMessage;
+        }
+    }
+
+    private Pair<String,Explanation> explain(SolrIndexSearcher searcher, Query query, int docid)
+    {
+        try
+        {
+            return new Pair<>(searcher.doc(docid).getField("id").stringValue(), searcher.explain(query, docid));
+        }
+        catch (IOException exception)
+        {
+            throw new RuntimeException(exception);
+        }
+    }
+
     protected String fixQueryString(String queryString, String... name)
     {
         if (name.length > 0)
