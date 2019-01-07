@@ -1205,9 +1205,7 @@ public class UpdateTaskTests extends RestTest
                 .build();
 
         restClient.authenticateUser(anyUser).withParams("select=dueAt").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of java.util.Date from String value 'invalid-date'"))
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of java.util.Date from String value 'invalid-date'"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
@@ -1220,9 +1218,7 @@ public class UpdateTaskTests extends RestTest
                 .build();
 
         restClient.authenticateUser(anyUser).withParams("select=priority").withWorkflowAPI().usingTask(taskModel).updateTask(inputJson);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
-                .containsErrorKey(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of int from String value 'a'"))
-                .containsSummary(String.format(RestErrorModel.NO_CONTENT, "Can not construct instance of int from String value 'a'"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
