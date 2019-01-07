@@ -644,7 +644,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
 
             ofNullable(textAttributes)
                     .map(Arrays::stream)
-                    .ifPresent(stream -> stream.forEach(searchParameters::addAllAttribute));
+                    .ifPresent(stream -> stream.forEach(searchParameters::addTextAttribute));
 
             ofNullable(allAttributes)
                     .map(Arrays::stream)
