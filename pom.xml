@@ -12,7 +12,7 @@
     <name>Alfresco Solr Search parent</name>
     <properties>
         <solr.version>6.6.5</solr.version>
-        <alfresco-solrclient.version>6.12</alfresco-solrclient.version>
+        <alfresco-solrclient.version>6.14</alfresco-solrclient.version>
         <!-- The location to download the solr zip file from. -->
         <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
         <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
