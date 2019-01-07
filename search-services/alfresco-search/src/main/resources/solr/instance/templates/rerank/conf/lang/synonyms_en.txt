@@ -1,13 +1,7 @@
-########### ENGLISH SYNONYMS
+#### ENGLISH SYNONYMS ####
 # This file lists several scenarios where synonyms could be applied for improving the
 # search effectiveness.
-# Important: the current Alfresco configuration lowecases the input stream before the Synonyms management plays its role;
-# that's the reason why in this file all terms, concepts, are in lowercase.
-# Making such assumption introduces some optimization but at the same time it requires the synonyms maintainer to be
-# careful about *not* using capitalized letters.
-# The alternative, much expensive in terms of computation but definitely more "end-user-friendly", is to declare the ignoreCase
-# attribute as "false" (you can also remove the attribute from the field definition, as "false" is its default value)
-###########
+##########################
 
 ### FUNCTIONAL SCENARIO: ACRONYMS
 ### EX. 1: SYNONYM CHAIN WITH TWO MEMBERS
