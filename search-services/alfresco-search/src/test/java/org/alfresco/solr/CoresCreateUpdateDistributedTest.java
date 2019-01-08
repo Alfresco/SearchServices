@@ -40,11 +40,13 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.alfresco.solr.AlfrescoSolrUtils.assertSummaryCorrect;
 import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Tests creating the default alfresco cores with workspace,archive stores.
@@ -81,8 +83,9 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         //Call custom actions
         SolrQueryResponse response = callHandler(coreAdminHandler, defaultCore, "SUMMARY");
         assertSummaryCorrect(response, defaultCore.getName());
-    }
 
+        coreContainer.shutdown();
+    }
 
     @Test
     public void newCoreWithUpdateSharedProperties() throws Exception {
@@ -176,7 +179,21 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         SolrQueryResponse response = new SolrQueryResponse();
         coreAdminHandler.handleCustomAction(request, response);
 
-        return coreName != null ? coreAdminHandler.getCoreContainer().getCore(coreName) : null;
+        final AtomicReference<SolrCore> coreRef = new AtomicReference<>();
+
+        await().with()
+                .pollInterval(1, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    SolrCore core = coreAdminHandler.getCoreContainer().getCore(coreName != null ? coreName : AlfrescoCoreAdminHandler.ALFRESCO_CORE_NAME);
+                    if (core != null) {
+                        coreRef.set(core);
+                        return true;
+                    }
+                    return false;
+                });
+
+        return coreName != null ? coreRef.get() : null;
     }
 
     public static SolrCore updateCore(AlfrescoCoreAdminHandler coreAdminHandler,
@@ -188,8 +205,21 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         SolrQueryRequest request = new LocalSolrQueryRequest(null,coreParams);
         SolrQueryResponse response = new SolrQueryResponse();
         coreAdminHandler.handleCustomAction(request, response);
+        final AtomicReference<SolrCore> coreRef = new AtomicReference<>();
 
-        return coreName != null ? coreAdminHandler.getCoreContainer().getCore(coreName) : null;
+        await().with()
+                .pollInterval(1, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    SolrCore core = coreAdminHandler.getCoreContainer().getCore(coreName != null ? coreName : AlfrescoCoreAdminHandler.ALFRESCO_CORE_NAME);
+                    if (core != null) {
+                        coreRef.set(core);
+                        return true;
+                    }
+                    return false;
+                });
+
+        return coreName != null ? coreRef.get() : null;
     }
 
     public static void updateShared(AlfrescoCoreAdminHandler coreAdminHandler,
@@ -200,7 +230,6 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         SolrQueryRequest request = new LocalSolrQueryRequest(null,coreParams);
         SolrQueryResponse response = new SolrQueryResponse();
         coreAdminHandler.handleCustomAction(request, response);
-        TimeUnit.SECONDS.sleep(2);
     }
 }
 
