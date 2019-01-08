@@ -31,6 +31,9 @@ import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
 /**
  * Faceted Range Search Query for numeric range
  * {
@@ -239,28 +242,20 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
+
+        List<RestGenericBucketModel> buckets = facetResponseModel.getBuckets();
+        assertThat(buckets.size(),is(1));
         
-        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
-        bucket.assertThat().field("label").is("[2015-09-29T10:45:15.729Z - 2016-07-05T10:45:15.729Z)");
-        bucket.assertThat().field("filterQuery").is("created:[\"2015-09-29T10:45:15.729Z\" TO \"2016-07-05T10:45:15.729Z\">");
+        RestGenericBucketModel bucket = buckets.get(0);
+        bucket.assertThat().field("label").is("[2015-09-29T10:45:15.729Z - 2017-04-11T10:45:15.729Z)");
+        bucket.assertThat().field("filterQuery").is("created:[\"2015-09-29T10:45:15.729Z\" TO \"2017-04-11T10:45:15.729Z\">");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=1}");
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"2015-09-29T10:45:15.729Z");
-        Assert.assertEquals(info.get("end"),"2016-07-05T10:45:15.729Z");
+        Assert.assertEquals(info.get("end"),"2017-04-11T10:45:15.729Z");
         Assert.assertNull(info.get("count"),"1");
         Assert.assertEquals(info.get("startInclusive"),"true");
         Assert.assertEquals(info.get("endInclusive"),"false");
-        
-        bucket = facetResponseModel.getBuckets().get(1);
-        bucket.assertThat().field("label").is("[2016-07-05T10:45:15.729Z - 2017-04-11T10:45:15.729Z]");
-        bucket.assertThat().field("filterQuery").is("created:[\"2016-07-05T10:45:15.729Z\" TO \"2017-04-11T10:45:15.729Z\"]");
-        bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
-        info = (Map<String, String>) bucket.getBucketInfo();
-        Assert.assertEquals(info.get("start"),"2016-07-05T10:45:15.729Z");
-        Assert.assertEquals(info.get("end"),"2017-04-11T10:45:15.729Z");
-        Assert.assertNull(info.get("count"),"0");
-        Assert.assertEquals(info.get("startInclusive"),"true");
-        Assert.assertEquals(info.get("endInclusive"),"true");
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
