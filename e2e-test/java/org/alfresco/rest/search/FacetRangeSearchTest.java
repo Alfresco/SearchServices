@@ -247,8 +247,8 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         assertThat(buckets.size(),is(1));
         
         RestGenericBucketModel bucket = buckets.get(0);
-        bucket.assertThat().field("label").is("[2015-09-29T10:45:15.729Z - 2017-04-11T10:45:15.729Z)");
-        bucket.assertThat().field("filterQuery").is("created:[\"2015-09-29T10:45:15.729Z\" TO \"2017-04-11T10:45:15.729Z\">");
+        bucket.assertThat().field("label").is("[2015-09-29T10:45:15.729Z - 2017-04-11T10:45:15.729Z]");
+        bucket.assertThat().field("filterQuery").is("created:[\"2015-09-29T10:45:15.729Z\" TO \"2017-04-11T10:45:15.729Z\"]");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=1}");
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"2015-09-29T10:45:15.729Z");
