@@ -158,7 +158,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                             .map(parameter -> parameter.split(","))
                             .map(Arrays::asList)
                             .orElse(Collections.emptyList());
-            SolrQueryResponse response = new SolrQueryResponse();
+
             coreNames.stream()
                     .map(String::trim)
                     .filter(coreName -> !coreName.isEmpty())
@@ -167,15 +167,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         switch (coreName)
                         {
                             case ARCHIVE_CORE_NAME:
-                                newDefaultCore(ARCHIVE_CORE_NAME,  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
+                                newDefaultCore(ARCHIVE_CORE_NAME,  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, new SolrQueryResponse());
                                 break;
                             case ALFRESCO_CORE_NAME:
-                                newDefaultCore(ALFRESCO_CORE_NAME, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
+                                newDefaultCore(ALFRESCO_CORE_NAME, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, new SolrQueryResponse());
                                 break;
                             case VERSION_CORE_NAME:
                                 final String versionStoreProtocol = "workspace";
                                 final String versionStoreId = "version2Store";
-                                newDefaultCore(VERSION_CORE_NAME, new StoreRef(versionStoreProtocol, versionStoreId), DEFAULT_TEMPLATE, null, response);
+                                newDefaultCore(VERSION_CORE_NAME, new StoreRef(versionStoreProtocol, versionStoreId), DEFAULT_TEMPLATE, null, new SolrQueryResponse());
                                 break;
                             default:
                                 LOGGER.error("Invalid '" + ALFRESCO_DEFAULTS + "' permitted values are " + ALLOWED_CORE_NAMES);
