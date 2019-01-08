@@ -22,7 +22,7 @@ import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.TestGroup;
-import org.junit.Assert;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**

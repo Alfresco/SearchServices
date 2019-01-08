@@ -18,6 +18,9 @@
  */
 package org.alfresco.rest.search;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +33,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 
 /**
  * Faceted Range Search Query for numeric range

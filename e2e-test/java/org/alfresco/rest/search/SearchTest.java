@@ -18,16 +18,20 @@
  */
 package org.alfresco.rest.search;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.reverse;
+
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.testng.AssertJUnit.assertEquals;
-import static java.util.Collections.reverse;
-import static java.util.Arrays.asList;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -36,11 +40,8 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Search end point Public API test.
