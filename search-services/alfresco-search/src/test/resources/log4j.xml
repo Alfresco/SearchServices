@@ -9,11 +9,17 @@
 
     <!-- ##### ALL ALFRESCO MESSAGES ##### -->
     <!--
-        <category name="org.alfresco">
-            <priority value="DEBUG"/>
+        <category name="org.apache.solr">
+            <priority value="INFO"/>
         </category>
     -->
 
+    <!-- ##### METADATA TRACKER MESSAGES ##### -->
+    <!--
+        <category name="org.alfresco.solr.tracker.MetadataTracker">
+            <priority value="DEBUG"/>
+        </category>
+    -->
     <!-- ##### ALL SOLR MESSAGES ##### -->
     <!--
         <category name="org.apache.solr">
