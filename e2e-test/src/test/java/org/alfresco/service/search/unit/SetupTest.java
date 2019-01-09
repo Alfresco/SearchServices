@@ -28,9 +28,9 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -116,7 +116,7 @@ public class SetupTest extends AbstractSearchServiceE2E
                 .createFile(customFile, properties, VersioningState.MAJOR)
                 .assertThat().existsInRepo();
 
-        Assert.assertTrue("New content could not be found", waitForIndexing("cm:name:" + customFile.getName(), true));
+        Assert.assertTrue(waitForIndexing("cm:name:" + customFile.getName(),true),"New content could not be found");
     }
 
     // Test sql API can be used
@@ -131,7 +131,7 @@ public class SetupTest extends AbstractSearchServiceE2E
         RestResponse response = restClient.authenticateUser(testUser).withSearchSqlAPI().searchSql(sqlRequest);
 
         Assert.assertNotNull(response);
-        Assert.assertTrue("Check ACS Version is 6.0 or above and if Insight Engine is running. Response received is: " + response.getStatusCode(), HttpStatus.OK.toString().matches(response.getStatusCode()));
+        Assert.assertTrue(HttpStatus.OK.toString().matches(response.getStatusCode()), "Check ACS Version is 6.0 or above and if Insight Engine is running. Response received is: " + response.getStatusCode());        
     }
     
     // Test sql can be executed via jdbc

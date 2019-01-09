@@ -6,6 +6,9 @@
  */
 package org.alfresco.service.search.e2e.searchservices.tracker;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.service.search.AbstractSearchServiceE2E;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
@@ -19,15 +22,10 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.hamcrest.core.Is.is;
 
 public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
 {
@@ -81,9 +79,12 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + parentNewName + "\"";
         int descendantCountOfDismissedName = query(parentQuery).getPagination().getCount();
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
-
-        Assert.assertThat("New renamed path has not the same descendants as before renaming: " + parentQueryAfterRename,descendantCountOfNewName,is(initialDescendantCount));
-        Assert.assertThat("Old path still has descendants: " + parentQuery,descendantCountOfDismissedName,is(0));
+        
+        Assert.assertEquals(initialDescendantCount, descendantCountOfNewName);        
+        //Assert.assertThat("New renamed path has not the same descendants as before renaming: " + parentQueryAfterRename,descendantCountOfNewName,is(initialDescendantCount));
+        
+        Assert.assertEquals(descendantCountOfDismissedName, 0);
+        //Assert.assertThat("Old path still has descendants: " + parentQuery,descendantCountOfDismissedName,is(0));
     }
 
     @Test(groups = { TestGroup.ASS_13 })
@@ -117,8 +118,11 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
         int descendantCountOfDismissedName = query(parentQuery).getPagination().getCount();
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
 
-        Assert.assertThat("New renamed path has not the same descendants as before renaming: " + parentQueryAfterRename,descendantCountOfNewName,is(initialDescendantCount));
-        Assert.assertThat("Old path still has descendants: " + parentQuery,descendantCountOfDismissedName,is(0));
+        Assert.assertEquals(descendantCountOfNewName, initialDescendantCount);
+        //Assert.assertThat("New renamed path has not the same descendants as before renaming: " + parentQueryAfterRename,descendantCountOfNewName,is(initialDescendantCount));
+        
+        Assert.assertEquals(descendantCountOfDismissedName, 0);
+        //Assert.assertThat("Old path still has descendants: " + parentQuery,descendantCountOfDismissedName,is(0));
     }
 }
 
