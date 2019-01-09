@@ -126,7 +126,7 @@ public class AFTSRangeQueryTest extends AbstractAlfrescoSolrTests {
     @Test
     public void testRangeQueriesTokenised() throws Exception
     {
-        // test on cm:ratingScheme that is non tokenised.
+        // test on cm:creator that is tokenised.
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:creator:[Mario TO *]"), null), "*[count(//doc)=2]");
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:creator:[Lu TO *]"), null), "*[count(//doc)=3]");
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", "cm:creator:[Luigi2 TO Mario]"), null), "*[count(//doc)=1]");
