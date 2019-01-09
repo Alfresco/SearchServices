@@ -255,7 +255,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         Assert.assertEquals(info.get("end"),"2017-04-11T10:45:15.729Z");
         Assert.assertNull(info.get("count"),"1");
         Assert.assertEquals(info.get("startInclusive"),"true");
-        Assert.assertEquals(info.get("endInclusive"),"false");
+        Assert.assertEquals(info.get("endInclusive"),"true");
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
