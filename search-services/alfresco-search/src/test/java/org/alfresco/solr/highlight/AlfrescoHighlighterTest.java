@@ -263,8 +263,8 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "long",
                 HighlightParams.FIELDS, "name,title",
-                "f.title."+HighlightParams.SIMPLE_PRE, "{",
-                "f.title."+HighlightParams.SIMPLE_POST, "}",
+                "f.title."+HighlightParams.SIMPLE_PRE, "(",
+                "f.title."+HighlightParams.SIMPLE_POST, ")",
                 "f.name."+HighlightParams.SIMPLE_PRE, "[",
                 "f.name."+HighlightParams.SIMPLE_POST, "]",
                 HighlightParams.SIMPLE_PRE, "{",
@@ -274,7 +274,7 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=2]",
                 "*[count(//lst[@name='highlighting']/lst/str[@name='DBID'])=2]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very [long] name']",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very (long)']",
                 "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some [long] text.  It has the word [long] in many places.  In fact, it has [long] on some']");
         
         logger.info("######### requireFieldMatch ###########");
