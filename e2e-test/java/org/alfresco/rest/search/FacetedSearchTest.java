@@ -347,7 +347,7 @@ public class FacetedSearchTest extends AbstractSearchTest
         
         waitForIndexing(file.getName(), true);
         
-       // FacetField: Site Name        
+       // Create Query with FacetFields: Site and Content MimeType       
         
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
