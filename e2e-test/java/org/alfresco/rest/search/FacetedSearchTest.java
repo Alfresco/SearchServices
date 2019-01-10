@@ -21,7 +21,14 @@ package org.alfresco.rest.search;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.Assert;
@@ -307,6 +314,159 @@ public class FacetedSearchTest extends AbstractSearchTest
         bucket1.assertThat().field("display").is(userModel.getUsername() + " FirstName LN-" + userModel.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + userModel.getUsername() + "\"");
         bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_13 })
+    public void searchWithFactedFieldsWithACLs() throws Exception
+    {
+        String fname = unique_searchString + "facet";
+        
+        // Create another user who would not have access to the Private Site created by userModel
+        UserModel user2 = dataUser.createRandomTestUser("UserSearch2");
+        UserModel user3 = dataUser.createRandomTestUser("UserSearch3");
+        
+        // Create a folder and a file as test User 
+        FolderModel folder = new FolderModel(fname);
+        dataContent.usingUser(userModel).usingSite(siteModel).createFolder(folder);
+        
+        FileModel file = new FileModel(fname + "-1.txt", fname, fname, FileType.TEXT_PLAIN, fname + " file for search ");
+        dataContent.usingUser(userModel).usingSite(siteModel).createContent(file);
+
+        FileModel file2 = new FileModel(fname + "-2.html", fname, fname, FileType.HTML, fname + " file 2 for search ");
+        dataContent.usingUser(userModel).usingSite(siteModel).createContent(file2);
+        
+        // Set Node Permissions to allow access for user3 user for text File
+        JsonObject userPermission = Json.createObjectBuilder()
+                .add("permissions", Json.createObjectBuilder().add("isInheritanceEnabled", false)
+                        .add("locallySet",Json.createObjectBuilder().add("authorityId", user3.getUsername())
+                                .add("name", "SiteConsumer").add("accessStatus", "ALLOWED")))
+                .build();
+        String putBody = userPermission.toString();
+
+        restClient.authenticateUser(userModel).withCoreAPI().usingNode(file).updateNode(putBody);
+        
+        waitForIndexing(file.getName(), true);
+        
+       // FacetField: Site Name        
+        
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("name:" + fname);
+        query.setQuery(queryReq);
+
+        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<RestRequestFacetFieldModel>();
+        
+        RestRequestFacetFieldModel facetName = new RestRequestFacetFieldModel("SITE");
+        facetName.setLabel("SEARCH.FACET_FIELDS.SITE");
+        facetName.setMincount(0); // MinCount = 0
+        facets.add(facetName);
+        
+        facetName = new RestRequestFacetFieldModel("cm:content.mimetype");
+        facetName.setLabel("Mimetype");
+        facetName.setMincount(2); // MinCount = 2
+        facets.add(facetName);
+        
+        facetFields.setFacets(facets);
+        query.setFacetFields(facetFields);
+
+        // Search query using user who created site: Expect Only 1 Facet bucket to be retrieved
+        SearchResponse response = query(query);
+
+        Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
+        Assert.assertEquals(response.getContext().getFacetsFields().size(), 1);
+        
+        RestResultBucketsModel facetFieldList = response.getContext().getFacetsFields().get(0);
+        Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELDS.SITE");
+        Assert.assertEquals(facetFieldList.getBuckets().size(), 1); //MimeType bucket won't be shown as minCount = 2 won't be reached
+        
+        FacetFieldBucket bucket1 = facetFieldList.getBuckets().get(0);
+        bucket1.assertThat().field("label").is(siteModel.getId());
+        bucket1.assertThat().field("filterQuery").contains(siteModel.getId());
+        bucket1.assertThat().field("count").is(3); //One folder and 2 files created above
+        
+        // MinCount 1 or not set: Defaults to 1
+        query = new SearchRequest();
+        queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("name:" + fname);
+        query.setQuery(queryReq);
+
+        facetFields = new RestRequestFacetFieldsModel();
+        facets = new ArrayList<RestRequestFacetFieldModel>();
+        
+        facetName = new RestRequestFacetFieldModel("SITE");
+        facetName.setLabel("SEARCH.FACET_FIELD1.SITE");
+        // MinCount Not set
+        facets.add(facetName);
+        
+        facetName = new RestRequestFacetFieldModel("cm:content.mimetype");
+        facetName.setLabel("SEARCH.FACET_FIELD2.Mimetype");
+        facetName.setMincount(1); // MinCount = 1
+        facets.add(facetName);
+        
+        facetFields.setFacets(facets);
+        query.setFacetFields(facetFields);
+
+        // Search query using user who created site: Expect 2 Facet buckets to be retrieved
+        response = query(query);
+        
+        Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
+        Assert.assertEquals(response.getContext().getFacetsFields().size(), 2);
+        
+        List<RestResultBucketsModel> facetFieldBucketsList = response.getContext().getFacetsFields();
+        facetFieldList = facetFieldBucketsList.get(0);
+        Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELD1.SITE");
+        
+        bucket1 = facetFieldList.getBuckets().get(0);
+        bucket1.assertThat().field("label").is(siteModel.getId());
+        bucket1.assertThat().field("filterQuery").contains(siteModel.getId());
+        bucket1.assertThat().field("count").is(3);
+        
+        facetFieldList = facetFieldBucketsList.get(1);
+        Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELD2.Mimetype");
+        Assert.assertEquals(facetFieldList.getBuckets().size(), 2); //MimeType bucket will be shown with 2 buckets
+        
+        bucket1 = facetFieldList.getBuckets().get(0);
+        bucket1.assertThat().field("label").is("text/html");
+        bucket1.assertThat().field("filterQuery").contains("text/html");
+        bucket1.assertThat().field("count").is(1);
+        bucket1.assertThat().field("display").is("HTML");
+
+        bucket1 = facetFieldList.getBuckets().get(1);
+        bucket1.assertThat().field("label").is("text/plain");
+        bucket1.assertThat().field("filterQuery").contains("text/plain");
+        bucket1.assertThat().field("count").is(1);
+        bucket1.assertThat().field("display").is("Plain Text");
+        
+        // Search query using other user: No access hence no buckets expected
+        response = restClient.authenticateUser(user2).withSearchAPI().search(query);
+        Assert.assertNull(response.getContext().getFacetsFields());
+
+        // Search query using user3
+        response = restClient.authenticateUser(user3).withSearchAPI().search(query);
+        Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
+        Assert.assertEquals(response.getContext().getFacetsFields().size(), 2);
+        
+        facetFieldBucketsList = response.getContext().getFacetsFields();
+        facetFieldList = facetFieldBucketsList.get(0);
+        
+        Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELD1.SITE");
+        
+        bucket1 = facetFieldList.getBuckets().get(0);
+        bucket1.assertThat().field("label").is(siteModel.getId());
+        bucket1.assertThat().field("filterQuery").contains(siteModel.getId());
+        bucket1.assertThat().field("count").is(1);
+        
+        facetFieldList = facetFieldBucketsList.get(1);
+        Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELD2.Mimetype");
+        Assert.assertEquals(facetFieldList.getBuckets().size(), 1); //MimeType bucket will be shown with 1 bucket only
+        
+        bucket1 = facetFieldList.getBuckets().get(0);
+        bucket1.assertThat().field("label").is("text/plain");
+        bucket1.assertThat().field("label").isNot("text/html");
+        bucket1.assertThat().field("filterQuery").contains("text/plain");
+        bucket1.assertThat().field("count").is(1);
+        bucket1.assertThat().field("display").is("Plain Text");
     }
     
 }
