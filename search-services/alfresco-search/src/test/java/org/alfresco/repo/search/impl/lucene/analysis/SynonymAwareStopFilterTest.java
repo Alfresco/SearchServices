@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.search.impl.lucene.analysis;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -33,13 +36,15 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.*;
-import java.util.*;
-
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Test case for {@link SynonymAwareStopFilterFactory.SynonymAwareStopFilter}
@@ -49,7 +54,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class SynonymAwareStopFilterTest
 {
-    private SynonymAwareStopFilterFactory.SynonymAwareStopFilter stopFilter;
 
     private Analyzer analyzer;
 
@@ -124,9 +128,10 @@ public class SynonymAwareStopFilterTest
     @Test
     public void noSynonmsNoStopwords() throws Exception
     {
-        final String text = "no synonyms and no stopwords here";
-        final List<String> expected = asList(text.split("\\W"));
-        this.assertAnalysisCorrectness(text, expected);
+        String text = "no synonyms and no stopwords here";
+        List<String> expected = asList(text.split("\\W"));
+
+        assertAnalysisCorrectness(text, expected);
     }
 
     /**
@@ -135,13 +140,9 @@ public class SynonymAwareStopFilterTest
     @Test
     public void noSynonymsOnlyStopwords() throws Exception
     {
-        final String text = "No synonyms detection. However we have two stopwords of and my which will be removed";
-        final List<String> expectedTokens =
-                stream(text.split("\\W|\\p{Punct}"))
-                        .map(String::trim)
-                        .filter(token -> !token.isEmpty())
-                        .filter(token -> !stopwords.contains(token))
-                        .collect(toList());
+        String text = "No synonyms detection. However we have two stopwords of and my which will be removed";
+        List<String> expectedTokens = asList("No", "synonyms", "detection","However", "we", "have", "two", "stopwords", "and", "which", "will", "be", "removed");
+
         assertAnalysisCorrectness(text, expectedTokens);
     }
 
@@ -150,8 +151,8 @@ public class SynonymAwareStopFilterTest
      */
     @Test
     public void synonymsDetectionWithoutStopwordTokens() throws Exception {
-        final String text = "How do I transfer phone number?";
-        final List<String> expectedTokens =
+        String text = "How do I transfer phone number?";
+        List<String> expectedTokens =
                 asList(
                         "How",
                         "do",
@@ -167,8 +168,8 @@ public class SynonymAwareStopFilterTest
     @Test
     public void synonymsDetectionWithStopwordTokensOutside() throws Exception
     {
-        final String text = "How do I transfer phone number, in my new device, of course?";
-        final List<String> expectedTokens =
+        String text = "How do I transfer phone number, in my new device, of course?";
+        List<String> expectedTokens =
                 asList(
                         "How",
                         "do",
@@ -191,8 +192,8 @@ public class SynonymAwareStopFilterTest
     @Test
     public void synonymsDetectionWithStopwordTokensInside() throws Exception
     {
-        final String text = "My car is out of warranty and it's broken. What should I do?";
-        final List<String> expectedTokens =
+        String text = "My car is out of warranty and it's broken. What should I do?";
+        List<String> expectedTokens =
                 asList(
                         // "My" is removed because outside the detected synonym
                         "car",
@@ -216,7 +217,7 @@ public class SynonymAwareStopFilterTest
      */
     private void assertAnalysisCorrectness(String text, List<String> expectedTokens) throws IOException
     {
-        final List<String> actualTokens = new ArrayList<>();
+        List<String> actualTokens = new ArrayList<>();
 
         try (Reader reader = new StringReader(text);
              TokenStream tokenStream = analyzer.tokenStream("dummy_field", reader))
