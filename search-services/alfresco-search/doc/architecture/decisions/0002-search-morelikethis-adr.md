@@ -8,7 +8,7 @@ Investigation Complete
 
 ## Context
 
-###Intro (Lucene)
+*Intro (Lucene)*
 
 The More Like This (MLT from now on) functionality is implemented in Lucene and made available through Solr Rest API.
 The main implementation code is currently in the Lucene library : org.apache.lucene.queries.mlt.MoreLikeThis_ class .
@@ -20,7 +20,7 @@ After the significant terms are extracted, a score is assigned to each one of th
 Which fields to take into account when extracting the terms and building the query is one of the MLT parameters.
 I attach the slides from a presentation I made in 2017[1] detailing the internal of the functionality and some proposed refactor.
 
-###Apache Solr
+*Apache Solr*
 
 Apache Solr exposes various ways to interact with the MLT library.
 
@@ -28,14 +28,14 @@ Apache Solr exposes various ways to interact with the MLT library.
 * MoreLikeThisComponent -> to automatically execute more like this query on each document in the result set
 * MoreLikeThisQueryParser -> I tend to consider this the modern approach, that allow you to build MLT queries and debug them more easily
 
-###More Like These
+*More Like These*
 
 Implementing the More Like These can be vital to offer advanced functionalities and reccomndetation to the users.
 The proposed implementation approach will cover different software areas : Lucene, Solr, Alfresco APIs .
 
 I attached an High Level T-Shirt sizing estimation to each part of the developments.
 
-###Lucene - M
+*Lucene - M*
 
 The Lucene implementation will be the biggest part. It will require to extend the More Like This class with:
 * Additional facade methods to process list of documents or list of document Ids
@@ -47,7 +47,7 @@ After a first investigation KLIP [3] seems a promising implementation as well.
 Being Alfresco use case very generic additional variants can be added later.
 Each variant could be specific to a specific scenario (big collection, kind of the collection ect)
 
-###Solr - S
+*Solr - S*
 
 Out of the various ways Apache Solr serves the functionality as a beginning I recommend to extend the 3) MoreLikeThisQueryParser.
 We’ll re-use all the Solr MLT parameters and in addition we’ll support a different input.
@@ -58,7 +58,7 @@ org.apache.solr.search.mlt.SimpleMLTQParser
 
 The More Like These Functionality will be compatible out of the box with SolrCloud but for the Alfresco distribution model it will require some work.
 
-###Solr - Alfresco Customisation - M
+*Solr - Alfresco Customisation - M*
 
 To have the More Like These fully distributed in the Alfresco use case:
 The Interesting terms extraction and query building is effectively run locally on a single Solr.
@@ -70,13 +70,13 @@ the customised query parser needs to be compatible with Alfresco name mapping an
 * the seed document must be fetched from the solr content store, potentially though the realtime GET
 * field parameters must be appropriately rewritten according to Alfresco mappings
 
-###Alfresco Side - Configuration - S
+*Alfresco Side - Configuration - S*
 
 A specific request handler will be configured in the Alfresco solrconfig.xml to expose an endpoint that will use the More Like This query parser by default.
 It will take in input as request parameters a set of document Ids and the document fields to use for the document similarity.
 The rest of the parameters will be hardcoded in the config, only expert admin are invited to touch them (such as the algorithm for term scoring, and all the other MLT params)
 
-###Alfresco Repository and Rest API - M
+*Alfresco Repository and Rest API - M*
 
 A specific query language must be implemented:
 org.alfresco.rest.api.search.impl.SearchMapper
