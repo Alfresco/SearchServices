@@ -64,12 +64,11 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         // Create another user who would not have access to the Private Site created by userModel
         userWithNoAccess = dataUser.createRandomTestUser("UserSearch2");
         userCanAccessTextFile = dataUser.createRandomTestUser("UserSearch3");
-
-        testFolder = dataContent.usingSite(testSite).usingUser(userModel).createFolder();
-        // Create a folder and a file as test User 
-        FolderModel folder = new FolderModel(fname);
-        dataContent.usingUser(userModel).usingSite(testSite).createFolder(folder);
         
+        // Create a folder and a file as test User
+        testFolder = new FolderModel(fname);
+        dataContent.usingUser(userModel).usingSite(testSite).createFolder(testFolder);
+
         textFile = new FileModel(fname + "-1.txt", fname, fname, FileType.TEXT_PLAIN, fname + " file for search ");
         dataContent.usingUser(userModel).usingSite(testSite).createContent(textFile);
 
