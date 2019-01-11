@@ -13,6 +13,7 @@
             <class name="org.alfresco.rest.search.FacetRangeSearchTest"/>
             <class name="org.alfresco.rest.search.PivotFacetedSearchTest"/>
             <class name="org.alfresco.rest.search.FacetedSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetFieldsSearchTest"/>
         </classes>
     </test>
     
