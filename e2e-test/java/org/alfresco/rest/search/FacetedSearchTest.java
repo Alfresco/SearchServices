@@ -322,8 +322,8 @@ public class FacetedSearchTest extends AbstractSearchTest
         String fname = unique_searchString + "facet";
         
         // Create another user who would not have access to the Private Site created by userModel
-        UserModel user2 = dataUser.createRandomTestUser("UserSearch2");
-        UserModel user3 = dataUser.createRandomTestUser("UserSearch3");
+        UserModel userWithNoAccess = dataUser.createRandomTestUser("UserSearch2");
+        UserModel userCanAccessTextFile = dataUser.createRandomTestUser("UserSearch3");
         
         // Create a folder and a file as test User 
         FolderModel folder = new FolderModel(fname);
@@ -338,7 +338,7 @@ public class FacetedSearchTest extends AbstractSearchTest
         // Set Node Permissions to allow access for user3 user for text File
         JsonObject userPermission = Json.createObjectBuilder()
                 .add("permissions", Json.createObjectBuilder().add("isInheritanceEnabled", false)
-                        .add("locallySet",Json.createObjectBuilder().add("authorityId", user3.getUsername())
+                        .add("locallySet",Json.createObjectBuilder().add("authorityId", userCanAccessTextFile.getUsername())
                                 .add("name", "SiteConsumer").add("accessStatus", "ALLOWED")))
                 .build();
         String putBody = userPermission.toString();
@@ -423,11 +423,11 @@ public class FacetedSearchTest extends AbstractSearchTest
         bucket1.assertThat().field("display").is("Plain Text");
 
         // Search query using other user: No access hence no buckets expected
-        response = restClient.authenticateUser(user2).withSearchAPI().search(query);
+        response = restClient.authenticateUser(userWithNoAccess).withSearchAPI().search(query);
         Assert.assertNull(response.getContext().getFacetsFields());
 
         // Search query using user3
-        response = restClient.authenticateUser(user3).withSearchAPI().search(query);
+        response = restClient.authenticateUser(userCanAccessTextFile).withSearchAPI().search(query);
 
         facetFieldBucketsList = response.getContext().getFacetsFields();
         Assert.assertEquals(facetFieldBucketsList.size(), 2);
