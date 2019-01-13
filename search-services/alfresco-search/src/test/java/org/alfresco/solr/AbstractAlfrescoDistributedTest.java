@@ -129,6 +129,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected String[] deadServers;
     protected String shards;
     protected String[] shardsArr;
+
     protected static File testDir;
 
     // to stress with higher thread counts and requests, make sure the junit
@@ -140,6 +141,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     protected int clientConnectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     protected int clientSoTimeout = 90000;
+
+    protected SolrClient genericClient;
 
     public static int ORDERED = 1;
     public static int SKIP = 2;
@@ -374,36 +377,21 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      */
     public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception
     {
-        waitForShardsCount(luceneToSolrQuery(query), count, waitMillis, start);
+        SolrQuery solrQuery = luceneToSolrQuery(query);
+        solrQuery.setParam("shards", shards);
+        waitForShardsCount(solrQuery, count, waitMillis, start);
     }
 
 
     public void waitForShardsCount(SolrQuery query, int count, long waitMillis, long start) throws Exception
     {
-        List<SolrClient> clients = getClusterClients();
         long timeOut = start+waitMillis;
         int totalCount = 0;
+        SolrClient clientShard = clientShards.get(0);
         while (System.currentTimeMillis() < timeOut)
         {
-            totalCount = 0;
-            for (SolrClient client : clients)
-            {
-                QueryResponse response = client.query(query);
-                long topDocsNumber = response.getResults().getNumFound();
-                totalCount += topDocsNumber;
-                /*
-                 * it's preferrable to immediately call the decref and not potentially after 2 seconds,
-                 * there are multiple components accessing and incrementing the searcher reference around
-                 * (Tracker, Solr itself).
-                 * Keeping a reference count +1 for 2 seconds when not necessary could cause nasty side effects
-                 * (I verified that during debugging core closures in tests)
-                 * To keep it simple is recommended to not use directly the searcher but use SolrJ clients
-                 * to query: see https://issues.alfresco.com/jira/browse/SEARCH-1364
-                 * */
-
-                Thread.sleep(2000);
-            }
-
+            QueryResponse response = clientShard.query(query);
+            totalCount = (int) response.getResults().getNumFound();
             if (totalCount == count)
             {
                 return;
@@ -428,6 +416,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             try
             {
                 solrQueryRequest = new AbstractAlfrescoSolrTests.SolrServletRequest(core, null);
+
                 AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
                 addDocCmd.overwrite = true;
                 addDocCmd.solrDoc = doc;
@@ -752,6 +741,8 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
 
         String[] ranges = {"0-100", "100-200", "200-300", "300-400"};
+
+
 
         for (int i = 0; i < numShards; i++)
         {
