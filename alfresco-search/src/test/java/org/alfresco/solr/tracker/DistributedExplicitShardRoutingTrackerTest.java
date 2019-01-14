@@ -28,6 +28,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.core.SolrCore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,6 +98,7 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         Query contentQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world"));
         Query aclQuery = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL));
         List<SolrCore> shards = getJettyCores(jettyShards);
+        List<SolrClient> shardClients = getClusterClients();
         long begin = System.currentTimeMillis();
 
         //Acls go to all cores
@@ -106,13 +108,15 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         waitForShardsCount(contentQuery,numNodes,20000, begin);
         begin = System.currentTimeMillis();
 
-        for (SolrCore core : shards)
+        for (int i = 0; i < shardClients.size(); ++i)
         {
+            SolrCore core = shards.get(i);
+            SolrClient client = shardClients.get(i);
             switch (core.getName())
             {
                 case "shard0":
                 case "shard1":
-                    waitForDocCountCore(core, contentQuery, 500, 1000, begin);
+                    waitForDocCountCore(client, luceneToSolrQuery(contentQuery), 500, 1000, begin);
                     break;
                 default:
                     //ignore other shards because we will check below
