@@ -107,15 +107,15 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
 
-        // Search query using user who created site: Expect Only 1 Facet bucket to be retrieved
+        // Search query using user who created site
         SearchResponse response = query(query);
-
-        Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
+        
+        // Expect MimeType bucket with size 1 is excluded as minCount = 2 won't be reached
         Assert.assertEquals(response.getContext().getFacetsFields().size(), 1);
 
         RestResultBucketsModel facetFieldList = response.getContext().getFacetsFields().get(0);
         Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELDS.SITE");
-        Assert.assertEquals(facetFieldList.getBuckets().size(), 1); // MimeType bucket won't be shown as minCount = 2 won't be reached
+        Assert.assertEquals(facetFieldList.getBuckets().size(), 1);
 
         FacetFieldBucket bucket1 = facetFieldList.getBuckets().get(0);
         bucket1.assertThat().field("label").is(testSite.getId());
@@ -142,9 +142,10 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
 
-        // Search query using user who created site: Expect 2 Facet buckets to be retrieved
+        // Search query using user who created site
         SearchResponse response = query(query);
 
+        // Expect 2 Facet buckets to be retrieved: MinCount when not set defaults to 1
         List<RestResultBucketsModel> facetFieldBucketsList = response.getContext().getFacetsFields();
         Assert.assertEquals(facetFieldBucketsList.size(), 2, "FacetField");
 
@@ -156,9 +157,10 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         bucket1.assertThat().field("filterQuery").contains(testSite.getId());
         bucket1.assertThat().field("count").is(3);
 
+        // MimeType bucket will be shown with 2 buckets
         facetFieldList = facetFieldBucketsList.get(1);
         Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELD2.Mimetype");
-        Assert.assertEquals(facetFieldList.getBuckets().size(), 2); // MimeType bucket will be shown with 2 buckets
+        Assert.assertEquals(facetFieldList.getBuckets().size(), 2);
 
         bucket1 = facetFieldList.getBuckets().get(0);
         bucket1.assertThat().field("label").is("text/html");
@@ -190,8 +192,10 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
         
-        // Search query using other user: No access hence no buckets expected
+        // Search query using other user
         SearchResponse response = restClient.authenticateUser(userWithNoAccess).withSearchAPI().search(query);
+        
+        // User has No access to matching content hence no buckets expected
         Assert.assertNull(response.getContext().getFacetsFields());
     }
 
@@ -211,7 +215,8 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
 
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
-        // Search query using user3
+
+        // Search query using user
         SearchResponse response = restClient.authenticateUser(userCanAccessTextFile).withSearchAPI().search(query);
 
         List<RestResultBucketsModel> facetFieldBucketsList = response.getContext().getFacetsFields();
@@ -221,7 +226,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         // Check FacetField 1
         RestResultBucketsModel facetFieldList = facetFieldBucketsList.get(0);
 
-        // User3 has granular permissions to content within this private site, so expect the Site bucket
+        // User has granular permissions to content within this private site, so expect the Site bucket
         Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELD1.SITE");
 
         FacetFieldBucket bucket1 = facetFieldList.getBuckets().get(0);
@@ -229,12 +234,12 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         bucket1.assertThat().field("filterQuery").contains(testSite.getId());
         bucket1.assertThat().field("count").is(1);
 
-        // Check FacetField 2
+        // Expect MimeType bucket shows only1 bucket where user has access to content
         facetFieldList = facetFieldBucketsList.get(1);
         Assert.assertEquals(facetFieldList.getLabel(), "SEARCH.FACET_FIELD2.Mimetype");
-        Assert.assertEquals(facetFieldList.getBuckets().size(), 1); // MimeType bucket will be shown with 1 bucket only
+        Assert.assertEquals(facetFieldList.getBuckets().size(), 1);
 
-        // User3 has access to text file alone, so expect bucket for text/plain and not for html content.
+        // User has access to text file alone, so expect bucket for text/plain and not for html content.
         bucket1 = facetFieldList.getBuckets().get(0);
         bucket1.assertThat().field("label").is("text/plain");
         bucket1.assertThat().field("label").isNot("text/html");
