@@ -75,7 +75,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         htmlFile = new FileModel(fname + "-2.html", fname, fname, FileType.HTML, fname + " file 2 for search ");
         dataContent.usingUser(userModel).usingSite(testSite).createContent(htmlFile);
         
-        // Set Node Permissions to allow access for user3 user for text File
+        // Set Node Permissions to allow access for user for text File
         JsonObject userPermission = Json.createObjectBuilder()
                 .add("permissions", Json.createObjectBuilder().add("isInheritanceEnabled", false)
                         .add("locallySet",Json.createObjectBuilder().add("authorityId", userCanAccessTextFile.getUsername())
