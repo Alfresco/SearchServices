@@ -29,9 +29,11 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
@@ -104,9 +106,22 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
         AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
         String fieldName = fieldInstance.getField();
 
-        for (int i = 0; i < dates.length; i++) {
-            LegacyNumericRangeQuery query = LegacyNumericRangeQuery.newLongRange(fieldName, dates[i].getTime(), dates[i].getTime() + 1, true, false);
-            assertCountAndColocation(query, counts[i]);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        for (int i = 0; i < dates.length; i++)
+        {
+            String startDate = format.format(dates[i]);
+            Calendar gcal = new GregorianCalendar();
+            gcal.setTime(dates[i]);
+            gcal.add(Calendar.SECOND, 1);
+            String endDate = format.format(gcal.getTime());
+
+            SolrQuery solrQuery = new SolrQuery("{!lucene}" + fixSpecialCharQuery(fieldName) +
+                    ":[" + fixSpecialCharQuery(startDate) + " TO " + fixSpecialCharQuery(endDate) + " } " );
+            assertCountAndColocation(solrQuery, counts[i]);
+
             assertCorrect(numNodes);
         }
     }
