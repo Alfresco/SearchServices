@@ -800,8 +800,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
    
     private void addFullTextSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
+        if (((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
                 || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                && !isIdentifierTextProperty(propertyDefinition.getName()))
         {
             indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
             if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
