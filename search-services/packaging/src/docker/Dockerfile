@@ -27,6 +27,8 @@ RUN set -x \
    && yum clean all \
    && unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP" \
    && mkdir -p $DIST_DIR/data \
+   && mkdir -p $DIST_DIR/solrhome/keystore \
+   && cp $DIST_DIR/solrhome/templates/noRerank/conf/ssl.repo.client.* $DIST_DIR/solrhome/keystore/ \
    && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ \
    && chown -R ${USERNAME}:${USERNAME} $DIST_DIR \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
