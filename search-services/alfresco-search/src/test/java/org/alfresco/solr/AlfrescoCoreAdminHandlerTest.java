@@ -18,14 +18,14 @@
  */
 package org.alfresco.solr;
 
+import static java.util.Arrays.asList;
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.ARG_TXID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.IndexHealthReport;
@@ -43,6 +43,10 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /** Unit tests for {@link org.alfresco.solr.AlfrescoCoreAdminHandler}. */
 @RunWith(MockitoJUnitRunner.class)
@@ -169,5 +173,82 @@ public class AlfrescoCoreAdminHandlerTest
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
 
         verify(rsp, never()).add(anyString(), any());
+    }
+
+    @Test
+    public void invalidCoreNameInRequest() {
+        AlfrescoCoreAdminHandler spy = spy(alfrescoCoreAdminHandler);
+
+        // First let's try a list of invalid names, one by one
+        List<String> invalidNames =
+                AlfrescoCoreAdminHandler.ALLOWED_CORE_NAMES.stream()
+                    .map(coreName -> coreName + System.currentTimeMillis())
+                    .collect(Collectors.toList());
+
+        invalidNames.forEach(spy::setupNewDefaultCores);
+
+        verify(spy, never()).newDefaultCore(anyString(), any(), anyString(), any(), any());
+
+        reset(spy);
+
+        // Then, the same list as a single parameter (e.g. name1, name2, name3, etc)
+        String commaSeparatedNames = String.join(",", invalidNames);
+        spy.setupNewDefaultCores(commaSeparatedNames);
+
+        verify(spy, never()).newDefaultCore(anyString(), any(), anyString(), any(), any());
+    }
+
+    @Test
+    public void coreNamesAreTrimmed_oneCoreNameAtTime() {
+        AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
+            @Override
+            protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+            {
+                // Do nothing here otherwise we cannot spy it
+                return true;
+            }
+        });
+
+        // First let's try a list of names, one by one
+        final List<String> coreNames =
+                asList(
+                        AlfrescoCoreAdminHandler.ARCHIVE_CORE_NAME + "  ", // whitespace char at the end
+                        "\t " + AlfrescoCoreAdminHandler.ALFRESCO_CORE_NAME, // whitespace chars at the beginning
+                        "   " + AlfrescoCoreAdminHandler.VERSION_CORE_NAME + "  \t", // beginning and end
+                        "   \t"); // empty name
+
+        coreNames.forEach(spy::setupNewDefaultCores);
+
+        verify(spy).newDefaultCore(eq(AlfrescoCoreAdminHandler.ARCHIVE_CORE_NAME), any(), anyString(), any(), any());
+        verify(spy).newDefaultCore(eq(AlfrescoCoreAdminHandler.ALFRESCO_CORE_NAME), any(), anyString(), any(), any());
+        verify(spy).newDefaultCore(eq(AlfrescoCoreAdminHandler.VERSION_CORE_NAME), any(), anyString(), any(), any());
+    }
+
+    @Test
+    public void validAndInvalidCoreNames() {
+        AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
+            @Override
+            protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+            {
+                // Do nothing here otherwise we cannot spy it
+                return true;
+            }
+        });
+
+        // First let's try a list of names, one by one
+        final List<String> coreNames =
+                asList(
+                        AlfrescoCoreAdminHandler.ARCHIVE_CORE_NAME + "  ", // whitespace char at the end
+                        "\t " + AlfrescoCoreAdminHandler.ALFRESCO_CORE_NAME, // whitespace chars at the beginning
+                        "   " + AlfrescoCoreAdminHandler.VERSION_CORE_NAME + "  \t", // beginning and end
+                        "   \t"); // empty name
+
+        // Then, the same list as a single parameter (e.g. name1, name2, name3, etc)
+        String commaSeparatedNames = String.join(",", coreNames);
+        spy.setupNewDefaultCores(commaSeparatedNames);
+
+        verify(spy).newDefaultCore(eq(AlfrescoCoreAdminHandler.ARCHIVE_CORE_NAME), any(), anyString(), any(), any());
+        verify(spy).newDefaultCore(eq(AlfrescoCoreAdminHandler.ALFRESCO_CORE_NAME), any(), anyString(), any(), any());
+        verify(spy).newDefaultCore(eq(AlfrescoCoreAdminHandler.VERSION_CORE_NAME), any(), anyString(), any(), any());
     }
 }
