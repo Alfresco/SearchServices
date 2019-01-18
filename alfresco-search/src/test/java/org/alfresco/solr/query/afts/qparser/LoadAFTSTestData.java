@@ -16,18 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.query;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
-import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+package org.alfresco.solr.query.afts.qparser;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,10 +38,21 @@ import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.util.ISO9075;
 import org.apache.solr.core.SolrCore;
 import org.junit.BeforeClass;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
+import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 /**
  * Load test data as part of legacy test.
- * @author Michael Suzuki
  *
+ * @author Michael Suzuki
  */
 public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements AlfrescoSolrConstants
 {
@@ -192,6 +192,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         initAlfrescoCore("schema.xml");
         Thread.sleep(1000);
+
         // Root
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
@@ -204,11 +205,21 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         // 1
         n01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         n01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "one");
-        n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName,
-                n01NodeRef, true, 0);
-        addNode(core, dataModel, 1, 2, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "andy",
-                new ChildAssociationRef[]{n01CAR}, new NodeRef[]{rootNodeRef}, new String[]{"/"
-                        + n01QName.toString()}, n01NodeRef, true);
+        n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n01QName, n01NodeRef, true, 0);
+        addNode(
+                core,
+                dataModel,
+                1,
+                2,
+                1,
+                TEST_SUPER_TYPE,
+                null,
+                getOrderProperties(),
+                null,
+                "andy",
+                new ChildAssociationRef[]{n01CAR},
+                new NodeRef[]{rootNodeRef},
+                new String[]{"/" + n01QName.toString()}, n01NodeRef, true);
 
         testNodeRef = n01NodeRef;
 
@@ -234,15 +245,21 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 4
 
-        properties04 = new HashMap<QName, PropertyValue>();
-        content04 = new HashMap<QName, String>();
+        properties04 = new HashMap<>();
+        content04 = new HashMap<>();
         properties04.putAll(getOrderProperties());
-        properties04.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"),
+        properties04.put(
+                QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"),
                 new StringPropertyValue("TEXT THAT IS INDEXED STORED AND TOKENISED ATOMICALLY KEYONE"));
-        properties04.put(QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic"),
+
+        properties04.put(
+                QName.createQName(TEST_NAMESPACE, "text-indexed-unstored-tokenised-atomic"),
                 new StringPropertyValue("TEXT THAT IS INDEXED STORED AND TOKENISED ATOMICALLY KEYUNSTORED"));
-        properties04.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic"),
+
+        properties04.put(
+                QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-nonatomic"),
                 new StringPropertyValue("TEXT THAT IS INDEXED STORED AND TOKENISED BUT NOT ATOMICALLY KEYTWO"));
+
         properties04.put(QName.createQName(TEST_NAMESPACE, "int-ista"), new StringPropertyValue("1"));
         properties04.put(QName.createQName(TEST_NAMESPACE, "long-ista"), new StringPropertyValue("2"));
         properties04.put(QName.createQName(TEST_NAMESPACE, "float-ista"), new StringPropertyValue("3.4"));
@@ -320,8 +337,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         n04NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         n04QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "four");
-        n04CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n04QName,
-                n04NodeRef, true, 0);
+        n04CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, n04QName, n04NodeRef, true, 0);
 
         properties04.put(QName.createQName(TEST_NAMESPACE, "aspectProperty"), new StringPropertyValue(""));
         addNode(core, dataModel, 1, 5, 1, TEST_TYPE, new QName[]{TEST_ASPECT}, properties04, content04, "dave",
@@ -440,9 +456,9 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
         // 14
 
-        properties14 = new HashMap<QName, PropertyValue>();
+        properties14 = new HashMap<>();
         properties14.putAll(getOrderProperties());
-        content14 = new HashMap<QName, String>();
+        content14 = new HashMap<>();
         MLTextPropertyValue desc1 = new MLTextPropertyValue();
         desc1.addValue(Locale.ENGLISH, "Alfresco tutorial");
         desc1.addValue(Locale.US, "Alfresco tutorial");
