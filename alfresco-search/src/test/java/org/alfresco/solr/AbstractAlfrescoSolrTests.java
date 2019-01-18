@@ -90,7 +90,7 @@ import org.xml.sax.SAXException;
  * @author Michael Suzuki
  *
  */
-public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrecsoSolrConstants
+public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrescoSolrConstants
 {
     static AlfrescoCoreAdminHandler admin;
     private static Log log = LogFactory.getLog(AbstractAlfrescoSolrTests.class);
@@ -598,6 +598,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     {
         assertAQuery(queryString, count, null, null, null);
     }
+
     protected void assertAQuery(String queryString,
             Integer count,
             Locale locale,
