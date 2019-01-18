@@ -85,37 +85,37 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
         
         StringPropertyValue single = new StringPropertyValue("Un tokenised");
-        content00Properties.put(singleTextUntokenised, single);
-        content00Properties.put(singleTextTokenised, single);
-        content00Properties.put(singleTextBoth, single);
+        content00Properties.put(SINGLE_TEXT_UNTOKENISED, single);
+        content00Properties.put(SINGLE_TEXT_TOKENISED, single);
+        content00Properties.put(SINGLE_TEXT_BOTH, single);
         MultiPropertyValue multi = new MultiPropertyValue();
         multi.addValue(single);
         multi.addValue(new StringPropertyValue("two parts"));
-        content00Properties.put(multipleTextUntokenised, multi);
-        content00Properties.put(multipleTextTokenised, multi);
-        content00Properties.put(multipleTextBoth, multi);
-        content00Properties.put(singleMLTextUntokenised, makeMLText());
-        content00Properties.put(singleMLTextTokenised, makeMLText());
-        content00Properties.put(singleMLTextBoth, makeMLText());
-        content00Properties.put(multipleMLTextUntokenised, makeMLTextMVP());
-        content00Properties.put(multipleMLTextTokenised, makeMLTextMVP());
-        content00Properties.put(multipleMLTextBoth, makeMLTextMVP());
+        content00Properties.put(MULTIPLE_TEXT_UNTOKENISED, multi);
+        content00Properties.put(MULTIPLE_TEXT_TOKENISED, multi);
+        content00Properties.put(MULTIPLE_TEXT_BOTH, multi);
+        content00Properties.put(SINGLE_ML_TEXT_UNTOKENISED, makeMLText());
+        content00Properties.put(SINGLE_ML_TEXT_TOKENISED, makeMLText());
+        content00Properties.put(SINGLE_ML_TEXT_BOTH, makeMLText());
+        content00Properties.put(MULTIPLE_ML_TEXT_UNTOKENISED, makeMLTextMVP());
+        content00Properties.put(MULTIPLE_ML_TEXT_TOKENISED, makeMLTextMVP());
+        content00Properties.put(MULTIPLE_ML_TEXT_BOTH, makeMLTextMVP());
         StringPropertyValue one = new StringPropertyValue("1");
         StringPropertyValue two = new StringPropertyValue("2");
         MultiPropertyValue multiDec = new MultiPropertyValue();
         multiDec.addValue(one);
         multiDec.addValue(new StringPropertyValue("1.1"));
-        content00Properties.put(singleFloat, one);
-        content00Properties.put(multipleFloat, multiDec);
-        content00Properties.put(singleDouble, one);
-        content00Properties.put(multipleDouble, multiDec);
+        content00Properties.put(SINGLE_FLOAT, one);
+        content00Properties.put(MULTIPLE_FLOAT, multiDec);
+        content00Properties.put(SINGLE_DOUBLE, one);
+        content00Properties.put(MULTIPLE_DOUBLE, multiDec);
         MultiPropertyValue multiInt = new MultiPropertyValue();
         multiInt.addValue(one);
         multiInt.addValue(two);
-        content00Properties.put(singleInteger, one);
-        content00Properties.put(multipleInteger, multiInt);
-        content00Properties.put(singleLong, one);
-        content00Properties.put(multipleLong, multiInt);
+        content00Properties.put(SINGLE_INTEGER, one);
+        content00Properties.put(MULTIPLE_INTEGER, multiInt);
+        content00Properties.put(SINGLE_LONG, one);
+        content00Properties.put(MULTIPLE_LONG, multiInt);
         
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date1);
@@ -127,10 +127,10 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         MultiPropertyValue multiDate = new MultiPropertyValue();
         multiDate.addValue(d1);
         multiDate.addValue(d2);
-        content00Properties.put(singleDate, d1);
-        content00Properties.put(multipleDate, multiDate);
-        content00Properties.put(singleDatetime, d1);
-        content00Properties.put(multipleDatetime, multiDate);
+        content00Properties.put(SINGLE_DATE, d1);
+        content00Properties.put(MULTIPLE_DATE, multiDate);
+        content00Properties.put(SINGLE_DATETIME, d1);
+        content00Properties.put(MULTIPLE_DATETIME, multiDate);
         
         StringPropertyValue bTrue = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, true));
         StringPropertyValue bFalse = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, false));
@@ -138,8 +138,8 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         multiBool.addValue(bTrue);
         multiBool.addValue(bFalse);
         
-        content00Properties.put(singleBoolean, bTrue);
-        content00Properties.put(multipleBoolean, multiBool);
+        content00Properties.put(SINGLE_BOOLEAN, bTrue);
+        content00Properties.put(MULTIPLE_BOOLEAN, multiBool);
         
         NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test One");
@@ -797,39 +797,39 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
                     new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
     
         StringPropertyValue single = new StringPropertyValue(orderable[position]);
-        content00Properties.put(singleTextUntokenised, single);
-        content00Properties.put(singleTextTokenised, single);
-        content00Properties.put(singleTextBoth, single);
+        content00Properties.put(SINGLE_TEXT_UNTOKENISED, single);
+        content00Properties.put(SINGLE_TEXT_TOKENISED, single);
+        content00Properties.put(SINGLE_TEXT_BOTH, single);
         MultiPropertyValue multi = new MultiPropertyValue();
         multi.addValue(single);
         multi.addValue(new StringPropertyValue(orderable[position + 1]));
-        content00Properties.put(multipleTextUntokenised, multi);
-        content00Properties.put(multipleTextTokenised, multi);
-        content00Properties.put(multipleTextBoth, multi);
-        content00Properties.put(singleMLTextUntokenised, makeMLText(position));
-        content00Properties.put(singleMLTextTokenised, makeMLText(position));
-        content00Properties.put(singleMLTextBoth, makeMLText(position));
-        content00Properties.put(multipleMLTextUntokenised, makeMLTextMVP(position));
-        content00Properties.put(multipleMLTextTokenised, makeMLTextMVP(position));
-        content00Properties.put(multipleMLTextBoth, makeMLTextMVP());
+        content00Properties.put(MULTIPLE_TEXT_UNTOKENISED, multi);
+        content00Properties.put(MULTIPLE_TEXT_TOKENISED, multi);
+        content00Properties.put(MULTIPLE_TEXT_BOTH, multi);
+        content00Properties.put(SINGLE_ML_TEXT_UNTOKENISED, makeMLText(position));
+        content00Properties.put(SINGLE_ML_TEXT_TOKENISED, makeMLText(position));
+        content00Properties.put(SINGLE_ML_TEXT_BOTH, makeMLText(position));
+        content00Properties.put(MULTIPLE_ML_TEXT_UNTOKENISED, makeMLTextMVP(position));
+        content00Properties.put(MULTIPLE_ML_TEXT_TOKENISED, makeMLTextMVP(position));
+        content00Properties.put(MULTIPLE_ML_TEXT_BOTH, makeMLTextMVP());
         StringPropertyValue one = new StringPropertyValue("" + (1.1 * position));
         StringPropertyValue two = new StringPropertyValue("" + (2.2 * position));
         MultiPropertyValue multiDec = new MultiPropertyValue();
         multiDec.addValue(one);
         multiDec.addValue(two);
-        content00Properties.put(singleFloat, one);
-        content00Properties.put(multipleFloat, multiDec);
-        content00Properties.put(singleDouble, one);
-        content00Properties.put(multipleDouble, multiDec);
+        content00Properties.put(SINGLE_FLOAT, one);
+        content00Properties.put(MULTIPLE_FLOAT, multiDec);
+        content00Properties.put(SINGLE_DOUBLE, one);
+        content00Properties.put(MULTIPLE_DOUBLE, multiDec);
         one = new StringPropertyValue("" + (1 * position));
         two = new StringPropertyValue("" + (2 * position));
         MultiPropertyValue multiInt = new MultiPropertyValue();
         multiInt.addValue(one);
         multiInt.addValue(two);
-        content00Properties.put(singleInteger, one);
-        content00Properties.put(multipleInteger, multiInt);
-        content00Properties.put(singleLong, one);
-        content00Properties.put(multipleLong, multiInt);
+        content00Properties.put(SINGLE_INTEGER, one);
+        content00Properties.put(MULTIPLE_INTEGER, multiInt);
+        content00Properties.put(SINGLE_LONG, one);
+        content00Properties.put(MULTIPLE_LONG, multiInt);
     
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date1);
@@ -844,10 +844,10 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         MultiPropertyValue multiDate = new MultiPropertyValue();
         multiDate.addValue(d1);
         multiDate.addValue(d2);
-        content00Properties.put(singleDate, d1);
-        content00Properties.put(multipleDate, multiDate);
-        content00Properties.put(singleDatetime, d1);
-        content00Properties.put(multipleDatetime, multiDate);
+        content00Properties.put(SINGLE_DATE, d1);
+        content00Properties.put(MULTIPLE_DATE, multiDate);
+        content00Properties.put(SINGLE_DATETIME, d1);
+        content00Properties.put(MULTIPLE_DATETIME, multiDate);
     
         StringPropertyValue b = new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class,
                     position % 2 == 0 ? true : false));
@@ -857,8 +857,8 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         multiBool.addValue(bTrue);
         multiBool.addValue(bFalse);
     
-        content00Properties.put(singleBoolean, b);
-        content00Properties.put(multipleBoolean, multiBool);
+        content00Properties.put(SINGLE_BOOLEAN, b);
+        content00Properties.put(MULTIPLE_BOOLEAN, multiBool);
     
         NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test " + position);
