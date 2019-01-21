@@ -7,7 +7,6 @@ ENV DIST_DIR /opt/alfresco-search-services
 ENV SOLR_ZIP ${project.build.finalName}.zip
 ENV LANG C.UTF-8
 ENV OPENSSL_VERSION 1.0.2k-8.el7
-
 ARG USERNAME=solr
 ARG USERID=33007
 
@@ -27,8 +26,6 @@ RUN set -x \
    && yum clean all \
    && unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP" \
    && mkdir -p $DIST_DIR/data \
-   && mkdir -p $DIST_DIR/solrhome/keystore \
-   && cp $DIST_DIR/solrhome/templates/noRerank/conf/ssl.repo.client.* $DIST_DIR/solrhome/keystore/ \
    && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ \
    && chown -R ${USERNAME}:${USERNAME} $DIST_DIR \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
