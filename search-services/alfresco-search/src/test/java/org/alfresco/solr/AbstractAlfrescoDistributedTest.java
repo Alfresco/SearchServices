@@ -1,12 +1,12 @@
 package org.alfresco.solr;
 
-import com.carrotsearch.ant.tasks.junit4.dependencies.com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
@@ -31,9 +31,6 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.common.util.ContentStream;
-import org.apache.solr.common.util.ContentStreamBase;
-import org.apache.lucene.document.Document;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
@@ -42,7 +39,6 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
-import org.apache.solr.update.CommitUpdateCommand;
 import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
@@ -329,39 +325,66 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
                 throw new Exception("Expecting "+count+" docs on shard "+shardNumber+" , found "+topDocs.totalHits);
             }
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
     }
 
     /**
      * Waits until all the shards reach the desired count, or errors.
-     * @param query
-     * @param count
-     * @param waitMillis
-     * @param start
-     * @throws Exception
+     *
+     * @param query the query that will be executed for getting the expected results.
+     * @param count the expected results cardinality.
+     * @param waitMillis how many msecs the test will wait before one try and another.
+     * @param start the current timestamp, in msecs.
+     *
+     * @throws Exception in case the count check fails.
      */
     public void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception
     {
         List<SolrCore> cores = getJettyCores(jettyShards);
         long timeOut = start+waitMillis;
         int totalCount = 0;
-        while (System.currentTimeMillis() < timeOut) {
+        while (System.currentTimeMillis() < timeOut)
+        {
             totalCount = 0;
-            for (SolrCore core : cores) {
+            for (SolrCore core : cores)
+            {
                 RefCounted<SolrIndexSearcher> refCounted = null;
-                try {
+                boolean refCountedDecremented = false;
+                try
+                {
                     refCounted = core.getSearcher();
+                    
                     SolrIndexSearcher searcher = refCounted.get();
                     TopDocs topDocs = searcher.search(query, 10);
                     totalCount += topDocs.totalHits;
-                    //System.out.println("####### shard count:"+core.getName()+":"+totalCount);
-                    Thread.sleep(2000);
-                } finally {
+                    /*
+                    * it's preferrable to immediately call the decref and not potentially after 2 seconds,
+                    * there are multiple components accessing and incrementing the searcher reference around
+                    * (Tracker, Solr itself).
+                    * Keeping a reference count +1 for 2 seconds when not necessary could cause nasty side effects
+                    * (I verified that during debugging core closures in tests)
+                    * To keep it simple is recommended to not use directly the searcher but use SolrJ clients
+                    * to query: see https://issues.alfresco.com/jira/browse/SEARCH-1364
+                    * */
                     refCounted.decref();
+                    refCountedDecremented = true;
+                    Thread.sleep(2000);
+                }
+                finally
+                {
+                    if(refCounted!=null && !refCountedDecremented)
+                    {
+                        refCounted.decref();
+                    }
                 }
             }
-            if (totalCount == count) {
+
+            if (totalCount == count)
+            {
                 return;
             }
         }
@@ -476,7 +499,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
             finally
             {
-                refCounted.decref();
+                if (refCounted != null)
+                {
+                    refCounted.decref();
+                }
             }
         }
 
@@ -509,7 +535,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             }
             finally
             {
-                refCounted.decref();
+                if (refCounted != null)
+                {
+                    refCounted.decref();
+                }
             }
         }
 
@@ -538,7 +567,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
         finally
         {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         if(totalCount != count) {
@@ -559,18 +591,24 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         while(new Date().getTime() < timeout)
         {
             RefCounted<SolrIndexSearcher> refCounted = null;
+            boolean refCountedDecremented = false;
             try {
                 refCounted = core.getSearcher();
                 SolrIndexSearcher searcher = refCounted.get();
                 TopDocs topDocs = searcher.search(query, 10);
                 totalHits = topDocs.totalHits;
+                refCounted.decref();
+                refCountedDecremented = true;
                 if (topDocs.totalHits == expectedNumFound) {
                     return;
                 } else {
                     Thread.sleep(500 * increment++);
                 }
             } finally {
-                refCounted.decref();
+                if(refCounted!=null && !refCountedDecremented)
+                {
+                    refCounted.decref();
+                }
             }
         }
         throw new Exception("Core:Wait error expected "+expectedNumFound+" found "+totalHits+" : "+query.toString());
@@ -952,6 +990,25 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return sdoc;
     }
 
+    protected void index(SolrClient client, int shardId, Object... fields) throws Exception
+    {
+        SolrInputDocument doc = new SolrInputDocument();
+        addFields(doc, fields);
+        indexDoc(client, shardId, doc);
+    }
+
+    /**
+     * Indexes the document in both the client, and a selected shard
+     */
+    protected void indexDoc(SolrClient client, int shardId, SolrInputDocument doc)
+        throws IOException, SolrServerException
+    {
+        client.add(doc);
+        int which = shardId;
+        SolrClient clientShard = clientShards.get(which);
+        clientShard.add(doc);
+    }
+    
     protected void index(SolrClient client, boolean andShards, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
@@ -1810,7 +1867,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             Document document = searcher.doc(doc.doc, fields);
             cap = Math.abs(getFieldValueLong(document, FIELD_DBID));
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         System.out.println("####### got cap:"+cap);
@@ -1819,6 +1879,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         long maxDBID = -1;
         Query query = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE));
+        refCounted = null;
         try {
             refCounted = core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
@@ -1832,7 +1893,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             Document document = searcher.doc(doc.doc, fields);
             maxDBID = getFieldValueLong(document, FIELD_DBID);
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         System.out.println("####### got max DBID:"+maxDBID);
@@ -1843,6 +1907,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
 
         long minDBID = -1;
+        refCounted = null;
         try {
             refCounted = core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
@@ -1854,7 +1919,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             Document document = searcher.doc(doc.doc, fields);
             minDBID = getFieldValueLong(document, FIELD_DBID);
         } finally {
-            refCounted.decref();
+            if (refCounted != null)
+            {
+                refCounted.decref();
+            }
         }
 
         System.out.println("####### got min DBID:"+minDBID);
