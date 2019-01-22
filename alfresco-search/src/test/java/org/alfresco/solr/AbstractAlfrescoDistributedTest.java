@@ -38,9 +38,7 @@ import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
-import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
-import org.apache.solr.util.RefCounted;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -121,7 +119,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     protected Map<String, JettySolrRunner> jettyContainers = new HashMap<>();
-    protected Map<String, SolrClient> jettyClients = new HashMap<>();
+    protected Map<String, SolrClient> collectionToStandaloneClient = new HashMap<>();
 
     protected List<JettySolrRunner> jettyShards = new ArrayList<>();
     protected List<SolrClient> clientShards = new ArrayList<>();
@@ -261,7 +259,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
         long begin = System.currentTimeMillis();
 
-        for (SolrClient client : getAllClients()) {
+        for (SolrClient client : getStandaloneAndShardedClients()) {
             waitForDocCountCore(client, luceneToSolrQuery(query), count, waitMillis, begin);
         }
     }
@@ -270,7 +268,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         List<SolrCore> cores = getJettyCores(jettyShards);
         long begin = System.currentTimeMillis();
-        for (SolrClient client : getClusterClients()) {
+        for (SolrClient client : getShardedClients()) {
             waitForDocCountCore(client, luceneToSolrQuery(query), count, waitMillis, begin);
         }
     }
@@ -284,7 +282,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
      */
     public void deleteByQueryAllClients(String q) throws Exception {
 
-        List<SolrClient> clients = getAllClients();
+        List<SolrClient> clients = getStandaloneAndShardedClients();
 
         for (SolrClient client : clients) {
             client.deleteByQuery(q);
@@ -292,23 +290,38 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     }
 
     /**
+     * Gets the Default test client.
+     *
+     * @return
+     */
+    protected SolrClient getDefaultTestClient()
+    {
+        return collectionToStandaloneClient.get(DEFAULT_TEST_CORENAME);
+    }
+
+    protected List<SolrClient> getShardedClients()
+    {
+        return clientShards;
+    }
+    
+    /**
      * Gets a list of all clients for that test
      *
      * @return list of SolrClient
      */
-    public List<SolrClient> getAllClients()
+    public List<SolrClient> getStandaloneAndShardedClients()
     {
         List<SolrClient> clients = new ArrayList();
-        clients.addAll(jettyClients.values());
+        clients.addAll(collectionToStandaloneClient.values());
         clients.addAll(clientShards);
         return clients;
     }
 
 
-    public List<SolrClient> getJettyClients()
+    public List<SolrClient> getStandaloneClients()
     {
         List<SolrClient> clients = new ArrayList();
-        clients.addAll(jettyClients.values());
+        clients.addAll(collectionToStandaloneClient.values());
         return clients;
     }
 
@@ -323,13 +336,13 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     {
         long begin = System.currentTimeMillis();
         //TODO: Support multiple cores per jetty
-        SolrClient controlClient = getJettyClients().get(0); //Get the first one
-        waitForDocCountCore(controlClient, luceneToSolrQuery(query), count, waitMillis, begin);
+        SolrClient standaloneClient = getStandaloneClients().get(0); //Get the first one
+        waitForDocCountCore(standaloneClient, luceneToSolrQuery(query), count, waitMillis, begin);
         waitForShardsCount(query, count, waitMillis, begin);
     }
 
     public void assertShardCount(int shardNumber, Query query, int count) throws Exception {
-        List<SolrClient> clients = getClusterClients();
+        List<SolrClient> clients = getShardedClients();
         SolrClient client = clients.get(shardNumber);
 
         QueryResponse response = client.query(luceneToSolrQuery(query));
@@ -340,36 +353,35 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     }
 
-    private String fixTermQuery(String query)
+    private String escapeQueryClause(String query)
     {
         int i = query.lastIndexOf(":");
         if (i == -1){
             return query + " ";
         }
-        String[] operands =  {query.substring(0, i), query.substring(i+1)};
+        String[] fieldAndValue =  {query.substring(0, i), query.substring(i+1)};
+        String field = fieldAndValue[0];
+        String escapedField = escapeQueryChars(field);
 
-        String s1 = fixSpecialCharQuery(operands[0]);
-
-        return s1 + ":" + operands[1] + " ";
+        return escapedField + ":" + fieldAndValue[1] + " ";
     }
 
-    protected String fixSpecialCharQuery(String query) {
+    protected String escapeQueryChars(String query) {
         return query.replaceAll("\\:", "\\\\:")
-                .replaceAll("\\{", "\\\\{")
-                .replaceAll("\\}", "\\\\}");
+            .replaceAll("\\{", "\\\\{")
+            .replaceAll("\\}", "\\\\}");
     }
-
-
+    
     public SolrQuery luceneToSolrQuery(Query query)
     {
         String[] terms = query.toString().split(" ");
-        String solrQueryString = new String();
+        String escapedQuery = new String();
         for (String t : terms)
         {
-            solrQueryString += fixTermQuery(t);
+            escapedQuery += escapeQueryClause(t);
         }
-
-        return new SolrQuery("{!lucene}" + solrQueryString);
+        
+        return new SolrQuery("{!lucene}" + escapedQuery);
     }
 
     /**
@@ -461,23 +473,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         }
         return coreAdminHandlers;
     }
-
-    /**
-     * Gets the Default test client.
-     *
-     * @return
-     */
-    protected SolrClient getDefaultTestClient()
-    {
-        return jettyClients.get(DEFAULT_TEST_CORENAME);
-    }
-
-    protected List<SolrClient> getClusterClients()
-    {
-        return clientShards;
-    }
-
-
+    
     public int assertNodesPerShardGreaterThan(int count) throws Exception
     {
         return assertNodesPerShardGreaterThan(count, false);
@@ -486,7 +482,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     public int assertNodesPerShardGreaterThan(int count, boolean ignoreZero) throws Exception
     {
         int shardHit = 0;
-        List<SolrClient> clients = getClusterClients();
+        List<SolrClient> clients = getShardedClients();
         List<SolrCore> cores = getJettyCores(jettyShards);
         SolrQuery query = luceneToSolrQuery(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE)));
         StringBuilder error = new StringBuilder();
@@ -535,7 +531,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     public void assertCountAndColocation(SolrQuery query, int count) throws Exception
     {
-        List<SolrClient> clients = getClusterClients();
+        List<SolrClient> clients = getShardedClients();
         int shardHit = 0;
         int totalCount = 0;
         for (SolrClient client : clients)
@@ -564,7 +560,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
 
     public void assertShardSequence(int shard, SolrQuery query, int count) throws Exception
     {
-        List<SolrClient> clients = getClusterClients();
+        List<SolrClient> clients = getShardedClients();
         int totalCount = 0;
         SolrClient client = clients.get(shard);
 
@@ -706,7 +702,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         {
             String url = buildUrl(jettyPort) + "/" + coreNames[i];
             log.info(url);
-            jettyClients.put(coreNames[i], createNewSolrClient(url));
+            collectionToStandaloneClient.put(coreNames[i], createNewSolrClient(url));
         }
 
         shardsArr = new String[numShards];
@@ -835,7 +831,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             solrHomes.add(jetty.getSolrHome());
             jetty.stop();
         }
-        for (SolrClient jClients : jettyClients.values())
+        for (SolrClient jClients : collectionToStandaloneClient.values())
         {
             jClients.close();
         }
@@ -859,7 +855,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         clientShards.clear();
         jettyShards.clear();
         jettyContainers.clear();
-        jettyClients.clear();
+        collectionToStandaloneClient.clear();
     }
 
     public JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride, boolean basicAuth) throws Exception
@@ -1840,11 +1836,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         return Long.parseLong(getFieldValueString(doc, fieldName));
     }
 
-    protected void assertCHECKCAPAction(long[] caps) throws Exception
-    {
-
-    }
-
     /**
      * A JUnit Rule to setup Jetty
      */
@@ -1973,7 +1964,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
             String url = buildUrl(jsr.getLocalPort()) + "/" + "alfresco";
             defaultClient = createNewSolrClient(url);
             assertNotNull(defaultClient);
-            jettyClients.put("alfresco", defaultClient);
+            collectionToStandaloneClient.put("alfresco", defaultClient);
 
         }
 
