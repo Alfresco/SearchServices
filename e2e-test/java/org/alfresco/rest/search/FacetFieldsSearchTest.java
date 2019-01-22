@@ -89,7 +89,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         waitForIndexing(htmlFile.getName(), true);
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_13 })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
     public void testSearchFacetFieldsBucketExcludedWhenMinCount2() throws Exception
     {
         // Create Query with FacetFields: Site and Content MimeType
@@ -125,7 +125,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_13 })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
     public void testSearchWithFacetFieldsMinCountChecks() throws Exception
     {
         SearchRequest query = new SearchRequest();
@@ -176,7 +176,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         bucket1.assertThat().field("display").is("Plain Text");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_13 })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
     public void testSearchWithFacetFieldsNoFacetsWhenNoAccess() throws Exception
     {
         SearchRequest query = new SearchRequest();
@@ -200,7 +200,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         Assert.assertNull(response.getContext().getFacetsFields());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_13 })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
     public void testSearchWithFacetFieldsOnlyFacetsWhereAccess() throws Exception
     {
         SearchRequest query = new SearchRequest();
