@@ -54,12 +54,14 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Load test data as part of legacy test.
+ * Test datasets provider.
+ * The data used in a test is usually managed within the test itself.
+ * However, sometimes a dataset is used by more than one test, and in this case we centralized its management in this class.
  *
  * @author Michael Suzuki
  * @author Andrea Gazzarini
  */
-public class TestDataProvider implements AlfrescoSolrConstants
+public class SharedTestDataProvider implements AlfrescoSolrConstants
 {
     private final String complexLocalName = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
     private final String numericLocalName = "12Woof12";
@@ -180,7 +182,7 @@ public class TestDataProvider implements AlfrescoSolrConstants
     private final SolrCore core;
     private final AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
 
-    public TestDataProvider(final TestHarness testHarness) throws Exception
+    public SharedTestDataProvider(final TestHarness testHarness) throws Exception
     {
         this.core = testHarness.getCore();
         dataModel.getNamespaceDAO().removePrefix("");
@@ -230,7 +232,10 @@ public class TestDataProvider implements AlfrescoSolrConstants
         return numericLocalName;
     }
 
-    public void loadTestSet() throws Exception
+    /**
+     * Loads in Solr a small dataset composed by 15 nodes.
+     */
+    public void loadSmallDataset() throws Exception
     {
         // 1
 
@@ -549,8 +554,7 @@ public class TestDataProvider implements AlfrescoSolrConstants
     {
         double orderDoubleCount = -0.11d + orderTextCount * ((orderTextCount % 2 == 0) ? 0.1d : -0.1d);
         float orderFloatCount = -3.5556f + orderTextCount * ((orderTextCount % 2 == 0) ? 0.82f : -0.82f);
-        long orderLongCount = -1999999999999999L + orderTextCount
-                * ((orderTextCount % 2 == 0) ? 299999999999999L : -299999999999999L);
+        long orderLongCount = -1999999999999999L + orderTextCount * ((orderTextCount % 2 == 0) ? 299999999999999L : -299999999999999L);
         int orderIntCount = -45764576 + orderTextCount * ((orderTextCount % 2 == 0) ? 8576457 : -8576457);
 
         Map<QName, PropertyValue> testProperties = new HashMap<>();
@@ -604,7 +608,10 @@ public class TestDataProvider implements AlfrescoSolrConstants
         return testProperties;
     }
 
-    public void loadSecondDataSet() throws Exception
+    /**
+     * Loads a medium-size dataset composed by 250 nodes.
+     */
+    public void loadMediumDataset() throws Exception
     {
         for (int i = 0; i < 100; i++)
         {
@@ -701,6 +708,9 @@ public class TestDataProvider implements AlfrescoSolrConstants
         }
     }
 
+    /**
+     * Loads a very small dataset (just 2 nodes) with escaped qNames.
+     */
     public void loadEscapingTestData() throws Exception
     {
         NodeRef childNameEscapingNodeRef = newNodeRef();
@@ -723,7 +733,10 @@ public class TestDataProvider implements AlfrescoSolrConstants
                 new ChildAssociationRef[] { numericCAR }, new NodeRef[] {rootNodeRef}, new String[] { "/"
                         + pathNumericNameEscapingQName.toString() }, numericNameEscapingNodeRef, true);
     }
-    
+
+    /**
+     * Loads the dataset used in MNT tests.
+     */
     public void loadMntTestData() throws Exception
     {
         Map<QName, PropertyValue> properties19 = new HashMap<>();

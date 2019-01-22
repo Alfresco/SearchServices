@@ -1,4 +1,4 @@
-package org.alfresco.solr.query;
+package org.alfresco.solr.query.afts.requestHandler;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
