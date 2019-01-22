@@ -197,7 +197,7 @@ public class AbstractSearchTest extends RestTest
         // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 1; searchCount <= 3; searchCount++)
         {
-            SearchRequest searchRequest = createQuery("name:'" + userQuery + "'");
+            SearchRequest searchRequest = createQuery(userQuery);
             SearchResponse response = query(searchRequest);
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
