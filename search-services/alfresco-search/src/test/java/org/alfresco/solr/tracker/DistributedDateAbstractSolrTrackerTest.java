@@ -118,8 +118,8 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
             gcal.add(Calendar.SECOND, 1);
             String endDate = format.format(gcal.getTime());
 
-            SolrQuery solrQuery = new SolrQuery("{!lucene}" + fixSpecialCharQuery(fieldName) +
-                    ":[" + fixSpecialCharQuery(startDate) + " TO " + fixSpecialCharQuery(endDate) + " } " );
+            SolrQuery solrQuery = new SolrQuery("{!lucene}" + escapeQueryChars(fieldName) +
+                    ":[" + escapeQueryChars(startDate) + " TO " + escapeQueryChars(endDate) + " } " );
             assertCountAndColocation(solrQuery, counts[i]);
 
             assertCorrect(numNodes);
