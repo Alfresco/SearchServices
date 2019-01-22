@@ -1549,7 +1549,6 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
                                         "sort", sort};
 
         assertQ(areq(params(params), null), xpaths.toArray(new String[0]));
-
     }
 
 

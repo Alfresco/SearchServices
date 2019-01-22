@@ -1,17 +1,35 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.solr.query.afts.qparser;
+
+import static java.util.Arrays.asList;
+import static java.util.stream.IntStream.range;
 
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.junit.BeforeClass;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.IntStream.range;
 
 /**
  * Supertype layer for all AFTS QParser tests.
@@ -27,43 +45,22 @@ public abstract class BaseQParserPluginTest extends AbstractAlfrescoSolrTests
         Thread.sleep(1000);
     }
 
-    void assertPage(String query, String sort, int num, int rows, int start, int [] sortOrder)
+    // TODO Integer-> int and use streams for checking
+    void assertAQueryIsSorted(String query, String sort, Locale aLocale, int num, Integer [] sortOrder)
     {
-        String[] params =
-        {
-            "start", Integer.toString(start),
-            "rows", Integer.toString(rows),
-            "qt", "/afts",
-            "q", query,
-            "sort", sort
-        };
-
-        assertQ(areq(params(params), null), Stream.concat(
-                Stream.of("*[count(//doc)=" + num + "]"),
-                range(1, sortOrder.length)
+        List<String> xpaths =
+                Stream.concat(
+                    Stream.of("*[count(//doc)=" + num + "]"),
+                    range(1, sortOrder.length)
+                        .filter(index -> sortOrder[index - 1] != null)
                         .mapToObj(index -> "//result/doc[" + index + "]/long[@name='DBID'][.='" + sortOrder[index - 1] + "']"))
-                .toArray(String[]::new));
-
-    }
-
-    void assertAQueryIsSorted(String query, String sort, Locale aLocale, int num, Integer[] sortOrder)
-    {
-        List<String> xpaths = new ArrayList();
-        xpaths.add("*[count(//doc)=" + num + "]");
-        for (int i = 1; i <= sortOrder.length; i++)
-        {
-            if(sortOrder[i - 1] != null) {
-                xpaths.add("//result/doc[" + i + "]/long[@name='DBID'][.='" + sortOrder[i - 1] + "']");
-            }
-        }
+                .collect(Collectors.toList());
 
         String[] params = new String[] {"rows", "20", "qt", "/afts", "q", query, "sort", sort};
 
-
         if (aLocale != null)
         {
-            List<String> localparams = new ArrayList<>(params.length+2);
-            localparams.addAll(Arrays.asList(params));
+            List<String> localparams = new ArrayList<>(asList(params));
             localparams.add("locale");
             localparams.add(aLocale.toString());
             assertQ(areq(params(localparams.toArray(new String[0])), null), xpaths.toArray(new String[0]));

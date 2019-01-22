@@ -739,7 +739,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     public static void loadMntTestData() throws Exception {
         SolrCore core = h.getCore();
 
-        properties19= new HashMap<QName, PropertyValue>();
+        properties19 = new HashMap<>();
         properties19.put(
                 ContentModel.PROP_NAME,
                 new StringPropertyValue("Test.hello.txt"));
