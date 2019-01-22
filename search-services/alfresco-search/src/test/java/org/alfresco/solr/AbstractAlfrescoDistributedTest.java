@@ -144,21 +144,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
     protected int clientConnectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     protected int clientSoTimeout = 90000;
 
-    public static int ORDERED = 1;
-    public static int SKIP = 2;
-    public static int SKIPVAL = 4;
-    public static int UNORDERED = 8;
-
-    /**
-     * When this flag is set, Double values will be allowed a difference ratio
-     * of 1E-8 between the non-distributed and the distributed returned values
-     */
-    public static int FUZZY = 16;
-    private static final double DOUBLE_RATIO_LIMIT = 1E-8;
-
-    protected int flags;
-    protected Map<String, Integer> handle = new HashMap<>();
-
     protected String id = "id";
 
     public static RandVal rint = new RandVal()
@@ -243,6 +228,10 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         SOLRAPIQueueClient.aclReadersMap.clear();
         SOLRAPIQueueClient.aclMap.clear();
         SOLRAPIQueueClient.nodeMap.clear();
+    }
+
+    protected void putHandleDefaults() {
+        solrComparator.putHandleDefaults();
     }
 
     /**
@@ -1325,25 +1314,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestCaseJ4
         //Add alfresco solr configurations
         FileUtils.copyDirectory(coreSourceConfig.resolve("conf").toFile(), confDir.toFile());
     }
-
-
-    /**
-     * Puts default values for handle
-     */
-    protected void putHandleDefaults() {
-        handle.put("explain", SKIPVAL);
-        handle.put("timestamp", SKIPVAL);
-        handle.put("score", SKIPVAL);
-        handle.put("wt", SKIP);
-        handle.put("distrib", SKIP);
-        handle.put("shards.qt", SKIP);
-        handle.put("shards", SKIP);
-        handle.put("q", SKIP);
-        handle.put("maxScore", SKIPVAL);
-        handle.put("_version_", SKIP);
-        handle.put("_original_parameters_", SKIP);
-    }
-
 
     protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException
     {
