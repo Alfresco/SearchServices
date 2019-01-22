@@ -19,24 +19,26 @@ public class SolrResponsesComparator
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
-    private static final double DOUBLE_RATIO_LIMIT = 1E-8;
-    /**
-     * When this flag is set, Double values will be allowed a difference ratio
-     * of 1E-8 between the non-distributed and the distributed returned values
-     */
     protected int flags;
     
     protected Map<String, Integer> handle = new HashMap<>();
-    
+
     public static int ORDERED = 1;
     public static int SKIP = 2;
     public static int SKIPVAL = 4;
     public static int UNORDERED = 8;
+
+    /**
+     * When this flag is set, Double values will be allowed a difference ratio
+     * of 1E-8 between the non-distributed and the distributed returned values
+     */
     public static int FUZZY = 16;
+    private static final double DOUBLE_RATIO_LIMIT = 1E-8;
+    
     /**
      * Puts default values for handle
      */
-    protected void putHandleDefaults() {
+    public void putHandleDefaults() {
         handle.put("explain", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
         handle.put("score", SKIPVAL);
@@ -48,6 +50,8 @@ public class SolrResponsesComparator
         handle.put("maxScore", SKIPVAL);
         handle.put("_version_", SKIP);
         handle.put("_original_parameters_", SKIP);
+        handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
+
     }
     
 

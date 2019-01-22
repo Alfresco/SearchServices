@@ -75,8 +75,6 @@ public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDis
         commit(getDefaultTestClient(), true);
 
         putHandleDefaults();
-        handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
-
         QueryResponse response = query(getDefaultTestClient(), true,
                 "{\"query\":\"(YYYYY BBBBB AND (id:(1 2 3 4 5 6)))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
                 params("spellcheck.q", "YYYYY BBBBB", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "spellcheck", "true"));
