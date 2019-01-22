@@ -18,31 +18,30 @@
  */
 package org.alfresco.solr.query.afts.qparser;
 
-import org.alfresco.solr.query.afts.SharedTestDataProvider;
-import org.alfresco.util.ISO9075;
+import static java.util.Arrays.asList;
+import static java.util.stream.IntStream.range;
+
+import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
-public class FieldNameEscapingTest extends AbstractQParserPluginTest
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+
+/**
+ * Supertype layer for all AFTS QParser tests.
+ *
+ * @author Andrea Gazzarini
+ */
+public abstract class AbstractQParserPluginTest extends AbstractAlfrescoSolrTests
 {
-    private static SharedTestDataProvider DATASETS_PROVIDER;
-
     @BeforeClass
-    public static void loadData() throws Exception
+    public static void spinUpSolr() throws Exception
     {
-        DATASETS_PROVIDER = new SharedTestDataProvider(h);
-        DATASETS_PROVIDER.loadEscapingTestData();
-    }
-
-    @Test
-    public void complexLocalNameEscaping() throws Exception
-    {
-        assertAQuery("PATH:\"/cm:" + ISO9075.encode(DATASETS_PROVIDER.getComplexLocalName()) + "\"", 1);
-    }
-
-    @Test
-    public void numericLocalNameEscaping() throws Exception
-    {
-        assertAQuery("PATH:\"/cm:" + ISO9075.encode(DATASETS_PROVIDER.getNumericLocalName()) + "\"", 1);
+        initAlfrescoCore("schema.xml");
+        Thread.sleep(1000);
     }
 }
