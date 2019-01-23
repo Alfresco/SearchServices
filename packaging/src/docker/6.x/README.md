@@ -1,14 +1,14 @@
 # How to execute it
 
-a) you can run Alfresco && Search Services using default configuration from `docker-compose.yml` file
+**a)** you can run Alfresco && Search Services using default configuration from `docker-compose.yml` file
 
 ```shell
 $  docker-compose up
 ```
 
-b) you can start Alfresco && Search Services with custom configuration that will override the default `docker-compose.yml` with the services found in `docker-compose.custom.yml` file
+**b)** you can start Alfresco && Search Services with custom configuration that will override the default `docker-compose.yml` with the services found in `docker-compose.custom.yml` file
 
-b-1) start with default scripts of docker-compose.custom.yml
+**b-1)** start with default scripts of docker-compose.custom.yml
 ```shell
 $  docker-compose -f docker-compose.yml -f docker-compose.custom.yml up --build --force-recreate
 ```
@@ -16,7 +16,7 @@ $  docker-compose -f docker-compose.yml -f docker-compose.custom.yml up --build 
 * `--build`: because I want to build the custom search image with my scripts.
 * `--force-recreate`: I don't want recreate the custom container, not using from catche.
 
-b-2) start with new scripts of docker-compose.custom.yml
+**b-2)** start with new scripts of docker-compose.custom.yml
 
 ```shell
 $  docker-compose -f docker-compose.yml -f docker-compose.custom.yml up --build-arg SCRIPTS_FOLDER=my-precious --build --force-recreate
@@ -24,7 +24,7 @@ $  docker-compose -f docker-compose.yml -f docker-compose.custom.yml up --build-
 *  `--build-arg SCRIPTS_FOLDER=my-precious` : will start a custom search image with all the scripts from `custom/my-precious` folder
 
 
->Hint:
+>**Hint**:
 >I also use this command to cleanup the volumes before building it.
 >```shell
 >$ docker-compose -f docker-compose.custom.yml rm -fv
@@ -38,4 +38,4 @@ This command will:
   * execute all shell scripts inside $DIST_DIR/scripts (make sure you `chmod +x <file>` to each of shell scripts)
   * and tail on $DIST_DIR/logs/solr.log"
 
->The advantage of this approach is that we can define scripts inside `./custom<my-settings` folder with any scripts that we want to enable/disable `my-setting`.
+>The advantage of this approach is that we can define scripts inside `./custom/<my-setting` folder with any scripts that we want to enable/disable `my-settings`.
