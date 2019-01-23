@@ -442,7 +442,7 @@ public class AlfrescoSolrUtils
                                   NodeRef[] ancestors,
                                   String[] paths,
                                   NodeRef nodeRef,
-                                  boolean commit) throws IOException
+                                  boolean commit)
     {
         SolrServletRequest solrQueryRequest = null;
         try
@@ -457,6 +457,10 @@ public class AlfrescoSolrUtils
             {
                 core.getUpdateHandler().commit(new CommitUpdateCommand(solrQueryRequest, false));
             }
+        }
+        catch (IOException exception)
+        {
+            throw new RuntimeException(exception);
         }
         finally
         {
