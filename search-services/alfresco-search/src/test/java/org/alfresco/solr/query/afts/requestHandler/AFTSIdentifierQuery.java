@@ -6,7 +6,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
@@ -25,13 +24,11 @@ import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
  * @author eporciani
  *
  */
-
-public class AFTSIdentifierQuery extends AbstractAlfrescoSolrTests {
-
+public class AFTSIdentifierQuery extends AbstractRequestHandlerTest
+{
     @BeforeClass
-    public static void beforeClass() throws Exception {
-        initAlfrescoCore("schema.xml");
-        Thread.sleep(1000);
+    public static void beforeClass() throws Exception
+    {
         // Root
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();

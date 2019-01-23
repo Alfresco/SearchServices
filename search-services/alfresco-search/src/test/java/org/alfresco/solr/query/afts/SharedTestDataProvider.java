@@ -716,22 +716,61 @@ public class SharedTestDataProvider implements AlfrescoSolrConstants
         NodeRef childNameEscapingNodeRef = newNodeRef();
         QName childNameEscapingQName = qName(CONTENT_MODEL_1_0_URI, complexLocalName);
         QName pathChildNameEscapingQName = qName(CONTENT_MODEL_1_0_URI, ISO9075.encode(complexLocalName));
-        ChildAssociationRef complexCAR =
-                new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, childNameEscapingQName, childNameEscapingNodeRef, true, 0);
 
-        addNode(core, dataModel, 1, 17, 1, TEST_SUPER_TYPE, null, null, null, "system",
-                new ChildAssociationRef[] { complexCAR }, new NodeRef[] {rootNodeRef}, new String[] { "/"
-                        + pathChildNameEscapingQName.toString() }, childNameEscapingNodeRef, true);
+        ChildAssociationRef complexCAR =
+                new ChildAssociationRef(
+                        ASSOC_CHILDREN,
+                        rootNodeRef,
+                        childNameEscapingQName,
+                        childNameEscapingNodeRef,
+                        true,
+                        0);
+
+        addNode(
+                core,
+                dataModel,
+                1,
+                17,
+                1,
+                TEST_SUPER_TYPE,
+                null,
+                null,
+                null,
+                "system",
+                new ChildAssociationRef[] { complexCAR },
+                new NodeRef[] {rootNodeRef},
+                new String[] { "/" + pathChildNameEscapingQName.toString() },
+                childNameEscapingNodeRef,
+                true);
 
         NodeRef numericNameEscapingNodeRef = newNodeRef();
         QName numericNameEscapingQName = qName(CONTENT_MODEL_1_0_URI, numericLocalName);
         QName pathNumericNameEscapingQName = qName(CONTENT_MODEL_1_0_URI, ISO9075.encode(numericLocalName));
         ChildAssociationRef numericCAR =
-                new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, numericNameEscapingQName, numericNameEscapingNodeRef, true, 0);
+                new ChildAssociationRef(
+                        ASSOC_CHILDREN,
+                        rootNodeRef,
+                        numericNameEscapingQName,
+                        numericNameEscapingNodeRef,
+                        true,
+                        0);
 
-        addNode(core, dataModel, 1, 18, 1, TEST_SUPER_TYPE, null, null, null, "system",
-                new ChildAssociationRef[] { numericCAR }, new NodeRef[] {rootNodeRef}, new String[] { "/"
-                        + pathNumericNameEscapingQName.toString() }, numericNameEscapingNodeRef, true);
+        addNode(
+                core,
+                dataModel,
+                1,
+                18,
+                1,
+                TEST_SUPER_TYPE,
+                null,
+                null,
+                null,
+                "system",
+                new ChildAssociationRef[] { numericCAR },
+                new NodeRef[] {rootNodeRef},
+                new String[] { "/" + pathNumericNameEscapingQName.toString() },
+                numericNameEscapingNodeRef,
+                true);
     }
 
     /**
