@@ -42,7 +42,6 @@ public abstract class AbstractRequestHandlerTest extends AbstractAlfrescoSolrTes
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", query, "fq", filterQuery), null), "*[count(//doc)=" + expectedCardinality + "]");
     }
 
-    // TODO Integer-> int and use streams for checking
     void assertAQueryIsSorted(String query, String sort, Locale aLocale, int num, Integer [] sortOrder)
     {
         List<String> xpaths =
@@ -84,6 +83,5 @@ public abstract class AbstractRequestHandlerTest extends AbstractAlfrescoSolrTes
                 range(1, sortOrder.length)
                         .mapToObj(index -> "//result/doc[" + index + "]/long[@name='DBID'][.='" + sortOrder[index - 1] + "']"))
                 .toArray(String[]::new));
-
     }
 }
