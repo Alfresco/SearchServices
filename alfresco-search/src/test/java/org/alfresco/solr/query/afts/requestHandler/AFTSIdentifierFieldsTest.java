@@ -63,10 +63,10 @@ public class AFTSIdentifierFieldsTest extends AbstractRequestHandlerTest
                     addNode(h.getCore(),
                         dataModel, 1, dbId, 1,
                         TYPE_CONTENT, null, properties, null,
-                        "the_owner_is_" + username,
+                        "the_owner_of_this_node_is" + username,
                         null,
                         new NodeRef[]{ TEST_ROOT_NODEREF },
-                        new String[]{ "/" + dataProvider.qName("test_" + username) },
+                        new String[]{ "/" + dataProvider.qName("a_qname_for_node_" + username) },
                         dataProvider.newNodeRef(), true);
                 });
     }
