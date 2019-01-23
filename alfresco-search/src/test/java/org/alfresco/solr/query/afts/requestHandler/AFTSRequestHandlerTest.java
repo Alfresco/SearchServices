@@ -10,7 +10,7 @@ import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.query.afts.SharedTestDataProvider;
+import org.alfresco.solr.query.afts.TestDataProvider;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
@@ -22,12 +22,12 @@ import java.util.Locale;
 @SolrTestCaseJ4.SuppressSSL
 public class AFTSRequestHandlerTest extends AbstractRequestHandlerTest implements QueryConstants
 {
-    private static SharedTestDataProvider DATASETS_PROVIDER;
+    private static TestDataProvider DATASETS_PROVIDER;
 
     @BeforeClass
     public static void loadData() throws Exception
     {
-        DATASETS_PROVIDER = new SharedTestDataProvider(h);
+        DATASETS_PROVIDER = new TestDataProvider(h);
         DATASETS_PROVIDER.loadSmallDataset();
         DATASETS_PROVIDER.loadMediumDataset();
 

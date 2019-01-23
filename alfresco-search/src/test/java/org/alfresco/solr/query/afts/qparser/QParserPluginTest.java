@@ -30,7 +30,7 @@ import static org.alfresco.model.ContentModel.TYPE_THUMBNAIL;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.query.afts.SharedTestDataProvider;
+import org.alfresco.solr.query.afts.TestDataProvider;
 import org.alfresco.util.CachingDateFormat;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
@@ -56,7 +56,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     @BeforeClass
     public static void loadData() throws Exception
     {
-        SharedTestDataProvider dataProvider = new SharedTestDataProvider(h);
+        TestDataProvider dataProvider = new TestDataProvider(h);
 
         // For this test we need both small and medium datasets
         dataProvider.loadSmallDataset();

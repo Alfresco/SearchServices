@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
-import org.alfresco.solr.query.afts.SharedTestDataProvider;
+import org.alfresco.solr.query.afts.TestDataProvider;
 import org.alfresco.util.Pair;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class AFTSRangeQueryTest extends AbstractRequestHandlerTest
     @BeforeClass
     public static void beforeClass() throws Exception
     {
-        SharedTestDataProvider dataProvider = new SharedTestDataProvider(h);
+        TestDataProvider dataProvider = new TestDataProvider(h);
 
         @SuppressWarnings("unchecked")
         Pair<String, String> [] ratingsAndCreators = new Pair[] {
