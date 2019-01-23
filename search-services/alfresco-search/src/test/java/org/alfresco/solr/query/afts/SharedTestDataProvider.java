@@ -926,27 +926,27 @@ public class SharedTestDataProvider implements AlfrescoSolrConstants
         addNode(core, dataModel, 1, 32, 1,  TYPE_CONTENT, null, properties32, null, "system", new ChildAssociationRef[] {n32CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/" + n32QName.toString() }, n32NodeRef, true);
     }
 
-    private static NodeRef newNodeRef()
+    public NodeRef newNodeRef()
     {
         return new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
     }
 
-    private static QName qName(String localName) 
+    public QName qName(String localName)
     {
         return qName(TEST_NAMESPACE, localName);
     }
 
-    private static QName qName(String namespace, String localName)
+    public QName qName(String namespace, String localName)
     {
         return QName.createQName(namespace, localName);
     }
 
-    private static StringPropertyValue value(Object value)
+    private StringPropertyValue value(Object value)
     {
         return new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, value));
     }
 
-    private static StringPropertyValue value(String value)
+    private StringPropertyValue value(String value)
     {
         return new StringPropertyValue(value);
     }
