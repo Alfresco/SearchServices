@@ -26,13 +26,11 @@ import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
  * @author elia
  *
  */
-public class AFTSRangeQueryTest extends AbstractAlfrescoSolrTests {
-
+public class AFTSRangeQueryTest extends AbstractRequestHandlerTest
+{
     @BeforeClass
     public static void beforeClass() throws Exception
     {
-        initAlfrescoCore("schema.xml");
-        Thread.sleep(1000);
         // Root
         SolrCore core = h.getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();

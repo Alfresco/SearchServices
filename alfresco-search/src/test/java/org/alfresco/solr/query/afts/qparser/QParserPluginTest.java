@@ -32,7 +32,6 @@ import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.query.afts.SharedTestDataProvider;
 import org.alfresco.util.CachingDateFormat;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,7 +40,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-//@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 public class QParserPluginTest extends AbstractQParserPluginTest implements QueryConstants
 {
@@ -59,6 +57,8 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     public static void loadData() throws Exception
     {
         SharedTestDataProvider dataProvider = new SharedTestDataProvider(h);
+
+        // For this test we need both small and medium datasets
         dataProvider.loadSmallDataset();
         dataProvider.loadMediumDataset();
 
@@ -226,7 +226,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     }
 
     @Test
-    public void text() 
+    public void fulltext()
     {
         assertAQuery("TEXT:fox AND TYPE:\"" + PROP_CONTENT + "\"", 1);
         assertAQuery("TEXT:fox @cm\\:name:fox", 1);
@@ -236,6 +236,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
         assertAQuery("TEXT:\"fox\"", 0, null, new String[]{ "@" + PROP_NAME }, null);
         assertAQuery("TEXT:\"fox\"", 1, null, new String[]{ "@" + PROP_NAME, "@" + PROP_CONTENT }, null);
         assertAQuery("TEXT:\"cabbage\"", 15, null, new String[]{ "@" + ORDER_TEXT }, null);
+        assertAQuery("TEXT:\"aeidnouy\"", 1);
 
         // Depends on the configuration
         assertAQuery("TEXT:\"the\"", 1);
@@ -249,7 +250,6 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
         assertAQuery("TEXT:\"over a lazy\"", 1);
 
         String contentFieldName = escape(PROP_CONTENT);
-
         assertAQuery("@" + contentFieldName + ":\"fox\"", 1);
         assertAQuery("@" + contentFieldName + ".mimetype:\"text/plain\"", 1);
         assertAQuery("@" + contentFieldName + ".locale:\"en_GB\"", 1);
@@ -257,7 +257,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     }
 
     @Test
-    public void textWithWildcards() 
+    public void wildcards()
     {
         final String indexedStoredTokenisedAtomicFieldName = escape(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"));
         assertAQuery("\\@" + indexedStoredTokenisedAtomicFieldName + ":*a*", 1);
@@ -333,23 +333,6 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
 
         assertAQuery("TEXT:\"cab*\"", 15, null, new String[]{ "@" + ORDER_TEXT }, null);
 
-        String contentFieldName = escape(PROP_CONTENT);
-        assertAQuery("@" + contentFieldName + ".locale:en_*", 1);
-        assertAQuery("@" + contentFieldName + ".locale:e*_GB", 1);
-    }
-
-    @Test
-    public void textWithAccents() 
-    {
-        // Accents
-
-        assertAQuery("TEXT:\"\u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF\"", 1);
-        assertAQuery("TEXT:\"aeidnouy\"", 1);
-    }
-
-    @Test
-    public void mlText() 
-    {
         String descriptionFieldName = escape(PROP_DESCRIPTION);
         assertAQuery("@" + descriptionFieldName + ":\"alfresco\"", 1);
         assertAQuery("@" + descriptionFieldName + ":\"alfresc?\"", 1);
@@ -396,6 +379,20 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
         assertAQuery("@" + descriptionFieldName + ":\"Alfresc*tutorial\"", 0);
         assertAQuery("@" + descriptionFieldName + ":\"Alf* tut*\"", 1);
         assertAQuery("@" + descriptionFieldName + ":\"*co *al\"", 1);
+    }
+
+    @Test
+    public void accents()
+    {
+        assertAQuery("TEXT:\"\u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF\"", 1);
+    }
+
+    @Test
+    public void mlText() 
+    {
+        String contentFieldName = escape(PROP_CONTENT);
+        assertAQuery("@" + contentFieldName + ".locale:en_*", 1);
+        assertAQuery("@" + contentFieldName + ".locale:e*_GB", 1);
 
         String fieldName = escape(QName.createQName(TEST_NAMESPACE, "ml"));
 
@@ -543,6 +540,12 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     }
 
     @Test
+    public void missingProperty()
+    {
+        assertAQuery("\\@" + escape("My-funny&MissingProperty:woof"), 0);
+    }
+
+    @Test
     public void doublePropertyType()
     {
         String doubleFieldName = escape(QName.createQName(TEST_NAMESPACE, "double-ista"));
@@ -560,7 +563,6 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
         assertAQuery("\\@" + doubleFieldName + ":{5.5 TO 5.6}", 0);
 
         assertAQuery("\\@" + doubleFieldName + ":{5.6 TO A}", 0);
-        assertAQuery("\\@" + escape("My-funny&MissingProperty:woof"), 0);
     }
 
     @Test
