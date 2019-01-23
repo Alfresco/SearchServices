@@ -57,11 +57,12 @@ import java.util.Map;
  * Test datasets provider.
  * The data used in a test is usually managed within the test itself.
  * However, sometimes a dataset is used by more than one test, and in this case we centralized its management in this class.
+ * The class also offers some abstraction for creating things like nodes, qname.
  *
  * @author Michael Suzuki
  * @author Andrea Gazzarini
  */
-public class SharedTestDataProvider implements AlfrescoSolrConstants
+public class TestDataProvider implements AlfrescoSolrConstants
 {
     private final String complexLocalName = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
     private final String numericLocalName = "12Woof12";
@@ -182,7 +183,7 @@ public class SharedTestDataProvider implements AlfrescoSolrConstants
     private final SolrCore core;
     private final AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
 
-    public SharedTestDataProvider(final TestHarness testHarness) throws Exception
+    public TestDataProvider(final TestHarness testHarness) throws Exception
     {
         this.core = testHarness.getCore();
         dataModel.getNamespaceDAO().removePrefix("");

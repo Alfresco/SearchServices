@@ -19,19 +19,19 @@
 package org.alfresco.solr.query.afts.qparser;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.solr.query.afts.SharedTestDataProvider;
+import org.alfresco.solr.query.afts.TestDataProvider;
 import org.alfresco.util.ISO9075;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FieldNameEscapingTest extends AbstractQParserPluginTest implements QueryConstants
 {
-    private static SharedTestDataProvider DATASETS_PROVIDER;
+    private static TestDataProvider DATASETS_PROVIDER;
 
     @BeforeClass
     public static void loadData() throws Exception
     {
-        DATASETS_PROVIDER = new SharedTestDataProvider(h);
+        DATASETS_PROVIDER = new TestDataProvider(h);
         DATASETS_PROVIDER.loadEscapingTestData();
     }
 

@@ -1,6 +1,6 @@
 package org.alfresco.solr.query.afts.requestHandler;
 
-import org.alfresco.solr.query.afts.SharedTestDataProvider;
+import org.alfresco.solr.query.afts.TestDataProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ public class MNTTest extends AbstractRequestHandlerTest
     @BeforeClass
     public static void loadData() throws Exception
     {
-        SharedTestDataProvider dataProvider = new SharedTestDataProvider(h);
+        TestDataProvider dataProvider = new TestDataProvider(h);
         dataProvider.loadMntTestData();
     }
 

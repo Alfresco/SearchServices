@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
-import org.alfresco.solr.query.afts.SharedTestDataProvider;
+import org.alfresco.solr.query.afts.TestDataProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -48,7 +48,7 @@ public class AFTSIdentifierFieldsTest extends AbstractRequestHandlerTest
     @BeforeClass
     public static void beforeClass() throws Exception
     {
-        SharedTestDataProvider dataProvider = new SharedTestDataProvider(h);
+        TestDataProvider dataProvider = new TestDataProvider(h);
         String [] usernames = {"Daniel", "Daniel2", "Daniele", "daniel.armstrong" };
 
         TEST_ROOT_NODEREF = dataProvider.getRootNode();
