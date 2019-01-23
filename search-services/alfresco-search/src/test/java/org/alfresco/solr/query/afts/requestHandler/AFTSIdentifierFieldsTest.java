@@ -22,12 +22,8 @@ import static java.util.stream.IntStream.range;
 import static org.alfresco.model.ContentModel.PROP_CREATOR;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
