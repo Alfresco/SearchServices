@@ -1,0 +1,10 @@
+version: '3'
+services:  
+  search:
+    build:
+       context: ./custom
+       dockerfile: Dockerfile
+       args: 
+        - SCRIPTS_FOLDER=spellcheck
+    image: quay.io/alfresco/search-services-custom:${SEARCH_TAG}
+    
