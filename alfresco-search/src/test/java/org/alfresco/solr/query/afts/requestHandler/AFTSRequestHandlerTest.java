@@ -137,10 +137,6 @@ public class AFTSRequestHandlerTest extends AbstractRequestHandlerTest implement
         assertResponseCardinality(FIELD_DBID, "15", 1);
         assertResponseCardinality(FIELD_DBID, "16", 1);
         assertResponseCardinality(FIELD_DBID, "17", 0);
-
-        // TODO
-//        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_DBID + ":*", 16);
-//        assertQ(areq(params("rows", "20", "qt", "/native", "q", FIELD_DBID + ":[3 TO 4), 2);
     }
 
     @Test
