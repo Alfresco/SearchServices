@@ -36,13 +36,13 @@ public class FieldNameEscapingTest extends AbstractQParserPluginTest implements 
     }
 
     @Test
-    public void complexLocalNameEscaping() throws Exception
+    public void complexLocalNameEscaping()
     {
         assertAQuery("PATH:\"/cm:" + ISO9075.encode(DATASETS_PROVIDER.getComplexLocalName()) + "\"", 1);
     }
 
     @Test
-    public void numericLocalNameEscaping() throws Exception
+    public void numericLocalNameEscaping()
     {
         assertAQuery("PATH:\"/cm:" + ISO9075.encode(DATASETS_PROVIDER.getNumericLocalName()) + "\"", 1);
     }
