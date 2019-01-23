@@ -20,6 +20,7 @@
 package org.alfresco.solr.query.afts.qparser;
 
 
+import static java.util.Arrays.stream;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.alfresco.model.ContentModel.PROP_CREATED;
 import static org.alfresco.model.ContentModel.PROP_DESCRIPTION;
@@ -27,7 +28,6 @@ import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.model.ContentModel.TYPE_THUMBNAIL;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.query.afts.SharedTestDataProvider;
@@ -41,10 +41,19 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
+//@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 public class QParserPluginTest extends AbstractQParserPluginTest implements QueryConstants
 {
+    private final long [] msecs = {
+            333,
+            20000,
+            20 * 60 * 1000, // 20 minutes
+            8 * 60 * 60 * 1000, // 8 hours
+            10 * 24 * 60 * 60 * 1000, // 10 days
+            4L * 30 * 24 * 60 * 60 * 1000, // 120 days
+            10L * 12 * 30 * 24 * 60 * 60 * 1000 // 10 years
+    };
 
     @BeforeClass
     public static void loadData() throws Exception
@@ -137,7 +146,8 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     }
 
     @Test
-    public void pathsWithWildcards()  {
+    public void pathsWithWildcards()
+    {
         assertAQuery("PATH:\"/cm:*\"", 5);
         assertAQuery("PATH:\"/cm:*/cm:*\"", 6);
         assertAQuery("PATH:\"/cm:*/cm:five\"", 1);
@@ -175,7 +185,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     }
 
     @Test
-    public void types() 
+    public void typesAndAspects()
     {
         assertAQuery("TYPE:\"" + TEST_TYPE + "\"", 1);
         assertAQuery("TYPE:\"" + TEST_TYPE.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 1);
@@ -196,7 +206,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
         assertAQuery("TYPE:\"content0\"", 0);
         assertAQuery("ASPECT:\"flubber\"", 0);
         assertAQuery("TYPE:\"" + TYPE_THUMBNAIL.toString() + "\"", 1);
-        assertAQuery("TYPE:\"" + TYPE_THUMBNAIL.toString() + "\" TYPE:\"" + ContentModel.TYPE_CONTENT + "\"", 2);
+        assertAQuery("TYPE:\"" + TYPE_THUMBNAIL.toString() + "\" TYPE:\"" + TYPE_CONTENT + "\"", 2);
         assertAQuery("EXACTTYPE:\"" + TEST_SUPER_TYPE + "\"", 12);
         assertAQuery("EXACTTYPE:\"" + TEST_SUPER_TYPE.toPrefixString(dataModel.getNamespaceDAO()) + "\"", 12);
         assertAQuery("ASPECT:\"" + TEST_ASPECT + "\"", 1);
@@ -409,7 +419,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     }
 
     @Test
-    public void ranges() 
+    public void textRanges()
     {
         assertAQuery("\\@" + escape(ORDER_TEXT) + ":[a TO b]", 1);
         assertAQuery("\\@" + escape(ORDER_TEXT) + ":[a TO \uFFFF]", 14);
@@ -554,64 +564,78 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     }
 
     @Test
-    public void datePropertyTypes()
+    public void dateLiterals()
     {
-        Date date = new Date();
+        stream(CachingDateFormat.getLenientFormatters())
+            .filter(formatter -> formatter.getResolution() < Calendar.DAY_OF_MONTH)
+            .map(formatter -> formatter.getSimpleDateFormat().format(FTS_TEST_DATE))
+            .filter(date -> date.length() >= 9)
+            .forEach(date -> assertAQuery("\\@" + escape(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + date + "\"", 1));
+    }
 
-        for (CachingDateFormat.SimpleDateFormatAndResolution df : CachingDateFormat.getLenientFormatters())
-        {
-            if (df.getResolution() < Calendar.DAY_OF_MONTH)
-            {
-                continue;
-            }
+    @Test
+    public void dateTimeLiterals()
+    {
+        stream(CachingDateFormat.getLenientFormatters())
+                .filter(formatter -> formatter.getResolution() > Calendar.DAY_OF_MONTH)
+                .map(formatter -> formatter.getSimpleDateFormat().format(FTS_TEST_DATE))
+                .forEach(date -> assertAQuery("\\@" + escape(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + date + "\"", 1));
+    }
 
-            String sDate = df.getSimpleDateFormat().format(FTS_TEST_DATE);
 
-            if (sDate.length() >= 9)
-            {
-                assertAQuery("\\@" + escape(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", 1);
-            }
+    @Test
+    public void fieldNamesAreCaseInsensitive()
+    {
+        Date now = new Date();
+        stream(CachingDateFormat.getLenientFormatters())
+                .filter(formatter -> formatter.getResolution() > Calendar.DAY_OF_MONTH)
+                .map(formatter -> formatter.getSimpleDateFormat().format(now))
+                .forEach(date -> {
+                    assertAQuery("\\@cM\\:CrEaTeD:[MIN TO " + date + "]", 1);
+                    assertAQuery("\\@cM\\:CrEaTeD:[MIN TO " + date + "]", 1);
+                    assertAQuery("\\@CM\\:CrEaTeD:[MIN TO " + date + "]", 1);
+                    assertAQuery("\\@cm\\:created:[MIN TO NOW]", 1);
+                    assertAQuery("\\@" + escape(PROP_CREATED) + ":[MIN TO " + date + "]", 1);
+                });
+    }
 
-            assertAQuery("\\@" + escape(QName.createQName(TEST_NAMESPACE,"datetime-ista")) + ":\"" + sDate + "\"", 1);
+    @Test
+    public void dateRanges()
+    {
+        String fieldName = escape(QName.createQName(TEST_NAMESPACE, "date-ista"));
+        stream(CachingDateFormat.getLenientFormatters())
+                .filter(formatter -> formatter.getResolution() > Calendar.DAY_OF_MONTH)
+                .map(formatter -> formatter.getSimpleDateFormat().format(FTS_TEST_DATE))
+                .filter(date -> date.length() >= 9)
+                .forEach(date -> {
+                    assertAQuery("\\@" + fieldName + ":[" + date + " TO " + date + "]", 1);
+                    assertAQuery("\\@" + fieldName + ":[MIN  TO " + date + "]", 1);
+                    assertAQuery("\\@" + fieldName + ":[" + date + " TO MAX]", 1);
+                });
+    }
 
-            sDate = df.getSimpleDateFormat().format(date);
+    @Test
+    public void dateTimeRanges()
+    {
+        String fieldName = escape(QName.createQName(TEST_NAMESPACE, "datetime-ista"));
+        stream(CachingDateFormat.getLenientFormatters())
+                .filter(formatter -> formatter.getResolution() > Calendar.DAY_OF_MONTH)
+                .forEach(formatter -> {
+                    String date = formatter.getSimpleDateFormat().format(FTS_TEST_DATE);
 
-            assertAQuery("\\@cm\\:CrEaTeD:[MIN TO " + sDate + "]", 1);
-            assertAQuery("\\@cm\\:created:[MIN TO NOW]", 1);
+                    stream(msecs)
+                            .forEach(milliseconds ->
+                            {
+                                String startDate = formatter.getSimpleDateFormat().format(new Date(FTS_TEST_DATE.getTime() - milliseconds));
+                                String endDate = formatter.getSimpleDateFormat().format(new Date(FTS_TEST_DATE.getTime() + milliseconds));
 
-            assertAQuery("\\@" + escape(PROP_CREATED) + ":[MIN TO " + sDate + "]", 1);
-
-            if (sDate.length() >= 9)
-            {
-                sDate = df.getSimpleDateFormat().format(FTS_TEST_DATE);
-
-                String dateFieldName = escape(QName.createQName(TEST_NAMESPACE, "date-ista"));
-
-                assertAQuery("\\@" + dateFieldName + ":[" + sDate + " TO " + sDate + "]", 1);
-                assertAQuery("\\@" + dateFieldName + ":[MIN  TO " + sDate + "]", 1);
-                assertAQuery("\\@" + dateFieldName + ":[" + sDate + " TO MAX]", 1);
-            }
-
-            sDate = CachingDateFormat.getDateFormat().format(FTS_TEST_DATE);
-
-            String datetimeFieldName = escape(QName.createQName(TEST_NAMESPACE, "datetime-ista"));
-
-            assertAQuery("\\@" + datetimeFieldName + ":[MIN TO " + sDate + "]", 1);
-
-            sDate = df.getSimpleDateFormat().format(FTS_TEST_DATE);
-            for (long i : new long[]{333, 20000, 20 * 60 * 1000, 8 * 60 * 60 * 1000, 10 * 24 * 60 * 60 * 1000,
-                    4L * 30 * 24 * 60 * 60 * 1000, 10L * 12 * 30 * 24 * 60 * 60 * 1000})
-            {
-                String startDate = df.getSimpleDateFormat().format(new Date(FTS_TEST_DATE.getTime() - i));
-                String endDate = df.getSimpleDateFormat().format(new Date(FTS_TEST_DATE.getTime() + i));
-
-                assertAQuery("\\@" + datetimeFieldName + ":[" + startDate + " TO " + endDate + "]", 1);
-                assertAQuery("\\@" + datetimeFieldName + ":[" + sDate + " TO " + endDate + "]", 1);
-                assertAQuery("\\@" + datetimeFieldName + ":[" + startDate + " TO " + sDate + "]", 1);
-                assertAQuery("\\@" + datetimeFieldName + ":{" + sDate + " TO " + endDate + "}", 0);
-                assertAQuery("\\@" + datetimeFieldName + ":{" + startDate + " TO " + sDate + "}", 0);
-            }
-        }
+                                assertAQuery("\\@" + fieldName + ":[" + startDate + " TO " + endDate + "]", 1);
+                                assertAQuery("\\@" + fieldName + ":[" + date + " TO " + endDate + "]", 1);
+                                assertAQuery("\\@" + fieldName + ":[" + startDate + " TO " + date + "]", 1);
+                                assertAQuery("\\@" + fieldName + ":{" + date + " TO " + endDate + "}", 0);
+                                assertAQuery("\\@" + fieldName + ":{" + startDate + " TO " + date + "}", 0);
+                            });
+                });
     }
 
     @Test
@@ -619,6 +643,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     {
         String booleanFieldName = escape(QName.createQName(TEST_NAMESPACE, "boolean-ista"));
         assertAQuery("\\@" + booleanFieldName + ":\"true\"", 1);
+        assertAQuery("\\@" + booleanFieldName + ":\"false\"", 0);
     }
 
     @Test
