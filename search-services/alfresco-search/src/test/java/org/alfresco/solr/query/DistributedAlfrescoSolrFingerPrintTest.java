@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr.query;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -29,16 +28,11 @@ import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 
-import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
@@ -53,11 +47,8 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.util.NamedList;
 import org.junit.Rule;
 import org.junit.Test;
 

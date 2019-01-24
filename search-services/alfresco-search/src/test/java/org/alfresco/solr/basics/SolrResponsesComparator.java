@@ -1,4 +1,4 @@
-package org.alfresco.solr.util;
+package org.alfresco.solr.basics;
 
 import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
