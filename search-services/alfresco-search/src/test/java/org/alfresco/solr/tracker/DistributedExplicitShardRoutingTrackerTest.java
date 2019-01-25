@@ -97,7 +97,7 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
 
         Query contentQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world"));
         Query aclQuery = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL));
-        List<SolrCore> shards = getJettyCores(jettyShards);
+        List<SolrCore> shards = getJettyCores(solrShards);
         List<SolrClient> shardClients = getShardedClients();
         long begin = System.currentTimeMillis();
 
