@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
@@ -49,7 +49,8 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -57,19 +58,18 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDistributedTest
+public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDistributedTestStatic
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
-
-    @Test
-    public void testFingerPrint() throws Exception
+    private static Node[] nodes = new Node[4];
+    private static NodeMetaData[] nodesMetada = new NodeMetaData[4];
+    
+    @BeforeClass
+    private static void initData() throws Throwable
     {
-        putHandleDefaults();
-
+        initSolrServers(2,"DistributedAlfrescoSolrFingerPrintTest",null);
         /*
-        * Create and index an AclChangeSet.
-        */
+         * Create and index an AclChangeSet.
+         */
 
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
@@ -82,8 +82,8 @@ public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDist
 
 
         indexAclChangeSet(aclChangeSet,
-                list(acl, acl2),
-                list(aclReaders, aclReaders2));
+            list(acl, acl2),
+            list(aclReaders, aclReaders2));
 
 
         //Check for the ACL state stamp.
@@ -94,24 +94,24 @@ public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDist
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
         /*
-        * Create and index a Transaction
-        */
+         * Create and index a Transaction
+         */
 
         //First create a transaction.
         Transaction txn = getTransaction(0, 4);
 
         //Next create two nodes to update for the transaction
-        Node node1 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
-        Node node2 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
-        Node node3 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
-        Node node4 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        nodes[0] = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        nodes[1] = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        nodes[2] = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        nodes[3] = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
 
 
         //Next create the NodeMetaData for each node. TODO: Add more metadata
-        NodeMetaData nodeMetaData1 = getNodeMetaData(node1, txn, acl, "mike", null, false);
-        NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
-        NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl, "mike", null, false);
-        NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl, "mike", null, false);
+        nodesMetada[0] = getNodeMetaData(nodes[0], txn, acl, "mike", null, false);
+        nodesMetada[1] = getNodeMetaData(nodes[1], txn, acl, "mike", null, false);
+        nodesMetada[2] = getNodeMetaData(nodes[2], txn, acl, "mike", null, false);
+        nodesMetada[3] = getNodeMetaData(nodes[3], txn, acl, "mike", null, false);
 
         List<String> content = new ArrayList();
         int[] sizes = {2000, 1000, 1500, 750};
@@ -135,9 +135,9 @@ public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDist
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                list(node1, node2, node3, node4),
-                list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4),
-                content);
+            list(nodes[0], nodes[1], nodes[2], nodes[3]),
+            list(nodesMetada[0], nodesMetada[1], nodesMetada[2], nodesMetada[3]),
+            content);
 
         //Check for the TXN state stamp.
         builder = new BooleanQuery.Builder();
@@ -148,16 +148,26 @@ public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDist
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
         /*
-        * Query the index for the content
-        */
+         * Query the index for the content
+         */
 
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", token1)), 4, 80000);
+    }
 
-
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
+    @Test
+    public void testFingerPrint() throws Exception
+    {
+        putHandleDefaults();
         QueryResponse response = query(getDefaultTestClient(), true,
                                        "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
-                                        params("q", "FINGERPRINT:"+node1.getId(),
+                                        params("q", "FINGERPRINT:"+nodes[0].getId(),
                                                 "qt", "/afts",
                                                 "shards.qt", "/afts",
                                                 "start", "0",
@@ -168,132 +178,157 @@ public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDist
         assertTrue(docs.getNumFound() == 4);
         SolrDocument doc0 = docs.get(0);
         long dbid0 = (long)doc0.getFieldValue("DBID");
-        assertTrue(dbid0 == node1.getId());
+        assertTrue(dbid0 == nodes[0].getId());
 
         SolrDocument doc1 = docs.get(1);
         long dbid1 = (long)doc1.getFieldValue("DBID");
-        assertTrue(dbid1 == node3.getId());
+        assertTrue(dbid1 == nodes[2].getId());
 
         SolrDocument doc2 = docs.get(2);
         long dbid2 = (long)doc2.getFieldValue("DBID");
-        assertTrue(dbid2 == node2.getId());
+        assertTrue(dbid2 == nodes[1].getId());
 
         SolrDocument doc3 = docs.get(3);
         long dbid3 = (long)doc3.getFieldValue("DBID");
-        assertTrue(dbid3 == node4.getId());
-
-        response = query(getDefaultTestClient(), true,
-                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
-                params("q", "FINGERPRINT:" + node1.getId()+"_70",
-                        "qt", "/afts",
-                        "shards.qt", "/afts",
-                        "start", "0",
-                        "fl", "DBID,score",
-                        "rows", "100"));
-
-        docs = response.getResults();
-        assertTrue(docs.getNumFound() == 2);
-        doc0 = docs.get(0);
-        dbid0 = (long)doc0.getFieldValue("DBID");
-        assertTrue(dbid0 == node1.getId());
-
-        doc1 = docs.get(1);
-        dbid1 = (long)doc1.getFieldValue("DBID");
-        assertTrue(dbid1 == node3.getId());
-
-        response = query(getDefaultTestClient(), true,
-                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
-                params("q", "FINGERPRINT:" + node1.getId()+"_45",
-                        "qt", "/afts",
-                        "shards.qt", "/afts",
-                        "start", "0",
-                        "fl", "DBID,score",
-                        "rows", "100"));
-
-        docs = response.getResults();
-        assertTrue(docs.getNumFound() == 3);
-        doc0 = docs.get(0);
-        dbid0 = (long)doc0.getFieldValue("DBID");
-        assertTrue(dbid0 == node1.getId());
-
-        doc1 = docs.get(1);
-        dbid1 = (long)doc1.getFieldValue("DBID");
-        assertTrue(dbid1 == node3.getId());
-
-        doc2 = docs.get(2);
-        dbid2 = (long)doc2.getFieldValue("DBID");
-        assertTrue(dbid2 == node2.getId());
-
-
-        response = query(getDefaultTestClient(), true,
-                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
-                params("q", "FINGERPRINT:"+nodeMetaData1.getNodeRef().getId(),
-                        "qt", "/afts",
-                        "shards.qt", "/afts",
-                        "start", "0",
-                        "fl","DBID,score",
-                        "rows", "100"));
-
-        docs = response.getResults();
-        assertTrue(docs.getNumFound() == 4);
-        doc0 = docs.get(0);
-        dbid0 = (long)doc0.getFieldValue("DBID");
-        assertTrue(dbid0 == node1.getId());
-
-        doc1 = docs.get(1);
-        dbid1 = (long)doc1.getFieldValue("DBID");
-        assertTrue(dbid1 == node3.getId());
-
-        doc2 = docs.get(2);
-        dbid2 = (long)doc2.getFieldValue("DBID");
-        assertTrue(dbid2 == node2.getId());
-
-        doc3 = docs.get(3);
-        dbid3 = (long)doc3.getFieldValue("DBID");
-        assertTrue(dbid3 == node4.getId());
-
-        response = query(getDefaultTestClient(), true,
-                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
-                params("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId() +"_70",
-                        "qt", "/afts",
-                        "shards.qt", "/afts",
-                        "start", "0",
-                        "fl", "DBID,score",
-                        "rows", "100"));
-
-        docs = response.getResults();
-        assertTrue(docs.getNumFound() == 2);
-        doc0 = docs.get(0);
-        dbid0 = (long)doc0.getFieldValue("DBID");
-        assertTrue(dbid0 == node1.getId());
-
-        doc1 = docs.get(1);
-        dbid1 = (long)doc1.getFieldValue("DBID");
-        assertTrue(dbid1 == node3.getId());
-
-        response = query(getDefaultTestClient(), true,
-                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
-                params("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId() +"_45",
-                        "qt", "/afts",
-                        "shards.qt", "/afts",
-                        "start", "0",
-                        "fl", "DBID,score",
-                        "rows", "100"));
-
-        docs = response.getResults();
-        assertTrue(docs.getNumFound() == 3);
-        doc0 = docs.get(0);
-        dbid0 = (long)doc0.getFieldValue("DBID");
-        assertTrue(dbid0 == node1.getId());
-
-        doc1 = docs.get(1);
-        dbid1 = (long)doc1.getFieldValue("DBID");
-        assertTrue(dbid1 == node3.getId());
-
-        doc2 = docs.get(2);
-        dbid2 = (long)doc2.getFieldValue("DBID");
-        assertTrue(dbid2 == node2.getId());
-        
+        assertTrue(dbid3 == nodes[3].getId());
     }
+
+    @Test
+    public void testFingerPrint2() throws Exception
+    {
+        putHandleDefaults();
+        QueryResponse response = query(getDefaultTestClient(), true,
+            "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+            params("q", "FINGERPRINT:" + nodes[0].getId()+"_70",
+                "qt", "/afts",
+                "shards.qt", "/afts",
+                "start", "0",
+                "fl", "DBID,score",
+                "rows", "100"));
+
+        SolrDocumentList docs = response.getResults();
+        assertTrue(docs.getNumFound() == 2);
+        SolrDocument doc0 = docs.get(0);
+        long dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == nodes[0].getId());
+
+        SolrDocument doc1 = docs.get(1);
+        long dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == nodes[2].getId());
+    }
+
+    @Test
+    public void testFingerPrint3() throws Exception
+    {
+        putHandleDefaults();
+        QueryResponse response = query(getDefaultTestClient(), true,
+            "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+            params("q", "FINGERPRINT:" + nodes[0].getId()+"_45",
+                "qt", "/afts",
+                "shards.qt", "/afts",
+                "start", "0",
+                "fl", "DBID,score",
+                "rows", "100"));
+
+        SolrDocumentList docs = response.getResults();
+        assertTrue(docs.getNumFound() == 3);
+        SolrDocument doc0 = docs.get(0);
+        long dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == nodes[0].getId());
+
+        SolrDocument doc1 = docs.get(1);
+        long dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == nodes[2].getId());
+
+        SolrDocument doc2 = docs.get(2);
+        long dbid2 = (long)doc2.getFieldValue("DBID");
+        assertTrue(dbid2 == nodes[1].getId());
+    }
+
+    @Test
+    public void testFingerPrint4() throws Exception
+    {
+        putHandleDefaults();
+        QueryResponse response = query(getDefaultTestClient(), true,
+            "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+            params("q", "FINGERPRINT:"+nodesMetada[0].getNodeRef().getId(),
+                "qt", "/afts",
+                "shards.qt", "/afts",
+                "start", "0",
+                "fl","DBID,score",
+                "rows", "100"));
+
+        SolrDocumentList docs = response.getResults();
+        assertTrue(docs.getNumFound() == 4);
+        SolrDocument doc0 = docs.get(0);
+        long dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == nodes[0].getId());
+
+        SolrDocument doc1 = docs.get(1);
+        long dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == nodes[2].getId());
+
+        SolrDocument doc2 = docs.get(2);
+        long dbid2 = (long)doc2.getFieldValue("DBID");
+        assertTrue(dbid2 == nodes[1].getId());
+
+        SolrDocument doc3 = docs.get(3);
+        long dbid3 = (long)doc3.getFieldValue("DBID");
+        assertTrue(dbid3 == nodes[3].getId());
+    }
+
+    @Test
+    public void testFingerPrint5() throws Exception
+    {
+        putHandleDefaults();
+        QueryResponse response = query(getDefaultTestClient(), true,
+            "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+            params("q", "FINGERPRINT:" + nodesMetada[0].getNodeRef().getId() +"_70",
+                "qt", "/afts",
+                "shards.qt", "/afts",
+                "start", "0",
+                "fl", "DBID,score",
+                "rows", "100"));
+
+        SolrDocumentList docs = response.getResults();
+        assertTrue(docs.getNumFound() == 2);
+        SolrDocument doc0 = docs.get(0);
+        long dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == nodes[0].getId());
+
+        SolrDocument doc1 = docs.get(1);
+        long dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == nodes[2].getId());
+    }
+
+    @Test
+    public void testFingerPrint6() throws Exception
+    {
+        putHandleDefaults();
+        QueryResponse response = query(getDefaultTestClient(), true,
+            "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
+            params("q", "FINGERPRINT:" + nodesMetada[0].getNodeRef().getId() +"_45",
+                "qt", "/afts",
+                "shards.qt", "/afts",
+                "start", "0",
+                "fl", "DBID,score",
+                "rows", "100"));
+
+        SolrDocumentList docs = response.getResults();
+        assertTrue(docs.getNumFound() == 3);
+        SolrDocument doc0 = docs.get(0);
+        long dbid0 = (long)doc0.getFieldValue("DBID");
+        assertTrue(dbid0 == nodes[0].getId());
+
+        SolrDocument doc1 = docs.get(1);
+        long dbid1 = (long)doc1.getFieldValue("DBID");
+        assertTrue(dbid1 == nodes[2].getId());
+
+        SolrDocument doc2 = docs.get(2);
+        long dbid2 = (long)doc2.getFieldValue("DBID");
+        assertTrue(dbid2 == nodes[1].getId());
+    }
+    
+    
 }
 
