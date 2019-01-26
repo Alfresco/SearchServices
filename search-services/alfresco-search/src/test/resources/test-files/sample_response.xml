@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <lst name="responseHeader">
+        <int name="status">0</int>
+        <int name="QTime">11</int>
+    </lst>
+    <str name="_original_parameters_">org.apache.solr.common.params.MultiMapSolrParams:carrot.url=id&amp;spellcheck.collateExtendedResults=true&amp;hl=true&amp;spellcheck.maxCollations=3&amp;hl.usePhraseHighlighter=false&amp;hl.fragsize=100&amp;spellcheck.maxCollationTries=5&amp;hl.simple.pre=(&amp;defType=afts&amp;spellcheck.maxResultsForSuggest=5&amp;carrot.outputSubClusters=false&amp;hl.fl=name&amp;wt=xml&amp;qt=/afts&amp;carrot.produceSummary=true&amp;start=0&amp;rows=5&amp;spellcheck.alternativeTermCount=2&amp;spellcheck.extendedResults=false&amp;hl.snippets=1&amp;q=name:long&amp;hl.simple.post=)&amp;spellcheck=false&amp;hl.q="some+long"&amp;spellcheck.count=5&amp;carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&amp;carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&amp;spellcheck.collate=true</str>
+    <lst name="_field_mappings_"/>
+    <lst name="_date_mappings_"/>
+    <lst name="_range_mappings_"/>
+    <lst name="_pivot_mappings_"/>
+    <lst name="_interval_mappings_"/>
+    <lst name="_stats_field_mappings_"/>
+    <lst name="_stats_facet_mappings_"/>
+    <lst name="_facet_function_mappings_"/>
+    <result name="response" numFound="2" start="0">
+        <doc>
+            <str name="id">_DEFAULT_!80000157c25c979b!80000157c25c97a0</str>
+            <long name="_version_">0</long>
+            <long name="DBID">1476434630560</long>
+        </doc>
+        <doc>
+            <str name="id">_DEFAULT_!80000157c25c979b!80000157c25c97a1</str>
+            <long name="_version_">0</long>
+            <long name="DBID">1476434630561</long>
+        </doc>
+    </result>
+    <lst name="highlighting">
+        <lst name="_DEFAULT_!80000157c25c979b!80000157c25c97a0">
+            <arr name="name">
+                <str>(some) very (long) name</str>
+            </arr>
+            <str name="DBID">1476434630560</str>
+        </lst>
+        <lst name="_DEFAULT_!80000157c25c979b!80000157c25c97a1">
+            <arr name="name">
+                <str>this is (some) (long) text. It has the word (long) in many places. In fact, it has (long) on
+                    (some)
+                </str>
+            </arr>
+            <str name="DBID">1476434630561</str>
+        </lst>
+    </lst>
+    <bool name="processedDenies">false</bool>
+</response>
