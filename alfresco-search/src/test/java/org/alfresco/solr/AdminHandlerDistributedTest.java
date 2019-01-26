@@ -24,6 +24,8 @@ import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.response.SolrQueryResponse;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -43,15 +45,24 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
+public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTestStatic
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     final String JETTY_SERVER_ID = this.getClass().getSimpleName();
     static final String CORE_NAME = "newcoretesting";
+    
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "AdminHandlerDistributedTest", null);
+    }
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
-
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void newCoreUsingAdminHandler() throws Exception
     {

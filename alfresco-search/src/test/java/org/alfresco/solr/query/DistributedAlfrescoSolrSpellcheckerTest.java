@@ -36,6 +36,7 @@ import java.util.Random;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
@@ -50,6 +51,8 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.util.NamedList;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -58,22 +61,24 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDistributedTest
+public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDistributedTestStatic
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "DistributedAlfrescoSolrSpellcheckerTest",null);
+        initSolrIndex();
+    }
 
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testSpellcheckerOutputFormat() throws Exception
     {
-        index(getDefaultTestClient(), true, "id", "1",  "suggest", "YYYYYYY BBBBBBB", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYYYYY BBBBBBB");
-        index(getDefaultTestClient(), true, "id", "2",  "suggest", "AAAAAAAA", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "AAAAAAAA");
-        index(getDefaultTestClient(), true, "id", "3",  "suggest", "BBBBBBB", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "BBBBBBB");
-        index(getDefaultTestClient(), true, "id", "4",  "suggest", "CCCC", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "CCCC");
-        index(getDefaultTestClient(), true, "id", "5", "suggest", "YYYYYYY", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYYYYY BBBBBBB");
-        index(getDefaultTestClient(), true, "id", "6", "suggest", "EEEE", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "EEEE");
-        commit(getDefaultTestClient(), true);
-
         putHandleDefaults();
         QueryResponse response = query(getDefaultTestClient(), true,
                 "{\"query\":\"(YYYYY BBBBB AND (id:(1 2 3 4 5 6)))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
@@ -89,6 +94,17 @@ public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDis
         assertTrue(hits == 3);
         assertTrue(collationQuery.equals("(yyyyyyy bbbbbbb AND (id:(1 2 3 4 5 6)))"));
         assertTrue(collationQueryString.equals("yyyyyyy bbbbbbb"));
+    }
+
+    private static void initSolrIndex() throws Exception
+    {
+        index(getDefaultTestClient(), true, "id", "1",  "suggest", "YYYYYYY BBBBBBB", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYYYYY BBBBBBB");
+        index(getDefaultTestClient(), true, "id", "2",  "suggest", "AAAAAAAA", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "AAAAAAAA");
+        index(getDefaultTestClient(), true, "id", "3",  "suggest", "BBBBBBB", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "BBBBBBB");
+        index(getDefaultTestClient(), true, "id", "4",  "suggest", "CCCC", "_version_","0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "CCCC");
+        index(getDefaultTestClient(), true, "id", "5", "suggest", "YYYYYYY", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "YYYYYYY BBBBBBB");
+        index(getDefaultTestClient(), true, "id", "6", "suggest", "EEEE", "_version_", "0", "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "EEEE");
+        commit(getDefaultTestClient(), true);
     }
 }
 
