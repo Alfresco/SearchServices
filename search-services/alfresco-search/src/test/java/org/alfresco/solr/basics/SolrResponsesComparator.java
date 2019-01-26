@@ -51,7 +51,6 @@ public class SolrResponsesComparator
         handle.put("_version_", SKIP);
         handle.put("_original_parameters_", SKIP);
         handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
-
     }
     
 

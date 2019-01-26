@@ -19,6 +19,7 @@
 package org.alfresco.solr.highlight;
 
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.util.LuceneTestCase;
@@ -27,6 +28,8 @@ import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.AlfrescoSolrHighlighter;
 import org.apache.solr.handler.component.HighlightComponent;
 import org.apache.solr.highlight.SolrHighlighter;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -35,18 +38,26 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class AlfrescoHighligherDistributedTest extends AbstractAlfrescoDistributedTest
+public class AlfrescoHighligherDistributedTest extends AbstractAlfrescoDistributedTestStatic
 {
     private static Log logger = LogFactory.getLog(AlfrescoHighligherDistributedTest.class);
+    
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSingleSolrServer("AlfrescoHighligherDistributedTest", DEFAULT_CORE_PROPS);
+    }
 
-    @Rule
-    public DefaultAlrescoCoreRule jetty = new DefaultAlrescoCoreRule(this.getClass().getSimpleName(), DEFAULT_CORE_PROPS);
-
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testHighlight() throws Exception {
 
         logger.info("######### Starting highlighter test ###########");
-        SolrCore defaultCore = jetty.getDefaultCore();
         SolrHighlighter highlighter = HighlightComponent.getHighlighter(defaultCore);
         assertTrue("wrong highlighter: " + highlighter.getClass(), highlighter instanceof AlfrescoSolrHighlighter);
 /**

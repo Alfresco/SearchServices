@@ -21,6 +21,7 @@ package org.alfresco.solr.tracker;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.*;
 import org.apache.lucene.index.Term;
@@ -30,6 +31,8 @@ import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.core.SolrCore;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -48,11 +51,20 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 @SolrTestCaseJ4.SuppressSSL
 @SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfrescoDistributedTest
+public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfrescoDistributedTestStatic
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(this.getClass().getSimpleName(), 3, getProperties(), new String[]{DEFAULT_TEST_CORENAME});
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(3, "DistributedExplicitShardRoutingTrackerTest", getProperties());
+    }
 
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testShardId() throws Exception
     {
@@ -151,7 +163,7 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         waitForShardsCount(contentQuery,numNodes+2,30000, begin);
     }
 
-    protected Properties getProperties()
+    protected static Properties getProperties()
     {
         Properties prop = new Properties();
         prop.put("shard.method", ShardMethodEnum.EXPLICIT_ID.toString());

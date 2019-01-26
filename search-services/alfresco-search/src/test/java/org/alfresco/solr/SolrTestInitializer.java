@@ -86,6 +86,9 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
     protected static String shards;
     protected static String[] shardsArr;
     protected static File testDir;
+    
+    //Standalone Tests
+    protected static SolrCore defaultCore;
  
     protected static final int clientConnectionTimeout = DEFAULT_CONNECTION_TIMEOUT;;
     protected static final int clientSoTimeout = 90000;;
@@ -151,7 +154,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
             }
 
         }
-        SolrCore defaultCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "alfresco", "rerank", 1, 1, extras);
+        defaultCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "alfresco", "rerank", 1, 1, extras);
         assertNotNull(defaultCore);
         String url = buildUrl(jsr.getLocalPort()) + "/" + "alfresco";
         SolrClient standaloneClient = createNewSolrClient(url);

@@ -19,6 +19,7 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -26,7 +27,9 @@ import org.apache.solr.client.solrj.response.PivotField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.RangeFacet;
 import org.apache.solr.common.util.NamedList;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -36,10 +39,21 @@ import static org.hamcrest.core.Is.is;
 
 @SolrTestCaseJ4.SuppressSSL @LuceneTestCase.SuppressCodecs({ "Appending", "Lucene3x", "Lucene40", "Lucene41",
     "Lucene42", "Lucene43", "Lucene44", "Lucene45", "Lucene46", "Lucene47", "Lucene48",
-    "Lucene49" }) public class DistributedAlfrescoSolrFacetingTest extends AbstractAlfrescoDistributedTest
+    "Lucene49" }) public class DistributedAlfrescoSolrFacetingTest extends AbstractAlfrescoDistributedTestStatic
 {
-    @Rule 
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "AdminHandlerDistributedTest", null);
+        indexSampleDocumentsForFacetingMincount();
+        
+    }
+
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
 
     @Test 
     public void distributedSearch_fieldFacetingRequiringRefinement_shouldReturnCorrectCounts() throws Exception
@@ -56,22 +70,22 @@ import static org.hamcrest.core.Is.is;
          * The refinement phase will ask those shards for those counts.
          * Only if refinement works we'll see the correct results (compared to not sharded Solr)
          * */
-        index(getDefaultTestClient(), 0, "id", "1", "suggest", "a", "_version_", "0",
+        index(getDefaultTestClient(), 0, "id", "10", "suggest", "b", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "a b");
-        index(getDefaultTestClient(), 0, "id", "2", "suggest", "a", "_version_", "0",
+        index(getDefaultTestClient(), 0, "id", "20", "suggest", "b", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "a");
-        index(getDefaultTestClient(), 0, "id", "3", "suggest", "a", "_version_", "0",
+        index(getDefaultTestClient(), 0, "id", "30", "suggest", "b", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "b c");
-        index(getDefaultTestClient(), 1, "id", "4", "suggest", "a", "_version_", "0",
+        index(getDefaultTestClient(), 1, "id", "40", "suggest", "b", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "c b");
-        index(getDefaultTestClient(), 1, "id", "5", "suggest", "a", "_version_", "0",
+        index(getDefaultTestClient(), 1, "id", "50", "suggest", "b", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "c b");
-        index(getDefaultTestClient(), 1, "id", "6", "suggest", "a", "_version_", "0",
+        index(getDefaultTestClient(), 1, "id", "60", "suggest", "b", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "c");
         commit(getDefaultTestClient(), true);
         String expectedFacetField = "{http://www.alfresco.org/model/content/1.0}content:[b (4), c (4)]";
 
-        String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
+        String jsonQuery = "{\"query\":\"(suggest:b)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
         putHandleDefaults();
 
         QueryResponse queryResponse = query(getDefaultTestClient(), true, jsonQuery,
@@ -87,7 +101,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void fieldFaceting_mincountMissing_shouldReturnFacetsMincountOne() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
         String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
         String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
 
@@ -108,8 +121,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void pivotFaceting_mincountMissing_shouldReturnFacetsMincountOne() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
-       
         String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
         putHandleDefaults();
 
@@ -145,7 +156,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void fieldFaceting_mincountSetZero_shouldReturnFacetsMincountOne() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
         String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
         String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
 
@@ -168,8 +178,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void pivotFaceting_mincountSetZero_shouldReturnFacetsMincountOne() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
-
         String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
         putHandleDefaults();
 
@@ -205,7 +213,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void fieldFaceting_mincountSetTwo_shouldReturnFacetsOriginalMincount() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
         String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4)]";
         String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4)]";
 
@@ -228,8 +235,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void pivotFaceting_mincountSetTwo_shouldReturnFacetsOriginalMincount() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
-
         String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
         putHandleDefaults();
 
@@ -256,7 +261,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void fieldFaceting_perFieldMincountSetZero_shoulReturnFacetsMincountOne() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
         String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4), contentone (1)]";
         String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
 
@@ -279,7 +283,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void fieldFaceting_perFieldMincountSetTwo_shoulReturnFacetsMincountTwo() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
         String expectedContentFacetField = "{http://www.alfresco.org/model/content/1.0}content:[contenttwo (4)]";
         String expectedNameFacetField = "{http://www.alfresco.org/model/content/1.0}name:[nametwo (4), nameone (1)]";
 
@@ -303,8 +306,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void rangeFaceting_mincountMissing_shouldReturnFacetsMincountOne() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
-
         String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
         putHandleDefaults();
 
@@ -338,8 +339,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void rangeFaceting_mincountSetZero_shouldReturnFacetsMincountOne() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
-
         String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
         putHandleDefaults();
 
@@ -374,8 +373,6 @@ import static org.hamcrest.core.Is.is;
     @Test
     public void rangeFaceting_mincountSetTwo_shouldReturnFacetsMincountTwo() throws Exception
     {
-        indexSampleDocumentsForFacetingMincount();
-
         String jsonQuery = "{\"query\":\"(suggest:a)\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}";
         putHandleDefaults();
 
@@ -398,7 +395,7 @@ import static org.hamcrest.core.Is.is;
         assertThat(createdDateCounts.get(0).getCount(),is(2));
     }
 
-    private void indexSampleDocumentsForFacetingMincount() throws Exception
+    private static void indexSampleDocumentsForFacetingMincount() throws Exception
     {
         index(getDefaultTestClient(), 0, "id", "1", "suggest", "a", "_version_", "0",
             "content@s___t@{http://www.alfresco.org/model/content/1.0}content", "contentone",

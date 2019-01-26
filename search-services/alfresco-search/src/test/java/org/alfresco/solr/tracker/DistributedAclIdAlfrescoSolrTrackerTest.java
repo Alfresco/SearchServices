@@ -36,6 +36,7 @@ import java.util.Random;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
@@ -48,6 +49,8 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -56,11 +59,21 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
+public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTestStatic
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2,this, getShardMethod());
 
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "DistributedAclIdAlfrescoSolrTrackerTest", getShardMethod());
+    }
+
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testAclId() throws Exception
     {
@@ -117,7 +130,7 @@ public class DistributedAclIdAlfrescoSolrTrackerTest extends AbstractAlfrescoDis
         }
     }
 
-    protected Properties getShardMethod() 
+    protected static Properties getShardMethod() 
     {
         Random random = random();
         List<ShardMethodEnum> methods = new ArrayList();
