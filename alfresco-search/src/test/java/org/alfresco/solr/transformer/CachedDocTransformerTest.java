@@ -22,8 +22,13 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -31,26 +36,29 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTestStatic
+public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
 {
     public static final String ALFRESCO_JSON = "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}";
     

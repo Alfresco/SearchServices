@@ -18,42 +18,13 @@
  */
 package org.alfresco.solr.query;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-
-import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.Acl;
-import org.alfresco.solr.client.AclChangeSet;
-import org.alfresco.solr.client.AclReaders;
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.NodeMetaData;
-import org.alfresco.solr.client.Transaction;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.util.NamedList;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -61,7 +32,7 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDistributedTestStatic
+public class DistributedAlfrescoSolrSpellcheckerTest extends AbstractAlfrescoDistributedTest
 {
     @BeforeClass
     private static void initData() throws Throwable

@@ -24,29 +24,23 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.alfresco.solr.AlfrescoSolrUtils.assertSummaryCorrect;
-import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 
 /**
@@ -57,7 +51,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistributedTestStatic
+public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistributedTest
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     final static String JETTY_SERVER_ID = "CoresCreateUpdateDistributedTest";

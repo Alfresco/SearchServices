@@ -24,7 +24,6 @@ import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class CoresCreateViaPropertyTest extends AbstractAlfrescoDistributedTestStatic
+public class CoresCreateViaPropertyTest extends AbstractAlfrescoDistributedTest
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     final static String JETTY_SERVER_ID = "CoresCreateViaPropertyTest";

@@ -21,9 +21,13 @@ package org.alfresco.solr.tracker;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -33,7 +37,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.core.SolrCore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -41,7 +44,14 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * Test Routes based on an explicit shard
@@ -51,7 +61,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 @SolrTestCaseJ4.SuppressSSL
 @SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfrescoDistributedTestStatic
+public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfrescoDistributedTest
 {
     @BeforeClass
     private static void initData() throws Throwable

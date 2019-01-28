@@ -19,18 +19,15 @@
 package org.alfresco.solr.highlight;
 
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.AlfrescoSolrHighlighter;
 import org.apache.solr.handler.component.HighlightComponent;
 import org.apache.solr.highlight.SolrHighlighter;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -38,7 +35,7 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class AlfrescoHighligherDistributedTest extends AbstractAlfrescoDistributedTestStatic
+public class AlfrescoHighligherDistributedTest extends AbstractAlfrescoDistributedTest
 {
     private static Log logger = LogFactory.getLog(AlfrescoHighligherDistributedTest.class);
     
