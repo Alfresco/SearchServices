@@ -18,7 +18,7 @@
  */
 package org.alfresco.solr;
 
-public class CloudTest //extends SolrCoreTestBase
+public class CloudTest
 {
     /*
     public final static String QUERY = "a query";
