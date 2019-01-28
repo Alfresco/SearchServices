@@ -28,8 +28,7 @@ public class AFTSRequestHandlerTest extends AbstractRequestHandlerTest implement
     public static void loadData() throws Exception
     {
         DATASETS_PROVIDER = new TestDataProvider(h);
-        DATASETS_PROVIDER.loadSmallDataset();
-        DATASETS_PROVIDER.loadMediumDataset();
+        DATASETS_PROVIDER.loadTestDataset();
 
         FTS_TEST_DATE = DATASETS_PROVIDER.getFtsTestDate();
         TEST_NODEREF = DATASETS_PROVIDER.getTestNodeRef();
@@ -353,7 +352,7 @@ public class AFTSRequestHandlerTest extends AbstractRequestHandlerTest implement
     @Test
     public void parentField()
     {
-        assertResponseCardinality(FIELD_PARENT, "\"" + DATASETS_PROVIDER.getTestNodeRef() + "\"", 4);
+        assertResponseCardinality(FIELD_PARENT, "\"" + TEST_NODEREF + "\"", 4);
     }
 
     @Test

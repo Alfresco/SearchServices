@@ -108,77 +108,13 @@ public class TestDataProvider implements AlfrescoSolrConstants
     private int orderTextCount;
     private Date orderDate = new Date();
 
-    private ChildAssociationRef n01CAR;
-    private ChildAssociationRef n02CAR;
-    private ChildAssociationRef n03CAR;
-    private ChildAssociationRef n04CAR;
-    private ChildAssociationRef n05CAR;
-    private ChildAssociationRef n06CAR;
-    private ChildAssociationRef n07CAR;
-    private ChildAssociationRef n08CAR_0;
-    private ChildAssociationRef n08CAR_1;
-    private ChildAssociationRef n08CAR_2;
-    private ChildAssociationRef n09CAR;
-    private ChildAssociationRef n10CAR;
-    private ChildAssociationRef n11CAR;
-    private ChildAssociationRef n12CAR;
-    private ChildAssociationRef n13CAR;
-    private ChildAssociationRef n13CARLink;
-    private ChildAssociationRef n14CAR;
-    private ChildAssociationRef n14CAR_1;
-    private ChildAssociationRef n14CAR_2;
-    private ChildAssociationRef n14CAR_5;
-    private ChildAssociationRef n14CAR_6;
-    private ChildAssociationRef n14CAR_12;
-    private ChildAssociationRef n14CAR_13;
-    private ChildAssociationRef n15CAR;
-
     private NodeRef n01NodeRef;
     private NodeRef n02NodeRef;
     private NodeRef n03NodeRef;
-    private NodeRef n04NodeRef;
-    private NodeRef n05NodeRef;
-    private NodeRef n06NodeRef;
-    private NodeRef n07NodeRef;
-    private NodeRef n08NodeRef;
-    private NodeRef n09NodeRef;
-    private NodeRef n10NodeRef;
-    private NodeRef n11NodeRef;
-    private NodeRef n12NodeRef;
-    private NodeRef n13NodeRef;
-    private NodeRef n14NodeRef;
-    private NodeRef n15NodeRef;
 
     private NodeRef rootNodeRef;
     private NodeRef testNodeRef;
     private Date ftsTestDate = new Date(System.currentTimeMillis() - 10000);
-
-    private QName n01QName;
-    private QName n02QName;
-    private QName n03QName;
-    private QName n04QName;
-    private QName n05QName;
-    private QName n06QName;
-    private QName n07QName;
-    private QName n08QName_0;
-    private QName n08QName_1;
-    private QName n08QName_2;
-    private QName n09QName;
-    private QName n10QName;
-    private QName n11QName;
-    private QName n12QName;
-    private QName n13QName;
-    private QName n13QNameLink;
-    private QName n14QName;
-    private QName n14QNameCommon;
-    private QName n15QName;
-
-    private Map<QName, PropertyValue> properties04;
-    private Map<QName, String> content04;
-    private Map<QName, PropertyValue> properties14;
-    private Map<QName, String> content14;
-    private Map<QName, PropertyValue> properties15;
-    private Map<QName, String> content15;
 
     private final SolrCore core;
     private final AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
@@ -234,15 +170,15 @@ public class TestDataProvider implements AlfrescoSolrConstants
     }
 
     /**
-     * Loads in Solr a small dataset composed by 15 nodes.
+     * Loads in Solr a dataset composed by 265 nodes.
      */
-    public void loadSmallDataset() throws Exception
+    public void loadTestDataset()
     {
-        // 1
+        // Node #1
 
         n01NodeRef = newNodeRef();
-        n01QName = QName.createQName(CONTENT_MODEL_1_0_URI, "one");
-        n01CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n01QName, n01NodeRef, true, 0);
+        QName n01QName = QName.createQName(CONTENT_MODEL_1_0_URI, "one");
+        ChildAssociationRef n01CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n01QName, n01NodeRef, true, 0);
         addNode(
                 core,
                 dataModel,
@@ -260,22 +196,20 @@ public class TestDataProvider implements AlfrescoSolrConstants
 
         testNodeRef = n01NodeRef;
 
-        // 2
+        // Node #2
 
         n02NodeRef = newNodeRef();
-        n02QName = QName.createQName(CONTENT_MODEL_1_0_URI, "two");
-        n02CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n02QName, n02NodeRef, true, 0);
+        QName n02QName = QName.createQName(CONTENT_MODEL_1_0_URI, "two");
+        ChildAssociationRef n02CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n02QName, n02NodeRef, true, 0);
         addNode(core, dataModel, 1, 3, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "bob",
                 new ChildAssociationRef[]{n02CAR}, new NodeRef[]{rootNodeRef}, new String[]{"/"
                         + n02QName.toString()}, n02NodeRef, true);
 
-
-
-        // 3
+        // Node #3
 
         n03NodeRef = newNodeRef();
-        n03QName = QName.createQName(CONTENT_MODEL_1_0_URI, "three");
-        n03CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n03QName,
+        QName n03QName = QName.createQName(CONTENT_MODEL_1_0_URI, "three");
+        ChildAssociationRef n03CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n03QName,
                 n03NodeRef, true, 0);
         addNode(core, dataModel, 1, 4, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "cid",
                 new ChildAssociationRef[]{n03CAR}, new NodeRef[]{rootNodeRef}, new String[]{"/"
@@ -283,8 +217,8 @@ public class TestDataProvider implements AlfrescoSolrConstants
 
         // Node #4
 
-        content04 = new HashMap<>();
-        properties04 = new HashMap<>(getOrderProperties());
+        Map<QName, String> content04 = new HashMap<>();
+        Map<QName, PropertyValue> properties04 = new HashMap<>(getOrderProperties());
         properties04.put(
                 qName("text-indexed-stored-tokenised-atomic"),
                 value("TEXT THAT IS INDEXED STORED AND TOKENISED ATOMICALLY KEYONE"));
@@ -351,54 +285,54 @@ public class TestDataProvider implements AlfrescoSolrConstants
         properties04.put(qName("mltext-many-ista"), new MultiPropertyValue(asList(mlText1, mlText2)));
         properties04.put(qName("nullist"), new MultiPropertyValue(singletonList(value(null))));
 
-        n04NodeRef = newNodeRef();
-        n04QName = qName(CONTENT_MODEL_1_0_URI, "four");
-        n04CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n04QName, n04NodeRef, true, 0);
+        NodeRef n04NodeRef = newNodeRef();
+        QName n04QName = qName(CONTENT_MODEL_1_0_URI, "four");
+        ChildAssociationRef n04CAR = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n04QName, n04NodeRef, true, 0);
 
         properties04.put(qName("aspectProperty"), value(("")));
         addNode(core, dataModel, 1, 5, 1, TEST_TYPE, new QName[]{TEST_ASPECT}, properties04, content04, "dave",
                 new ChildAssociationRef[]{n04CAR}, new NodeRef[]{rootNodeRef}, new String[]{"/"
                         + n04QName.toString()}, n04NodeRef, true);
 
-        // 5
+        // Node #5
 
-        n05NodeRef = newNodeRef();
-        n05QName = QName.createQName(CONTENT_MODEL_1_0_URI, "five");
-        n05CAR = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef, n05QName,
+        NodeRef n05NodeRef = newNodeRef();
+        QName n05QName = QName.createQName(CONTENT_MODEL_1_0_URI, "five");
+        ChildAssociationRef n05CAR = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef, n05QName,
                 n05NodeRef, true, 0);
         addNode(core, dataModel, 1, 6, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "eoin",
                 new ChildAssociationRef[]{n05CAR}, new NodeRef[]{rootNodeRef, n01NodeRef},
                 new String[]{"/" + n01QName.toString() + "/" + n05QName.toString()}, n05NodeRef, true);
 
-        // 6
+        // Node #6
 
-        n06NodeRef = newNodeRef();
-        n06QName = QName.createQName(CONTENT_MODEL_1_0_URI, "six");
-        n06CAR = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef, n06QName,
+        NodeRef n06NodeRef = newNodeRef();
+        QName n06QName = QName.createQName(CONTENT_MODEL_1_0_URI, "six");
+        ChildAssociationRef n06CAR = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef, n06QName,
                 n06NodeRef, true, 0);
         addNode(core, dataModel, 1, 7, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "fred",
                 new ChildAssociationRef[]{n06CAR}, new NodeRef[]{rootNodeRef, n01NodeRef},
                 new String[]{"/" + n01QName.toString() + "/" + n06QName.toString()}, n06NodeRef, true);
 
-        // 7
+        // Node #7
 
-        n07NodeRef = newNodeRef();
-        n07QName = QName.createQName(CONTENT_MODEL_1_0_URI, "seven");
-        n07CAR = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef, n07QName,
+        NodeRef n07NodeRef = newNodeRef();
+        QName n07QName = QName.createQName(CONTENT_MODEL_1_0_URI, "seven");
+        ChildAssociationRef n07CAR = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef, n07QName,
                 n07NodeRef, true, 0);
         addNode(core, dataModel, 1, 8, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "gail",
                 new ChildAssociationRef[]{n07CAR}, new NodeRef[]{rootNodeRef, n02NodeRef},
                 new String[]{"/" + n02QName.toString() + "/" + n07QName.toString()}, n07NodeRef, true);
 
-        // 8
+        // Node #8
 
-        n08NodeRef = newNodeRef();
-        n08QName_0 = qName(CONTENT_MODEL_1_0_URI, "eight-0");
-        n08QName_1 = qName(CONTENT_MODEL_1_0_URI, "eight-1");
-        n08QName_2 = qName(CONTENT_MODEL_1_0_URI, "eight-2");
-        n08CAR_0 = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n08QName_0, n08NodeRef, false, 2);
-        n08CAR_1 = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef, n08QName_1, n08NodeRef, false, 1);
-        n08CAR_2 = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef, n08QName_2, n08NodeRef, true, 0);
+        NodeRef n08NodeRef = newNodeRef();
+        QName n08QName_0 = qName(CONTENT_MODEL_1_0_URI, "eight-0");
+        QName n08QName_1 = qName(CONTENT_MODEL_1_0_URI, "eight-1");
+        QName n08QName_2 = qName(CONTENT_MODEL_1_0_URI, "eight-2");
+        ChildAssociationRef n08CAR_0 = new ChildAssociationRef(ASSOC_CHILDREN, rootNodeRef, n08QName_0, n08NodeRef, false, 2);
+        ChildAssociationRef n08CAR_1 = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef, n08QName_1, n08NodeRef, false, 1);
+        ChildAssociationRef n08CAR_2 = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef, n08QName_2, n08NodeRef, true, 0);
 
         addNode(core, dataModel, 1, 9, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "hal",
                 new ChildAssociationRef[]{n08CAR_0, n08CAR_1, n08CAR_2}, new NodeRef[]{rootNodeRef,
@@ -406,57 +340,57 @@ public class TestDataProvider implements AlfrescoSolrConstants
                         "/" + n08QName_0, "/" + n01QName.toString() + "/" + n08QName_1.toString(),
                         "/" + n02QName.toString() + "/" + n08QName_2.toString()}, n08NodeRef, true);
 
-        // 9
+        // Node #9
 
-        n09NodeRef = newNodeRef();
-        n09QName = QName.createQName(CONTENT_MODEL_1_0_URI, "nine");
-        n09CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n09QName,
+        NodeRef n09NodeRef = newNodeRef();
+        QName n09QName = QName.createQName(CONTENT_MODEL_1_0_URI, "nine");
+        ChildAssociationRef n09CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n09QName,
                 n09NodeRef, true, 0);
         addNode(core, dataModel, 1, 10, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "ian",
                 new ChildAssociationRef[]{n09CAR}, new NodeRef[]{rootNodeRef, n01NodeRef, n05NodeRef},
                 new String[]{"/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n09QName},
                 n09NodeRef, true);
 
-        // 10
+        // Node #10
 
-        n10NodeRef = newNodeRef();
-        n10QName = QName.createQName(CONTENT_MODEL_1_0_URI, "ten");
-        n10CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n10QName,
+        NodeRef n10NodeRef = newNodeRef();
+        QName n10QName = QName.createQName(CONTENT_MODEL_1_0_URI, "ten");
+        ChildAssociationRef n10CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n10QName,
                 n10NodeRef, true, 0);
         addNode(core, dataModel, 1, 11, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "jake",
                 new ChildAssociationRef[]{n10CAR}, new NodeRef[]{rootNodeRef, n01NodeRef, n05NodeRef},
                 new String[]{"/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n10QName},
                 n10NodeRef, true);
 
-        // 11
+        // Node #11
 
-        n11NodeRef = newNodeRef();
-        n11QName = QName.createQName(CONTENT_MODEL_1_0_URI, "eleven");
-        n11CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n11QName,
+        NodeRef n11NodeRef = newNodeRef();
+        QName n11QName = QName.createQName(CONTENT_MODEL_1_0_URI, "eleven");
+        ChildAssociationRef n11CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n11QName,
                 n11NodeRef, true, 0);
         addNode(core, dataModel, 1, 12, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "kara",
                 new ChildAssociationRef[]{n11CAR}, new NodeRef[]{rootNodeRef, n01NodeRef, n05NodeRef},
                 new String[]{"/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n11QName},
                 n11NodeRef, true);
 
-        // 12
+        // Node #12
 
-        n12NodeRef = newNodeRef();
-        n12QName = QName.createQName(CONTENT_MODEL_1_0_URI, "twelve");
-        n12CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n12QName,
+        NodeRef n12NodeRef = newNodeRef();
+        QName n12QName = QName.createQName(CONTENT_MODEL_1_0_URI, "twelve");
+        ChildAssociationRef n12CAR = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef, n12QName,
                 n12NodeRef, true, 0);
         addNode(core, dataModel, 1, 13, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "loon",
                 new ChildAssociationRef[]{n12CAR}, new NodeRef[]{rootNodeRef, n01NodeRef, n05NodeRef},
                 new String[]{"/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName},
                 n12NodeRef, true);
 
-        // 13
+        // Node #13
 
-        n13NodeRef = newNodeRef();
-        n13QName = qName(CONTENT_MODEL_1_0_URI, "thirteen");
-        n13QNameLink = qName(CONTENT_MODEL_1_0_URI, "link");
-        n13CAR = new ChildAssociationRef(ASSOC_CONTAINS, n12NodeRef, n13QName, n13NodeRef, true, 0);
-        n13CARLink = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef, n13QName, n13NodeRef, false, 0);
+        NodeRef n13NodeRef = newNodeRef();
+        QName n13QName = qName(CONTENT_MODEL_1_0_URI, "thirteen");
+        QName n13QNameLink = qName(CONTENT_MODEL_1_0_URI, "link");
+        ChildAssociationRef n13CAR = new ChildAssociationRef(ASSOC_CONTAINS, n12NodeRef, n13QName, n13NodeRef, true, 0);
+        ChildAssociationRef n13CARLink = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef, n13QName, n13NodeRef, false, 0);
         addNode(core, dataModel, 1, 14, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "mike",
                 new ChildAssociationRef[]{n13CAR, n13CARLink}, new NodeRef[]{rootNodeRef, n01NodeRef,
                         n05NodeRef, n12NodeRef, rootNodeRef, n02NodeRef},
@@ -465,11 +399,10 @@ public class TestDataProvider implements AlfrescoSolrConstants
                                 + n13QName, "/" + n02QName.toString() + "/" + n13QNameLink},
                 n13NodeRef, true);
 
-        // 14
+        // Node #14
 
-        properties14 = new HashMap<>();
-        properties14.putAll(getOrderProperties());
-        content14 = new HashMap<>();
+        Map<QName, PropertyValue> properties14 = new HashMap<>(getOrderProperties());
+        Map<QName, String> content14 = new HashMap<>();
 
         MLTextPropertyValue desc1 = new MLTextPropertyValue();
         desc1.addValue(Locale.ENGLISH, "Alfresco tutorial");
@@ -499,22 +432,22 @@ public class TestDataProvider implements AlfrescoSolrConstants
 
         properties14.put(ContentModel.PROP_TITLE, title);
 
-        n14NodeRef = newNodeRef();
-        n14QName = qName(CONTENT_MODEL_1_0_URI, "fourteen");
-        n14QNameCommon = qName(CONTENT_MODEL_1_0_URI, "common");
-        n14CAR = new ChildAssociationRef(ASSOC_CONTAINS, n13NodeRef, n14QName,
+        NodeRef n14NodeRef = newNodeRef();
+        QName n14QName = qName(CONTENT_MODEL_1_0_URI, "fourteen");
+        QName n14QNameCommon = qName(CONTENT_MODEL_1_0_URI, "common");
+        ChildAssociationRef n14CAR = new ChildAssociationRef(ASSOC_CONTAINS, n13NodeRef, n14QName,
                 n14NodeRef, true, 0);
-        n14CAR_1 = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef,
+        ChildAssociationRef n14CAR_1 = new ChildAssociationRef(ASSOC_CONTAINS, n01NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        n14CAR_2 = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef,
+        ChildAssociationRef n14CAR_2 = new ChildAssociationRef(ASSOC_CONTAINS, n02NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        n14CAR_5 = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef,
+        ChildAssociationRef n14CAR_5 = new ChildAssociationRef(ASSOC_CONTAINS, n05NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        n14CAR_6 = new ChildAssociationRef(ASSOC_CONTAINS, n06NodeRef,
+        ChildAssociationRef n14CAR_6 = new ChildAssociationRef(ASSOC_CONTAINS, n06NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        n14CAR_12 = new ChildAssociationRef(ASSOC_CONTAINS, n12NodeRef,
+        ChildAssociationRef n14CAR_12 = new ChildAssociationRef(ASSOC_CONTAINS, n12NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
-        n14CAR_13 = new ChildAssociationRef(ASSOC_CONTAINS, n13NodeRef,
+        ChildAssociationRef n14CAR_13 = new ChildAssociationRef(ASSOC_CONTAINS, n13NodeRef,
                 n14QNameCommon, n14NodeRef, false, 0);
         addNode(core, dataModel, 1, 15, 1, ContentModel.TYPE_CONTENT, new QName[]{ContentModel.ASPECT_TITLED}, properties14, content14, "noodle",
                 new ChildAssociationRef[]{n14CAR, n14CAR_1, n14CAR_2, n14CAR_5, n14CAR_6, n14CAR_12,
@@ -531,16 +464,15 @@ public class TestDataProvider implements AlfrescoSolrConstants
                         "/" + n01QName + "/" + n05QName + "/" + n12QName + "/" + n13QName + "/"
                                 + n14QNameCommon}, n14NodeRef, true);
 
-        // 15
+        // Node #15
 
-        properties15 = new HashMap<>();
-        properties15.putAll(getOrderProperties());
+        Map<QName, PropertyValue> properties15 = new HashMap<>(getOrderProperties());
         properties15.put(ContentModel.PROP_MODIFIED, value(explicitCreatedDate));
-        content15 = new HashMap<>();
+        Map<QName, String> content15 = new HashMap<>();
         content15.put(ContentModel.PROP_CONTENT, "          ");
-        n15NodeRef = newNodeRef();
-        n15QName = qName(CONTENT_MODEL_1_0_URI, "fifteen");
-        n15CAR = new ChildAssociationRef(ASSOC_CONTAINS, n13NodeRef, n15QName,
+        NodeRef n15NodeRef = newNodeRef();
+        QName n15QName = qName(CONTENT_MODEL_1_0_URI, "fifteen");
+        ChildAssociationRef n15CAR = new ChildAssociationRef(ASSOC_CONTAINS, n13NodeRef, n15QName,
                 n15NodeRef, true, 0);
         addNode(core, dataModel, 1, 16, 1, ContentModel.TYPE_THUMBNAIL, null, properties15, content15, "ood",
                 new ChildAssociationRef[]{n15CAR}, new NodeRef[]{rootNodeRef, n01NodeRef, n05NodeRef,
@@ -549,77 +481,15 @@ public class TestDataProvider implements AlfrescoSolrConstants
                         "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName + "/"
                                 + n13QName + "/" + n15QName,
                         "/" + n02QName.toString() + "/" + n13QNameLink + "/" + n14QName}, n15NodeRef, true);
-    }
 
-    private Map<QName, PropertyValue> getOrderProperties()
-    {
-        double orderDoubleCount = -0.11d + orderTextCount * ((orderTextCount % 2 == 0) ? 0.1d : -0.1d);
-        float orderFloatCount = -3.5556f + orderTextCount * ((orderTextCount % 2 == 0) ? 0.82f : -0.82f);
-        long orderLongCount = -1999999999999999L + orderTextCount * ((orderTextCount % 2 == 0) ? 299999999999999L : -299999999999999L);
-        int orderIntCount = -45764576 + orderTextCount * ((orderTextCount % 2 == 0) ? 8576457 : -8576457);
+        // Now loads another 250 nodes.
 
-        Map<QName, PropertyValue> testProperties = new HashMap<>();
-        testProperties.put(CREATED_DATE, value(orderDate));
-        testProperties.put(CREATED_TIME, value(orderDate));
-        testProperties.put(ORDER_DOUBLE, value(orderDoubleCount));
-        testProperties.put(ORDER_FLOAT, value(orderFloatCount));
-        testProperties.put(ORDER_LONG, value(orderLongCount));
-        testProperties.put(ORDER_INT, value(orderIntCount));
-        testProperties.put(ORDER_TEXT, value(new String(
-                        new char[] { (char) ('l' + ((orderTextCount % 2 == 0) ? orderTextCount
-                                : -orderTextCount)) })
-                        + " cabbage"));
-
-        testProperties.put(PROP_NAME, value(ORDER_NAMES[orderTextCount]));
-        testProperties.put(ORDER_LOCALISED_TEXT, value(ORDER_LOCALISED_NAMES[orderTextCount]));
-
-        MLTextPropertyValue mlTextPropLocalisedOrder = new MLTextPropertyValue();
-        if (ORDER_LOCALISED_MLTEXT_EN[orderTextCount].length() > 0)
-        {
-            mlTextPropLocalisedOrder.addValue(Locale.ENGLISH, ORDER_LOCALISED_MLTEXT_EN[orderTextCount]);
-        }
-        if (ORDER_LOCALISED_MLTEXT_FR[orderTextCount].length() > 0)
-        {
-            mlTextPropLocalisedOrder.addValue(Locale.FRENCH, ORDER_LOCALISED_MLTEXT_FR[orderTextCount]);
-        }
-        if (ORDER_LOCALISED_MLTEXT_ES[orderTextCount].length() > 0)
-        {
-            mlTextPropLocalisedOrder.addValue(new Locale("es"), ORDER_LOCALISED_MLTEXT_ES[orderTextCount]);
-        }
-        if (ORDER_LOCALISED_MLTEXT_DE[orderTextCount].length() > 0)
-        {
-            mlTextPropLocalisedOrder.addValue(Locale.GERMAN, ORDER_LOCALISED_MLTEXT_DE[orderTextCount]);
-        }
-        testProperties.put(ORDER_LOCALISED_ML_TEXT, mlTextPropLocalisedOrder);
-
-        MLTextPropertyValue mlTextPropVal = new MLTextPropertyValue();
-        mlTextPropVal.addValue(Locale.ENGLISH, new String(
-                new char[]{(char) ('l' + ((orderTextCount % 2 == 0) ? orderTextCount : -orderTextCount))})
-                + " banana");
-        mlTextPropVal.addValue(Locale.FRENCH, new String(
-                new char[]{(char) ('L' + ((orderTextCount % 2 == 0) ? -orderTextCount : orderTextCount))})
-                + " banane");
-        mlTextPropVal.addValue(Locale.CHINESE, new String(
-                new char[]{(char) ('香' + ((orderTextCount % 2 == 0) ? orderTextCount : -orderTextCount))})
-                + " 香蕉");
-        testProperties.put(ORDER_ML_TEXT, mlTextPropVal);
-
-        orderDate = Duration.subtract(orderDate, new Duration("P1D"));
-        orderTextCount++;
-        return testProperties;
-    }
-
-    /**
-     * Loads a medium-size dataset composed by 250 nodes.
-     */
-    public void loadMediumDataset() throws Exception
-    {
         for (int i = 0; i < 100; i++)
         {
             orderDate = new Date();
             orderTextCount = 0;
             addNode(core, dataModel, 1, 2, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "andy",
-                    new ChildAssociationRef[] { n01CAR }, new NodeRef[] {rootNodeRef}, new String[] { "/"
+                    new ChildAssociationRef[] {n01CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/"
                             + n01QName.toString() }, n01NodeRef, true);
         }
 
@@ -630,63 +500,63 @@ public class TestDataProvider implements AlfrescoSolrConstants
             orderTextCount = 0;
 
             addNode(core, dataModel, 1, 2, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "andy",
-                    new ChildAssociationRef[] { n01CAR }, new NodeRef[] {rootNodeRef}, new String[] { "/"
+                    new ChildAssociationRef[] {n01CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/"
                             + n01QName.toString() }, n01NodeRef, true);
             addNode(core, dataModel, 1, 3, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "bob",
-                    new ChildAssociationRef[] { n02CAR }, new NodeRef[] {rootNodeRef}, new String[] { "/"
+                    new ChildAssociationRef[] {n02CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/"
                             + n02QName.toString() }, n02NodeRef, true);
             addNode(core, dataModel, 1, 4, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "cid",
-                    new ChildAssociationRef[] { n03CAR }, new NodeRef[] {rootNodeRef}, new String[] { "/"
+                    new ChildAssociationRef[] {n03CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/"
                             + n03QName.toString() }, n03NodeRef, true);
             properties04.putAll(getOrderProperties());
             addNode(core, dataModel, 1, 5, 1, TEST_TYPE, new QName[] {TEST_ASPECT}, properties04, content04,
-                    "dave", new ChildAssociationRef[] { n04CAR }, new NodeRef[] {rootNodeRef},
+                    "dave", new ChildAssociationRef[] {n04CAR}, new NodeRef[] {rootNodeRef},
                     new String[] { "/" + n04QName.toString() }, n04NodeRef, true);
             addNode(core, dataModel, 1, 6, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "eoin",
-                    new ChildAssociationRef[] { n05CAR }, new NodeRef[] {rootNodeRef, n01NodeRef },
+                    new ChildAssociationRef[] {n05CAR}, new NodeRef[] {rootNodeRef, n01NodeRef },
                     new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() }, n05NodeRef, true);
             addNode(core, dataModel, 1, 7, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "fred",
-                    new ChildAssociationRef[] { n06CAR }, new NodeRef[] {rootNodeRef, n01NodeRef },
+                    new ChildAssociationRef[] {n06CAR}, new NodeRef[] {rootNodeRef, n01NodeRef },
                     new String[] { "/" + n01QName.toString() + "/" + n06QName.toString() }, n06NodeRef, true);
             addNode(core, dataModel, 1, 8, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "gail",
-                    new ChildAssociationRef[] { n07CAR }, new NodeRef[] {rootNodeRef, n02NodeRef },
+                    new ChildAssociationRef[] {n07CAR}, new NodeRef[] {rootNodeRef, n02NodeRef },
                     new String[] { "/" + n02QName.toString() + "/" + n07QName.toString() }, n07NodeRef, true);
             addNode(core, dataModel, 1, 9, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "hal",
-                    new ChildAssociationRef[] { n08CAR_0, n08CAR_1, n08CAR_2 }, new NodeRef[] {rootNodeRef,
+                    new ChildAssociationRef[] {n08CAR_0, n08CAR_1, n08CAR_2}, new NodeRef[] {rootNodeRef,
                             rootNodeRef, n01NodeRef, rootNodeRef, n02NodeRef }, new String[] {
                             "/" + n08QName_0, "/" + n01QName.toString() + "/" + n08QName_1.toString(),
                             "/" + n02QName.toString() + "/" + n08QName_2.toString() }, n08NodeRef, true);
             addNode(core, dataModel, 1, 10, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "ian",
-                    new ChildAssociationRef[] { n09CAR },
-                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef },
-                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n09QName },
+                    new ChildAssociationRef[] {n09CAR},
+                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef},
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n09QName},
                     n09NodeRef, true);
             addNode(core, dataModel, 1, 11, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "jake",
-                    new ChildAssociationRef[] { n10CAR },
-                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef },
-                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n10QName },
+                    new ChildAssociationRef[] {n10CAR},
+                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef},
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n10QName},
                     n10NodeRef, true);
             addNode(core, dataModel, 1, 12, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "kara",
-                    new ChildAssociationRef[] { n11CAR },
-                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef },
-                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n11QName },
+                    new ChildAssociationRef[] {n11CAR},
+                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef},
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n11QName},
                     n11NodeRef, true);
             addNode(core, dataModel, 1, 13, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "loon",
-                    new ChildAssociationRef[] { n12CAR },
-                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef },
-                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName },
+                    new ChildAssociationRef[] {n12CAR},
+                    new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef},
+                    new String[] { "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName},
                     n12NodeRef, true);
             addNode(core, dataModel, 1, 14, 1, TEST_SUPER_TYPE, null, getOrderProperties(), null, "mike",
-                    new ChildAssociationRef[] { n13CAR, n13CARLink }, new NodeRef[] {rootNodeRef, n01NodeRef,
+                    new ChildAssociationRef[] {n13CAR, n13CARLink}, new NodeRef[] {rootNodeRef, n01NodeRef,
                             n05NodeRef, n12NodeRef, rootNodeRef, n02NodeRef }, new String[] {
                             "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName + "/"
-                                    + n13QName, "/" + n02QName.toString() + "/" + n13QNameLink },
+                                    + n13QName, "/" + n02QName.toString() + "/" + n13QNameLink},
                     n13NodeRef, true);
             properties14.putAll(getOrderProperties());
             addNode(core, dataModel, 1, 15, 1, ContentModel.TYPE_CONTENT, null, properties14, content14, "noodle",
-                    new ChildAssociationRef[] { n14CAR, n14CAR_1, n14CAR_2, n14CAR_5, n14CAR_6, n14CAR_12,
-                            n14CAR_13 }, new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef, n12NodeRef,
-                            n13NodeRef },
+                    new ChildAssociationRef[] {n14CAR, n14CAR_1, n14CAR_2, n14CAR_5, n14CAR_6, n14CAR_12,
+                            n14CAR_13}, new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef, n12NodeRef,
+                            n13NodeRef},
                     new String[] {
                             "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName + "/"
                                     + n13QName + "/" + n14QName,
@@ -697,14 +567,14 @@ public class TestDataProvider implements AlfrescoSolrConstants
                             "/" + n01QName + "/" + n06QName + "/" + n14QNameCommon,
                             "/" + n01QName + "/" + n05QName + "/" + n12QName + "/" + n14QNameCommon,
                             "/" + n01QName + "/" + n05QName + "/" + n12QName + "/" + n13QName + "/"
-                                    + n14QNameCommon }, n14NodeRef, true);
+                                    + n14QNameCommon}, n14NodeRef, true);
             properties14.putAll(getOrderProperties());
             addNode(core, dataModel, 1, 16, 1, ContentModel.TYPE_THUMBNAIL, null, properties15, content15, "ood",
-                    new ChildAssociationRef[] { n15CAR }, new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef,
-                            n12NodeRef, n13NodeRef }, new String[] {
+                    new ChildAssociationRef[] {n15CAR}, new NodeRef[] {rootNodeRef, n01NodeRef, n05NodeRef,
+                            n12NodeRef, n13NodeRef}, new String[] {
                             "/" + n01QName.toString() + "/" + n05QName.toString() + "/" + n12QName + "/"
                                     + n13QName + "/" + n15QName,
-                            "/" + n02QName.toString() + "/" + n13QNameLink + "/" + n14QName }, n15NodeRef,
+                            "/" + n02QName.toString() + "/" + n13QNameLink + "/" + n14QName}, n15NodeRef,
                     true);
         }
     }
@@ -712,7 +582,7 @@ public class TestDataProvider implements AlfrescoSolrConstants
     /**
      * Loads a very small dataset (just 2 nodes) with escaped qNames.
      */
-    public void loadEscapingTestData() throws Exception
+    public void loadEscapingTestData()
     {
         NodeRef childNameEscapingNodeRef = newNodeRef();
         QName childNameEscapingQName = qName(CONTENT_MODEL_1_0_URI, complexLocalName);
@@ -777,7 +647,7 @@ public class TestDataProvider implements AlfrescoSolrConstants
     /**
      * Loads the dataset used in MNT tests.
      */
-    public void loadMntTestData() throws Exception
+    public void loadMntTestData()
     {
         Map<QName, PropertyValue> properties19 = new HashMap<>();
         properties19.put(
@@ -927,6 +797,64 @@ public class TestDataProvider implements AlfrescoSolrConstants
         addNode(core, dataModel, 1, 32, 1,  TYPE_CONTENT, null, properties32, null, "system", new ChildAssociationRef[] {n32CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/" + n32QName.toString() }, n32NodeRef, true);
     }
 
+    private Map<QName, PropertyValue> getOrderProperties()
+    {
+        double orderDoubleCount = -0.11d + orderTextCount * ((orderTextCount % 2 == 0) ? 0.1d : -0.1d);
+        float orderFloatCount = -3.5556f + orderTextCount * ((orderTextCount % 2 == 0) ? 0.82f : -0.82f);
+        long orderLongCount = -1999999999999999L + orderTextCount * ((orderTextCount % 2 == 0) ? 299999999999999L : -299999999999999L);
+        int orderIntCount = -45764576 + orderTextCount * ((orderTextCount % 2 == 0) ? 8576457 : -8576457);
+
+        Map<QName, PropertyValue> testProperties = new HashMap<>();
+        testProperties.put(CREATED_DATE, value(orderDate));
+        testProperties.put(CREATED_TIME, value(orderDate));
+        testProperties.put(ORDER_DOUBLE, value(orderDoubleCount));
+        testProperties.put(ORDER_FLOAT, value(orderFloatCount));
+        testProperties.put(ORDER_LONG, value(orderLongCount));
+        testProperties.put(ORDER_INT, value(orderIntCount));
+        testProperties.put(ORDER_TEXT, value(new String(
+                new char[] { (char) ('l' + ((orderTextCount % 2 == 0) ? orderTextCount
+                        : -orderTextCount)) })
+                + " cabbage"));
+
+        testProperties.put(PROP_NAME, value(ORDER_NAMES[orderTextCount]));
+        testProperties.put(ORDER_LOCALISED_TEXT, value(ORDER_LOCALISED_NAMES[orderTextCount]));
+
+        MLTextPropertyValue mlTextPropLocalisedOrder = new MLTextPropertyValue();
+        if (ORDER_LOCALISED_MLTEXT_EN[orderTextCount].length() > 0)
+        {
+            mlTextPropLocalisedOrder.addValue(Locale.ENGLISH, ORDER_LOCALISED_MLTEXT_EN[orderTextCount]);
+        }
+        if (ORDER_LOCALISED_MLTEXT_FR[orderTextCount].length() > 0)
+        {
+            mlTextPropLocalisedOrder.addValue(Locale.FRENCH, ORDER_LOCALISED_MLTEXT_FR[orderTextCount]);
+        }
+        if (ORDER_LOCALISED_MLTEXT_ES[orderTextCount].length() > 0)
+        {
+            mlTextPropLocalisedOrder.addValue(new Locale("es"), ORDER_LOCALISED_MLTEXT_ES[orderTextCount]);
+        }
+        if (ORDER_LOCALISED_MLTEXT_DE[orderTextCount].length() > 0)
+        {
+            mlTextPropLocalisedOrder.addValue(Locale.GERMAN, ORDER_LOCALISED_MLTEXT_DE[orderTextCount]);
+        }
+        testProperties.put(ORDER_LOCALISED_ML_TEXT, mlTextPropLocalisedOrder);
+
+        MLTextPropertyValue mlTextPropVal = new MLTextPropertyValue();
+        mlTextPropVal.addValue(Locale.ENGLISH, new String(
+                new char[]{(char) ('l' + ((orderTextCount % 2 == 0) ? orderTextCount : -orderTextCount))})
+                + " banana");
+        mlTextPropVal.addValue(Locale.FRENCH, new String(
+                new char[]{(char) ('L' + ((orderTextCount % 2 == 0) ? -orderTextCount : orderTextCount))})
+                + " banane");
+        mlTextPropVal.addValue(Locale.CHINESE, new String(
+                new char[]{(char) ('香' + ((orderTextCount % 2 == 0) ? orderTextCount : -orderTextCount))})
+                + " 香蕉");
+        testProperties.put(ORDER_ML_TEXT, mlTextPropVal);
+
+        orderDate = Duration.subtract(orderDate, new Duration("P1D"));
+        orderTextCount++;
+        return testProperties;
+    }
+
     public NodeRef newNodeRef()
     {
         return new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
@@ -937,7 +865,7 @@ public class TestDataProvider implements AlfrescoSolrConstants
         return qName(TEST_NAMESPACE, localName);
     }
 
-    public QName qName(String namespace, String localName)
+    private QName qName(String namespace, String localName)
     {
         return QName.createQName(namespace, localName);
     }
