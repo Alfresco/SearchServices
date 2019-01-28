@@ -76,7 +76,7 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
     }
     
     @Test
-    public void transformDocument() throws Exception 
+    public void transformDocument_noDocTransformer_shouldReturnBasicFields() throws Exception 
     {
         putHandleDefaults();
         //Test 1: Running a simple query without invoking CachedDocTransformer, expected to see id,DBID and _version_
@@ -101,7 +101,7 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
     }
 
     @Test
-    public void transformDocument2() throws Exception
+    public void transformDocument_docTransformer_shouldReturnAllFields() throws Exception
     {
         putHandleDefaults();
         
@@ -123,7 +123,7 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
     }
 
     @Test
-    public void transformDocument3() throws Exception
+    public void transformDocument_docTransformerAndFieldsSelects_shouldReturnOnlySelectedFields() throws Exception
     {
         putHandleDefaults();
 
@@ -138,7 +138,7 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
     }
 
     @Test
-    public void transformDocument4() throws Exception
+    public void transformDocument_docTransformerNotDefaultFields_shouldReternOnlySelectedFields() throws Exception
     {
         putHandleDefaults();
         
@@ -154,7 +154,7 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
     }
 
     @Test
-    public void transformDocument5() throws Exception
+    public void transformDocument_docTransformerAndScoreRequested_shouldReturnScore() throws Exception
     {
         putHandleDefaults();
 
@@ -169,7 +169,7 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
     }
 
     @Test
-    public void transformDocument6() throws Exception
+    public void transformDocument_docTransformerFieldsAndScoreRequested_shouldReturnScoreAndSelectedFields() throws Exception
     {
         putHandleDefaults();
 
