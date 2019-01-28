@@ -41,6 +41,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -50,6 +51,12 @@ import org.testng.annotations.Test;
  */
 public class SearchTest extends AbstractSearchTest
 {
+    @BeforeClass(alwaysRun = true)
+    public void setupEnvironment() throws Exception
+    {
+        waitForContentIndexing(file4.getContent(), true);
+    }
+
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
     public void searchOnIndexedData() throws Exception
     {        

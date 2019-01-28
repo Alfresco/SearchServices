@@ -97,7 +97,7 @@ public class AbstractSearchTest extends RestTest
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
         
-        waitForIndexing(file4.getName(), true);
+        waitForMetadataIndexing(file4.getName(), true);
     }
     
     /**
@@ -183,21 +183,62 @@ public class AbstractSearchTest extends RestTest
     /**
      * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
      * 
-     * @param userQuery: string to search for, unique search string will guarantee accurate results
+     * @param userQuery: search query, this can include the fieldname, unique search string will guarantee accurate results
      * @param expectedInResults, true if entry is expected in the results set
      * @return true (indexing is finished) if search returns appropriate results
      * @throws Exception
      */
     public boolean waitForIndexing(String userQuery, boolean expectedInResults) throws Exception
     {
+        // Use the search query as is: fieldname(s) may or may not be specified within the userQuery
+        return waitForIndexing(null, userQuery, expectedInResults);
+    }
+    
+    /**
+     * waitForIndexing method that matches / waits for filename, metadata to be indexed.
+     * @param userQuery
+     * @param expectedInResults
+     * @return
+     * @throws Exception
+     */
+    public boolean waitForMetadataIndexing(String userQuery, boolean expectedInResults) throws Exception
+    {
+        return waitForIndexing("name", userQuery, expectedInResults);
+    }
+    
+    /**
+     * waitForIndexing method that matches / waits for content to be indexed, this can take longer than metadata indexing.
+     * Since Metadata is indexed first, use this method where tests, queries need content to be indexed too.
+     * @param userQuery
+     * @param expectedInResults
+     * @return
+     * @throws Exception
+     */
+    public boolean waitForContentIndexing(String userQuery, boolean expectedInResults) throws Exception
+    {
+        return waitForIndexing("cm:content", userQuery, expectedInResults);
+    }
+
+    /**
+     * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
+     * 
+     * @param fieldName: specific field to search for, e.g. name. When specified, the query will become: name:'userQuery'
+     * @param userQuery: search string, unique search string will guarantee accurate results
+     * @param expectedInResults, true if entry is expected in the results set
+     * @return true (indexing is finished) if search returns appropriate results
+     * @throws Exception
+     */
+    private boolean waitForIndexing(String fieldName, String userQuery, boolean expectedInResults) throws Exception
+    {
         boolean found = false;
         boolean resultAsExpected = false;
         String expectedStatusCode = HttpStatus.OK.toString();
+        String query = (fieldName == null)? userQuery: String.format("%s:'%s'", fieldName, userQuery); 
 
         // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 1; searchCount <= 3; searchCount++)
         {
-            SearchRequest searchRequest = createQuery(userQuery);
+            SearchRequest searchRequest = createQuery(query);
             SearchResponse response = query(searchRequest);
 
             if (restClient.getStatusCode().matches(expectedStatusCode))

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.report.Bug;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -36,6 +37,8 @@ public class SearchHighLightTest extends AbstractSearchTest
     @Bug(id = "TAS-3220")
     public void searchWithHighLight() throws Exception
     {        
+        waitForContentIndexing(file2.getContent(), true);
+
         RestRequestQueryModel queryReq =  new RestRequestQueryModel();
         queryReq.setQuery("cm:content:cars");
         queryReq.setUserQuery("cars");

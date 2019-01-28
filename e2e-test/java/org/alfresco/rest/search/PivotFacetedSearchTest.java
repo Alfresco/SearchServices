@@ -31,6 +31,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -40,6 +41,11 @@ import org.testng.annotations.Test;
  */
 public class PivotFacetedSearchTest extends AbstractSearchTest
 {
+    @BeforeClass(alwaysRun = true)
+    public void setupEnvironment() throws Exception
+    {
+        waitForContentIndexing(file4.getContent(), true);
+    }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
