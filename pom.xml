@@ -12,7 +12,6 @@
     <name>Alfresco Solr Search parent</name>
     <properties>
         <solr.version>6.6.0</solr.version>
-        <alfresco-solrclient.version>6.5</alfresco-solrclient.version>
     </properties>
     <distributionManagement>
         <repository>
@@ -31,6 +30,7 @@
         <tag>1.2.0</tag>
     </scm>
     <modules>
+        <module>alfresco-solrclient-lib</module>
         <module>alfresco-search</module>
         <module>packaging</module>
     </modules>
