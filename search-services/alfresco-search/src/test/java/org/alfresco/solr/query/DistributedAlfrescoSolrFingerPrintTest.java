@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
@@ -58,7 +58,7 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDistributedTestStatic
+public class DistributedAlfrescoSolrFingerPrintTest extends AbstractAlfrescoDistributedTest
 {
     private static Node[] nodes = new Node[4];
     private static NodeMetaData[] nodesMetada = new NodeMetaData[4];

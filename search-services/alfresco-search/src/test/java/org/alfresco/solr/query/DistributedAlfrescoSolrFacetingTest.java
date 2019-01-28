@@ -19,7 +19,6 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AbstractAlfrescoDistributedTestStatic;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -30,7 +29,6 @@ import org.apache.solr.common.util.NamedList;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
@@ -39,7 +37,7 @@ import static org.hamcrest.core.Is.is;
 
 @SolrTestCaseJ4.SuppressSSL @LuceneTestCase.SuppressCodecs({ "Appending", "Lucene3x", "Lucene40", "Lucene41",
     "Lucene42", "Lucene43", "Lucene44", "Lucene45", "Lucene46", "Lucene47", "Lucene48",
-    "Lucene49" }) public class DistributedAlfrescoSolrFacetingTest extends AbstractAlfrescoDistributedTestStatic
+    "Lucene49" }) public class DistributedAlfrescoSolrFacetingTest extends AbstractAlfrescoDistributedTest
 {
     @BeforeClass
     private static void initData() throws Throwable
