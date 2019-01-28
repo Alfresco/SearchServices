@@ -57,10 +57,7 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     public static void loadData() throws Exception
     {
         TestDataProvider dataProvider = new TestDataProvider(h);
-
-        // For this test we need both small and medium datasets
-        dataProvider.loadSmallDataset();
-        dataProvider.loadMediumDataset();
+        dataProvider.loadTestDataset();
 
         FTS_TEST_DATE = dataProvider.getFtsTestDate();
         TEST_NODEREF = dataProvider.getTestNodeRef();
