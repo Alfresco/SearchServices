@@ -1,0 +1,1 @@
+The folder contains some Alfresco custom models used within the test suite. 
