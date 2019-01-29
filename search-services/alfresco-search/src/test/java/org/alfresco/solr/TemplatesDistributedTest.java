@@ -20,7 +20,6 @@ package org.alfresco.solr;
 
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.response.SolrQueryResponse;
@@ -56,29 +55,11 @@ public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
         assertNotNull(coreAdminHandler);
-        SolrCore rankCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "templateWithrerank", "rerank", 2, 1);
+        SolrCore rankCore = createCoreUsingTemplate(coreContainer, coreAdminHandler, "templateWithrerank", AlfrescoCoreAdminHandler.DEFAULT_TEMPLATE, 2, 1);
 
         //Call custom actions
         SolrQueryResponse response = callHandler(coreAdminHandler, rankCore, "SUMMARY");
         assertSummaryCorrect(response, rankCore.getName());
     }
-
-    @Test
-    public void newCoreUsingQlogTemplate() throws Exception
-    {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
-
-        //Now create the new core with
-        AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
-        assertNotNull(coreAdminHandler);
-        SolrCore corererank = createCoreUsingTemplate(coreContainer, coreAdminHandler, "woof", "rerankWithQueryLog/rerank", 1, 1);
-        SolrCore coreqlog = createCoreUsingTemplate(coreContainer, coreAdminHandler, "woof_qlog", "rerankWithQueryLog/qlog", 1, 1);
-
-        //Call custom actions
-        SolrQueryResponse response = callHandler(coreAdminHandler, corererank, "SUMMARY");
-        assertSummaryCorrect(response, corererank.getName());
-    }
-
-
 }
 

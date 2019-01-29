@@ -19,6 +19,8 @@
 
 package org.alfresco.solr;
 
+import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 import static org.alfresco.solr.HandlerOfResources.extractCustomProperties;
 import static org.alfresco.solr.HandlerOfResources.getSafeBoolean;
 import static org.alfresco.solr.HandlerOfResources.getSafeLong;
@@ -39,12 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -82,7 +79,7 @@ import org.slf4j.LoggerFactory;
 
 public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 {
-    protected static final Logger log = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
     
     private static final String ARG_ACLTXID = "acltxid";
     protected static final String ARG_TXID = "txid";
@@ -93,8 +90,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
     public static final String DEFAULT_TEMPLATE = "rerank";
 
-    private SolrTrackerScheduler scheduler = null;
-    private TrackerRegistry trackerRegistry = null;
+    static final String ALFRESCO_CORE_NAME = "alfresco";
+    static final String ARCHIVE_CORE_NAME = "archive";
+    static final String VERSION_CORE_NAME = "version";
+    static final List<String> ALLOWED_CORE_NAMES = asList(ALFRESCO_CORE_NAME, ARCHIVE_CORE_NAME, VERSION_CORE_NAME);
+
+    private SolrTrackerScheduler scheduler;
+    private TrackerRegistry trackerRegistry;
     private ConcurrentHashMap<String, InformationServer> informationServers = null;
     
     public AlfrescoCoreAdminHandler()
@@ -102,9 +104,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         super();
     }
 
-    /**
-     * @param coreContainer
-     */
     public AlfrescoCoreAdminHandler(CoreContainer coreContainer)
     {
         super(coreContainer);
@@ -116,7 +115,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     public void startup(CoreContainer coreContainer)
     {
-        log.info("Starting Alfresco core container services");
+        LOGGER.info("Starting Alfresco core container services");
 
         trackerRegistry = new TrackerRegistry();
         informationServers = new ConcurrentHashMap<String, InformationServer>();
@@ -144,47 +143,48 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     }
 
     /**
-     * Creates new default cores based on the "createDefaultCores" String passed in
-     * @param createDefaultCores comma delimited list of corenames.
+     * Creates new default cores based on the "createDefaultCores" String passed in.
+     *
+     * @param names comma delimited list of core names that will be created.
      */
-    protected void setupNewDefaultCores(String createDefaultCores)
+    void setupNewDefaultCores(String names)
     {
-        final String VERSION_STORE_PROTOCOL = "workspace";
-        final String VERSION_STORE_ID = "version2Store";
 
-        SolrQueryResponse response = new SolrQueryResponse();
         try
         {
-            String[] coreNames = createDefaultCores.toLowerCase().split(",");
-            for (String coreName:coreNames)
-            {
-                log.info("Attempting to create default alfresco core: "+coreName);
-                switch (coreName)
-                {
-                    case "process":
-                        StoreRef processStoreRef = new StoreRef("process", "services");
-                        newDefaultCore("process", processStoreRef, "aps/process", null, response);
-                        newDefaultCore("processDefinition", processStoreRef, "aps/processDefinition", null, response);
-                        newDefaultCore("task", processStoreRef, "aps/task", null, response);
-                        newDefaultCore("taskDefinition",processStoreRef, "aps/taskDefinition", null, response);
-                        break;
-                    case "archive":
-                        newDefaultCore("archive",  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, response);
-                        break;
-                    case "alfresco":
-                        newDefaultCore("alfresco", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, response);
-                        break;
-                    case "version":
-                        newDefaultCore("version", new StoreRef(VERSION_STORE_PROTOCOL, VERSION_STORE_ID), DEFAULT_TEMPLATE, null, response);
-                        break;
-                    default:
-                        log.error("Invalid '"+ALFRESCO_DEFAULTS+"' permitted values are alfresco,archive,version");
-                }
-            }
+            List<String> coreNames =
+                    ofNullable(names)
+                            .map(String::toLowerCase)
+                            .map(parameter -> parameter.split(","))
+                            .map(Arrays::asList)
+                            .orElse(Collections.emptyList());
+
+            coreNames.stream()
+                    .map(String::trim)
+                    .filter(coreName -> !coreName.isEmpty())
+                    .forEach(coreName -> {
+                        LOGGER.info("Attempting to create default alfresco core: "+coreName);
+                        switch (coreName)
+                        {
+                            case ARCHIVE_CORE_NAME:
+                                newDefaultCore(ARCHIVE_CORE_NAME,  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, new SolrQueryResponse());
+                                break;
+                            case ALFRESCO_CORE_NAME:
+                                newDefaultCore(ALFRESCO_CORE_NAME, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, new SolrQueryResponse());
+                                break;
+                            case VERSION_CORE_NAME:
+                                final String versionStoreProtocol = "workspace";
+                                final String versionStoreId = "version2Store";
+                                newDefaultCore(VERSION_CORE_NAME, new StoreRef(versionStoreProtocol, versionStoreId), DEFAULT_TEMPLATE, null, new SolrQueryResponse());
+                                break;
+                            default:
+                                LOGGER.error("Invalid '" + ALFRESCO_DEFAULTS + "' permitted values are " + ALLOWED_CORE_NAMES);
+                        }
+                    });
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            log.error("Failed to create default alfresco cores (workspace/archive stores)", e);
+            LOGGER.error("Failed to create default alfresco cores (workspace/archive stores)", exception);
         }
     }
 
@@ -196,7 +196,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         super.shutdown();
         try 
         {
-            log.info("Shutting down Alfresco core container services");
+            LOGGER.info("Shutting down Alfresco core container services");
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
@@ -221,7 +221,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         } 
         catch(Exception e) 
         {
-            log.error("Problem shutting down", e);
+            LOGGER.error("Problem shutting down", e);
         }
     }
 
@@ -242,13 +242,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
         catch (Exception e)
         {
-            log.info("Failed to load " + resource, e);
+            LOGGER.info("Failed to load " + resource, e);
         }
     }
 
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
-        log.info("######## Handle Custom Action ###########");
+        LOGGER.info("######## Handle Custom Action ###########");
         SolrParams params = req.getParams();
         String cname = params.get(CoreAdminParams.CORE);
         String action = params.get(CoreAdminParams.ACTION);
@@ -548,7 +548,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         if (coreContainer.getLoadedCoreNames().contains(coreName))
         {
             //Core alfresco exists
-            log.warn(coreName + " already exists, not creating again.");
+            LOGGER.warn(coreName + " already exists, not creating again.");
             rsp.add("core", coreName);
             return;
         }
@@ -627,7 +627,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             return true;
         } catch (IOException e)
         {
-            log.error("Failed to update Shared properties ", e);
+            LOGGER.error("Failed to update Shared properties ", e);
         }
         return false;
     }
@@ -1017,7 +1017,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             {
                 rsp.add("expand", -1);
                 rsp.add("exception", t.getMessage());
-                log.error("exception expanding", t);
+                LOGGER.error("exception expanding", t);
                 return;
             }
         }

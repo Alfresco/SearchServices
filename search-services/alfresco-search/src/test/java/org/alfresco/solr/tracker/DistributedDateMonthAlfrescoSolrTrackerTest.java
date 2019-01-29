@@ -28,6 +28,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.alfresco.model.ContentModel;
@@ -44,6 +45,7 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.schema.TrieDateField;
 import org.junit.Rule;
@@ -130,10 +132,21 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
         AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
         String fieldName = fieldInstance.getField();
 
-        for (int i = 0; i < dates.length; i++) {
-            LegacyNumericRangeQuery query = LegacyNumericRangeQuery.newLongRange(fieldName, dates[i].getTime(), dates[i].getTime() + 1, true, false);
-            assertCountAndColocation(query, counts[i]);
-            assertShardSequence(i, query, counts[i]);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        for (int i = 0; i < dates.length; i++)
+        {
+            String startDate = format.format(dates[i]);
+            Calendar gcal = new GregorianCalendar();
+            gcal.setTime(dates[i]);
+            gcal.add(Calendar.SECOND, 1);
+            String endDate = format.format(gcal.getTime());
+
+            SolrQuery solrQuery = new SolrQuery("{!lucene}" + escapeQueryChars(fieldName) +
+                    ":[" + escapeQueryChars(startDate) + " TO " + escapeQueryChars(endDate) + " } " );
+            assertCountAndColocation(solrQuery, counts[i]);
+            assertShardSequence(i, solrQuery, counts[i]);
         }
 
         nodes.clear();
