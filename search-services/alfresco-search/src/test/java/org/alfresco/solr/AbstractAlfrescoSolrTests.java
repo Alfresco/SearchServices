@@ -18,16 +18,10 @@
  */
 package org.alfresco.solr;
 
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
@@ -90,10 +84,11 @@ import org.xml.sax.SAXException;
  * @author Michael Suzuki
  *
  */
-public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrecsoSolrConstants
+public abstract class  AbstractAlfrescoSolrTests  implements SolrTestFiles, AlfrecsoSolrConstants
 {
     static AlfrescoCoreAdminHandler admin;
     private static Log log = LogFactory.getLog(AbstractAlfrescoSolrTests.class);
+
 
     protected static SolrConfig solrConfig;
     /**
@@ -114,16 +109,104 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      */
     protected static TestHarness.LocalRequestFactory lrf;
     protected static AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-    protected static NodeRef testRootNodeRef;
     protected static NodeRef testNodeRef;
-    protected static NodeRef testBaseFolderNodeRef;
-    protected static NodeRef testFolder00NodeRef;
     protected static Date ftsTestDate;
+
+    /* Bunch of methods that wrap testHarness object usage.
+     * TestHarness is a class for internal solr test and should not be use outside Solr.
+     * Unfortunately this class is used in too many test and a complete refactor would have a huge impact
+     * over the existing code and it would be hard to guarantee the same semantic.
+     * Wrapping the use of TestHarness in this methods
+     */
+
     /**
+     * @deprecated as testHarness is used
+     * Executes query request and returns xml response
+     * @param req
+     * @return
+     * @throws Exception
+     */
+    protected static String query(SolrQueryRequest req) throws Exception {
+        return h.query(req);
+    }
+
+    /**
+     * Executes query request and returns SolrQueryResponse response
+     * @param handler
+     * @param req
+     * @return
+     * @throws Exception
+     */
+    @Deprecated
+    protected static SolrQueryResponse queryAndResponse(String handler, SolrQueryRequest req) throws Exception
+    {
+        return h.queryAndResponse(handler, req);
+    }
+
+    /**
+     * @deprecated as testHarness is used
+     * Reload solr core
+     * @throws Exception
+     */
+    @Deprecated
+    protected static void reload() throws Exception {
+        h.reload();
+    }
+
+    /**
+     * @deprecated as testHarness is used
+     * Get admin core handler
+     * @return
+     */
+    @Deprecated
+    protected static CoreAdminHandler getMultiCoreHandler(){
+        return h.getCore().getCoreContainer().getMultiCoreHandler();
+    }
+
+    /**
+     * @deprecated as testHarness is used
+     * Get solr Core
+     * @return
+     */
+    @Deprecated
+    protected static SolrCore getCore()
+    {
+        return h.getCore();
+    }
+
+    /**
+     * @deprecated as testHarness is used
+     * Validates that an "update" (add, commit or optimize) results in success.
+     * @param update
+     * @return
+     * @throws SAXException
+     */
+    @Deprecated
+    protected static String validateUpdate(String update) throws SAXException
+    {
+        return h.validateUpdate(update);
+    }
+
+    /**
+     * @deprecated as testHarness is used
+     * Validates that an "update" (add, commit or optimize) results in success.
+     * @param update
+     * @return
+     * @throws SAXException
+     */
+    @Deprecated
+    protected static String validateErrorUpdate(String update) throws SAXException
+    {
+        return h.validateErrorUpdate(update);
+    }
+
+    /**
+     * @deprecated as testHarness is used
      * Creates a Solr Alfresco test harness.
      * @param schema
      * @throws Exception
      */
+    @Deprecated
     public static void initAlfrescoCore(String schema) throws Exception
     {
         log.info("##################################### init Alfresco core ##############");
@@ -144,9 +227,11 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             createAlfrescoCore(schema);
         }
         log.info("####initCore end");
-        admin = (AlfrescoCoreAdminHandler)h.getCore().getCoreContainer().getMultiCoreHandler();
+        admin = (AlfrescoCoreAdminHandler)getCore().getCoreContainer().getMultiCoreHandler();
     }
 
+
+    @Deprecated
     public static void createAlfrescoCore(String schema) throws ParserConfigurationException, IOException, SAXException
     {
         Properties properties = new Properties();
@@ -256,12 +341,12 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             String m = (null == message) ? "" : message + " ";
             if (shouldSucceed) 
             {
-                String res = h.validateUpdate(update);
+                String res = validateUpdate(update);
                 if (res != null) Assert.fail(m + "update was not successful: " + res);
             } 
             else
             {
-                String res = h.validateErrorUpdate(update);
+                String res = validateErrorUpdate(update);
                 if (res != null) Assert.fail(m + "update succeeded, but should have failed: " + res);
             }
         }
@@ -316,7 +401,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     {
         try
         {
-            String response = h.query(req);
+            String response = query(req);
             if (req.getParams().getBool("facet", false)) 
             {
                 // add a test to ensure that faceting did not throw an exception
@@ -359,7 +444,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         SolrQueryRequest solrReq = req(params("rows", "20", "qt", "/cmis", "q",query,"wt","json"));
         try
         {
-            String response = h.query(solrReq);
+            String response = query(solrReq);
             JSONObject json = (JSONObject)JSONValue.parse(response);
             JSONObject res = (JSONObject) json.get("response");
             JSONArray docs = (JSONArray) res.get("docs");
@@ -390,7 +475,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         {
             params.add("wt","xml");
         }
-        SolrServletRequest req =  new SolrServletRequest(h.getCore(), null);
+        SolrServletRequest req =  new SolrServletRequest(getCore(), null);
         req.setParams(params);
         if(json != null) 
         {
@@ -414,7 +499,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         {
             try
             {
-                ref = h.getCore().getSearcher();
+                ref = getCore().getSearcher();
                 SolrIndexSearcher searcher = ref.get();
                 TopDocs topDocs = searcher.search(query, 10);
                 totalHits = topDocs.totalHits;
@@ -435,10 +520,13 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         throw new Exception("Wait error expected "+expectedNumFound+" found "+totalHits+" : "+query.toString());
     }
     /**
+     *
+     * @deprecated  as TestHarness.LocalRequestFactory is used
      * Makes a solr request.
      * @param q
      * @return
      */
+    @Deprecated
     public static SolrQueryRequest req(String... q)
     {
         return lrf.makeRequest(q);
@@ -450,10 +538,10 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      */
     public void indexAclId(long aclId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "INDEX",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "aclid", Long.toString(aclId)),
                 resp);
     }
@@ -464,10 +552,10 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      */
     public void reindexAclId(long aclId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "REINDEX",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "aclid", Long.toString(aclId)),
                 resp);
     }
@@ -478,12 +566,12 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
      */
     public void reindexTransactionId(long txnId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION,
                         "REINDEX",
                         CoreAdminParams.NAME,
-                        h.getCore().getName(),
+                        getCore().getName(),
                         "txid", Long.toString(txnId)),
                 resp);
     }
@@ -523,29 +611,29 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
 
     public void purgeAclId(long aclId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "PURGE",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "aclid", Long.toString(aclId)),
                 resp);
     }
     public void purgeAclChangeSetId(long aclChangeSetId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "PURGE",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "acltxid", Long.toString(aclChangeSetId)),
                 resp);
     }
     //Maintenance method
     public void purgeNodeId(long nodeId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "PURGE",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "nodeid", Long.toString(nodeId)),
                 resp);
     }
@@ -553,38 +641,38 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     //Maintenance method
     public void purgeTransactionId(long txnId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "PURGE",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "txid", Long.toString(txnId)),
                 resp);
     }
     public void reindexNodeId(long nodeId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "REINDEX",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "nodeid", Long.toString(nodeId)),
                 resp);
     }
     public void reindexAclChangeSetId(long aclChangeSetId) throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "REINDEX",
-                        CoreAdminParams.NAME, h.getCore().getName(),
+                        CoreAdminParams.NAME, getCore().getName(),
                         "acltxid", Long.toString(aclChangeSetId)),
                 resp);
     }
   //Maintenance method
     public void retry() throws Exception
     {
-        CoreAdminHandler admin = h.getCoreContainer().getMultiCoreHandler();
+        CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "RETRY",
-                        CoreAdminParams.NAME, h.getCore().getName()),
+                        CoreAdminParams.NAME, getCore().getName()),
                 resp);
     }
     /**
@@ -609,8 +697,8 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         RefCounted<SolrIndexSearcher>refCounted = null;
         try
         {
-            solrQueryRequest = new SolrServletRequest(h.getCore(), null);
-            refCounted = h.getCore().getSearcher();
+            solrQueryRequest = new SolrServletRequest(getCore(), null);
+            refCounted = getCore().getSearcher();
             SolrIndexSearcher solrIndexSearcher = refCounted.get();
             SearchParameters searchParameters = new SearchParameters();
             searchParameters.setQuery(queryString);
@@ -673,7 +761,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         {
             mp.add(moreParams[i], moreParams[i+1]);
         }
-        return new LocalSolrQueryRequest(h.getCore(), mp);
+        return new LocalSolrQueryRequest(getCore(), mp);
     }
     
     public static ModifiableSolrParams params(String... params)
@@ -693,7 +781,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         }
     }
     protected Collection<Tracker> getTrackers() {
-        Collection<Tracker> trackers = admin.getTrackerRegistry().getTrackersForCore(h.getCore().getName());
+        Collection<Tracker> trackers = admin.getTrackerRegistry().getTrackersForCore(getCore().getName());
         log.info("######### Number of trackers is "+trackers.size()+" ###########");
         return trackers;
     }

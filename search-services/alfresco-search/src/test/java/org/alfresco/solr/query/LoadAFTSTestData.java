@@ -193,7 +193,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
         initAlfrescoCore("schema.xml");
         Thread.sleep(1000);
         // Root
-        SolrCore core = h.getCore();
+        SolrCore core = getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         dataModel.getNamespaceDAO().removePrefix("");
         dataModel.setCMDefaultUri();
@@ -599,7 +599,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
 
     public static void loadSecondDataSet() throws Exception {
 
-        SolrCore core = h.getCore();
+        SolrCore core = getCore();
         for (int i = 0; i < 100; i++)
         {
             orderDate = new Date();
@@ -697,7 +697,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     }
 
     public static void loadEscapingTestData() throws Exception {
-        SolrCore core = h.getCore();
+        SolrCore core = getCore();
 
         NodeRef childNameEscapingNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName childNameEscapingQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, COMPLEX_LOCAL_NAME);
@@ -721,7 +721,7 @@ public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements Alfre
     }
     
     public static void loadMntTestData() throws Exception {
-        SolrCore core = h.getCore();
+        SolrCore core = getCore();
 
         properties19= new HashMap<QName, PropertyValue>();
         properties19.put(
