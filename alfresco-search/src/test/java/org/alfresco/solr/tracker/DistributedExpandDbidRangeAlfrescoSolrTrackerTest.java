@@ -18,21 +18,6 @@
  */
 package org.alfresco.solr.tracker;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Acl;
@@ -46,10 +31,25 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.response.SolrQueryResponse;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * @author Joel
@@ -58,9 +58,18 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2,this, getShardMethod());
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "DistributedExpandDbidRangeAlfrescoSolrTrackerTest", getShardMethod());
+    }
 
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testDbIdRange() throws Exception
     {
@@ -396,13 +405,9 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerTest extends AbstractA
         assertEquals((double) values1.get("density"), 0.32575757575757575, 0.0);
         assertEquals((long) values1.get("expand"), -1);
         assertEquals((boolean) values1.get("expanded"), true);
-
-        //assert(false);
-
-        //Do a reload
     }
 
-    protected Properties getShardMethod()
+    protected static Properties getShardMethod()
     {
         Properties prop = new Properties();
         prop.put("shard.method", "DB_ID_RANGE");
