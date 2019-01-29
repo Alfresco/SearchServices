@@ -325,12 +325,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         if (additionalProperties == null) {
             additionalProperties = new Properties();
         }
-
-
         String[] ranges = {"0-100", "100-200", "200-300", "300-400"};
-
-
-
         for (int i = 0; i < numShards; i++)
         {
             Properties props = new Properties();
@@ -442,11 +437,6 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         }
 
         JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
-        // .stopAtShutdown(true)
-        // .withFilters(getExtraRequestFilters())
-        // .withServlets(getExtraServlets())
-        // .withSSLConfig(sslConfig)
-        // .build());
         return jetty;
     }
 
@@ -472,7 +462,6 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
     {
         try
         {
-            // setUpSolrTestProperties the client...
             HttpSolrClient client = new HttpSolrClient(url);
             client.setConnectionTimeout(clientConnectionTimeout);
             client.setSoTimeout(clientSoTimeout);

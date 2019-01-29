@@ -253,11 +253,11 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
         if (i == -1){
             return query + " ";
         }
-        String[] fieldAndValue =  {query.substring(0, i), query.substring(i+1)};
-        String field = fieldAndValue[0];
+        String field = query.substring(0, i);
+        String value = query.substring(i+1);
         String escapedField = escapeQueryChars(field);
 
-        return escapedField + ":" + fieldAndValue[1] + " ";
+        return escapedField + ":" + value + " ";
     }
 
     protected static String escapeQueryChars(String query) {
