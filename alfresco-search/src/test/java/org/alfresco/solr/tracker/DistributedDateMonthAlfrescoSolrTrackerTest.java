@@ -74,7 +74,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
     @BeforeClass
     private static void initData() throws Throwable
     {
-        initSolrServers(5, "DistributedExplicitShardRoutingTrackerTest", getShardMethod());
+        initSolrServers(5, "DistributedDateMonthAlfrescoSolrTrackerTest", getShardMethod());
     }
 
     @AfterClass
