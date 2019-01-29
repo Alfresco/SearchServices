@@ -18,6 +18,37 @@
  */
 package org.alfresco.solr.tracker;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.SolrInformationServer;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.util.LuceneTestCase;
+import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Properties;
+import java.util.TimeZone;
+
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
@@ -27,29 +58,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.LegacyNumericRangeQuery;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
-import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.schema.TrieDateField;
-import org.junit.Rule;
-import org.junit.Test;
 
 /**
  * @author Joel
@@ -63,13 +71,21 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(this.getClass().getSimpleName(), 5, getShardMethod(), new String[]{DEFAULT_TEST_CORENAME});
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(5, "DistributedDateMonthAlfrescoSolrTrackerTest", getShardMethod());
+    }
 
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testDateMonth() throws Exception
     {
-        Thread.sleep(15000);
         putHandleDefaults();
 
         int numAcls = 25;
@@ -143,8 +159,8 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
             gcal.add(Calendar.SECOND, 1);
             String endDate = format.format(gcal.getTime());
 
-            SolrQuery solrQuery = new SolrQuery("{!lucene}" + fixSpecialCharQuery(fieldName) +
-                    ":[" + fixSpecialCharQuery(startDate) + " TO " + fixSpecialCharQuery(endDate) + " } " );
+            SolrQuery solrQuery = new SolrQuery("{!lucene}" + escapeQueryChars(fieldName) +
+                    ":[" + escapeQueryChars(startDate) + " TO " + escapeQueryChars(endDate) + " } " );
             assertCountAndColocation(solrQuery, counts[i]);
             assertShardSequence(i, solrQuery, counts[i]);
         }
@@ -168,7 +184,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
         assertNodesPerShardGreaterThan((int)((numNodes*2)*.17));
     }
 
-    protected Properties getShardMethod()
+    protected static Properties getShardMethod()
     {
         Properties prop = new Properties();
         prop.put("shard.method", ShardMethodEnum.DATE.toString());
