@@ -18,23 +18,6 @@
  */
 package org.alfresco.solr;
 
-import static java.util.Optional.of;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -51,7 +34,6 @@ import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
@@ -81,6 +63,24 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static org.junit.Assert.assertEquals;
+
 /**
  * Base class that provides the solr test harness.
  * This is used to manage the embedded solr used for unit and integration testing.
@@ -90,7 +90,7 @@ import org.xml.sax.SAXException;
  * @author Michael Suzuki
  *
  */
-public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrecsoSolrConstants
+public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrescoSolrConstants
 {
     static AlfrescoCoreAdminHandler admin;
     private static Log LOG = LogFactory.getLog(AbstractAlfrescoSolrTests.class);
