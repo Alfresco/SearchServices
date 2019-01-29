@@ -368,7 +368,7 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
         
         logger.info("######### stemming ###########");
 
-        req = areq(params( "q", "name:discuss", "qt", "/afts", "start", "0", "rows", "5",
+        req = areq(params( "q", "name:discussions", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 //HighlightParams.Q, "lon*",
                 HighlightParams.FIELDS, "name",

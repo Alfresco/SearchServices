@@ -229,8 +229,7 @@ public class AlfrescoFTSQParserPluginTest extends LoadAFTSTestData implements Qu
         assertAQuery("TEXT:\"over lazy\"", 0);
         assertAQuery("TEXT:\"over the lazy dog\"", 1);
         assertAQuery("TEXT:\"over the lazy\"", 1);
-        //With no shared.properties this falls back to 5.0 cross locale support
-        assertAQuery("TEXT:\"over a lazy\"", 1);
+        assertAQuery("TEXT:\"over a lazy\"", 0);
 
         assertAQuery("\\@"
                 + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE,
