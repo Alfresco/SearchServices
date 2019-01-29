@@ -132,11 +132,13 @@ public abstract class  AbstractAlfrescoSolrTests  implements SolrTestFiles, Alfr
      * @return
      * @throws Exception
      */
+    @Deprecated
     protected static String query(SolrQueryRequest req) throws Exception {
         return h.query(req);
     }
 
     /**
+     * @deprecated as testHarness is used
      * Executes query request and returns SolrQueryResponse response
      * @param handler
      * @param req
@@ -236,7 +238,9 @@ public abstract class  AbstractAlfrescoSolrTests  implements SolrTestFiles, Alfr
         admin = (AlfrescoCoreAdminHandler)getCore().getCoreContainer().getMultiCoreHandler();
     }
 
-
+    /**
+     * @deprecated as testHarness is used
+     */
     @Deprecated
     public static void createAlfrescoCore(String schema) throws ParserConfigurationException, IOException, SAXException
     {
