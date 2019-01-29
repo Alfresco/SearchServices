@@ -42,7 +42,7 @@ import static org.hamcrest.core.Is.is;
     @BeforeClass
     private static void initData() throws Throwable
     {
-        initSolrServers(2, "AdminHandlerDistributedTest", null);
+        initSolrServers(2, "DistributedAlfrescoSolrFacetingTest", null);
         indexSampleDocumentsForFacetingMincount();
         
     }
