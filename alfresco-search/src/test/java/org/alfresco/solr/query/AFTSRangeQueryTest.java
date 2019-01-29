@@ -34,7 +34,7 @@ public class AFTSRangeQueryTest extends AbstractAlfrescoSolrTests {
         initAlfrescoCore("schema.xml");
         Thread.sleep(1000);
         // Root
-        SolrCore core = h.getCore();
+        SolrCore core = getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         dataModel.getNamespaceDAO().removePrefix("");
         dataModel.setCMDefaultUri();
@@ -54,7 +54,7 @@ public class AFTSRangeQueryTest extends AbstractAlfrescoSolrTests {
         ChildAssociationRef folder00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
                 baseFolderNodeRef, folder00QName, folder00NodeRef, true, 0);
 
-        addNode(h.getCore(), dataModel, 1, 3, 1, ContentModel.TYPE_FOLDER, null, folder00Properties, null, "andy",
+        addNode(getCore(), dataModel, 1, 3, 1, ContentModel.TYPE_FOLDER, null, folder00Properties, null, "andy",
                 new ChildAssociationRef[] { folder00CAR },
                 new NodeRef[] { baseFolderNodeRef, rootNodeRef },
                 new String[] { "/" + baseFolderQName.toString() + "/" + folder00QName.toString() },
