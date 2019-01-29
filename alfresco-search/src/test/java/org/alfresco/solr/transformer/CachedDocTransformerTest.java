@@ -102,7 +102,7 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
 
         putHandleDefaults();
 
-        List<SolrClient> clusterClients = getClusterClients();
+        List<SolrClient> clusterClients = getShardedClients();
         String shards = getShardsString(clusterClients);
 
         //Test 1: Running a simple query without invoking CachedDocTransformer, expected to see id,DBID and _version_

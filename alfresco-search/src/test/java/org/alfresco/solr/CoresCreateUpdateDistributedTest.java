@@ -136,7 +136,7 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         assertNotNull(coreAdminHandler);
         String coreName = "archive";
 
-        createSimpleCore(coreAdminHandler, coreName, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.toString(),"rerankWithQueryLog/rerank",
+        createSimpleCore(coreAdminHandler, coreName, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.toString(),AlfrescoCoreAdminHandler.DEFAULT_TEMPLATE,
                 "property.alfresco.maxTotalBagels", "99", "property.alfresco.maxTotalConnections", "3456");
         //Get a reference to the new core
         SolrCore defaultCore = getCore(coreContainer, coreName);
@@ -153,8 +153,8 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
 
         //Test updating properties
         updateCore(coreAdminHandler,coreName, "property.alfresco.maxTotalBagels", "101",
-                                              "property.alfresco.maxTotalConnections", "55",
-                                              "property.solr.is.great", "true");
+                "property.alfresco.maxTotalConnections", "55",
+                "property.solr.is.great", "true");
         defaultCore = getCore(coreContainer, coreName);
         assertEquals("55", defaultCore.getCoreDescriptor().getCoreProperty("alfresco.maxTotalConnections","notset"));
         assertEquals("101", defaultCore.getCoreDescriptor().getCoreProperty("alfresco.maxTotalBagels", "notset"));
@@ -183,8 +183,8 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
     }
 
     public static void updateCore(AlfrescoCoreAdminHandler coreAdminHandler,
-                                        String coreName,
-                                        String... extraParams) throws InterruptedException {
+                                  String coreName,
+                                  String... extraParams) throws InterruptedException {
 
         ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "UPDATECORE", "coreName", coreName);
         coreParams.add(params(extraParams));
@@ -205,4 +205,3 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         TimeUnit.SECONDS.sleep(2);
     }
 }
-
