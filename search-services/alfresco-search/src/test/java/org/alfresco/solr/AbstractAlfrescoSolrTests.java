@@ -714,11 +714,10 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
             Locale locale,
             String[] textAttributes,
             String[] allAttributes,
-            String... name)throws IOException,ParseException
-{
-        SolrServletRequest solrQueryRequest = null;
+            String... name)
+    {
         RefCounted<SolrIndexSearcher>refCounted = null;
-        try (SolrServletRequest solrQueryRequest = new SolrServletRequest(h.getCore(), null))
+        try (SolrServletRequest solrQueryRequest = new SolrServletRequest(getCore(), null))
         {
             refCounted = getCore().getSearcher();
             SolrIndexSearcher solrIndexSearcher = refCounted.get();
