@@ -88,7 +88,7 @@ public class TrieFieldsCMISTest extends LoadCMISData
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Trie test1");
         ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
                     content00QName, content00NodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 1, 300, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+        addNode(getCore(), dataModel, 1, 300, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
                     ContentModel.ASPECT_TITLED }, content00Properties, null, "andy",
                     new ChildAssociationRef[] { content00CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
                                 folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
@@ -113,7 +113,7 @@ public class TrieFieldsCMISTest extends LoadCMISData
         QName content01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Trie test1");
         ChildAssociationRef content01CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
                     content01QName, content01NodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 1, 301, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+        addNode(getCore(), dataModel, 1, 301, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
                     ContentModel.ASPECT_TITLED }, content01Properties, null, "andy",
                     new ChildAssociationRef[] { content01CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
                                 folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"

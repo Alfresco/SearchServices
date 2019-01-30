@@ -59,7 +59,7 @@ public class AuthDataLoad extends AbstractAlfrescoSolrTests
         // Root
 
         NodeRef rootNodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
-        addStoreRoot(h.getCore(), dataModel, rootNodeRef, 1, 1, 1, 1);
+        addStoreRoot(getCore(), dataModel, rootNodeRef, 1, 1, 1, 1);
         //        rsp.add("StoreRootNode", 1);
 
         // Base
@@ -70,7 +70,7 @@ public class AuthDataLoad extends AbstractAlfrescoSolrTests
         QName baseFolderQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "baseFolder");
         ChildAssociationRef n01CAR = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef,
                     baseFolderQName, baseFolderNodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 1, 2, 1, ContentModel.TYPE_FOLDER, null, baseFolderProperties, null, "andy",
+        addNode(getCore(), dataModel, 1, 2, 1, ContentModel.TYPE_FOLDER, null, baseFolderProperties, null, "andy",
                     new ChildAssociationRef[] { n01CAR }, new NodeRef[] { rootNodeRef }, new String[] { "/"
                                 + baseFolderQName.toString() }, baseFolderNodeRef, true);
 
@@ -82,7 +82,7 @@ public class AuthDataLoad extends AbstractAlfrescoSolrTests
         QName folder00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Folder 0");
         ChildAssociationRef folder00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
                     baseFolderNodeRef, folder00QName, folder00NodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 1, 3, 1, ContentModel.TYPE_FOLDER, null, folder00Properties, null, "andy",
+        addNode(getCore(), dataModel, 1, 3, 1, ContentModel.TYPE_FOLDER, null, folder00Properties, null, "andy",
                     new ChildAssociationRef[] { folder00CAR },
                     new NodeRef[] { baseFolderNodeRef, rootNodeRef },
                     new String[] { "/" + baseFolderQName.toString() + "/" + folder00QName.toString() },
@@ -90,7 +90,7 @@ public class AuthDataLoad extends AbstractAlfrescoSolrTests
 
         for (long i = 0; i < count; i++)
         {
-            addAcl(h.getCore(), dataModel, 10 + (int) i, 10 + (int) i, (int) (i % maxReader), (int) maxReader);
+            addAcl(getCore(), dataModel, 10 + (int) i, 10 + (int) i, (int) (i % maxReader), (int) maxReader);
 
             HashMap<QName, PropertyValue> content00Properties = new HashMap<QName, PropertyValue>();
             MLTextPropertyValue desc00 = new MLTextPropertyValue();
@@ -116,14 +116,14 @@ public class AuthDataLoad extends AbstractAlfrescoSolrTests
             QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Doc-" + i);
             ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
                         folder00NodeRef, content00QName, content00NodeRef, true, 0);
-            addNode(h.getCore(), dataModel, 1, 10 + (int) i, 10 + (int) i, ContentModel.TYPE_CONTENT, new QName[] {
+            addNode(getCore(), dataModel, 1, 10 + (int) i, 10 + (int) i, ContentModel.TYPE_CONTENT, new QName[] {
                         ContentModel.ASPECT_OWNABLE, ContentModel.ASPECT_TITLED }, content00Properties,
                         content00Content, "andy", new ChildAssociationRef[] { content00CAR }, new NodeRef[] {
                                     baseFolderNodeRef, rootNodeRef, folder00NodeRef }, new String[] { "/"
                                     + baseFolderQName.toString() + "/" + folder00QName.toString() + "/"
                                     + content00QName.toString() }, content00NodeRef, false);
         }
-        h.getCore().getUpdateHandler().commit(new CommitUpdateCommand(req(), false));
+        getCore().getUpdateHandler().commit(new CommitUpdateCommand(req(), false));
 
     }
 }
