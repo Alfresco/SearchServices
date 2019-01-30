@@ -60,7 +60,7 @@ public class AFTSIdentifierFieldsTest extends AbstractRequestHandlerTest
                     Map<QName, PropertyValue> properties = new HashMap<>();
                     properties.put(PROP_CREATOR, new StringPropertyValue(username));
 
-                    addNode(h.getCore(),
+                    addNode(getCore(),
                         dataModel, 1, dbId, 1,
                         TYPE_CONTENT, null, properties, null,
                         "the_owner_of_this_node_is" + username,
