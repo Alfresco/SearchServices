@@ -40,11 +40,11 @@ public class TestPostingsSolrHighlighter extends AbstractAlfrescoSolrTests
     // test our config is sane, just to be sure:
 
     // postingshighlighter should be used
-    SolrHighlighter highlighter = HighlightComponent.getHighlighter(h.getCore());
+    SolrHighlighter highlighter = HighlightComponent.getHighlighter(getCore());
     assertTrue("wrong highlighter: " + highlighter.getClass(), highlighter instanceof AlfrescoSolrHighlighter);
 
     // 'text' and 'text3' should have offsets, 'text2' should not
-    IndexSchema schema = h.getCore().getLatestSchema();
+    IndexSchema schema = getCore().getLatestSchema();
     assertTrue(schema.getField("text").storeOffsetsWithPositions());
     assertTrue(schema.getField("text3").storeOffsetsWithPositions());
     assertFalse(schema.getField("text2").storeOffsetsWithPositions());

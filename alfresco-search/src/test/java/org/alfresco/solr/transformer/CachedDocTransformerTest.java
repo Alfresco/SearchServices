@@ -22,7 +22,13 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -30,32 +36,155 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
 {
     public static final String ALFRESCO_JSON = "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}";
+    
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(1, "CachedDocTransformerTest", null);
+        populateAlfrescoData();
+    }
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
     
     @Test
-    public void transformDocument() throws Exception 
+    public void transformDocument_noDocTransformer_shouldReturnBasicFields() throws Exception 
+    {
+        putHandleDefaults();
+        //Test 1: Running a simple query without invoking CachedDocTransformer, expected to see id,DBID and _version_
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts"));
+        assertNotNull(resp);
+        SolrDocumentList results = resp.getResults();
+        assertEquals("Expecting 5 rows",5, results.size());
+        SolrDocument doc = results.get(0);
+        assertTrue(doc.size() == 3);
+        assertNotNull(doc);
+        String id = (String) doc.get("id");
+        assertNotNull(id);
+        long version = (long) doc.get("_version_");
+        assertNotNull(version);
+        long dbid = (long) doc.get("DBID");
+        assertNotNull(dbid);
+        //Not expected to see below as part of the solr response.
+        String title = (String) doc.get("cm:title");
+        assertNull(title);
+        String owner = (String) doc.get("OWNER");
+        assertNull(owner);
+    }
+
+    @Test
+    public void transformDocument_docTransformer_shouldReturnAllFields() throws Exception
+    {
+        putHandleDefaults();
+        
+        //Test 2: Running simple query with CachedDocTransformer, expected to see all fields returned
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","*,[cached]"));
+        SolrDocument docWithAllFields = resp.getResults().get(0);
+        assertTrue(docWithAllFields.size() > 3);
+
+        Integer version2 = (Integer) docWithAllFields.get("_version_");
+        assertNotNull(version2);
+        String owner = ((ArrayList) docWithAllFields.get("OWNER")).toString();
+        assertNotNull(owner);
+        assertEquals("[mike]", owner);
+        String title = ((ArrayList) docWithAllFields.get("cm:title")).toString();
+        assertEquals("[title1]", title);
+        assertNotNull(title);
+        long dbid2 = (long) docWithAllFields.get("DBID");
+        assertNotNull(dbid2);
+    }
+
+    @Test
+    public void transformDocument_docTransformerAndFieldsSelects_shouldReturnOnlySelectedFields() throws Exception
+    {
+        putHandleDefaults();
+
+        //Test 3: Running simple query with CachedDocTransformer, expected to see selected fields returned
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id,DBID,[cached]"));
+
+        assertNotNull(resp);
+        SolrDocument docWithRequestedFields = resp.getResults().get(0);
+        assertTrue(docWithRequestedFields.size() == 2);
+        assertNotNull(docWithRequestedFields.get("id"));
+        assertNotNull(docWithRequestedFields.get("DBID"));
+    }
+
+    @Test
+    public void transformDocument_docTransformerNotDefaultFields_shouldReternOnlySelectedFields() throws Exception
+    {
+        putHandleDefaults();
+        
+        //Test 4: Running simple query with CachedDocTransformer on non default fields, expected to see selected fields returned
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[cached]"));
+
+        assertNotNull(resp);
+        SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
+        assertTrue(docWithRequestedFields3.size() == 2);
+        assertNotNull(docWithRequestedFields3.get("id"));
+        String title = (String) docWithRequestedFields3.getFieldValue("cm_title");
+        assertEquals("title1", title);
+    }
+
+    @Test
+    public void transformDocument_docTransformerAndScoreRequested_shouldReturnScore() throws Exception
+    {
+        putHandleDefaults();
+
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_name, score, [cached]"));
+        assertNotNull(resp);
+        SolrDocumentList results = resp.getResults();
+        SolrDocument docWithAllFields = results.get(0);
+        assertTrue(docWithAllFields.size() == 2);
+        assertNotNull(docWithAllFields.get("cm_name"));
+        Float score = (Float) docWithAllFields.get("score");
+        assertNotNull(score);
+    }
+
+    @Test
+    public void transformDocument_docTransformerFieldsAndScoreRequested_shouldReturnScoreAndSelectedFields() throws Exception
+    {
+        putHandleDefaults();
+
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, cm_created, DBID, score, [cached]"));
+        assertNotNull(resp);
+        SolrDocumentList results = resp.getResults();
+        SolrDocument docWithAllFields = results.get(0);
+        assertTrue(docWithAllFields.size() == 4);
+        assertNotNull(docWithAllFields.get("cm_title"));
+        assertNotNull(docWithAllFields.get("cm_created"));
+        assertNotNull(docWithAllFields.get("score"));
+        assertNotNull(docWithAllFields.get("DBID"));
+    }
+
+    private static void populateAlfrescoData() throws Exception
     {
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
@@ -70,7 +199,8 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
         //Check for the ACL state stamp.
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
-        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(LegacyNumericRangeQuery
+            .newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
@@ -99,85 +229,5 @@ public class CachedDocTransformerTest extends AbstractAlfrescoDistributedTest
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
-
-        putHandleDefaults();
-
-        List<SolrClient> clusterClients = getClusterClients();
-        String shards = getShardsString(clusterClients);
-
-        //Test 1: Running a simple query without invoking CachedDocTransformer, expected to see id,DBID and _version_
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts"));
-        assertNotNull(resp);
-        SolrDocumentList results = resp.getResults();
-        assertEquals("Expecting 5 rows",5, results.size());
-        SolrDocument doc = results.get(0);
-        assertTrue(doc.size() == 3);
-        assertNotNull(doc);
-        String id = (String) doc.get("id");
-        assertNotNull(id);
-        long version = (long) doc.get("_version_");
-        assertNotNull(version);
-        long dbid = (long) doc.get("DBID");
-        assertNotNull(dbid);
-        //Not expected to see below as part of the solr response.
-        String title = (String) doc.get("cm:title");
-        assertNull(title);
-        String owner = (String) doc.get("OWNER");
-        assertNull(owner);
-        
-        //Test 2: Running simple query with CachedDocTransformer, expected to see all fields returned
-        resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","*,[cached]"));
-        SolrDocument docWithAllFields = resp.getResults().get(0);
-        assertTrue(docWithAllFields.size() > 3);
-        
-        Integer version2 = (Integer) docWithAllFields.get("_version_");
-        assertNotNull(version2);
-        owner = ((ArrayList) docWithAllFields.get("OWNER")).toString();
-        assertNotNull(owner);
-        assertEquals("[mike]", owner);
-        title = ((ArrayList) docWithAllFields.get("cm:title")).toString();
-        assertEquals("[title1]", title);
-        assertNotNull(title);
-        long dbid2 = (long) docWithAllFields.get("DBID");
-        assertNotNull(dbid2);
-        
-        //Test 3: Running simple query with CachedDocTransformer, expected to see selected fields returned
-        resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id,DBID,[cached]"));
-        
-        assertNotNull(resp);
-        SolrDocument docWithRequestedFields = resp.getResults().get(0);
-        assertTrue(docWithRequestedFields.size() == 2);
-        assertNotNull(docWithRequestedFields.get("id"));
-        assertNotNull(docWithRequestedFields.get("DBID"));
-
-        //Test 4: Running simple query with CachedDocTransformer on non default fields, expected to see selected fields returned
-        resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[cached]"));
-        
-        assertNotNull(resp);
-        SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
-        assertTrue(docWithRequestedFields3.size() == 2);
-        assertNotNull(docWithRequestedFields3.get("id"));
-        title = (String) docWithRequestedFields3.getFieldValue("cm_title");
-        assertEquals("title1", title);
-
-        resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_name, score, [cached]"));
-        assertNotNull(resp);
-        results = resp.getResults();
-        docWithAllFields = results.get(0);
-        assertTrue(docWithAllFields.size() == 2);
-        assertNotNull(docWithAllFields.get("cm_name"));
-        Float score = (Float) docWithAllFields.get("score");
-        assertNotNull(score);
-
-        resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, cm_created, DBID, score, [cached]"));
-        assertNotNull(resp);
-        results = resp.getResults();
-        docWithAllFields = results.get(0);
-        assertTrue(docWithAllFields.size() == 4);
-        assertNotNull(docWithAllFields.get("cm_title"));
-        assertNotNull(docWithAllFields.get("cm_created"));
-        assertNotNull(docWithAllFields.get("score"));
-        assertNotNull(docWithAllFields.get("DBID"));
-
     }
 }

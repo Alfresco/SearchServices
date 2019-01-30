@@ -22,14 +22,21 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.core.SolrCore;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -37,7 +44,14 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * Test Routes based on an explicit shard
@@ -49,9 +63,18 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfrescoDistributedTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(this.getClass().getSimpleName(), 3, getProperties(), new String[]{DEFAULT_TEST_CORENAME});
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(3, "DistributedExplicitShardRoutingTrackerTest", getProperties());
+    }
 
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testShardId() throws Exception
     {
@@ -96,7 +119,8 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
 
         Query contentQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world"));
         Query aclQuery = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL));
-        List<SolrCore> shards = getJettyCores(jettyShards);
+        List<SolrCore> shards = getJettyCores(solrShards);
+        List<SolrClient> shardClients = getShardedClients();
         long begin = System.currentTimeMillis();
 
         //Acls go to all cores
@@ -106,13 +130,15 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         waitForShardsCount(contentQuery,numNodes,20000, begin);
         begin = System.currentTimeMillis();
 
-        for (SolrCore core : shards)
+        for (int i = 0; i < shardClients.size(); ++i)
         {
+            SolrCore core = shards.get(i);
+            SolrClient client = shardClients.get(i);
             switch (core.getName())
             {
                 case "shard0":
                 case "shard1":
-                    waitForDocCountCore(core, contentQuery, 500, 1000, begin);
+                    waitForDocCountCore(client, luceneToSolrQuery(contentQuery), 500, 1000, begin);
                     break;
                 default:
                     //ignore other shards because we will check below
@@ -147,7 +173,7 @@ public class DistributedExplicitShardRoutingTrackerTest extends AbstractAlfresco
         waitForShardsCount(contentQuery,numNodes+2,30000, begin);
     }
 
-    protected Properties getProperties()
+    protected static Properties getProperties()
     {
         Properties prop = new Properties();
         prop.put("shard.method", ShardMethodEnum.EXPLICIT_ID.toString());

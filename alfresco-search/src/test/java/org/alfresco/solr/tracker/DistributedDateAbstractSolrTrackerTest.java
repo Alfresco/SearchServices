@@ -19,22 +19,39 @@
 package org.alfresco.solr.tracker;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.junit.Rule;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.junit.Test;
 
-import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.TimeZone;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * Abstract sharding by date test
@@ -48,7 +65,6 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
     @Test
     public void testDateMonth() throws Exception
     {
-        Thread.sleep(12000);
         putHandleDefaults();
 
         int numAcls = 25;
@@ -104,9 +120,22 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
         AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
         String fieldName = fieldInstance.getField();
 
-        for (int i = 0; i < dates.length; i++) {
-            LegacyNumericRangeQuery query = LegacyNumericRangeQuery.newLongRange(fieldName, dates[i].getTime(), dates[i].getTime() + 1, true, false);
-            assertCountAndColocation(query, counts[i]);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        for (int i = 0; i < dates.length; i++)
+        {
+            String startDate = format.format(dates[i]);
+            Calendar gcal = new GregorianCalendar();
+            gcal.setTime(dates[i]);
+            gcal.add(Calendar.SECOND, 1);
+            String endDate = format.format(gcal.getTime());
+
+            SolrQuery solrQuery = new SolrQuery("{!lucene}" + escapeQueryChars(fieldName) +
+                    ":[" + escapeQueryChars(startDate) + " TO " + escapeQueryChars(endDate) + " } " );
+            assertCountAndColocation(solrQuery, counts[i]);
+
             assertCorrect(numNodes);
         }
     }
@@ -121,8 +150,7 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
         }
         return dates;
     }
-
-    protected abstract Properties getShardMethod();
+    
     protected abstract void assertCorrect(int numNodes) throws Exception;
 }
 

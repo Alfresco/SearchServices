@@ -55,7 +55,7 @@ import static org.mockito.Mockito.when;
  * @author Andrea Gazzarini
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SolrInformationServerTest //extends SolrCoreTestBase
+public class SolrInformationServerTest
 {
     private SolrInformationServer infoServer;
 

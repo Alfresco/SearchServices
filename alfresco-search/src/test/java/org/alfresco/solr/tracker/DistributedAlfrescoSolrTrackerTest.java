@@ -18,9 +18,14 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -28,15 +33,23 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import static org.alfresco.solr.AlfrescoSolrUtils.TestActChanges;
+import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * @author Joel
@@ -46,9 +59,18 @@ import java.util.ArrayList;
 public class DistributedAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
 {
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "DistributedAlfrescoSolrTrackerTest", null);
+    }
 
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void testTracker() throws Exception
     {
