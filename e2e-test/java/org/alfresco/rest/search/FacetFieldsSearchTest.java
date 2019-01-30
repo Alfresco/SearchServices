@@ -72,7 +72,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         textFile = new FileModel(fname + "-1.txt", fname, fname, FileType.TEXT_PLAIN, fname + " file for search ");
         dataContent.usingUser(userModel).usingSite(testSite).createContent(textFile);
 
-        htmlFile = new FileModel(fname + "-2.html", fname, fname, FileType.HTML, fname + " file 2 for search ");
+        htmlFile = new FileModel(fname + "-2.html", FileType.HTML, fname + " file 2 for search ");
         dataContent.usingUser(userModel).usingSite(testSite).createContent(htmlFile);
         
         // Set Node Permissions to allow access for user for text File
