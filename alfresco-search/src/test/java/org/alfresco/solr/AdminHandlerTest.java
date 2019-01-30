@@ -18,7 +18,7 @@ public class AdminHandlerTest extends AbstractAlfrescoSolrTests {
     @BeforeClass
     public static void beforeClass() throws Exception {
         initAlfrescoCore("schema.xml");
-        admin = h.getCoreContainer().getMultiCoreHandler();
+        admin = getMultiCoreHandler();
     }
 
     @Test(expected = SolrException.class)
@@ -26,7 +26,7 @@ public class AdminHandlerTest extends AbstractAlfrescoSolrTests {
     {
         SolrQueryResponse resp = new SolrQueryResponse();
         admin.handleRequestBody(req(CoreAdminParams.ACTION, "totalnonsense",
-                CoreAdminParams.NAME, h.getCore().getName()),
+                CoreAdminParams.NAME, getCore().getName()),
                 resp);
     }
 
@@ -48,7 +48,7 @@ public class AdminHandlerTest extends AbstractAlfrescoSolrTests {
 
     private void requestAction(String actionName) throws Exception {
         admin.handleRequestBody(req(CoreAdminParams.ACTION, actionName,
-                CoreAdminParams.NAME, h.getCore().getName()),
+                CoreAdminParams.NAME, getCore().getName()),
                 new SolrQueryResponse());
     }
 }

@@ -145,7 +145,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test One");
         ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
         content00QName, content00NodeRef, true, 0);
-        addNode(h.getCore(),
+        addNode(getCore(),
         dataModel,
         1,
         100,
@@ -195,7 +195,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
     public static void loadCMISTestSet() throws Exception 
     {
         initAlfrescoCore("schema.xml");
-        SolrCore core = h.getCore();
+        SolrCore core = getCore();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         dataModel.getNamespaceDAO().removePrefix("");
         dataModel.setCMDefaultUri();
@@ -864,7 +864,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test " + position);
         ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
                 content00QName, content00NodeRef, true, 0);
-        addNode(h.getCore(),
+        addNode(getCore(),
                 dataModel, 1, 1000 + position, 1, extendedContent, new QName[]{ContentModel.ASPECT_OWNABLE,
                         ContentModel.ASPECT_TITLED}, content00Properties, null, "andy",
                 new ChildAssociationRef[]{content00CAR}, new NodeRef[]{baseFolderNodeRef, rootNodeRef,
@@ -932,7 +932,7 @@ public class LoadCMISData extends AbstractAlfrescoSolrTests
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Test null");
         ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
                     content00QName, content00NodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 1, 200 + offset, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+        addNode(getCore(), dataModel, 1, 200 + offset, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
                     ContentModel.ASPECT_TITLED }, content00Properties, null, "andy",
                     new ChildAssociationRef[] { content00CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
                                 folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
