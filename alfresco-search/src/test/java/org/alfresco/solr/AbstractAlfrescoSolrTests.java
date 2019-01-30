@@ -18,21 +18,6 @@
  */
 package org.alfresco.solr;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -47,10 +32,8 @@ import org.apache.chemistry.opencmis.commons.impl.json.JSONArray;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONObject;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
@@ -64,7 +47,6 @@ import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrConfig;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.handler.admin.CoreAdminHandler;
@@ -72,8 +54,6 @@ import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequestBase;
 import org.apache.solr.response.SolrQueryResponse;
-import org.apache.solr.schema.IndexSchema;
-import org.apache.solr.schema.IndexSchemaFactory;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.BaseTestHarness;
 import org.apache.solr.util.RefCounted;
@@ -83,6 +63,21 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.junit.Assert.assertEquals;
 
@@ -95,13 +90,12 @@ import static org.junit.Assert.assertEquals;
  * @author Michael Suzuki
  *
  */
-public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrescoSolrConstants
+public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, AlfrescoSolrConstants
 {
     static AlfrescoCoreAdminHandler admin;
     private static Log LOG = LogFactory.getLog(AbstractAlfrescoSolrTests.class);
+    private static boolean CORE_NOT_YET_CREATED = true;
 
-
-    protected static SolrConfig solrConfig;
     /**
      * Harness initialized by initTestHarness.
      * <p/>
@@ -122,11 +116,7 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
     protected static AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
     protected static NodeRef TEST_ROOT_NODEREF;
     protected static NodeRef TEST_NODEREF;
-    protected static NodeRef testBaseFolderNodeRef;
-    protected static NodeRef testFolder00NodeRef;
     protected static Date FTS_TEST_DATE;
-    protected static NodeRef testNodeRef;
-    protected static Date ftsTestDate;
 
     /* Bunch of methods that wrap testHarness object usage.
      * TestHarness is a class for internal solr test and should not be use outside Solr.
@@ -240,12 +230,16 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
         System.setProperty("solr.tests.mergePolicy", "org.apache.lucene.index.TieredMergePolicy");
-        if (solrConfig == null) 
+        if (CORE_NOT_YET_CREATED)
         {
             createAlfrescoCore(schema);
         }
         LOG.info("####initCore end");
-        admin = (AlfrescoCoreAdminHandler)getCore().getCoreContainer().getMultiCoreHandler();
+
+        admin = of(h).map(TestHarness::getCoreContainer)
+                    .map(CoreContainer::getMultiCoreHandler)
+                    .map(AlfrescoCoreAdminHandler.class::cast)
+                    .orElseThrow(RuntimeException::new);
     }
 
     /**
@@ -266,36 +260,27 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         properties.put("alfresco.commit.tracker.cron", "0/10 * * * * ? *");
         if("schema.xml".equalsIgnoreCase(schema))
         {
-            String templateName = "rerank";
-            String templateNameSystemProperty = System.getProperty("templateName");
-            if (StringUtils.isNotBlank(templateNameSystemProperty))
-            {
-                templateName = templateNameSystemProperty;
-            }
-            FileUtils.copyFile(Paths.get(String.format(TEMPLATE_CONF, templateName) + schema).toFile(), Paths.get(TEST_SOLR_CONF + schema).toFile());
+            String templateName = System.getProperty("templateName", "rerank");
+            FileUtils.copyFile(
+                    Paths.get(String.format(TEMPLATE_CONF, templateName) + schema).toFile(),
+                    Paths.get(TEST_SOLR_CONF + schema).toFile());
         }
-        
-        // The local test solrconfig with RAMDirectoryFactory and lockType of single.
-        CoreContainer coreContainer = new CoreContainer(TEST_FILES_LOCATION);
-        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_SOLR_CONF), null, properties);
-        solrConfig = new SolrConfig(resourceLoader, "solrconfig.xml", null);
-        IndexSchema indexSchema = IndexSchemaFactory.buildIndexSchema(schema, solrConfig);
-        LOG.info("################ Index schema:"+schema+":"+indexSchema.getResourceName());
+
+        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_FILES_LOCATION), null, properties);
         TestCoresLocator locator = new TestCoresLocator(SolrTestCaseJ4.DEFAULT_TEST_CORENAME,
                                                         "data", 
-                                                        solrConfig.getResourceName(),
-                                                        indexSchema.getResourceName());
+                                                        "solrconfig.xml",
+                                                        schema);
         
-        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("name", coreContainer.getResourceLoader())
+        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("name", resourceLoader)
                 .setUseSchemaCache(false)
-                .setCoreAdminHandlerClass("org.alfresco.solr.AlfrescoCoreAdminHandler")
+                .setCoreAdminHandlerClass(AlfrescoCoreAdminHandler.class.getName())
                 .build();
-        coreContainer.shutdown();
         try
         {
             h = new TestHarness(nodeConfig, locator);
             h.coreName = SolrTestCaseJ4.DEFAULT_TEST_CORENAME;
-            
+            CORE_NOT_YET_CREATED = false;
         }
         catch(Exception e)
         {
@@ -304,11 +289,12 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
         lrf = h.getRequestFactory
                 ("standard",0,20, CommonParams.VERSION,"2.2");
     }
+
     @AfterClass()
     public static void tearDown()
     {
-        solrConfig = null;
         h.close();
+        CORE_NOT_YET_CREATED = true;
     }
     /**
      * Generates a &lt;delete&gt;... XML string for an query
@@ -733,22 +719,19 @@ public abstract class  AbstractAlfrescoSolrTests implements SolrTestFiles, Alfre
                 for (String textAttribute : textAttributes)
                 {
                     searchParameters.addTextAttribute(textAttribute);
-                }
             }
-
-            if (allAttributes != null)
+        }
+        if (allAttributes != null)
+        {
+            for (String allAttribute : allAttributes)
             {
-                for (String allAttribute : allAttributes)
-                {
-                    searchParameters.addAllAttribute(allAttribute);
-                }
+                searchParameters.addAllAttribute(allAttribute);
             }
+        }
 
-            Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
-
-            LOG.debug("Query: " + query);
-
-            TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
+        Query query = dataModel.getLuceneQueryParser(searchParameters, solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS).parse(queryString);
+        LOG.debug("####### Query ######:"+query);
+        TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
 
             assertEquals(fixQueryString(queryString, name), count, docs.totalHits);
         }

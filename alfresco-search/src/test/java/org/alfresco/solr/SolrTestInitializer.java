@@ -502,9 +502,6 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), jettyHome.resolve("alfrescoModels").toFile());
         // Add templates
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/templates"), jettyHome.resolve("templates").toFile());
-        //add solr alfresco properties
-        FileUtils.copyFile(new File(getTestFilesHome() + "/log4j-solr.properties"), jettyHome.resolve("log4j-solr.properties").toFile());
-        
     }
 
     /**
