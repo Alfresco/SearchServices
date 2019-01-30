@@ -66,7 +66,7 @@ public class AFTSRangeQueryTest extends AbstractRequestHandlerTest
                     properties.put(PROP_CREATOR, new StringPropertyValue(creator));
                     properties.put(PROP_RATING_SCHEME, new StringPropertyValue(rating));
 
-                    addNode(h.getCore(),
+                    addNode(getCore(),
                             dataModel, 1, dbId, 1,
                             TYPE_CONTENT, null, properties, null,
                             "the_owner_of_this_node_is" + creator,

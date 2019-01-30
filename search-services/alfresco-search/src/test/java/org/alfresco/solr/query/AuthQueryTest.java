@@ -101,8 +101,8 @@ public class AuthQueryTest extends AuthDataLoad
         RefCounted<SolrIndexSearcher>refCounted = null;
         try
         {
-            solrQueryRequest = new SolrServletRequest(h.getCore(), null);
-            refCounted = h.getCore().getSearcher(false, true, null);
+            solrQueryRequest = new SolrServletRequest(getCore(), null);
+            refCounted = getCore().getSearcher(false, true, null);
             SolrIndexSearcher solrIndexSearcher = refCounted.get();
             
             SearchParameters searchParameters = new SearchParameters();
