@@ -24,26 +24,23 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
-import org.junit.AfterClass;
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.alfresco.solr.AlfrescoSolrUtils.assertSummaryCorrect;
-import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 
 /**
@@ -57,11 +54,21 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistributedTest
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final String JETTY_SERVER_ID = this.getClass().getSimpleName();
+    final static String JETTY_SERVER_ID = "CoresCreateUpdateDistributedTest";
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
+    @Before
+    private void initData() throws Throwable
+    {
+        initSolrServers(0, JETTY_SERVER_ID , null);
+    }
 
+    @After
+    private void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+        System.clearProperty("solr.solr.home");
+    }
+    
     @Test
     public void newCoreUsingAllDefaults() throws Exception
     {
@@ -160,12 +167,7 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         assertEquals("101", defaultCore.getCoreDescriptor().getCoreProperty("alfresco.maxTotalBagels", "notset"));
         assertEquals("true", defaultCore.getCoreDescriptor().getCoreProperty("solr.is.great", "notset"));
     }
-
-    @AfterClass
-    protected static void cleanupProp()
-    {
-        System.clearProperty("solr.solr.home");
-    }
+    
 
     public static void createSimpleCore(AlfrescoCoreAdminHandler coreAdminHandler,
                                         String coreName, String storeRef, String templateName,

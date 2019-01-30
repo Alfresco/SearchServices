@@ -43,7 +43,7 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
     @BeforeClass
     public static void beforeClass() throws Exception {
         initAlfrescoCore("schema.xml");
-        admin = (AlfrescoCoreAdminHandler)h.getCore().getCoreContainer().getMultiCoreHandler();
+        admin = (AlfrescoCoreAdminHandler)getCore().getCoreContainer().getMultiCoreHandler();
     }
 
     @After
@@ -112,7 +112,7 @@ public class AlfrescoSolrReloadTest extends AbstractAlfrescoSolrTests {
 
     private void reloadAndAssertCorrect(Collection<Tracker> trackers, int numOfTrackers, int jobs) throws Exception {
         logger.info("######### reload called ###########");
-        h.reload();
+        reload();
         //Give it a little time to shutdown properly and recover.
         TimeUnit.SECONDS.sleep(1);
         logger.info("######### reload finished ###########");

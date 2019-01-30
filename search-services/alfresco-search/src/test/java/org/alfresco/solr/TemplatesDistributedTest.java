@@ -23,7 +23,8 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.response.SolrQueryResponse;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +43,21 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 public class TemplatesDistributedTest extends AbstractAlfrescoDistributedTest
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final String JETTY_SERVER_ID = this.getClass().getSimpleName();
+    final static String JETTY_SERVER_ID = "TemplatesDistributedTest";
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(0, JETTY_SERVER_ID, null);
+    }
 
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
+    
     @Test
     public void newCoreUsinglshTemplate() throws Exception
     {

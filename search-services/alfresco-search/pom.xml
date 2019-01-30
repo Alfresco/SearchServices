@@ -153,7 +153,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-production-config</id>
+                        <id>copy-production-templates</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -163,6 +163,25 @@
                             <resources>
                                 <resource>
                                     <directory>src/main/resources/solr/instance</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-production-solr-configuration</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.testOutputDirectory}/test-files/collection1/conf</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/solr/instance/templates/rerank/conf</directory>
+                                    <excludes>
+                                        <exclude>schema.xml</exclude>
+                                        <exclude>solrconfig.xml</exclude>
+                                    </excludes>
                                 </resource>
                             </resources>
                         </configuration>
