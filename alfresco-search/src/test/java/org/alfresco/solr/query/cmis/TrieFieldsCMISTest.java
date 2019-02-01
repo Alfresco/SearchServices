@@ -79,16 +79,16 @@ public class TrieFieldsCMISTest extends LoadCMISData
                     new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date00)));
 
         StringPropertyValue firstIntValue = new StringPropertyValue("98198");
-        content00Properties.put(singleInteger,firstIntValue);
+        content00Properties.put(SINGLE_INTEGER,firstIntValue);
         
         StringPropertyValue firstLongValue = new StringPropertyValue("3956650");
-        content00Properties.put(singleLong,firstLongValue);
+        content00Properties.put(SINGLE_LONG,firstLongValue);
         
         NodeRef content00NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName content00QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Trie test1");
         ChildAssociationRef content00CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
                     content00QName, content00NodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 1, 300, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+        addNode(getCore(), dataModel, 1, 300, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
                     ContentModel.ASPECT_TITLED }, content00Properties, null, "andy",
                     new ChildAssociationRef[] { content00CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
                                 folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
@@ -104,16 +104,16 @@ public class TrieFieldsCMISTest extends LoadCMISData
                     new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date00)));
 
         StringPropertyValue secondIntValue = new StringPropertyValue("98200");
-        content01Properties.put(singleInteger,secondIntValue);
+        content01Properties.put(SINGLE_INTEGER,secondIntValue);
         
         StringPropertyValue secondLongValue = new StringPropertyValue("3956651");
-        content01Properties.put(singleLong,secondLongValue);
+        content01Properties.put(SINGLE_LONG,secondLongValue);
         
         NodeRef content01NodeRef = new NodeRef(new StoreRef("workspace", "SpacesStore"), createGUID());
         QName content01QName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Trie test1");
         ChildAssociationRef content01CAR = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, folder00NodeRef,
                     content01QName, content01NodeRef, true, 0);
-        addNode(h.getCore(), dataModel, 1, 301, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
+        addNode(getCore(), dataModel, 1, 301, 1, extendedContent, new QName[] { ContentModel.ASPECT_OWNABLE,
                     ContentModel.ASPECT_TITLED }, content01Properties, null, "andy",
                     new ChildAssociationRef[] { content01CAR }, new NodeRef[] { baseFolderNodeRef, rootNodeRef,
                                 folder00NodeRef }, new String[] { "/" + baseFolderQName.toString() + "/"
