@@ -196,12 +196,14 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         System.setProperty("solr.test.sys.prop2", "proptwo");
         System.setProperty("solr.directoryFactory", "org.apache.solr.core.MockDirectoryFactory");
         System.setProperty("solr.log.dir", testDir.toPath().resolve(serverName).toString());
+        System.setProperty("solr.solr.home", testDir.toPath().resolve(serverName).toString());
     }
 
     public static void distribTearDown() throws Exception
     {
         System.clearProperty("solr.directoryFactory");
         System.clearProperty("solr.log.dir");
+        System.clearProperty("solr.solr.home");
 
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();
