@@ -161,7 +161,6 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         SolrClient standaloneClient = createNewSolrClient(url);
         assertNotNull(standaloneClient);
         solrCollectionNameToStandaloneClient.put("alfresco", standaloneClient);
-        System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
     }
 
     public static void dismissSolrServers()
