@@ -134,6 +134,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         distribSetUp(serverName);
         RandomSupplier.RandVal.uniqueValues = new HashSet(); // reset random values
         createServers(serverName, coreNames, numShards,solrcoreProperties);
+        System.setProperty("solr.solr.home", testDir.toPath().resolve(serverName).toString());
     }
 
     public static void initSingleSolrServer(String testClassName, Properties solrcoreProperties) throws Throwable {
@@ -160,6 +161,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         SolrClient standaloneClient = createNewSolrClient(url);
         assertNotNull(standaloneClient);
         solrCollectionNameToStandaloneClient.put("alfresco", standaloneClient);
+        System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
     }
 
     public static void dismissSolrServers()
@@ -196,7 +198,6 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         System.setProperty("solr.test.sys.prop2", "proptwo");
         System.setProperty("solr.directoryFactory", "org.apache.solr.core.MockDirectoryFactory");
         System.setProperty("solr.log.dir", testDir.toPath().resolve(serverName).toString());
-        System.setProperty("solr.solr.home", testDir.toPath().resolve(serverName).toString());
     }
 
     public static void distribTearDown() throws Exception
