@@ -249,19 +249,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>1.17</version>
-                <executions>
-                    <execution>
-                        <id>download-licenses</id>
-                        <goals>
-                            <goal>download-licenses</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
