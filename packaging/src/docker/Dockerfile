@@ -35,6 +35,9 @@ RUN set -x \
 COPY search_config_setup.sh $DIST_DIR/solr/bin/
 RUN chmod +x $DIST_DIR/solr/bin/search_config_setup.sh
 
+# Add the licenses to a root directory.
+RUN cp -R $DIST_DIR/licenses /licenses
+
 WORKDIR $DIST_DIR
 
 VOLUME $DIST_DIR/data
