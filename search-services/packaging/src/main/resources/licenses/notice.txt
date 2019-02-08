@@ -114,12 +114,13 @@ jta-1.0.1b.jar  http://geronimo.apache.org/
 
 === CDDL 1.1 ===
 stax-ex-1.2.jar http://stax-ex.java.net/
-jaxb-xjc-2.3.0.jar      http://jaxb.java.net/
-jaxb-impl-2.3.0.jar     http://jaxb.java.net/
-jaxb-core-2.3.0.jar     http://jaxb.java.net/
+jaxb-core-2.3.0.1.jar   http://jaxb.java.net/
+jaxb-api-2.3.1.jar      http://jaxb.java.net/
+jaxb-impl-2.3.1.jar     http://jaxb.java.net/
+jaxb-xjc-2.3.1.jar      http://jaxb.java.net/
 mimepull-1.9.4.jar      http://mimepull.java.net/
-jaxb-api-2.1.jar        http://jaxb.java.net/
 jaxws-rt-2.1.7.jar      http://jax-ws.java.net/
+javax.activation-api-1.2.0.jar  https://github.com/javaee/activation/blob/master/LICENSE.txt
 
 
 === BSD ===
