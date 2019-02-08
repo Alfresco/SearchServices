@@ -14,16 +14,27 @@
  */
 package org.alfresco.rest.search.sql;
 
+import static java.util.Arrays.asList;
+
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.not;
+
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.AbstractSearchTest;
 import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.hamcrest.Matchers;
 
 /**
  * Tests for /sql end point Search API.
@@ -32,6 +43,21 @@ import org.hamcrest.Matchers;
  */
 public class SearchSQLAPITest extends AbstractSearchTest
 {
+    /**
+     * Path selector to get the values of all cm_name entries for returned search results.
+     * <p>
+     * For example it will retrieve the "alfresco.txt" from:
+     * <pre>
+     * {"list": {
+     *    "entries": [
+     *       {"entry": [{
+     *          "label": "cm_name",
+     *          "value": "alfresco.txt"
+     *       }]},
+     *       ...
+     * </pre>
+     */
+    private static final String CM_NAME_VALUES = "list.entries.collect {it.entry.findAll {it.label == 'cm_name'}}.flatten().value";
     String sql = "select SITE, CM_OWNER from alfresco group by SITE,CM_OWNER";
     String[] locales = { "en-US" };
     String solrFormat = "solr";
@@ -211,9 +237,9 @@ public class SearchSQLAPITest extends AbstractSearchTest
 
         restClient.onResponse().assertThat().body("result-set", Matchers.notNullValue());
         restClient.onResponse().assertThat().body("result-set.docs", Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.SITE", Matchers.equalToIgnoringCase("SITE"));
-        restClient.onResponse().assertThat().body("result-set.docs[0].isMetadata", Matchers.is(true));
-        restClient.onResponse().assertThat().body("result-set.docs[0].fields[0]", Matchers.equalToIgnoringCase("SITE"));
+        restClient.onResponse().assertThat().body("result-set.docs[0].aliases.SITE", equalToIgnoringCase("SITE"));
+        restClient.onResponse().assertThat().body("result-set.docs[0].isMetadata", is(true));
+        restClient.onResponse().assertThat().body("result-set.docs[0].fields[0]", equalToIgnoringCase("SITE"));
     }
 
     /**
@@ -284,12 +310,12 @@ public class SearchSQLAPITest extends AbstractSearchTest
 
         restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
         restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("aliases"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase("{\"SITE\":\"SITE\",\"cm_owner\":\"CM_OWNER\"}"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].label", Matchers.equalToIgnoringCase("isMetadata"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", Matchers.is("true"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][2].label", Matchers.equalToIgnoringCase("fields"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][2].value", Matchers.equalToIgnoringCase("[\"SITE\",\"cm_owner\"]"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", equalToIgnoringCase("aliases"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", equalToIgnoringCase("{\"SITE\":\"SITE\",\"cm_owner\":\"CM_OWNER\"}"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][1].label", equalToIgnoringCase("isMetadata"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][1].value", is("true"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][2].label", equalToIgnoringCase("fields"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][2].value", equalToIgnoringCase("[\"SITE\",\"cm_owner\"]"));
     }
 
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 05)
@@ -320,7 +346,7 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
         restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
         restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.not("aliases"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", not("aliases"));
 
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql(sql);
@@ -332,7 +358,7 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.onResponse().assertThat().body("result-set", Matchers.nullValue());
         restClient.onResponse().assertThat().body("list.entries", Matchers.notNullValue());
         restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.notNullValue());
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.not("aliases"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", not("aliases"));
 
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql(sql);
@@ -428,7 +454,7 @@ public class SearchSQLAPITest extends AbstractSearchTest
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.entries", Matchers.notNullValue());
-        response.assertThat().body("list.entries.entry[0][0].value", Matchers.not("0"));
+        response.assertThat().body("list.entries.entry[0][0].value", not("0"));
     }
 
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 9)
@@ -498,19 +524,19 @@ public class SearchSQLAPITest extends AbstractSearchTest
         restClient.authenticateUser(userNoPerm).withSearchSqlAPI().searchSql(sqlRequest);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.is(0));
-        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.is(0));
-        restClient.onResponse().assertThat().body("list.pagination.hasMoreItems", Matchers.is(false));
-        restClient.onResponse().assertThat().body("list.entries", Matchers.empty());
+        restClient.onResponse().assertThat().body("list.pagination.count", is(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", is(0));
+        restClient.onResponse().assertThat().body("list.pagination.hasMoreItems", is(false));
+        restClient.onResponse().assertThat().body("list.entries", empty());
 
         // Results expected for query as User does has access to the private site
         restClient.authenticateUser(userPerm).withSearchSqlAPI().searchSql(sqlRequest);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.greaterThan(0));
-        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.greaterThan(0));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("SITE"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase("[\"" + siteModel.getId() + "\"]"));
+        restClient.onResponse().assertThat().body("list.pagination.count", greaterThan(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", greaterThan(0));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", equalToIgnoringCase("SITE"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", equalToIgnoringCase("[\"" + siteModel.getId() + "\"]"));
     }
 
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_10 }, priority = 12)
@@ -613,7 +639,7 @@ public class SearchSQLAPITest extends AbstractSearchTest
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.pagination.maxItems", Matchers.equalTo(1));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("PATH"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", equalToIgnoringCase("PATH"));
 
         // Select * with Limit, solr format: Also covered in JDBC
         sqlRequest = new SearchSqlRequest();
@@ -669,14 +695,14 @@ public class SearchSQLAPITest extends AbstractSearchTest
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.pagination.maxItems", Matchers.equalTo(10));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("site"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", equalToIgnoringCase("site"));
 
         // Select distinct cm_name: solr format
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select distinct cm_name from alfresco limit 5");
         sqlRequest.setFormat("solr");
 
-        response = searchSql(sqlRequest);
+        searchSql(sqlRequest);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("result-set.docs[0].cm_name", Matchers.notNullValue());
@@ -686,66 +712,70 @@ public class SearchSQLAPITest extends AbstractSearchTest
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_11 }, priority = 16)
     public void testFilterQuery() throws Exception
     {
-        UserModel userPerm = dataUser.createRandomTestUser("UserSearchPerm");
-
-        dataUser.addUserToSite(userPerm, siteModel, UserRole.SiteContributor);
-
-        String siteSQL = "select SITE, CM_OWNER from alfresco where SITE='" + siteModel.getId() + "'";
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        String siteSQL = "select SITE, CM_OWNER from alfresco where SITE='" + siteModel.getId() + "'";
         sqlRequest.setSql(siteSQL);
-
         // Add a filter query to only include results from inside the site (i.e. all results).
         String[] filterQuery = { "SITE:'" + siteModel.getId() + "'" };
         sqlRequest.setFilterQuery(filterQuery);
 
-        // Results expected for query as User does has access to the private site
-        restClient.authenticateUser(userPerm).withSearchSqlAPI().searchSql(sqlRequest);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        searchSql(sqlRequest);
 
-        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.greaterThan(0));
-        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.greaterThan(0));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("SITE"));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalToIgnoringCase("[\"" + siteModel.getId() + "\"]"));
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.onResponse().assertThat().body("list.pagination.count", greaterThan(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", greaterThan(0));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", equalToIgnoringCase("SITE"));
+        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", equalToIgnoringCase("[\"" + siteModel.getId() + "\"]"));
 
         // Now try instead removing everything from the site (i.e. all results).
         String[] inverseFilterQuery = { "-SITE:'" + siteModel.getId() + "'" };
         sqlRequest.setFilterQuery(inverseFilterQuery);
 
-        restClient.authenticateUser(userPerm).withSearchSqlAPI().searchSql(sqlRequest);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        searchSql(sqlRequest);
 
-        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.is(0));
-        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.is(0));
-        restClient.onResponse().assertThat().body("list.pagination.hasMoreItems", Matchers.is(false));
-        restClient.onResponse().assertThat().body("list.entries", Matchers.empty());
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.onResponse().assertThat().body("list.pagination.count", is(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", is(0));
+        restClient.onResponse().assertThat().body("list.pagination.hasMoreItems", is(false));
+        restClient.onResponse().assertThat().body("list.entries", empty());
     }
 
     /** Check that the combination of multiple filter queries produce the intersection of results. */
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_11 }, priority = 17)
     public void testCombiningFilterQueries() throws Exception
     {
-        UserModel userPerm = dataUser.createRandomTestUser("UserSearchPerm");
-        dataUser.addUserToSite(userPerm, siteModel, UserRole.SiteContributor);
-
         String siteSQL = "select cm_name from alfresco where SITE='" + siteModel.getId() + "'";
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql(siteSQL);
-
         // Add a filter query to only include results from inside the site (i.e. all results).
         String[] filterQueries = { "-cm_name:'cars'", "-cm_name:'pangram'" };
         sqlRequest.setFilterQuery(filterQueries);
 
-        // Results expected for query as User does has access to the private site
-        restClient.authenticateUser(userPerm).withSearchSqlAPI().searchSql(sqlRequest);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        searchSql(sqlRequest);
 
-        restClient.onResponse().assertThat().body("list.pagination.count", Matchers.greaterThan(0));
-        restClient.onResponse().assertThat().body("list.pagination.totalItems", Matchers.greaterThan(0));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalToIgnoringCase("cm_name"));
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.onResponse().assertThat().body("list.pagination.count", greaterThan(0));
+        restClient.onResponse().assertThat().body("list.pagination.totalItems", greaterThan(0));
         // Check that pangram.txt and cars.txt were both filtered out.
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value",
-                    Matchers.not(Matchers.equalToIgnoringCase("pangram.txt")));
-        restClient.onResponse().assertThat().body("list.entries.entry[0][0].value",
-                    Matchers.not(Matchers.equalToIgnoringCase("cars.txt")));
+        restClient.onResponse().assertThat()
+                    .body(CM_NAME_VALUES, everyItem(not(isIn(asList("pangram.txt", "cars.txt")))));
+    }
+
+    /** Check that an empty list of filter queries doesn't remove anything from the results. */
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.INSIGHT_11 }, priority = 18)
+    public void testEmptyFilterQuery() throws Exception
+    {
+        String siteSQL = "select cm_name from alfresco where SITE='" + siteModel.getId() + "'";
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql(siteSQL);
+        // Add an empty list of filter queries.
+        sqlRequest.setFilterQuery(new String[]{});
+
+        searchSql(sqlRequest);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        // Check that the cm_names of all nodes in the site are returned.
+        restClient.onResponse().assertThat()
+                    .body(CM_NAME_VALUES, containsInAnyOrder("documentLibrary", SEARCH_DATA_SAMPLE_FOLDER, "pangram.txt", "cars.txt", "alfresco.txt", unique_searchString + ".txt"));
     }
 }
