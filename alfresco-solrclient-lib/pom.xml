@@ -7,14 +7,14 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>1.3.1-SNAPSHOT</version>
+        <version>1.3.0.1</version>
     </parent>
 
     <scm>
         <connection>scm:git:git@github.com:Alfresco/alfresco-solrclient.git</connection>
         <developerConnection>scm:git:git@github.com:Alfresco/alfresco-solrclient.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-solrclient</url>
-        <tag>HEAD</tag>
+        <tag>1.3.0.1</tag>
     </scm>
 
     <distributionManagement>
