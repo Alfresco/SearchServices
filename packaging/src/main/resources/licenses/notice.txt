@@ -8,6 +8,10 @@ source files.
 
 Below is the list of licenses and modules used under corresponding licenses. Licenses for libraries used by Apache Solr are listed separately.
 
+=== Public Domain ===
+aopalliance-1.0.jar     http://aopalliance.sourceforge.net/
+
+
 === Common Public 1.0 ===
 wsdl4j-1.6.3.jar        http://sourceforge.net/projects/wsdl4j
 
@@ -35,10 +39,18 @@ commons-logging-1.2.jar http://jakarta.apache.org/commons/
 commons-lang3-3.4.jar   http://jakarta.apache.org/commons/
 spring-web-3.2.14.RELEASE.jar   http://projects.spring.io/spring-framework/
 mybatis-3.3.0.jar       http://www.mybatis.org/
+spring-core-3.2.16.RELEASE.jar  http://projects.spring.io/spring-framework/
+spring-aop-3.2.16.RELEASE.jar   http://projects.spring.io/spring-framework/
+spring-beans-3.2.16.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-context-3.2.16.RELEASE.jar       http://projects.spring.io/spring-framework/
+spring-jdbc-3.2.16.RELEASE.jar  http://projects.spring.io/spring-framework/
+spring-tx-3.2.16.RELEASE.jar    http://projects.spring.io/spring-framework/
 chemistry-opencmis-commons-impl-0.11.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-0.11.0.jar       http://chemistry.apache.org/
+spring-context-support-3.2.16.RELEASE.jar       http://projects.spring.io/spring-framework/
 xmlschema-core-2.2.1.jar        http://ws.apache.org/commons/XmlSchema/
-HikariCP-java6-2.3.13.jar       https://github.com/brettwooldridge/HikariCP
+spring-expression-3.2.16.RELEASE.jar    http://projects.spring.io/spring-framework/
+spring-orm-3.2.16.RELEASE.jar   http://projects.spring.io/spring-framework/
 cxf-rt-bindings-soap-3.0.10.jar https://cxf.apache.org/
 cxf-rt-frontend-simple-3.0.10.jar       https://cxf.apache.org/
 cxf-rt-transports-http-3.0.10.jar       https://cxf.apache.org/
@@ -52,48 +64,34 @@ cxf-rt-frontend-jaxws-3.0.10.jar        https://cxf.apache.org/
 mybatis-spring-1.2.5.jar        http://www.mybatis.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
-quartz-2.3.0.jar        http://quartz-scheduler.org/
-jackson-core-2.8.10.jar http://jackson.codehaus.org/
-jackson-annotations-2.8.10.jar  http://jackson.codehaus.org/
+lucene-core-6.6.0.jar   https://lucene.apache.org/
+lucene-expressions-6.6.0.jar    https://lucene.apache.org/
+lucene-queries-6.6.0.jar        https://lucene.apache.org/
+lucene-highlighter-6.6.0.jar    https://lucene.apache.org/
+lucene-analyzers-common-6.6.0.jar       https://lucene.apache.org/
+lucene-memory-6.6.0.jar https://lucene.apache.org/
+lucene-sandbox-6.6.0.jar        https://lucene.apache.org/
+lucene-suggest-6.6.0.jar        https://lucene.apache.org/
+lucene-queryparser-6.6.0.jar    https://lucene.apache.org/
+lucene-grouping-6.6.0.jar       https://lucene.apache.org/
+lucene-misc-6.6.0.jar   https://lucene.apache.org/
+lucene-join-6.6.0.jar   https://lucene.apache.org/
+lucene-codecs-6.6.0.jar https://lucene.apache.org/
+solr-clustering-6.6.0.jar       http://lucene.apache.org/solr/
+solr-solrj-6.6.0.jar    http://lucene.apache.org/solr/
+lucene-backward-codecs-6.6.0.jar        https://lucene.apache.org/
+lucene-analyzers-kuromoji-6.6.0.jar     https://lucene.apache.org/
+lucene-analyzers-phonetic-6.6.0.jar     https://lucene.apache.org/
+solr-core-6.6.0.jar     http://lucene.apache.org/solr/
+lucene-spatial-extras-6.6.0.jar https://lucene.apache.org/
+lucene-classification-6.6.0.jar https://lucene.apache.org/
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
-spring-beans-5.0.4.RELEASE.jar  http://projects.spring.io/spring-framework/
-spring-core-5.0.4.RELEASE.jar   http://projects.spring.io/spring-framework/
-spring-context-5.0.4.RELEASE.jar        http://projects.spring.io/spring-framework/
-spring-jdbc-5.0.4.RELEASE.jar   http://projects.spring.io/spring-framework/
-spring-expression-5.0.4.RELEASE.jar     http://projects.spring.io/spring-framework/
-spring-orm-5.0.4.RELEASE.jar    http://projects.spring.io/spring-framework/
-spring-jcl-5.0.4.RELEASE.jar    http://projects.spring.io/spring-framework/
-spring-aop-5.0.4.RELEASE.jar    http://projects.spring.io/spring-framework/
-spring-tx-5.0.4.RELEASE.jar     http://projects.spring.io/spring-framework/
-spring-context-support-5.0.4.RELEASE.jar        http://projects.spring.io/spring-framework/
-xercesImpl-2.11.0-alfresco-patched-20180402.jar http://xerces.apache.org/xerces2-j
-solr-analysis-extras-6.6.5.jar  http://lucene.apache.org/solr/
-lucene-analyzers-common-6.6.5.jar       https://lucene.apache.org/
-lucene-analyzers-icu-6.6.5.jar  https://lucene.apache.org/
-solr-solrj-6.6.5.jar    http://lucene.apache.org/solr/
-lucene-analyzers-morfologik-6.6.5.jar   https://lucene.apache.org/
-lucene-queries-6.6.5.jar        https://lucene.apache.org/
-lucene-suggest-6.6.5.jar        https://lucene.apache.org/
-lucene-analyzers-smartcn-6.6.5.jar      https://lucene.apache.org/
-solr-core-6.6.5.jar     http://lucene.apache.org/solr/
-lucene-backward-codecs-6.6.5.jar        https://lucene.apache.org/
-solr-clustering-6.6.5.jar       http://lucene.apache.org/solr/
-lucene-analyzers-stempel-6.6.5.jar      https://lucene.apache.org/
-lucene-classification-6.6.5.jar https://lucene.apache.org/
-lucene-sandbox-6.6.5.jar        https://lucene.apache.org/
-lucene-expressions-6.6.5.jar    https://lucene.apache.org/
-lucene-grouping-6.6.5.jar       https://lucene.apache.org/
-lucene-highlighter-6.6.5.jar    https://lucene.apache.org/
-lucene-analyzers-kuromoji-6.6.5.jar     https://lucene.apache.org/
-lucene-core-6.6.5.jar   https://lucene.apache.org/
-solr-langid-6.6.5.jar   http://lucene.apache.org/solr/
-lucene-misc-6.6.5.jar   https://lucene.apache.org/
-lucene-spatial-extras-6.6.5.jar https://lucene.apache.org/
-lucene-analyzers-phonetic-6.6.5.jar     https://lucene.apache.org/
-lucene-queryparser-6.6.5.jar    https://lucene.apache.org/
-lucene-memory-6.6.5.jar https://lucene.apache.org/
-lucene-codecs-6.6.5.jar https://lucene.apache.org/
-lucene-join-6.6.5.jar   https://lucene.apache.org/
+lucene-analyzers-morfologik-6.6.0.jar   https://lucene.apache.org/
+solr-langid-6.6.0.jar   http://lucene.apache.org/solr/
+lucene-analyzers-stempel-6.6.0.jar      https://lucene.apache.org/
+lucene-analyzers-icu-6.6.0.jar  https://lucene.apache.org/
+solr-analysis-extras-6.6.0.jar  http://lucene.apache.org/solr/
+lucene-analyzers-smartcn-6.6.0.jar      https://lucene.apache.org/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-2.10.0.jar     https://github.com/FasterXML/jackson
 jetty-start-9.3.14.v20161028.jar        https://www.eclipse.org/jetty/licenses.html
@@ -114,9 +112,9 @@ jta-1.0.1b.jar  http://geronimo.apache.org/
 
 === CDDL 1.1 ===
 stax-ex-1.2.jar http://stax-ex.java.net/
-jaxb-xjc-2.3.0.jar      http://jaxb.java.net/
-jaxb-impl-2.3.0.jar     http://jaxb.java.net/
-jaxb-core-2.3.0.jar     http://jaxb.java.net/
+jaxb-impl-2.2.11.jar    http://jaxb.java.net/
+jaxb-xjc-2.2.11.jar     http://jaxb.java.net/
+jaxb-core-2.2.11.jar    http://jaxb.java.net/
 mimepull-1.9.4.jar      http://mimepull.java.net/
 jaxb-api-2.1.jar        http://jaxb.java.net/
 jaxws-rt-2.1.7.jar      http://jax-ws.java.net/
@@ -124,3 +122,14 @@ jaxws-rt-2.1.7.jar      http://jax-ws.java.net/
 
 === BSD ===
 jibx-run-1.2.6.jar      http://jibx.sourceforge.net/
+
+
+Alfresco has modified the source code of the following third party libraries.  Below is the list of modified modules and corresponding licenses.
+
+=== Apache 2.0 License ====
+quartz-1.8.3-alfresco-patched.jar       http://quartz-scheduler.org/
+xercesImpl-2.10.0-alfresco-patched.jar  http://xerces.apache.org/xerces2-j
+
+
+=== LGPL 2.1 ===
+hibernate-3.2.6-alf-20131023.jar        http://www.hibernate.org/
