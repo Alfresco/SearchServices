@@ -134,6 +134,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         distribSetUp(serverName);
         RandomSupplier.RandVal.uniqueValues = new HashSet(); // reset random values
         createServers(serverName, coreNames, numShards,solrcoreProperties);
+        System.setProperty("solr.solr.home", testDir.toPath().resolve(serverName).toString());
     }
 
     public static void initSingleSolrServer(String testClassName, Properties solrcoreProperties) throws Throwable {
@@ -202,6 +203,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
     {
         System.clearProperty("solr.directoryFactory");
         System.clearProperty("solr.log.dir");
+        System.clearProperty("solr.solr.home");
 
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();

@@ -179,7 +179,6 @@
                                 <resource>
                                     <directory>src/main/resources/solr/instance/templates/rerank/conf</directory>
                                     <excludes>
-                                        <exclude>schema.xml</exclude>
                                         <exclude>solrconfig.xml</exclude>
                                     </excludes>
                                 </resource>
