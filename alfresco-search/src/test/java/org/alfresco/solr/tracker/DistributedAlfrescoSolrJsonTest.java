@@ -18,9 +18,13 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -29,15 +33,17 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import static org.alfresco.solr.AlfrescoSolrUtils.TestActChanges;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 
 /**
  * @author Joel
@@ -46,9 +52,17 @@ import java.util.ArrayList;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoSolrJsonTest extends AbstractAlfrescoDistributedTest
 {
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "DistributedAlfrescoSolrJsonTest", null);
+    }
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
 
     @Test
     public void testTracker() throws Exception
@@ -62,6 +76,7 @@ public class DistributedAlfrescoSolrJsonTest extends AbstractAlfrescoDistributed
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
+        
         putHandleDefaults();
 
         //Load 1000 nodes

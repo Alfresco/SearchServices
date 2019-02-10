@@ -8,11 +8,10 @@
     </appender>
 
     <!-- ##### ALL ALFRESCO MESSAGES ##### -->
-    <!--
         <category name="org.apache.solr">
             <priority value="INFO"/>
         </category>
-    -->
+
 
     <!-- ##### METADATA TRACKER MESSAGES ##### -->
     <!--
