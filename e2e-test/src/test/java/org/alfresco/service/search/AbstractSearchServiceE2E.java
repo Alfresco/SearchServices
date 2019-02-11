@@ -285,7 +285,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
      */
     public SearchResponse query(String queryString) throws Exception
     {
-        return queryWithUser(dataUser.getAdminUser(), queryString);
+        return queryAsUser(dataUser.getAdminUser(), queryString);
     }
 
     /**
@@ -296,7 +296,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
      * @return the search response from the API
      * @throws Exception
      */
-    public SearchResponse queryWithUser(UserModel user, String queryString) throws Exception
+    public SearchResponse queryAsUser(UserModel user, String queryString) throws Exception
     {
         SearchRequest searchRequest = new SearchRequest();
         RestRequestQueryModel queryModel = new RestRequestQueryModel();

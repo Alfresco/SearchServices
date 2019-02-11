@@ -120,22 +120,22 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     public void testRangeQueryTextField() throws Exception
     {
         // Search Range Query
-        SearchResponse response = queryWithUser(testUser, "finance_Location:[* TO London]");
+        SearchResponse response = queryAsUser(testUser, "finance_Location:[* TO London]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         // Content where Location = London is returned, If property is not set, its ignored.
         Assert.assertEquals(response.getPagination().getCount(), 1);
 
-        response = queryWithUser(testUser, "finance_Location:[London TO *]");
+        response = queryAsUser(testUser, "finance_Location:[London TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         // Content where Location = London, Paris is returned, If property is not set, its ignored.
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryWithUser(testUser, "finance_Location:[London To Paris]");
+        response = queryAsUser(testUser, "finance_Location:[London To Paris]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryWithUser(testUser, "finance_Location:[* To *]");
+        response = queryAsUser(testUser, "finance_Location:[* To *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }
@@ -143,20 +143,20 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     @Test(priority = 2, groups = { TestGroup.ASS_14 })
     public void testRangeQueryTextFieldWhiteSpace() throws Exception
     {
-        SearchResponse response = queryWithUser(testUser, "finance:Emp:[* TO Daniel]");
+        SearchResponse response = queryAsUser(testUser, "finance:Emp:[* TO Daniel]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         // TODO: Uncomment when fixed
         // Assert.assertEquals(response.getPagination().getCount(), 1); //2
 
-        response = queryWithUser(testUser, "finance:Emp:[Dan TO *]");
+        response = queryAsUser(testUser, "finance:Emp:[Dan TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryWithUser(testUser, "finance:Emp:[Dan To David]");
+        response = queryAsUser(testUser, "finance:Emp:[Dan To David]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryWithUser(testUser, "finance:Emp:[* To *]");
+        response = queryAsUser(testUser, "finance:Emp:[* To *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }
@@ -165,25 +165,25 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     public void testRangeQueryTextFieldNonFacetable() throws Exception
     {
         // Search Range Query
-        SearchResponse response = queryWithUser(testUser, "finance:Title:[* TO H]");
+        SearchResponse response = queryAsUser(testUser, "finance:Title:[* TO H]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1);
 
-        response = queryWithUser(testUser, "finance:Title:[Hotel TO *]");
+        response = queryAsUser(testUser, "finance:Title:[Hotel TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         // TODO: Uncomment when fixed
         // Assert.assertEquals(response.getPagination().getCount(), 1); //2
 
-        response = queryWithUser(testUser, "finance:Title:[B To H]");
+        response = queryAsUser(testUser, "finance:Title:[B To H]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         // TODO: Uncomment when fixed
         // Assert.assertEquals(response.getPagination().getCount(), 1); // H, H* return 0
         
-        response = queryWithUser(testUser, "finance:Title:[B To I]");
+        response = queryAsUser(testUser, "finance:Title:[B To I]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1);
 
-        response = queryWithUser(testUser, "finance:Title:[* To *]");
+        response = queryAsUser(testUser, "finance:Title:[* To *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }
@@ -192,19 +192,19 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     public void testRangeQueryDoubleField() throws Exception
     {
         // Search Range Query
-        SearchResponse response = queryWithUser(testUser, "finance:amount:[* TO 100]");
+        SearchResponse response = queryAsUser(testUser, "finance:amount:[* TO 100]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryWithUser(testUser, "finance_amount:[100 TO *]");
+        response = queryAsUser(testUser, "finance_amount:[100 TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryWithUser(testUser, "finance_amount:[100 To 300]");
+        response = queryAsUser(testUser, "finance_amount:[100 To 300]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryWithUser(testUser, "finance_amount:[* To *]");
+        response = queryAsUser(testUser, "finance_amount:[* To *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 3);
     }
