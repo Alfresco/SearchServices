@@ -143,7 +143,6 @@ public class SolrContentStoreTest
         ContentWriter writer = store.getWriter(ctx);
         String url = writer.getContentUrl();
         
-        
         Assert.assertNotNull(url);
         Assert.assertEquals("URL of the context does not match the writer URL. ", ctx.getContentUrl(), url);
     }

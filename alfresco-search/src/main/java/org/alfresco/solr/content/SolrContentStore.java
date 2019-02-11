@@ -81,7 +81,6 @@ public class SolrContentStore implements ContentStore
         
         String path = solrHomeFile.getParent()+"/"+CONTENT_STORE;
         log.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
-        
         File rootFile = new File(ConfigUtil.locateProperty(SOLR_CONTENT_DIR, path));
 
         try
