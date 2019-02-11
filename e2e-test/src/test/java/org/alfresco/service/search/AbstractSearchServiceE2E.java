@@ -9,6 +9,7 @@ package org.alfresco.service.search;
 
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.ContentService;
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.search.RestRequestQueryModel;
@@ -20,7 +21,10 @@ import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.ServerHealth;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Session;
@@ -71,6 +75,12 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
     @Autowired
     @Getter(value = PROTECTED)
     private ContentService contentService;
+    
+    protected UserModel testUser, adminUserModel;
+    protected SiteModel testSite;
+    protected UserModel searchedUser;
+    
+    protected static String unique_searchString;
 
     public static final String NODE_PREFIX = "workspace/SpacesStore/";
 
@@ -88,6 +98,16 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         {
             LOG.warn("Error Loading Custom Model", e);
         }
+        
+        adminUserModel = dataUser.getAdminUser();
+        testUser = dataUser.createRandomTestUser("UserSearch");
+                
+        testSite = new SiteModel(RandomData.getRandomName("SiteSearch"));
+        testSite.setVisibility(Visibility.PRIVATE);
+        
+        testSite = dataSite.usingUser(testUser).createSite(testSite);
+        
+        unique_searchString = testSite.getTitle().replace("SiteSearch", "Unique");
     }
 
     public boolean deployCustomModel(String path)
@@ -257,17 +277,31 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
     }
 
     /**
-     * Run a search and return the response
+     * Run a search as admin user and return the response
+     * 
      * @param queryString: string to search for, unique search string will guarantee accurate results
      * @return the search response from the API
      * @throws Exception
      */
     public SearchResponse query(String queryString) throws Exception
     {
+        return queryAsUser(dataUser.getAdminUser(), queryString);
+    }
+
+    /**
+     * Run a search as given user and return the response
+     * 
+     * @param user: UserModel for the user you wish to run the query as
+     * @param queryString: string to search for, unique search string will guarantee accurate results
+     * @return the search response from the API
+     * @throws Exception
+     */
+    public SearchResponse queryAsUser(UserModel user, String queryString) throws Exception
+    {
         SearchRequest searchRequest = new SearchRequest();
         RestRequestQueryModel queryModel = new RestRequestQueryModel();
         queryModel.setQuery(queryString);
         searchRequest.setQuery(queryModel);
-        return restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(searchRequest);
+        return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
     }
 }

@@ -23,7 +23,9 @@
 		<groups>
 			<run>
 				<include name="ASS_1.0.0" />
+				<include name="ASS_1.4.0" />
 				<exclude name="InsightEngine_1.0.0" />
+				<exclude name="InsightEngine_1.1.0" />
 			</run>
 		</groups>
 		<classes>
