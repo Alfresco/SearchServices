@@ -64,34 +64,7 @@ cxf-rt-frontend-jaxws-3.0.10.jar        https://cxf.apache.org/
 mybatis-spring-1.2.5.jar        http://www.mybatis.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
-lucene-core-6.6.0.jar   https://lucene.apache.org/
-lucene-expressions-6.6.0.jar    https://lucene.apache.org/
-lucene-queries-6.6.0.jar        https://lucene.apache.org/
-lucene-highlighter-6.6.0.jar    https://lucene.apache.org/
-lucene-analyzers-common-6.6.0.jar       https://lucene.apache.org/
-lucene-memory-6.6.0.jar https://lucene.apache.org/
-lucene-sandbox-6.6.0.jar        https://lucene.apache.org/
-lucene-suggest-6.6.0.jar        https://lucene.apache.org/
-lucene-queryparser-6.6.0.jar    https://lucene.apache.org/
-lucene-grouping-6.6.0.jar       https://lucene.apache.org/
-lucene-misc-6.6.0.jar   https://lucene.apache.org/
-lucene-join-6.6.0.jar   https://lucene.apache.org/
-lucene-codecs-6.6.0.jar https://lucene.apache.org/
-solr-clustering-6.6.0.jar       http://lucene.apache.org/solr/
-solr-solrj-6.6.0.jar    http://lucene.apache.org/solr/
-lucene-backward-codecs-6.6.0.jar        https://lucene.apache.org/
-lucene-analyzers-kuromoji-6.6.0.jar     https://lucene.apache.org/
-lucene-analyzers-phonetic-6.6.0.jar     https://lucene.apache.org/
-solr-core-6.6.0.jar     http://lucene.apache.org/solr/
-lucene-spatial-extras-6.6.0.jar https://lucene.apache.org/
-lucene-classification-6.6.0.jar https://lucene.apache.org/
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
-lucene-analyzers-morfologik-6.6.0.jar   https://lucene.apache.org/
-solr-langid-6.6.0.jar   http://lucene.apache.org/solr/
-lucene-analyzers-stempel-6.6.0.jar      https://lucene.apache.org/
-lucene-analyzers-icu-6.6.0.jar  https://lucene.apache.org/
-solr-analysis-extras-6.6.0.jar  http://lucene.apache.org/solr/
-lucene-analyzers-smartcn-6.6.0.jar      https://lucene.apache.org/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-2.10.0.jar     https://github.com/FasterXML/jackson
 jetty-start-9.3.14.v20161028.jar        https://www.eclipse.org/jetty/licenses.html
@@ -124,7 +97,7 @@ jaxws-rt-2.1.7.jar      http://jax-ws.java.net/
 jibx-run-1.2.6.jar      http://jibx.sourceforge.net/
 
 
-Alfresco has modified the source code of the following third party libraries.  Below is the list of modified modules and corresponding licenses.
+=== Alfresco has modified the source code of the following third party libraries.  Below is the list of modified modules and corresponding licenses. ===
 
 === Apache 2.0 License ====
 quartz-1.8.3-alfresco-patched.jar       http://quartz-scheduler.org/
@@ -133,3 +106,6 @@ xercesImpl-2.10.0-alfresco-patched.jar  http://xerces.apache.org/xerces2-j
 
 === LGPL 2.1 ===
 hibernate-3.2.6-alf-20131023.jar        http://www.hibernate.org/
+
+
+=== Part of Apache Solr (Licenses listed separately) ===
