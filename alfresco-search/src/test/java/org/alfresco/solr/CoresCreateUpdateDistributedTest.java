@@ -66,7 +66,6 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
     private void destroyData() throws Throwable
     {
         dismissSolrServers();
-        System.clearProperty("solr.solr.home");
     }
     
     @Test
@@ -99,11 +98,6 @@ public class CoresCreateUpdateDistributedTest extends AbstractAlfrescoDistribute
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
         assertNotNull(coreAdminHandler);
         String coreName = "alfSharedCore";
-
-        //AlfrescoSolrDataModel.getResourceDirectory() looks for solrhome in a system property or jndi.
-        //In production there's always a solr.home but not in this test, so this is the workaround.
-        //Set it here and clean up with a @AfterClass method.
-        System.setProperty("solr.solr.home", coreContainer.getSolrHome());
 
         //First, we have no cores so we can update the shared properties, including disallowed
         updateShared(coreAdminHandler,"property.solr.host", "myhost", "property.my.property", "chocolate",
