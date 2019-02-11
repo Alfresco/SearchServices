@@ -22,7 +22,7 @@ import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.TestGroup;
-import org.junit.Assert;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -67,6 +67,8 @@ public class SearchSpellCheckTest extends AbstractSearchTest
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=1)
     public void testSearchMissSpelled() throws Exception
     {        
+        waitForContentIndexing(file4.getContent(), true);
+        
         // Name
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();

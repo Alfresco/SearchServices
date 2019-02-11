@@ -18,8 +18,8 @@
  */
 package org.alfresco.rest.search;
 
-import static org.junit.Assert.assertTrue;
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +31,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -40,6 +41,11 @@ import org.testng.annotations.Test;
  */
 public class PivotFacetedSearchTest extends AbstractSearchTest
 {
+    @BeforeClass(alwaysRun = true)
+    public void setupEnvironment() throws Exception
+    {
+        waitForContentIndexing(file4.getContent(), true);
+    }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
@@ -167,6 +173,9 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
     public void searchWithRangePivoting() throws Exception
     {
         SearchRequest query = carsQuery();
+        
+        String endDate = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")); //the car document is created at runtime, so to include it in range facets end date must be now
 
         Pagination pagination = new Pagination();
         pagination.setMaxItems(2);
@@ -181,7 +190,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         facetRangeModel.setField("created");
         facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
-        facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
+        facetRangeModel.setEnd(endDate);
         facetRangeModel.setGap("+280DAY");
         facetRangeModel.setLabel("aRange");
         List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
@@ -204,8 +213,6 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
         RestGenericFacetResponseModel rangeResponse = bucket.getFacets().get(0);
         rangeResponse.assertThat().field("type").is("range");
-        assertTrue(rangeResponse.getBuckets().size()>0);
-
     }
 
     private void assertPivotResponse(SearchResponse response, String field, String alabel) throws Exception

@@ -61,8 +61,7 @@ public class AddProcessCoreTests extends RestTest
         restClient.authenticateUser(adminUser).withWorkflowAPI();
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, "", "processes");
         restClient.processModel(RestProcessModel.class, request);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map to Object due to end of input"));
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
     @Bug(id = "REPO-1936")

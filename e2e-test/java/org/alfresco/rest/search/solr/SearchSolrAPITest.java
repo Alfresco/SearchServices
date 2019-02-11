@@ -24,9 +24,8 @@ import org.alfresco.rest.search.AbstractSearchTest;
 import org.alfresco.utility.model.TestGroup;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import junit.framework.Assert;
 
 /**
  * Tests for solr/alfresco Solr API.

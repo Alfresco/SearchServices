@@ -26,6 +26,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.Assert;
 import org.testng.TestException;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -86,7 +87,13 @@ public class FacetedSearchTest extends AbstractSearchTest
      * }}
      * @throws Exception
      */
-	
+
+    @BeforeClass(alwaysRun = true)
+    public void setupEnvironment() throws Exception
+    {
+        waitForContentIndexing(file4.getContent(), true);
+    }
+
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH,
             TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION, description = "Checks facet queries for the Search api")
@@ -308,5 +315,4 @@ public class FacetedSearchTest extends AbstractSearchTest
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + userModel.getUsername() + "\"");
         bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
     }
-    
 }

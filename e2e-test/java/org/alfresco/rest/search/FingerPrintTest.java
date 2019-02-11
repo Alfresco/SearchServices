@@ -61,7 +61,10 @@ public class FingerPrintTest extends AbstractSearchTest
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
         dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
 
-        waitForIndexing(file4.getName(), true);
+        waitForContentIndexing(file4.getContent(), true);
+        // Additional wait implemented to remove inconsistent failures. Ref: Search-1438 for details
+        waitForIndexing("FINGERPRINT:" + file2.getNodeRefWithoutVersion(), true);
+        waitForIndexing("FINGERPRINT:" + file3.getNodeRefWithoutVersion(), true);
     }
 
     /**

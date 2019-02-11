@@ -67,25 +67,6 @@ public class AddProcessVariableFullTests  extends RestTest
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Adding process variable is falling in case of empty value is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void failedAddingProcessVariableIfEmptyValueIsProvided() throws Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:int");
-        variableModel.setValue("");
-
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
-
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
-                  .containsSummary(String.format(RestErrorModel.FOR_INPUT_STRING, ""))
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable in case of having only 'name' field is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void addingProcessVariableWithOnlyNameProvided() throws Exception
