@@ -174,10 +174,10 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
         // TODO: Uncomment when fixed
         // Assert.assertEquals(response.getPagination().getCount(), 1); //2
 
-        response = queryAsUser(testUser, "finance:Title:[B To H]");
+        response = queryAsUser(testUser, "finance:Title:[B To H*]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         // TODO: Uncomment when fixed
-        // Assert.assertEquals(response.getPagination().getCount(), 1); // H, H* return 0
+        // Assert.assertEquals(response.getPagination().getCount(), 1); // H* return 0
         
         response = queryAsUser(testUser, "finance:Title:[B To I]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
