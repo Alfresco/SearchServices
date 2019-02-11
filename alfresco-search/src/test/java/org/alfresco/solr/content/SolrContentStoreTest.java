@@ -36,6 +36,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.hamcrest.core.Is.is;
+
 /**
  * Tests {@link SolrContentStoreTest}
  * 
@@ -55,10 +57,62 @@ public class SolrContentStoreTest
         File rootDir = new File(new SolrContentStore(solrHome).getRootLocation());
         FileUtils.deleteDirectory(rootDir);
     }
+    
     @Test(expected = RuntimeException.class)
-    public void nullInput()
+    public void contentStoreCreation_solrHomeNull_shouldThrowException()
     {
         new SolrContentStore(null);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void contentStoreCreation_solrHomeEmpty_shouldThrowException()
+    {
+        new SolrContentStore("");
+    }
+
+    @Test
+    public void contentStoreCreation_solrHomeNotExistSolrContentDirNotDefined_shouldUseDefaultContentStore()
+    {
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome+"/notExist");
+        
+        Assert.assertThat(solrContentStore.getRootLocation(),is(solrHome+"/"+SolrContentStore.CONTENT_STORE));
+    }
+
+    @Test
+    public void contentStoreCreation_solrHomeNotExistSolrContentDirDefined_shouldCreateContentStore(){
+        String testContentDir = solrHome+"/test/content/dir";
+        System.setProperty(SolrContentStore.SOLR_CONTENT_DIR, testContentDir);
+        
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome+"/notExist");
+        
+        Assert.assertThat(solrContentStore.getRootLocation(),is(testContentDir));
+        
+        
+        System.clearProperty(SolrContentStore.SOLR_CONTENT_DIR);
+    }
+
+    @Test
+    public void contentStoreCreation_solrHomeExistSolrContentDirDefined_shouldCreateContentStore(){
+        String testContentDir = solrHome+"/test/content/dir";
+        System.setProperty(SolrContentStore.SOLR_CONTENT_DIR, testContentDir);
+        
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
+        
+        Assert.assertThat(solrContentStore.getRootLocation(),is(testContentDir));
+        
+        System.clearProperty(SolrContentStore.SOLR_CONTENT_DIR);
+    }
+
+    @Test
+    public void contentStoreCreation_solrHomeExistSolrContentDirNotDefined_shouldUseDefaultContentStore()
+    {
+        String existSolrHomePath = solrHome + "/exist";
+        File existSolrHome = new File(existSolrHomePath);
+        existSolrHome.mkdir();
+        
+        SolrContentStore solrContentStore = new SolrContentStore(existSolrHomePath);
+        
+        Assert.assertThat(solrContentStore.getRootLocation(),is(solrHome+"/"+SolrContentStore.CONTENT_STORE));
     }
     
     /**
@@ -240,11 +294,5 @@ public class SolrContentStoreTest
         solrContentStore.removeDocFromContentStore(nodeMetaData);
         document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNull(document);
-    }
-
-    @Test
-    public void nonExistentSolrHome() throws IOException {
-        SolrContentStore solrContentStore = new SolrContentStore("bob");
-        Assert.assertNotNull(solrContentStore);
     }
 }
