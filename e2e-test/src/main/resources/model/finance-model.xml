@@ -73,7 +73,16 @@
                     <type>d:text</type>
                     <mandatory>false</mandatory>
                     <index enabled="true">
-                        <tokenised>TRUE</tokenised>
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="finance:Desc">
+                    <title>Description</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>false</tokenised>
                         <facetable>false</facetable>
                     </index>
                 </property>

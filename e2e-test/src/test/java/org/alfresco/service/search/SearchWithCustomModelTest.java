@@ -84,6 +84,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
         properties.put("finance:amount", 100);
         properties.put("finance:Title", "Airport Taxi Outgoing");
         properties.put("finance:Emp", "David A");
+        properties.put("finance:Desc", "David's Taxi");
 
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(expenseParis, properties, VersioningState.MAJOR)
                 .assertThat().existsInRepo();
@@ -103,6 +104,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
         properties.put("finance:amount", 0);
         properties.put("finance:Title", "Hotel Stay");
         properties.put("finance:Emp", "Daniel S");
+        properties.put("finance:Desc", "Daniel's Taxi");
 
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(expenseNoLocation, properties, VersioningState.MAJOR)
                 .assertThat().existsInRepo();
@@ -145,8 +147,8 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     {
         SearchResponse response = queryAsUser(testUser, "finance:Emp:[* TO Daniel]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        // TODO: Uncomment when fixed
-        // Assert.assertEquals(response.getPagination().getCount(), 1); //2
+        // Tockenised field, so Returns Daniel, David A (A before Daniel)
+        Assert.assertEquals(response.getPagination().getCount(), 2);
 
         response = queryAsUser(testUser, "finance:Emp:[Dan TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -171,13 +173,13 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
 
         response = queryAsUser(testUser, "finance:Title:[Hotel TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        // TODO: Uncomment when fixed
-        // Assert.assertEquals(response.getPagination().getCount(), 1); //2
+        // Tockenised field, so Includes: Hotel, (Airport) Taxi Outgoing
+        Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryAsUser(testUser, "finance:Title:[B To H*]");
+        response = queryAsUser(testUser, "finance:Title:[B To Hotel]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        // TODO: Uncomment when fixed
-        // Assert.assertEquals(response.getPagination().getCount(), 1); // H* return 0
+        // Tockenised field, so Includes: (Airport) Taxi Outgoing
+        Assert.assertEquals(response.getPagination().getCount(), 1);
         
         response = queryAsUser(testUser, "finance:Title:[B To I]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -189,6 +191,27 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     }
 
     @Test(priority = 4, groups = { TestGroup.ASS_14 })
+    public void testRangeQueryTextFieldNotTockenised() throws Exception
+    {
+        SearchResponse response = queryAsUser(testUser, "finance:Desc:[* TO David]");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        // Includes: Daniel's Taxi
+        Assert.assertEquals(response.getPagination().getCount(), 1);
+
+        response = queryAsUser(testUser, "finance:Desc:[Dan TO *]");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 2);
+
+        response = queryAsUser(testUser, "finance:Desc:[Dan To David]");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1);
+
+        response = queryAsUser(testUser, "finance:Desc:[* To *]");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 2);
+    }
+
+    @Test(priority = 5, groups = { TestGroup.ASS_14 })
     public void testRangeQueryDoubleField() throws Exception
     {
         // Search Range Query
