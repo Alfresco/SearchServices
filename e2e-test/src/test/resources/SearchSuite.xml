@@ -28,6 +28,10 @@
 				<exclude name="InsightEngine_1.1.0" />
 			</run>
 		</groups>
+		<packages>
+			<package name="org.alfresco.service.search.e2e.searchservices" />
+			<package name="org.alfresco.service.search.e2e.searchservices.tracker" />
+		</packages>
 		<classes>
 		</classes>
 	</test>
