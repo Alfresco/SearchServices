@@ -6,7 +6,7 @@
 			<!-- this class depends on data produce and validated by search-pre-upgrade-suite.xml. 
 				Execute it after upgrading product to new version -->
 			<class
-				name="org.alfresco.service.search.e2e.searchservices.SearchServiceUpgradeTests">
+				name="org.alfresco.service.search.upgrade.SearchServiceUpgradeTests">
 				<methods>
 					<include name="checkDataIsSearchable" />
 				</methods>
