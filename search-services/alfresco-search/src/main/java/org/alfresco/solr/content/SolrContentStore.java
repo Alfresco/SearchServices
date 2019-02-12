@@ -73,10 +73,11 @@ public class SolrContentStore implements ContentStore
         }
 
         File solrHomeFile = new File(SolrResourceLoader.normalizeDir(solrHome));
-        if (!solrHomeFile.exists()) {
+        if (!solrHomeFile.exists())
+        {
             //Its very unlikely that solrHome would not exist so we will log an error
             //but continue because solr.content.dir may be specified, so it keeps working
-            log.error(solrHomeFile.getAbsolutePath()+ " does not exist.");
+            log.error(solrHomeFile.getAbsolutePath() + " does not exist.");
         }
         
         String path = solrHomeFile.getParent()+"/"+CONTENT_STORE;
