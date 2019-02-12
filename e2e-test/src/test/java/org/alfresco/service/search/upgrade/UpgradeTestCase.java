@@ -1,4 +1,4 @@
-package org.alfresco.service.search.e2e;
+package org.alfresco.service.search.upgrade;
 
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.utility.data.DataContent;

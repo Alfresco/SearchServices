@@ -1,6 +1,5 @@
-package org.alfresco.service.search.e2e.searchservices;
+package org.alfresco.service.search.upgrade;
 
-import org.alfresco.service.search.e2e.UpgradeTestCase;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.provider.XMLDataConfig;

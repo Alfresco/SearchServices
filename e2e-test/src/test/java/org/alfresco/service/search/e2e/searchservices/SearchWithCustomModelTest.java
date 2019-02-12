@@ -5,7 +5,7 @@
  * agreement is prohibited.
  */
 
-package org.alfresco.service.search;
+package org.alfresco.service.search.e2e.searchservices;
 
 import java.util.HashMap;
 import java.util.Map;
