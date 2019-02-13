@@ -18,31 +18,19 @@
  */
 package org.alfresco.solr;
 
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.common.SolrException;
-import org.apache.solr.common.params.CoreAdminParams;
-import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
-import org.apache.solr.request.LocalSolrQueryRequest;
-import org.apache.solr.request.SolrQueryRequest;
-import org.apache.solr.response.SolrQueryResponse;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.lang.invoke.MethodHandles;
-import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.assertSummaryCorrect;
 import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 
 /**
@@ -55,21 +43,19 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 public class CoresCreateViaPropertyTest extends AbstractAlfrescoDistributedTest
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final String JETTY_SERVER_ID = this.getClass().getSimpleName();
-
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
-
+    final static String JETTY_SERVER_ID = "CoresCreateViaPropertyTest";
 
     @BeforeClass
-    public static void setProps()
+    private static void initData() throws Throwable
     {
         System.setProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS, "alfresco,archive");
+        initSolrServers(0, JETTY_SERVER_ID, null);
     }
 
     @AfterClass
-    protected static void cleanupProp()
+    private static void destroyData() throws Throwable
     {
+        dismissSolrServers();
         System.clearProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS);
     }
 
