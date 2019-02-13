@@ -34,33 +34,89 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.hamcrest.core.Is.is;
 
 /**
  * Tests {@link SolrContentStoreTest}
- * 
+ *
  * @author Derek Hulley
  * @since 5.0
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.class) 
 public class SolrContentStoreTest
 {
     private static final String DEFAULT_TENANT = "_DEFAULT_";
     private String solrHome = new File("./target/contentstoretest/").getAbsolutePath();
     private long dbid = 111;
     private String tenant = "me";
-    @After
+
+    @After 
     public void tearDown() throws IOException
     {
         File rootDir = new File(new SolrContentStore(solrHome).getRootLocation());
         FileUtils.deleteDirectory(rootDir);
     }
-    @Test(expected = RuntimeException.class)
-    public void nullInput()
+
+    @Test(expected = RuntimeException.class) 
+    public void contentStoreCreation_solrHomeNull_shouldThrowException()
     {
         new SolrContentStore(null);
     }
-    
+
+    @Test(expected = RuntimeException.class) 
+    public void contentStoreCreation_solrHomeEmpty_shouldThrowException()
+    {
+        new SolrContentStore("");
+    }
+
+    @Test 
+    public void contentStoreCreation_solrHomeNotExistSolrContentDirNotDefined_shouldUseDefaultContentStore()
+    {
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome + "/notExist");
+
+        Assert.assertThat(solrContentStore.getRootLocation(), is(solrHome + "/" + SolrContentStore.CONTENT_STORE));
+    }
+
+    @Test 
+    public void contentStoreCreation_solrHomeNotExistSolrContentDirDefined_shouldCreateContentStore()
+    {
+        String testContentDir = solrHome + "/test/content/dir";
+        System.setProperty(SolrContentStore.SOLR_CONTENT_DIR, testContentDir);
+
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome + "/notExist");
+
+        Assert.assertThat(solrContentStore.getRootLocation(), is(testContentDir));
+
+        System.clearProperty(SolrContentStore.SOLR_CONTENT_DIR);
+    }
+
+    @Test 
+    public void contentStoreCreation_solrHomeExistSolrContentDirDefined_shouldCreateContentStore()
+    {
+        String testContentDir = solrHome + "/test/content/dir";
+        System.setProperty(SolrContentStore.SOLR_CONTENT_DIR, testContentDir);
+
+        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
+
+        Assert.assertThat(solrContentStore.getRootLocation(), is(testContentDir));
+
+        System.clearProperty(SolrContentStore.SOLR_CONTENT_DIR);
+    }
+
+    @Test 
+    public void contentStoreCreation_solrHomeExistSolrContentDirNotDefined_shouldUseDefaultContentStore()
+    {
+        String existSolrHomePath = solrHome + "/exist";
+        File existSolrHome = new File(existSolrHomePath);
+        existSolrHome.mkdir();
+
+        SolrContentStore solrContentStore = new SolrContentStore(existSolrHomePath);
+
+        Assert.assertThat(solrContentStore.getRootLocation(), is(solrHome + "/" + SolrContentStore.CONTENT_STORE));
+    }
+
     /**
      * Generates a content context using a string.  The URL part will be the same if the
      * data provided is the same.
@@ -69,8 +125,8 @@ public class SolrContentStoreTest
     {
         return SolrContentUrlBuilder.start().add("data", data).getContentContext();
     }
-    
-    @Test
+
+    @Test 
     public void rootLocation()
     {
         SolrContentStore store = new SolrContentStore(solrHome);
@@ -78,9 +134,8 @@ public class SolrContentStoreTest
         Assert.assertTrue(rootDir.exists());
         Assert.assertTrue(rootDir.isDirectory());
     }
-    
-    
-    @Test
+
+    @Test 
     public void getWriter()
     {
         SolrContentStore store = new SolrContentStore(solrHome);
@@ -88,26 +143,26 @@ public class SolrContentStoreTest
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
         String url = writer.getContentUrl();
-        
+
         Assert.assertNotNull(url);
         Assert.assertEquals("URL of the context does not match the writer URL. ", ctx.getContentUrl(), url);
     }
-    
-    @Test
+
+    @Test 
     public void contentByString()
     {
         SolrContentStore store = new SolrContentStore(solrHome);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
-        
+
         File file = new File(store.getRootLocation() + "/" + writer.getContentUrl().replace("solr://", ""));
         Assert.assertFalse("File was created before anything was written", file.exists());
 
         String content = "Quick brown fox jumps over the lazy dog.";
         writer.putContent(content);
         Assert.assertTrue("File was not created.", file.exists());
-        
+
         try
         {
             writer.putContent("Should not work");
@@ -116,38 +171,38 @@ public class SolrContentStoreTest
         {
             // Expected
         }
-        
+
         // Now get the reader
         ContentReader reader = store.getReader(ctx.getContentUrl());
         Assert.assertNotNull(reader);
         Assert.assertTrue(reader.exists());
-        
+
         Assert.assertEquals(content, reader.getContentString());
     }
-    
-    @Test
+
+    @Test 
     public void contentByStream() throws Exception
     {
         SolrContentStore store = new SolrContentStore(solrHome);
 
         ContentContext ctx = createContentContext("abc");
         ContentWriter writer = store.getWriter(ctx);
-        
-        byte[] bytes = new byte[] {1, 7, 13};
+
+        byte[] bytes = new byte[] { 1, 7, 13 };
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
         writer.putContent(bis);
-        
+
         // Now get the reader
         ContentReader reader = store.getReader(ctx.getContentUrl());
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream(3);
         reader.getContent(bos);
         Assert.assertEquals(bytes[0], bos.toByteArray()[0]);
         Assert.assertEquals(bytes[1], bos.toByteArray()[1]);
         Assert.assertEquals(bytes[2], bos.toByteArray()[2]);
     }
-    
-    @Test
+
+    @Test 
     public void delete() throws Exception
     {
         SolrContentStore store = new SolrContentStore(solrHome);
@@ -156,18 +211,18 @@ public class SolrContentStoreTest
         String url = ctx.getContentUrl();
         ContentWriter writer = store.getWriter(ctx);
         writer.putContent("Content goes here.");
-        
+
         // Check the reader
         ContentReader reader = store.getReader(url);
         Assert.assertNotNull(reader);
         Assert.assertTrue(reader.exists());
-        
+
         // Delete
         store.delete(url);
         reader = store.getReader(url);
         Assert.assertNotNull(reader);
         Assert.assertFalse(reader.exists());
-        
+
         // Delete when already gone; should just not fail
         store.delete(url);
     }
@@ -175,7 +230,7 @@ public class SolrContentStoreTest
     /**
      * A demonstration of how the store might be used.
      */
-    @Test
+    @Test 
     public void exampleUsage()
     {
         SolrContentStore store = new SolrContentStore(solrHome);
@@ -183,29 +238,24 @@ public class SolrContentStoreTest
         String tenant = "alfresco.com";
         long dbId = 12345;
         String otherData = "sdfklsfdl";
-        
-        ContentContext ctxWrite = SolrContentUrlBuilder
-                .start()
-                .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
-                .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                .add("otherData", otherData)
-                .getContentContext();
+
+        ContentContext ctxWrite = SolrContentUrlBuilder.start()
+            .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId)).add(SolrContentUrlBuilder.KEY_TENANT, tenant)
+            .add("otherData", otherData).getContentContext();
         ContentWriter writer = store.getWriter(ctxWrite);
         writer.putContent("a document in plain text");
-        
+
         // The URL can be reliably rebuilt in any order
-        String urlRead = SolrContentUrlBuilder
-                .start()
-                .add("otherData", otherData)
-                .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
-                .get();
+        String urlRead = SolrContentUrlBuilder.start().add("otherData", otherData)
+            .add(SolrContentUrlBuilder.KEY_TENANT, tenant).add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
+            .get();
         ContentReader reader = store.getReader(urlRead);
         String documentText = reader.getContentString();
-        
+
         Assert.assertEquals("a document in plain text", documentText);
     }
-    @Test
+
+    @Test 
     public void storeDocOnSolrContentStore() throws IOException
     {
         SolrContentStore solrContentStore = new SolrContentStore(solrHome);
@@ -216,7 +266,8 @@ public class SolrContentStoreTest
         document = solrContentStore.retrieveDocFromSolrContentStore(tenant, dbid);
         Assert.assertNotNull(document);
     }
-    @Test
+
+    @Test 
     public void storeDocOnSolrContentStoreNodeMetaData() throws IOException
     {
         SolrContentStore solrContentStore = new SolrContentStore(solrHome);
@@ -228,7 +279,8 @@ public class SolrContentStoreTest
         document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNotNull(document);
     }
-    @Test
+
+    @Test 
     public void removeDocFromContentStore() throws IOException
     {
         SolrContentStore solrContentStore = new SolrContentStore(solrHome);
@@ -240,11 +292,5 @@ public class SolrContentStoreTest
         solrContentStore.removeDocFromContentStore(nodeMetaData);
         document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNull(document);
-    }
-
-    @Test
-    public void nonExistentSolrHome() throws IOException {
-        SolrContentStore solrContentStore = new SolrContentStore("bob");
-        Assert.assertNotNull(solrContentStore);
     }
 }
