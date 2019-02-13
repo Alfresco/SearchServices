@@ -23,6 +23,9 @@ RUN set -x \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
    && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$DIST_DIR/data -Dsolr.solr.model.dir=$DIST_DIR/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
 
+# Add the licenses to a root directory.
+RUN mv $DIST_DIR/licenses /licenses
+
 WORKDIR $DIST_DIR
 
 VOLUME $DIST_DIR/data
