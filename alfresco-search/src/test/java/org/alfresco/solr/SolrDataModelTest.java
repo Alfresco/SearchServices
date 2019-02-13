@@ -51,7 +51,7 @@ public class SolrDataModelTest
         String id = AlfrescoSolrDataModel.getNodeDocumentId(tenant, aclId, dbId);
         TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
         assertEquals(tenant,ids.tenant);
-        assertEquals(aclId, ids.alcId);
+        assertEquals(aclId, ids.aclId);
         assertEquals(dbId, ids.dbId);
     }
     
