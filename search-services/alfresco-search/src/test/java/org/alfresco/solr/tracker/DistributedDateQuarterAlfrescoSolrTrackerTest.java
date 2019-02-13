@@ -18,23 +18,13 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.solr.AbstractAlfrescoDistributedTest;
-import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.client.*;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.LegacyNumericRangeQuery;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
-import java.util.*;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import java.util.Properties;
 
 /**
  * Tests sharding by quarter
@@ -45,9 +35,19 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedDateQuarterAlfrescoSolrTrackerTest extends DistributedDateAbstractSolrTrackerTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(this.getClass().getSimpleName(), 6, getShardMethod(), new String[]{DEFAULT_TEST_CORENAME});
 
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(6, "DistributedDateQuarterAlfrescoSolrTrackerTest", getShardMethod());
+    }
+
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Override
     protected void assertCorrect(int numNodes) throws Exception {
         //We should expect roughly 25% on each of the 4 cores
@@ -56,8 +56,8 @@ public class DistributedDateQuarterAlfrescoSolrTrackerTest extends DistributedDa
         assertEquals(4, shardHits);
     }
 
-    @Override
-    protected Properties getShardMethod()
+    
+    protected static Properties getShardMethod()
     {
         Properties prop = new Properties();
         prop.put("shard.method", ShardMethodEnum.DATE.toString());

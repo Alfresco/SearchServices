@@ -606,7 +606,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
         SolrQueryResponse res = null;
 
         try {
-            res = h.queryAndResponse(null, req);
+            res = queryAndResponse(null, req);
         } finally {
             req.close();
         }
@@ -654,7 +654,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
 
         req = req(params);
         try {
-            res = h.queryAndResponse(null, req);
+            res = queryAndResponse(null, req);
         }finally {
             req.close();
         }

@@ -91,7 +91,7 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
     public void testTrackers() throws Exception
     {
 
-        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = (AlfrescoCoreAdminHandler)h.getCore().getCoreContainer().getMultiCoreHandler();
+        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = (AlfrescoCoreAdminHandler)getCore().getCoreContainer().getMultiCoreHandler();
 
 
         /*
@@ -122,7 +122,7 @@ public class AlfrescoSolrTrackerRollbackTest extends AbstractAlfrescoSolrTests
         waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
 
         TrackerRegistry trackerRegistry = alfrescoCoreAdminHandler.getTrackerRegistry();
-        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(h.getCore().getName());
+        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(getCore().getName());
         MetadataTracker metadataTracker = null;
         CommitTracker commitTracker = null;
 
