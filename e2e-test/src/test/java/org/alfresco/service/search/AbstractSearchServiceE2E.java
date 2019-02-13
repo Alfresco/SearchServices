@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
 
 import lombok.Getter;
@@ -98,7 +99,11 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         {
             LOG.warn("Error Loading Custom Model", e);
         }
-        
+    }
+    
+    @BeforeClass(alwaysRun = true)
+    public void beforeClass() throws Exception
+    {      
         adminUserModel = dataUser.getAdminUser();
         testUser = dataUser.createRandomTestUser("UserSearch");
                 

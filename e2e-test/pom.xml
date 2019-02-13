@@ -13,6 +13,7 @@
    <properties>
       <tas.rest.api.version>5.2.0.13-SNAPSHOT</tas.rest.api.version>
       <tas.cmis.api.version>5.2.0-3-SNAPSHOT</tas.cmis.api.version>
+      <tas.utility.version>1.0.32</tas.utility.version>
       <rm.version>2.6.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
@@ -62,7 +63,23 @@
          <version>${rm.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
-      </dependency>  
+      </dependency>
+        <!-- alfresco tester settings -->
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>utility</artifactId>
+            <version>${tas.utility.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>      
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
