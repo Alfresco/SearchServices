@@ -38,6 +38,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.SolrTestCaseJ4.XmlDoc;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -801,6 +802,6 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
 
     protected String escape(String value)
     {
-        return SearchLanguageConversion.escapeLuceneQuery(value);
+        return ClientUtils.escapeQueryChars(value);
     }
 }
