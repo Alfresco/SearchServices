@@ -144,7 +144,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
         TRANSFORMATION_EXCEPTION
     }
 
-    static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
+    public static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
+    public static final String CONTENT_M_LOCALE_PREFIX = "content@m__locale@";
     static final String SHARED_PROPERTIES = "shared.properties";
 
     protected final static Logger log = LoggerFactory.getLogger(AlfrescoSolrDataModel.class);
@@ -280,7 +281,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * @param aclId the acl identifer
      * @return the ACL Document identifier (&lt;TENANT>!&lt;ACLID>!ACL)
      */
-    static String getAclDocumentId(String tenant, Long aclId)
+    public static String getAclDocumentId(String tenant, Long aclId)
     {
         return getTenantId(tenant) + "!" + NumericEncoder.encode(aclId) + "!ACL";
     }
@@ -291,7 +292,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * @param aclChangeSetId the ACL changeset identifier.
      * @return the ACL ChangeSet Document identifier (TRACKER!CHANGESET!&lt;ACL_CHANGESET_ID>)
      */
-    static String getAclChangeSetDocumentId(Long aclChangeSetId)
+    public static String getAclChangeSetDocumentId(Long aclChangeSetId)
     {
         return "TRACKER" + "!" + CHANGE_SET + "!" + NumericEncoder.encode(aclChangeSetId);
     }
@@ -304,7 +305,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * @see #getAclChangeSetDocumentId(Long)
      * @return the numeric ACL changeset identifier.
      */
-    static Long parseAclChangeSetId(String documentId)
+    public static Long parseAclChangeSetId(String documentId)
     {
         return parseIdFromDocumentId(documentId);
     }
@@ -316,7 +317,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * @param documentId the document identifier.
      * @return the numeric ACL changeset identifier.
      */
-    static Long parseTransactionId(String documentId)
+    public static Long parseTransactionId(String documentId)
     {
         return parseIdFromDocumentId(documentId);
     }
@@ -368,7 +369,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * @param txId the transaction identifier.
      * @return the Transaction Document identifier in the following format TRACKER!TX!&lt;TX_ID>
      */
-    static String getTransactionDocumentId(Long txId)
+    public static String getTransactionDocumentId(Long txId)
     {
         // TODO - check and encode for ":"
         return "TRACKER" +
@@ -502,7 +503,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return qnameFilter;
     }
 
-    static Properties getCommonConfig()
+    public static Properties getCommonConfig()
     {
         File resourceDirectory = getResourceDirectory();
         // If we ever need to filter out models in the future, then we must put a filter somewhere.
@@ -531,7 +532,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
     /**
      * @return ClassLoader
      */
-    private ClassLoader getResourceClassLoader()
+    public ClassLoader getResourceClassLoader()
     {
         File f = getResourceDirectory();
         if (f.canRead() && f.isDirectory())
@@ -556,7 +557,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-    static File getResourceDirectory()
+    public static File getResourceDirectory()
     {
         return new File(SolrResourceLoader.locateSolrHome().toFile(), "conf");
     }
@@ -584,7 +585,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return dictionaryComponent;
     }
 
-    IndexedField getIndexedFieldForContentPropertyMetadata(QName propertyQName, ContentFieldType type)
+    public IndexedField getIndexedFieldForContentPropertyMetadata(QName propertyQName, ContentFieldType type)
     {
         IndexedField indexedField = new IndexedField();
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
@@ -1112,7 +1113,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         else return dataType.getName().equals(DataTypeDefinition.NODE_REF);
     }
 
-    private String getFieldForNonText(PropertyDefinition propertyDefinition)
+    public String getFieldForNonText(PropertyDefinition propertyDefinition)
     {
         StringBuilder builder = new StringBuilder();
         QName qName = propertyDefinition.getDataType().getName();
@@ -1167,12 +1168,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return builder.toString();
     }
 
-    private PropertyDefinition getPropertyDefinition(QName propertyQName)
+    public PropertyDefinition getPropertyDefinition(QName propertyQName)
     {
         return getDictionaryService(CMISStrictDictionaryService.DEFAULT).getProperty(propertyQName);
     }
 
-    boolean putModel(M2Model model)
+    public boolean putModel(M2Model model)
     {
         Set<String> errors = validateModel(model);
         if(errors.isEmpty())
@@ -1196,7 +1197,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
     {
         // FIXME: this has no effect. The method should be changed (SEARCH-1482)
         modelErrors.remove(modelQName);
-
         dictionaryDAO.removeModel(modelQName);
     }
 
@@ -1294,7 +1294,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * @param alternativeDictionary - can be null;
      * @return CMISDictionaryService
      */
-    private CMISDictionaryService getCMISDictionary(String alternativeDictionary, CmisVersion cmisVersion)
+    public CMISDictionaryService getCMISDictionary(String alternativeDictionary, CmisVersion cmisVersion)
     {
         CMISDictionaryService cmisDictionary = null;
 
@@ -1317,7 +1317,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      *
      * @return the Alfresco models associated with the current dictionary.
      */
-    List<AlfrescoModel> getAlfrescoModels()
+    public List<AlfrescoModel> getAlfrescoModels()
     {
         return dictionaryDAO.getModels().stream()
                 .map(qname -> {
@@ -1395,7 +1395,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return new ContextAwareQuery(luceneQuery, Boolean.TRUE.equals(isFilter) ? null : searchParameters);
     }
 
-    private LuceneQueryBuilderContext<Query, Sort, ParseException> getLuceneQueryBuilderContext(SearchParameters searchParameters, SolrQueryRequest req, String alternativeDictionary, FTSQueryParser.RerankPhase rerankPhase)
+    public LuceneQueryBuilderContext<Query, Sort, ParseException> getLuceneQueryBuilderContext(SearchParameters searchParameters, SolrQueryRequest req, String alternativeDictionary, FTSQueryParser.RerankPhase rerankPhase)
     {
         return new Lucene4QueryBuilderContextSolrImpl(
                 getDictionaryService(alternativeDictionary),
@@ -1556,7 +1556,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return solrSortField;
     }
 
-    private String mapNonPropertyFields(String queryField)
+    public String mapNonPropertyFields(String queryField)
     {
         switch(queryField)
         {
@@ -1574,7 +1574,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * @param ending String
      * @return ContentFieldType
      */
-    private ContentFieldType getTextField(String ending)
+    public ContentFieldType getTextField(String ending)
     {
         switch(ending)
         {
