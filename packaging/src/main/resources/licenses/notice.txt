@@ -8,6 +8,9 @@ source files.
 
 Below is the list of licenses and modules used under corresponding licenses. Licenses for libraries used by Apache Solr are listed separately.
 
+The Apache Solr project page is http://lucene.apache.org/solr/
+The Apache Lucene project page is https://lucene.apache.org/
+
 === Public Domain ===
 aopalliance-1.0.jar     http://aopalliance.sourceforge.net/
 
@@ -66,10 +69,9 @@ chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
-xml-apis-2.10.0.jar     https://github.com/FasterXML/jackson
-jetty-start-9.3.14.v20161028.jar        https://www.eclipse.org/jetty/licenses.html
+xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
 resolver-20050927.jar   http://xml.apache.org/commons/
-jug-2.0.0.jar   http://jug.safehaus.org/
+jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
 
 
@@ -109,3 +111,148 @@ hibernate-3.2.6-alf-20131023.jar        http://www.hibernate.org/
 
 
 === Part of Apache Solr (Licenses listed separately) ===
+antlr4-runtime-4.5.1-1.jar
+apache-mime4j-core-0.7.2.jar
+apache-mime4j-dom-0.7.2.jar
+asm-5.1.jar
+asm-commons-5.1.jar
+aspectjrt-1.8.0.jar
+attributes-binder-1.3.1.jar
+avatica-core-1.9.0.jar
+bcmail-jdk15-1.45.jar
+bcprov-jdk15-1.45.jar
+boilerpipe-1.1.0.jar
+caffeine-2.4.0.jar
+calcite-core-1.11.0.jar
+calcite-linq4j-1.11.0.jar
+carrot2-guava-18.0.jar
+carrot2-mini-3.15.0.jar
+commons-cli-1.2.jar
+commons-codec-1.10.jar
+commons-collections-3.2.2.jar
+commons-compiler-2.7.6.jar
+commons-compress-1.11.jar
+commons-configuration-1.6.jar
+commons-exec-1.3.jar
+commons-fileupload-1.3.2.jar
+commons-io-2.5.jar
+commons-lang-2.6.jar
+commons-math3-3.4.1.jar
+curator-client-2.8.0.jar
+curator-framework-2.8.0.jar
+curator-recipes-2.8.0.jar
+dom4j-1.6.1.jar
+eigenbase-properties-1.1.5.jar
+fontbox-2.0.1.jar
+gmetric4j-1.0.7.jar
+guava-14.0.1.jar
+hadoop-annotations-2.7.2.jar
+hadoop-auth-2.7.2.jar
+hadoop-common-2.7.2.jar
+hadoop-hdfs-2.7.2.jar
+hppc-0.7.1.jar
+htrace-core-3.2.0-incubating.jar
+httpclient-4.4.1.jar
+httpcore-4.4.1.jar
+httpmime-4.4.1.jar
+icu4j-56.1.jar
+isoparser-1.1.18.jar
+jackcess-2.1.3.jar
+jackson-annotations-2.5.4.jar
+jackson-core-2.5.4.jar
+jackson-core-asl-1.9.13.jar
+jackson-databind-2.5.4.jar
+jackson-dataformat-smile-2.5.4.jar
+jackson-mapper-asl-1.9.13.jar
+janino-2.7.6.jar
+java-libpst-0.8.1.jar
+javax.servlet-api-3.1.0.jar
+jcl-over-slf4j-1.7.7.jar
+jdom-1.0.jar
+jempbox-1.8.12.jar
+jetty-continuation-9.3.14.v20161028.jar
+jetty-deploy-9.3.14.v20161028.jar
+jetty-http-9.3.14.v20161028.jar
+jetty-io-9.3.14.v20161028.jar
+jetty-jmx-9.3.14.v20161028.jar
+jetty-rewrite-9.3.14.v20161028.jar
+jetty-security-9.3.14.v20161028.jar
+jetty-server-9.3.14.v20161028.jar
+jetty-servlet-9.3.14.v20161028.jar
+jetty-servlets-9.3.14.v20161028.jar
+jetty-util-9.3.14.v20161028.jar
+jetty-webapp-9.3.14.v20161028.jar
+jetty-xml-9.3.14.v20161028.jar
+jmatio-1.0.jar
+joda-time-2.2.jar
+jsonic-1.2.7.jar
+jul-to-slf4j-1.7.7.jar
+juniversalchardet-1.0.3.jar
+langdetect-1.1-20120112.jar
+log4j-1.2.17.jar
+lucene-analyzers-common-6.6.0.jar
+lucene-analyzers-icu-6.6.0.jar
+lucene-analyzers-kuromoji-6.6.0.jar
+lucene-analyzers-morfologik-6.6.0.jar
+lucene-analyzers-phonetic-6.6.0.jar
+lucene-analyzers-smartcn-6.6.0.jar
+lucene-analyzers-stempel-6.6.0.jar
+lucene-backward-codecs-6.6.0.jar
+lucene-classification-6.6.0.jar
+lucene-codecs-6.6.0.jar
+lucene-core-6.6.0.jar
+lucene-expressions-6.6.0.jar
+lucene-grouping-6.6.0.jar
+lucene-highlighter-6.6.0.jar
+lucene-join-6.6.0.jar
+lucene-memory-6.6.0.jar
+lucene-misc-6.6.0.jar
+lucene-queries-6.6.0.jar
+lucene-queryparser-6.6.0.jar
+lucene-sandbox-6.6.0.jar
+lucene-spatial-extras-6.6.0.jar
+lucene-suggest-6.6.0.jar
+metadata-extractor-2.8.1.jar
+metrics-core-3.2.2.jar
+metrics-ganglia-3.2.2.jar
+metrics-graphite-3.2.2.jar
+metrics-jetty9-3.2.2.jar
+metrics-jvm-3.2.2.jar
+morfologik-fsa-2.1.1.jar
+morfologik-polish-2.1.1.jar
+morfologik-stemming-2.1.1.jar
+noggit-0.6.jar
+org.restlet-2.3.0.jar
+org.restlet.ext.servlet-2.3.0.jar
+pdfbox-2.0.1.jar
+pdfbox-tools-2.0.1.jar
+poi-3.15-beta1.jar
+poi-ooxml-3.15-beta1.jar
+poi-ooxml-schemas-3.15-beta1.jar
+poi-scratchpad-3.15-beta1.jar
+protobuf-java-3.1.0.jar
+rome-1.0.jar
+simple-xml-2.7.1.jar
+slf4j-api-1.7.7.jar
+slf4j-log4j12-1.7.7.jar
+solr-analysis-extras-6.6.0.jar
+solr-clustering-6.6.0.jar
+solr-core-6.6.0.jar
+solr-langid-6.6.0.jar
+solr-solrj-6.6.0.jar
+spatial4j-0.6.jar
+start.jar
+stax2-api-3.1.4.jar
+t-digest-3.1.jar
+tagsoup-1.2.1.jar
+tika-core-1.13.jar
+tika-java7-1.13.jar
+tika-parsers-1.13.jar
+tika-xmp-1.13.jar
+vorbis-java-core-0.8.jar
+vorbis-java-tika-0.8.jar
+woodstox-core-asl-4.4.1.jar
+xmlbeans-2.6.0.jar
+xmpcore-5.1.2.jar
+xz-1.5.jar
+zookeeper-3.4.10.jar
