@@ -66,7 +66,7 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
 
         // Find nodes where Path with new folder name matches
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + parentNewName + "\"";
-        waitForContent(parentQueryAfterRename, childFile.getName(), true);
+        Assert.assertEquals(waitForContent(parentQueryAfterRename, childFile.getName(), true), true, "Indexing is still in Progress");
 
         // Query using new parent name
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
@@ -110,7 +110,7 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
         
         // Find nodes where Path with new folder name matches
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + grandParentNewName + "\"";
-        waitForContent(parentQueryAfterRename, grandChildFile.getName(), true);
+        Assert.assertEquals(waitForContent(parentQueryAfterRename, grandChildFile.getName(), true), true, "Indexing is still in Progress");
 
         // Query using new parent name
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
