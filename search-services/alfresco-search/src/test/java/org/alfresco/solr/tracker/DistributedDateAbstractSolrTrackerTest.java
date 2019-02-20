@@ -78,11 +78,12 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
         {
             Acl bulkAcl = getAcl(bulkAclChangeSet);
             bulkAcls.add(bulkAcl);
-            bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
-                    bulkAcl,
-                    singletonList("joel" + bulkAcl.getId()),
-                    singletonList("phil" + bulkAcl.getId()),
-                    null));
+            bulkAclReaders.add(
+                    getAclReaders(bulkAclChangeSet,
+                        bulkAcl,
+                        singletonList("joel" + bulkAcl.getId()),
+                        singletonList("phil" + bulkAcl.getId()),
+                        null));
         }
 
         indexAclChangeSet(bulkAclChangeSet,
@@ -125,14 +126,15 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
         AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
         String fieldName = fieldInstance.getField();
 
-        SimpleDateFormat format = CachingDateFormat.getSolrDatetimeFormatWithoutMsecs();
+        SimpleDateFormat formatter = CachingDateFormat.getSolrDatetimeFormatWithoutMsecs();
         for (int i = 0; i < dates.length; i++)
         {
-            String startDate = format.format(dates[i]);
-            Calendar gcal = new GregorianCalendar();
-            gcal.setTime(dates[i]);
-            gcal.add(Calendar.SECOND, 1);
-            String endDate = format.format(gcal.getTime());
+            String startDate = formatter.format(dates[i]);
+
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(dates[i]);
+            calendar.add(Calendar.SECOND, 1);
+            String endDate = formatter.format(calendar.getTime());
 
             SolrQuery query =
                     new SolrQuery(
@@ -140,11 +142,21 @@ public abstract class DistributedDateAbstractSolrTrackerTest extends AbstractAlf
                                     escapeQueryChars(fieldName) +
                                     ":[" + escapeQueryChars(startDate) + " TO " + escapeQueryChars(endDate) + " } " );
             assertCountAndColocation(query, counts[i]);
-
             assertCorrect(numNodes);
         }
     }
 
+    /**
+     * Initializes 12 test date instances with the following scheme:
+     *
+     * <ul>
+     *     <li>Year: 1980</li>
+     *     <li>Month: 0 to 11</li>
+     *     <li>Day: 21</li>
+     * </ul>
+     *
+     * @return an array containing 12 test dates.
+     */
     protected Date[] setupDates()
     {
         return range(0, 12)
