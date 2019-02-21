@@ -37,7 +37,7 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
     private FileModel childFile, grandChildFile;
     
     @Test(priority = 1, groups = { TestGroup.ASS_13 })
-    public void testChildrenWhenParentRenamed() throws Exception
+    public void testChildPathWhenParentRenamed() throws Exception
     {
         // Create PArent folder
         parentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
@@ -78,7 +78,7 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
     }
 
     @Test(priority = 2, groups = { TestGroup.ASS_13 })
-    public void testChildrenWhenGrandParentRenamed() throws Exception
+    public void testGrandChildPathWhenGrandParentRenamed() throws Exception
     {
         // Create grand-parent folder
         grandParentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
