@@ -273,7 +273,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         String expectedStatusCode = HttpStatus.OK.toString();
 
         // Repeat search until the query results are as expected or Search Retry count is hit
-        for (int searchCount = 1; searchCount <= 5; searchCount++)
+        for (int searchCount = 1; searchCount <= 6; searchCount++)
         {
             SearchRequest searchRequest = createQuery(userQuery);
             SearchResponse response = query(searchRequest);
