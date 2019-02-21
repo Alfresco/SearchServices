@@ -287,17 +287,17 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
                     {
                         found = (contentName.equalsIgnoreCase(entry.getModel().getName()));
                     }
-                    // Loop again if result is not as expected: To cater for solr lag: eventual consistency
-                    resultAsExpected = (expectedInResults == found);
-                    if (resultAsExpected)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        // Wait for the solr indexing.
-                        Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
-                    }
+                }
+                // Loop again if result is not as expected: To cater for solr lag: eventual consistency
+                resultAsExpected = (expectedInResults == found);
+                if (resultAsExpected)
+                {
+                    break;
+                }
+                else
+                {
+                    // Wait for the solr indexing.
+                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
                 }
             }
             else
