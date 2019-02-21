@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
 
 import org.alfresco.rest.model.RestHtmlResponse;
+import org.alfresco.utility.model.SiteModel;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -16,6 +17,7 @@ import org.testng.annotations.Test;
  */
 public class SearchServiceBackupTests extends AbstractBackupTest {
 
+	private SiteModel testSite = new SiteModel("siteForBackupTesting");
 	/**
 	 * {"responseHeader":{"status":0,"QTime":1},"exception":"org.apache.solr.common.SolrException:org.apache.solr.common.SolrException:
 	 * Directory does not exist:
@@ -32,10 +34,17 @@ public class SearchServiceBackupTests extends AbstractBackupTest {
 		
 	}
 
+	@Test(priority=1)
+	public void createTestSiteForBackup() {
+		if(dataSite.isSiteCreated(testSite)) 
+			testSite = dataSite.usingAdmin().createSite(testSite);
+		
+	}
+	
 	/**
 	 * In case of success: {"responseHeader":{"status":0,"QTime":3},"status":"OK"}
 	 */
-	@Test(priority=1)
+	@Test(priority=2)
 	public void save1AlfrescoSnaphotToExistingBackupFolder() throws Exception {
 		RestHtmlResponse htmlResponse = executeSolrBackupRequest("alfresco", "/backup/alfresco", 1);
 

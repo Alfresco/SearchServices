@@ -7,6 +7,7 @@ import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.utility.Utility;
+import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.network.ServerHealth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,9 @@ public abstract class AbstractBackupTest extends AbstractTestNGSpringContextTest
 
 	@Autowired
 	protected ServerHealth serverHealth;
+	
+	@Autowired
+    protected DataSite dataSite;
 
 	@Autowired
 	RestWrapper restWrapper;
