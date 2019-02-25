@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Alfresco Software, Ltd. All rights reserved.
+ * Copyright 2019 Alfresco Software, Ltd. All rights reserved.
  * License rights for this program may be obtained from Alfresco Software, Ltd.
  * pursuant to a written agreement and any use of this program without such an
  * agreement is prohibited.
@@ -10,119 +10,115 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.search.AbstractSearchServiceE2E;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
-import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+/**
+ * Test class tests cascading updates for a child node when parent node is updated
+ * 
+ * @author Alessandro Benedetti
+ * @author Meenal Bhave
+ */
 public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
 {
     @Autowired
-    protected DataSite dataSite;
-
-    @Autowired
     protected DataContent dataContent;
-
-    private SiteModel testSite;
-
-    private UserModel testUser;
     
-    private FolderModel testFolder;
-
-    @BeforeClass(alwaysRun = true)
-    public void setupEnvironment() throws Exception
-    {
-        serverHealth.assertServerIsOnline();
-        
-        testSite = dataSite.createPublicRandomSite();
-        testUser = dataUser.createRandomTestUser();
-        dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
-    }
+    private FolderModel parentFolder, grandParentFolder, childFolder;
+    private FileModel childFile, grandChildFile;
     
-    @Test(groups = { TestGroup.ASS_13 })
-    public void testCascadingTracking_parentFolderRenaming_shouldReIndexChildren() throws Exception
+    @Test(priority = 1, groups = { TestGroup.ASS_13 })
+    public void testChildPathWhenParentRenamed() throws Exception
     {
-        testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+        // Create Parent folder
+        parentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
-        FileModel customFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
+        // Create a file in the parent folder
+        childFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
+
         Map<String, Object> properties = new HashMap<>();
-        properties.put(PropertyIds.NAME, customFile.getName());
+        properties.put(PropertyIds.NAME, childFile.getName());
+        properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+
+        cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(parentFolder)
+            .createFile(childFile, properties, VersioningState.MAJOR).assertThat().existsInRepo();
         
-        cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder)
-            .createFile(customFile, properties, VersioningState.MAJOR).assertThat().existsInRepo();
-        
-        waitForIndexing(customFile.getName(), true);
-        
-        String parentQuery = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + testFolder.getName() + "\"";
-        int initialDescendantCount = query(parentQuery).getPagination().getCount();
-        
+        // Query to find nodes where Path with original folder name matches
+        String parentQuery = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + parentFolder.getName() + "\"";
+
+        // Rename parent folder
         String parentNewName = "parentRenamed";
+        parentFolder.setName(parentNewName);
+
         ContentModel parentNewNameModel = new ContentModel(parentNewName);
+        dataContent.usingUser(testUser).usingResource(parentFolder).renameContent(parentNewNameModel);
 
-        this.dataContent.usingUser(testUser).usingResource(testFolder).renameContent(parentNewNameModel);
+        waitForMetadataIndexing(parentNewName, true);
 
-        testFolder.setName(parentNewName);
-        waitForIndexing(testFolder.getName(), true);
-
+        // Find nodes where Path with new folder name matches
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + parentNewName + "\"";
-        int descendantCountOfDismissedName = query(parentQuery).getPagination().getCount();
+        Boolean indexingInProgress = !waitForContent(parentQueryAfterRename, childFile.getName(), true);
+
+        // Query using new parent name: Expect parent folder and child file
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
-        
-        Assert.assertEquals(initialDescendantCount, descendantCountOfNewName);        
-        //Assert.assertThat("New renamed path has not the same descendants as before renaming: " + parentQueryAfterRename,descendantCountOfNewName,is(initialDescendantCount));
-        
-        Assert.assertEquals(descendantCountOfDismissedName, 0);
-        //Assert.assertThat("Old path still has descendants: " + parentQuery,descendantCountOfDismissedName,is(0));
+        Assert.assertEquals(descendantCountOfNewName, 2, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress.toString(), parentQueryAfterRename));
+
+        // Query using old parent name: Expect no descendant after rename
+        int descendantCountOfOriginalName = query(parentQuery).getPagination().getCount();
+        Assert.assertEquals(descendantCountOfOriginalName, 0, "Old path still has descendants: " + parentQuery);
     }
 
-    @Test(groups = { TestGroup.ASS_13 })
-    public void testCascadingTracking_granParentFolderRenaming_shouldReIndexChildren() throws Exception
+    @Test(priority = 2, groups = { TestGroup.ASS_13 })
+    public void testGrandChildPathWhenGrandParentRenamed() throws Exception
     {
-        testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+        // Create grand parent folder
+        grandParentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
         // Create child folder
-        FolderModel childFolder = dataContent.usingUser(testUser).usingResource(testFolder).createFolder();
+        childFolder = dataContent.usingUser(testUser).usingResource(grandParentFolder).createFolder();
         
-        // Create grandchild file
-        FileModel customFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
+        // Create grand child file
+        grandChildFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
         Map<String, Object> properties = new HashMap<>();
-        properties.put(PropertyIds.NAME, customFile.getName());
-        
+        properties.put(PropertyIds.NAME, grandChildFile.getName());
+        properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(childFolder)
-            .createFile(customFile, properties, VersioningState.MAJOR).assertThat().existsInRepo();
-        waitForIndexing(customFile.getName(), true);
-        
-        String parentQuery = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + testFolder.getName() + "\"";
-        int initialDescendantCount = query(parentQuery).getPagination().getCount();
+            .createFile(grandChildFile, properties, VersioningState.MAJOR).assertThat().existsInRepo();
 
-        // Edit grand parent folder name
-        String granParentNewName = "granParentRenamed";
-        ContentModel granParentNewNameModel = new ContentModel(granParentNewName);
-        this.dataContent.usingUser(testUser).usingResource(testFolder).renameContent(granParentNewNameModel);
-
-        waitForIndexing(granParentNewName, true);
+        // Wait for file to be indexed
+        waitForMetadataIndexing(grandChildFile.getName(), true);
         
-        String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + granParentNewName + "\"";
-        int descendantCountOfDismissedName = query(parentQuery).getPagination().getCount();
+        // Query to find nodes where Path with original folder name matches
+        String parentQuery = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + grandParentFolder.getName() + "\"";
+
+        // Rename grand parent folder
+        String grandParentNewName = "grandParentRenamed";
+        grandParentFolder.setName(grandParentNewName);
+
+        ContentModel grandParentFolderRenamed = new ContentModel(grandParentNewName);
+        dataContent.usingUser(testUser).usingResource(grandParentFolder).renameContent(grandParentFolderRenamed);
+        
+        // Find nodes where Path with new folder name matches
+        String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + grandParentNewName + "\"";
+        Boolean indexingInProgress = !waitForContent(parentQueryAfterRename, grandChildFile.getName(), true);
+
+        // Query using new parent name: Expect grand parent, child folder, grand child file
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
+        Assert.assertEquals(descendantCountOfNewName, 3, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress.toString(), parentQueryAfterRename));
 
-        Assert.assertEquals(descendantCountOfNewName, initialDescendantCount);
-        //Assert.assertThat("New renamed path has not the same descendants as before renaming: " + parentQueryAfterRename,descendantCountOfNewName,is(initialDescendantCount));
-        
-        Assert.assertEquals(descendantCountOfDismissedName, 0);
-        //Assert.assertThat("Old path still has descendants: " + parentQuery,descendantCountOfDismissedName,is(0));
+        // Query using old parent name: Expect no descendant after rename
+        int descendantCountOfOriginalName = query(parentQuery).getPagination().getCount();
+        Assert.assertEquals(descendantCountOfOriginalName, 0, "Old path still has descendants: " + parentQuery);
     }
 }
 
