@@ -297,7 +297,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
                 else
                 {
                     // Wait for the solr indexing.
-                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
+                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + searchCount);
                 }
             }
             else
@@ -382,7 +382,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
                 else
                 {
                  // Wait for the solr indexing.
-                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
+                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + searchCount);
                 }
             }
             else
