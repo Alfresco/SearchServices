@@ -11,19 +11,27 @@
    <name>Search Analytics E2E Tests</name>
    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
    <properties>
-      <tas.rest.api.version>5.2.0.14</tas.rest.api.version>
-      <tas.cmis.api.version>5.2.0-3-SNAPSHOT</tas.cmis.api.version>
-      <tas.utility.version>1.0.32</tas.utility.version>
+      <tas.rest.api.version>6.0.0.1</tas.rest.api.version>
+      <tas.cmis.api.version>6.0.0.0</tas.cmis.api.version>
+      <tas.utility.version>2.0.1</tas.utility.version>
       <rm.version>2.6.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
       <test.include></test.include>
+      <java.version>11</java.version>
+      <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
    </properties>
    <build>
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>${maven-compiler-plugin.version}</version>
+            <configuration>
+                    <release>${java.version}</release>                    
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>                    
+                </configuration>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -79,12 +87,17 @@
                     <artifactId>junit</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>      
+        </dependency>
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
          <version>1.18.4</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+           <groupId>org.openjfx</groupId>
+           <artifactId>javafx-fxml</artifactId>
+           <version>12-ea+10</version>
+       </dependency>
    </dependencies>
 </project>
