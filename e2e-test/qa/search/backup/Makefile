@@ -1,11 +1,13 @@
-include ../Makefile
+include ../../Makefile
 include .env
 
 # the suffix of the backup taken in time. It can be overriden on runtime: make SUFIX=T1 backup-perform 
 SUFIX ?=T0
+# CURRENT_DIR is the folder where this Makefile is saved
+CURRENT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # this is used also in compose yml files
-export HOST_BACKUP_LOCATION:=$(CURRENT_DIR)/backup/host-bkp
+export HOST_BACKUP_LOCATION:=$(CURRENT_DIR)/host-bkp
 
 ifeq ($(dc-backup),)
 	dc-backup:=$(dc) -f ../docker-compose.yml -f docker-compose.backup.yml

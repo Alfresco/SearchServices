@@ -6,19 +6,31 @@ This folder contains code for provisioning ACS with SearchServices or InsightEng
 
 ```ruby
 .
-├── README.md                             # this readme file
-└── search                                # code related to search product
-    ├── Makefile                          # main Makefile (with common tasks)
-    ├── backup                            # related to backup testing of Search Service
-    │   ├── Makefile                      # start here if you want to test backup
-    │   ├── README.md                     # how you can use it
-    │   └── docker-compose.backup.yml     # overrides standard docker-compose.yml with backup data
-    └── docker-compose.yml                # standard docker-compose.yml for Search Service
-    ├── sharding                          # related to Sharding
+├── README.md
+├── insight                             # INSIGHT ENGINE
+│   ├── docker-compose.yml
+│   └── upgrade
+│       └── Makefile
+└── search                              # SEARCH SERVICES
+    ├── Makefile                        # main Makefile - inherited by all Makefiles bellow
+    ├── backup
+    │   ├── Makefile
+    │   ├── README.md                   # start here if you want to test the backup
+    │   └── docker-compose.backup.yml
+    ├── custom
+    │   ├── Dockerfile
+    │   ├── Makefile
+    │   ├── README.md                   # start here if you want to built/test a custom image
+    │   ├── docker-compose.custom.yml
+    │   └── spellcheck
+    │       └── enable-spellcheck.sh
+    ├── docker-compose.yml
+    ├── sharding
     │   ├── Makefile
     │   ├── README.md
     │   └── docker-compose.sharding.yml
     └── upgrade
-        ├── Makefile                      # start here if you want to test the upgrade
+        ├── Makefile
+        ├── README.md
         └── docker-compose.upgrade.yml
 ```

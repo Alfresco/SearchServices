@@ -4,13 +4,12 @@ UNAME := $(shell uname)
 SHELL := /bin/bash
 export COMPOSE_INTERACTIVE_NO_CLI=1
 
-# CURRENT_DIR is the current location of this script: qa/search
+# CURRENT_DIR is the folder where this Makefile is saved
 CURRENT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-# ROOT_DIR is the location of 'qa' folder
+
+# the root dir where E2E maven project resides
 ROOT_DIR:=$(shell dirname $(CURRENT_DIR))
 
-# TEST_DIR is the location of POM
-POM_DIR:=$(shell dirname $(ROOT_DIR))
 
 help: ## main: output this help	
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -60,4 +59,8 @@ standard: ## main: start with standard docker-compose.yml file
 	make clean && $(dc) config && $(dc) up -d && make wait
 
 run-mvn-tests: ## run e2e maven suite: $make run-mvn-tests suiteXmlFile=src/path-to-suite.xml
-	cd $(POM_DIR) && $(mvn) test -DsuiteXmlFile=$(suiteXmlFile)	
+ifndef suiteXmlFile
+	@echo suiteXmlFile not specified! Usage: make run-mvn-tests suiteXmlFile=src/path-to-suite.xml
+	exit 1
+endif
+	cd $(ROOT_DIR) && $(mvn) test -DsuiteXmlFile=$(suiteXmlFile)
