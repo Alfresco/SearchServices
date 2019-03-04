@@ -1,0 +1,39 @@
+version: '3'
+services:  
+  alfresco:    
+    environment:
+      JAVA_OPTS : "
+        -Ddb.driver=org.postgresql.Driver
+        -Ddb.username=alfresco
+        -Ddb.password=alfresco
+        -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
+        -Dsolr.host=search
+        -Dsolr.port=8983
+        -Dsolr.secureComms=none
+        -Dsolr.base.url=/solr
+        -Dindex.subsystem.name=solr6
+        -Dalfresco.restApi.basicAuthScheme=true
+        -Ddeployment.method=DOCKER_COMPOSE
+        -Dcsrf.filter.enabled=false
+        -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+        -Dsolr.backup.alfresco.remoteBackupLocation=/backup/solr/alfresco/
+        -Dsolr.backup.alfresco.numberToKeep=1
+        -Dsolr.backup.archive.remoteBackupLocation=/backup/solr/archive/
+        -Dsolr.backup.archive.numberToKeep=1"
+    volumes:       
+      - ${HOST_BACKUP_LOCATION}/alf_data:/usr/local/tomcat/alf_data
+  
+  search:    
+    environment:
+      - VERSION=${SEARCH_TAG}
+    image: ${SEARCH_IMAGE}:${SEARCH_TAG}
+    volumes:       
+      - ${HOST_BACKUP_LOCATION}/solr:/backup/solr
+
+  postgres:
+    environment:
+      - POSTGRES_PASSWORD=alfresco
+      - POSTGRES_USER=alfresco
+      - POSTGRES_DB=alfresco
+    volumes:
+      - ${HOST_BACKUP_LOCATION}/db:/backup/db

@@ -30,3 +30,5 @@ target
 *.jar
 *.war
 *.ear
+qa/search/backup/host-bkp
+qa/search/backup/host-bkp_T0
