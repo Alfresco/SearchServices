@@ -13,3 +13,6 @@ $ make sharding
 
 # Environment Settings
 Pay attention at the values that exist in [.env](.env) file. These settings will be picked up in custom docker-compose.*.yml file(s)
+
+# `!` 
+I think sharding can be built using [custom](../custom/README.md) approach too - use your preferred approach.
