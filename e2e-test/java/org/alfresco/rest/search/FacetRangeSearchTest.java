@@ -134,7 +134,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("[0 - 200)");
         bucket.assertThat().field("filterQuery").is("content.size:[\"0\" TO \"200\">");
         Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Assert.assertTrue(new Integer(metric.get("count")) >= 4);
+        Assert.assertTrue(Integer.valueOf(metric.get("count")) >= 4);
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"0");
         Assert.assertEquals(info.get("end"),"200");
@@ -146,7 +146,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("[200 - 400)");
         bucket.assertThat().field("filterQuery").is("content.size:[\"200\" TO \"400\">");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Integer count = new Integer(metric.get("count"));
+        Integer count = Integer.valueOf(metric.get("count"));
         Assert.assertTrue(count >= 4);
         info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"200");
@@ -158,7 +158,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("[400 - 600]");
         bucket.assertThat().field("filterQuery").is("content.size:[\"400\" TO \"600\"]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Assert.assertTrue(new Integer(metric.get("count")) >= 7);
+        Assert.assertTrue(Integer.valueOf(metric.get("count")) >= 7);
         info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"400");
         Assert.assertEquals(info.get("end"),"600");
@@ -191,7 +191,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("[0 - 200)");
         bucket.assertThat().field("filterQuery").is("content.size:[\"0\" TO \"200\">");
         Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Assert.assertTrue(new Integer(metric.get("count")) >= 4);
+        Assert.assertTrue(Integer.valueOf(metric.get("count")) >= 4);
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"0");
         Assert.assertEquals(info.get("end"),"200");
@@ -206,7 +206,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         Assert.assertEquals(info.get("start"),"200");
         Assert.assertEquals(info.get("end"),"400");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Assert.assertTrue(new Integer(metric.get("count")) >= 4);
+        Assert.assertTrue(Integer.valueOf(metric.get("count")) >= 4);
         Assert.assertNull(info.get("count"));
         Assert.assertEquals(info.get("startInclusive"),"true");
         Assert.assertEquals(info.get("endInclusive"),"false");
@@ -215,7 +215,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("[400 - 500]");
         bucket.assertThat().field("filterQuery").is("content.size:[\"400\" TO \"500\"]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Assert.assertTrue(new Integer(metric.get("count")) >= 3);
+        Assert.assertTrue(Integer.valueOf(metric.get("count")) >= 3);
         info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"400");
         Assert.assertEquals(info.get("end"),"500");
@@ -307,7 +307,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("(0 - 200]");
         bucket.assertThat().field("filterQuery").is("content.size:<\"0\" TO \"200\"]");
         Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Assert.assertTrue(new Integer(metric.get("count")) >= 4);
+        Assert.assertTrue(Integer.valueOf(metric.get("count")) >= 4);
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"0");
         Assert.assertEquals(info.get("end"),"200");
@@ -319,7 +319,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("(200 - 400]");
         bucket.assertThat().field("filterQuery").is("content.size:<\"200\" TO \"400\"]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Integer count = new Integer(metric.get("count"));
+        Integer count = Integer.valueOf(metric.get("count"));
         Assert.assertTrue(count >= 4);
         info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"200");
@@ -331,7 +331,7 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         bucket.assertThat().field("label").is("(400 - 600]");
         bucket.assertThat().field("filterQuery").is("content.size:<\"400\" TO \"600\"]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Assert.assertTrue(new Integer(metric.get("count")) >= 7);
+        Assert.assertTrue(Integer.valueOf(metric.get("count")) >= 7);
         info = (Map<String, String>) bucket.getBucketInfo();
         Assert.assertEquals(info.get("start"),"400");
         Assert.assertEquals(info.get("end"),"600");

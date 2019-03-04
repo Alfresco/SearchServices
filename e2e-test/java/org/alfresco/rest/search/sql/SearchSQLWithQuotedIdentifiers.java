@@ -22,10 +22,13 @@ import java.util.UUID;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.search.AbstractSearchTest;
-import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.report.Bug;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;

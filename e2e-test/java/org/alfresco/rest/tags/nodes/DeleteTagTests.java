@@ -226,7 +226,7 @@ public class DeleteTagTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void userCollaboratorCanDeleteLongTag() throws Exception
     {
-        String longTag = org.apache.commons.lang.RandomStringUtils.randomAlphanumeric(800);
+        String longTag = RandomStringUtils.randomAlphanumeric(800);
 
         tag = restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingResource(document).addTag(longTag);
@@ -241,7 +241,7 @@ public class DeleteTagTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void managerCanDeleteShortTag() throws Exception
     {
-        String shortTag = org.apache.commons.lang.RandomStringUtils.randomAlphanumeric(10);
+        String shortTag = RandomStringUtils.randomAlphanumeric(10);
 
         tag = restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingResource(document).addTag(shortTag);

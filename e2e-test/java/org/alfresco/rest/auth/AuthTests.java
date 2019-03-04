@@ -10,7 +10,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.codec.binary.Base64;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;

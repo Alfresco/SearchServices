@@ -2,7 +2,6 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonModel;
 import org.alfresco.rest.model.RestPersonModelsCollection;
 import org.alfresco.utility.constants.UserRole;
@@ -11,7 +10,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;

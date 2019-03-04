@@ -19,7 +19,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;

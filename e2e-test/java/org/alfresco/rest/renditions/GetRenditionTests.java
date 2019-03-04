@@ -2,7 +2,6 @@ package org.alfresco.rest.renditions;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
