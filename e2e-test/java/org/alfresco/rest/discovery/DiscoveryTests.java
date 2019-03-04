@@ -69,8 +69,13 @@ public class DiscoveryTests extends RestTest
         List<String> expectedModules = Arrays.asList("alfresco-aos-module", "org.alfresco.integrations.google.docs",
                 "org_alfresco_integrations_S3Connector", "org_alfresco_module_xamconnector",
                 "org.alfresco.module.KofaxAddon", "alfresco-content-connector-for-salesforce-repo",
-                "alfresco-share-services", "alfresco-saml-repo", "org_alfresco_device_sync_repo",
-                "org_alfresco_mm_repo", "org.alfresco.module.TransformationServer", "alfresco-glacier-connector-repo");
+                "alfresco-share-services",
+                // uncomment when REPO-4233 is fixed
+                // "alfresco-saml-repo",
+                "org_alfresco_device_sync_repo",
+                // uncomment when MM-785 is fixed:
+                // "org_alfresco_mm_repo",
+                "org.alfresco.module.TransformationServer", "alfresco-glacier-connector-repo");
 
         expectedModules.forEach(module ->
                 assertTrue(modules.contains(module), String.format("Expected module %s is not installed", module)));
