@@ -40,3 +40,6 @@ At any time you can run the `make all` taks that will execute all the above comm
 ```shel
 make all
 ```
+
+# Environment Settings
+Pay attention at the values that exist in [.env](.env) file. These settings will be picked up in custom docker-compose.*.yml file(s)
