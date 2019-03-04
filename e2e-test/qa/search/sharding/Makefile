@@ -1,5 +1,8 @@
-include ../Makefile
+include ../../Makefile
 include .env
+
+# CURRENT_DIR is the folder where this Makefile is saved
+CURRENT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 ifeq ($(sharding),)
 	sharding:=$(dc) -f ../docker-compose.yml -f docker-compose.sharding.yml

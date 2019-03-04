@@ -1,5 +1,8 @@
-include ../Makefile
+include ../../Makefile
 include .env
+
+# CURRENT_DIR is the folder where this Makefile is saved
+CURRENT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 ifeq ($(dc-upgrade),)
 	dc-upgrade:=$(dc) -f ../docker-compose.yml -f docker-compose.upgrade.yml
