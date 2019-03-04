@@ -44,14 +44,10 @@ public class GetSiteContainersTests extends RestTest
                         UserRole.SiteContributor);
 
         dataLink.usingAdmin().usingSite(publicSiteWithContainers).createRandomLink();
-        dataDiscussion.usingAdmin().usingSite(publicSiteWithContainers).createRandomDiscussion();
 
         dataLink.usingAdmin().usingSite(moderatedSiteModel).createRandomLink();
-        dataDiscussion.usingAdmin().usingSite(moderatedSiteModel).createRandomDiscussion();
 
         dataLink.usingAdmin().usingSite(privateSiteModel).createRandomLink();
-        dataDiscussion.usingAdmin().usingSite(privateSiteModel).createRandomDiscussion();
-
 
         restSiteContainers = restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers();
@@ -146,10 +142,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("maxItems=5")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(3)
+                .assertThat().entriesListCountIs(2)
                 .and().entriesListContains("folderId" , ContainerName.documentLibrary.toString())
-                .and().entriesListContains("folderId", ContainerName.links.toString())
-                .and().entriesListContains("folderId", ContainerName.discussions.toString());
+                .and().entriesListContains("folderId", ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         restClient.withParams("maxItems=1")
@@ -195,7 +190,7 @@ public class GetSiteContainersTests extends RestTest
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withParams("maxItems=000007")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(3);
+                .assertThat().entriesListCountIs(2);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -211,17 +206,17 @@ public class GetSiteContainersTests extends RestTest
 
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=1")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(2);
+                .assertThat().entriesListCountIs(1);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteConsumer)).withParams("skipCount=2")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(1);
+                .assertThat().entriesListCountIs(0);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=0")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(3);
+                .assertThat().entriesListCountIs(2);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -243,7 +238,7 @@ public class GetSiteContainersTests extends RestTest
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=00002")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(1);
+                .assertThat().entriesListCountIs(0);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -265,7 +260,7 @@ public class GetSiteContainersTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingSite(privateSiteModel).getSiteContainers()
-                .assertThat().entriesListCountIs(3);
+                .assertThat().entriesListCountIs(2);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -276,7 +271,7 @@ public class GetSiteContainersTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingSite(moderatedSiteModel).getSiteContainers()
-                .assertThat().entriesListCountIs(3);
+                .assertThat().entriesListCountIs(2);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -287,10 +282,9 @@ public class GetSiteContainersTests extends RestTest
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(3)
+                .assertThat().entriesListCountIs(2)
                 .and().entriesListContains("folderId" ,ContainerName.documentLibrary.toString())
-                .and().entriesListContains("folderId", ContainerName.links.toString())
-                .and().entriesListContains("folderId", ContainerName.discussions.toString());
+                .and().entriesListContains("folderId", ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -313,8 +307,7 @@ public class GetSiteContainersTests extends RestTest
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().usingSite(publicSiteWithContainers).usingParams("properties=folderId").getSiteContainers()
-                .assertThat().entriesListCountIs(3)
-                .and().entriesListContains("folderId", ContainerName.discussions.toString())
+                .assertThat().entriesListCountIs(2)
                 .and().entriesListContains("folderId", ContainerName.documentLibrary.toString())
                 .and().entriesListContains("folderId", ContainerName.links.toString())
                 .and().entriesListDoesNotContain("id");
@@ -328,7 +321,7 @@ public class GetSiteContainersTests extends RestTest
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(3)
+                .assertThat().entriesListCountIs(2)
                 .and().entriesListContains("folderId", ContainerName.documentLibrary.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -340,10 +333,9 @@ public class GetSiteContainersTests extends RestTest
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withParams("skipCount=1").withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
-                .assertThat().entriesListCountIs(2)
+                .assertThat().entriesListCountIs(1)
                 .and().entriesListDoesNotContain("folderId", restSiteContainers.getEntries().get(0).onModel().getFolderId())
-                .and().entriesListContains("folderId", restSiteContainers.getEntries().get(1).onModel().getFolderId())
-                .and().entriesListContains("folderId", restSiteContainers.getEntries().get(2).onModel().getFolderId());
+                .and().entriesListContains("folderId", restSiteContainers.getEntries().get(1).onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -356,8 +348,7 @@ public class GetSiteContainersTests extends RestTest
                 .withParams("skipCount=" + String.valueOf(totalItems-1)).withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
                 .assertThat().entriesListCountIs(1)
                 .and().entriesListDoesNotContain("folderId", restSiteContainers.getEntries().get(0).onModel().getFolderId())
-                .and().entriesListDoesNotContain("folderId", restSiteContainers.getEntries().get(1).onModel().getFolderId())
-                .and().entriesListContains("folderId", restSiteContainers.getEntries().get(2).onModel().getFolderId());
+                .and().entriesListContains("folderId", restSiteContainers.getEntries().get(1).onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 

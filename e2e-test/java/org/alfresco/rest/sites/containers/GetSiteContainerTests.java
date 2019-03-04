@@ -43,14 +43,10 @@ public class GetSiteContainerTests extends RestTest
                 UserRole.SiteContributor);
 
         dataLink.usingAdmin().usingSite(publicSiteModel).createRandomLink();
-        dataDiscussion.usingAdmin().usingSite(publicSiteModel).createRandomDiscussion();
-
-        dataLink.usingUser(testUser).usingSite(moderatedSiteModel).createRandomLink();
 
         dataLink.usingAdmin().usingSite(adminPrivateSiteModel).createRandomLink();
 
         dataLink.usingUser(testUser).usingSite(privateSiteModel).createRandomLink();
-        dataDiscussion.usingUser(testUser).usingSite(privateSiteModel).createRandomDiscussion();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
@@ -140,9 +136,9 @@ public class GetSiteContainerTests extends RestTest
     public void getContainerWithNonExistentSite() throws Exception
     {
         restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite("NonExistentSiteId").getSiteContainer(ContainerName.discussions.toString());
+                .withCoreAPI().usingSite("NonExistentSiteId").getSiteContainer(ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, "NonExistentSiteId", ContainerName.discussions.toString()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, "NonExistentSiteId", ContainerName.links.toString()));
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
@@ -162,11 +158,6 @@ public class GetSiteContainerTests extends RestTest
     public void getContainerForPublicSite() throws Exception
     {
         restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite(publicSiteModel).getSiteContainer(ContainerName.discussions.toString())
-                .assertThat().field("folderId").is(ContainerName.discussions.toString());
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-
-        restClient.authenticateUser(testUser)
                 .withCoreAPI().usingSite(publicSiteModel).getSiteContainer(ContainerName.links.toString())
                 .assertThat().field("folderId").is(ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -178,8 +169,8 @@ public class GetSiteContainerTests extends RestTest
     public void getContainerForPrivateSite() throws Exception
     {
         restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite(privateSiteModel).getSiteContainer(ContainerName.discussions.toString())
-                .assertThat().field("folderId").is(ContainerName.discussions.toString());
+                .withCoreAPI().usingSite(privateSiteModel).getSiteContainer(ContainerName.links.toString())
+                .assertThat().field("folderId").is(ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -189,8 +180,8 @@ public class GetSiteContainerTests extends RestTest
     public void getContainerForModeratedSite() throws Exception
     {
         restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite(moderatedSiteModel).getSiteContainer(ContainerName.links.toString())
-                .assertThat().field("folderId").is(ContainerName.links.toString());
+                .withCoreAPI().usingSite(moderatedSiteModel).getSiteContainer(ContainerName.documentLibrary.toString())
+                .assertThat().field("folderId").is(ContainerName.documentLibrary.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -200,7 +191,7 @@ public class GetSiteContainerTests extends RestTest
     public void getContainerUsingPropertiesParameter() throws Exception
     {
         restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite(publicSiteModel).usingParams("properties=id").getSiteContainer(ContainerName.discussions.toString())
+                .withCoreAPI().usingSite(publicSiteModel).usingParams("properties=id").getSiteContainer(ContainerName.links.toString())
                 .assertThat().fieldsCount().is(1)
                 .and().field("id").isNotEmpty()
                 .and().field("folderId").isNull();
@@ -213,10 +204,10 @@ public class GetSiteContainerTests extends RestTest
     public void getContainerThatDoesNotBelongToSite() throws Exception
     {
         restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite(moderatedSiteModel).getSiteContainer(ContainerName.discussions.toString());
+                .withCoreAPI().usingSite(moderatedSiteModel).getSiteContainer(ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsErrorKey(RestErrorModel.RELATIONSHIP_NOT_FOUND_ERRORKEY)
-                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, moderatedSiteModel.getId(), ContainerName.discussions.toString()))
+                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, moderatedSiteModel.getId(), ContainerName.links.toString()))
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
@@ -227,10 +218,10 @@ public class GetSiteContainerTests extends RestTest
     public void getContainerForEmptySiteId() throws Exception
     {
         restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite("").getSiteContainer(ContainerName.discussions.toString());
+                .withCoreAPI().usingSite("").getSiteContainer(ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsErrorKey(RestErrorModel.RELATIONSHIP_NOT_FOUND_ERRORKEY)
-                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, "", ContainerName.discussions.toString()))
+                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, "", ContainerName.links.toString()))
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
@@ -267,8 +258,8 @@ public class GetSiteContainerTests extends RestTest
     public void adminCanGetContainerForPrivateSiteCreatedByUser() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
-                .withCoreAPI().usingSite(privateSiteModel).getSiteContainer(ContainerName.discussions.toString())
-                .assertThat().field("folderId").is(ContainerName.discussions.toString())
+                .withCoreAPI().usingSite(privateSiteModel).getSiteContainer(ContainerName.links.toString())
+                .assertThat().field("folderId").is(ContainerName.links.toString())
                 .and().field("id").isNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
