@@ -54,3 +54,6 @@ clean: ## kill containers
 wait: ## main: wait for alfresco service && solr to startup	
 	$(helpers)/wait-service-to-start.sh && \
 	$(helpers)/wait-service-to-start.sh http://localhost:8083/solr	
+
+standard: ## start with standard docker-compose.yml file
+	make clean && $(dc) config && $(dc) up -d && make wait
