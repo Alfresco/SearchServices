@@ -18,7 +18,7 @@ help: ## main: output this help
 
 # $(helpers)/wait-service-to-start.sh
 ifeq ($(dc),)
-	helpers:=$(ROOT_DIR)/.helpers
+	helpers:=$(ROOT_DIR)/qa/.helpers
 endif
 
 # $(dc) ls
