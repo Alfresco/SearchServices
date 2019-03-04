@@ -2,6 +2,7 @@
 # execute any on the task that are found here from your terminal
 UNAME := $(shell uname)
 SHELL := /bin/bash
+export COMPOSE_INTERACTIVE_NO_CLI=1
 
 # CURRENT_DIR is the current location of this script: qa/search
 CURRENT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -47,7 +48,7 @@ shell: ## main: open a shell to search service: $ make shell
 	@$(dc) exec search sh
 
 # kill all containers on default docker-compose.yml file
-clean: ## kill containers
+clean: ## main: kill containers
 	$(dc) kill && $(dc) rm -fv	
 
 # just waits for a alfresco and solr to start
@@ -55,5 +56,8 @@ wait: ## main: wait for alfresco service && solr to startup
 	$(helpers)/wait-service-to-start.sh && \
 	$(helpers)/wait-service-to-start.sh http://localhost:8083/solr	
 
-standard: ## start with standard docker-compose.yml file
+standard: ## main: start with standard docker-compose.yml file
 	make clean && $(dc) config && $(dc) up -d && make wait
+
+run-mvn-tests: ## run e2e maven suite: $make run-mvn-tests suiteXmlFile=src/path-to-suite.xml
+	cd $(POM_DIR) && $(mvn) test -DsuiteXmlFile=$(suiteXmlFile)	
