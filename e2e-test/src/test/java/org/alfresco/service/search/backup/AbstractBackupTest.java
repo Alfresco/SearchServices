@@ -3,11 +3,16 @@ package org.alfresco.service.search.backup;
 import java.io.File;
 import java.nio.file.Paths;
 
+import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.DataSite;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.network.ServerHealth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,20 +30,25 @@ import com.jayway.restassured.RestAssured;
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
 public abstract class AbstractBackupTest extends AbstractTestNGSpringContextTests {
 
+	protected SiteModel testSite = new SiteModel("siteForBackupTesting");
+	protected FolderModel folder = new FolderModel("folderBackedUp");
+	protected FileModel file = new FileModel("fileBackedUp.txt", FileType.TEXT_PLAIN, "uber important file");
+	
 	@Autowired
 	protected ServerHealth serverHealth;
 	
 	@Autowired
     protected DataSite dataSite;
+	
+	@Autowired
+    protected CmisWrapper cmisWrapper;
 
 	@Autowired
-	RestWrapper restWrapper;
+	protected RestWrapper restWrapper;
 
 	@Value("${solr.port}")
 	int solrPort;
 
-	@Value("${solr.docker.hostPath}")
-	String solrDockerHostPath;
 
 	@BeforeClass(alwaysRun = true)
 	protected void setupSolrRequest() throws Exception {
@@ -55,7 +65,7 @@ public abstract class AbstractBackupTest extends AbstractTestNGSpringContextTest
 	 * Prepare a GET "backup" command request to localhost:{solrPort}/solr
 	 * 
 	 * @param core : alfresco or archive
-	 * @param location : location inside docker container, should be mounted as volume
+	 * @param dockerVolume : location inside docker container, should be mounted as volume
 	 * @param numberToKeep : how many backup you want to keep
 	 * 
 	 * @return {@link RestHtmlResponse} 
@@ -66,18 +76,16 @@ public abstract class AbstractBackupTest extends AbstractTestNGSpringContextTest
 	 *         file:///nop/snapshot.20190212152339023","status":"OK"}
 	 * @throws InterruptedException
 	 */
-	protected RestHtmlResponse executeSolrBackupRequest(String core, String location, int numberToKeep)
+	protected RestHtmlResponse executeSolrBackupRequest(String core, String dockerVolume, int numberToKeep)
 			throws InterruptedException {
 
 		String keep = String.valueOf(numberToKeep);
-		RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,
-				"{core}/replication?command=backup&location={location}&numberToKeep={keep}&wt=json", core,
-				location, keep);
+		RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "{core}/replication?command=backup&location={dockerVolume}&numberToKeep={keep}&wt=json", core,dockerVolume, keep);
 		RestHtmlResponse htmlResponse = restWrapper.processHtmlResponse(request);
-		// need to wait for backup data to be created or deleted based on numberToKeep
-		Utility.waitToLoopTime(2, "Wait until the backup data is created/deleted");
-		return htmlResponse;
 
+		// need to wait for backup data to be created or deleted based on numberToKeep
+		Utility.waitToLoopTime(2, "Wait until the backup data is created/deleted on docker volume");
+		return htmlResponse;
 	}
 
 	/**
@@ -86,8 +94,9 @@ public abstract class AbstractBackupTest extends AbstractTestNGSpringContextTest
 	 */
 	protected File[] assertFileExistInLocalBackupFolder(String folder, String filePrefix, int count) {
 
-		File backupLocation = Paths.get(solrDockerHostPath, folder).toFile();
+		File backupLocation = Paths.get("./qa/search/backup/host-bkp", folder).toFile();
 
+		Assert.assertTrue(backupLocation.exists(), "Backup location exists: " + backupLocation.getAbsolutePath());
 		if (count >= 1) {
 			Assert.assertEquals(backupLocation.listFiles().length, count,
 					"Expected Files in folder:" + backupLocation.getPath());
