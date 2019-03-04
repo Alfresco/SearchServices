@@ -32,3 +32,6 @@ target
 *.ear
 qa/search/backup/host-bkp
 qa/search/backup/host-bkp_T0
+image-digests.txt
+qa/search/upgrade/solr-data
+qa/search/upgrade/solr-contentstore

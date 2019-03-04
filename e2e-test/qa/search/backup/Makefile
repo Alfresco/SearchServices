@@ -3,9 +3,6 @@ include .env
 
 # the suffix of the backup taken in time. It can be overriden on runtime: make SUFIX=T1 backup-perform 
 SUFIX ?=T0
-suiteXmlFile ?=./src/test/resources/search-pre-backup-suite.xml
-
-export COMPOSE_INTERACTIVE_NO_CLI=1
 
 # this is used also in compose yml files
 export HOST_BACKUP_LOCATION:=$(CURRENT_DIR)/backup/host-bkp
@@ -44,9 +41,6 @@ backup-restore: ## 3 - start restoring from backup location
 	$(dc-backup) up -d postgres && sleep 30 && \
 	docker-compose exec postgres bash -c 'psql --dbname=postgresql://alfresco:alfresco@127.0.0.1:5432/alfresco < /backup/db/alfresco.pg' && \
 	$(dc-backup) up -d
-
-run-mvn-tests: ## run e2e suiteXmlFile: $make run-e2e-tests suiteXmlFile=./src/test/resources/search-post-backup-suite.xml
-	cd $(POM_DIR) && $(mvn) test -DsuiteXmlFile=$(suiteXmlFile)
 
 all: show-config ## 0 - executes the entire backup process
 	# perform the backup and waits until the server is starting

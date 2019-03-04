@@ -14,4 +14,11 @@ This folder contains code for provisioning ACS with SearchServices or InsightEng
     │   ├── README.md                     # how you can use it
     │   └── docker-compose.backup.yml     # overrides standard docker-compose.yml with backup data
     └── docker-compose.yml                # standard docker-compose.yml for Search Service
+    ├── sharding                          # related to Sharding
+    │   ├── Makefile
+    │   ├── README.md
+    │   └── docker-compose.sharding.yml
+    └── upgrade
+        ├── Makefile                      # start here if you want to test the upgrade
+        └── docker-compose.upgrade.yml
 ```
