@@ -3,7 +3,6 @@ package org.alfresco.cmis.search;
 import org.alfresco.cmis.CmisTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.provider.XMLDataConfig;
-import org.alfresco.utility.data.provider.XMLTestData;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
