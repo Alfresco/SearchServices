@@ -110,8 +110,8 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         facetRangeModel.setGap("100");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
               description = "Check basic facet range search api")
     public void searchWithRange()throws Exception
     {
@@ -223,8 +223,8 @@ public class FacetRangeSearchTest extends AbstractSearchTest
         Assert.assertEquals(info.get("startInclusive"),"true");
         Assert.assertEquals(info.get("endInclusive"),"true");
     }
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check date facet intervals search api")
     public void searchDateRange()throws Exception
     {
