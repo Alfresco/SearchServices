@@ -4,6 +4,8 @@ Testing the Upgrade of SearchService product
 
 **Build Plan:** https://bamboo.alfresco.com/bamboo/browse/SAD-QAUP
 
+![](docs/upgrade.png?raw=true)
+
 # Steps
 
 * **a)** start the initial version
