@@ -40,8 +40,7 @@ backup-restore: ## 3 - start restoring from backup location
 	cp -rf $(HOST_BACKUP_LOCATION)_$(SUFIX)/db/ $(HOST_BACKUP_LOCATION)/db/ && \
 	cp -rf $(HOST_BACKUP_LOCATION)_$(SUFIX)/solr $(HOST_BACKUP_LOCATION)/solr && \
 	$(sudo) chmod -R 777 $(HOST_BACKUP_LOCATION) && \
-	$(dc-backup) up -d postgres && sleep 30 && \
-	docker-compose exec postgres bash -c 'psql --dbname=postgresql://alfresco:alfresco@127.0.0.1:5432/alfresco < /backup/db/alfresco.pg' && \
+	$(dc-backup) exec postgres bash -c 'psql --dbname=postgresql://alfresco:alfresco@127.0.0.1:5432/alfresco < /backup/db/alfresco.pg' && \
 	$(dc-backup) up -d
 
 all: show-config ## 0 - executes the entire backup process
