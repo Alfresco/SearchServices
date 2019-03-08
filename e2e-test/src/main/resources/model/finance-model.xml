@@ -86,16 +86,14 @@
                         <facetable>false</facetable>
                     </index>
                 </property>
-            </properties>
-            <associations/>
-            <overrides/>
-            <mandatory-aspects/>
-        </type>
-    </types>
-    <aspects>
-        <aspect name="finance:ParkEx">
-            <title>Parking Expense</title>
-            <properties>
+                <property name="finance:CreatedAt">
+                    <title>CreatedAt</title>
+                    <type>d:datetime</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
                 <property name="finance:Location">
                     <title>Location</title>
                     <type>d:text</type>
@@ -109,6 +107,8 @@
             <associations/>
             <overrides/>
             <mandatory-aspects/>
-        </aspect>
+        </type>
+    </types>
+    <aspects>
     </aspects>
 </model>

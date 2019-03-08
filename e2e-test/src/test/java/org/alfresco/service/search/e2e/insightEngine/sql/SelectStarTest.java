@@ -17,7 +17,7 @@ import java.util.Map;
 
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.SearchSqlRequest;
-import org.alfresco.service.search.AbstractSearchServiceE2E;
+import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
