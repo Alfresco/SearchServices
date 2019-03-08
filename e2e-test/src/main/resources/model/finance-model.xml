@@ -110,5 +110,22 @@
         </type>
     </types>
     <aspects>
+        <aspect name="finance:ParkEx">
+            <title>Parking Expense</title>
+            <properties>
+                <property name="finance:ParkingLocation">
+                    <title>Location</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>            
+         </aspect>
     </aspects>
 </model>
