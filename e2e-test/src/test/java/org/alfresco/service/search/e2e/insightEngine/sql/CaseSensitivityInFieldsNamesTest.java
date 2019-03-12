@@ -10,7 +10,7 @@ package org.alfresco.service.search.e2e.insightEngine.sql;
 import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
 
-import org.alfresco.service.search.AbstractSearchServiceE2E;
+import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
