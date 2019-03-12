@@ -285,7 +285,7 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
 
             return response;
         } catch (Exception exception) {
-            throw new RuntimeException(exception);
+            throw new AssertionError(exception);
         }
     }
 
