@@ -272,7 +272,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_Notes = 'Paris'", 1);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 4, groups = { TestGroup.INSIGHT_11 }, enabled=false)
     public void testMLTextFieldNullValues()
     {
@@ -302,6 +303,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where expense_id = 50 and TYPE = 'expense:expenseReport'", 1);
     }
 
+    // TODO: Update on fix: Search-1457
     @Test(priority = 6, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testIntegerFieldNullValues()
     {
@@ -329,7 +331,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_EmpNo = 56", 1);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 8, groups = { TestGroup.INSIGHT_11 }, enabled=false)
     public void testLongFieldNullValues()
     {
@@ -356,7 +359,9 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_ExchangeRate = 12.5", 1);
     }
-    
+
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 10, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testDoubleFieldNullValues()
     {     
@@ -385,6 +390,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where expense_amount = 60", 1);
     }
 
+    // TODO: Update on fix: Search-1457
     @Test(priority = 12, groups = { TestGroup.INSIGHT_11 }, enabled=false)
     public void testFloatFieldNullValues()
     {
@@ -408,7 +414,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_Approved = 'true' and `expense:Location` = 'Paris'", 0);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 14, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testBooleanFieldNullValues()
     {
@@ -447,7 +454,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_ExpenseDate >= '1970-02-01T01:01:01Z' and TYPE = 'expense:expenseReport'", 3);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 16, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testDateFieldNullValues()
     {
@@ -479,7 +487,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_Recorded_At >= '1970-02-01T01:01:01Z' and TYPE = 'expense:expenseReport'", 3);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 18, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testDateTimeFieldNullValues()
     {
