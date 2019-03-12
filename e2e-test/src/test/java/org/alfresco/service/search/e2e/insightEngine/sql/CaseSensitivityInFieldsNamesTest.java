@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class CaseSensitivityInFieldsNamesTest extends AbstractSearchServiceE2E
         waitForIndexing(lastFile.getName(), true);
     }
 
-    @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
+    @Test(groups = { TestGroup.INSIGHT_11 })
     public void fieldsInSelectListAreCaseSensitive()
     {
         List<String> selectLists =
@@ -114,7 +115,23 @@ public class CaseSensitivityInFieldsNamesTest extends AbstractSearchServiceE2E
                 });
     }
 
-    @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
+    @Test(groups = { TestGroup.INSIGHT_11 })
+    public void fieldsInCountListAreCaseInsensitive()
+    {
+        List<String> selectLists =
+                asList("cm_name", "CM_NAME","cM_NaMe", "expense_Currency","EXPENSE_CURRENCY");
+
+        selectLists.forEach(field -> {
+            String query = "select count(" + field + ") from alfresco where expense_Currency='GBP' and TYPE = 'expense:expenseReport'";
+
+            testSqlQuery(query, 1);
+
+            restClient.onResponse().assertThat().body("list.entries.entry[0][0].label", Matchers.equalTo("EXPR$0"));
+            restClient.onResponse().assertThat().body("list.entries.entry[0][0].value", Matchers.equalTo("4"));
+        });
+    }
+
+    @Test(groups = { TestGroup.INSIGHT_11 })
     public void fieldsInPredicateAreCaseInsensitive()
     {
         List<String> queries =
@@ -135,14 +152,17 @@ public class CaseSensitivityInFieldsNamesTest extends AbstractSearchServiceE2E
         });
     }
 
-    @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
+    @Test(groups = { TestGroup.INSIGHT_11 })
     public void fieldsInExpressionsAreCaseInsensitive()
     {
         List<String> fieldNames = asList("expense_Currency", "EXPENSE_CURRENCY", "ExPeNsE_CurrENCY");
         List<String> queries = fieldNames.stream()
-                .map(fieldName -> "select " + fieldName + " from alfresco where TYPE = 'expense:expenseReport' group by " + fieldName)
+                .map(fieldName -> asList(
+                        "select " + fieldName + " from alfresco where TYPE = 'expense:expenseReport' group by " + fieldName + " having sum(EXPENSE_AMOUNT) > 0",
+                        "select " + fieldName + " from alfresco where TYPE = 'expense:expenseReport' group by " + fieldName + " having sum(expense_Amount) > 0",
+                        "select " + fieldName + " from alfresco where TYPE = 'expense:expenseReport' group by " + fieldName + " having sum(expense_amount) > 0"))
+                .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-
 
         queries.forEach(query -> {
             testSqlQuery(query, 1);
@@ -151,7 +171,7 @@ public class CaseSensitivityInFieldsNamesTest extends AbstractSearchServiceE2E
         });
     }
 
-    @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
+    @Test(groups = { TestGroup.INSIGHT_11 })
     public void fieldsInSortExpressionAreCaseInsensitive_descendingOrder()
     {
         List<String> queries =
@@ -177,13 +197,14 @@ public class CaseSensitivityInFieldsNamesTest extends AbstractSearchServiceE2E
         });
     }
 
-    @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
+    @Test(groups = { TestGroup.INSIGHT_11 })
     public void fieldsInSortExpressionAreCaseInsensitive_ascendingOrder()
     {
         List<String> queries =
                 asList("select expense_Id from alfresco where expense_Currency='GBP' and type = 'expense:expenseReport' order by expense_id asc",
                         "select expense_Id from alfresco where expense_Currency='GBP' and TYPE = 'expense:expenseReport' order by expense_id asc",
-                        "select expense_Id from alfresco where expense_Currency='GBP' and TyPe = 'expense:expenseReport' order by expense_id asc");
+                        "select expense_Id from alfresco where expense_Currency='GBP' and TyPe = 'expense:expenseReport' order by expense_id asc",
+                        "select expense_Id from alfresco where expense_Currency='GBP' and TYPE = 'expense:expenseReport' order by expense_id asc");
 
         int expectedNumberOfResults = 4;
 
