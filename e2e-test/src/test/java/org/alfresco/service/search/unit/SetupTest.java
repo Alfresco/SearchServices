@@ -15,7 +15,7 @@ import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.SearchSqlJDBCRequest;
 import org.alfresco.rest.search.SearchSqlRequest;
-import org.alfresco.service.search.AbstractSearchServiceE2E;
+import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
@@ -123,9 +123,21 @@ public class SetupTest extends AbstractSearchServiceE2E
     @Test(priority = 4, groups = { TestGroup.SANITY, TestGroup.INSIGHT_10 })
     public void testSQLAPICanBeUsed() throws Exception
     {
-        // Select distinct site: json format
+        FileModel customFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "searchContent-finance2");
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Receipt");
+        properties.put(PropertyIds.NAME, customFile.getName());
+        properties.put("finance:ReceiptNo", 2);
+        properties.put("finance:ReceiptValue", 50);
+
+        cmisApi.authenticateUser(testUser).usingSite(testSite)
+                .usingResource(testFolder)
+                .createFile(customFile, properties, VersioningState.MAJOR)
+                .assertThat().existsInRepo();
+
+    	// Select distinct site: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql("select cm_name from alfresco where finance_ReceiptValue > 0");
+        sqlRequest.setSql("select cm_name from alfresco where TYPE = 'financeReceipt'");
         sqlRequest.setLimit(10);
 
         RestResponse response = restClient.authenticateUser(testUser).withSearchSqlAPI().searchSql(sqlRequest);

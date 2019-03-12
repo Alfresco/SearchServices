@@ -1,4 +1,4 @@
-package org.alfresco.service.search;
+package org.alfresco.service.search.e2e;
 
 /*
  * Copyright 2019 Alfresco Software, Ltd. All rights reserved.

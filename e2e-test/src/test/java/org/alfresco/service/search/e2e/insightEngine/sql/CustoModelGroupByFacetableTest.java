@@ -2,7 +2,7 @@ package org.alfresco.service.search.e2e.insightEngine.sql;
 
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.SearchSqlRequest;
-import org.alfresco.service.search.AbstractSearchServiceE2E;
+import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.*;
 import org.apache.chemistry.opencmis.commons.PropertyIds;

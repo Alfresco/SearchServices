@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.search.AbstractSearchServiceE2E;
+import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
@@ -227,7 +227,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
     }
 
     @Test(priority = 1, groups = { TestGroup.INSIGHT_11 })
-    public void testTextField() throws Exception
+    public void testTextField()
     {
         testSqlQuery("select * from alfresco where `expense:Location` = 'london'", 2);
         testSqlQuery("select * from alfresco where `expense:Location` >= 'London'", 3);
@@ -246,7 +246,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
     
     // TODO: Enable when fixed: Bug: Search-1457
     @Test(priority = 2, groups = { TestGroup.INSIGHT_11 }, enabled = false)
-    public void testTextFieldNullValues() throws Exception
+    public void testTextFieldNullValues()
     {  
         testSqlQuery("select * from alfresco where `expense:Location` = '*' and TYPE = 'expense:expenseReport'", 3); //4 or 3
         testSqlQuery("select * from alfresco where `expense:Location` != '*' and TYPE = 'expense:expenseReport'", 2); //0 or 1 or 2
@@ -259,7 +259,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
      }
 
     @Test(priority = 3, groups = { TestGroup.INSIGHT_11 })
-    public void testMLTextField() throws Exception
+    public void testMLTextField()
     {
         testSqlQuery("select * from alfresco where `expense:Notes` = 'London is a busy'", 2);
         testSqlQuery("select * from alfresco where `expense:Notes` = 'london'", 2);
@@ -274,7 +274,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
     }
     
     @Test(priority = 4, groups = { TestGroup.INSIGHT_11 }, enabled=false)
-    public void testMLTextFieldNullValues() executeSqlQuery
+    public void testMLTextFieldNullValues()
     {
         testSqlQuery("select * from alfresco where `expense:Notes` = '*' and TYPE = 'expense:expenseReport'", 3); //4
         testSqlQuery("select * from alfresco where `expense:Notes` != '*' and TYPE = 'expense:expenseReport'", 2); //0 or 1
