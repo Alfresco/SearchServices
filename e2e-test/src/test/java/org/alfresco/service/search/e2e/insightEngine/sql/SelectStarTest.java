@@ -272,7 +272,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_Notes = 'Paris'", 1);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 4, groups = { TestGroup.INSIGHT_11 }, enabled=false)
     public void testMLTextFieldNullValues()
     {
@@ -296,13 +297,13 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where `expense:id`< 12 and TYPE = 'expense:expenseReport'", 1);
         testSqlQuery("select * from alfresco where `expense:id` = 50", 1);
 
-        // TODO: Update on fix: Search-1476
-        // testSqlQuery("select * from alfresco where `expense:id` in (10, 30, 0)", 2);
-        // testSqlQuery("select * from alfresco where `expense:id` not in (5, 10) and TYPE = 'expense:expenseReport'", 4);
+        testSqlQuery("select * from alfresco where `expense:id` in (10, 30, 0)", 2);
+        testSqlQuery("select * from alfresco where `expense:id` not in (5, 10) and TYPE = 'expense:expenseReport'", 4);
 
         testSqlQuery("select * from alfresco where expense_id = 50 and TYPE = 'expense:expenseReport'", 1);
     }
 
+    // TODO: Update on fix: Search-1457
     @Test(priority = 6, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testIntegerFieldNullValues()
     {
@@ -325,13 +326,13 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where `expense:EmpNo` >= 50", 1);
         testSqlQuery("select * from alfresco where `expense:EmpNo` = 1", 2);
 
-        // TODO: Update on fix: Search-1476
-        // testSqlQuery("select * from alfresco where `expense:EmpNo` in (00001, 1, 50)", 2);
-        // testSqlQuery("select * from alfresco where `expense:EmpNo` not in (1, 50)", 2);
+        testSqlQuery("select * from alfresco where `expense:EmpNo` in (00001, 1, 50)", 2);
+        testSqlQuery("select * from alfresco where `expense:EmpNo` not in (1, 50) and TYPE = 'expense:expenseReport'", 3);
 
         testSqlQuery("select * from alfresco where expense_EmpNo = 56", 1);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 8, groups = { TestGroup.INSIGHT_11 }, enabled=false)
     public void testLongFieldNullValues()
     {
@@ -353,13 +354,14 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where `expense:ExchangeRate` <= 12 and TYPE = 'expense:expenseReport'", 2);
         testSqlQuery("select * from alfresco where `expense:ExchangeRate` >= 12.5", 1);
 
-        // TODO: Update on fix: Search-1476
-        // testSqlQuery("select * from alfresco where `expense:ExchangeRate` in (12, 10)", 2);
-        // testSqlQuery("select * from alfresco where `expense:ExchangeRate` not in (12.5, 100) and TYPE = 'expense:expenseReport'", 4);
+        testSqlQuery("select * from alfresco where `expense:ExchangeRate` in (12, 10)", 2);
+        testSqlQuery("select * from alfresco where `expense:ExchangeRate` not in (12.5, 100) and TYPE = 'expense:expenseReport'", 4);
 
         testSqlQuery("select * from alfresco where expense_ExchangeRate = 12.5", 1);
     }
-    
+
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 10, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testDoubleFieldNullValues()
     {     
@@ -373,21 +375,22 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where `expense:ExchangeRate` is not null and TYPE = 'expense:expenseReport'", 3);
     }
 
-    // TODO: Enable the test when fixed: Bug: Search-1455
-    @Test(priority = 11, groups = { TestGroup.INSIGHT_11 }, enabled = false)
+    @Test(priority = 11, groups = { TestGroup.INSIGHT_11 })
     public void testFloatField()
     {
         testSqlQuery("select * from alfresco where `expense:amount` >= '60.50'", 2);
         testSqlQuery("select * from alfresco where `expense:amount` >= 60", 3);
-        testSqlQuery("select * from alfresco where `expense:amount` <= 60 and TYPE = 'expense:expenseReport'", 2);
-        testSqlQuery("select * from alfresco where `expense:amount` = 60", 21);
+        testSqlQuery("select * from alfresco where `expense:amount` <= 60 and TYPE = 'expense:expenseReport'", 1);
+        testSqlQuery("select * from alfresco where `expense:amount` = 60", 1);
         testSqlQuery("select * from alfresco where `expense:amount` in (60, 100)", 2);
-        testSqlQuery("select * from alfresco where `expense:amount` not in (60.5, 100) and TYPE = 'expense:expenseReport'", 2);
-        testSqlQuery("select * from alfresco where `expense:amount` not in (60.5, 100, null) and TYPE = 'expense:expenseReport'", 1);
+        testSqlQuery("select * from alfresco where `expense:amount` not in (60.5, 100) and TYPE = 'expense:expenseReport'", 3);
+        // unsupported?
+        // testSqlQuery("select * from alfresco where `expense:amount` not in (60.5, 100, null) and TYPE = 'expense:expenseReport'", 1);
 
         testSqlQuery("select * from alfresco where expense_amount = 60", 1);
     }
 
+    // TODO: Update on fix: Search-1457
     @Test(priority = 12, groups = { TestGroup.INSIGHT_11 }, enabled=false)
     public void testFloatFieldNullValues()
     {
@@ -411,7 +414,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_Approved = 'true' and `expense:Location` = 'Paris'", 0);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 14, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testBooleanFieldNullValues()
     {
@@ -450,7 +454,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_ExpenseDate >= '1970-02-01T01:01:01Z' and TYPE = 'expense:expenseReport'", 3);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 16, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testDateFieldNullValues()
     {
@@ -482,7 +487,8 @@ public class SelectStarTest extends AbstractSearchServiceE2E
 
         testSqlQuery("select * from alfresco where expense_Recorded_At >= '1970-02-01T01:01:01Z' and TYPE = 'expense:expenseReport'", 3);
     }
-    
+
+    // TODO: Update on fix: Search-1457
     @Test(priority = 18, groups = { TestGroup.INSIGHT_11 }, enabled = false)
     public void testDateTimeFieldNullValues()
     {
