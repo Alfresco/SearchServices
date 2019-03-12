@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.SearchSqlRequest;
-import org.alfresco.service.search.AbstractSearchServiceE2E;
+import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;

@@ -2,6 +2,10 @@
 
 Testing the Backup of SearchService product
 
+**Build Plan:** https://bamboo.alfresco.com/bamboo/browse/SAD-QAB
+
+![](docs/backup.png?raw=true)
+
 # Steps
 
 * **a)** prepare the backup

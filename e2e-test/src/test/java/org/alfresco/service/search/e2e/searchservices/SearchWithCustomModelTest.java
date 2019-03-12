@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.service.search.AbstractSearchServiceE2E;
+import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
@@ -72,7 +72,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
         // Location value is set to London
         cmisApi.authenticateUser(testUser).usingResource(expenseLondon).addSecondaryTypes("P:finance:ParkEx").assertThat()
                 .secondaryTypeIsAvailable("P:finance:ParkEx");
-        cmisApi.authenticateUser(testUser).usingResource(expenseLondon).updateProperty("finance:Location", "London");
+        cmisApi.authenticateUser(testUser).usingResource(expenseLondon).updateProperty("finance:ParkingLocation", "London");
 
         expenseParis = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Expense");
         expenseParis.setName("fin2-" + expenseParis.getName());
@@ -92,7 +92,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
         // Location value is set to Paris
         cmisApi.authenticateUser(testUser).usingResource(expenseParis).addSecondaryTypes("P:finance:ParkEx").assertThat()
                 .secondaryTypeIsAvailable("P:finance:ParkEx");
-        cmisApi.authenticateUser(testUser).usingResource(expenseParis).updateProperty("finance:Location", "Paris");
+        cmisApi.authenticateUser(testUser).usingResource(expenseParis).updateProperty("finance:ParkingLocation", "Paris");
 
         expenseNoLocation = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "receipt");
         expenseNoLocation.setName("fin3-" + expenseNoLocation.getName());
@@ -122,22 +122,22 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     public void testRangeQueryTextField() throws Exception
     {
         // Search Range Query
-        SearchResponse response = queryAsUser(testUser, "finance_Location:[* TO London]");
+        SearchResponse response = queryAsUser(testUser, "finance_ParkingLocation:[* TO London]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         // Content where Location = London is returned, If property is not set, its ignored.
         Assert.assertEquals(response.getPagination().getCount(), 1);
 
-        response = queryAsUser(testUser, "finance_Location:[London TO *]");
+        response = queryAsUser(testUser, "finance_ParkingLocation:[London TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         // Content where Location = London, Paris is returned, If property is not set, its ignored.
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryAsUser(testUser, "finance_Location:[London To Paris]");
+        response = queryAsUser(testUser, "finance_ParkingLocation:[London To Paris]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
 
-        response = queryAsUser(testUser, "finance_Location:[* To *]");
+        response = queryAsUser(testUser, "finance_ParkingLocation:[* To *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }

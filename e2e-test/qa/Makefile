@@ -17,7 +17,7 @@ help: ## main: output this help
 .DEFAULT_GOAL := help
 
 # $(helpers)/wait-service-to-start.sh
-ifeq ($(dc),)
+ifeq ($(helpers),)
 	helpers:=$(ROOT_DIR)/qa/.helpers
 endif
 

@@ -1,4 +1,4 @@
-package org.alfresco.service.search;
+package org.alfresco.service.search.e2e;
 
 /*
  * Copyright 2019 Alfresco Software, Ltd. All rights reserved.
@@ -11,11 +11,13 @@ import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
+import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.Utility;
@@ -29,6 +31,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.ServerHealth;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Session;
+import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,6 +41,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
 
 import lombok.Getter;
+
+import static java.util.Optional.ofNullable;
 import static lombok.AccessLevel.PROTECTED;
 
 import java.util.List;
@@ -254,6 +259,33 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         catch (final Exception exception)
         {
             throw new RuntimeException(exception);
+        }
+    }
+
+    /**
+     * Executes a SQL query and optionally asserts the response cardinality.
+     *
+     * @param sql the SQL query.
+     * @param expectedCardinality if present an additional check is done in order to assert the expected response cardinality.
+     * @return the {@link RestResponse} instance as result of the query execution.
+     */
+    protected RestResponse testSqlQuery(String sql, Integer expectedCardinality)
+    {
+        try {
+            SearchSqlRequest sqlRequest = new SearchSqlRequest();
+            sqlRequest.setSql(sql);
+
+            RestResponse response = restClient.authenticateUser(testUser).withSearchSqlAPI().searchSql(sqlRequest);
+
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+
+            if (ofNullable(expectedCardinality).isPresent()) {
+                restClient.onResponse().assertThat().body("list.pagination.count", Matchers.equalTo(expectedCardinality));
+            }
+
+            return response;
+        } catch (Exception exception) {
+            throw new AssertionError(exception);
         }
     }
 
