@@ -10,8 +10,6 @@ package org.alfresco.service.search.e2e.insightEngine.sql;
 import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
 
-import org.alfresco.rest.core.RestResponse;
-import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.service.search.AbstractSearchServiceE2E;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.model.FileModel;
@@ -22,7 +20,6 @@ import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.hamcrest.Matchers;
 import org.slf4j.Logger;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -222,33 +219,6 @@ public class CaseSensitivityInFieldsNamesTest extends AbstractSearchServiceE2E
             restClient.onResponse().assertThat().body("list.entries.entry[3][0].label", Matchers.equalToIgnoringCase("expense_Id"));
             restClient.onResponse().assertThat().body("list.entries.entry[3][0].value", Matchers.equalTo("4"));
         });
-    }
-
-    /**
-     * Executes the given SQL query and asserts the response cardinality.
-     *
-     * @param sql the SQL query.
-     * @param expectedCardinality the expected cardinality.
-     * @return the {@link RestResponse} instance, that is the query response.
-     */
-    private RestResponse testSqlQuery(String sql, int expectedCardinality)
-    {
-        try
-        {
-            SearchSqlRequest sqlRequest = new SearchSqlRequest();
-            sqlRequest.setSql(sql);
-
-            RestResponse response = restClient.authenticateUser(testUser).withSearchSqlAPI().searchSql(sqlRequest);
-
-            restClient.assertStatusCodeIs(HttpStatus.OK);
-            restClient.onResponse().assertThat().body("list.pagination.count", Matchers.equalTo(expectedCardinality));
-
-            return response;
-        }
-        catch (Exception exception)
-        {
-            throw new RuntimeException(exception);
-        }
     }
 
     /**

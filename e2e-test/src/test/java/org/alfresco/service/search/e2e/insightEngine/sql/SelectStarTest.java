@@ -15,8 +15,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.rest.core.RestResponse;
-import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.service.search.AbstractSearchServiceE2E;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.data.DataContent;
@@ -27,10 +25,8 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.TestGroup;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -241,7 +237,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where `expense:Location` <> 'london' and TYPE = 'expense:expenseReport'", 3);
         testSqlQuery("select * from alfresco where `expense:Location` = 'Reading'", 0);
         testSqlQuery("select * from alfresco where `expense:Location` != 'Reading' and TYPE = 'expense:expenseReport'", 5);
-        testSqlQuery("select * from alfresco where `expense:Location` not in ('Paris', 'Reading') and TYPE = 'expense:expenseReport'", 4);        
+        testSqlQuery("select * from alfresco where `expense:Location` not in ('Paris', 'Reading') and TYPE = 'expense:expenseReport'", 4);
         testSqlQuery("select * from alfresco where `expense:Location` not in ('Paris', 'Reading') and `expense:Location` in ('london')", 2);
         
         // Field name with _
@@ -374,7 +370,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         testSqlQuery("select * from alfresco where `expense:ExchangeRate` not in (12.5, 100, null) and TYPE = 'expense:expenseReport'", 1);
 
         testSqlQuery("select * from alfresco where `expense:ExchangeRate` is null and TYPE = 'expense:expenseReport'", 2);
-        testSqlQuery("select * from alfresco where `expense:ExchangeRate` is not null and TYPE = 'expense:expenseReport'", 3);        
+        testSqlQuery("select * from alfresco where `expense:ExchangeRate` is not null and TYPE = 'expense:expenseReport'", 3);
     }
 
     // TODO: Enable the test when fixed: Bug: Search-1455
@@ -466,7 +462,7 @@ public class SelectStarTest extends AbstractSearchServiceE2E
     
         testSqlQuery("select * from alfresco where `expense:ExpenseDate` is null and TYPE = 'expense:expenseReport'", 2); //4
         testSqlQuery("select * from alfresco where `expense:ExpenseDate` is not null and TYPE = 'expense:expenseReport'", 3); //0
-        }
+    }
     
     @Test(priority = 17, groups = { TestGroup.INSIGHT_11 })
     public void testDateTimeField() throws Exception
@@ -542,24 +538,5 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         // + " where TYPE = 'expense:expenseReport' "
         // + " group by expense_Recorded_At_year"
         // + " order by expense_Recorded_At desc", 5);
-    }
-    
-    private RestResponse testSqlQuery(String sql, Integer entriesCount) throws Exception
-    {
-        SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(sql);
-
-        RestResponse response = restClient.authenticateUser(testUser).withSearchSqlAPI().searchSql(sqlRequest);
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        
-        if (entriesCount != null)
-        {
-            restClient.onResponse().assertThat().body("list.pagination.count", Matchers.equalTo(entriesCount));
-            // To check the label: Use the json path in body:  list.entries.entry[0][0].label
-            // To check the value: Use the json path in body:  list.entries.entry[0][0].value
-        }
-        
-        return response;
     }
 }
