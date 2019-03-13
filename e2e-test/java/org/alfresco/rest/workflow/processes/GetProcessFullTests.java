@@ -2,7 +2,6 @@ package org.alfresco.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -21,7 +20,6 @@ public class GetProcessFullTests extends RestTest
 {
     private UserModel userWhoStartsProcess, assignee;
     private RestProcessModel addedProcess, process;
-    private RestProcessDefinitionModel adhocProcessDefinition;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -29,7 +27,6 @@ public class GetProcessFullTests extends RestTest
         userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
         addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
-        adhocProcessDefinition = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getAllProcessDefinitions().getProcessDefinitionByKey("activitiAdhoc");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
@@ -55,7 +52,7 @@ public class GetProcessFullTests extends RestTest
         process = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(addedProcess).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat()
-            .field("processDefinitionId").is(adhocProcessDefinition.getId())
+            .field("processDefinitionId").is("activitiAdhoc:1:4")
             .and().field("startUserId").is(addedProcess.getStartUserId())
             .and().field("startActivityId").is("start")
             .and().field("startedAt").isNotEmpty()
@@ -69,7 +66,7 @@ public class GetProcessFullTests extends RestTest
         process = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(addedProcess).getProcess();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat()
-            .field("processDefinitionId").is(adhocProcessDefinition.getId())
+            .field("processDefinitionId").is("activitiAdhoc:1:4")
             .and().field("durationInMs").isNotNull()
             .and().field("startUserId").is(addedProcess.getStartUserId())
             .and().field("startActivityId").is("start")

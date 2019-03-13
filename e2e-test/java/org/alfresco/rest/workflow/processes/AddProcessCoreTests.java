@@ -5,8 +5,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestProcessDefinitionModel;
-import org.alfresco.rest.model.RestProcessDefinitionModelsCollection;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.utility.model.TestGroup;
@@ -28,7 +26,6 @@ public class AddProcessCoreTests extends RestTest
     private UserModel assignee, adminUser;
     private RestProcessModel addedProcess;
     private RestProcessModelsCollection processes;
-    private RestProcessDefinitionModel processDefinition;
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, 
             executionType = ExecutionType.REGRESSION, description = "Verify non network admin is able to start new process using REST API and status code is OK (200)")
@@ -43,11 +40,10 @@ public class AddProcessCoreTests extends RestTest
         addedProcess.assertThat().field("id").is(addedProcess.getId())
                     .and().field("startUserId").is(adminUser.getUsername());
 
-        processDefinition = restClient.authenticateUser(adminUser).withWorkflowAPI().getAllProcessDefinitions().getProcessDefinitionByKey("activitiAdhoc");
         processes = restClient.withWorkflowAPI().getProcesses();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().entriesListContains("id", addedProcess.getId())
-            .assertThat().entriesListContains("processDefinitionId", processDefinition.getId())
+            .assertThat().entriesListContains("processDefinitionId", "activitiAdhoc:1:4")
             .assertThat().entriesListContains("startUserId", adminUser.getUsername())
             .assertThat().entriesListContains("startActivityId", "start")
             .assertThat().entriesListContains("completed", "false")
