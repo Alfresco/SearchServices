@@ -53,4 +53,4 @@ do
     #log "Progress: "`echo $status | sed 's|^.*"progress" : \([^ ]*\) .*$|\1|g'`
 done
 
-curl -s -o search_data_results.xlsx -O -J $REQ_TESTS_API"/"$TEST_NAME"/runs/"$INSTANCE_NAME"/results/xlsx"
+curl -s -o create_data_results.xlsx -O -J $REQ_TESTS_API"/"$TEST_NAME"/runs/"$INSTANCE_NAME"/results/xlsx"
