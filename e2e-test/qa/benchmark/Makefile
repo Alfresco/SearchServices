@@ -29,4 +29,4 @@ benchmark-prepare: ## 1 - prepare data with users/sites for benchmark
 	./prepare-data.sh
 
 benchmark-run: ## 2 - here we will actually execute the RestAPI for Search
-	./bechmark-search.sh
+	./benchmark-search.sh
