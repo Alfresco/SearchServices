@@ -10,6 +10,7 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestVariableModelsCollection;
 import org.alfresco.utility.model.FileModel;
@@ -37,6 +38,7 @@ public class UpdateTaskTests extends RestTest
     TaskModel taskModel;
     RestTaskModel restTaskModel;
     UserModel adminUser;
+    RestProcessDefinitionModel activitiReviewProcessDefinition;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -47,6 +49,7 @@ public class UpdateTaskTests extends RestTest
         assigneeUser = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
         fileModel = dataContent.usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
+        activitiReviewProcessDefinition = restClient.authenticateUser(adminUser).withWorkflowAPI().getAllProcessDefinitions().getProcessDefinitionByKey("activitiReviewPooled");
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -105,7 +108,7 @@ public class UpdateTaskTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restTaskModel.assertThat()
                 .field("dueAt").isNotEmpty()
-                .and().field("processDefinitionId").is("activitiReviewPooled:1:12")
+                .and().field("processDefinitionId").is(activitiReviewProcessDefinition.getId())
                 .and().field("processId").is(taskModel.getProcessId())
                 .and().field("name").is("Review Task")
                 .and().field("description").is(taskModel.getMessage())
