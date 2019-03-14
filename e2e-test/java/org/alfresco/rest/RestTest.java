@@ -8,7 +8,6 @@ import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.data.DataContent;
-import org.alfresco.utility.data.DataDiscussion;
 import org.alfresco.utility.data.DataGroup;
 import org.alfresco.utility.data.DataLink;
 import org.alfresco.utility.data.DataSite;
@@ -59,8 +58,6 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     @Autowired
     protected DataLink dataLink;
     
-    @Autowired
-    protected DataDiscussion dataDiscussion;
     @Autowired
     protected WorkflowService workflow;
 
