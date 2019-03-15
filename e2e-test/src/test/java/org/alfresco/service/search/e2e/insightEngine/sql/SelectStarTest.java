@@ -7,12 +7,18 @@
 
 package org.alfresco.service.search.e2e.insightEngine.sql;
 
+import static java.util.Collections.emptyList;
+
+import static org.testng.AssertJUnit.assertEquals;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
@@ -544,5 +550,32 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         // + " where TYPE = 'expense:expenseReport' "
         // + " group by expense_Recorded_At_year"
         // + " order by expense_Recorded_At desc", 5);
+    }
+
+    /** Try adding a double space at each location throughout a wildcard query. */
+    @Test(priority = 21, groups = { TestGroup.INSIGHT_11 })
+    public void testWildcardQueryContainingExtraSpaces()
+    {
+        String baseQuery = "select * from alfresco where `expense:Location` = 'london'";
+        int wordCount = baseQuery.split(" ").length;
+        for (int i = 1; i < wordCount; i++)
+        {
+            // Replace the ith space with a double space.
+            String query = baseQuery.replaceFirst("(([^ ]+ ){" + i + "})", "$1 ");
+            // Check the query still executes correctly.
+            testSqlQuery(query, 2);
+        }
+    }
+
+    /** Check that using different whitespace characters doesn't break the query. */
+    @Test(priority = 22, groups = { TestGroup.INSIGHT_11 })
+    public void testWildcardQueryContainingDifferentWhitespace()
+    {
+        // Loop through the supported whitespace characters.
+        for (char w : " \n\r\t\f".toCharArray())
+        {
+            String query = "select * from alfresco where `expense:id` in (10, 30, 0)".replace(' ' , w);
+            testSqlQuery(query, 2);
+        }
     }
 }
