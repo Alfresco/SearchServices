@@ -1,0 +1,64 @@
+version: '3'
+services:  
+  alfresco:
+    image: alfresco-content-repository-ssl:${ALFRESCO_TAG}
+    build:
+       context: ./ssl/alfresco       
+    environment:
+      JAVA_OPTS : "
+        -Ddb.driver=org.postgresql.Driver
+        -Ddb.username=alfresco
+        -Ddb.password=alfresco
+        -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
+        -Dsolr.host=search
+        -Dsolr.port=8443
+        -Dsolr.port.ssl=8443        
+        -Dalfresco.protocol=https
+        -Dalfresco.port.ssl=7070
+        -Dsolr.secureComms=https
+        -Dalfresco.secureComms=https
+        -Dalfresco.encryption.ssl.keystore.type=JCEKS
+        -Dalfresco.encryption.ssl.keystore.provider=
+        -Dalfresco.encryption.ssl.keystore.location=/keystore/ssl.repo.client.keystore
+        -Dalfresco.encryption.ssl.keystore.passwordFileLocation=/keystore/ssl-keystore-passwords.properties
+        -Dalfresco.encryption.ssl.truststore.type=JCEKS
+        -Dalfresco.encryption.ssl.truststore.provider=
+        -Dalfresco.encryption.ssl.truststore.location=/keystore/ssl.repo.client.truststore
+        -Dalfresco.encryption.ssl.truststore.passwordFileLocation=/keystore/ssl-truststore-passwords.properties
+        -Dsolr.base.url=/solr
+        -Dindex.subsystem.name=solr6
+        -Dalfresco.restApi.basicAuthScheme=true
+        -Ddeployment.method=DOCKER_COMPOSE
+        -Dcsrf.filter.enabled=false        
+        -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+        "
+    ports:
+      - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
+      - "5005:5005" #Java debugging
+      - "8081:8080" #Browser port for Alfresco
+      - "7070:7070" #SSL Browser port for Alfresco
+    volumes:
+      - shared-volume:/keystore
+
+  search:    
+    image: search-services-ssl:${SEARCH_TAG}
+    build:
+       context: ./ssl/search       
+    environment:      
+      SOLR_SSL_KEY_STORE: /opt/alfresco-search-services/solrhome/templates/rerank/conf/ssl.repo.client.keystore
+      SOLR_SSL_KEY_STORE_PASSWORD: kT9X6oe68t
+      SOLR_SSL_KEY_STORE_TYPE: JCEKS
+      SOLR_SSL_TRUST_STORE: /opt/alfresco-search-services/solrhome/templates/rerank/conf/ssl.repo.client.truststore
+      SOLR_SSL_TRUST_STORE_PASSWORD: kT9X6oe68t
+      SOLR_SSL_TRUST_STORE_TYPE: JCEKS
+      SOLR_SSL_NEED_CLIENT_AUTH: "true"
+      SOLR_SSL_WANT_CLIENT_AUTH: "false"      
+      SOLR_PORT: 8443
+    ports: 
+      - 8083:8983 #Browser port
+      - 8084:8443 #SSL Port
+    volumes: 
+      - shared-volume:/opt/alfresco-search-services/solrhome/templates/rerank/conf
+      
+volumes:
+  shared-volume:
