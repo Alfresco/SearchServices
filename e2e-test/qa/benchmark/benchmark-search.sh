@@ -25,8 +25,8 @@ curl -s $REQ_TESTS_API"/"$TEST_NAME"/props/alfresco.port" -X PUT -H "'Host: '"$R
 
 #Set Scenario Weightings
 echo -ne "Set Scenario Weightings\n"
-curl -s $REQ_TESTS_API"/"$TEST_NAME"/props/weight.4.read" -X PUT -H "'Host: '"$REQ_HOST"/'" -H 'Content-Type: application/json;charset=utf-8' --data '{"version":0,"value":0}'
-curl -s $REQ_TESTS_API"/"$TEST_NAME"/props/weight.5.write" -X PUT -H "'Host: '"$REQ_HOST"/'" -H 'Content-Type: application/json;charset=utf-8' --data '{"version":0,"value":0}'
+#curl -s $REQ_TESTS_API"/"$TEST_NAME"/props/weight.4.read" -X PUT -H "'Host: '"$REQ_HOST"/'" -H 'Content-Type: application/json;charset=utf-8' --data '{"version":0,"value":0}'
+#curl -s $REQ_TESTS_API"/"$TEST_NAME"/props/weight.5.write" -X PUT -H "'Host: '"$REQ_HOST"/'" -H 'Content-Type: application/json;charset=utf-8' --data '{"version":0,"value":0}'
 
 
 echo -ne "Create test instance Search\n"
