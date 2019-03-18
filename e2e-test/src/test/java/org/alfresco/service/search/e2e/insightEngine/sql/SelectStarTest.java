@@ -7,15 +7,12 @@
 
 package org.alfresco.service.search.e2e.insightEngine.sql;
 
-import static java.util.Collections.emptyList;
-
-import static org.testng.AssertJUnit.assertEquals;
+import static java.util.Arrays.asList;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +37,7 @@ import org.testng.annotations.Test;
  * Purpose of this TestClass is to test that the variants of <select *> query works as expected with CustomModels
  * 
  * @author meenal bhave
- * {@link https://issues.alfresco.com/jira/browse/SEARCH-873}
+ * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-873>SEARCH-873</a>
  */
 public class SelectStarTest extends AbstractSearchServiceE2E
 {
@@ -571,11 +568,17 @@ public class SelectStarTest extends AbstractSearchServiceE2E
     @Test(priority = 22, groups = { TestGroup.INSIGHT_11 })
     public void testWildcardQueryContainingDifferentWhitespace()
     {
-        // Loop through the supported whitespace characters.
-        for (char w : " \n\r\t\f".toCharArray())
-        {
-            String query = "select * from alfresco where `expense:id` in (10, 30, 0)".replace(' ' , w);
-            testSqlQuery(query, 2);
-        }
+        List<String> whitespacesSequences = asList("\n\r", "\n", "\r", "\t", "\f");
+
+        whitespacesSequences.forEach(whitespaces -> {
+            StringBuilder chars = new StringBuilder();
+            for (int howManyWhiteSpaceChars = 1; howManyWhiteSpaceChars < 3; howManyWhiteSpaceChars++)
+            {
+                chars.append(whitespaces);
+                String query = "select * from alfresco where `expense:id` in (10, 30, 0)".replace(" ", chars);
+                testSqlQuery(query, 2);
+            }
+
+        });
     }
 }
