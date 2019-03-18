@@ -1,5 +1,6 @@
-package org.alfresco.service.search;
+package org.alfresco.service.search.cmis;
 
+import org.alfresco.cmis.CmisProperties;
 import org.alfresco.cmis.CmisWrapper;
 
 import java.lang.reflect.Method;
@@ -28,6 +29,9 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
 
     @Autowired
     protected CmisWrapper cmisApi;
+    
+    @Autowired
+    protected CmisProperties cmisProperties;
 
     @Autowired
     protected DataUser dataUser;
@@ -64,6 +68,6 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
     
     public Integer getSolrWaitTimeInSeconds()
     {
-        return cmisApi.cmisProperties.envProperty().getSolrWaitTimeInSeconds();
+        return cmisProperties.envProperty().getSolrWaitTimeInSeconds();
     }
 }

@@ -1,6 +1,5 @@
 package org.alfresco.service.search.cmis;
 
-import org.alfresco.service.search.CmisTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestData;

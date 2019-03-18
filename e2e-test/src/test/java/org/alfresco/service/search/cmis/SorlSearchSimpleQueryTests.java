@@ -1,6 +1,5 @@
 package org.alfresco.service.search.cmis;
 
-import org.alfresco.service.search.CmisTest;
 import org.testng.annotations.Test;
 
 public class SorlSearchSimpleQueryTests extends CmisTest
