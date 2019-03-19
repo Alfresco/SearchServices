@@ -35,7 +35,7 @@ json-20160212.jar       http://code.google.com/p/json-simple/
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
 neethi-3.0.3.jar        http://ws.apache.org/commons/neethi/
 commons-logging-1.2.jar http://jakarta.apache.org/commons/
-commons-lang3-3.4.jar   http://jakarta.apache.org/commons/
+commons-lang3-3.8.1.jar   http://jakarta.apache.org/commons/
 spring-web-3.2.14.RELEASE.jar   http://projects.spring.io/spring-framework/
 mybatis-3.3.0.jar       http://www.mybatis.org/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
@@ -59,16 +59,16 @@ quartz-2.3.0.jar        http://quartz-scheduler.org/
 jackson-core-2.9.8.jar http://jackson.codehaus.org/
 jackson-annotations-2.9.8.jar  http://jackson.codehaus.org/
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
-spring-beans-5.0.4.RELEASE.jar  http://projects.spring.io/spring-framework/
-spring-core-5.0.4.RELEASE.jar   http://projects.spring.io/spring-framework/
-spring-context-5.0.4.RELEASE.jar        http://projects.spring.io/spring-framework/
-spring-jdbc-5.0.4.RELEASE.jar   http://projects.spring.io/spring-framework/
-spring-expression-5.0.4.RELEASE.jar     http://projects.spring.io/spring-framework/
-spring-orm-5.0.4.RELEASE.jar    http://projects.spring.io/spring-framework/
-spring-jcl-5.0.4.RELEASE.jar    http://projects.spring.io/spring-framework/
-spring-aop-5.0.4.RELEASE.jar    http://projects.spring.io/spring-framework/
-spring-tx-5.0.4.RELEASE.jar     http://projects.spring.io/spring-framework/
-spring-context-support-5.0.4.RELEASE.jar        http://projects.spring.io/spring-framework/
+spring-aop-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-beans-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-context-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-context-support-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-core-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-expression-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-jcl-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-jdbc-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-orm-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-tx-5.1.4.RELEASE.jar http://projects.spring.io/spring-framework/
 xercesImpl-2.11.0-alfresco-patched-20180402.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
@@ -77,19 +77,19 @@ acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisec
 
 
 === CDDL 1.0 ===
-jta-1.0.1b.jar  http://geronimo.apache.org/
+jta-1.1.jar  http://geronimo.apache.org/
 
 
 === CDDL 1.1 ===
 jaxb-core-2.3.0.1.jar   http://jaxb.java.net/
 jaxb-api-2.3.1.jar      http://jaxb.java.net/
-jaxb-impl-2.3.1.jar     http://jaxb.java.net/
-jaxb-xjc-2.3.1.jar      http://jaxb.java.net/
+jaxb-impl-2.3.2.jar     http://jaxb.java.net/
+jaxb-xjc-2.3.2.jar      http://jaxb.java.net/
 javax.activation-api-1.2.0.jar  https://github.com/javaee/activation/blob/master/LICENSE.txt
 
 
 === BSD ===
-jibx-run-1.2.6.jar      http://jibx.sourceforge.net/
+jibx-run-1.3.1.jar      http://jibx.sourceforge.net/
 
 
 === Part of Apache Solr (Licenses listed separately) ===
