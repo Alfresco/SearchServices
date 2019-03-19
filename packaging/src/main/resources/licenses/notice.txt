@@ -56,8 +56,8 @@ mybatis-spring-1.2.5.jar        http://www.mybatis.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 quartz-2.3.0.jar        http://quartz-scheduler.org/
-jackson-core-2.8.10.jar http://jackson.codehaus.org/
-jackson-annotations-2.8.10.jar  http://jackson.codehaus.org/
+jackson-core-2.9.8.jar http://jackson.codehaus.org/
+jackson-annotations-2.9.8.jar  http://jackson.codehaus.org/
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
 spring-beans-5.0.4.RELEASE.jar  http://projects.spring.io/spring-framework/
 spring-core-5.0.4.RELEASE.jar   http://projects.spring.io/spring-framework/
