@@ -20,7 +20,7 @@ start-drivers: ## 2 - start BM Drivers
 
 start-all: start-manager start-drivers ## 3 - start BM Manager and Driver
 
-clean-up: ## clean BM Manager and Drivers
+clean: ## clean BM Manager and Drivers
 	$(dc) -f docker-compose-manager.yml down || true && $(dc) -f docker-compose-drivers.yml down || true
 
 benchmark-prepare: ## 1 - prepare data with users/sites for benchmark
