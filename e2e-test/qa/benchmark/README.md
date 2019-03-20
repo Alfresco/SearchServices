@@ -23,7 +23,7 @@ $ make start-all
 > we need to create users/sites and load some content in order to tests the search performance
 
 ```shell
-$ make benchmark-prepare
+$ make ALFRESCO_URL=<http://alserver:port> benchmark-prepare
 ```
 >this will call some shell scripts
 
