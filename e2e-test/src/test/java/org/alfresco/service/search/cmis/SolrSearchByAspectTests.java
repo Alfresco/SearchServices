@@ -40,7 +40,7 @@ public class SolrSearchByAspectTests extends CmisTest
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")
-    @XMLDataConfig(file = "src/main/resources/testdata/search-by-aspect.xml")
+    @XMLDataConfig(file = "src/test/resources/testdata/search-by-aspect.xml")
     public void prepareDataForAspectSearch(XMLTestData testData) throws Exception
     {
         this.testData = testData;
@@ -52,7 +52,7 @@ public class SolrSearchByAspectTests extends CmisTest
 
     @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
             dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForAspectSearch")
-    @XMLDataConfig(file = "src/main/resources/testdata/search-by-aspect.xml")
+    @XMLDataConfig(file = "src/test/resources/testdata/search-by-aspect.xml")
     public void executeSearchByAspect(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue())

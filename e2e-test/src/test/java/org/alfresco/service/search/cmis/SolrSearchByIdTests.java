@@ -40,7 +40,7 @@ public class SolrSearchByIdTests extends CmisTest
     }
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")
-    @XMLDataConfig(file = "src/main/resources/testdata/search-by-id.xml")
+    @XMLDataConfig(file = "src/test/resources/testdata/search-by-id.xml")
     public void prepareDataForSearchById(XMLTestData testData) throws Exception
     {
         this.testData = testData;
@@ -52,7 +52,7 @@ public class SolrSearchByIdTests extends CmisTest
 
     @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
             dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchById")
-    @XMLDataConfig(file = "src/main/resources/testdata/search-by-id.xml")
+    @XMLDataConfig(file = "src/test/resources/testdata/search-by-id.xml")
     public void executeSortedSearchByID(QueryModel query) throws Exception
     {
         cmisApi.withQuery(query.getValue())

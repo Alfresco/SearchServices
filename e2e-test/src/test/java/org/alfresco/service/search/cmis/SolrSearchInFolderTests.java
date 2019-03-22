@@ -60,7 +60,7 @@ public class SolrSearchInFolderTests extends CmisTest
     
     @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
             dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
-    @XMLDataConfig(file = "src/main/resources/testdata/search-in-folder.xml")
+    @XMLDataConfig(file = "src/test/resources/testdata/search-in-folder.xml")
     public void executeCMISQuery(QueryModel query) throws Exception
     {
         String currentQuery = String.format(query.getValue(), parentFolder.getNodeRef());
