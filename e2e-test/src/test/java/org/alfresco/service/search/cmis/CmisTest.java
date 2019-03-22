@@ -20,7 +20,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
-@ContextConfiguration("classpath:alfresco-cmis-context.xml")
+@ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
 @Component
 @Scope(value = "prototype")
 public abstract class CmisTest extends AbstractTestNGSpringContextTests
