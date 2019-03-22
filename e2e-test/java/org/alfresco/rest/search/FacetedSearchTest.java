@@ -231,7 +231,9 @@ public class FacetedSearchTest extends AbstractSearchTest
 
     }
     
-    @Test
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH , TestGroup.ASS_1})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH ,TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION,
+              description = "Checks facet queries for the Search api")
     /**
      * {
      *  "query": {
@@ -273,7 +275,9 @@ public class FacetedSearchTest extends AbstractSearchTest
         bucket1.assertThat().field("count").is(1);
     }
     
-    @Test
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH , TestGroup.ASS_1})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH ,TestGroup.ASS_1 }, executionType = ExecutionType.REGRESSION,
+              description = "Checks facet queries for the Search api")
     /**
      * Test that items returned are in the format of generic facets.
      * {
