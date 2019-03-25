@@ -7,24 +7,28 @@ the base readme is keept in the bottom of this readme.
 
 * have kubernetes cluster deployed using the bottom documentation (in this ca we skip the search acs deplyment for now as it is not chaos ready)
 * build nodejs app for testing purposes (just an app that will display time)
+  
   ```shell
   cd ../stupid-server/
   docker build -t docker build -t quay.io/lsuciu/stupid-server .
   docker push
   ```
 * build chaos-monkey image
+  
   ```shell
   cd ../kubernetes-pod-chaos-monkey/
   docker build -t quay.io/lsuciu/chaos:latest .
   docker push
   ```
 * deploy the application
+  
   ```shell
   kubectl create -f namespace.yaml
   kubectl create -f deployment.yaml
   kubectl create -f service.yaml
   ```
 * edit chaos.yaml with your values for the env variables (KILL_NR -> number of pods to be killed simultaneous, DELAY_SEC -> number of seconds between repeating the kill cycle)
+  
   ```shell
     env:
     - name: NAMESPACE
@@ -35,6 +39,7 @@ the base readme is keept in the bottom of this readme.
       value: "20"
   ```
 * deploy the chaos 
+  
   ```shell
   kubectl create -f chaos.yaml
   ```
