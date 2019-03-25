@@ -1,0 +1,14 @@
+{
+	"Comment":"CNAME for my ACS deployment",
+	"Changes":[{
+		"Action": "CREATE",
+		"ResourceRecordSet":{
+			"Name": "lsuciu3.dev.alfresco.me",
+			"Type":"CNAME",
+			"TTL":30, 
+			"ResourceRecords":[{
+				"Value": "a0c3ad6a9e80611e8a9f302ac589cc94-762417480.eu-west-1.elb.amazonaws.com"
+			}]
+		}
+	}]
+}
