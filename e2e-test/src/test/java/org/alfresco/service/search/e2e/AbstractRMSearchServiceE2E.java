@@ -20,11 +20,13 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 
 /**
  * Base test class for RM tests.
@@ -42,8 +44,52 @@ public class AbstractRMSearchServiceE2E extends AbstractSearchServiceE2E
     protected static final String NON_ELECTRONIC_RECORD_TYPE = "rma:nonElectronicDocument";
     protected static final String RECORD_CATEGORY_TITLE = "RM_CATEGORY_TITLE";
 
+    protected static final String ROOT_CATEGORY_NAME = RandomData.getRandomName("RM_Cat");
+    protected static final String CATEGORY1 = RandomData.getRandomName("RM_child_cat1");
+    protected static final String CATEGORY2 = RandomData.getRandomName("RM_child_cat2");
+    protected static final String FOLDER1 = RandomData.getRandomName("RM_folder1");
+    protected static final String FOLDER2 = RandomData.getRandomName("RM_folder2");
+    protected static final String ELECTRONIC_FILE = RandomData.getRandomName("RM_electonic_file");
+    protected static final String NON_ELECTRONIC_FILE = RandomData.getRandomName("RM_nonelectonic_file");
+    protected static final String SEARCH_LANGUAGE = "cmis";
+
     @Autowired
     protected RestAPIFactory restAPIFactory;
+
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        serverHealth.assertServerIsOnline();
+
+        testSite = createRMSite();
+
+        // create the Root category
+        RecordCategory rootCategory = createRootCategory(ROOT_CATEGORY_NAME);
+        Assert.assertNotNull(rootCategory, "Root category was not created!");
+
+        // Add two children (categories) on Root category
+        RecordCategoryChild childCategory1 = createRecordCategoryChild(rootCategory.getId(), CATEGORY1);
+        Assert.assertNotNull(childCategory1, "Child category 1 was not created!");
+
+        RecordCategoryChild childCategory2 = createRecordCategoryChild(rootCategory.getId(), CATEGORY2);
+        Assert.assertNotNull(childCategory2, "Child category 2 was not created!");
+
+        // Create two folders with records (electronic and nonElectronic files) on Child category 1
+        RecordCategoryChild folder1 = createRecordFolder(childCategory1.getId(), FOLDER1);
+        RecordCategoryChild folder2 = createRecordFolder(childCategory1.getId(), FOLDER2);
+
+        // Create two folders on Child Category2
+        createRecordFolder(childCategory2.getId(), FOLDER1);
+        createRecordFolder(childCategory2.getId(), FOLDER2);
+
+        // Complete a file
+        Record electronicRecord = createElectronicRecord(folder1.getId(), ELECTRONIC_FILE);
+        completeRecord(electronicRecord.getId());
+        createNonElectronicRecord(folder1.getId(), NON_ELECTRONIC_FILE);
+
+        // Add an electronic record on folder2
+        createElectronicRecord(folder2.getId(), ELECTRONIC_FILE);
+    }
 
     /**
      * Create a new RM Site. If the site already exists then remove it and create a new one.
