@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="CompatibilitySuite" verbose="6" preserve-order="true">
+	<test name="SS-With-RM">
+		<packages>
+			<package
+				name="org.alfresco.service.search.e2e.rm.searchServices"></package>
+		</packages>
+	</test>
+</suite>
