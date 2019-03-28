@@ -2,38 +2,83 @@
 
 <suite name="SearchSuite" verbose="6" preserve-order="true">
 
-	<listeners>
-		<listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
-	</listeners>
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"></listener>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+    </listeners>
 
-	<test name="Smoke">
-		<groups>
-			<run>
-				<include name="sanity" />
-				<include name="ASS_1.0.0" />
-				<exclude name="InsightEngine_1.0.0" />
-			</run>
-		</groups>
+    <test name="SearchFaceted">
+        <classes>
+            <class name="org.alfresco.rest.search.FacetIntervalSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetRangeSearchTest"/>
+            <class name="org.alfresco.rest.search.PivotFacetedSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetedSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetFieldsSearchTest"/>
+        </classes>
+    </test>
+
+    <test name="SearchFeatures">
+        <classes>
+            <class name="org.alfresco.rest.search.FingerPrintTest"/>
+            <class name="org.alfresco.rest.search.SearchAPATHTest"/>
+            <class name="org.alfresco.rest.search.SearchHighLightTest"/>
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest"/>
+            <class name="org.alfresco.rest.search.SearchTest"/>
+            <class name="org.alfresco.rest.search.StatsSearchTest"/>
+        </classes>
+    </test>
+
+   <test name="SearchPrivateAPIs">
+        <classes>
+            <class name="org.alfresco.rest.search.ShardInfoTest"/>
+        </classes>
+    </test>
+
+	<test name="SolrAPIs">
 		<classes>
-			<class name="org.alfresco.service.search.unit.SetupTest" />
+			<class name="org.alfresco.rest.search.solr.SearchSolrAPITest" />
 		</classes>
 	</test>
 
-	<test name="E2E-SearchServices">
-		<groups>
-			<run>
-				<include name="ASS_1.0.0" />
-				<include name="ASS_1.4.0" />
-				<exclude name="InsightEngine_1.0.0" />
-				<exclude name="InsightEngine_1.1.0" />
-			</run>
-		</groups>
-		<packages>
-			<package name="org.alfresco.service.search.e2e.searchservices" />
-			<package name="org.alfresco.service.search.e2e.searchservices.tracker" />
-		</packages>
-		<classes>
-		</classes>
-	</test>
+	<test name="InsightEngine">
+        <classes>
+            <class name="org.alfresco.rest.search.sql.SearchSQLAPITest"/>
+            <class name="org.alfresco.rest.search.sql.SearchSQLPhraseTest"/>
+            <class name="org.alfresco.rest.search.sql.SearchSQLViaJDBCTest"/>
+        </classes>
+    </test>
 
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+    </listeners>
+
+    <test name="Smoke">
+        <groups>
+            <run>
+                <include name="sanity" />
+                <include name="ASS_1.0.0" />
+                <exclude name="InsightEngine_1.0.0" />
+            </run>
+        </groups>
+        <classes>
+            <class name="org.alfresco.service.search.unit.SetupTest" />
+        </classes>
+    </test>
+
+    <test name="E2E-SearchServices">
+        <groups>
+            <run>
+                <include name="ASS_1.0.0" />
+                <include name="ASS_1.4.0" />
+                <exclude name="InsightEngine_1.0.0" />
+                <exclude name="InsightEngine_1.1.0" />
+            </run>
+        </groups>
+        <packages>
+            <package name="org.alfresco.service.search.e2e.searchservices" />
+            <package name="org.alfresco.service.search.e2e.searchservices.tracker" />
+        </packages>
+        <classes>
+        </classes>
+    </test>
 </suite>
