@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.demo.workshop;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;

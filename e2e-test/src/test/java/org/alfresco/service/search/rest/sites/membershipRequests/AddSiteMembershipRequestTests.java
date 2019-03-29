@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.sites.membershipRequests;
 
 import org.alfresco.dataprep.SiteService;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteEntry;
 import org.alfresco.rest.model.RestSiteMembershipRequestModel;

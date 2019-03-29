@@ -3,7 +3,6 @@ package org.alfresco.service.search.rest.workflow;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.NetworkDataPrep;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestItemModel;
@@ -21,6 +20,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.alfresco.service.search.rest.NetworkDataPrep;
 
 public class WorkflowNetworkProcessesTests extends NetworkDataPrep
 {

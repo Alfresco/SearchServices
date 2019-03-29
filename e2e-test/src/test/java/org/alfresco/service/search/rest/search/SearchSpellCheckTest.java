@@ -19,7 +19,7 @@
 package org.alfresco.service.search.rest.search;
 
 import org.alfresco.rest.model.RestRequestSpellcheckModel;
-import org.alfresco.rest.search.AbstractSearchTest;
+import org.alfresco.service.search.rest.search.AbstractSearchTest;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;

@@ -4,7 +4,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestSharedLinksModelCollection;
 import org.alfresco.utility.exception.DataPreparationException;

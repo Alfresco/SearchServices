@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.renditions;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.utility.Utility;

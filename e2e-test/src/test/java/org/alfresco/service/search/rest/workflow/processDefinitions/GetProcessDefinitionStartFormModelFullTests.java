@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.workflow.processDefinitions;
 
 import java.util.Arrays;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestFormModelsCollection;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.utility.model.TestGroup;

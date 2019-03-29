@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.networks;
 
 import java.util.ArrayList;
 
-import org.alfresco.rest.NetworkDataPrep;
+import org.alfresco.service.search.rest.NetworkDataPrep;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestNetworkQuotaModel;
 import org.alfresco.utility.model.TestGroup;

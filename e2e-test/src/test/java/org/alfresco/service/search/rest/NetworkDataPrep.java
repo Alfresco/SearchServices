@@ -1,6 +1,5 @@
 package org.alfresco.service.search.rest;
 
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNetworkModel;
 import org.alfresco.utility.model.UserModel;
 

@@ -20,7 +20,7 @@ package org.alfresco.service.search.rest.search.sql;
 
 import java.util.UUID;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.service.search.rest.search.AbstractSearchTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.CustomObjectTypeProperties;

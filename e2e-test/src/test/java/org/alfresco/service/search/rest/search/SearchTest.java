@@ -19,9 +19,9 @@
 package org.alfresco.service.search.rest.search;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.reverse;
 
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -200,7 +200,7 @@ public class SearchTest extends AbstractSearchTest
         String include = "permissions";
 
         SearchRequest retrievalQueryIncludingPermissionsInformation = createQuery(query);
-        retrievalQueryIncludingPermissionsInformation.setInclude(asList(include));
+        retrievalQueryIncludingPermissionsInformation.setInclude(singletonList(include));
 
         query(retrievalQueryIncludingPermissionsInformation);
 
@@ -223,7 +223,7 @@ public class SearchTest extends AbstractSearchTest
         String include = "isLocked";
 
         SearchRequest retrievalQueryIncludingLockInformation = createQuery(query);
-        retrievalQueryIncludingLockInformation.setInclude(asList(include));
+        retrievalQueryIncludingLockInformation.setInclude(singletonList(include));
 
         query(retrievalQueryIncludingLockInformation);
         
@@ -257,7 +257,7 @@ public class SearchTest extends AbstractSearchTest
         String query = "fox";
         String notValidInclude = "notValid";
         SearchRequest permissionsRetrieval = createQuery(query);
-        permissionsRetrieval.setInclude(asList(notValidInclude));
+        permissionsRetrieval.setInclude(singletonList(notValidInclude));
         
         query(permissionsRetrieval);
         
@@ -277,7 +277,7 @@ public class SearchTest extends AbstractSearchTest
         query.setQuery(queryReq);
 
         // Restrict to fields: parentId
-        List<String> fields = new ArrayList<String>();
+        List<String> fields = new ArrayList<>();
         fields.add("parentId");
         query.setFields(fields);
 

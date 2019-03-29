@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.people;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestPersonModel;
 import org.alfresco.rest.model.RestPersonModelsCollection;

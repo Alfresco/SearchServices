@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.favorites;
 import static org.alfresco.utility.report.log.Step.STEP;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;

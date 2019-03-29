@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;

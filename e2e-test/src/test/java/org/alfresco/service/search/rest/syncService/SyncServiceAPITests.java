@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.syncService;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestSubscriberModel;
 import org.alfresco.rest.model.RestSubscriberModelCollection;
 import org.alfresco.rest.model.RestSyncNodeSubscriptionModel;

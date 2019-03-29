@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.sites.members;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;

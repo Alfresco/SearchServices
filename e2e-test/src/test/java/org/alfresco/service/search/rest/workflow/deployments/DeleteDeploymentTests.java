@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.workflow.deployments;
 import java.util.List;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;

@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.workflow;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.NetworkDataPrep;
+import org.alfresco.service.search.rest.NetworkDataPrep;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;

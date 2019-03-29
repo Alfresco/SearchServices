@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.demo;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.UserModel;
 import org.apache.commons.lang3.RandomStringUtils;

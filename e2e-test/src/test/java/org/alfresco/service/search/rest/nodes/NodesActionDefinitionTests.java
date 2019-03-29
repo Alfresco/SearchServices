@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.nodes;
 
 import static org.testng.Assert.assertFalse;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.rest.model.builder.NodesBuilder;

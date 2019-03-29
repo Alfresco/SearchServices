@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.people.preferences;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPreferenceModel;
 import org.alfresco.utility.constants.PreferenceName;

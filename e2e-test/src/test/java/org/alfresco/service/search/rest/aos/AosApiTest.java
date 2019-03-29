@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.aos;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;

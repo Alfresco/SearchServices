@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.sites;
 
 import org.alfresco.dataprep.SiteService;
-import org.alfresco.rest.NetworkDataPrep;
+import org.alfresco.service.search.rest.NetworkDataPrep;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteMembershipRequestModel;
 import org.alfresco.utility.model.SiteModel;

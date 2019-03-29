@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.demo;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.exception.DataPreparationException;

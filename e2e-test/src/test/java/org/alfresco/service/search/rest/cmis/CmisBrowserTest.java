@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.cmis;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.utility.model.FileModel;
 import org.testng.annotations.Test;

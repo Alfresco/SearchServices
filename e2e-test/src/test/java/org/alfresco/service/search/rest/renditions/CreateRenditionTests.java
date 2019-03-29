@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.renditions;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.utility.Utility;

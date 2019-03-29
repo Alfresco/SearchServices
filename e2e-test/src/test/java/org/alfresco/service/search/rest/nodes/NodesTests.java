@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.nodes;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.builder.NodesBuilder;

@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.comments;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;

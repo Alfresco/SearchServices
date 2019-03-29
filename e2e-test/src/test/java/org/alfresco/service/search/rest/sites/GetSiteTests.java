@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.sites;
 
 import org.alfresco.dataprep.SiteService;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.*;

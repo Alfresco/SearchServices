@@ -5,7 +5,7 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.utility.RetryOperation;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.TestGroup;

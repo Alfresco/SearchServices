@@ -1,11 +1,11 @@
 package org.alfresco.service.search.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.rest.model.RestTagModel;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;

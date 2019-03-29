@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.auth;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestTicketBodyModel;

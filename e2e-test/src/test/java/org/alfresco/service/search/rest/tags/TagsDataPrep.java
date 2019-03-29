@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.tags;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.utility.Utility;

@@ -16,7 +16,7 @@
 package org.alfresco.service.search.rest.trashcan;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.rest.model.RestRenditionInfoModel;

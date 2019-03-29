@@ -5,7 +5,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.exception.DataPreparationException;
 import org.alfresco.utility.model.TestGroup;

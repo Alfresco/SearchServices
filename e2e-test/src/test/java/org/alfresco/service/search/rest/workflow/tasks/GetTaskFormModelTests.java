@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.*;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;

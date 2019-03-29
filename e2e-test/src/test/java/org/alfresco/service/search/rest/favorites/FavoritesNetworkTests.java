@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.favorites;
 
-import org.alfresco.rest.NetworkDataPrep;
+import org.alfresco.service.search.rest.NetworkDataPrep;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;

@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.demo.workshop;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.testng.annotations.Test;
 
 /**

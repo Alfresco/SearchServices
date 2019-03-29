@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.sites.membershipRequests;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.*;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;

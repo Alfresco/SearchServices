@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;

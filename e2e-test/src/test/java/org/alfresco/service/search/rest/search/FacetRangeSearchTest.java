@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRequestRangesModel;
-import org.alfresco.rest.search.AbstractSearchTest;
+import org.alfresco.service.search.rest.search.AbstractSearchTest;
 import org.alfresco.rest.search.RestGenericBucketModel;
 import org.alfresco.rest.search.RestGenericFacetResponseModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -67,6 +67,7 @@ import org.testng.annotations.Test;
  * @author Michael Suzuki
  *
  */
+@SuppressWarnings("unchecked")
 public class FacetRangeSearchTest extends AbstractSearchTest
 {
 

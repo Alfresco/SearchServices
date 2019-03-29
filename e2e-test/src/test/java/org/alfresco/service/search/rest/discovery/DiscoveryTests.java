@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestDiscoveryModel;
 import org.alfresco.utility.model.TestGroup;

@@ -5,7 +5,7 @@ import static org.testng.Assert.assertFalse;
 import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.rest.model.RestNodeModel;

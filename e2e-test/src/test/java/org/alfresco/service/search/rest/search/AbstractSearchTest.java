@@ -19,7 +19,7 @@
 package org.alfresco.service.search.rest.search;
 
 import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
@@ -122,7 +122,7 @@ public class AbstractSearchTest extends RestTest
     }
     /**
      * Helper method which create an http post request to Search API end point.
-     * @param term String search term
+     *
      * @return {@link SearchResponse} response.
      * @throws Exception if error
      * 

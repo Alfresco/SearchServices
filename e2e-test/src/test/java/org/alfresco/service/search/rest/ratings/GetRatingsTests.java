@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.ratings;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRatingModelsCollection;
 import org.alfresco.utility.constants.UserRole;

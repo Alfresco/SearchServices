@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.workflow.deployments;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;

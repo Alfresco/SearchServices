@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestNodeAssocTargetModel;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.builder.NodesBuilder;

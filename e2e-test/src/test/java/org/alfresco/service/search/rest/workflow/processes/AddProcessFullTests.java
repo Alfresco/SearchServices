@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.workflow.processes;
 import javax.json.JsonObject;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;

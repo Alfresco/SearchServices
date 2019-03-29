@@ -1,6 +1,6 @@
 package org.alfresco.service.search.rest.workflow.deployments;
 
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;
 import org.alfresco.utility.model.TestGroup;

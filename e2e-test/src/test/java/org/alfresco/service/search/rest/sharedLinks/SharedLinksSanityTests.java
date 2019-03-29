@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.sharedLinks;
 import javax.json.Json;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestRenditionInfoModel;
 import org.alfresco.rest.model.RestRenditionInfoModelCollection;
 import org.alfresco.rest.model.RestSharedLinksModel;

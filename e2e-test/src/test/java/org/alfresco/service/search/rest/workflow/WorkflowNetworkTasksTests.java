@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.workflow;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.NetworkDataPrep;
+import org.alfresco.service.search.rest.NetworkDataPrep;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestFormModelsCollection;
 import org.alfresco.rest.model.RestItemModel;

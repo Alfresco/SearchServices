@@ -19,7 +19,6 @@
 package org.alfresco.service.search.rest.search;
 
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.search.AbstractSearchTest;
 import org.alfresco.rest.search.FacetInterval;
 import org.alfresco.rest.search.RestGenericBucketModel;
 import org.alfresco.rest.search.RestGenericFacetResponseModel;
@@ -40,7 +39,6 @@ import java.util.Arrays;
 /**
  * Faceted Intervals Search Test
  * @author Gethin James
- *
  */
 public class FacetIntervalSearchTest extends AbstractSearchTest
 {

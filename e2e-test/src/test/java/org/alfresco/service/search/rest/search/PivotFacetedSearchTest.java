@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRequestRangesModel;
-import org.alfresco.rest.search.AbstractSearchTest;
+import org.alfresco.service.search.rest.search.AbstractSearchTest;
 import org.alfresco.rest.search.Pagination;
 import org.alfresco.rest.search.RestGenericBucketModel;
 import org.alfresco.rest.search.RestGenericFacetResponseModel;

@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.workflow.tasks;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTaskModel;
 import org.alfresco.rest.model.RestTaskModelsCollection;

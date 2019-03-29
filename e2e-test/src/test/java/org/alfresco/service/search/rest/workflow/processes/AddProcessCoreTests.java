@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.workflow.processes;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;

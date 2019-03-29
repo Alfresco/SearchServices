@@ -25,7 +25,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.rest.search.AbstractSearchTest;
 import org.alfresco.rest.search.FacetFieldBucket;
 import org.alfresco.rest.search.RestRequestFacetFieldModel;
 import org.alfresco.rest.search.RestRequestFacetFieldsModel;

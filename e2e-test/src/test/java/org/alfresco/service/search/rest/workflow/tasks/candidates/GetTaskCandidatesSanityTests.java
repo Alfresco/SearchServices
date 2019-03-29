@@ -1,7 +1,7 @@
 package org.alfresco.service.search.rest.workflow.tasks.candidates;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.model.RestCandidateModelsCollection;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.GroupModel;

@@ -3,7 +3,7 @@ package org.alfresco.service.search.rest.workflow.processes;
 import java.util.List;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.RestTest;
+import org.alfresco.service.search.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
 import org.alfresco.rest.model.RestProcessModel;

@@ -2,7 +2,7 @@ package org.alfresco.service.search.rest.workflow;
 
 import java.util.List;
 
-import org.alfresco.rest.NetworkDataPrep;
+import org.alfresco.service.search.rest.NetworkDataPrep;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestDeploymentModelsCollection;
