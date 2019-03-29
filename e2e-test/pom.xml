@@ -19,6 +19,8 @@
       <test.exclude></test.exclude>
       <test.include></test.include>
       <java.version>11</java.version>
+      <maven.compiler.source>${java.version}</maven.compiler.source>
+      <maven.compiler.target>${java.version}</maven.compiler.target>
       <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
    </properties>
    <build>
