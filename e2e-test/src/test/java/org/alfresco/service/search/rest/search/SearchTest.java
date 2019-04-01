@@ -64,15 +64,15 @@ public class SearchTest extends AbstractSearchTest
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
     public void searchOnIndexedData() throws Exception
-    {        
-        SearchResponse nodes =  query(unique_searchString);
+    {
+        SearchResponse nodes =  query("cm:content:" + unique_searchString);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
         
         SearchNodeModel entity = nodes.getEntryByIndex(0);
         entity.assertThat().field("search").contains("score");
         entity.getSearch().assertThat().field("score").isNotEmpty();
-        Assert.assertEquals("pangram.txt",entity.getName());
+        Assert.assertEquals(entity.getName(),"pangram.txt");
     }
     
     @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
