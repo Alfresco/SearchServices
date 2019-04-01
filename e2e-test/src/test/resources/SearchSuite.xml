@@ -9,44 +9,36 @@
 
     <test name="SearchFaceted">
         <classes>
-            <class name="org.alfresco.service.search.rest.search.FacetIntervalSearchTest"/>
-            <class name="org.alfresco.service.search.rest.search.FacetRangeSearchTest"/>
-            <class name="org.alfresco.service.search.rest.search.PivotFacetedSearchTest"/>
-            <class name="org.alfresco.service.search.rest.search.FacetedSearchTest"/>
-            <class name="org.alfresco.service.search.rest.search.FacetFieldsSearchTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.FacetIntervalSearchTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.FacetRangeSearchTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.PivotFacetedSearchTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.FacetedSearchTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.FacetFieldsSearchTest"/>
         </classes>
     </test>
 
     <test name="SearchFeatures">
         <classes>
-            <class name="org.alfresco.service.search.rest.search.FingerPrintTest"/>
-            <class name="org.alfresco.service.search.rest.search.SearchAPATHTest"/>
-            <class name="org.alfresco.service.search.rest.search.SearchHighLightTest"/>
-            <class name="org.alfresco.service.search.rest.search.SearchSpellCheckTest"/>
-            <class name="org.alfresco.service.search.rest.search.SearchTest"/>
-            <class name="org.alfresco.service.search.rest.search.StatsSearchTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.FingerPrintTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.SearchAPATHTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.SearchHighLightTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.SearchSpellCheckTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.SearchTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.StatsSearchTest"/>
         </classes>
     </test>
 
    <test name="SearchPrivateAPIs">
         <classes>
-            <class name="org.alfresco.service.search.rest.search.ShardInfoTest"/>
+            <class name="org.alfresco.service.search.e2e.searchservices.ShardInfoTest"/>
         </classes>
     </test>
 
 	<test name="SolrAPIs">
 		<classes>
-			<class name="org.alfresco.service.search.rest.search.solr.SearchSolrAPITest" />
+			<class name="org.alfresco.service.search.e2e.searchservices.solr.SearchSolrAPITest" />
 		</classes>
 	</test>
-
-	<test name="InsightEngine">
-        <classes>
-            <class name="org.alfresco.service.search.rest.search.sql.SearchSQLAPITest"/>
-            <class name="org.alfresco.service.search.rest.search.sql.SearchSQLPhraseTest"/>
-            <class name="org.alfresco.service.search.rest.search.sql.SearchSQLViaJDBCTest"/>
-        </classes>
-    </test>
 
     <test name="Smoke">
         <groups>
