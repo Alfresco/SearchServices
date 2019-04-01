@@ -141,7 +141,7 @@ public class AbstractSearchTest extends RestTest
      * @return {@link SearchResponse} response.
      * 
      */
-    protected SearchResponse query(SearchRequest query) throws Exception
+    protected SearchResponse query(SearchRequest query)
     {
         try
         {
