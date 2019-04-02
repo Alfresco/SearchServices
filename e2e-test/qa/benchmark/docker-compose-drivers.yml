@@ -1,0 +1,27 @@
+version: "3"
+# This is the docker compose for Alfresco Benchmark drivers
+
+services:
+    alfresco-bm-load-users:
+        image: quay.io/alfresco/alfresco-bm-load-users:${ALFRESCO_BM_LOAD_USERS_TAG}
+        environment:
+            JAVA_OPTS : "
+                -Dmongo.config.host=mongo:${MONGO_PORT}
+                -Dserver.port=9082
+                "
+
+    alfresco-bm-load-data:
+        image: quay.io/alfresco/alfresco-bm-load-data:${ALFRESCO_BM_LOAD_DATA_TAG}
+        environment:
+            JAVA_OPTS : "
+                -Dmongo.config.host=mongo:${MONGO_PORT}
+                -Dserver.port=9083
+                "
+
+    alfresco-bm-rest-api:
+        image: quay.io/alfresco/alfresco-bm-rest-api:${ALFRESCO_BM_REST_API_TAG}
+        environment:
+            JAVA_OPTS : "
+                -Dmongo.config.host=mongo:${MONGO_PORT}
+                -Dserver.port=9084
+                "

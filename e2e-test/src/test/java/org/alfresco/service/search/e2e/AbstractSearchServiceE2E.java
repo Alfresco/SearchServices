@@ -454,4 +454,20 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         searchRequest.setQuery(queryModel);
         return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
     }
+    
+    /**
+     * Run a search as given user and return the response
+     * 
+     * @param user: UserModel for the user you wish to run the query as
+     * @param queryModel: The queryModel to search for, containing the query
+     * @return the search response from the API
+     * @throws Exception
+     */
+    public SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel) throws Exception
+    {
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery(queryModel);
+
+        return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
+    }
 }

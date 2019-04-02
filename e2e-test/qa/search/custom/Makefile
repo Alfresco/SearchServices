@@ -10,9 +10,9 @@ endif
 
 
 ## ---- CUSTOM
-build: ## 1 - build a custom image: $ make SCRIPTS_FOLDER=spellcheck custom-build	
+build: ## 1 - build a custom image: $ make SCRIPTS_FOLDER=spellcheck build	
 ifndef SCRIPTS_FOLDER
-	@echo SCRIPTS_FOLDER not defined "Usage: make SCRIPTS_FOLDER=spellcheck custom-build"
+	@echo SCRIPTS_FOLDER not defined "Usage: make SCRIPTS_FOLDER=spellcheck build"
 	exit 1
 endif
 	$(dc-custom) build  --force-rm --no-cache --pull --build-arg SCRIPTS_FOLDER=$(SCRIPTS_FOLDER)
