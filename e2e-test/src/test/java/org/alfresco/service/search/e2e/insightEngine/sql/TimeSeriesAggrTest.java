@@ -32,6 +32,7 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
+import org.alfresco.utility.report.log.Step;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.hamcrest.Matchers;
@@ -67,7 +68,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     /**
      * sql query to retrieve aggregated results based on Virtual Time Dimension _day
      */
-    private static final String VIRTUAL_TIME_DIMENTION_DAY = ""
+    private static final String VIRTUAL_TIME_DIMENSION_DAY = ""
             + "select "
             + "finance_CreatedAt_day, "
             + "count(*) as ExpensesCount, "
@@ -79,7 +80,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     /**
      * sql query to retrieve aggregated results based on Virtual Time Dimension _month
      */
-    private static final String VIRTUAL_TIME_DIMENTION_MONTH = ""
+    private static final String VIRTUAL_TIME_DIMENSION_MONTH = ""
             + "select "
             + "finance_CreatedAt_month, "
             + "count(*) as ExpensesCount, "
@@ -92,7 +93,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
      * sql query to retrieve aggregated results based on Virtual Time Dimension _year
      * Includes order by desc: order by virtual time dimension _year
      */
-    private static final String VIRTUAL_TIME_DIMENTION_YEAR = ""
+    private static final String VIRTUAL_TIME_DIMENSION_YEAR = ""
             + "select "
             + "finance_CreatedAt_year, "
             + "count(*) as ExpensesCount, "
@@ -117,10 +118,12 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
      */
     private static final String ORDER_BY_DESC = " order by finance_CreatedAt_month desc";
 
-    /**
-     * LocalDateTime that represents date 1 month ago
-     */
-    private static final LocalDateTime dateLastMonth = LocalDateTime.now().minusMonths(1);
+    /** The current date. */
+    private static final LocalDateTime nowDate = LocalDateTime.now();
+    /** LocalDateTime that represents date 1 month ago */
+    private static final LocalDateTime dateLastMonth = nowDate.minusMonths(1);
+    /** The day after one month ago. */
+    private static final LocalDateTime lastMonthPlusOneDay = dateLastMonth.plusDays(1);
 
     @BeforeClass(alwaysRun = true)
     public void setupEnvironment() throws Exception
@@ -172,22 +175,22 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         // Expense1 for testExpenseUser1 dated today: Amount 100
         expense1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
         expense1.setName("ex-"+ expense1.getName());
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
         properties.put(PropertyIds.NAME, expense1.getName());
         properties.put("finance:No", uniqueRef);
         properties.put("finance:Emp", testExpenseUser1.getUsername());
         properties.put("finance:amount", 100);
-        properties.put("finance:CreatedAt", Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+        properties.put("finance:CreatedAt", Date.from(nowDate.toInstant(ZoneOffset.UTC)));
         properties.put("finance:Location", "Reading");
         
         cmisApi.authenticateUser(testExpenseUser1).usingSite(testSite).usingResource(testFolderUser1)
             .createFile(expense1, properties, VersioningState.MAJOR).assertThat().existsInRepo();
         
-        // Expense2 for testExpenseUser1 dated <today- 1 month>: Amount 50
+        // Expense2 for testExpenseUser1 dated <today - 1 month>: Amount 50
         expense2 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
         expense2.setName("ex-"+ expense2.getName());
-        properties = new HashMap<String, Object>();
+        properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
         properties.put(PropertyIds.NAME, expense2.getName());
         properties.put("finance:No", uniqueRef+1);
@@ -199,10 +202,10 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         cmisApi.authenticateUser(testExpenseUser1).usingSite(testSite).usingResource(testFolderUser1)
             .createFile(expense2, properties, VersioningState.MAJOR).assertThat().existsInRepo();
         
-        // Expense1 for testExpenseAdmin dated <today- 1 month>: Amount 400
+        // Expense1 for testExpenseAdmin dated <today - 1 month>: Amount 400
         expense3 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
         expense3.setName("ex-"+ expense3.getName());
-        properties = new HashMap<String, Object>();
+        properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
         properties.put(PropertyIds.NAME, expense3.getName());
         properties.put("finance:No", uniqueRef+3);
@@ -214,15 +217,15 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         cmisApi.authenticateUser(testExpenseAdmin).usingSite(testSite).usingResource(testFolderAdmin)
         .createFile(expense3, properties, VersioningState.MAJOR).assertThat().existsInRepo();
         
-        // Expense2 for testExpenseAdmin dated <today- 1 month>: Amount Not specified / Null
+        // Expense2 for testExpenseAdmin dated <today - 1 month>: Amount Not specified / Null
         expense4 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
         expense4.setName("ex-"+ expense4.getName());
-        properties = new HashMap<String, Object>();
+        properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
         properties.put(PropertyIds.NAME, expense4.getName());
         properties.put("finance:No", uniqueRef+4);
         properties.put("finance:Emp", testExpenseAdmin.getUsername());
-        properties.put("finance:CreatedAt", Date.from(dateLastMonth.plusDays(1).toInstant(ZoneOffset.UTC)));
+        properties.put("finance:CreatedAt", Date.from(lastMonthPlusOneDay.toInstant(ZoneOffset.UTC)));
         properties.put("finance:Location", "Maidenhead");
         
         cmisApi.authenticateUser(testExpenseAdmin).usingSite(testSite).usingResource(testFolderAdmin)
@@ -244,7 +247,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     {
         // Select Data for TimeSeriesAggr: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(VIRTUAL_TIME_DIMENTION_DAY);
+        sqlRequest.setSql(VIRTUAL_TIME_DIMENSION_DAY);
         sqlRequest.setFormat("json");
 
         RestResponse response = 
@@ -252,7 +255,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         // Check that response includes the details for expense dated <today - 1 month>
-        int noOfDays = LocalDateTime.now().getDayOfYear() - dateLastMonth.getDayOfYear();
+        int noOfDays = nowDate.getDayOfYear() - dateLastMonth.getDayOfYear();
         response.assertThat().body("list.pagination.count", Matchers.equalTo(noOfDays + 1));
 
         // Execute in solr format
@@ -269,7 +272,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
 
         // last date available in the results set is today
         restClient.onResponse().assertThat().body("result-set.docs[" + noOfDays + "].finance_CreatedAt_day", Matchers
-                .equalTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .equalTo(nowDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         
     }
 
@@ -285,7 +288,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     {
         // Select Data for TimeSeriesAggr: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(VIRTUAL_TIME_DIMENTION_DAY + HAVING_MIN_AMOUNT);
+        sqlRequest.setSql(VIRTUAL_TIME_DIMENSION_DAY + HAVING_MIN_AMOUNT);
         sqlRequest.setFormat("json");
 
         RestResponse response = 
@@ -314,7 +317,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
 
         // Check that response includes the details for expense dated <today>
         restClient.onResponse().assertThat().body("result-set.docs[1].finance_CreatedAt_day", Matchers
-                .equalTo(LocalDateTime.now().minusMonths(0).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .equalTo(nowDate.minusMonths(0).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         restClient.onResponse().assertThat().body("result-set.docs[1].ExpensesCount", Matchers.equalTo(1));
         restClient.onResponse().assertThat().body("result-set.docs[1].MinExpenses", Matchers.equalTo(100));
         restClient.onResponse().assertThat().body("result-set.docs[1].MaxExpenses", Matchers.equalTo(100));
@@ -334,7 +337,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     {
         // Select Data for TimeSeriesAggr: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(VIRTUAL_TIME_DIMENTION_MONTH + ORDER_BY_DESC);
+        sqlRequest.setSql(VIRTUAL_TIME_DIMENSION_MONTH + ORDER_BY_DESC);
         sqlRequest.setFormat("json");
 
         RestResponse response = 
@@ -355,7 +358,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
 
         // Check that response includes the details for expense dated <today>: Order By desc
         restClient.onResponse().assertThat().body("result-set.docs[0].finance_CreatedAt_month", Matchers
-                .equalTo(LocalDateTime.now().minusMonths(0).format(DateTimeFormatter.ofPattern("yyyy-MM"))));
+                .equalTo(nowDate.minusMonths(0).format(DateTimeFormatter.ofPattern("yyyy-MM"))));
         restClient.onResponse().assertThat().body("result-set.docs[0].ExpensesCount", Matchers.equalTo(1));
         restClient.onResponse().assertThat().body("result-set.docs[0].MinExpenses", Matchers.equalTo(100));
         restClient.onResponse().assertThat().body("result-set.docs[0].MaxExpenses", Matchers.equalTo(100));
@@ -384,7 +387,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     {
         // Select Data for TimeSeriesAggr: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(VIRTUAL_TIME_DIMENTION_YEAR);
+        sqlRequest.setSql(VIRTUAL_TIME_DIMENSION_YEAR);
         sqlRequest.setFormat("json");
 
         RestResponse response = 
@@ -405,7 +408,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
 
         // Check that response includes the details for expense dated <today>: Order By desc
         restClient.onResponse().assertThat().body("result-set.docs[0].finance_CreatedAt_year", Matchers
-                .equalTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy"))));
+                .equalTo(nowDate.format(DateTimeFormatter.ofPattern("yyyy"))));
         restClient.onResponse().assertThat().body("result-set.docs[0].ExpensesCount", Matchers.equalTo(2));
         restClient.onResponse().assertThat().body("result-set.docs[0].MinExpenses", Matchers.equalTo(50));
         restClient.onResponse().assertThat().body("result-set.docs[0].MaxExpenses", Matchers.equalTo(100));
@@ -414,7 +417,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
 
         // Check that response includes the details for expense dated <today - 1 year>
         restClient.onResponse().assertThat().body("result-set.docs[1].finance_CreatedAt_year", Matchers
-                .equalTo(LocalDateTime.now().minusYears(1).format(DateTimeFormatter.ofPattern("yyyy"))));
+                .equalTo(nowDate.minusYears(1).format(DateTimeFormatter.ofPattern("yyyy"))));
         restClient.onResponse().assertThat().body("result-set.docs[1].ExpensesCount", Matchers.equalTo(0));
         restClient.onResponse().assertThat().body("result-set.docs[1].MinExpenses", Matchers.equalTo(0));
         restClient.onResponse().assertThat().body("result-set.docs[1].MaxExpenses", Matchers.equalTo(0));
@@ -430,7 +433,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     {
         // Select Data for TimeSeriesAggr: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(VIRTUAL_TIME_DIMENTION_DAY);
+        sqlRequest.setSql(VIRTUAL_TIME_DIMENSION_DAY);
         sqlRequest.setFormat("json");
 
         RestResponse response = 
@@ -476,7 +479,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     {
         // Select Data for TimeSeriesAggr: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(VIRTUAL_TIME_DIMENTION_DAY);
+        sqlRequest.setSql(VIRTUAL_TIME_DIMENSION_DAY);
         sqlRequest.setFormat("json");
 
         RestResponse response = 
@@ -520,9 +523,16 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     @Test(priority = 7, groups = { TestGroup.INSIGHT_10 })
     public void testAggregationsInclNulls() throws Exception
     {
+        // This test only works when the four documents are split 3 last month/1 this month.
+        if (lastMonthPlusOneDay.getMonth().equals(nowDate.getMonth()))
+        {
+            Step.STEP("Skipping testAggregationsInclNulls as it fails near the end of months.");
+            return;
+        }
+
         // Select Data for TimeSeriesAggr: json format
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(VIRTUAL_TIME_DIMENTION_MONTH + HAVING_COUNT);
+        sqlRequest.setSql(VIRTUAL_TIME_DIMENSION_MONTH + HAVING_COUNT);
         sqlRequest.setFormat("solr");
 
         // User2 can see aggr results for All 4 Content
@@ -541,7 +551,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         restClient.onResponse().assertThat().body("result-set.docs[0].AvgExpenses", Matchers.equalTo(225));
 
         restClient.onResponse().assertThat().body("result-set.docs[1].finance_CreatedAt_month", Matchers
-                .equalTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))));
+                .equalTo(nowDate.format(DateTimeFormatter.ofPattern("yyyy-MM"))));
         restClient.onResponse().assertThat().body("result-set.docs[1].ExpensesCount", Matchers.equalTo(1));
         restClient.onResponse().assertThat().body("result-set.docs[1].MinExpenses", Matchers.equalTo(100));
         restClient.onResponse().assertThat().body("result-set.docs[1].MaxExpenses", Matchers.equalTo(100));
@@ -551,13 +561,13 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     
     /**
      * Test that aggregation produces correct results for admin, aggregating data from different users
-     * Aggregated Values appear as 0 when actual values include a mix of null and non nul values
+     * Aggregated Values appear as 0 when actual values include a mix of null and non null values
      * Results don't show 0 entries: when having clause filters them out
      */
     @Bug(id = "Search-927", status=Bug.Status.OPENED)
     @Test(priority = 8, groups = { TestGroup.INSIGHT_10 })
     public void testAggregationsForOtherUser() throws Exception
-    {        
+    {
         String timeSeriesSqlDayAdmin = ""
                 + "select "
                 + "finance_CreatedAt_day, "
@@ -589,18 +599,18 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         restClient.onResponse().assertThat().body("result-set.docs[0].AvgExpenses", Matchers.equalTo(225));
 
         restClient.onResponse().assertThat().body("result-set.docs[1].finance_CreatedAt_day", Matchers
-                .equalTo(dateLastMonth.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .equalTo(lastMonthPlusOneDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         restClient.onResponse().assertThat().body("result-set.docs[1].ExpensesCount", Matchers.equalTo(1));
 
         // TODO: Search-927: NaN: Uncomment the following steps when Search-927 is resolved
-        // restClient.onResponse().assertThat().body("result-set.docs[1].MinExpenses", Matchers.equalTo(00));
-        // restClient.onResponse().assertThat().body("result-set.docs[1].MaxExpenses", Matchers.equalTo(00));
+        // restClient.onResponse().assertThat().body("result-set.docs[1].MinExpenses", Matchers.equalTo(0));
+        // restClient.onResponse().assertThat().body("result-set.docs[1].MaxExpenses", Matchers.equalTo(0));
 
-        restClient.onResponse().assertThat().body("result-set.docs[1].TotalExpenses", Matchers.equalTo(00));
+        restClient.onResponse().assertThat().body("result-set.docs[1].TotalExpenses", Matchers.equalTo(0));
         restClient.onResponse().assertThat().body("result-set.docs[1].AvgExpenses", Matchers.equalTo(0));
 
         restClient.onResponse().assertThat().body("result-set.docs[2].finance_CreatedAt_day", Matchers
-                .equalTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .equalTo(nowDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         restClient.onResponse().assertThat().body("result-set.docs[2].ExpensesCount", Matchers.equalTo(1));
         restClient.onResponse().assertThat().body("result-set.docs[2].MinExpenses", Matchers.equalTo(100));
         restClient.onResponse().assertThat().body("result-set.docs[2].MaxExpenses", Matchers.equalTo(100));
@@ -617,7 +627,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
     @Bug(id = "Search-927", status=Bug.Status.OPENED)
     @Test(priority = 9, groups = { TestGroup.INSIGHT_10 })
     public void testAggregationsForOtherUserOrderByDesc() throws Exception
-    {        
+    {
         String timeSeriesSqlDayAdmin = ""
                 + "select "
                 + "finance_CreatedAt_day, "
@@ -643,7 +653,7 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         response.assertThat().body("result-set.docs", Matchers.notNullValue());
         
         restClient.onResponse().assertThat().body("result-set.docs[0].finance_CreatedAt_day", Matchers
-                .equalTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .equalTo(nowDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         restClient.onResponse().assertThat().body("result-set.docs[0].ExpensesCount", Matchers.equalTo(1));
         restClient.onResponse().assertThat().body("result-set.docs[0].MinExpenses", Matchers.equalTo(100));
         restClient.onResponse().assertThat().body("result-set.docs[0].MaxExpenses", Matchers.equalTo(100));
@@ -651,14 +661,14 @@ public class TimeSeriesAggrTest extends AbstractSearchServiceE2E
         restClient.onResponse().assertThat().body("result-set.docs[0].AvgExpenses", Matchers.equalTo(100));
 
         restClient.onResponse().assertThat().body("result-set.docs[1].finance_CreatedAt_day", Matchers
-                .equalTo(dateLastMonth.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .equalTo(lastMonthPlusOneDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         restClient.onResponse().assertThat().body("result-set.docs[1].ExpensesCount", Matchers.equalTo(1));
 
         // TODO: Search-927: NaN: Uncomment the following steps when Search-927 is resolved
-        // restClient.onResponse().assertThat().body("result-set.docs[1].MinExpenses", Matchers.equalTo(00));
-        // restClient.onResponse().assertThat().body("result-set.docs[1].MaxExpenses", Matchers.equalTo(00));
+        // restClient.onResponse().assertThat().body("result-set.docs[1].MinExpenses", Matchers.equalTo(0));
+        // restClient.onResponse().assertThat().body("result-set.docs[1].MaxExpenses", Matchers.equalTo(0));
 
-        restClient.onResponse().assertThat().body("result-set.docs[1].TotalExpenses", Matchers.equalTo(00));
+        restClient.onResponse().assertThat().body("result-set.docs[1].TotalExpenses", Matchers.equalTo(0));
         restClient.onResponse().assertThat().body("result-set.docs[1].AvgExpenses", Matchers.equalTo(0));
 
         restClient.onResponse().assertThat().body("result-set.docs[2].finance_CreatedAt_day", Matchers

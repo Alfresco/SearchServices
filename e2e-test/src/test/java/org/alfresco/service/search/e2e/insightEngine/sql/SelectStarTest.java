@@ -7,12 +7,15 @@
 
 package org.alfresco.service.search.e2e.insightEngine.sql;
 
+import static java.util.Arrays.asList;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.search.e2e.AbstractSearchServiceE2E;
@@ -34,7 +37,7 @@ import org.testng.annotations.Test;
  * Purpose of this TestClass is to test that the variants of <select *> query works as expected with CustomModels
  * 
  * @author meenal bhave
- * {@link https://issues.alfresco.com/jira/browse/SEARCH-873}
+ * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-873>SEARCH-873</a>
  */
 public class SelectStarTest extends AbstractSearchServiceE2E
 {
@@ -544,5 +547,38 @@ public class SelectStarTest extends AbstractSearchServiceE2E
         // + " where TYPE = 'expense:expenseReport' "
         // + " group by expense_Recorded_At_year"
         // + " order by expense_Recorded_At desc", 5);
+    }
+
+    /** Try adding a double space at each location throughout a wildcard query. */
+    @Test(priority = 21, groups = { TestGroup.INSIGHT_11 })
+    public void testWildcardQueryContainingExtraSpaces()
+    {
+        String baseQuery = "select * from alfresco where `expense:Location` = 'london'";
+        int wordCount = baseQuery.split(" ").length;
+        for (int i = 1; i < wordCount; i++)
+        {
+            // Replace the ith space with a double space.
+            String query = baseQuery.replaceFirst("(([^ ]+ ){" + i + "})", "$1 ");
+            // Check the query still executes correctly.
+            testSqlQuery(query, 2);
+        }
+    }
+
+    /** Check that using different whitespace characters doesn't break the query. */
+    @Test(priority = 22, groups = { TestGroup.INSIGHT_11 })
+    public void testWildcardQueryContainingDifferentWhitespace()
+    {
+        List<String> whitespacesSequences = asList("\n\r", "\n", "\r", "\t", "\f");
+
+        whitespacesSequences.forEach(whitespaces -> {
+            StringBuilder chars = new StringBuilder();
+            for (int howManyWhiteSpaceChars = 1; howManyWhiteSpaceChars < 3; howManyWhiteSpaceChars++)
+            {
+                chars.append(whitespaces);
+                String query = "select * from alfresco where `expense:id` in (10, 30, 0)".replace(" ", chars);
+                testSqlQuery(query, 2);
+            }
+
+        });
     }
 }
