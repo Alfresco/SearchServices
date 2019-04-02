@@ -99,7 +99,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
 
         userModel = dataUser.createRandomTestUser();
 
-        dataContent.deployContentModel("model/search-1063-model.xml");
+        dataContent.usingAdmin().deployContentModel("model/search-1063-model.xml");
 
         dataUser.addUserToSite(userModel, testSite, UserRole.SiteContributor);
 
