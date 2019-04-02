@@ -84,7 +84,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
      * @throws Exception hopefully never, otherwise the test fails.
      */
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void localDataPreparation() throws Exception
     {
         songName = "The Dry Cleaner from Des Moines ";
         genre = "Jazz, vocal jazz ";
@@ -99,7 +99,7 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
 
         userModel = dataUser.createRandomTestUser();
 
-        dataContent.deployContentModel("model/SEARCH-1063.xml");
+        dataContent.deployContentModel("model/search-1063-model.xml");
 
         dataUser.addUserToSite(userModel, testSite, UserRole.SiteContributor);
 
