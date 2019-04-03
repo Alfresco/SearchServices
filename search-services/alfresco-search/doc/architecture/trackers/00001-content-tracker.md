@@ -2,11 +2,9 @@
 
 ![Completeness Badge](https://img.shields.io/badge/Document_Level-In_Progress-yellow.svg?style=flat-square)
 
-![Version Badge](https://img.shields.io/badge/Version-Future-blue.svg?style=flat-square)
-
 ### Purpose
 The _ContentTracker_ queries for documents with "unclean" content (that is, data whose content has been modified in Alfresco), and then updates them.
-Periodically, at a configurable frequency, the ContentTracker checks for transactions containing data that has been marked "Dirty" (changed) or "New". 
+Periodically, at a configurable frequency, the ContentTracker checks for transactions containing data that has been marked as "Dirty" (changed) or "New". 
 Then, 
 
 - it retrieves the cached version of that data from the ContentStore
@@ -48,10 +46,12 @@ Each tracker is a stateful object which is initialized, registered in a TrackerR
 The other relevant classes depicted in the diagram are: 
 
 - **SolrCore**: the dashed dependency relationship means that a Tracker doesn't hold a stable reference to the SolrCore: It obtains that reference each time it's needed. 
+- **ThreadHandler**: The ThreadExecutionPool manager which holds a pool of threads needed for scheduling asynchronous tasks (i.e. unclean content reindexing) 
 - **TrackerState**: being a shared instance across all trackers, it would have been called something like _TrackersState_ or _TrackerSubsystemState_. It is used for holding the **trackers** state (e.g. lastTxIdOnServer, trackerCycles, lastStartTime)
 - **TrackerStats**: maintains a global stats about all trackers. Following the same approach of the TrackerState, it is a shared instance and therefore the name is a little bit misleading because it is related to all trackers
 - **SOLRAPIClient**: this is the HTTP proxy / facade towards Alfresco REST API: in the sequence diagrams these interactions are depicted in green
 - **SolrInformationServer**: The Solr binding of the InformationServer interface, which defines an abstract definition of the underlying search infrastructure 
+
 
 ### Startup and Shutdown 
 The trackers startup and registration flow is depicted in the [StartupAndRegistration](trackers_startup_and_registration.png) sequence diagram. 
@@ -90,7 +90,7 @@ If the list of Tenant/ACLID/DBID triples is not empty, that means we need to fet
 In order to do that, each document is wrapped in a _Runnable_ object (see _ContentTracker.ContentIndexWorkerRunnable_ inner class) and submitted to a thread pool executor. 
 That makes each document content processing asynchronous.
 
-The _ContentIndexWorkerRunnable_ once executed, delegates the actual update to the SolrInformationServer which, as said above, contains the logic needed for dealing with the Solr infrastructure.
+The _ContentIndexWorkerRunnable_ once executed, delegates the actual update to the _SolrInformationServer_ which, as said above, contains the logic needed for dealing with the Solr infrastructure.
 In the _SolrInformationServer::updateContentToIndexAndCache_ 
 
 - the document that needs to be refreshed, uniquely identified by the tenant and the db identifier, is retrieved from the local content store. In case the cached document cannot be found in the content store, the _/api/solr/metadata_ remote API is contacted in order to rebuild the document (only metadata) from scratch. 
@@ -155,6 +155,30 @@ The following table illustrates the configuration properties used by the Tracker
 |alfresco.fingerprint|true|true if we want to compute the content Fingerprint| | |Y|| | |
 |alfresco.index.transformContent|true| | | |Y|| | |
 |alfresco.version|5.0.0|The target Alfresco version| | | | | | |
+|alfresco.corePoolSize|4|The number of threads to keep in the pool, even if they are idle|Y|Y|Y|Y|Y|Y|
+|alfresco.maximumPoolSize|-1|The maximum number of threads allowed in the pool|Y|Y|Y|Y|Y|Y|
+|alfresco.keepAliveTime|120|When the number of threads is greater than the core pool size, this is the maximum time that excess idle threads will wait for new tasks before terminating|Y|Y|Y|Y|Y|Y|
+|alfresco.threadPriority|5|The thread priority assigned to threads in the pool|Y|Y|Y|Y|Y|Y|
+|alfresco.threadDaemon|true|Thread type (daemon/user) assigned to threads in the pool|Y|Y|Y|Y|Y|Y|
+|alfresco.workQueueSize|-1|ACLTracker specific configuration. See above|Y|Y|Y|Y|Y|Y|
+|alfresco.acl.tracker.corePoolSize| |ACL Tracker specific configuration. See above| | | |Y| | |
+|alfresco.acl.tracker.maximumPoolSize| |ACL Tracker specific configuration. See above| | | |Y| | |
+|alfresco.acl.tracker.keepAliveTime| |ACL Tracker specific configuration. See above| | | |Y| | |
+|alfresco.acl.tracker.threadPriority| |ACL Tracker specific configuration. See above| | | |Y| | |
+|alfresco.acl.tracker.threadDaemon| |ACL Tracker specific configuration. See above| | | |Y| | |
+|alfresco.acl.tracker.workQueueSize| |ACL Tracker specific configuration. See above| | | |Y| | |
+|alfresco.content.tracker.corePoolSize| |Content Tracker specific configuration. See above| |Y| | | | |
+|alfresco.content.tracker.maximumPoolSize| |Content Tracker specific configuration. See above| |Y| | | | |
+|alfresco.content.tracker.keepAliveTime| |Content Tracker specific configuration. See above| |Y| | | | |
+|alfresco.content.tracker.threadPriority| |Content Tracker specific configuration. See above| |Y| | | | |
+|alfresco.content.tracker.threadDaemon| |Content Tracker specific configuration. See above| |Y| | | | |
+|alfresco.content.tracker.workQueueSize| |Content Tracker specific configuration. See above| |Y| | | | |
+|alfresco.metadata.tracker.corePoolSize| |Metadata Tracker specific configuration. See above| | |Y| | | |
+|alfresco.metadata.tracker.maximumPoolSize| |Metadata Tracker specific configuration. See above| | |Y| | | |
+|alfresco.metadata.tracker.keepAliveTime| |Metadata Tracker specific configuration. See above| | |Y| | | |
+|alfresco.metadata.tracker.threadPriority| |Metadata Tracker specific configuration. See above| | |Y| | | |
+|alfresco.metadata.tracker.threadDaemon| |Metadata Tracker specific configuration. See above| | |Y| | | |
+|alfresco.metadata.tracker.workQueueSize| |Metadata Tracker specific configuration. See above| | |Y| | | |
 
 
 ***
