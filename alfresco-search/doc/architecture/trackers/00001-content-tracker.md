@@ -125,8 +125,11 @@ In order to properly work in a Master/Slave infrastructure, the Tracker Subsyste
 - enabled on Master(s)
 - disabled on Slaves
 
-The same is valid also in case the Master/Slave infrastructure is also using sharding: each Master Shard will have the Tracker Subsystem enabled, 
-while it will be disabled in the related Slave Shards.
+The only exceptions to that rule are about: 
+
+- The **MetadataTracker**: only if the search infrastructure uses dynamic sharding [2] the Metadata tracker is in charge 
+to register the Solr instance (the Shard) to Alfresco so it will be included in the subsequent queries. The tracker itself, in this scenario, won't track anything.
+- The **ModelTracker**: each Solr instance pulls, by means of this tracker, the custom models from Alfresco, so it must be enabled in any case.
 
 *** 
 
@@ -183,3 +186,4 @@ The following table illustrates the configuration properties used by the Tracker
 
 ***
 [1] [Template Method](https://en.wikipedia.org/wiki/Template_method_pattern) 
+[2] [Dynamic Sharding](http://docs.alfresco.com/5.1/concepts/solr-shard-config.html)
