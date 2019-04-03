@@ -27,12 +27,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+
+import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
-import static junit.framework.TestCase.assertEquals;
 import static org.alfresco.model.ContentModel.*;
 import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
+import static com.google.common.collect.ImmutableMap.of;
 
 
 /**
@@ -46,52 +49,41 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
     {
         TestDataProvider dataProvider = new TestDataProvider(h);
 
-        String[] names = {
-                "test1",
-                "test2",
-                "file3",
-                "name4"};
+        List<Map<String, String>> data = asList(
+                of("name", "test1",
+                        "description", "description of test 1",
+                        "content", "test",
+                        "title", "TITLE1",
+                        "creator", "Luca"),
+                of("name", "test2",
+                        "description", "description 2",
+                        "content", "content of test 2",
+                        "title", "Other Title",
+                        "creator", "Mario"),
+                of("name", "file3",
+                        "description", "this is not a description of test 1 and 2",
+                        "content", "other contents",
+                        "title", "Third",
+                        "creator", "Giovanni"),
+                of("name", "name4",
+                        "description", "other description",
+                        "content", "content of file number 4",
+                        "title", "Forth",
+                        "creator", "Giuseppe"));
 
-        String[] descriptions = {
-                "description of test 1",
-                "description 2",
-                "this is not a description of test 1 and 2",
-                "other description"};
-
-        String[] contents = {
-                "test",
-                "content of test 2",
-                "other contents",
-                "content of file number 4"};
-
-        String[] titles = {
-                "Title1",
-                "Other Title",
-                "Third",
-                "Forth"};
-
-        // Creators should not be searched in default queries
-        String[] creators = {
-                "Luca",
-                "Mario",
-                "Giovanni",
-                "Giuseppe"};
-
-        // Make sure the arrays of properties have the same cardinality.
-        assertEquals(names.length, descriptions.length);
-        assertEquals(names.length, contents.length);
-        assertEquals(names.length, titles.length);
-        assertEquals(names.length, creators.length);
 
         TEST_ROOT_NODEREF = dataProvider.getRootNode();
 
-        range(0, names.length)
+        range(0, data.size())
                 .forEach(dbId -> {
-                    String name = names[dbId];
-                    String description = descriptions[dbId];
-                    String content = contents[dbId];
-                    String title = titles[dbId];
-                    String creator = creators[dbId];
+
+                    Map<String, String> record = data.get(dbId);
+
+                    String name = record.get("name");
+                    String description = record.get("description");
+                    String content = record.get("content");
+                    String title = record.get("title");
+                    String creator = record.get("creator");
 
                     Map<QName, PropertyValue> properties = new HashMap<>();
                     properties.put(PROP_NAME, new StringPropertyValue(name));
