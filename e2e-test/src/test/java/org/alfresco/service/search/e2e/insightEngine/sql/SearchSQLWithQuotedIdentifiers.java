@@ -97,11 +97,11 @@ public class SearchSQLWithQuotedIdentifiers extends AbstractSearchTest
         drummerName = "Peter Erskine";
         saxophonistName = "Wayne Shorter";
 
-        userModel = dataUser.createRandomTestUser();
-
         dataContent.usingAdmin().deployContentModel("model/search-1063-model.xml");
 
-        dataUser.addUserToSite(userModel, testSite, UserRole.SiteContributor);
+        dataUser.addUserToSite(userModel, siteModel, UserRole.SiteContributor);
+
+        testSite = siteModel;
 
         FolderModel testFolder = dataContent.usingSite(testSite).usingUser(userModel).createFolder();
 
