@@ -185,7 +185,7 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
         assertResponseCardinality("Other *(0) title", 1);
 
         /*
-         * 1 result expected
+         * 2 results expected
          * record 1 ("description of test" in description)
          * record 3 ("description of test" in description)
          */
@@ -220,14 +220,5 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
         assertResponseCardinality("fil*", 2);
     }
 
-    /**
-     * Check that creators are correctly inserted
-     */
-    @Test
-    public void CreatorQueryTest()
-    {
-        assertResponseCardinality("cm:creator:Giovanni", 1);
-        assertResponseCardinality("cm:creator:[L TO Z]", 2);
-    }
 
 }
