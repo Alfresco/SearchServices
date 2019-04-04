@@ -40,6 +40,14 @@ import static com.google.common.collect.ImmutableMap.of;
 
 /**
  * @author elia
+ *
+ * The following test set needs to test that default text queries actually work by searching
+ * in cm:name, cm:title, cm:description and cm:content fields.
+ *
+ * THe default queries can be of the following types:
+ * exact, prefix, wildcard, fuzzy, span and range.
+ * This test set check that in all these query types the default fields are involved in the search.
+ *
  */
 public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
 {
@@ -103,42 +111,112 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
                 });
     }
 
+
+    /**
+     * Test exact search is working.
+     */
     @Test
     public void defaultExactQueryTest()
     {
+
+        /*
+         * 3 results expected:
+         * record 1 ("test" in name, description and content)
+         * record 2 ("test" in name, and content)
+         * record 3 ("test" in description)
+         */
         assertResponseCardinality("test", 3);
+
+        /*
+         * No results expected because creator should not be considered in default text search.
+         */
         assertResponseCardinality("Giovanni", 0);
     }
 
+
+    /**
+     * Test range queries.
+     */
     @Test
     public void defaultRangeQueryTest()
     {
+        /*
+         * 3 results expected:
+         * record 1 ("test" in name, description and content)
+         * record 2 ("test" in name, and content)
+         * record 3 ("test" in description)
+         */
         assertResponseCardinality("[te to test]", 3);
     }
 
+    /**
+     * Test wildcard queries.
+     */
     @Test
     public void defaultWildCardQueryTest()
     {
+        /*
+         * 3 results expected:
+         * record 1 ("test" in name, description and content)
+         * record 2 ("test" in name, and content)
+         * record 3 ("test" in description)
+         */
         assertResponseCardinality("?est", 3);
     }
+
 
     @Test
     public void defaultFuzzyQueryTest()
     {
+
         assertResponseCardinality("content~1.0", 3);
     }
 
+    /**
+     * Thes span queries
+     */
     @Test
     public void defaultSpanQueryTest()
     {
-        assertResponseCardinality("Other * title", 1);
-        assertResponseCardinality("description * of", 2);
+        /*
+         * 1 result expected
+         * record 1 ("Other title" in title)
+         */
+        assertResponseCardinality("Other *(0) title", 1);
+
+        /*
+         * 1 result expected
+         * record 1 ("description of test" in description)
+         * record 3 ("description of test" in description)
+         */
+        assertResponseCardinality("description *(1) test ", 2);
+
+        /*
+         * No results expected.
+         */
+        assertResponseCardinality("description *(0) test ", 0);
+
     }
 
+    /**
+     * Test prefix queries
+     */
     @Test
     public void defaultPrefixQueryTest()
     {
+        /*
+         * 3 results expected
+         * record 1 ("test" in name, description and content)
+         * record 2 ("test" in name, and content)
+         * record 3 ("test" in description)
+         */
         assertResponseCardinality("te*", 3);
+
+        /*
+         * 3 results expected
+         * record 1 ("file" in name, description and content)
+         * record 2 ("file" in name, and content)
+         */
         assertResponseCardinality("fil*", 2);
     }
 
