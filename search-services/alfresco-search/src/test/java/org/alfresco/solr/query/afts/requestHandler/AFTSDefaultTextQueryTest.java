@@ -46,7 +46,7 @@ import static com.google.common.collect.ImmutableMap.of;
  *
  * THe default queries can be of the following types:
  * exact, prefix, wildcard, fuzzy, span and range.
- * This test set check that in all these query types the default fields are involved in the search.
+ * This test set checks that in all these query types the default fields are involved in the search.
  *
  */
 public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
@@ -70,11 +70,11 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
                         "creator", "Mario"),
                 of("name", "file3",
                         "description", "this is not a description of test 1 and 2",
-                        "content", "other contents",
+                        "content", "other content here ",
                         "title", "Third",
                         "creator", "Giovanni"),
-                of("name", "name4",
-                        "description", "other description",
+                of("name", "name of record 4",
+                        "description", "other description right here",
                         "content", "content of file number 4",
                         "title", "Forth",
                         "creator", "Giuseppe"));
@@ -128,6 +128,14 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
         assertResponseCardinality("test", 3);
 
         /*
+         * 3 results expected:
+         * record 2 ("Other" in title )
+         * record 3 ("other" in content)
+         * record 4 ("other" in description)
+         */
+        assertResponseCardinality("Other", 3);
+
+        /*
          * No results expected because creator should not be considered in default text search.
          */
         assertResponseCardinality("Giovanni", 0);
@@ -147,6 +155,15 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
          * record 3 ("test" in description)
          */
         assertResponseCardinality("[te to test]", 3);
+
+        /*
+         * 3 results expected:
+         * record 2 ("Other" in title )
+         * record 3 ("other" in content)
+         * record 4 ("other" in description)
+         */
+        assertResponseCardinality("other to otherz ", 3);
+
     }
 
     /**
@@ -162,15 +179,17 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
          * record 3 ("test" in description)
          */
         assertResponseCardinality("?est", 3);
+
+        /*
+         * 3 results expected:
+         * record 2 ("Other" in title )
+         * record 3 ("other" in content)
+         * record 4 ("other" in description)
+         */
+        assertResponseCardinality("?ther", 3);
+
     }
 
-
-    @Test
-    public void defaultFuzzyQueryTest()
-    {
-
-        assertResponseCardinality("content~1.0", 3);
-    }
 
     /**
      * Thes span queries
@@ -193,8 +212,21 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
 
         /*
          * No results expected.
+         * There is no "description test" in any field.
          */
         assertResponseCardinality("description *(0) test ", 0);
+
+        /*
+         * 1 result expected
+         * record 4 ("name of record" in name)
+         */
+        assertResponseCardinality("name *(1) record ", 1);
+
+        /*
+         * 2 results expected
+         * record 2 ("other content here" in content)
+         */
+        assertResponseCardinality("other *(1) here ", 1);
 
     }
 
@@ -218,6 +250,14 @@ public class AFTSDefaultTextQueryTest extends AbstractRequestHandlerTest
          * record 2 ("file" in name, and content)
          */
         assertResponseCardinality("fil*", 2);
+
+        /*
+         * 3 results expected:
+         * record 2 ("Other" in title )
+         * record 3 ("other" in content)
+         * record 4 ("other" in description)
+         */
+        assertResponseCardinality("oth*", 3);
     }
 
 
