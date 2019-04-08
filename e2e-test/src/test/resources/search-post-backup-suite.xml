@@ -4,7 +4,7 @@
 		<classes>
 			<!-- execute this after backup -->
 			<class
-				name="org.alfresco.service.search.backup.SearchServicePostBackupTests" />
+				name="org.alfresco.test.search.nonFunctional.backup.SearchServicePostBackupTests" />
 		</classes>
 	</test>
 </suite>
