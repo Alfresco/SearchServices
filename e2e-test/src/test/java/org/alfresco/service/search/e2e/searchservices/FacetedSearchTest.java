@@ -258,7 +258,7 @@ public class FacetedSearchTest extends AbstractSearchTest
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery(unique_searchString);
+        queryReq.setQuery("cm:content:" + unique_searchString);
         query.setQuery(queryReq);
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
@@ -304,7 +304,7 @@ public class FacetedSearchTest extends AbstractSearchTest
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery(unique_searchString);
+        queryReq.setQuery("cm:content:" + unique_searchString);
         query.setQuery(queryReq);
         query.setFacetFormat("V2");
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
