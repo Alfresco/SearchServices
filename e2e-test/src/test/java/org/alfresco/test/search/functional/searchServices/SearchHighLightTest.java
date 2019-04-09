@@ -35,7 +35,7 @@ import org.testng.annotations.Test;
  * @author Michael Suzuki
  *
  */
-public class SearchHighLightTest extends AbstractSearchTest
+public class SearchHighLightTest extends AbstractSearchServicesE2ETest
 {
     @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
     @Bug(id = "TAS-3220")
@@ -51,7 +51,7 @@ public class SearchHighLightTest extends AbstractSearchTest
         highlight.setPrefix("¿");
         highlight.setPostfix("?");
         highlight.setMergeContiguous(true);
-        List<RestRequestFieldsModel> fields = new ArrayList<RestRequestFieldsModel>();
+        List<RestRequestFieldsModel> fields = new ArrayList<>();
         fields.add(new RestRequestFieldsModel("cm:content"));
         highlight.setFields(fields);
         SearchResponse nodes =  query(queryReq, highlight);
@@ -71,7 +71,7 @@ public class SearchHighLightTest extends AbstractSearchTest
         highlight.setPrefix("¿");
         highlight.setPostfix("?");
         highlight.setMergeContiguous(true);
-        List<RestRequestFieldsModel> fields = new ArrayList<RestRequestFieldsModel>();
+        List<RestRequestFieldsModel> fields = new ArrayList<>();
         fields.add(new RestRequestFieldsModel("cm:title"));
         highlight.setFields(fields);
         SearchResponse nodes =  query(queryReq, highlight);

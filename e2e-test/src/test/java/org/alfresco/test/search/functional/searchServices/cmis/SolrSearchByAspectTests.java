@@ -13,7 +13,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class SolrSearchByAspectTests extends AbstractCmisTest
+public class SolrSearchByAspectTests extends AbstractCmisE2ETest
 {
     /** Logger for the class. */
     private static Logger LOGGER = LoggerFactory.getLogger(SolrSearchByAspectTests.class);
@@ -22,7 +22,7 @@ public class SolrSearchByAspectTests extends AbstractCmisTest
     @BeforeClass(alwaysRun = true)
     public void deployCustomModel() throws TestConfigurationException
     {
-        dataContent.deployContentModel("model/tas-model.xml");
+        deployCustomModel("model/tas-model.xml");
         cmisApi.authenticateUser(dataUser.getAdminUser());
     }
     

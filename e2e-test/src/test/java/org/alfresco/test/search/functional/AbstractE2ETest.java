@@ -1,11 +1,10 @@
-package org.alfresco.test.search.functional;
-
 /*
  * Copyright 2019 Alfresco Software, Ltd. All rights reserved.
  * License rights for this program may be obtained from Alfresco Software, Ltd.
  * pursuant to a written agreement and any use of this program without such an
  * agreement is prohibited.
  */
+package org.alfresco.test.search.functional;
 
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.ContentService;
@@ -13,6 +12,7 @@ import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -21,6 +21,7 @@ import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.Utility;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
@@ -42,7 +43,6 @@ import org.testng.annotations.BeforeSuite;
 
 import lombok.Getter;
 
-import static java.util.Optional.ofNullable;
 import static lombok.AccessLevel.PROTECTED;
 
 import java.util.List;
@@ -50,9 +50,8 @@ import java.util.List;
 /**
  * @author meenal bhave
  */
-
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
-public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringContextTests
+public abstract class AbstractE2ETest extends AbstractTestNGSpringContextTests
 {
     private static Logger LOG = LogFactory.getLogger();
 
@@ -87,7 +86,6 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
     
     protected UserModel testUser, adminUserModel;
     protected SiteModel testSite;
-    protected UserModel searchedUser;
     
     protected static String unique_searchString;
 
@@ -98,15 +96,8 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
     {
         super.springTestContextPrepareTestInstance();
 
-        try
-        {
-            deployCustomModel("model/music-model.xml");
-            deployCustomModel("model/finance-model.xml");
-        }
-        catch (Exception e)
-        {
-            LOG.warn("Error Loading Custom Model", e);
-        }
+        deployCustomModel("model/music-model.xml");
+        deployCustomModel("model/finance-model.xml");
     }
     
     @BeforeClass(alwaysRun = true)
@@ -123,6 +114,8 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         testSite = dataSite.usingUser(testUser).createSite(testSite);
         
         unique_searchString = testSite.getTitle().replace("SiteSearch", "Unique");
+
+        dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
     }
 
     public boolean deployCustomModel(String path)
@@ -233,24 +226,15 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         return customModel;
     }
 
-    protected SearchRequest createQuery(String term)
-    {
-        SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery(term);
-        query.setQuery(queryReq);
-        return query;
-    }
-
     /**
      * 
      * Helper method which create an http post request to Search API end point.
      * Executes the given search request without throwing checked exceptions (a {@link RuntimeException} will be thrown in case).
+     *
      * @param query the search request.
-     * @return {@link SearchResponse} response.
-     * 
+     * @return the query execution response.
      */
-    protected SearchResponse query(SearchRequest query) throws Exception
+    protected SearchResponse query(SearchRequest query)
     {
         try
         {
@@ -259,33 +243,6 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
         catch (final Exception exception)
         {
             throw new RuntimeException(exception);
-        }
-    }
-
-    /**
-     * Executes a SQL query and optionally asserts the response cardinality.
-     *
-     * @param sql the SQL query.
-     * @param expectedCardinality if present an additional check is done in order to assert the expected response cardinality.
-     * @return the {@link RestResponse} instance as result of the query execution.
-     */
-    protected RestResponse testSqlQuery(String sql, Integer expectedCardinality)
-    {
-        try {
-            SearchSqlRequest sqlRequest = new SearchSqlRequest();
-            sqlRequest.setSql(sql);
-
-            RestResponse response = restClient.authenticateUser(testUser).withSearchSqlAPI().searchSql(sqlRequest);
-
-            restClient.assertStatusCodeIs(HttpStatus.OK);
-
-            if (ofNullable(expectedCardinality).isPresent()) {
-                restClient.onResponse().assertThat().body("list.pagination.count", Matchers.equalTo(expectedCardinality));
-            }
-
-            return response;
-        } catch (Exception exception) {
-            throw new AssertionError(exception);
         }
     }
 
@@ -431,9 +388,8 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
      * 
      * @param queryString: string to search for, unique search string will guarantee accurate results
      * @return the search response from the API
-     * @throws Exception
      */
-    public SearchResponse query(String queryString) throws Exception
+    public SearchResponse query(String queryString)
     {
         return queryAsUser(dataUser.getAdminUser(), queryString);
     }
@@ -444,15 +400,19 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
      * @param user: UserModel for the user you wish to run the query as
      * @param queryString: string to search for, unique search string will guarantee accurate results
      * @return the search response from the API
-     * @throws Exception
      */
-    public SearchResponse queryAsUser(UserModel user, String queryString) throws Exception
+    protected SearchResponse queryAsUser(UserModel user, String queryString)
     {
-        SearchRequest searchRequest = new SearchRequest();
-        RestRequestQueryModel queryModel = new RestRequestQueryModel();
-        queryModel.setQuery(queryString);
-        searchRequest.setQuery(queryModel);
-        return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
+        try {
+            SearchRequest searchRequest = new SearchRequest();
+            RestRequestQueryModel queryModel = new RestRequestQueryModel();
+            queryModel.setQuery(queryString);
+            searchRequest.setQuery(queryModel);
+            return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
+        } catch (final Exception exception)
+        {
+            throw new RuntimeException(exception);
+        }
     }
     
     /**
@@ -461,13 +421,35 @@ public abstract class AbstractSearchServiceE2E extends AbstractTestNGSpringConte
      * @param user: UserModel for the user you wish to run the query as
      * @param queryModel: The queryModel to search for, containing the query
      * @return the search response from the API
-     * @throws Exception
      */
-    public SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel) throws Exception
+    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel) throws Exception
     {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery(queryModel);
 
         return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
+    }
+
+    /**
+     * Helper method which create an http post request to Search API end point.
+     *
+     * @return {@link SearchResponse} response.
+     * @throws Exception if error
+     *
+     */
+    protected SearchResponse query(RestRequestQueryModel queryReq, RestRequestHighlightModel highlight) throws Exception
+    {
+        SearchRequest query = new SearchRequest(queryReq);
+        query.setHighlight(highlight);
+        return restClient.authenticateUser(testUser).withSearchAPI().search(query);
+    }
+
+    protected SearchRequest createQuery(String term)
+    {
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery(term);
+        query.setQuery(queryReq);
+        return query;
     }
 }

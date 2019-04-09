@@ -74,7 +74,6 @@ public abstract class AbstractBackupTest extends AbstractTestNGSpringContextTest
 	 *         {"responseHeader":{"status":0,"QTime":5},"exception":"org.apache.solr.common.SolrException:org.apache.solr.common.SolrException:
 	 *         Directory does not exist:
 	 *         file:///nop/snapshot.20190212152339023","status":"OK"}
-	 * @throws InterruptedException
 	 */
 	protected RestHtmlResponse executeSolrBackupRequest(String core, String dockerVolume, int numberToKeep)
 			throws InterruptedException {

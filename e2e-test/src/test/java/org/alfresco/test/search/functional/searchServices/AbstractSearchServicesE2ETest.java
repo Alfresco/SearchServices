@@ -18,23 +18,15 @@
  */
 package org.alfresco.test.search.functional.searchServices;
 
-import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.rest.core.RestResponse;
-import org.alfresco.rest.search.RestRequestHighlightModel;
-import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.rest.search.SearchSqlRequest;
+import org.alfresco.test.search.functional.AbstractE2ETest;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.alfresco.rest.RestTest;
 
 import javax.naming.AuthenticationException;
 
@@ -49,30 +41,15 @@ import javax.naming.AuthenticationException;
  * @author Meenal Bhave
  *
  */
-public class AbstractSearchTest extends RestTest
+public abstract class AbstractSearchServicesE2ETest extends AbstractE2ETest
 {
-    
-    protected static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
-    protected UserModel userModel, adminUserModel;
-    protected SiteModel siteModel;
-    protected UserModel searchedUser;    
-    protected FileModel file, file2, file3, file4;
+    private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
 
-    protected static String unique_searchString;
-    
+    protected FileModel file, file2, file4;
+
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void searchServicesDataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();
-        userModel = dataUser.createRandomTestUser("UserSearch");
-                
-        siteModel = new SiteModel(RandomData.getRandomName("SiteSearch"));
-        siteModel.setVisibility(Visibility.PRIVATE);
-        
-        siteModel = dataSite.usingUser(userModel).createSite(siteModel);
-        
-        unique_searchString = siteModel.getTitle().replace("SiteSearch", "Unique");
-
         /*
          * Create the following file structure for preconditions : 
          *   |- folder
@@ -83,106 +60,47 @@ public class AbstractSearchTest extends RestTest
          */
 
         FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
-        dataContent.usingUser(userModel).usingSite(siteModel).createFolder(folder);
+        dataContent.usingUser(testUser).usingSite(testSite).createFolder(folder);
         
         //Create files
         String title = "Title: " + unique_searchString;
         String description = "Description: File is created for search tests by Author: " + unique_searchString + " . ";
-        
+
         file = new FileModel("pangram.txt", "pangram" + title, description, FileType.TEXT_PLAIN, description + " The quick brown fox jumps over the lazy dog");
-        
+
         file2 = new FileModel("cars.txt", "cars" + title, description, FileType.TEXT_PLAIN, "The landrover discovery is not a sports car ");
-        
-        file3 = new FileModel("alfresco.txt", "alfresco", "alfresco", FileType.TEXT_PLAIN, "Alfresco text file for search ");
+
+        FileModel file3 = new FileModel("alfresco.txt", "alfresco", "alfresco", FileType.TEXT_PLAIN, "Alfresco text file for search ");
         
         file4 = new FileModel(unique_searchString + ".txt", "uniquee" + title, description, FileType.TEXT_PLAIN, "Unique text file for search ");
         
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file2);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file2);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file3);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file4);
 
         waitForMetadataIndexing(file4.getName(), true);
     }
     
-    /**
-     * Helper method which create an http post request to Search API end point.
-     * @param term String search term
-     * @return {@link SearchResponse} response.
-     * @throws Exception if error
-     * 
-     */
-    protected SearchResponse query(String term) throws Exception
-    {
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setLanguage("afts");
-        queryReq.setQuery(term);
-        SearchRequest query = new SearchRequest(queryReq);
-        return restClient.authenticateUser(userModel).withSearchAPI().search(query);
-    }
-    /**
-     * Helper method which create an http post request to Search API end point.
-     *
-     * @return {@link SearchResponse} response.
-     * @throws Exception if error
-     * 
-     */
-    protected SearchResponse query(RestRequestQueryModel queryReq, RestRequestHighlightModel highlight) throws Exception
-    {
-        SearchRequest query = new SearchRequest(queryReq);
-        query.setHighlight(highlight);
-        return restClient.authenticateUser(userModel).withSearchAPI().search(query);
-    }
-    /**
-     * 
-     * Helper method which create an http post request to Search API end point.
-     * Executes the given search request without throwing checked exceptions (a {@link RuntimeException} will be thrown in case).
-     * @param query the search request.
-     * @return {@link SearchResponse} response.
-     * 
-     */
-    protected SearchResponse query(SearchRequest query)
-    {
-        try
-        {
-            return restClient.authenticateUser(userModel).withSearchAPI().search(query);
-        }
-        catch (final Exception exception)
-        {
-            throw new RuntimeException(exception);
-        }
-    }
-
-    /**
-     * Executes an SQL Query using "solr" as output format.
-     *
-     * @param sql the SQL statement.
-     */
-    protected RestResponse executeSqlAsSolr(String sql) throws Exception
-    {
-        SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql(sql);
-        sqlRequest.setFormat("solr");
-        return searchSql(sqlRequest);
-    }
-
-    protected SearchRequest createQuery(String term)
-    {
-        SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery(term);
-        query.setQuery(queryReq);
-        return query;
-    }
+//    /**
+//     * Helper method which create an http post request to Search API end point.
+//     * @param term String search term
+//     * @return {@link SearchResponse} response.
+//     * @throws Exception if error
+//     *
+//     */
+//    protected SearchResponse query(String term) throws Exception
+//    {
+//        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+//        queryReq.setLanguage("afts");
+//        queryReq.setQuery(term);
+//        SearchRequest query = new SearchRequest(queryReq);
+//        return restClient.authenticateUser(testUser).withSearchAPI().search(query);
+//    }
 
     protected SearchRequest carsQuery()
     {
         return createQuery("cars");
-    }
-    
-    protected RestResponse searchSql(SearchSqlRequest searchSqlRequest) throws Exception
-    {
-        return restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(searchSqlRequest);        
     }
     
     /**

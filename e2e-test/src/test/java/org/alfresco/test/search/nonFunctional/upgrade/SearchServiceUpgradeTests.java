@@ -9,8 +9,8 @@ import org.alfresco.utility.model.QueryModel;
 import org.slf4j.Logger;
 import org.testng.annotations.Test;
 
-public class SearchServiceUpgradeTests extends UpgradeTestCase {
-
+public class SearchServiceUpgradeTests extends UpgradeTestCase
+{
 	private static Logger LOG = LogFactory.getLogger();
 	
 	@Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")

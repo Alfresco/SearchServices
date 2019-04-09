@@ -48,12 +48,10 @@ import org.testng.annotations.Test;
  * @author Meenal Bhave
  *
  */
-public class FacetFieldsSearchTest extends AbstractSearchTest
+public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
 {   
     private UserModel userWithNoAccess, userCanAccessTextFile;
     private SiteModel testSite;
-    private FolderModel testFolder;
-    private FileModel textFile, htmlFile;
     private String fname;
     
     @BeforeClass(alwaysRun = true)
@@ -66,21 +64,21 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         testSite = new SiteModel(RandomData.getRandomName("SiteSearch"));
         testSite.setVisibility(Visibility.PRIVATE);
         
-        testSite = dataSite.usingUser(userModel).createSite(testSite);
+        testSite = dataSite.usingUser(testUser).createSite(testSite);
         
-        // Create another user who would not have access to the Private Site created by userModel
+        // Create another user who would not have access to the Private Site created by testUser
         userWithNoAccess = dataUser.createRandomTestUser("UserSearch2");
         userCanAccessTextFile = dataUser.createRandomTestUser("UserSearch3");
         
         // Create a folder and a file as test User
-        testFolder = new FolderModel(fname);
-        dataContent.usingUser(userModel).usingSite(testSite).createFolder(testFolder);
+        FolderModel testFolder = new FolderModel(fname);
+        dataContent.usingUser(testUser).usingSite(testSite).createFolder(testFolder);
 
-        textFile = new FileModel(fname + "-1.txt", fname, fname, FileType.TEXT_PLAIN, fname + " file for search ");
-        dataContent.usingUser(userModel).usingSite(testSite).createContent(textFile);
+        FileModel textFile = new FileModel(fname + "-1.txt", fname, fname, FileType.TEXT_PLAIN, fname + " file for search ");
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(textFile);
 
-        htmlFile = new FileModel(fname + "-2.html", FileType.HTML, fname + " file 2 for search ");
-        dataContent.usingUser(userModel).usingSite(testSite).createContent(htmlFile);
+        FileModel htmlFile = new FileModel(fname + "-2.html", FileType.HTML, fname + " file 2 for search ");
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(htmlFile);
         
         // Set Node Permissions to allow access for user for text File
         JsonObject userPermission = Json.createObjectBuilder()
@@ -90,7 +88,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
                 .build();
         String putBody = userPermission.toString();
 
-        restClient.authenticateUser(userModel).withCoreAPI().usingNode(textFile).updateNode(putBody);
+        restClient.authenticateUser(testUser).withCoreAPI().usingNode(textFile).updateNode(putBody);
         
         // Wait for the file to be indexed
         waitForIndexing(htmlFile.getName(), true);
@@ -106,7 +104,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         query.setQuery(queryReq);
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel> facets = new ArrayList<RestRequestFacetFieldModel>();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<>();
 
         facets.add(new RestRequestFacetFieldModel("SITE", "SEARCH.FACET_FIELDS.SITE", 0)); // MinCount = 0
         facets.add(new RestRequestFacetFieldModel("cm:content.mimetype", "Mimetype", 2)); // MinCount = 2
@@ -141,7 +139,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         query.setQuery(queryReq);
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel> facets = new ArrayList<RestRequestFacetFieldModel>();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<>();
 
         // MinCount not set
         facets.add(new RestRequestFacetFieldModel("SITE", "SEARCH.FACET_FIELD1.SITE", null)); // MinCount Not set
@@ -192,7 +190,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         query.setQuery(queryReq);
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel> facets = new ArrayList<RestRequestFacetFieldModel>();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<>();
 
         facets.add(new RestRequestFacetFieldModel("SITE", "SEARCH.FACET_FIELD1.SITE", null)); // MinCount Not set
         facets.add(new RestRequestFacetFieldModel("cm:content.mimetype", "SEARCH.FACET_FIELD2.Mimetype", 1)); // MinCount = 1
@@ -216,7 +214,7 @@ public class FacetFieldsSearchTest extends AbstractSearchTest
         query.setQuery(queryReq);
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
-        List<RestRequestFacetFieldModel> facets = new ArrayList<RestRequestFacetFieldModel>();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<>();
 
         facets.add(new RestRequestFacetFieldModel("SITE", "SEARCH.FACET_FIELD1.SITE", null)); // MinCount Not set
         facets.add(new RestRequestFacetFieldModel("cm:content.mimetype", "SEARCH.FACET_FIELD2.Mimetype", 1)); // MinCount = 1

@@ -27,7 +27,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.search.RestInstanceModel;
 import org.alfresco.rest.search.RestShardInfoModel;
 import org.alfresco.rest.search.RestShardInfoModelCollection;
@@ -41,10 +40,10 @@ import org.testng.annotations.Test;
  *
  * @author Tuna Aksoy
  */
-public class ShardInfoTest extends AbstractSearchTest
+public class ShardInfoTest extends AbstractSearchServicesE2ETest
 {
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
-    public void getShardInfoWithAdminAuthority() throws JsonProcessingException, EmptyRestModelCollectionException
+    public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -62,7 +61,9 @@ public class ShardInfoTest extends AbstractSearchTest
             assertEquals(model.getMode(), "MASTER");
             assertEquals(model.getShardMethod(), "DB_ID");
             assertTrue(model.getHasContent());
-            stores.contains(model.getStores());
+
+            assertTrue(stores.contains(model.getStores()));
+
             List<RestShardModel> shards = model.getShards();
             assertNotNull(shards);
             RestShardModel shard = shards.iterator().next();
@@ -71,7 +72,9 @@ public class ShardInfoTest extends AbstractSearchTest
             assertNotNull(instances);
             RestInstanceModel instance = instances.iterator().next();
             assertNotNull(instance);
-            baseUrls.contains(instance.getBaseUrl());
+
+            assertTrue(baseUrls.contains(instance.getBaseUrl()));
+
             // TODO: Ideally Solr Host and Port should be Parameterised
             assertEquals(instance.getHost(), "search");
             assertEquals(instance.getPort().intValue(), 8983);

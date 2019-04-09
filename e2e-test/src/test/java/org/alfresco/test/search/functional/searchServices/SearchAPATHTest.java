@@ -44,10 +44,9 @@ import org.testng.annotations.Test;
  * @author Michael Suzuki
  *
  */
-public class SearchAPATHTest extends AbstractSearchTest
+public class SearchAPATHTest extends AbstractSearchServicesE2ETest
 {
 
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
     /**
      * {
      *   "query": {
@@ -87,7 +86,8 @@ public class SearchAPATHTest extends AbstractSearchTest
      *}}
      *
      */
-    public void searchLevel0() throws Exception
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
+    public void searchLevel0()
     {
         SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
         SearchResponse response =  query(searchQuery);
@@ -99,7 +99,7 @@ public class SearchAPATHTest extends AbstractSearchTest
     }
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
-    public void searchLevel0andIncludeSubLevel1() throws Exception
+    public void searchLevel0andIncludeSubLevel1()
     {
         SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
         SearchResponse response =  query(searchQuery);
@@ -111,7 +111,7 @@ public class SearchAPATHTest extends AbstractSearchTest
     }
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
-    public void searchLevel2() throws Exception
+    public void searchLevel2()
     {
         String queryString = "name:cars";
 

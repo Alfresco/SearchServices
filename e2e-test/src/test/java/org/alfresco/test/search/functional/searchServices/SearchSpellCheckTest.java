@@ -30,12 +30,12 @@ import org.testng.annotations.Test;
 
 /**
  * Search end point Public API test with spell checking enabled.
+ *
  * @author Michael Suzuki
  * @author Meenal Bhave
  */
-public class SearchSpellCheckTest extends AbstractSearchTest
+public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 {
-   
     /**
      * Perform the below query 
      * {
@@ -64,8 +64,6 @@ public class SearchSpellCheckTest extends AbstractSearchTest
      *    },
      *    "entries": [...]
      * }
-     * 
-     * @throws Exception
      */
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=1)
     public void testSearchMissSpelled() throws Exception
@@ -103,7 +101,7 @@ public class SearchSpellCheckTest extends AbstractSearchTest
         assertResponse(query(searchReq));
     }
     
-    private void assertResponse(SearchResponse nodes) throws Exception
+    private void assertResponse(SearchResponse nodes)
     {
         nodes.assertThat().entriesListIsNotEmpty();
         nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -121,10 +119,9 @@ public class SearchSpellCheckTest extends AbstractSearchTest
      *   },
      *   "spellcheck": {"query": "alfrezco"}
      * }
-     * @throws Exception
      */
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=2)
-    public void testSearchMissSpelledVersion2() throws Exception
+    public void testSearchMissSpelledVersion2()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -138,7 +135,7 @@ public class SearchSpellCheckTest extends AbstractSearchTest
     }   
 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=3)
-    public void testSearchWithSpellcheckerAndCorrectSpelling() throws Exception
+    public void testSearchWithSpellcheckerAndCorrectSpelling()
     {
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -156,7 +153,7 @@ public class SearchSpellCheckTest extends AbstractSearchTest
     {
         // Create a file with mis-spelt name, expect spellcheck type = didYouMean
         FileModel file = new FileModel(unique_searchString + "-1.txt", "uniquee" + "uniquee", "uniquee", FileType.TEXT_PLAIN, "Unique text file for search ");
-        dataContent.usingUser(userModel).usingSite(siteModel).createContent(file);
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
 
         waitForIndexing(file.getName(), true);
         

@@ -9,7 +9,7 @@ package org.alfresco.test.search.functional.searchServices.tracker;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.test.search.functional.AbstractSearchServiceE2E;
+import org.alfresco.test.search.functional.AbstractE2ETest;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
@@ -28,22 +28,19 @@ import org.testng.annotations.Test;
  * @author Alessandro Benedetti
  * @author Meenal Bhave
  */
-public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
+public class CascadingTrackerIntegrationTest extends AbstractE2ETest
 {
     @Autowired
     protected DataContent dataContent;
-    
-    private FolderModel parentFolder, grandParentFolder, childFolder;
-    private FileModel childFile, grandChildFile;
-    
+
     @Test(priority = 1, groups = { TestGroup.ASS_13 })
     public void testChildPathWhenParentRenamed() throws Exception
     {
         // Create Parent folder
-        parentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+        FolderModel parentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
         // Create a file in the parent folder
-        childFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
+        FileModel childFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
 
         Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.NAME, childFile.getName());
@@ -66,11 +63,11 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
 
         // Find nodes where Path with new folder name matches
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + parentNewName + "\"";
-        Boolean indexingInProgress = !waitForContent(parentQueryAfterRename, childFile.getName(), true);
+        boolean indexingInProgress = !waitForContent(parentQueryAfterRename, childFile.getName(), true);
 
         // Query using new parent name: Expect parent folder and child file
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
-        Assert.assertEquals(descendantCountOfNewName, 2, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress.toString(), parentQueryAfterRename));
+        Assert.assertEquals(descendantCountOfNewName, 2, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress, parentQueryAfterRename));
 
         // Query using old parent name: Expect no descendant after rename
         int descendantCountOfOriginalName = query(parentQuery).getPagination().getCount();
@@ -81,13 +78,13 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
     public void testGrandChildPathWhenGrandParentRenamed() throws Exception
     {
         // Create grand parent folder
-        grandParentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+        FolderModel grandParentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
         // Create child folder
-        childFolder = dataContent.usingUser(testUser).usingResource(grandParentFolder).createFolder();
+        FolderModel childFolder = dataContent.usingUser(testUser).usingResource(grandParentFolder).createFolder();
         
         // Create grand child file
-        grandChildFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
+        FileModel grandChildFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
         Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.NAME, grandChildFile.getName());
         properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
@@ -110,11 +107,11 @@ public class CascadingTrackerIntegrationTest extends AbstractSearchServiceE2E
         
         // Find nodes where Path with new folder name matches
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + grandParentNewName + "\"";
-        Boolean indexingInProgress = !waitForContent(parentQueryAfterRename, grandChildFile.getName(), true);
+        boolean indexingInProgress = !waitForContent(parentQueryAfterRename, grandChildFile.getName(), true);
 
         // Query using new parent name: Expect grand parent, child folder, grand child file
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
-        Assert.assertEquals(descendantCountOfNewName, 3, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress.toString(), parentQueryAfterRename));
+        Assert.assertEquals(descendantCountOfNewName, 3, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress, parentQueryAfterRename));
 
         // Query using old parent name: Expect no descendant after rename
         int descendantCountOfOriginalName = query(parentQuery).getPagination().getCount();

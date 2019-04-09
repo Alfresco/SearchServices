@@ -54,7 +54,7 @@ import org.testng.annotations.Test;
  * @author Michael Suzuki
  *
  */
-public class SearchTest extends AbstractSearchTest
+public class SearchTest extends AbstractSearchServicesE2ETest
 {
     @BeforeClass(alwaysRun = true)
     public void setupEnvironment() throws Exception
@@ -76,7 +76,7 @@ public class SearchTest extends AbstractSearchTest
     }
     
     @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
-    public void searchNonIndexedData() throws Exception
+    public void searchNonIndexedData()
     {        
         SearchResponse nodes =  query("yeti");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -86,7 +86,7 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
               description = "Checks its possible to include the original request in the response")
-    public void searchWithRequest() throws Exception
+    public void searchWithRequest()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -103,7 +103,7 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
-    public void searchWithOneSortClause() throws Exception
+    public void searchWithOneSortClause()
     {
         // Tests the ascending order first
         List<String> expectedOrder = asList("alfresco.txt", "cars.txt", "pangram.txt");
@@ -112,7 +112,7 @@ public class SearchTest extends AbstractSearchTest
         searchRequest.addSortClause("FIELD", "name", true);
 
         RestRequestFilterQueryModel filters = new RestRequestFilterQueryModel();
-        filters.setQuery("SITE:'" + siteModel.getId() + "'");
+        filters.setQuery("SITE:'" + testSite.getId() + "'");
         searchRequest.setFilterQueries(filters);
 
         SearchResponse responseWithAscendingOrder = query(searchRequest);
@@ -150,7 +150,7 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
-    public void searchWithTwoSortClauses() throws Exception
+    public void searchWithTwoSortClauses()
     {
         // Tests the ascending order first
         List<String> expectedOrder = asList("alfresco.txt", "cars.txt", "pangram.txt");
@@ -160,7 +160,7 @@ public class SearchTest extends AbstractSearchTest
         searchRequest.addSortClause("FIELD", "createdByUser.id", true);
 
         RestRequestFilterQueryModel filters = new RestRequestFilterQueryModel();
-        filters.setQuery("SITE:'" + siteModel.getId() + "'");
+        filters.setQuery("SITE:'" + testSite.getId() + "'");
         searchRequest.setFilterQueries(filters);
 
         SearchResponse responseWithAscendingOrder = query(searchRequest);
@@ -193,8 +193,8 @@ public class SearchTest extends AbstractSearchTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n }) @TestRail(section = {
         TestGroup.REST_API, TestGroup.SEARCH,
-        TestGroup.ACS_61n }, executionType = ExecutionType.REGRESSION, description = "Checks the \"include\" request parameter support the 'permissions' option") public void searchQuery_includePermissions_shouldReturnNodeWithPermissionsInformation()
-        throws Exception
+        TestGroup.ACS_61n }, executionType = ExecutionType.REGRESSION, description = "Checks the \"include\" request parameter support the 'permissions' option")
+    public void searchQuery_includePermissions_shouldReturnNodeWithPermissionsInformation()
     {
         String query = "fox";
         String include = "permissions";
@@ -234,7 +234,7 @@ public class SearchTest extends AbstractSearchTest
         lockBodyModel.setLifetime("EPHEMERAL");
         lockBodyModel.setTimeToExpire(20);
         lockBodyModel.setType("FULL");
-        restClient.authenticateUser(userModel).withCoreAPI().usingNode(file).usingParams("include=isLocked").lockNode(lockBodyModel);
+        restClient.authenticateUser(testUser).withCoreAPI().usingNode(file).usingParams("include=isLocked").lockNode(lockBodyModel);
         
         query(retrievalQueryIncludingLockInformation);
 
@@ -252,7 +252,7 @@ public class SearchTest extends AbstractSearchTest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n  }, executionType = ExecutionType.REGRESSION,
             description = "Checks the \"include\" request parameter does not support the 'notValid' option")
-    public void searchQuery_includeInvalid_shouldReturnBadResponse() throws Exception
+    public void searchQuery_includeInvalid_shouldReturnBadResponse()
     {
         String query = "fox";
         String notValidInclude = "notValid";
@@ -269,7 +269,7 @@ public class SearchTest extends AbstractSearchTest
 
     // Test that when fields parameter is set, only restricted fields appear in the response
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    public void searchWithFields() throws Exception
+    public void searchWithFields()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -298,7 +298,7 @@ public class SearchTest extends AbstractSearchTest
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
         FileModel file = new FileModel(specialCharfileName, "è¥äæ§ç§-åæ¬¯¸" + "è¥äæ§ç§-åæ¬¯¸", "è¥äæ§ç§-åæ¬¯¸", FileType.TEXT_PLAIN,
                 "Text file with Special Characters: " + specialCharfileName);
-        dataContent.usingUser(userModel).usingSite(siteModel).createContent(file);
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
 
         waitForIndexing(file.getName(), true);
 

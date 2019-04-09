@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.rest.model.RestErrorModel;
@@ -47,7 +48,7 @@ import org.testng.annotations.Test;
  * @author Gethin James
  *
  */
-public class PivotFacetedSearchTest extends AbstractSearchTest
+public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
 {
     @BeforeClass(alwaysRun = true)
     public void setupEnvironment() throws Exception
@@ -59,7 +60,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks errors with pivot using Search api")
-    public void searchWithPivotingErrors() throws Exception
+    public void searchWithPivotingErrors()
     {
         SearchRequest query = carsQuery();
 
@@ -92,7 +93,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks with pivot using Search api")
-    public void searchWithPivoting() throws Exception
+    public void searchWithPivoting()
     {
         SearchRequest query = carsQuery();
 
@@ -121,7 +122,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks nested pivot using Search api")
-    public void searchWithNestedPivoting() throws Exception
+    public void searchWithNestedPivoting()
     {
         SearchRequest query = carsQuery();
 
@@ -147,7 +148,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         pivotModelList.add(sitepivots);
         query.setPivots(pivotModelList);
 
-        SearchResponse response =  query(query);
+        query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                     .assertLastError().containsSummary("invalid argument was received")
                     .containsSummary("Currently only 1 nested pivot is supported, you have 2");
@@ -155,12 +156,12 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         pivotModelList = new ArrayList<>();
         sitepivots = new RestRequestPivotModel();
         sitepivots.setKey("site");
-        sitepivots.setPivots(Arrays.asList(modifierpivot));
+        sitepivots.setPivots(Collections.singletonList(modifierpivot));
         pivotModelList.add(sitepivots);
         pivotModelList.add(creatorpivot);
         query.setPivots(pivotModelList);
 
-        response =  query(query);
+        SearchResponse response = query(query);
         assertPivotResponse(response, "SITE", "site");
 
         RestGenericFacetResponseModel siteResponse = response.getContext().getFacets().get(0);
@@ -178,7 +179,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks range pivots using Search api")
-    public void searchWithRangePivoting() throws Exception
+    public void searchWithRangePivoting()
     {
         SearchRequest query = carsQuery();
         
@@ -201,7 +202,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         facetRangeModel.setEnd(endDate);
         facetRangeModel.setGap("+280DAY");
         facetRangeModel.setLabel("aRange");
-        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        List<RestRequestRangesModel> ranges = new ArrayList<>();
         ranges.add(facetRangeModel);
         query.setRanges(ranges);
 
@@ -210,7 +211,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         creatorpivot.setKey("creator");
         RestRequestPivotModel rangepivot = new RestRequestPivotModel();
         rangepivot.setKey("aRange");
-        creatorpivot.setPivots(Arrays.asList(rangepivot));
+        creatorpivot.setPivots(Collections.singletonList(rangepivot));
         pivotModelList.add(creatorpivot);
         query.setPivots(pivotModelList);
 
@@ -223,7 +224,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
         rangeResponse.assertThat().field("type").is("range");
     }
 
-    private void assertPivotResponse(SearchResponse response, String field, String alabel) throws Exception
+    private void assertPivotResponse(SearchResponse response, String field, String alabel)
     {
         String label = alabel!=null?alabel:field;
         response.getContext().assertThat().field("facetsFields").isNull();
@@ -242,7 +243,7 @@ public class PivotFacetedSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks with pivot using Search api and a label as a key")
-    public void searchWithPivotingUsingLabel() throws Exception
+    public void searchWithPivotingUsingLabel()
     {
         SearchRequest query = carsQuery();
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();

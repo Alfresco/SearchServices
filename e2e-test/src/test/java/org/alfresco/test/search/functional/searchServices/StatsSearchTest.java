@@ -24,6 +24,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,7 +55,7 @@ import org.testng.annotations.Test;
  * @author Gethin James
  *
  */
-public class StatsSearchTest extends AbstractSearchTest
+public class StatsSearchTest extends AbstractSearchServicesE2ETest
 {
     @BeforeClass(alwaysRun = true)
     public void setupEnvironment() throws Exception
@@ -66,7 +67,7 @@ public class StatsSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats using Search api")
-    public void searchWithBasicStats() throws Exception
+    public void searchWithBasicStats()
     {
         SearchRequest query = carsQuery();
         Pagination pagination = new Pagination();
@@ -77,12 +78,12 @@ public class StatsSearchTest extends AbstractSearchTest
         query.setStats(statsModels);
         query.setPaging(pagination);
 
-        SearchResponse response =  query(query);
+        query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "stats field"));
 
         statsModel1.setField("DBID");
-        response =  query(query);
+        SearchResponse response =  query(query);
         //8 metrics by default for a numeric field
         Set<String> metricTypes = assertStatsFacetedResponse(response, "DBID", 8);
         assertTrue(metricTypes.containsAll(Arrays.asList("missing", "countValues", "sum","min","max", "sumOfSquares", "mean", "stddev")));
@@ -150,7 +151,7 @@ public class StatsSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats labels using Search api")
-    public void searchWithStatsLabel() throws Exception
+    public void searchWithStatsLabel()
     {
         SearchRequest query = carsQuery();
         Pagination pagination = new Pagination();
@@ -170,7 +171,7 @@ public class StatsSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats fitlers using Search api")
-    public void searchWithStatsFilters() throws Exception
+    public void searchWithStatsFilters()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -183,7 +184,7 @@ public class StatsSearchTest extends AbstractSearchTest
         statsModel1.setMax(false);
         statsModel1.setMissing(false);
         statsModels.add(statsModel1);
-        query.setFilterQueries(new RestRequestFilterQueryModel("cars", Arrays.asList("justCars")));
+        query.setFilterQueries(new RestRequestFilterQueryModel("cars", Collections.singletonList("justCars")));
         query.setStats(statsModels);
         SearchResponse response = query(query);
         assertStatsFacetedResponse(response, "creator", 1);
@@ -192,7 +193,7 @@ public class StatsSearchTest extends AbstractSearchTest
         Map<?, ?> metricCount = (Map<?, ?>) countMetric.getValue();
         assertEquals(count, metricCount.get("countValues"));
 
-        statsModel1.setExcludeFilters(Arrays.asList("justCars"));
+        statsModel1.setExcludeFilters(Collections.singletonList("justCars"));
         response = query(query);
         assertStatsFacetedResponse(response, "creator", 1);
         countMetric = response.getContext().getFacets().get(0).getBuckets().get(0).getMetrics().get(0);
@@ -205,7 +206,7 @@ public class StatsSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats with Pivot using Search api")
-    public void searchWithStatsAndMutlilevelPivot() throws Exception
+    public void searchWithStatsAndMutlilevelPivot()
     {
         SearchRequest query = carsQuery();
 
@@ -233,8 +234,8 @@ public class StatsSearchTest extends AbstractSearchTest
         RestRequestPivotModel pivot2 = new RestRequestPivotModel();
         pivot2.setKey("aNumber");
 
-        pivotn.setPivots(Arrays.asList(pivot2));
-        pivots.setPivots(Arrays.asList(pivotn));
+        pivotn.setPivots(Collections.singletonList(pivot2));
+        pivots.setPivots(Collections.singletonList(pivotn));
         pivotModelList.add(pivots);
         query.setPivots(pivotModelList);
 
@@ -261,7 +262,6 @@ public class StatsSearchTest extends AbstractSearchTest
         created.assertThat().field("label").is("created");
         //Another nested stats
         assertEquals(created.getBuckets().get(0).getMetrics().size(), 9, "Metrics are on the end of a pivot bucket");
-
     }
 
 
@@ -269,7 +269,7 @@ public class StatsSearchTest extends AbstractSearchTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 },
               executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats with Pivot using Search api")
-    public void searchWithStatsAndPivot() throws Exception
+    public void searchWithStatsAndPivot()
     {
         SearchRequest query = carsQuery();
 
@@ -292,7 +292,7 @@ public class StatsSearchTest extends AbstractSearchTest
         RestRequestPivotModel pivotn = new RestRequestPivotModel();
         pivotn.setKey("numericId");
 
-        pivots.setPivots(Arrays.asList(pivotn));
+        pivots.setPivots(Collections.singletonList(pivotn));
         pivotModelList.add(pivots);
         query.setPivots(pivotModelList);
 
@@ -314,10 +314,9 @@ public class StatsSearchTest extends AbstractSearchTest
         RestGenericFacetResponseModel statsFacet = response.getContext().getFacets().get(1);
         statsFacet.assertThat().field("type").is("stats");
         statsFacet.assertThat().field("label").is("numericId");
-
     }
 
-    private Set<String> assertStatsFacetedResponse(SearchResponse response, String label, int metricsCount) throws Exception
+    private Set<String> assertStatsFacetedResponse(SearchResponse response, String label, int metricsCount)
     {
         response.getContext().assertThat().field("facets").isNotEmpty();
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
@@ -326,7 +325,6 @@ public class StatsSearchTest extends AbstractSearchTest
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
         List<RestGenericMetricModel> metrics = bucket.getMetrics();
         assertEquals(metrics.size(),metricsCount);
-        return metrics.stream().map(m -> m.getType()).collect(Collectors.toSet());
+        return metrics.stream().map(RestGenericMetricModel::getType).collect(Collectors.toSet());
     }
-
 }

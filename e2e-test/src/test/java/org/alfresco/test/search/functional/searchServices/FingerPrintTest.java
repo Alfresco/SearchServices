@@ -30,17 +30,17 @@ import org.testng.annotations.Test;
 
 /**
  * Search end point Public API test with finger print.
+ * 
  * @author Michael Suzuki
- *
  */
-public class FingerPrintTest extends AbstractSearchTest
+public class FingerPrintTest extends AbstractSearchServicesE2ETest
 {
-    private FileModel file1, file2, file3, file4;
+    private FileModel file1;
+    private FileModel file2;
 
     @BeforeClass(alwaysRun = true)
     public void indexSimilarFile() throws Exception
     {
-
         /*
          * Create the following file structure in the same Site  : In addition to the preconditions created in dataPreparation
          * |- folder
@@ -51,19 +51,21 @@ public class FingerPrintTest extends AbstractSearchTest
          */
 
         FolderModel folder = new FolderModel("The quick brown fox jumps over");
-        dataContent.usingUser(userModel).usingSite(siteModel).createFolder(folder);
+        dataContent.usingUser(testUser).usingSite(testSite).createFolder(folder);
 
         file1 = new FileModel("pangram-banana.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy banana");
         file2 = new FileModel("pangram-taco.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog that ate the taco");
-        file3 = new FileModel("pangram-cat.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy cat");
-        file4 = new FileModel("dog.txt", FileType.TEXT_PLAIN, "The quick brown fox ate the lazy dog");
 
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file1);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file2);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file3);
-        dataContent.usingUser(userModel).usingSite(siteModel).usingResource(folder).createContent(file4);
+        FileModel file3 = new FileModel("pangram-cat.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy cat");
+        FileModel file4 = new FileModel("dog.txt", FileType.TEXT_PLAIN, "The quick brown fox ate the lazy dog");
+
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file1);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file2);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file3);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file4);
 
         waitForContentIndexing(file4.getContent(), true);
+
         // Additional wait implemented to remove inconsistent failures. Ref: Search-1438 for details
         waitForIndexing("FINGERPRINT:" + file2.getNodeRefWithoutVersion(), true);
         waitForIndexing("FINGERPRINT:" + file3.getNodeRefWithoutVersion(), true);
@@ -74,11 +76,9 @@ public class FingerPrintTest extends AbstractSearchTest
      * The data prep should have loaded 2 files which one is similar
      * to the files loaded as part of this test.
      * Note that for fingerprint to work it need a 5 word sequence.
-     * 
-     * @throws Exception
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    public void search() throws Exception
+    public void search()
     {
         String uuid = file1.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
@@ -92,11 +92,8 @@ public class FingerPrintTest extends AbstractSearchTest
             switch (match)
             {
                 case "pangram.txt":
-                    break;
                 case "pangram-banana.txt":
-                    break;
                 case "pangram-taco.txt":
-                    break;
                 case "pangram-cat.txt":
                     break;
                 default:
@@ -108,7 +105,7 @@ public class FingerPrintTest extends AbstractSearchTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    public void searchSimilar() throws Exception
+    public void searchSimilar()
     {
         String uuid = file2.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
@@ -125,7 +122,6 @@ public class FingerPrintTest extends AbstractSearchTest
             switch (m.getModel().getName())
             {
                 case "pangram.txt":
-                    break;
                 case "pangram-taco.txt":
                     break;
                 default:
@@ -139,7 +135,7 @@ public class FingerPrintTest extends AbstractSearchTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    public void searchSimilar67Percent() throws Exception
+    public void searchSimilar67Percent()
     {
         String uuid = file2.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
@@ -152,9 +148,7 @@ public class FingerPrintTest extends AbstractSearchTest
             switch (m.getModel().getName())
             {
                 case "pangram.txt":
-                    break;
                 case "pangram-taco.txt":
-                    break;
                 case "pangram-cat.txt":
                     break;
                 default:

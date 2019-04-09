@@ -12,13 +12,13 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeClass;
 
 /**
- * @author Paul Brodner
- * We can use this class for both SearchService and InsightEngine
+ * We can use this class for both SearchService and InsightEngine.
  *
+ * @author Paul Brodner
  */
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
-public abstract class UpgradeTestCase extends AbstractTestNGSpringContextTests {	
-
+public abstract class UpgradeTestCase extends AbstractTestNGSpringContextTests
+{
     @Autowired
     protected ServerHealth serverHealth;
 

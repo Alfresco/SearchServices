@@ -12,7 +12,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class SolrSearchByPathTests extends AbstractCmisTest
+public class SolrSearchByPathTests extends AbstractCmisE2ETest
 {
     /** Logger for the class. */
     private static Logger LOGGER = LoggerFactory.getLogger(SolrSearchByPathTests.class);

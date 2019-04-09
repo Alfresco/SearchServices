@@ -35,12 +35,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Faceted Intervals Search Test
  * @author Gethin James
  */
-public class FacetIntervalSearchTest extends AbstractSearchTest
+public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
 {
     @BeforeClass(alwaysRun = true)
     public void setupEnvironment() throws Exception
@@ -57,7 +58,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
         RestRequestFacetIntervalsModel facetIntervalsModel = new RestRequestFacetIntervalsModel();
         FacetInterval facetInterval = new FacetInterval(null, null, null);
-        facetIntervalsModel.setIntervals(Arrays.asList(facetInterval));
+        facetIntervalsModel.setIntervals(Collections.singletonList(facetInterval));
         query.setFacetIntervals(facetIntervalsModel);
 
         query(query);
@@ -70,7 +71,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
 
         RestRequestFacetSetModel restFacetSetModel = new RestRequestFacetSetModel();
         restFacetSetModel.setLabel("theRest");
-        facetInterval.setSets(Arrays.asList(restFacetSetModel));
+        facetInterval.setSets(Collections.singletonList(restFacetSetModel));
         query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "facetIntervals intervals created sets start"));
@@ -91,16 +92,15 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary("duplicate set interval label [theRest=2]");
 
-        facetInterval.setSets(Arrays.asList(restFacetSetModel));
+        facetInterval.setSets(Collections.singletonList(restFacetSetModel));
         facetInterval.setLabel("thesame");
-        FacetInterval duplicateLabel = new FacetInterval("creator", "thesame", Arrays.asList(duplicate));
+        FacetInterval duplicateLabel = new FacetInterval("creator", "thesame", Collections.singletonList(duplicate));
         facetIntervalsModel.setIntervals(Arrays.asList(facetInterval, duplicateLabel));
         query.setFacetIntervals(facetIntervalsModel);
         
         query(query);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError()
                     .containsSummary("duplicate interval label [thesame=2]");
-
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
@@ -123,7 +123,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         restFacetSetModel.setLabel("theRest");
 
         FacetInterval facetInterval = new FacetInterval("creator", null, Arrays.asList(restRequestFacetSetModel, restFacetSetModel));
-        facetIntervalsModel.setIntervals(Arrays.asList(facetInterval));
+        facetIntervalsModel.setIntervals(Collections.singletonList(facetInterval));
         query.setFacetIntervals(facetIntervalsModel);
 
         SearchResponse response = query(query);
@@ -166,7 +166,7 @@ public class FacetIntervalSearchTest extends AbstractSearchTest
         restFacetSetModel.setLabel("From2016");
 
         FacetInterval facetInterval = new FacetInterval("cm:modified", "modified", Arrays.asList(restRequestFacetSetModel, restFacetSetModel));
-        facetIntervalsModel.setIntervals(Arrays.asList(facetInterval));
+        facetIntervalsModel.setIntervals(Collections.singletonList(facetInterval));
         query.setFacetIntervals(facetIntervalsModel);
 
         SearchResponse response = query(query);

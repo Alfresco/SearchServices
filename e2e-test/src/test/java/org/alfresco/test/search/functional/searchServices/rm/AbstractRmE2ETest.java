@@ -5,7 +5,7 @@
  * agreement is prohibited.
  */
 
-package org.alfresco.test.search.functional;
+package org.alfresco.test.search.functional.searchServices.rm;
 
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
@@ -20,6 +20,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.test.search.functional.searchServices.AbstractSearchServicesE2ETest;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -33,7 +34,7 @@ import org.testng.annotations.BeforeClass;
  * 
  * @author Cristina Diaconu
  */
-public abstract class AbstractRMSearchServiceE2E extends AbstractSearchServiceE2E
+public abstract class AbstractRmE2ETest extends AbstractSearchServicesE2ETest
 {
     protected static final String FILE_PLAN_ALIAS = "-filePlan-";
     protected static final String RECORD_TYPE = "rma:record";
@@ -57,7 +58,7 @@ public abstract class AbstractRMSearchServiceE2E extends AbstractSearchServiceE2
     protected RestAPIFactory restAPIFactory;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void rmDataPreparation() throws Exception
     {
         serverHealth.assertServerIsOnline();
 

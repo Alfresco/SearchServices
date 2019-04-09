@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.test.search.functional.AbstractSearchServiceE2E;
+import org.alfresco.test.search.functional.AbstractE2ETest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
@@ -34,17 +34,13 @@ import org.testng.annotations.Test;
  * @author meenal bhave
  */
 
-public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
+public class SearchWithCustomModelTest extends AbstractE2ETest
 {
     @Autowired
     protected DataSite dataSite;
 
     @Autowired
     protected DataContent dataContent;
-
-    private FolderModel testFolder;
-
-    private FileModel expenseLondon, expenseParis, expenseNoLocation;
 
     @BeforeClass(alwaysRun = true)
     public void setupEnvironment() throws Exception
@@ -53,14 +49,14 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
 
         dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
 
-        testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+        FolderModel testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
         Long uniqueRef = System.currentTimeMillis();
 
-        expenseLondon = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Expense");
+        FileModel expenseLondon = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Expense");
         expenseLondon.setName("fin1-" + expenseLondon.getName());
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
         properties.put(PropertyIds.NAME, expenseLondon.getName());
         properties.put("finance:No", uniqueRef);
@@ -74,10 +70,10 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
                 .secondaryTypeIsAvailable("P:finance:ParkEx");
         cmisApi.authenticateUser(testUser).usingResource(expenseLondon).updateProperty("finance:ParkingLocation", "London");
 
-        expenseParis = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Expense");
+        FileModel expenseParis = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Expense");
         expenseParis.setName("fin2-" + expenseParis.getName());
 
-        properties = new HashMap<String, Object>();
+        properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
         properties.put(PropertyIds.NAME, expenseParis.getName());
         properties.put("finance:No", uniqueRef + 1);
@@ -94,10 +90,10 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
                 .secondaryTypeIsAvailable("P:finance:ParkEx");
         cmisApi.authenticateUser(testUser).usingResource(expenseParis).updateProperty("finance:ParkingLocation", "Paris");
 
-        expenseNoLocation = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "receipt");
+        FileModel expenseNoLocation = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "receipt");
         expenseNoLocation.setName("fin3-" + expenseNoLocation.getName());
 
-        properties = new HashMap<String, Object>();
+        properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
         properties.put(PropertyIds.NAME, expenseNoLocation.getName());
         properties.put("finance:No", uniqueRef + 2);
@@ -119,7 +115,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
 
     // Search-1359: Search AFTS Query with Range
     @Test(priority = 1, groups = { TestGroup.ASS_14 })
-    public void testRangeQueryTextField() throws Exception
+    public void testRangeQueryTextField()
     {
         // Search Range Query
         SearchResponse response = queryAsUser(testUser, "finance_ParkingLocation:[* TO London]");
@@ -143,7 +139,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     }
 
     @Test(priority = 2, groups = { TestGroup.ASS_14 })
-    public void testRangeQueryTextFieldWhiteSpace() throws Exception
+    public void testRangeQueryTextFieldWhiteSpace()
     {
         SearchResponse response = queryAsUser(testUser, "finance:Emp:[* TO Daniel]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -164,7 +160,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     }
 
     @Test(priority = 3, groups = { TestGroup.ASS_14 })
-    public void testRangeQueryTextFieldNonFacetable() throws Exception
+    public void testRangeQueryTextFieldNonFacetable()
     {
         // Search Range Query
         SearchResponse response = queryAsUser(testUser, "finance:Title:[* TO H]");
@@ -191,7 +187,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     }
 
     @Test(priority = 4, groups = { TestGroup.ASS_14 })
-    public void testRangeQueryTextFieldNotTockenised() throws Exception
+    public void testRangeQueryTextFieldNotTockenised()
     {
         SearchResponse response = queryAsUser(testUser, "finance:Desc:[* TO David]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -212,7 +208,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServiceE2E
     }
 
     @Test(priority = 5, groups = { TestGroup.ASS_14 })
-    public void testRangeQueryDoubleField() throws Exception
+    public void testRangeQueryDoubleField()
     {
         // Search Range Query
         SearchResponse response = queryAsUser(testUser, "finance:amount:[* TO 100]");

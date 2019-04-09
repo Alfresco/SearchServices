@@ -7,17 +7,13 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.QueryModel;
-import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class SolrSearchInFolderTests extends AbstractCmisTest
+public class SolrSearchInFolderTests extends AbstractCmisE2ETest
 {
-    private UserModel testUser;
-    private SiteModel testSite;
     private FolderModel parentFolder, subFolder1, subFolder2, subFolder3;
     private FileModel subFile1, subFile2, subFile3, subFile4, subFile5;
     
@@ -34,9 +30,7 @@ public class SolrSearchInFolderTests extends AbstractCmisTest
         subFile2 = FileModel.getRandomFileModel(FileType.MSPOWERPOINT2007);
         subFile3 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         subFile4 = new FileModel("fourthFile", "fourthFileTitle", "fourthFileDescription", FileType.MSWORD2007);
-        
-        testUser = dataUser.createRandomTestUser();
-        testSite = dataSite.usingUser(testUser).createPublicRandomSite();
+
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(parentFolder)
             .then().usingResource(parentFolder)
                 .createFile(subFile5).assertThat().contentIs("fifthFile content")

@@ -15,7 +15,7 @@ import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.search.SearchSqlJDBCRequest;
 import org.alfresco.rest.search.SearchSqlRequest;
-import org.alfresco.test.search.functional.AbstractSearchServiceE2E;
+import org.alfresco.test.search.functional.AbstractE2ETest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
@@ -25,7 +25,6 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +38,7 @@ import org.testng.annotations.Test;
  * 
  * @author meenal bhave
  */
-public class SetupTest extends AbstractSearchServiceE2E
+public class SetupTest extends AbstractE2ETest
 {
     @Autowired
     protected DataSite dataSite;
@@ -47,24 +46,12 @@ public class SetupTest extends AbstractSearchServiceE2E
     @Autowired
     protected DataContent dataContent;
 
-    protected SiteModel testSite;
-
-    protected FolderModel targetFolder;
-
-    private UserModel testUser;
-
     private FolderModel testFolder;
 
     @BeforeClass(alwaysRun = true)
     public void setUp() throws Exception
     {
-        serverHealth.assertServerIsOnline();
-
-        testSite = dataSite.createPublicRandomSite();
-        targetFolder = dataContent.usingSite(testSite).createFolder(FolderModel.getRandomFolderModel());
-
-        // Create test user and add the user as a SiteContributor
-        testUser = dataUser.createRandomTestUser();
+        dataContent.usingSite(testSite).createFolder(FolderModel.getRandomFolderModel());
 
         dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
 
@@ -86,7 +73,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     {
         // Create document of custom type
         FileModel customFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "searchContent-music");
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:music:song");
         properties.put(PropertyIds.NAME, customFile.getName());
         properties.put("music:genre", "pop");
@@ -105,7 +92,7 @@ public class SetupTest extends AbstractSearchServiceE2E
         // Create document of custom type
 
         FileModel customFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "searchContent-finance");
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Receipt");
         properties.put(PropertyIds.NAME, customFile.getName());
         properties.put("finance:ReceiptNo", 1);
@@ -124,7 +111,7 @@ public class SetupTest extends AbstractSearchServiceE2E
     public void testSQLAPICanBeUsed() throws Exception
     {
         FileModel customFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "searchContent-finance2");
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Receipt");
         properties.put(PropertyIds.NAME, customFile.getName());
         properties.put("finance:ReceiptNo", 2);
