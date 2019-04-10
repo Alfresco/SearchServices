@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
  * @author Paul Brodner
  *
  */
-public class SearchServiceOnBackupTests extends AbstractBackupTest
+public class SearchServicesOnBackupTests extends AbstractBackupE2ETest
 {
 	@Test
 	public void deleteBackupFolder() throws Exception {

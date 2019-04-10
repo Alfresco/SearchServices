@@ -9,7 +9,7 @@ import org.alfresco.utility.model.QueryModel;
 import org.slf4j.Logger;
 import org.testng.annotations.Test;
 
-public class SearchServiceUpgradeTests extends UpgradeTestCase
+public class SearchServiceUpgradeTests extends AbstractUpgradeE2ETest
 {
 	private static Logger LOG = LogFactory.getLogger();
 	

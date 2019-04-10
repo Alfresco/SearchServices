@@ -17,7 +17,7 @@ import org.testng.annotations.BeforeClass;
  * @author Paul Brodner
  */
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
-public abstract class UpgradeTestCase extends AbstractTestNGSpringContextTests
+public abstract class AbstractUpgradeE2ETest extends AbstractTestNGSpringContextTests
 {
     @Autowired
     protected ServerHealth serverHealth;

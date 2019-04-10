@@ -28,7 +28,7 @@ import com.jayway.restassured.RestAssured;
 
 @Configuration
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
-public abstract class AbstractBackupTest extends AbstractTestNGSpringContextTests
+public abstract class AbstractBackupE2ETest extends AbstractTestNGSpringContextTests
 {
 	protected SiteModel testSite = new SiteModel("siteForBackupTesting");
 	protected FolderModel folder = new FolderModel("folderBackedUp");

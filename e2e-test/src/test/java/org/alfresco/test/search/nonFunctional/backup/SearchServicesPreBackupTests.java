@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
  * @author Paul Brodner
  *
  */
-public class SearchServicePreBackupTests extends AbstractBackupTest
+public class SearchServicesPreBackupTests extends AbstractBackupE2ETest
 {
 	/**
 	 * {"responseHeader":{"status":0,"QTime":1},"exception":"org.apache.solr.common.SolrException:org.apache.solr.common.SolrException:

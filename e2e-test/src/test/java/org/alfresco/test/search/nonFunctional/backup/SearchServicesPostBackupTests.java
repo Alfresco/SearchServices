@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
  * @author Paul Brodner
  *
  */
-public class SearchServicePostBackupTests extends AbstractBackupTest
+public class SearchServicesPostBackupTests extends AbstractBackupE2ETest
 {
 	@Test
 	public void testIFBackupDataExist() throws Exception {
