@@ -14,10 +14,18 @@ way to keep this code up to date on GitHub.
 
 ## Decision
 
-We will mirror the alfresco-search-parent submodule of `master` along with all branches starting with `release/` to a
-branch with the same name on GitHub.  We will include this command as part of our build to do this:
+We will mirror `master` and all branches starting with `release/` to a branch with the same name on GitHub.  We will
+exclude the alfresco-insight-engine-parent directory. We will include these commands as part of our build to do this:
 
-```git subtree push -P alfresco-search-parent out $targetBranch```
+```
+# This avoids making changes to the original branch.
+get checkout -b tempBranch
+# This strips all enterprise changes (in a reproducible way) and pushes any updates to the mirror.
+git filter-branch -f --prune-empty --index-filter 'git rm -r --cached --ignore-unmatch alfresco-insight-engine-parent'
+git push out HEAD:$branch
+# This resets us back to where we were before the filtering.
+git checkout $branch
+```
 
 ## Consequences
 
@@ -27,10 +35,10 @@ mirroring [[2]].
 We will rewrite the whole history of the SearchServices repository using the mirroring command (the only change will be
 the commit ids).
 
-Any changes within a module called alfresco-search-parent will be mirrored. Any changes outside this will not be
-mirrored. 
+All changes except those within the module called alfresco-insight-engine-parent will be mirrored.
 
-!!! TODO: Check if the community can build the submodule without access to the parent pom file !!!
+The root pom file in the community project will point to the alfresco-insight-engine-parent pom file, so community users
+will have to build from within the alfresco-search-parent directory. 
 
 [1]: https://issues.alfresco.com/jira/browse/SEARCH-1397
 [2]: https://git.alfresco.com/search_discovery/combinerScript/blob/master/combineSearch.sh
