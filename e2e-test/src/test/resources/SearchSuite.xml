@@ -53,6 +53,12 @@
         </classes>
     </test>
 
+    <test name="Non-Functional">
+        <packages>
+            <package name="org.alfresco.test.search.nonFunctional.*"/>
+        </packages>
+    </test>
+
     <test name="E2E-SearchServices">
         <groups>
             <run>
@@ -63,7 +69,10 @@
             </run>
         </groups>
         <packages>
-            <package name="org.alfresco.test.search.functional.searchServices.*" />
+            <package name="org.alfresco.test.search.functional.searchServices.*">
+                <exclude name="org.alfresco.test.search.functional.searchServices.cmis"/>
+                <exclude name="org.alfresco.test.search.functional.searchServices.rm"/>
+            </package>
         </packages>
         <classes>
         </classes>
