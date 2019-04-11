@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.test.search.functional.searchServices;
+package org.alfresco.test.search.functional.searchServices.search;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

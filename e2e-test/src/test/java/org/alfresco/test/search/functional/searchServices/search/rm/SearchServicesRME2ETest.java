@@ -5,7 +5,7 @@
  * agreement is prohibited.
  */
 
-package org.alfresco.test.search.functional.searchServices.rm;
+package org.alfresco.test.search.functional.searchServices.search.rm;
 
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;

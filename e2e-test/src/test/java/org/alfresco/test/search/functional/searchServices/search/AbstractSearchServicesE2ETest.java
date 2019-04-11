@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.test.search.functional.searchServices;
+package org.alfresco.test.search.functional.searchServices.search;
 
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.test.search.functional.AbstractE2ETest;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -41,7 +41,7 @@ import javax.naming.AuthenticationException;
  * @author Meenal Bhave
  *
  */
-public abstract class AbstractSearchServicesE2ETest extends AbstractE2ETest
+public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctionalTest
 {
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
 

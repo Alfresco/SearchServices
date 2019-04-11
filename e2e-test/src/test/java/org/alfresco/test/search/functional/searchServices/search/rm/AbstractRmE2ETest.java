@@ -5,7 +5,7 @@
  * agreement is prohibited.
  */
 
-package org.alfresco.test.search.functional.searchServices.rm;
+package org.alfresco.test.search.functional.searchServices.search.rm;
 
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
@@ -20,7 +20,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.test.search.functional.searchServices.AbstractSearchServicesE2ETest;
+import org.alfresco.test.search.functional.searchServices.search.AbstractSearchServicesE2ETest;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;

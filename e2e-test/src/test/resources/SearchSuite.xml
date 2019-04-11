@@ -16,7 +16,7 @@
             </run>
         </groups>
         <classes>
-            <class name="org.alfresco.test.search.nonFunctional.sanity.SetupTest" />
+            <class name="org.alfresco.test.search.functional.searchServices.sanity.SetupTest" />
         </classes>
     </test>
 
@@ -32,7 +32,7 @@
         <packages>
             <package name="org.alfresco.test.search.functional.searchServices.*">
                 <exclude name="org.alfresco.test.search.functional.searchServices.cmis"/>
-                <exclude name="org.alfresco.test.search.functional.searchServices.rm"/>
+                <exclude name="org.alfresco.test.search.functional.searchServices.search.rm"/>
             </package>
         </packages>
         <classes>

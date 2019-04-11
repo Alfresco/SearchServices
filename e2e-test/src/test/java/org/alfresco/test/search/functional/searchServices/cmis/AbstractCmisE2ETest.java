@@ -5,7 +5,7 @@ import org.alfresco.cmis.CmisWrapper;
 
 import java.lang.reflect.Method;
 
-import org.alfresco.test.search.functional.searchServices.AbstractSearchServicesE2ETest;
+import org.alfresco.test.search.functional.searchServices.search.AbstractSearchServicesE2ETest;
 import org.alfresco.utility.LogFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

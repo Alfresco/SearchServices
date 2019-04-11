@@ -5,13 +5,13 @@
  * agreement is prohibited.
  */
 
-package org.alfresco.test.search.functional.searchServices;
+package org.alfresco.test.search.functional.searchServices.search;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.test.search.functional.AbstractE2ETest;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
@@ -34,7 +34,7 @@ import org.testng.annotations.Test;
  * @author meenal bhave
  */
 
-public class SearchWithCustomModelTest extends AbstractE2ETest
+public class SearchWithCustomModelTest extends AbstractE2EFunctionalTest
 {
     @Autowired
     protected DataSite dataSite;

@@ -4,12 +4,12 @@
  * pursuant to a written agreement and any use of this program without such an
  * agreement is prohibited.
  */
-package org.alfresco.test.search.functional.searchServices.tracker;
+package org.alfresco.test.search.functional.searchServices.search.tracker;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.test.search.functional.AbstractE2ETest;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
@@ -28,7 +28,7 @@ import org.testng.annotations.Test;
  * @author Alessandro Benedetti
  * @author Meenal Bhave
  */
-public class CascadingTrackerIntegrationTest extends AbstractE2ETest
+public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
 {
     @Autowired
     protected DataContent dataContent;
