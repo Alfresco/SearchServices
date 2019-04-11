@@ -7,39 +7,6 @@
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
     </listeners>
 
-<!--    <test name="SearchFaceted">-->
-<!--        <classes>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.FacetIntervalSearchTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.FacetRangeSearchTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.PivotFacetedSearchTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.FacetedSearchTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.FacetFieldsSearchTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
-
-<!--    <test name="SearchFeatures">-->
-<!--        <classes>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.FingerPrintTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.SearchAPATHTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.SearchHighLightTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.SearchSpellCheckTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.SearchTest"/>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.StatsSearchTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
-
-<!--   <test name="SearchPrivateAPIs">-->
-<!--        <classes>-->
-<!--            <class name="org.alfresco.test.search.functional.searchServices.ShardInfoTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
-
-<!--	<test name="SolrAPIs">-->
-<!--		<classes>-->
-<!--			<class name="org.alfresco.test.search.functional.searchServices.solr.SearchSolrAPITest" />-->
-<!--		</classes>-->
-<!--	</test>-->
-
     <test name="Smoke">
         <groups>
             <run>
@@ -51,12 +18,6 @@
         <classes>
             <class name="org.alfresco.test.search.nonFunctional.sanity.SetupTest" />
         </classes>
-    </test>
-
-    <test name="Non-Functional">
-        <packages>
-            <package name="org.alfresco.test.search.nonFunctional.*"/>
-        </packages>
     </test>
 
     <test name="E2E-SearchServices">
