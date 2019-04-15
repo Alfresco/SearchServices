@@ -37,6 +37,10 @@ services:
   search:
     image: quay.io/alfresco/search-services:${SEARCH_TAG}
     environment:
+      #Replication properties
+      - REPLICATION_TYPE=master
+      #- REPLICATION_AFTER=commit,startup
+      #- REPLICATION_CONFIG_FILES=schema.xml,stopwords.txt
       #Solr needs to know how to register itself with Alfresco
       - SOLR_ALFRESCO_HOST=alfresco
       - SOLR_ALFRESCO_PORT=8080

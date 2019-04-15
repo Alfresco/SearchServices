@@ -26,7 +26,8 @@ RUN set -x \
    && yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
    && yum clean all \
    && unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP" \
-   && mkdir -p $DIST_DIR/data \
+   && mkdir $DIST_DIR/data \
+   && mkdir $DIST_DIR/contentstore \
    && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ \
    && chown -R ${USERNAME}:${USERNAME} $DIST_DIR \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
@@ -41,6 +42,7 @@ RUN mv $DIST_DIR/licenses /licenses
 WORKDIR $DIST_DIR
 
 VOLUME $DIST_DIR/data
+VOLUME $DIST_DIR/contentstore
 VOLUME $DIST_DIR/solrhome
 
 EXPOSE 8983
