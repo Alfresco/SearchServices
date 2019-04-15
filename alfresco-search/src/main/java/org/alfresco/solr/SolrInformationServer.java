@@ -2656,7 +2656,7 @@ public class SolrInformationServer implements InformationServer
 
     private void indexNonShardCascade(NodeMetaData nodeMetaData) throws IOException
     {
-        canUpdate();
+
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = newSolrQueryRequest())
         {
@@ -2668,7 +2668,7 @@ public class SolrInformationServer implements InformationServer
             SolrInputDocument input = new SolrInputDocument();
             input.addField(FIELD_SOLR4_ID, AlfrescoSolrDataModel.getNodeDocumentId(nodeMetaData.getTenantDomain(), nodeMetaData.getAclId(), nodeMetaData.getId()));
             input.addField(FIELD_VERSION, 0);
-            input.addField(fieldInstance.getField(), stringPropertyValue.toString());
+            input.addField(fieldInstance.getField(), stringPropertyValue.getValue());
             cmd.solrDoc = input;
             processor.processAdd(cmd);
 
