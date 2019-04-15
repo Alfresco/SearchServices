@@ -2,20 +2,14 @@
 
 <suite name="CMISSearchSuite" verbose="6" preserve-order="true">
 
-    <listeners>        
-        <listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"/>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
     </listeners>
 
     <test name="Search">
-        <classes>
-            <class name="org.alfresco.service.search.cmis.SolrSearchByAspectTests" />
-            <class name="org.alfresco.service.search.cmis.SolrSearchByIdTests" />
-            <class name="org.alfresco.service.search.cmis.SolrSearchByPathTests" />
-            <class name="org.alfresco.service.search.cmis.SolrSearchByPropertyTests" />
-            <class name="org.alfresco.service.search.cmis.SolrSearchInFolderTests" />
-            <class name="org.alfresco.service.search.cmis.SolrSearchInTreeTests" />
-            <class name="org.alfresco.service.search.cmis.SorlSearchSimpleQueryTests" />
-        </classes>
+        <packages>
+            <package name="org.alfresco.test.search.functional.searchServices.cmis" />
+        </packages>
     </test>
-
 </suite>

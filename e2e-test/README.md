@@ -35,4 +35,4 @@ Search Services 1.2.0 or above or Insight Engine 1.0.0 or above
 
 e.g.
 
-`mvn clean install -Dtest=org.alfresco.service.search.e2e.insightEngine.sql.CustomModelTest`
+`mvn clean install -Dtest=CustomModelTest`

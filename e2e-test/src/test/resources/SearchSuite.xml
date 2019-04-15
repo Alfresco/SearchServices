@@ -7,39 +7,6 @@
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
     </listeners>
 
-    <test name="SearchFaceted">
-        <classes>
-            <class name="org.alfresco.service.search.e2e.searchservices.FacetIntervalSearchTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.FacetRangeSearchTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.PivotFacetedSearchTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.FacetedSearchTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.FacetFieldsSearchTest"/>
-        </classes>
-    </test>
-
-    <test name="SearchFeatures">
-        <classes>
-            <class name="org.alfresco.service.search.e2e.searchservices.FingerPrintTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.SearchAPATHTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.SearchHighLightTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.SearchSpellCheckTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.SearchTest"/>
-            <class name="org.alfresco.service.search.e2e.searchservices.StatsSearchTest"/>
-        </classes>
-    </test>
-
-   <test name="SearchPrivateAPIs">
-        <classes>
-            <class name="org.alfresco.service.search.e2e.searchservices.ShardInfoTest"/>
-        </classes>
-    </test>
-
-	<test name="SolrAPIs">
-		<classes>
-			<class name="org.alfresco.service.search.e2e.searchservices.solr.SearchSolrAPITest" />
-		</classes>
-	</test>
-
     <test name="Smoke">
         <groups>
             <run>
@@ -49,7 +16,7 @@
             </run>
         </groups>
         <classes>
-            <class name="org.alfresco.service.search.unit.SetupTest" />
+            <class name="org.alfresco.test.search.functional.searchServices.sanity.SetupTest" />
         </classes>
     </test>
 
@@ -63,8 +30,10 @@
             </run>
         </groups>
         <packages>
-            <package name="org.alfresco.service.search.e2e.searchservices" />
-            <package name="org.alfresco.service.search.e2e.searchservices.tracker" />
+            <package name="org.alfresco.test.search.functional.searchServices.*">
+                <exclude name="org.alfresco.test.search.functional.searchServices.cmis"/>
+                <exclude name="org.alfresco.test.search.functional.searchServices.search.rm"/>
+            </package>
         </packages>
         <classes>
         </classes>
