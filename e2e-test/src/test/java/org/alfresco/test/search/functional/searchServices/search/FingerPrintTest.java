@@ -24,9 +24,12 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.report.Bug;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertTrue;
 
 /**
  * Search end point Public API test with finger print.
@@ -37,6 +40,7 @@ public class FingerPrintTest extends AbstractSearchServicesE2ETest
 {
     private FileModel file1;
     private FileModel file2;
+    private FolderModel folder;
 
     @BeforeClass(alwaysRun = true)
     public void indexSimilarFile() throws Exception
@@ -49,8 +53,7 @@ public class FingerPrintTest extends AbstractSearchServicesE2ETest
          *    |-- pangram-cat.txt
          *    |-- dog.txt
          */
-
-        FolderModel folder = new FolderModel("The quick brown fox jumps over");
+        folder = new FolderModel("The quick brown fox jumps over");
         dataContent.usingUser(testUser).usingSite(testSite).createFolder(folder);
 
         file1 = new FileModel("pangram-banana.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy banana");
@@ -71,6 +74,31 @@ public class FingerPrintTest extends AbstractSearchServicesE2ETest
         waitForIndexing("FINGERPRINT:" + file3.getNodeRefWithoutVersion(), true);
     }
 
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Bug(id = "MNT-20449")
+    public void makeSureFingerprintQueryWorksAfterMetadataUpdate() throws Exception
+    {
+        // Index a new file with content
+        FileModel file = new FileModel("Project_Contract.pdf", FileType.TEXT_PLAIN, "A content which is completely different from other indexed files.");
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file);
+
+        // make sure the content has been indexed (i.e. the ContentTracker fingerprint has been correctly computed
+        assertTrue(waitForIndexing("FINGERPRINT:" + file.getNodeRefWithoutVersion(), true));
+
+        // Update some metadata attribute of the file
+        String newFileName = "Contrattazione.pdf";
+        file.setName(newFileName);
+
+        // ...and reindex it
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(file).renameContent(file);
+
+        // Make sure the new version of the file has been indexed
+        assertTrue(waitForIndexing("Contrattazione", true));
+
+        // ...and finally
+        assertTrue(waitForIndexing("FINGERPRINT:" + file.getNodeRefWithoutVersion(), true));
+    }
+
     /**
      * Search similar document based on document finger print.
      * The data prep should have loaded 2 files which one is similar
@@ -85,7 +113,7 @@ public class FingerPrintTest extends AbstractSearchServicesE2ETest
         String fingerprint = String.format("FINGERPRINT:%s", uuid);
         SearchResponse response = query(fingerprint);
         int count = response.getEntries().size();
-        Assert.assertTrue(count > 1);
+        assertTrue(count > 1);
         for (SearchNodeModel m : response.getEntries())
         {
             String match = m.getModel().getName();
@@ -115,7 +143,7 @@ public class FingerPrintTest extends AbstractSearchServicesE2ETest
         SearchResponse response = query(fingerprint);
 
         int count = response.getEntries().size();
-        Assert.assertTrue(count > 1);
+        assertTrue(count > 1);
 
         for (SearchNodeModel m : response.getEntries())
         {
@@ -142,7 +170,7 @@ public class FingerPrintTest extends AbstractSearchServicesE2ETest
         String fingerprint = String.format("FINGERPRINT:%s_68", uuid);
         SearchResponse response = query(fingerprint);
         int count = response.getEntries().size();
-        Assert.assertTrue(count > 1);
+        assertTrue(count > 1);
         for (SearchNodeModel m : response.getEntries())
         {
             switch (m.getModel().getName())
