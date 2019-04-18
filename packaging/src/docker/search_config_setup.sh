@@ -44,17 +44,13 @@ if [[ $REPLICATION_TYPE == "slave" ]]; then
       REPLICATION_MASTER_PORT=8083
    fi
 
-   if [[ $REPLICATION_CORE_NAME == "" ]]; then
-      REPLICATION_CORE_NAME=alfresco
-   fi
-
    if [[ $REPLICATION_POLL_INTERVAL == "" ]]; then
       REPLICATION_POLL_INTERVAL=00:00:60
    fi
 
    sed -i -e 's/<requestHandler name="\/replication" class="solr\.ReplicationHandler" >/<requestHandler name="\/replication" class="solr\.ReplicationHandler" >\
       <lst name="slave">\
-         <str name="masterUrl">'$REPLICATION_MASTER_PROTOCOL':\/\/'$REPLICATION_MASTER_HOST':'$REPLICATION_MASTER_PORT'\/solr\/'$REPLICATION_CORE_NAME'<\/str>\
+         <str name="masterUrl">'$REPLICATION_MASTER_PROTOCOL':\/\/'$REPLICATION_MASTER_HOST':'$REPLICATION_MASTER_PORT'\/solr\/${solr.core.name}<\/str>\
          <str name="pollInterval">'$REPLICATION_POLL_INTERVAL'<\/str>\
       <\/lst>/g' $SOLR_CONFIG_FILE
    sed -i -e "s/enable.alfresco.tracking=true/enable.alfresco.tracking=true\nenable.master=false\nenable.slave=true/g" $SOLR_CORE_FILE
