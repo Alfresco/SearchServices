@@ -31,6 +31,8 @@ import org.alfresco.util.Pair;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 
+import org.apache.lucene.util.LuceneTestCase;
+import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,6 +55,8 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 /**
  * @author Elia
  */
+@SolrTestCaseJ4.SuppressSSL
+@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTest
 {
     private Node parentFolder;
