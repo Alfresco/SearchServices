@@ -65,8 +65,8 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
     private NodeMetaData childShardMetadata1;
 
     private final String pathParent = "pathParent";
-    private final String pathChild0 = "pathChiled0";
-    private final String pathChild1 = "pathChiled2";
+    private final String pathChild0 = "pathChild0";
+    private final String pathChild1 = "pathChild2";
 
     private final int timeout = 100000;
 
