@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr;
 
+import static java.util.Optional.ofNullable;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
@@ -169,6 +170,7 @@ import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.common.util.NamedList;
@@ -3213,6 +3215,10 @@ public class SolrInformationServer implements InformationServer
         
         if (cachedDoc != null)
         {
+            ofNullable(cachedDoc.getField("MINHASH"))
+                    .map(SolrInputField::getValue)
+                    .ifPresent(minHash -> newDoc.setField("MINHASH", minHash));
+
             // Builds up the new solr doc from the cached content regardless of whether or not it is current
             List<FieldInstance> fields = AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(
                         propertyQName).getFields();
