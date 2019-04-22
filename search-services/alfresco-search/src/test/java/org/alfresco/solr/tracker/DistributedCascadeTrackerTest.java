@@ -18,6 +18,17 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.Collections.singletonList;
+import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.client.Acl;
@@ -36,20 +47,7 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.util.Properties;
-
-
-import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 
 /**
  * @author Elia
@@ -59,7 +57,6 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTest
 {
-
     private Node parentFolder;
     private NodeMetaData parentFolderMetadata;
 
@@ -84,7 +81,7 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
     }
 
     @After
-    private void destroyData() throws Throwable
+    private void destroyData()
     {
         dismissSolrServers();
     }
@@ -93,17 +90,13 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
      * Default data is indexed in solr.
      * 1 folder node with 2 children nodes.
      * 1 Child is on the same shard of the parent folder (shard 0) while the other is on shard 1.
-     * @throws Exception
      */
     private void indexData() throws Exception
     {
-        /*
-         * Create and index an AclChangeSet.
-         */
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
         Acl acl = getAcl(aclChangeSet);
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
 
         indexAclChangeSet(aclChangeSet,
                 of(acl),
@@ -112,11 +105,9 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         indexNodes(acl);
     }
 
-
     /**
      * This test checks if after updating the parent folder,
      * both the children(in both the shards) are updated as well in cascading.
-     * @throws Exception
      */
     @Test
     public void testCascadeShouldHappenInBothShardsAfterUpdateParentFolder() throws Exception
@@ -151,13 +142,10 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         // The old paths are no longer in the index
         assertShardCount(0, params("qt", "/afts", "q", "PATH:" + pathChild0), 0);
         assertShardCount(1, params("qt", "/afts", "q", "PATH:" + pathChild1), 0);
-
     }
-
 
     private void indexNodes(Acl acl) throws Exception
     {
-
         Transaction bigTxn = getTransaction(0, 3);
 
         /*
@@ -193,13 +181,10 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, timeout);
         assertShardCount(0, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2);
         assertShardCount(1, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1);
-
     }
-
 
     private void indexParentFolderWithCascade()
     {
-
         Transaction bigTxn = getTransaction(0, 1);
 
         parentFolder.setTxnId(bigTxn.getId());
@@ -209,12 +194,10 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         indexTransaction(bigTxn, of(parentFolder), of(parentFolderMetadata));
     }
 
-
-    protected Properties getShardMethod()
+    private Properties getShardMethod()
     {
         Properties prop = new Properties();
         prop.put("shard.method", "DB_ID_RANGE");
         return prop;
     }
 }
-
