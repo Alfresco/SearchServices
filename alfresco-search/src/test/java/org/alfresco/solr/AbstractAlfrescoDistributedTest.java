@@ -744,13 +744,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
         request.setMethod(SolrRequest.METHOD.POST);
         return request;
     }
-
-
-    protected QueryResponse queryN(SolrClient solrClient, boolean setDistribParams, SolrParams p) throws IOException, SolrServerException {
-        final ModifiableSolrParams params = new ModifiableSolrParams(p);
-        params.set("distrib", "false");
-        return  solrClient.query(params);
-    }
+    
 
     /**
      * Returns the QueryResponse from {@link #queryRandomShard}
