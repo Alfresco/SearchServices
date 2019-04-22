@@ -54,6 +54,7 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 
 /**
  * @author Elia
+ * Test cascade tracker in multi sharded environment.
  */
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
@@ -75,9 +76,9 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
     private final int timeout = 100000;
 
     @BeforeClass
-    private static void initData() throws Throwable
+    private void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedCascadeTrackerTest", getShardMethod());
+        initSolrServers(2, getClassName(), getShardMethod());
     }
 
     @AfterClass
@@ -86,7 +87,12 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         dismissSolrServers();
     }
 
-
+    /**
+     * Default data is indexed in solr.
+     * 1 folder node with 2 children nodes.
+     * 1 Child is on the same shard of the parent folder (shard 0) while the other is on shard 1.
+     * @throws Exception
+     */
     @Before
     public void indexData() throws Exception
     {
@@ -105,9 +111,13 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         indexNodes(acl);
     }
 
-
+    /**
+     * This test check if after updating the parent folder,
+     * both the children(in both the shards) are updated as well in cascading.
+     * @throws Exception
+     */
     @Test
-    public void test() throws Exception
+    public void testCascadeShouldHappenInBothShardsAfterUpdateParentFolder() throws Exception
     {
         String cascadingFirstChild = "cascadingFirstChild";
         String cascadingSecondChild = "cascadingSecondChild";
@@ -143,7 +153,8 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
     }
 
 
-    private void indexNodes(Acl acl) throws Exception{
+    private void indexNodes(Acl acl) throws Exception
+    {
 
         Transaction bigTxn = getTransaction(0, 3);
 
@@ -185,7 +196,8 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
     }
 
 
-    private void indexParentFolderWithCascade(){
+    private void indexParentFolderWithCascade()
+    {
 
         Transaction bigTxn = getTransaction(0, 1);
 
