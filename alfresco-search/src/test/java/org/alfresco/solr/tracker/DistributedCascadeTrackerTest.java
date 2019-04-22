@@ -33,9 +33,8 @@ import org.apache.lucene.search.TermQuery;
 
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -60,6 +59,7 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTest
 {
+
     private Node parentFolder;
     private NodeMetaData parentFolderMetadata;
 
@@ -73,16 +73,18 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
     private final String pathChild0 = "pathChild0";
     private final String pathChild1 = "pathChild2";
 
+
     private final int timeout = 100000;
 
-    @BeforeClass
+    @Before
     private void initData() throws Throwable
     {
         initSolrServers(2, getClassName(), getShardMethod());
+        indexData();
     }
 
-    @AfterClass
-    private static void destroyData() throws Throwable
+    @After
+    private void destroyData() throws Throwable
     {
         dismissSolrServers();
     }
@@ -93,8 +95,7 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
      * 1 Child is on the same shard of the parent folder (shard 0) while the other is on shard 1.
      * @throws Exception
      */
-    @Before
-    public void indexData() throws Exception
+    private void indexData() throws Exception
     {
         /*
          * Create and index an AclChangeSet.
@@ -111,14 +112,16 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         indexNodes(acl);
     }
 
+
     /**
-     * This test check if after updating the parent folder,
+     * This test checks if after updating the parent folder,
      * both the children(in both the shards) are updated as well in cascading.
      * @throws Exception
      */
     @Test
     public void testCascadeShouldHappenInBothShardsAfterUpdateParentFolder() throws Exception
     {
+
         String cascadingFirstChild = "cascadingFirstChild";
         String cascadingSecondChild = "cascadingSecondChild";
 
@@ -127,7 +130,6 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
          */
         childShardMetadata0.setPaths(of(new Pair<>(cascadingFirstChild, null)));
         childShardMetadata1.setPaths(of(new Pair<>(cascadingSecondChild, null)));
-
 
         /*
          * Check the path of the two nodes before cascading
@@ -181,11 +183,9 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         childShardMetadata1 = getNodeMetaData(childShard1, bigTxn, acl, "elia", ancestors(parentFolderMetadata.getNodeRef()), false);
         childShardMetadata1.setPaths(of(new Pair<>(pathChild1, null)));
 
-
         indexTransaction(bigTxn,
                 of(parentFolder, childShard0, childShard1),
                 of(parentFolderMetadata, childShardMetadata0, childShardMetadata1));
-
 
         /*
          * Get sure the nodes are indexed correctly in the shards
@@ -193,6 +193,7 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, timeout);
         assertShardCount(0, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2);
         assertShardCount(1, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1);
+
     }
 
 
@@ -209,7 +210,7 @@ public class DistributedCascadeTrackerTest extends AbstractAlfrescoDistributedTe
     }
 
 
-    protected static Properties getShardMethod()
+    protected Properties getShardMethod()
     {
         Properties prop = new Properties();
         prop.put("shard.method", "DB_ID_RANGE");
