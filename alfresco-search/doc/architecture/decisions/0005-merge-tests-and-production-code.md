@@ -4,13 +4,13 @@ Date: 09/04/2019
 
 ## Status
 
-Proposed
+Approved
 
 ## Context
 
 In [ADR 3: "Combined Codebase"](0003-combined-codebase.md) we decided to merge the production and end-to-end test
-repositories. In [ADR 4: "Community Mirror"](0004-community-mirror.md) we discuss setting up a mirror for code within a
-particular submodule.
+repositories. In [ADR 4: "Community Mirror"](0004-community-mirror.md) we discuss setting up a mirror for the community
+code.
 
 ## Decision
 
