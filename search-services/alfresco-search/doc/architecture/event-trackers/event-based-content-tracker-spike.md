@@ -88,3 +88,45 @@ The *T-Engine* performs the transformation (5) and stores the result in the `Sha
 Both source and target files can be deleted from `Shared File Store` after the operation ends successfully (9).
 
 *Note*. Detailed JSON syntax for `Transform Request` and `Transform Reply` are available at [Spec for Transform Request & Reply](https://github.com/Alfresco/alfresco-transform-service/blob/master/docs/transformation-request-reply.md)
+
+
+## Alternatives evaluation
+
+Below different alternatives for integrating Content Tracking with the New Transform Service are described.
+
+
+### 1 - No Change to Search Service
+
+The repository will off load the transformation to Transformation Service and pause the thread requesting the transformation until the content is transformed.
+
+![No Change to Search Service](content-tracker-1.png)
+
+**Components referenced in the figure**
+
+* [alfresco-search](https://github.com/Alfresco/SearchServices/tree/master/alfresco-search): Alfresco SOLR Application, deployed in SOLR Jetty web application `solr.war` as library
+* [alfresco-remote-api](https://github.com/Alfresco/alfresco-remote-api): REST API Layer for Alfresco Content Services, deployed in Alfresco Tomcat web application `alfresco.war` as library
+* [alfresco-repository](https://github.com/Alfresco/alfresco-repository): Metadata and content storage for Alfresco Content Services, deployed in Alfresco Tomcat web application `alfresco.war` as library
+* [Shared File Store](https://github.com/Alfresco/alfresco-shared-file-store): REST API Layer to share contents between a *T-Client* and the *T-Engine*
+* [T-Service](https://github.com/Alfresco/alfresco-transform-service): Alfresco Transform Service to route JMS Events to T-Engines
+* [DockerTika](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-tika) REST API Layer for *T-Engine* based in Tika
+* [DockerLibreoffice](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-libreoffice) REST API Layer for *T-Engine* based in LibreOffice
+
+**Transformation Process**
+
+From SOLR side, the code remains unchanged, so the transformation to text is requested to `NodeContentGet` web script (2) as before.
+
+From this point, *Content Transformer* stores the source content in the `Shared File Store` to retrieve the `sourceRef` (4) and creates a new *Transform Request* event to be consumed by *Transform Service* (5).
+
+*Transform Service* uses routing component to find the right *Transform Engine* (Tika, LibreOffice...) and perform the invocation with the `sourceRef` and the target media type (TXT) to the *Transform Engine* (6).
+
+Source Content is retrieved from `Shared File Store` using `sourceRef` (7) and the transformation is performed (8) and the result is stored in the `Shared File Store` to retrieve the `targetRef` (9).
+
+After that, *Transform Engine* creates a new *Transform Reply* event (10) to be consumed by *Content Transformer*, where the content is retrieved from `Shared File Store` using `targetRef` (11).
+
+As the original request to `NodeContentGet` has been paused while performing the transformation, *Content Transformer* returns the TextContent Stream back and the response is delivered to SOLR (12).
+
+Both source and target files can be deleted from `Shared File Store` after the operation ends successfully (13,14).
+
+**Consequences**
+
+No consequences for *Search Services* are expected from applying this alternative. Probably then only one is that the whole indexing process will become slower, as the transformation is performed by the new Transform Service and contents are uploaded and downloaded using HTTP protocol. Anyway, this problem can be overcome by providing the right resources to Transform Service.
