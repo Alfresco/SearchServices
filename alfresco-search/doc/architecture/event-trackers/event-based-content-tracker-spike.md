@@ -215,7 +215,7 @@ Apache Kafka *PoC* has been developed in order to test different requirements:
 The *PoC* is available at https://github.com/aborroy/event-content-tracker-kafka
 
 
-**The I-* design**
+**The I-x design**
 
 The new paradigm introduced by *Kafka*, requires a set of components to be provided to the platform in order to provide the indexation process.
 
@@ -260,7 +260,7 @@ Once *EventSearchService* has a `TransformReply` and a matching `IndexRequest`, 
 
 *ContentTrackerService* starts the indexation process for a `txId` by using current logic (6)
 
-When reply is sent back to `I-Client`, current Kafka `offset` must be updated in `I-Engine` in order to be prepared for catching up the repository or re-building purposes.
+When reply is sent back to `I-Client`, current Kafka `offset` must be updated in `I-Engine` in order to be prepared for catching up the repository or re-building purposes (14)
 
 **Consequences**
 
@@ -284,9 +284,15 @@ When reply is sent back to `I-Client`, current Kafka `offset` must be updated in
 ## References
 
 [1] [Content Tracker](https://github.com/Alfresco/SearchServices/blob/master/alfresco-search/doc/architecture/trackers/00001-content-tracker.md)
+
 [2] [JodConverter](https://github.com/Alfresco/alfresco-jodconverter)
+
 [3] [PDFium](https://pdfium.googlesource.com/pdfium)
+
 [4] [Alfresco PDF Renderer](https://git.alfresco.com/Repository/alfresco-pdf-renderer)
+
 [5] [ImageMagick](http://www.imagemagick.org)
+
 [6] [Apache Tika](https://tika.apache.org)
+
 [7] [PausableThreadPoolExecutor](https://gist.github.com/warmwaffles/8534618)
