@@ -2,6 +2,18 @@
 
 ![Completeness Badge](https://img.shields.io/badge/Document_Level-In_Progress-yellow.svg?style=flat-square)
 
+**Contents**
+
+- [Context](#context)
+- [How Text Extraction Works](#how-text-extraction-works)
+- [How the New Transform Service Works](#how-the-new-transform-service-works)
+- [Alternatives evaluation](#alternatives-evaluation)
+  - [1 - No Change to Search Service](#1---no-change-to-search-service)
+  - [2 - New Microservice in the Middle](#2---new-microservice-in-the-middle)
+  - [3 - Event Oriented Content Tracking](#3---event-oriented-content-tracking)
+- [Findings](#findings)
+- [References](#references)
+
 ## Context
 
 The current approach of the Content Tracker in Search Service is to query Solr for any *dirty* documents which it then fetches from Alfresco. Once the content is successfully obtained from Alfresco, it marks it clean which eventually get committed to the index. This approach will need to be modified as it applies pressure on Alfresco on every call to get the content. Taking an event based approach where the Content Tracker subscribes to a *topic* with policy the specific behaviour will allow to get the extracted content when ready.
@@ -174,3 +186,107 @@ Both source and target files can be deleted from `Shared File Store` after the o
 * It's required to create a switch in Search Services to use current Content Tracker (based in REST API invocation) or the new Content Tracker (including JMS events), mainly to preserve 5.2 compatibility.
 * A new component *DockerSOLR* must be developed. This component is a new *T-Client*, dockerizable and JMS ready. Incoming threads must be paused till the JMS *TransforReply* is consumed, so some logic and control need to be added to current code [7]
 * **RISK** Currently Transform Service is not supporting several *T-Clients* for the same *Transform Service*, despite the story is being developed [ATS-208](https://issues.alfresco.com/jira/browse/ATS-208). This will exclude this alternative, as *ACS* is the only *T-Client* supported by now. Also, for a Sharding environment, more than one indexing *T-Client* can be required.  
+
+
+### 3 - Event Oriented Content Tracking
+
+The Content Tracker that consumes content based on events.
+
+**Why Apache Kafka**
+
+SOLR indexes require a full history of events (transactions) to be rebuilt from scratch, so message brokers with no storage (like *ActiveMQ*, currently used by ACS and Transform Service) are not recommended for this scenario.
+
+Since Amazon is providing an [MSK](https://aws.amazon.com/msk/) (Amazon Managed Streaming for Kafka) and Apache Kafka is a streaming data store, this product seems to fit better the requirements for Search Services.
+
+Apache Kafka *PoC* has been developed in order to test different requirements:
+
+* Apache Kafka and Zookeeper compatibility with current [ACS Stack](https://github.com/Alfresco/acs-deployment)
+
+* Producing events to a topic using messages in JSON format
+
+* Consuming events from a topic: live, from an offset and from the beginning
+
+  * Consuming events *live* from a topic is required for a regular running of the platform, where index requests are consumed to perform indexing operations
+
+  * Consuming events *from an offset* is required to provide a safe Search Service re-starting, as Indexing System needs then to catch up with events production that may happen during Search Service stopping
+
+  * Consuming events *from beginning* is required when rebuilding SOLR indexes from scratch
+
+The *PoC* is available at https://github.com/aborroy/event-content-tracker-kafka
+
+
+**The I-* design**
+
+The new paradigm introduced by *Kafka*, requires a set of components to be provided to the platform in order to provide the indexation process.
+
+![Components I-*](index-sequence.png)
+
+* *I-Client*: Spring Boot App receiving indexing requests from an ACS behaviour, a REST API invocation or an ActiveMQ message.
+* [Shared File Store](https://github.com/Alfresco/alfresco-shared-file-store): REST API Layer to store text files to be indexed.
+* *I-Service*: Spring Boot App listening to a *topic* in Apache Kafka to process `IndexRequest` messages.
+* *I-Engine*: Spring Boot App receiving REST API invocations to perform indexing operations.
+
+The *I-Client* receives a new request for a node `Id` with `txtContentRef` to be indexed, and it produces a new `IndexRequest` message for Apache Kafka indexing `topic` (1)
+
+The *I-Service* consumes the message from Apache Kafka indexing `topic` and invokes the *I-Engine* with the `Id` and the `txtContentRef` (2)
+
+The *I-Engine* retrieves the text content file from *Shared File Store* (3) and performs the indexation in the indexer (SOLR) updating the current `offset` global value (4)
+
+The result is propagated till the *I-Client* to provide feedback (5, 6)
+
+
+**Sample content tracking process**
+
+![Event Oriented Content Tracking](content-tracker-3-kafka.png)
+
+**Components referenced in the figure**
+
+* *OnUpdateBehaviour* [I-Client, T-Client]: This component can be developed as part of Alfresco Repository or as a new module for Alfresco Repository. This component is a *T-Client* (transformation client) and also a *I-Client* (indexation client). When the content of a node is updated, a new `TransformRequest` event to transform to text is published to ActiveMQ to be consumed by *Transform Service* and a new `IndexRequest` event to perform the indexation is published to Kafka Topic `Indexation`
+* [Shared File Store](https://github.com/Alfresco/alfresco-shared-file-store): REST API Layer to share contents between a *T-Client* and the *T-Engine*
+* [TransformService](https://github.com/Alfresco/alfresco-transform-service): Alfresco Transform Service to route JMS Events to *T-Engines*
+* *EventSearchService* [I-Service]: This component is a *I-Service*, receiving `IndexRequest` to be delivered to a *I-Engine*
+* *ContentTrackerService* [I-Engine]: This component is a *I-Engine*, providing the indexing logic for an `IndexRequest`
+* [alfresco-search](https://github.com/Alfresco/SearchServices/tree/master/alfresco-search): Custom SOLR Code including indexing logic components: `ContentTracker`, `SolrInformationServer` and `SolrContentStore`
+
+**Transformation Process**
+
+A new content updated event in the repository triggers a `TransformRequest` event to text to be consumed by *T-Service* (2) saving first the original file in *Shared File Store* (1)
+
+When *T-Service* has performed the transformation, a `TransformReply` event is produced, that is consumed by *EventSearchService* to store the reference `targetRef` to the transformed content (3).
+
+Also, after issuing the transformation event, a new `IndexRequest` event is triggered to Kafka Topic `Indexation` to be consumed by *EventSearchService* (4)
+
+Once *EventSearchService* has a `TransformReply` and a matching `IndexRequest`, an indexation process is started by invoking *ContentTrackerService* REST API with the `targetRef` and the `txId` (5)
+
+*ContentTrackerService* starts the indexation process for a `txId` by using current logic (6)
+
+When reply is sent back to `I-Client`, current Kafka `offset` must be updated in `I-Engine` in order to be prepared for catching up the repository or re-building purposes.
+
+**Consequences**
+
+* A new dependency from Transform Service version must be included in Search Services compatibility matrix.
+* A new dependency from Apache Kafka version must be included in Search Services compatibility matrix.
+* It's required to create a switch in Search Services to use current Content Tracker (based in REST API invocation) or the new Content Tracker (including JMS events), mainly to preserve 5.2 compatibility.
+* A new component *EventSearchService* must be developed. This component is a new *I-Service*, dockerizable and JMS / Kafka ready.
+* A new component *ContentTrackerService* must be developed. This component is a new *I-Engine*, dockerizable and providing a REST API.
+* Since the new indexation repository is Apache Kafka, `Transaction Id` concept must be translated to Kafka transaction system, to provide the right *offset* to Consumers when re-indexing or catching up when indexation is behind Content Services updates.
+* **RISK** Currently Transform Service is not supporting several *T-Clients* for the same *Transform Service*, despite the story is being developed [ATS-208](https://issues.alfresco.com/jira/browse/ATS-208). This will exclude this alternative, as *ACS* is the only *T-Client* supported by now. Also, for a Sharding environment, more than one indexing *T-Client* can be required.  
+
+
+## Findings
+
+* Apache Kafka works inside ACS Deployment strategy, so it can be used alone or together with the one used by Transform Service (ApacheMQ).
+* An Apache Kafka topic is a feed name to which events are published. For each topic, the Kafka cluster maintains a partitioned log. Each partition is an ordered, immutable sequence of events that is continually appended to—a structured commit log. The records in the partitions are each assigned a sequential id number called the **offset** that uniquely identifies each record within the partition. So, this `offset` can be used by I-Engines to identify the order when recovering from a previous indexation status.
+* The Kafka cluster durably persists all published records whether or not they have been consumed. Kafka's performance is effectively constant with respect to data size so storing data for a long time (or even forever) is not a problem.
+* Apache Kafka is supported by Amazon, so it can be the right product to store indexing events also in Amazon deployments.
+* According to Apache Kafka, for better throughput, the max message size should be 10KB. So text content should not be stored within the event.
+
+## References
+
+[1] [Content Tracker](https://github.com/Alfresco/SearchServices/blob/master/alfresco-search/doc/architecture/trackers/00001-content-tracker.md)
+[2] [JodConverter](https://github.com/Alfresco/alfresco-jodconverter)
+[3] [PDFium](https://pdfium.googlesource.com/pdfium)
+[4] [Alfresco PDF Renderer](https://git.alfresco.com/Repository/alfresco-pdf-renderer)
+[5] [ImageMagick](http://www.imagemagick.org)
+[6] [Apache Tika](https://tika.apache.org)
+[7] [PausableThreadPoolExecutor](https://gist.github.com/warmwaffles/8534618)
