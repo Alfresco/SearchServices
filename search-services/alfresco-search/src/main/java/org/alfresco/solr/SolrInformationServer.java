@@ -1783,6 +1783,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+
     @Override
     public void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, JSONException
     {
@@ -1889,6 +1890,7 @@ public class SolrInformationServer implements InformationServer
 
                             continue;
                         }
+
 
                         AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
                         addDocCmd.overwrite = overwrite;
@@ -2654,6 +2656,13 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+
+    /**
+     * Index information of a node that does not belong to the current shard.
+     * These information are necessary for cascade tracker to work properly.
+     * The information stored are:
+     *      nodeDocumentId, cascadeTx
+     */
     private void indexNonShardCascade(NodeMetaData nodeMetaData) throws IOException
     {
 
