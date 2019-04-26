@@ -228,23 +228,33 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
      */
     public static void waitForDocCount(Query query, int count, long waitMillis) throws Exception
     {
+        waitForDocCount(luceneToSolrQuery(query), count, waitMillis);
+    }
+
+    public static void waitForDocCount(ModifiableSolrParams query, int count, long waitMillis) throws Exception
+    {
         long begin = System.currentTimeMillis();
         //TODO: Support multiple cores per jetty
         SolrClient standaloneClient = getStandaloneClients().get(0); //Get the first one
-        waitForDocCountCore(standaloneClient, luceneToSolrQuery(query), count, waitMillis, begin);
+        waitForDocCountCore(standaloneClient, query, count, waitMillis, begin);
         waitForShardsCount(query, count, waitMillis, begin);
     }
 
-    public static void assertShardCount(int shardNumber, Query query, int count) throws Exception {
+    public static void assertShardCount(int shardNumber, Query query, int count) throws Exception
+    {
+        assertShardCount(shardNumber, luceneToSolrQuery(query), count);
+    }
+
+    public static void assertShardCount(int shardNumber, ModifiableSolrParams query, int count) throws Exception
+    {
         List<SolrClient> clients = getShardedClients();
         SolrClient client = clients.get(shardNumber);
 
-        QueryResponse response = client.query(luceneToSolrQuery(query));
+        QueryResponse response = client.query(query);
         int totalHits = (int) response.getResults().getNumFound();
         if (count != totalHits) {
             throw new Exception("Expecting " + count + " docs on shard " + shardNumber + " , found " + totalHits);
         }
-
     }
 
     private static String escapeQueryClause(String query)
@@ -291,15 +301,16 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
     public static void waitForShardsCount(Query query, int count, long waitMillis, long start) throws Exception
     {
         SolrQuery solrQuery = luceneToSolrQuery(query);
-        solrQuery.setParam("shards", shards);
         waitForShardsCount(solrQuery, count, waitMillis, start);
     }
 
 
-    public static void waitForShardsCount(SolrQuery query, int count, long waitMillis, long start) throws Exception
+    public static void waitForShardsCount(ModifiableSolrParams query, int count, long waitMillis, long start) throws Exception
     {
+
         long timeOut = start+waitMillis;
         int totalCount = 0;
+        query.set("shards", shards);
         SolrClient clientShard = clientShards.get(0);
         while (System.currentTimeMillis() < timeOut)
         {
@@ -450,7 +461,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
     }
 
     public static void waitForDocCountCore(SolrClient client,
-                                 SolrQuery query,
+                                 ModifiableSolrParams query,
                                  long expectedNumFound,
                                  long waitMillis,
                                  long startMillis)
@@ -733,6 +744,7 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
         request.setMethod(SolrRequest.METHOD.POST);
         return request;
     }
+    
 
     /**
      * Returns the QueryResponse from {@link #queryRandomShard}
