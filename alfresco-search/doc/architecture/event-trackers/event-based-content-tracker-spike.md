@@ -153,7 +153,7 @@ Introduce a new microservice that sits between Search Service and the Transform
 **Components referenced in the figure**
 
 * [alfresco-search](https://github.com/Alfresco/SearchServices/tree/master/alfresco-search): Alfresco SOLR Application, deployed in SOLR Jetty web application `solr.war` as library
-* *DockerSOLR*: New REST API Layer based in Spring Boot App (to be dockerizable) to be designed. This component is also publishing `TransformRequest` events to be consumed by *Transform Service*
+* *ContentTracker*: New REST API Layer based in Spring Boot App (to be dockerizable) to be designed. This component is also publishing `TransformRequest` events to be consumed by *Transform Service*
 * [alfresco-remote-api](https://github.com/Alfresco/alfresco-remote-api): REST API Layer for Alfresco Content Services, deployed in Alfresco Tomcat web application `alfresco.war` as library
 * [Shared File Store](https://github.com/Alfresco/alfresco-shared-file-store): REST API Layer to share contents between a *T-Client* and the *T-Engine*
 * [T-Service](https://github.com/Alfresco/alfresco-transform-service): Alfresco Transform Service to route JMS Events to T-Engines
@@ -162,21 +162,21 @@ Introduce a new microservice that sits between Search Service and the Transform
 
 **Transformation Process**
 
->> A new microservice, named *DockerSOLR* in the diagram, will handle transformations to text requests from Content Tracker. This service replaces previous `NodeContentGet` web script.
+>> A new microservice, named *ContentTracker* in the diagram, will handle transformations to text requests from Content Tracker. This service replaces previous `NodeContentGet` web script.
 
-Content Tracker invokes to *Docker SOLR* using HTTP REST API to start the transformation (1).
+SolrInformationServer invokes to *ContentTracker* using HTTP REST API to start the transformation (1).
 
-*Docker SOLR* invokes the repository to retrieve the source content for the node using the Remote API (2) and stores the result in the `Shared File Store` to retrieve the `sourceRef` (3).
+*ContentTracker* invokes the repository to retrieve the source content for the node using the Remote API (2) and stores the result in the `Shared File Store` to retrieve the `sourceRef` (3).
 
-After that, *Docker SOLR* creates a new *Transform Request* event to be consumed by *Transform Service* (4).
+After that, *ContentTracker* creates a new *Transform Request* event to be consumed by *Transform Service* (4).
 
 *Transform Service* uses routing component to find the right *Transform Engine* (Tika, LibreOffice...) and perform the invocation with the `sourceRef` and the target media type (TXT) to the *Transform Engine* (5).
 
 Source Content is retrieved from `Shared File Store` using `sourceRef` (6) and the transformation is performed (7) and the result is stored in the `Shared File Store` to retrieve the `targetRef` (8).
 
-After that, *Transform Engine* creates a new *Transform Reply* event (9) to be consumed by *Docker SOLR*, where the content is retrieved from `Shared File Store` using `targetRef` (10).
+After that, *Transform Engine* creates a new *Transform Reply* event (9) to be consumed by *ContentTracker*, where the content is retrieved from `Shared File Store` using `targetRef` (10).
 
-As the original request (1) has been paused while performing the transformation, *Docker SOLR* returns the TextContent Stream back and the response is delivered to Content Tracker (11).
+As the original request (1) has been paused while performing the transformation, *ContentTracker* returns the TextContent Stream back and the response is delivered to Content Tracker (11).
 
 Both source and target files can be deleted from `Shared File Store` after the operation ends successfully (12,13).
 
@@ -184,7 +184,7 @@ Both source and target files can be deleted from `Shared File Store` after the o
 
 * A new dependency from Transform Service version must be included in Search Services compatibility matrix.
 * It's required to create a switch in Search Services to use current Content Tracker (based in REST API invocation) or the new Content Tracker (including JMS events), mainly to preserve 5.2 compatibility.
-* A new component *DockerSOLR* must be developed. This component is a new *T-Client*, dockerizable and JMS ready. Incoming threads must be paused till the JMS *TransforReply* is consumed, so some logic and control need to be added to current code [7]
+* A new component *ContentTraker* must be developed. This component is a new *T-Client*, dockerizable and JMS ready. Incoming threads must be paused till the JMS *TransformReply* is consumed, so some logic and control need to be added to current code [7]
 * **RISK** Currently Transform Service is not supporting several *T-Clients* for the same *Transform Service*, despite the story is being developed [ATS-208](https://issues.alfresco.com/jira/browse/ATS-208). This will exclude this alternative, as *ACS* is the only *T-Client* supported by now. Also, for a Sharding environment, more than one indexing *T-Client* can be required.  
 
 
