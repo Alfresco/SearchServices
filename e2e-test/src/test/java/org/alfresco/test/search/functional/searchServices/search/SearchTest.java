@@ -191,7 +191,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
                         .collect(Collectors.toList()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n }) @TestRail(section = {
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n, TestGroup.ASS_14 })
+    @TestRail(section = {
         TestGroup.REST_API, TestGroup.SEARCH,
         TestGroup.ACS_61n }, executionType = ExecutionType.REGRESSION, description = "Checks the \"include\" request parameter support the 'permissions' option")
     public void searchQuery_includePermissions_shouldReturnNodeWithPermissionsInformation()
@@ -215,7 +216,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries[0].entry.permissions", nullValue());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n, TestGroup.ASS_14 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n  }, executionType = ExecutionType.REGRESSION,
             description = "Checks the \"include\" request parameter support the 'isLocked' option")
     public void searchQuery_includeIsLocked_shouldReturnNodeWithLockInformation() throws Exception {
@@ -249,7 +250,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries[0].entry.isLocked", nullValue());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n, TestGroup.ASS_14 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n  }, executionType = ExecutionType.REGRESSION,
             description = "Checks the \"include\" request parameter does not support the 'notValid' option")
     public void searchQuery_includeInvalid_shouldReturnBadResponse()
