@@ -93,7 +93,7 @@ public class FingerPrintTest extends AbstractSearchServicesE2ETest
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(file).renameContent(file);
 
         // Make sure the new version of the file has been indexed
-        assertTrue(waitForIndexing("Contrattazione", true));
+        assertTrue(waitForMetadataIndexing("Contrattazione", true));
 
         // ...and finally
         assertTrue(waitForIndexing("FINGERPRINT:" + file.getNodeRefWithoutVersion(), true));
