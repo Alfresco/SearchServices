@@ -20,8 +20,8 @@ The current approach of the Content Tracker in Search Service is to query Solr f
 
 There are currently different alternatives to be considered:
 
-1. No change to Search Service. The repository will off load the transformation to Transformation Service and pause the thread requesting the transformation until the content is transformed.
-2. Introduce a new microservice that sits between Search Service and the Transformation Service. The content is off loaded to Transformation Service and the microservice stores the content for Search Service to ingest.
+1. No change to Search Service. The repository will off load the transformation to Transform Service and pause the thread requesting the transformation until the content is transformed.
+2. Introduce a new microservice that sits between Search Service and the Transform Service. The content is off loaded to Transform Service and the microservice stores the content for Search Service to ingest.
 3. The Content Tracker that consumes content based on events
 
 This document describes and explores these alternatives to provide the background required to produce an **ADR** (Architectural Decision Record) related to this topic.
@@ -65,14 +65,16 @@ Once the transformation has been performed (4) by the Content Transformer, the S
 
 Before going on with the alternatives evaluation, a quick overview of the new **Alfresco Transform Service** is provided.
 
-Since ACS 6.0, transformations are performed by different *microservices* named as *Transform Engines* (T-Engine):
+Since ACS 6.1, transformations are performed by different *microservices* named as *Transform Engines* (T-Engine):
 
 * [alfresco-docker-alfresco-pdf-renderer](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-alfresco-pdf-renderer) includes a PDFium [3] *wrapper* named Alfresco PDF Renderer [4] to provide operations on PDF files, as extracting the first page
 * [alfresco-docker-imagemagick](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-imagemagick) includes an ImageMagick [5] *wrapper* to provide operations on images, as generating a thumbnail
 * [alfresco-docker-libreoffice](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-libreoffice) includes a LibreOffice *wrapper* to provide transformation operations from a source mime type to a target mime type
 * [alfresco-docker-tika](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-tika) exposes Apache Tika [6] features for mime type transformation
 
-A *Transform Engine* is a dockerized REST API providing transformation services and *renderization* operations. The [Transform Service](https://github.com/Alfresco/alfresco-transform-service) is a message router, currently working with ActiveMQ, to provide Transformation Requests to Transform Engines and to manage Transformation Replies from Transform Engines. This *router* finds the right Transform Engine for a Transformation Request depending on the source and target mime types.
+>> These components are only available for Enterprise releases of Alfresco, so links in the text may be unavailable to Community users.
+
+A *Transform Engine* is a dockerized REST API providing Transform Services and *renderization* operations. The [Transform Service](https://github.com/Alfresco/alfresco-transform-service) is a message router, currently working with ActiveMQ, to provide Transformation Requests to Transform Engines and to manage Transformation Replies from Transform Engines. This *router* finds the right Transform Engine for a Transformation Request depending on the source and target mime types.
 
 To reduce the transit of content between the services, a dockerized [Shared File Store](https://github.com/Alfresco/alfresco-shared-file-store) REST API is used to have a single point of storage. When a transformation operation is requested, the source file is uploaded to the *Shared File Store* and when the transformation operation has been performed, the target file is uploaded also to that *Shared File Store*. Once the operation has been consumed, both source and target files are removed from *Shared File Store*.
 
@@ -84,6 +86,8 @@ To reduce the transit of content between the services, a dockerized [Shared File
 * [Shared File Store](https://github.com/Alfresco/alfresco-shared-file-store): REST API Layer to share contents between a *T-Client* and the *T-Engine*
 * [T-Service](https://github.com/Alfresco/alfresco-transform-service): Alfresco Transform Service to route JMS Events to T-Engines
 * [T-Engine](https://git.alfresco.com/Repository/alfresco-docker-transformers): Transformation Engines provides transformation operations on content, consuming the source from `Shared File Store` and producing the target also in `Shared File Store`. Currently Apache Tika, LibreOffice, ImageMagick and PDF Renderer are available
+
+>> T-Engine is currently only available for Enterprise releases of Alfresco, so links in the text may be unavailable to Community users.
 
 **Transformation Process**
 
@@ -109,7 +113,7 @@ Below different alternatives for integrating Content Tracking with the New Trans
 
 ### 1 - No Change to Search Service
 
-The repository will off load the transformation to Transformation Service and pause the thread requesting the transformation until the content is transformed.
+The repository will off load the transformation to Transform Service and pause the thread requesting the transformation until the content is transformed.
 
 ![No Change to Search Service](content-tracker-1.png)
 
@@ -122,6 +126,8 @@ The repository will off load the transformation to Transformation Service and pa
 * [T-Service](https://github.com/Alfresco/alfresco-transform-service): Alfresco Transform Service to route JMS Events to T-Engines
 * [DockerTika](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-tika) REST API Layer for *T-Engine* based in Tika
 * [DockerLibreoffice](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-libreoffice) REST API Layer for *T-Engine* based in LibreOffice
+
+>> T-Engine components, like Tika and LibreOffice, are only available for Enterprise releases of Alfresco, so links in the text may be unavailable to Community users.
 
 **Transformation Process**
 
@@ -141,12 +147,12 @@ Both source and target files can be deleted from `Shared File Store` after the o
 
 **Consequences**
 
-No consequences for *Search Services* are expected from applying this alternative. Probably then only one is that the whole indexing process will become slower, as the transformation is performed by the new Transform Service and contents are uploaded and downloaded using HTTP protocol. Anyway, this problem can be overcome by providing the right resources to Transform Service.
+No consequences for *Search Services* are expected from applying this alternative.
 
 
 ### 2 - New Microservice in the Middle
 
-Introduce a new microservice that sits between Search Service and the Transformation Service. The content is off loaded to Transformation Service and the microservice stores the content for Search Service to ingest.
+Introduce a new microservice that sits between Search Service and the Transform Service. The content is off loaded to Transform Service and the microservice stores the content for Search Service to ingest.
 
 ![New Microservice in the Middle](content-tracker-2.png)
 
@@ -159,6 +165,8 @@ Introduce a new microservice that sits between Search Service and the Transform
 * [T-Service](https://github.com/Alfresco/alfresco-transform-service): Alfresco Transform Service to route JMS Events to T-Engines
 * [DockerTika](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-tika) REST API Layer for *T-Engine* based in Tika
 * [DockerLibreoffice](https://git.alfresco.com/Repository/alfresco-docker-transformers/tree/master/alfresco-docker-libreoffice) REST API Layer for *T-Engine* based in LibreOffice
+
+>> T-Engines, like Tika and LibreOffice, are only available for Enterprise releases of Alfresco, so links in the text may be unavailable to Community users.
 
 **Transformation Process**
 
@@ -179,6 +187,14 @@ After that, *Transform Engine* creates a new *Transform Reply* event (9) to be c
 As the original request (1) has been paused while performing the transformation, *ContentTracker* returns the TextContent Stream back and the response is delivered to Content Tracker (11).
 
 Both source and target files can be deleted from `Shared File Store` after the operation ends successfully (12,13).
+
+**Alternative implementation**
+
+A variation of this scenario is to adapt the indexing flow for the transform of content "to text" to be async by using `Transform Request` / `Transform Reply`.
+
+*Search Service* requests Repo to transfer content into *Shared File Store* and then *Search Services* sends the async transform request to the new Transform Service. The *Search Service* then consumes the async Transform Reply (unique for each shard) in order to update the index shard.
+
+The main difference with original option is that *ContentTracker* does not get the original content and stores it in *Shared File Store* but sends a request to *Repository* to do that, what is better in terms of performance.
 
 **Consequences**
 
@@ -289,7 +305,7 @@ When reply is sent back to `I-Client`, current Kafka `offset` must be updated in
 
 [3] [PDFium](https://pdfium.googlesource.com/pdfium)
 
-[4] [Alfresco PDF Renderer](https://git.alfresco.com/Repository/alfresco-pdf-renderer)
+[4] [Alfresco PDF Renderer](https://git.alfresco.com/Repository/alfresco-pdf-renderer) - This source code is currently only available for Enteprise users.
 
 [5] [ImageMagick](http://www.imagemagick.org)
 
