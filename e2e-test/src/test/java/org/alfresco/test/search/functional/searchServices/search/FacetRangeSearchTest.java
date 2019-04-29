@@ -21,6 +21,8 @@ package org.alfresco.test.search.functional.searchServices.search;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,11 +116,244 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         facetRangeModel.setGap("100");
     }
 
+    @SuppressWarnings("unchecked")
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check basic facet range search api")
+    public void searchWithRange()throws Exception
+    {
+        SearchRequest query = createQuery("A*");
+
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        facetRangeModel.setField("content.size");
+        facetRangeModel.setStart("0");
+        facetRangeModel.setEnd("500");
+        facetRangeModel.setGap("200");
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
+        SearchResponse response = query(query);
+        response.assertThat().entriesListIsNotEmpty();
+        response.getContext().assertThat().field("facets").isNotEmpty();
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
+
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        bucket.assertThat().field("label").is("[0 - 200)");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"0\" TO \"200\">");
+        Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        assertTrue(Integer.valueOf(metric.get("count")) >= 4);
+        Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"0");
+        assertEquals(info.get("end"),"200");
+        assertNull(info.get("count"));
+        assertEquals(info.get("startInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"false");
+        
+        bucket = facetResponseModel.getBuckets().get(1);
+        bucket.assertThat().field("label").is("[200 - 400)");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"200\" TO \"400\">");
+        metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        Integer count = Integer.valueOf(metric.get("count"));
+        assertTrue(count >= 4);
+        info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"200");
+        assertEquals(info.get("end"),"400");
+        assertEquals(info.get("startInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"false");
+        
+        bucket = facetResponseModel.getBuckets().get(2);
+        bucket.assertThat().field("label").is("[400 - 600]");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"400\" TO \"600\"]");
+        metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        assertTrue(Integer.valueOf(metric.get("count")) >= 7);
+        info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"400");
+        assertEquals(info.get("end"),"600");
+        assertEquals(info.get("startInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"true");
+    }
+
+    @SuppressWarnings("unchecked")
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check date facet intervals search api")
+    public void searchWithRangeHardend()throws Exception
+    {
+        SearchRequest query = createQuery("A*");
+
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        facetRangeModel.setField("content.size");
+        facetRangeModel.setStart("0");
+        facetRangeModel.setEnd("500");
+        facetRangeModel.setGap("200");
+        facetRangeModel.setHardend(true);
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
+        SearchResponse response = query(query);
+        response.assertThat().entriesListIsNotEmpty();
+        response.getContext().assertThat().field("facets").isNotEmpty();
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
+
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        bucket.assertThat().field("label").is("[0 - 200)");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"0\" TO \"200\">");
+        Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        assertTrue(Integer.valueOf(metric.get("count")) >= 4);
+        Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"0");
+        assertEquals(info.get("end"),"200");
+        assertEquals(info.get("startInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"false");
+        assertNull(info.get("count"));
+        
+        bucket = facetResponseModel.getBuckets().get(1);
+        bucket.assertThat().field("label").is("[200 - 400)");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"200\" TO \"400\">");
+        info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"200");
+        assertEquals(info.get("end"),"400");
+        metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        assertTrue(Integer.valueOf(metric.get("count")) >= 4);
+        assertNull(info.get("count"));
+        assertEquals(info.get("startInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"false");
+        
+        bucket = facetResponseModel.getBuckets().get(2);
+        bucket.assertThat().field("label").is("[400 - 500]");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"400\" TO \"500\"]");
+        metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        assertTrue(Integer.valueOf(metric.get("count")) >= 3);
+        info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"400");
+        assertEquals(info.get("end"),"500");
+        assertNull(info.get("count"));
+        assertEquals(info.get("startInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"true");
+    }
+    @SuppressWarnings("unchecked")
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
+              description = "Check date facet intervals search api")
+    public void searchDateRange()throws Exception
+    {
+        SearchRequest query = createQuery("name:A*");
+
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        facetRangeModel.setField("created");
+        facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
+        facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
+        facetRangeModel.setGap("+280DAY");
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
+        SearchResponse response = query(query);
+        response.assertThat().entriesListIsNotEmpty();
+        response.getContext().assertThat().field("facets").isNotEmpty();
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
+
+        List<RestGenericBucketModel> buckets = facetResponseModel.getBuckets();
+        assertThat(buckets.size(),is(1));
+        
+        RestGenericBucketModel bucket = buckets.get(0);
+        bucket.assertThat().field("label").is("[2015-09-29T10:45:15.729Z - 2017-04-11T10:45:15.729Z]");
+        bucket.assertThat().field("filterQuery").is("created:[\"2015-09-29T10:45:15.729Z\" TO \"2017-04-11T10:45:15.729Z\"]");
+        bucket.getMetrics().get(0).assertThat().field("value").is("{count=1}");
+        Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"2015-09-29T10:45:15.729Z");
+        assertEquals(info.get("end"),"2017-04-11T10:45:15.729Z");
+        assertNull(info.get("count"),"1");
+        assertEquals(info.get("startInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"true");
+    }
+    
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check date facet intervals search api")
+    public void searchDateAndSizeRanges()throws Exception
+    {
+        SearchRequest query = createQuery("name:A*");
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        facetRangeModel.setField("created");
+        facetRangeModel.setStart("2015-09-29T10:45:15.729Z");
+        facetRangeModel.setEnd("2016-09-29T10:45:15.729Z");
+        facetRangeModel.setGap("+280DAY");
+        ranges.add(facetRangeModel);
+        RestRequestRangesModel facetCountRangeModel = new RestRequestRangesModel();
+        facetCountRangeModel.setField("content.size");
+        facetCountRangeModel.setStart("0");
+        facetCountRangeModel.setEnd("500");
+        facetCountRangeModel.setGap("200");
+        ranges.add(facetCountRangeModel);
+        query.setRanges(ranges);
+    }
+    
+    @SuppressWarnings("unchecked")
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+              description = "Check basic facet range search api")
+    public void searchWithRangeAndIncludeUpperBound()throws Exception
+    {
+        SearchRequest query = createQuery("A*");
+
+        RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
+        facetRangeModel.setField("content.size");
+        facetRangeModel.setStart("0");
+        facetRangeModel.setEnd("500");
+        facetRangeModel.setGap("200");
+        List<String> include = new ArrayList<String>();
+        include.add("upper");
+        facetRangeModel.setInclude(include);
+        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        ranges.add(facetRangeModel);
+        query.setRanges(ranges);
+        SearchResponse response = query(query);
+        response.assertThat().entriesListIsNotEmpty();
+        response.getContext().assertThat().field("facets").isNotEmpty();
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
+
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        bucket.assertThat().field("label").is("(0 - 200]");
+        bucket.assertThat().field("filterQuery").is("content.size:<\"0\" TO \"200\"]");
+        Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        assertTrue(Integer.valueOf(metric.get("count")) >= 4);
+        Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"0");
+        assertEquals(info.get("end"),"200");
+        assertNull(info.get("count"));
+        assertEquals(info.get("startInclusive"),"false");
+        assertEquals(info.get("endInclusive"),"true");
+        
+        bucket = facetResponseModel.getBuckets().get(1);
+        bucket.assertThat().field("label").is("(200 - 400]");
+        bucket.assertThat().field("filterQuery").is("content.size:<\"200\" TO \"400\"]");
+        metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        Integer count = Integer.valueOf(metric.get("count"));
+        assertTrue(count >= 4);
+        info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"200");
+        assertEquals(info.get("end"),"400");
+        assertEquals(info.get("startInclusive"),"false");
+        assertEquals(info.get("endInclusive"),"true");
+        
+        bucket = facetResponseModel.getBuckets().get(2);
+        bucket.assertThat().field("label").is("(400 - 600]");
+        bucket.assertThat().field("filterQuery").is("content.size:<\"400\" TO \"600\"]");
+        metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
+        assertTrue(Integer.valueOf(metric.get("count")) >= 7);
+        info = (Map<String, String>) bucket.getBucketInfo();
+        assertEquals(info.get("start"),"400");
+        assertEquals(info.get("end"),"600");
+        assertEquals(info.get("startInclusive"),"false");
+        assertEquals(info.get("endInclusive"),"true");
+    }
+    
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
-    public void searchWithRange()
+    public void searchWithRangeV2()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
@@ -143,7 +378,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"20");
         assertEquals(info.get("end"),"40");
-        Assert.assertNull(info.get("count"));
+        assertNull(info.get("count"));
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"false");
 
@@ -173,7 +408,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     @SuppressWarnings("unchecked")
-    public void searchWithRangeHardend()
+    public void searchWithRangeHardendV2()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
@@ -201,7 +436,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("end"),"40");
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"false");
-        Assert.assertNull(info.get("count"));
+        assertNull(info.get("count"));
 
         bucket = facetResponseModel.getBuckets().get(1);
         bucket.assertThat().field("label").is("[40 - 120)");
@@ -211,7 +446,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("end"),"120");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
         assertEquals(Integer.valueOf(metric.get("count")).intValue(), 1, "Unexpected count for second bucket.");
-        Assert.assertNull(info.get("count"));
+        assertNull(info.get("count"));
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"false");
 
@@ -223,7 +458,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"120");
         assertEquals(info.get("end"),"200");
-        Assert.assertNull(info.get("count"));
+        assertNull(info.get("count"));
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"true");
     }
@@ -233,7 +468,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     @SuppressWarnings("unchecked")
-    public void searchDateRange()
+    public void searchDateRangeV2()
     {
         SearchRequest query = createQuery("name:A*");
 
@@ -260,7 +495,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"2015-09-29T10:45:15.729Z");
         assertEquals(info.get("end"),"2017-04-11T10:45:15.729Z");
-        Assert.assertNull(info.get("count"),"1");
+        assertNull(info.get("count"),"1");
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"true");
     }
@@ -268,7 +503,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
-    public void searchDateAndSizeRanges()
+    public void searchDateAndSizeRangesV2()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
         List<RestRequestRangesModel> ranges = new ArrayList<>();
@@ -291,7 +526,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
-    public void searchWithRangeAndIncludeUpperBound()
+    public void searchWithRangeAndIncludeUpperBoundV2()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
@@ -319,7 +554,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"20");
         assertEquals(info.get("end"),"40");
-        Assert.assertNull(info.get("count"));
+        assertNull(info.get("count"));
         assertEquals(info.get("startInclusive"),"false");
         assertEquals(info.get("endInclusive"),"true");
 
@@ -344,5 +579,5 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("end"),"200");
         assertEquals(info.get("startInclusive"),"false");
         assertEquals(info.get("endInclusive"),"true");
-    }
+    }    
 }
