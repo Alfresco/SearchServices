@@ -38,7 +38,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -76,7 +75,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
             description = "Check facet intervals mandatory fields")
     public void checkingFacetsMandatoryErrorMessages()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
         List<RestRequestRangesModel> ranges = new ArrayList<>();
         RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         ranges.add(facetRangeModel);
@@ -117,19 +116,19 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @SuppressWarnings("unchecked")
-	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check basic facet range search api")
     public void searchWithRange()throws Exception
     {
-        SearchRequest query = createQuery("A*");
+        SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
         RestRequestRangesModel facetRangeModel = new RestRequestRangesModel();
         facetRangeModel.setField("content.size");
         facetRangeModel.setStart("0");
-        facetRangeModel.setEnd("500");
-        facetRangeModel.setGap("200");
-        List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
+        facetRangeModel.setEnd("200");
+        facetRangeModel.setGap("20");
+        List<RestRequestRangesModel> ranges = new ArrayList<>();
         ranges.add(facetRangeModel);
         query.setRanges(ranges);
         SearchResponse response = query(query);
@@ -138,44 +137,32 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
 
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
-        bucket.assertThat().field("label").is("[0 - 200)");
-        bucket.assertThat().field("filterQuery").is("content.size:[\"0\" TO \"200\">");
+        bucket.assertThat().field("label").is("[0 - 20)");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"0\" TO \"20\">");
         Map<String,String> metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        assertTrue(Integer.valueOf(metric.get("count")) >= 4);
+        assertEquals(Integer.valueOf(metric.get("count")).intValue(), 0, "Unexpected count for first bucket.");
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"0");
-        assertEquals(info.get("end"),"200");
+        assertEquals(info.get("end"),"20");
         assertNull(info.get("count"));
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"false");
-        
+
         bucket = facetResponseModel.getBuckets().get(1);
-        bucket.assertThat().field("label").is("[200 - 400)");
-        bucket.assertThat().field("filterQuery").is("content.size:[\"200\" TO \"400\">");
+        bucket.assertThat().field("label").is("[20 - 40)");
+        bucket.assertThat().field("filterQuery").is("content.size:[\"20\" TO \"40\">");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        Integer count = Integer.valueOf(metric.get("count"));
-        assertTrue(count >= 4);
+        assertEquals(Integer.valueOf(metric.get("count")).intValue(), 2, "Unexpected count for second bucket.");
         info = (Map<String, String>) bucket.getBucketInfo();
-        assertEquals(info.get("start"),"200");
-        assertEquals(info.get("end"),"400");
+        assertEquals(info.get("start"),"20");
+        assertEquals(info.get("end"),"40");
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"false");
-        
-        bucket = facetResponseModel.getBuckets().get(2);
-        bucket.assertThat().field("label").is("[400 - 600]");
-        bucket.assertThat().field("filterQuery").is("content.size:[\"400\" TO \"600\"]");
-        metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        assertTrue(Integer.valueOf(metric.get("count")) >= 7);
-        info = (Map<String, String>) bucket.getBucketInfo();
-        assertEquals(info.get("start"),"400");
-        assertEquals(info.get("end"),"600");
-        assertEquals(info.get("startInclusive"),"true");
-        assertEquals(info.get("endInclusive"),"true");
     }
 
     @SuppressWarnings("unchecked")
-	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check date facet intervals search api")
     public void searchWithRangeHardend()throws Exception
     {
@@ -214,7 +201,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("start"),"200");
         assertEquals(info.get("end"),"400");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        assertTrue(Integer.valueOf(metric.get("count")) >= 4);
+        assertTrue(Integer.valueOf(metric.get("count")) == 4);
         assertNull(info.get("count"));
         assertEquals(info.get("startInclusive"),"true");
         assertEquals(info.get("endInclusive"),"false");
@@ -223,7 +210,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         bucket.assertThat().field("label").is("[400 - 500]");
         bucket.assertThat().field("filterQuery").is("content.size:[\"400\" TO \"500\"]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        assertTrue(Integer.valueOf(metric.get("count")) >= 3);
+        assertTrue(Integer.valueOf(metric.get("count")) == 2);
         info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"400");
         assertEquals(info.get("end"),"500");
@@ -232,8 +219,8 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("endInclusive"),"true");
     }
     @SuppressWarnings("unchecked")
-	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check date facet intervals search api")
     public void searchDateRange()throws Exception
     {
@@ -253,22 +240,22 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
 
         List<RestGenericBucketModel> buckets = facetResponseModel.getBuckets();
-        assertThat(buckets.size(),is(1));
+        assertThat(buckets.size(),is(2));
         
         RestGenericBucketModel bucket = buckets.get(0);
-        bucket.assertThat().field("label").is("[2015-09-29T10:45:15.729Z - 2017-04-11T10:45:15.729Z]");
-        bucket.assertThat().field("filterQuery").is("created:[\"2015-09-29T10:45:15.729Z\" TO \"2017-04-11T10:45:15.729Z\"]");
+        bucket.assertThat().field("label").is("[2015-09-29T10:45:15.729Z - 2016-07-05T10:45:15.729Z)");
+        bucket.assertThat().field("filterQuery").is("created:[\"2015-09-29T10:45:15.729Z\" TO \"2016-07-05T10:45:15.729Z\">");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=1}");
         Map<String, String> info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"2015-09-29T10:45:15.729Z");
-        assertEquals(info.get("end"),"2017-04-11T10:45:15.729Z");
-        assertNull(info.get("count"),"1");
+        assertEquals(info.get("end"),"2016-07-05T10:45:15.729Z");
+        assertNull(info.get("count"),"Expecting count to be null");
         assertEquals(info.get("startInclusive"),"true");
-        assertEquals(info.get("endInclusive"),"true");
+        assertEquals(info.get("endInclusive"),"false");
     }
     
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check date facet intervals search api")
     public void searchDateAndSizeRanges()throws Exception
     {
@@ -290,8 +277,8 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
     
     @SuppressWarnings("unchecked")
-	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check basic facet range search api")
     public void searchWithRangeAndIncludeUpperBound()throws Exception
     {
@@ -330,7 +317,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         bucket.assertThat().field("filterQuery").is("content.size:<\"200\" TO \"400\"]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
         Integer count = Integer.valueOf(metric.get("count"));
-        assertTrue(count >= 4);
+        assertTrue(count == 4);
         info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"200");
         assertEquals(info.get("end"),"400");
@@ -341,7 +328,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         bucket.assertThat().field("label").is("(400 - 600]");
         bucket.assertThat().field("filterQuery").is("content.size:<\"400\" TO \"600\"]");
         metric = (Map<String, String>) bucket.getMetrics().get(0).getValue();
-        assertTrue(Integer.valueOf(metric.get("count")) >= 7);
+        assertTrue(Integer.valueOf(metric.get("count")) == 5);
         info = (Map<String, String>) bucket.getBucketInfo();
         assertEquals(info.get("start"),"400");
         assertEquals(info.get("end"),"600");

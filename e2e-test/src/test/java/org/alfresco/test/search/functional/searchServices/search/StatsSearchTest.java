@@ -69,7 +69,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks errors with stats using Search api")
     public void searchWithBasicStats()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
         Pagination pagination = new Pagination();
         pagination.setMaxItems(2);
         List<RestRequestStatsModel> statsModels = new ArrayList<>();
@@ -153,7 +153,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks errors with stats labels using Search api")
     public void searchWithStatsLabel()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
         Pagination pagination = new Pagination();
         pagination.setMaxItems(2);
         List<RestRequestStatsModel> statsModels = new ArrayList<>();
@@ -208,7 +208,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks errors with stats with Pivot using Search api")
     public void searchWithStatsAndMutlilevelPivot()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         Pagination pagination = new Pagination();
         pagination.setMaxItems(1);
@@ -271,7 +271,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks errors with stats with Pivot using Search api")
     public void searchWithStatsAndPivot()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         Pagination pagination = new Pagination();
         pagination.setMaxItems(2);

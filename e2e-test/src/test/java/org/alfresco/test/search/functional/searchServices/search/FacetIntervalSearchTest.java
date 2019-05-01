@@ -54,7 +54,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
               description = "Check facet intervals mandatory fields")
     public void checkingFacetsMandatoryErrorMessages()throws Exception
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         RestRequestFacetIntervalsModel facetIntervalsModel = new RestRequestFacetIntervalsModel();
         FacetInterval facetInterval = new FacetInterval(null, null, null);
@@ -108,7 +108,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
               description = "Check basic facet intervals search api")
     public void searchWithBasicInterval()throws Exception
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         RestRequestFacetIntervalsModel facetIntervalsModel = new RestRequestFacetIntervalsModel();
         RestRequestFacetSetModel restRequestFacetSetModel = new RestRequestFacetSetModel();
@@ -151,7 +151,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
               description = "Check date facet intervals search api")
     public void searchWithDates() throws Exception
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         RestRequestFacetIntervalsModel facetIntervalsModel = new RestRequestFacetIntervalsModel();
         RestRequestFacetSetModel restRequestFacetSetModel = new RestRequestFacetSetModel();
