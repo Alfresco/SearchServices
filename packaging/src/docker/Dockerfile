@@ -1,37 +1,45 @@
-# Alfresco Solr Docker image
-FROM openjdk:8u111-jdk-alpine
-MAINTAINER Gethin James, gethin.james@alfresco.com
+# Alfresco Search Services ${project.version} Docker Image
 
-ARG solrUrl
-ARG solrBranch
-ARG solrVer
-ENV SOLR_URL ${solrUrl:-nightlybuilds.alfresco.com/SearchServices/$solrBranch/LATEST/Distribution/alfresco-search-services-$solrVer.zip}
-ENV SOLR_ZIP alfresco-search-services.zip
+FROM alfresco/alfresco-base-java:8u181-oracle-centos-7-40f36eac3504
+LABEL creator="Gethin James" maintainer="Alfresco Search Services Team"
+
 ENV DIST_DIR /opt/alfresco-search-services
+ENV SOLR_ZIP ${project.build.finalName}.zip
 ENV LANG C.UTF-8
+ENV OPENSSL_VERSION 1.0.2k-8.el7
 
-RUN addgroup solr && adduser -s /bin/bash -D -G solr solr
+ARG USERNAME=solr
+ARG USERID=33007
+
+COPY "$SOLR_ZIP" .
+
 RUN set -x \
-	&& apk add --no-cache --virtual .fetch-deps \
-		ca-certificates \
-		vim unzip lsof \
-		bash openssl wget \
-	&& wget --no-check-certificate -O "$SOLR_ZIP" "$SOLR_URL" \
-	&& unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP"\
-	&& mkdir -p $DIST_DIR/data \
-	&& mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/  \
-	&& chown -R solr:solr $DIST_DIR \
-	&& echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
- 	&& echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=/opt/alfresco-search-services/data -Dsolr.solr.model.dir=/opt/alfresco-search-services/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
+   && useradd \
+        -c "Alfresco ${USERNAME}" \
+        -M \
+        -s "/bin/bash" \
+        -u "${USERID}" \
+        -o \
+        "${USERNAME}" \
+   && yum update -y \
+   && yum install -y unzip \
+   && yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
+   && yum clean all \
+   && unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP" \
+   && mkdir -p $DIST_DIR/data \
+   && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ \
+   && chown -R ${USERNAME}:${USERNAME} $DIST_DIR \
+   && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
+   && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$DIST_DIR/data -Dsolr.solr.model.dir=$DIST_DIR/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
 
 # Add the licenses to a root directory.
 RUN mv $DIST_DIR/licenses /licenses
 
 WORKDIR $DIST_DIR
 
-VOLUME /opt/alfresco-search-services/data
-VOLUME /opt/alfresco-search-services/solrhome
+VOLUME $DIST_DIR/data
+VOLUME $DIST_DIR/solrhome
 
 EXPOSE 8983
-USER solr
+USER ${USERNAME}
 CMD [ "/opt/alfresco-search-services/solr/bin/solr", "start", "-f" ]
