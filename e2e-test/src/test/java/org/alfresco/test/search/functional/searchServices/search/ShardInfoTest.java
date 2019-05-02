@@ -43,7 +43,8 @@ import org.springframework.http.HttpStatus;
  */
 public class ShardInfoTest extends AbstractSearchServicesE2ETest
 {
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER})
+    // The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. 
+	@Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER})
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
@@ -84,6 +85,7 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
         }
     }
 
+	//The test that will be run when in master slave setup by including the ASS_MASTER_SLAVE test group. 
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER_SLAVE})
     public void getShardInfoWithAdminAuthorityMasterSlaveConfig() throws JsonProcessingException
     {
