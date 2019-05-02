@@ -18,6 +18,8 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
+import org.testng.annotations.Test;
+import org.testng.AssertJUnit;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -33,7 +35,6 @@ import org.alfresco.rest.search.RestShardInfoModelCollection;
 import org.alfresco.rest.search.RestShardModel;
 import org.alfresco.utility.model.TestGroup;
 import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
 
 /**
  * Shard info end point REST API test.
@@ -42,13 +43,13 @@ import org.testng.annotations.Test;
  */
 public class ShardInfoTest extends AbstractSearchServicesE2ETest
 {
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER})
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
+        AssertJUnit.assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
 
         List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
@@ -57,32 +58,73 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
         for (RestShardInfoModel shardInfoModel : entries)
         {
             RestShardInfoModel model = shardInfoModel.getModel();
-            assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getMode(), "MASTER");
-            assertEquals(model.getShardMethod(), "DB_ID");
+            AssertJUnit.assertEquals(model.getTemplate(), "rerank");
+            AssertJUnit.assertEquals(model.getMode(), "MASTER");
+            AssertJUnit.assertEquals(model.getShardMethod(), "DB_ID");
             assertTrue(model.getHasContent());
 
-            assertTrue(stores.contains(model.getStores()));
+            AssertJUnit.assertTrue(stores.contains(model.getStores()));
 
             List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);
+            AssertJUnit.assertNotNull(shards);
             RestShardModel shard = shards.iterator().next();
-            assertNotNull(shard);
+            AssertJUnit.assertNotNull(shard);
             List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances);
+            AssertJUnit.assertNotNull(instances);
             RestInstanceModel instance = instances.iterator().next();
-            assertNotNull(instance);
+            AssertJUnit.assertNotNull(instance);
 
-            assertTrue(baseUrls.contains(instance.getBaseUrl()));
+            AssertJUnit.assertTrue(baseUrls.contains(instance.getBaseUrl()));
 
             // TODO: Ideally Solr Host and Port should be Parameterised
-            assertEquals(instance.getHost(), "search");
-            assertEquals(instance.getPort().intValue(), 8983);
-            assertEquals(instance.getState(), "ACTIVE");
-            assertEquals(instance.getMode(), "MASTER");
+            AssertJUnit.assertEquals(instance.getHost(), "search");
+            AssertJUnit.assertEquals(instance.getPort().intValue(), 8983);
+            AssertJUnit.assertEquals(instance.getState(), "ACTIVE");
+            AssertJUnit.assertEquals(instance.getMode(), "MASTER");
         }
     }
 
+    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER_SLAVE})
+    public void getShardInfoWithAdminAuthorityMasterSlaveConfig() throws JsonProcessingException
+    {
+        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        info.assertThat().entriesListIsNotEmpty();
+        AssertJUnit.assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
+
+        List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
+        List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
+
+        List<RestShardInfoModel> entries = info.getEntries();
+        for (RestShardInfoModel shardInfoModel : entries)
+        {
+            RestShardInfoModel model = shardInfoModel.getModel();
+            AssertJUnit.assertEquals(model.getTemplate(), "rerank");
+            AssertJUnit.assertEquals(model.getMode(), "MIXED");
+            AssertJUnit.assertEquals(model.getShardMethod(), "DB_ID");
+            assertTrue(model.getHasContent());
+
+            AssertJUnit.assertTrue(stores.contains(model.getStores()));
+
+            List<RestShardModel> shards = model.getShards();
+            AssertJUnit.assertNotNull(shards);
+            RestShardModel shard = shards.iterator().next();
+            AssertJUnit.assertNotNull(shard);
+            List<RestInstanceModel> instances = shard.getInstances();
+            AssertJUnit.assertNotNull(instances);
+            RestInstanceModel instance = instances.iterator().next();
+            AssertJUnit.assertNotNull(instance);
+
+            AssertJUnit.assertTrue(baseUrls.contains(instance.getBaseUrl()));
+            
+            AssertJUnit.assertEquals(instance.getHost(), "search"); 
+            AssertJUnit.assertEquals(instance.getState(), "ACTIVE");
+            AssertJUnit.assertEquals(instance.getMode(), "MIXED");
+
+        }
+    }
+
+    
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithoutAdminAuthority() throws Exception
     {

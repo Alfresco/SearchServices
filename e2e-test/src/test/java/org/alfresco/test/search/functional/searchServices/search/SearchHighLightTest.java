@@ -28,6 +28,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.report.Bug;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -56,7 +57,9 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
         highlight.setFields(fields);
         SearchResponse nodes =  query(queryReq, highlight);
         nodes.assertThat().entriesListIsNotEmpty();
+        Assert.assertNotNull(nodes.getEntryByIndex(0).getSearch());
         ResponseHighLightModel hl = nodes.getEntryByIndex(0).getSearch().getHighlight().get(0);
+        Assert.assertNotNull(nodes.getEntryByIndex(0).getSearch());
         hl.assertThat().field("snippets").contains( "The landrover discovery is not a sports ¿car?");
     }
     
