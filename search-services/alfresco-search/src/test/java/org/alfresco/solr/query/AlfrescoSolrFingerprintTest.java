@@ -19,50 +19,75 @@
 
 package org.alfresco.solr.query;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
-import org.alfresco.solr.client.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.singletonList;
+import static java.util.stream.IntStream.range;
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
 {
-    private static Log logger = LogFactory.getLog(AlfrescoSolrFingerprintTest.class);
     private static long MAX_WAIT_TIME = 80000;
+
     @BeforeClass
     public static void beforeClass() throws Exception
     {
-        initAlfrescoCore("schema-fingerprint.xml");
+        initAlfrescoCore("schema.xml");
     }
 
+    private Acl acl;
+
     @Before
-    public void setUp() throws Exception {
-        // if you override setUp or tearDown, you better callf
-        // the super classes version
-        //clearIndex();
-        //assertU(commit());
+    public void prepare() throws Exception
+    {
+        AclChangeSet aclChangeSet = getAclChangeSet(1);
+        acl = getAcl(aclChangeSet);
+        Acl acl2 = getAcl(aclChangeSet);
+
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
+        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, singletonList("jim"), singletonList("phil"), null);
+
+        indexAclChangeSet(aclChangeSet,
+                asList(acl, acl2),
+                asList(aclReaders, aclReaders2));
+
+        // Check for the ACL state stamp.
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
+        BooleanQuery waitForQuery = builder.build();
+        waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
     }
 
     @After
-    public void clearQueue() throws Exception {
+    public void clearQueue()
+    {
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();
         SOLRAPIQueueClient.aclChangeSetQueue.clear();
@@ -70,234 +95,255 @@ public class AlfrescoSolrFingerprintTest extends AbstractAlfrescoSolrTests
         SOLRAPIQueueClient.aclMap.clear();
         SOLRAPIQueueClient.nodeMap.clear();
         SOLRAPIQueueClient.nodeContentMap.clear();
+
+        clearIndex();
+        assertU(commit());
     }
 
-
-    @Test
-    public void testBasciFingerPrint() throws Exception
+    private void makeSureTransactionHasBeenIndexed(long transactionId) throws Exception
     {
-        /*
-        * Create and index an AclChangeSet.
-        */
-
-        logger.info("######### Starting fingerprint test ###########");
-        AclChangeSet aclChangeSet = getAclChangeSet(1);
-
-        Acl acl = getAcl(aclChangeSet);
-        Acl acl2 = getAcl(aclChangeSet);
-
-
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
-        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
-
-
-        indexAclChangeSet(aclChangeSet,
-                list(acl, acl2),
-                list(aclReaders, aclReaders2));
-
-
-        //Check for the ACL state stamp.
+        //Check for the TXN state stamp.
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
-        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
-        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!TX")), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_TXID, transactionId, transactionId + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
         waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
+    }
 
-        logger.info("#################### Passed First Test ##############################");
-
-        /*
-        * Create and index a Transaction
-        */
-
-        //First create a transaction.
+    @Test
+    public void testBasicFingerprint() throws Exception
+    {
         Transaction txn = getTransaction(0, 4);
 
-        //Next create two nodes to update for the transaction
         Node node1 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node node2 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node node3 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node node4 = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
 
-
-        //Next create the NodeMetaData for each node. TODO: Add more metadata
         NodeMetaData nodeMetaData1 = getNodeMetaData(node1, txn, acl, "mike", null, false);
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl, "mike", null, false);
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl, "mike", null, false);
 
-        List<String> content = new ArrayList();
+        Random randomizer = new Random(1);
+        String aFirstToken = Integer.toString(Math.abs(randomizer.nextInt()));
+
+        indexTransaction(txn,
+                asList(node1, node2, node3, node4),
+                asList(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4),
+                randomTextContent());
+
+        makeSureTransactionHasBeenIndexed(txn.getId());
+        makeSureContentNodesHaveBeenIndexed("mike", aFirstToken, 4);
+
+        assertFingerprintQueryCorrectness(node1.getId(),
+                "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+
+        assertFingerprintQueryCorrectness(nodeMetaData1.getNodeRef().getId(),
+                "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+
+        assertFingerprintQueryCorrectness(node1.getId() + "_70",
+                "*[count(//doc)= 2]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']");
+
+        assertFingerprintQueryCorrectness(nodeMetaData1.getNodeRef().getId() + "_70",
+                "*[count(//doc)= 2]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']");
+
+        assertFingerprintQueryCorrectness(node1.getId() + "_45",
+                "*[count(//doc)= 3]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']");
+
+        assertFingerprintQueryCorrectness(nodeMetaData1.getNodeRef().getId() + "_45",
+                "*[count(//doc)= 3]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']");
+
+        assertFingerprintQueryCorrectness(node4.getId() + "_30",
+                "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+
+        assertFingerprintQueryCorrectness(nodeMetaData4.getNodeRef().getId() + "_30",
+                "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+
+        assertFingerprintQueryCorrectness(node4.getId(),
+                "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+
+        assertFingerprintQueryCorrectness(nodeMetaData4.getNodeRef().getId(),
+                "*[count(//doc)= 4]",
+                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
+                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
+                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
+                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
+    }
+
+    @Test
+    public void testFingerprintStillExistsAfterNodeMetadataUpdate() throws Exception
+    {
+        Transaction txn = getTransaction(0, 1);
+        Node fileNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+        NodeMetaData fileMetaData = getNodeMetaData(fileNode, txn, acl, "mike", null, false);
+
+        indexTransaction(
+                txn,
+                singletonList(fileNode),
+                singletonList(fileMetaData),
+                singletonList("This is a text content which is longer than the default hello world " + fileNode.getId() +
+                        " returned by the Mock SOLRAPIQueueClient. This is needed because the \"min_hash\" field type " +
+                        "definition in Solr doesn't take in account fields which produce less than 5 tokens (see the " +
+                        "ShingleFilter settings)."));
+
+        makeSureTransactionHasBeenIndexed(txn.getId());
+        makeSureContentNodeHasBeenIndexed(fileNode, "mike", "world");
+
+        assertFingerprintQueryCorrectness(fileNode.getId(), "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
+
+        // Let's update the test node
+        fileMetaData.setOwner("Andrea");
+        fileMetaData.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("This is the new file \"title\" metadata attribute."));
+        reindexTransactionId(txn.getId());
+
+        makeSureContentNodeHasBeenIndexed(fileNode, "Andrea", "world");
+
+        assertFingerprintQueryCorrectness(fileNode.getId(), "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
+    }
+
+    /**
+     * Queries the index using a token from the (dummy) text produced by the test framework ("world", actually).
+     * Once the query returns a positive result we are sure the ContentTracker
+     *
+     * <ol>
+     *     <li>
+     *         Fetched the text content associated with the current node, from Alfresco
+     *     </li>
+     *     <li>
+     *         Computed a fingerprint (using the retrieved text) for the node
+     *     </li>
+     *     <li>
+     *         Updated the node definition in the (Solr)ContentStore and in Solr
+     *     </li>
+     * </ol>
+     *
+     * Last but not least, we are also making sure that CommitTracker executed its cycle as well (otherwise document
+     * wouldn't be searchable).
+     *
+     * @param node an addition term which will be appended as a required clause in the executed query.
+     * @param testTerm a term which is supposed to be in the indexed content
+     * @param owner the #FIELD_OWNER which will be used as an additional required query clause.
+     * @throws Exception in case the MAX_WAIT_TIME is reached and the node is not in results.
+     */
+    private void makeSureContentNodeHasBeenIndexed(final Node node, final String owner, String testTerm) throws Exception
+    {
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", testTerm)), 1, MAX_WAIT_TIME);
+
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(node.getId()))), 1, MAX_WAIT_TIME);
+
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        builder.add(new BooleanClause(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", testTerm)), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_OWNER, owner)), BooleanClause.Occur.MUST));
+        waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
+    }
+
+
+    /**
+     * Queries the index using a token from the (dummy) text produced by the test framework.
+     * Once the query returns a positive result we are sure the ContentTracker
+     *
+     * <ol>
+     *     <li>
+     *         Fetched the text content associated with the test nodes, from Alfresco
+     *     </li>
+     *     <li>
+     *         Computed a fingerprint (using the retrieved text) for each node
+     *     </li>
+     *     <li>
+     *         Updated the nodes definitions in the (Solr)ContentStore and in Solr
+     *     </li>
+     * </ol>
+     *
+     * Last but not least, we are also making sure that CommitTracker executed its cycle as well (otherwise documents
+     * wouldn't be searchable).
+     *
+     * @param owner the #FIELD_OWNER which will be used as an additional required query clause.
+     * @param testTerm a term which is supposed to be in the indexed content
+     * @throws Exception in case the MAX_WAIT_TIME is reached and the node is not in results.
+     */
+    private void makeSureContentNodesHaveBeenIndexed(final String owner, String testTerm, final int expectedCount) throws Exception
+    {
+        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", testTerm)), expectedCount, MAX_WAIT_TIME);
+
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        builder.add(new BooleanClause(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", testTerm)), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_OWNER, owner)), BooleanClause.Occur.MUST));
+        waitForDocCount(builder.build(), expectedCount, MAX_WAIT_TIME);
+    }
+
+    /**
+     * Asserts that a query in the format <pre>FINGERPRINT:<DBID></pre> correctly returns the node we are testing.
+     *
+     * @param id the node identifier.
+     */
+    private void assertFingerprintQueryCorrectness(long id, String ... assertions)
+    {
+        assertFingerprintQueryCorrectness(String.valueOf(id), assertions);
+    }
+
+    /**
+     * Asserts that a query in the format <pre>FINGERPRINT:<DBID></pre> correctly returns the node we are testing.
+     *
+     * @param id the node identifier.
+     */
+    private void assertFingerprintQueryCorrectness(String id, String ... assertions)
+    {
+        ModifiableSolrParams params = new ModifiableSolrParams()
+                .add("q", "FINGERPRINT:" + id)
+                .add("qt", "/afts")
+                .add("start", "0")
+                .add("rows", "6")
+                .add("sort", "id asc");
+               // .add("fq", "{!afts}AUTHORITY_FILTER_FROM_JSON");
+
+        SolrServletRequest req = areq(params, "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [ \"joel\"], \"tenants\": [ \"\" ]}");
+        assertQ(req, assertions);
+    }
+
+    private List<String> randomTextContent()
+    {
         int[] sizes = {2000, 1000, 1500, 750};
 
-        Random r = new Random(1);
-        String token1 = Integer.toString(Math.abs(r.nextInt()));
-
-        for(int i=0; i<4; i++) {
-            Random rand = new Random(1);
-            StringBuilder buf = new StringBuilder();
-            int size = sizes[i];
-            for(int s=0; s<size; s++) {
-                if(s>0) {
-                    buf.append(" ");
-                }
-                buf.append(Integer.toString(Math.abs(rand.nextInt())));
-            }
-            content.add(buf.toString());
-        }
-
-        //Index the transaction, nodes, and nodeMetaDatas.
-        //Note that the content is automatically created by the test framework.
-        indexTransaction(txn,
-                list(node1, node2, node3, node4),
-                list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4),
-                content);
-
-        //Check for the TXN state stamp.
-        logger.info("#################### Started Second Test ##############################");
-        builder = new BooleanQuery.Builder();
-        builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!TX")), BooleanClause.Occur.MUST));
-        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_TXID, txn.getId(), txn.getId() + 1, true, false), BooleanClause.Occur.MUST));
-        waitForQuery = builder.build();
-
-        waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
-        logger.info("#################### Passed Second Test ##############################");
-
-        /*
-        * Query the index for the content
-        */
-
-        waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", token1)), 4, MAX_WAIT_TIME);
-
-        logger.info("#################### Passed Third Test ##############################");
-
-        ModifiableSolrParams params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node1.getId());  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
-        params.add("qt", "/afts");
-        params.add("fl", "DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        SolrServletRequest req = areq(params, null);
-        assertQ(req, "*[count(//doc)=4]",
-                "//result/doc[1]/long[@name='DBID'][.='" + node1.getId() + "']",
-                "//result/doc[2]/long[@name='DBID'][.='" + node3.getId() + "']",
-                "//result/doc[3]/long[@name='DBID'][.='" + node2.getId() + "']",
-                "//result/doc[4]/long[@name='DBID'][.='" + node4.getId() + "']");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node1.getId() + "_70");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 2]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node1.getId()+"_45");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 3]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
-                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node1.getId()+"_30");
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 4]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
-                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']",
-                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
-
-        
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + node4.getId());
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 4]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node4.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
-                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
-                "//result/doc[4]/long[@name='DBID'][.='"+node1.getId()+"']");
-
-        //Test nodeRef
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId());  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
-        params.add("qt", "/afts");
-        params.add("fl", "DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)=4]",
-                "//result/doc[1]/long[@name='DBID'][.='" + node1.getId() + "']",
-                "//result/doc[2]/long[@name='DBID'][.='" + node3.getId() + "']",
-                "//result/doc[3]/long[@name='DBID'][.='" + node2.getId() + "']",
-                "//result/doc[4]/long[@name='DBID'][.='" + node4.getId() + "']");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId() + "_70");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 2]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId()+"_45");  //Query for an id in the content field. The node id is automatically populated into the content field by test framework
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 3]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
-                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']");
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + nodeMetaData1.getNodeRef().getId()+"_30");
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 4]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node1.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node3.getId()+"']",
-                "//result/doc[3]/long[@name='DBID'][.='"+node2.getId()+"']",
-                "//result/doc[4]/long[@name='DBID'][.='"+node4.getId()+"']");
-
-
-        params = new ModifiableSolrParams();
-        params.add("q", "FINGERPRINT:" + nodeMetaData4.getNodeRef().getId());
-        params.add("qt", "/afts");
-        params.add("fl","DBID,score");
-        params.add("start", "0");
-        params.add("rows", "6");
-        req = areq(params, null);
-        assertQ(req, "*[count(//doc)= 4]",
-                "//result/doc[1]/long[@name='DBID'][.='"+node4.getId()+"']",
-                "//result/doc[2]/long[@name='DBID'][.='"+node2.getId()+"']",
-                "//result/doc[3]/long[@name='DBID'][.='"+node3.getId()+"']",
-                "//result/doc[4]/long[@name='DBID'][.='"+node1.getId()+"']");
-
+        return stream(sizes)
+                .mapToObj(item -> {
+                    Random randomizer = new Random(1);
+                    return range(0, item)
+                            .mapToObj(i -> randomizer.nextInt())
+                            .map(Object::toString)
+                            .collect(Collectors.joining(" "));})
+                .collect(Collectors.toList());
     }
 }
