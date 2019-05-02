@@ -18,10 +18,10 @@ import org.testng.annotations.Test;
  * @author aborroy
  *
  */
-public class SorlSearchScoreQueryTests extends AbstractCmisE2ETest
+public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
 {
 	
-    private static Logger LOGGER = LoggerFactory.getLogger(SorlSearchScoreQueryTests.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(SolrSearchScoreQueryTests.class);
     private XMLTestData testData;
     
     @AfterClass(alwaysRun = true)
