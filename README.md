@@ -56,11 +56,22 @@ To build the docker image:
 cd packaging/target/docker-resources/
 docker build -t searchservices:develop .
 ```
+To Build Master or slave image locally
+```bash
+docker build -t searchservices-slave:develop --build-arg REPLICATION_TYPE=slave .
+
+docker build -t searchservices-master:develop --build-arg REPLICATION_TYPE=master .
+```
+Based on the Argument REPLICATION_TYPE, the solrconfig has been configured while building image via bash script.
 
 To run the docker image:
 
 ```bash
 docker run -p 8983:8983 searchservices:develop
+
+docker run -p 8983:8983 searchservices-master:develop
+
+docker run -p 8984:8984 searchservices-master:develop
 ```
 
 To pass an environment variable:
@@ -87,11 +98,22 @@ This will start up Alfresco, Postgres, Share and SearchServices. You can access 
  * Alfresco: http://localhost:8081/alfresco
  * Share: http://localhost:8082/share
  * Solr: http://localhost:8083/solr
+ * Solr-slave: http://localhost:8084/solr
  
 If you start version 5.x instead you can also access the API Explorer:
 
  * API Explorer: http://localhost:8084/api-explorer
 
+### Docker Master-Slave setup
+We have seperate docker compose file for slave. To setup Master slave setup
+```bash
+docker-compose -f docker-compose.yml -f ./master-slave/docker-compose.slave.yml up
+```
+The slave running behind the load balancer under 8084, so we can spin up multiple slave with the same port. To deploy multiple slaves
+
+```bash
+docker-compose -f docker-compose.yml -f ./master-slave/docker-compose.slave.yml up --scale search_slave=2
+```
 ### License
 Copyright (C) 2005 - 2017 Alfresco Software Limited
 
