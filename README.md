@@ -71,7 +71,7 @@ docker run -p 8983:8983 searchservices:develop
 
 docker run -p 8983:8983 searchservices-master:develop
 
-docker run -p 8984:8984 searchservices-master:develop
+docker run -p 8984:8984 searchservices-slave:develop
 ```
 
 To pass an environment variable:
