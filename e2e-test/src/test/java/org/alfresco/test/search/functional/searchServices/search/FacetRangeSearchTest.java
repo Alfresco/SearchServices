@@ -34,7 +34,7 @@ import org.alfresco.rest.search.RestGenericBucketModel;
 import org.alfresco.rest.search.RestGenericFacetResponseModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;

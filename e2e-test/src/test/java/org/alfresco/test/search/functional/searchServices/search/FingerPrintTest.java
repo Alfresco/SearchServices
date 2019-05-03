@@ -23,7 +23,7 @@ import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.alfresco.utility.report.Bug;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
