@@ -43,14 +43,14 @@ import org.springframework.http.HttpStatus;
  */
 public class ShardInfoTest extends AbstractSearchServicesE2ETest
 {
-    // The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. 
+    /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group.*/
 	@Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER})
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
-        AssertJUnit.assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
+        assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
 
         List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
@@ -59,9 +59,9 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
         for (RestShardInfoModel shardInfoModel : entries)
         {
             RestShardInfoModel model = shardInfoModel.getModel();
-            AssertJUnit.assertEquals(model.getTemplate(), "rerank");
-            AssertJUnit.assertEquals(model.getMode(), "MASTER");
-            AssertJUnit.assertEquals(model.getShardMethod(), "DB_ID");
+            assertEquals(model.getTemplate(), "rerank");
+            assertEquals(model.getMode(), "MASTER");
+            assertEquals(model.getShardMethod(), "DB_ID");
             assertTrue(model.getHasContent());
 
             AssertJUnit.assertTrue(stores.contains(model.getStores()));
@@ -85,14 +85,14 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
         }
     }
 
-	//The test that will be run when in master slave setup by including the ASS_MASTER_SLAVE test group. 
+	/* The test that will be run when in master slave setup by including the ASS_MASTER_SLAVE test group.*/
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER_SLAVE})
     public void getShardInfoWithAdminAuthorityMasterSlaveConfig() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
-        AssertJUnit.assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
+        assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
 
         List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
@@ -101,9 +101,9 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
         for (RestShardInfoModel shardInfoModel : entries)
         {
             RestShardInfoModel model = shardInfoModel.getModel();
-            AssertJUnit.assertEquals(model.getTemplate(), "rerank");
-            AssertJUnit.assertEquals(model.getMode(), "MIXED");
-            AssertJUnit.assertEquals(model.getShardMethod(), "DB_ID");
+            assertEquals(model.getTemplate(), "rerank");
+            assertEquals(model.getMode(), "MIXED");
+            assertEquals(model.getShardMethod(), "DB_ID");
             assertTrue(model.getHasContent());
 
             AssertJUnit.assertTrue(stores.contains(model.getStores()));
