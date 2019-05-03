@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   alfresco:
     image: alfresco/alfresco-content-repository:${ALFRESCO_TAG}
@@ -17,6 +17,9 @@ services:
         -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
         "
 
+  search:
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}_master
+
   search_slave_load_balancer:
     image: nginx:${NGINX_TAG}
     links:
@@ -27,7 +30,7 @@ services:
       - 8084:80
 
   search_slave:
-    image: quay.io/alfresco/search-services:${SEARCH_TAG}
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}_slave
     environment:
       #Replication properties
       - REPLICATION_TYPE=slave
