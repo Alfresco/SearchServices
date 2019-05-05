@@ -37,6 +37,7 @@ import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
@@ -53,6 +54,8 @@ import org.apache.commons.codec.EncoderException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Optional.of;
 
 /*
  * This tracks two things: transactions and metadata nodes
@@ -190,15 +193,21 @@ public class MetadataTracker extends AbstractTracker implements Tracker
      */
     private ShardState getShardState()
     {
-        TrackerState state = super.getTrackerState();
-       
-        ShardState shardstate =  ShardStateBuilder.shardState()
+        TrackerState transactionsTrackerState = super.getTrackerState();
+        TrackerState changeSetsTrackerState =
+                of(infoSrv.getAdminHandler())
+                        .map(AlfrescoCoreAdminHandler::getTrackerRegistry)
+                        .map(registry -> registry.getTrackerForCore(coreName, AclTracker.class))
+                        .map(Tracker::getTrackerState)
+                        .orElse(transactionsTrackerState);
+
+        return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
-                .withLastIndexedChangeSetCommitTime(state.getLastIndexedChangeSetCommitTime())
-                .withLastIndexedChangeSetId(state.getLastIndexedChangeSetId())
-                .withLastIndexedTxCommitTime(state.getLastIndexedTxCommitTime())
-                .withLastIndexedTxId(state.getLastIndexedTxId())
+                .withLastIndexedChangeSetCommitTime(changeSetsTrackerState.getLastIndexedChangeSetCommitTime())
+                .withLastIndexedChangeSetId(changeSetsTrackerState.getLastIndexedChangeSetId())
+                .withLastIndexedTxCommitTime(transactionsTrackerState.getLastIndexedTxCommitTime())
+                .withLastIndexedTxId(transactionsTrackerState.getLastIndexedTxId())
                 .withShardInstance()
                     .withBaseUrl(infoSrv.getBaseUrl())
                     .withPort(infoSrv.getPort())
@@ -215,7 +224,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                         .endShard()
                      .endShardInstance()
                 .build();
-        return shardstate;
     }
 
     /**
