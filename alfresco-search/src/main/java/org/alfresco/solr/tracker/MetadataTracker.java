@@ -194,10 +194,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         trackTransactions();
     }
 
-    /**
-     * @return
-     */
-    private ShardState getShardState()
+    ShardState getShardState()
     {
         TrackerState transactionsTrackerState = super.getTrackerState();
         TrackerState changeSetsTrackerState =
