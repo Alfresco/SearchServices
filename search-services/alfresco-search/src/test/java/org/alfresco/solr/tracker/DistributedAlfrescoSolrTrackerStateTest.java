@@ -46,6 +46,7 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
+import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,6 +64,7 @@ import java.util.Map;
  *
  * @author agazzarini
  */
+@SolrTestCaseJ4.SuppressSSL
 public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDistributedTest
 {
     @BeforeClass
