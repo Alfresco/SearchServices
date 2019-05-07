@@ -100,7 +100,9 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
         Date[] dates = new Date[5];
 
         Calendar cal = new GregorianCalendar();
+        cal.setTimeZone(TimeZone.getTimeZone("UTC"));
         for (int i = 0; i < dates.length; i++) {
+
             cal.set(1980, i, 21);
             dates[i] = cal.getTime();
         }
