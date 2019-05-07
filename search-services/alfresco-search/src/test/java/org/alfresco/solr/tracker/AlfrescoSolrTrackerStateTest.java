@@ -27,6 +27,7 @@ import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.dataload.TestDataProvider;
 import org.apache.lucene.document.LongPoint;
@@ -36,6 +37,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.solr.core.SolrCore;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -70,6 +72,16 @@ public class AlfrescoSolrTrackerStateTest extends AbstractAlfrescoSolrTests
     public static void beforeClass() throws Exception
     {
         initAlfrescoCore("schema.xml");
+    }
+
+    @After
+    public void clearQueue() throws Exception {
+        SOLRAPIQueueClient.nodeMetaDataMap.clear();
+        SOLRAPIQueueClient.transactionQueue.clear();
+        SOLRAPIQueueClient.aclChangeSetQueue.clear();
+        SOLRAPIQueueClient.aclReadersMap.clear();
+        SOLRAPIQueueClient.aclMap.clear();
+        SOLRAPIQueueClient.nodeMap.clear();
     }
 
     @Before
