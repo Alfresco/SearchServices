@@ -282,6 +282,11 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
                         }
                     }
                 }
+                else
+                {
+                    found = false;
+                }
+
                 // Loop again if result is not as expected: To cater for solr lag: eventual consistency
                 resultAsExpected = (expectedInResults == found);
                 if (resultAsExpected)
