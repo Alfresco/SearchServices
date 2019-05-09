@@ -118,7 +118,7 @@ public class AlfrescoSolrTrackerStateTest extends AbstractAlfrescoSolrTests
     @SuppressWarnings("deprecated")
     public void shardStateMustBeConsistentWithCoreSummaryStats()
     {
-        SolrCore core = getCore();
+        SolrCore core = h.getCore();
 
         MetadataTracker tracker =
                 of(coreAdminHandler(core))
