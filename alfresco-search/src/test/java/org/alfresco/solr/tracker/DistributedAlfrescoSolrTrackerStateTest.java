@@ -40,15 +40,14 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.dataload.TestDataProvider;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
@@ -67,13 +66,15 @@ import java.util.Map;
 @SolrTestCaseJ4.SuppressSSL
 public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDistributedTest
 {
-    @BeforeClass
-    private static void initData() throws Throwable
-    {
-        int howManyShards = 5;
-        int howManyNodes = 15;
+    private int howManyShards = 5;
 
-        initSolrServers(howManyShards, getClassName(),null);
+    @Rule
+    public JettyServerRule jetty = new JettyServerRule(howManyShards, this);
+
+    @Before
+    private void initData() throws Throwable
+    {
+        int howManyNodes = 15;
 
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
@@ -87,7 +88,7 @@ public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDis
 
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
-        builder.add(new BooleanClause(LongPoint.newExactQuery(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId()), BooleanClause.Occur.MUST));
+
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, MAX_WAIT_TIME);
 
@@ -97,18 +98,12 @@ public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDis
         indexTransaction(txn, data.getKey(), data.getValue());
         builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!TX")), BooleanClause.Occur.MUST));
-        builder.add(new BooleanClause(LongPoint.newExactQuery(QueryConstants.FIELD_S_TXID, txn.getId()), BooleanClause.Occur.MUST));
+        builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_TXID, txn.getId(), txn.getId() + 1, true, false), BooleanClause.Occur.MUST));
         waitForQuery = builder.build();
 
         waitForDocCountAllCores(waitForQuery, 1, MAX_WAIT_TIME);
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), howManyNodes, MAX_WAIT_TIME);
-    }
-
-    @AfterClass
-    private static void destroyData()
-    {
-        dismissSolrServers();
     }
     
     @Test
@@ -116,7 +111,7 @@ public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDis
     {
         putHandleDefaults();
 
-        getJettyCores(solrShards).forEach(core -> {
+        getJettyCores(jettyContainers.values()).forEach(core -> {
             MetadataTracker tracker =
                     of(coreAdminHandler(core))
                             .map(AlfrescoCoreAdminHandler::getTrackerRegistry)
