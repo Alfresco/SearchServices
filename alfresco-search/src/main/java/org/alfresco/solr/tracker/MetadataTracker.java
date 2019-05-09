@@ -188,6 +188,23 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         trackTransactions();
     }
 
+    /**
+     * The {@link ShardState}, as the name suggests, encapsulates/stores the state of the shard which hosts this
+     * {@link MetadataTracker} instance.
+     *
+     * The {@link ShardState} is primarily used in two places:
+     *
+     * <ul>
+     *     <li>Transaction tracking: (see {@link #trackTransactions()}): for pulling/tracking transactions from Alfresco</li>
+     *     <li>
+     *         DynamicSharding: when the {@link MetadataTracker} is running on a slave instance it doesn't actually act
+     *         as a tracker, it calls Alfresco to register the state of the node (the shard) without pulling any transactions.
+     *         As consequence of that, Alfresco will be aware about the shard which will be included in subsequent queries.
+     *     </li>
+     * </ul>
+     *
+     * @return the {@link ShardState} instance which stores the current state of the hosting shard.
+     */
     ShardState getShardState()
     {
         TrackerState transactionsTrackerState = super.getTrackerState();
