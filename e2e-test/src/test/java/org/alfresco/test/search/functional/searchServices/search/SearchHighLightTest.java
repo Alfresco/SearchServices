@@ -57,9 +57,7 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
         highlight.setFields(fields);
         SearchResponse nodes =  query(queryReq, highlight);
         nodes.assertThat().entriesListIsNotEmpty();
-        Assert.assertNotNull(nodes.getEntryByIndex(0).getSearch(), "SearchResponse: is not null");
         ResponseHighLightModel hl = nodes.getEntryByIndex(0).getSearch().getHighlight().get(0);
-        Assert.assertNotNull(nodes.getEntryByIndex(0).getSearch(), "ResponseHighLightModel: is not null");
         hl.assertThat().field("snippets").contains( "The landrover discovery is not a sports ¿car?");
     }
     

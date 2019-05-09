@@ -102,7 +102,6 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
         {
             RestShardInfoModel model = shardInfoModel.getModel();
             assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getMode(), "MIXED");
             assertEquals(model.getShardMethod(), "DB_ID");
             assertTrue(model.getHasContent());
 
@@ -118,15 +117,11 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
             AssertJUnit.assertNotNull(instance);
 
             AssertJUnit.assertTrue(baseUrls.contains(instance.getBaseUrl()));
-            
-            AssertJUnit.assertEquals(instance.getHost(), "search"); 
-            AssertJUnit.assertEquals(instance.getState(), "ACTIVE");
-            AssertJUnit.assertEquals(instance.getMode(), "MIXED");
 
+            restClient.assertStatusCodeIs(HttpStatus.OK);
         }
     }
-
-    
+       
     @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
     public void getShardInfoWithoutAdminAuthority() throws Exception
     {
