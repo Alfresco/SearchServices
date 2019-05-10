@@ -15,7 +15,7 @@
       <tas.cmis.api.version>6.0.0.0</tas.cmis.api.version>
       <tas.utility.version>2.0.12</tas.utility.version>
       <rm.version>2.6.0</rm.version>
-      <suiteXmlFile>src/test/resources/cmis-search.xml</suiteXmlFile>
+      <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
       <test.include></test.include>
       <java.version>11</java.version>
