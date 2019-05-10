@@ -86,6 +86,11 @@ import com.carrotsearch.hppc.IntArrayList;
 
 import com.carrotsearch.hppc.LongHashSet;
 import com.carrotsearch.hppc.cursors.LongCursor;
+import com.cybozu.labs.langdetect.Detector;
+import com.cybozu.labs.langdetect.DetectorFactory;
+import com.cybozu.labs.langdetect.LangDetectException;
+import com.cybozu.labs.langdetect.Language;
+
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -100,6 +105,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.AlfrescoSolrDataModel.ContentFieldType;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
@@ -2462,6 +2468,55 @@ public class SolrInformationServer implements InformationServer
             // Could update multi content but it is broken ....
         }
     }
+
+    /**
+     * Max amount of text to be analysed, to control performance. 
+     */
+    private static final Integer MAX_TEXT_LENGTH = 10240;
+    
+    /**
+     * Use LangDetect library to detect language from text content.
+     * 
+     * Also Tika LangDetect would be available, but the dependencies of this library
+     * does not fit with current alfresco-search dependencies (Google Guava).
+     *  
+     * @param textContent Text to be analysed
+     * @return Map of language detected and percentage of text content
+     */
+    protected Map<String, Double> detectLanguageLangDetect(String textContent) 
+    {
+
+        try 
+        {
+            
+            Detector detector = DetectorFactory.create();
+            
+            // Limit the amount of text analysed to obtain better performance.
+            // Since locale field is not multiple, only fetching local from
+            // first part of the document.
+            detector.append(textContent.length() > MAX_TEXT_LENGTH ? 
+                    textContent.substring(0, MAX_TEXT_LENGTH) :
+                    textContent);
+
+            // Text Content can include different languages inside. 
+            // In the results, a pair of (language, percentage) is obtained.
+            // 'Percentage' means the amount of Text Content detected in that 'Language'.
+            Map<String, Double> languagesDetected = new HashMap<>();
+            ArrayList<Language> langlist = detector.getProbabilities();
+            for (Language l: langlist) 
+            {
+                languagesDetected.put(l.lang, l.prob);
+            }
+            return languagesDetected;
+
+        } 
+        catch (LangDetectException e) 
+        {
+            LOGGER.error("LangDetect cannot be applied: " + e.getMessage());
+            return new HashMap<>();
+        }
+
+    }
     
     private void addContentPropertyToDocUsingAlfrescoRepository(SolrInputDocument doc,
                 QName propertyQName, long dbId, String locale) throws AuthenticationException, IOException
@@ -2520,6 +2575,37 @@ public class SolrInformationServer implements InformationServer
         long end = System.nanoTime();
         this.getTrackerStats().addDocTransformationTime(end - start);
         
+        // LANGUAGE DETECTION START
+        start = System.currentTimeMillis();
+        LOGGER.warning("Detecting languages with LangDetect...");
+        Map<String, Double> languages = detectLanguageLangDetect(textContent);
+        Double maxProb = 0.0;
+        for (Entry<String, Double> language : languages.entrySet())
+        {
+            LOGGER.warning("LANGUAGE: " + language.getKey() + ", " + language.getValue());
+            if (language.getValue() > maxProb) 
+            {
+                locale = language.getKey();
+                maxProb = language.getValue();
+            }
+        }
+        LOGGER.warning("locale=" + locale);
+        
+        // Set detected locale to 'Locale' Document field
+        IndexedField indexedField = AlfrescoSolrDataModel.getInstance().getIndexedFieldForContentPropertyMetadata(
+                propertyQName, ContentFieldType.LOCALE);
+        for (FieldInstance fieldInstance : indexedField.getFields())
+        {
+            doc.removeField(fieldInstance.getField());
+            doc.addField(fieldInstance.getField(), locale);
+            LOGGER.warning("Setting " + fieldInstance.getField() + " to locale=" + locale);
+        }
+        end = System.currentTimeMillis();
+        LOGGER.warning("Language detection took {} ms.", end - start);
+        // <EOF> LANGUAGE DETECTION START        
+        
+        
+        // Set detected "locale" to textContent
         StringBuilder builder = new StringBuilder(textContent.length() + 16);
         builder.append("\u0000").append(locale).append("\u0000");
         builder.append(textContent);
