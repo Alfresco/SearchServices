@@ -114,8 +114,8 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
             assertNotNull(instance);
 
             assertTrue(baseUrls.contains(instance.getBaseUrl()));
-
-            restClient.assertStatusCodeIs(HttpStatus.OK);
+            
+            assertEquals(instance.getState(), "ACTIVE");
         }
     }
 
