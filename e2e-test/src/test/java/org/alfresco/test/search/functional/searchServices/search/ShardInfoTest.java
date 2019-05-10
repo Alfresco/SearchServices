@@ -1,25 +1,20 @@
 /*
  * Copyright (C) 2005-2018 Alfresco Software Limited.
- *
  * This file is part of Alfresco
- *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
 import org.testng.annotations.Test;
-import org.testng.AssertJUnit;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -43,14 +38,15 @@ import org.springframework.http.HttpStatus;
  */
 public class ShardInfoTest extends AbstractSearchServicesE2ETest
 {
-    /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group.*/
-	@Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER})
+    /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. */
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER })
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
+        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
+                .getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
+        assertEquals(info.getPagination().getTotalItems().intValue(), 2);
 
         List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
@@ -85,14 +81,15 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
         }
     }
 
-	/* The test that will be run when in master slave setup by including the ASS_MASTER_SLAVE test group.*/
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER_SLAVE})
+    /* The test that will be run when in master slave setup by including the ASS_MASTER_SLAVE test group. */
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER_SLAVE })
     public void getShardInfoWithAdminAuthorityMasterSlaveConfig() throws JsonProcessingException
     {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
+        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
+                .getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2); 
+        assertEquals(info.getPagination().getTotalItems().intValue(), 2);
 
         List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
@@ -121,8 +118,8 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
             restClient.assertStatusCodeIs(HttpStatus.OK);
         }
     }
-       
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n})
+
+    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n })
     public void getShardInfoWithoutAdminAuthority() throws Exception
     {
         restClient.authenticateUser(dataUser.createRandomTestUser()).withShardInfoAPI().getInfo();
