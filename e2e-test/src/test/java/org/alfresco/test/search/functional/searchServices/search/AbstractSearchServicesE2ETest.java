@@ -18,17 +18,11 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
-import org.alfresco.rest.search.SearchRequest;
-import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-
-import javax.naming.AuthenticationException;
 
 /**
  * Abstract Search test class that contains useful methods
@@ -80,111 +74,5 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file4);
 
         waitForMetadataIndexing(file4.getName(), true);
-    }
-    
-//    /**
-//     * Helper method which create an http post request to Search API end point.
-//     * @param term String search term
-//     * @return {@link SearchResponse} response.
-//     * @throws Exception if error
-//     *
-//     */
-//    protected SearchResponse query(String term) throws Exception
-//    {
-//        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-//        queryReq.setLanguage("afts");
-//        queryReq.setQuery(term);
-//        SearchRequest query = new SearchRequest(queryReq);
-//        return restClient.authenticateUser(testUser).withSearchAPI().search(query);
-//    }
-
-    protected SearchRequest carsQuery()
-    {
-        return createQuery("cars");
-    }
-    
-    /**
-     * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
-     * 
-     * @param userQuery: search query, this can include the fieldname, unique search string will guarantee accurate results
-     * @param expectedInResults, true if entry is expected in the results set
-     * @return true (indexing is finished) if search returns appropriate results
-     * @throws Exception
-     */
-    public boolean waitForIndexing(String userQuery, boolean expectedInResults) throws Exception
-    {
-        // Use the search query as is: fieldname(s) may or may not be specified within the userQuery
-        return waitForIndexing(null, userQuery, expectedInResults);
-    }
-    
-    /**
-     * waitForIndexing method that matches / waits for filename, metadata to be indexed.
-     * @param userQuery
-     * @param expectedInResults
-     * @return
-     * @throws Exception
-     */
-    public boolean waitForMetadataIndexing(String userQuery, boolean expectedInResults) throws Exception
-    {
-        return waitForIndexing("name", userQuery, expectedInResults);
-    }
-    
-    /**
-     * waitForIndexing method that matches / waits for content to be indexed, this can take longer than metadata indexing.
-     * Since Metadata is indexed first, use this method where tests, queries need content to be indexed too.
-     * @param userQuery
-     * @param expectedInResults
-     * @return
-     * @throws Exception
-     */
-    public boolean waitForContentIndexing(String userQuery, boolean expectedInResults) throws Exception
-    {
-        return waitForIndexing("cm:content", userQuery, expectedInResults);
-    }
-
-    /**
-     * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
-     * 
-     * @param fieldName: specific field to search for, e.g. name. When specified, the query will become: name:'userQuery'
-     * @param userQuery: search string, unique search string will guarantee accurate results
-     * @param expectedInResults, true if entry is expected in the results set
-     * @return true (indexing is finished) if search returns appropriate results
-     * @throws Exception
-     */
-    private boolean waitForIndexing(String fieldName, String userQuery, boolean expectedInResults) throws Exception
-    {
-        boolean resultAsExpected = false;
-        String expectedStatusCode = HttpStatus.OK.toString();
-        String query = (fieldName == null)? userQuery: String.format("%s:'%s'", fieldName, userQuery); 
-
-        // Repeat search until the query results are as expected or Search Retry count is hit
-        for (int searchCount = 1; searchCount <= 3; searchCount++)
-        {
-            SearchRequest searchRequest = createQuery(query);
-            SearchResponse response = query(searchRequest);
-
-            if (restClient.getStatusCode().matches(expectedStatusCode))
-            {
-                boolean found = !response.getEntries().isEmpty();
-
-                // Loop again if result is not as expected: To cater for solr lag: eventual consistency
-                resultAsExpected = (expectedInResults == found);
-                if (resultAsExpected)
-                {
-                    break;
-                }
-                else
-                {
-                 // Wait for the solr indexing.
-                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
-                }
-            }
-            else
-            {
-                throw new AuthenticationException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode);
-            }
-        }
-
-        return resultAsExpected;
     }
 }

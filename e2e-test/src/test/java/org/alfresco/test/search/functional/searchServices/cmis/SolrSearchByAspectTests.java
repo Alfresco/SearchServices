@@ -6,7 +6,7 @@ import org.alfresco.utility.data.provider.XMLTestData;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.exception.TestConfigurationException;
 import org.alfresco.utility.model.QueryModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -50,7 +50,7 @@ public class SolrSearchByAspectTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
 
-    @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
+    @Test(groups = { TestGroup.CMIS },
             dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForAspectSearch")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-aspect.xml")
     public void executeSearchByAspect(QueryModel query) throws Exception

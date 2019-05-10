@@ -10,14 +10,12 @@ import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
-import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.Utility;
@@ -32,7 +30,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.ServerHealth;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Session;
-import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -83,10 +80,10 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     @Autowired
     @Getter(value = PROTECTED)
     private ContentService contentService;
-    
+
     protected UserModel testUser, adminUserModel;
     protected SiteModel testSite;
-    
+
     protected static String unique_searchString;
 
     public static final String NODE_PREFIX = "workspace/SpacesStore/";
@@ -99,7 +96,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         deployCustomModel("model/music-model.xml");
         deployCustomModel("model/finance-model.xml");
     }
-    
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -107,12 +104,12 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         adminUserModel = dataUser.getAdminUser();
         testUser = dataUser.createRandomTestUser("UserSearch");
-                
+
         testSite = new SiteModel(RandomData.getRandomName("SiteSearch"));
         testSite.setVisibility(Visibility.PRIVATE);
-        
+
         testSite = dataSite.usingUser(testUser).createSite(testSite);
-        
+
         unique_searchString = testSite.getTitle().replace("SiteSearch", "Unique");
 
         dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
@@ -136,7 +133,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         }
         return modelDeployed;
     }
-    
+
     public boolean deactivateCustomModel(String fileName)
     {
         Boolean modelDeactivated = false;
@@ -227,7 +224,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     }
 
     /**
-     * 
      * Helper method which create an http post request to Search API end point.
      * Executes the given search request without throwing checked exceptions (a {@link RuntimeException} will be thrown in case).
      *
@@ -250,16 +246,18 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      * Wait for Solr to finish indexing and search to return appropriate results
      * 
      * @param userQuery: Search Query
-     * @param contentName that's expected to be included / excluded from the results
+     * @param contentToFind that's expected to be included / excluded from the results
      * @param expectedInResults
      * @return true if search returns expected results, i.e. is given content is found or excluded from the results
      * @throws Exception
      */
-    public boolean waitForContent(String userQuery, String contentName, boolean expectedInResults) throws Exception
+    public boolean isContentInSearchResults(String userQuery, String contentToFind, boolean expectedInResults)
+            throws Exception
     {
         boolean resultAsExpected = false;
         boolean found = !expectedInResults;
         String expectedStatusCode = HttpStatus.OK.toString();
+        String contentName = (contentToFind == null) ? "" : contentToFind;
 
         // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 1; searchCount <= 6; searchCount++)
@@ -272,11 +270,23 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
                 List<SearchNodeModel> entries = response.getEntries();
                 if (!entries.isEmpty())
                 {
-                    for (SearchNodeModel entry : entries)
+                    if (contentName.isEmpty())
                     {
-                        found = (contentName.equalsIgnoreCase(entry.getModel().getName()));
+                        found = true;
+                    }
+                    else
+                    {
+                        for (SearchNodeModel entry : entries)
+                        {
+                            found = (contentName.equalsIgnoreCase(entry.getModel().getName()));
+                        }
                     }
                 }
+                else
+                {
+                    found = false;
+                }
+
                 // Loop again if result is not as expected: To cater for solr lag: eventual consistency
                 resultAsExpected = (expectedInResults == found);
                 if (resultAsExpected)
@@ -311,9 +321,10 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         // Use the search query as is: fieldname(s) may or may not be specified within the userQuery
         return waitForIndexing(null, userQuery, expectedInResults);
     }
-    
+
     /**
      * waitForIndexing method that matches / waits for filename, metadata to be indexed.
+     * 
      * @param userQuery
      * @param expectedInResults
      * @return
@@ -323,10 +334,11 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     {
         return waitForIndexing("name", userQuery, expectedInResults);
     }
-    
+
     /**
      * waitForIndexing method that matches / waits for content to be indexed, this can take longer than metadata indexing.
      * Since Metadata is indexed first, use this method where tests, queries need content to be indexed too.
+     * 
      * @param userQuery
      * @param expectedInResults
      * @return
@@ -348,39 +360,9 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      */
     private boolean waitForIndexing(String fieldName, String userQuery, boolean expectedInResults) throws Exception
     {
-        boolean resultAsExpected = false;
-        String expectedStatusCode = HttpStatus.OK.toString();
-        String query = (fieldName == null)? userQuery: String.format("%s:'%s'", fieldName, userQuery); 
+        String query = (fieldName == null) ? userQuery : String.format("%s:'%s'", fieldName, userQuery);
 
-        // Repeat search until the query results are as expected or Search Retry count is hit
-        for (int searchCount = 1; searchCount <= 3; searchCount++)
-        {
-            SearchRequest searchRequest = createQuery(query);
-            SearchResponse response = query(searchRequest);
-
-            if (restClient.getStatusCode().matches(expectedStatusCode))
-            {
-                boolean found = !response.getEntries().isEmpty();
-
-                // Loop again if result is not as expected: To cater for solr lag: eventual consistency
-                resultAsExpected = (expectedInResults == found);
-                if (resultAsExpected)
-                {
-                    break;
-                }
-                else
-                {
-                 // Wait for the solr indexing.
-                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + searchCount);
-                }
-            }
-            else
-            {
-                throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode);
-            }
-        }
-
-        return resultAsExpected;
+        return isContentInSearchResults(query, null, expectedInResults);
     }
 
     /**
@@ -435,7 +417,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      *
      * @return {@link SearchResponse} response.
      * @throws Exception if error
-     *
      */
     protected SearchResponse query(RestRequestQueryModel queryReq, RestRequestHighlightModel highlight) throws Exception
     {

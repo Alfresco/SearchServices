@@ -6,7 +6,7 @@ import org.alfresco.utility.data.provider.XMLTestData;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.exception.TestConfigurationException;
 import org.alfresco.utility.model.QueryModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -50,7 +50,7 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
 
-    @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
+    @Test(groups = { TestGroup.CMIS },
             dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", dependsOnMethods = "prepareDataForSearchById")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-id.xml")
     public void executeSortedSearchByID(QueryModel query) throws Exception
