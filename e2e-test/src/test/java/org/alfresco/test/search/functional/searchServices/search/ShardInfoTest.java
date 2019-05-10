@@ -64,24 +64,24 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
             assertEquals(model.getShardMethod(), "DB_ID");
             assertTrue(model.getHasContent());
 
-            AssertJUnit.assertTrue(stores.contains(model.getStores()));
+            assertTrue(stores.contains(model.getStores()));
 
             List<RestShardModel> shards = model.getShards();
-            AssertJUnit.assertNotNull(shards);
+            assertNotNull(shards);
             RestShardModel shard = shards.iterator().next();
-            AssertJUnit.assertNotNull(shard);
+            assertNotNull(shard);
             List<RestInstanceModel> instances = shard.getInstances();
-            AssertJUnit.assertNotNull(instances);
+            assertNotNull(instances);
             RestInstanceModel instance = instances.iterator().next();
-            AssertJUnit.assertNotNull(instance);
+            assertNotNull(instance);
 
-            AssertJUnit.assertTrue(baseUrls.contains(instance.getBaseUrl()));
+            assertTrue(baseUrls.contains(instance.getBaseUrl()));
 
             // TODO: Ideally Solr Host and Port should be Parameterised
-            AssertJUnit.assertEquals(instance.getHost(), "search");
-            AssertJUnit.assertEquals(instance.getPort().intValue(), 8983);
-            AssertJUnit.assertEquals(instance.getState(), "ACTIVE");
-            AssertJUnit.assertEquals(instance.getMode(), "MASTER");
+            assertEquals(instance.getHost(), "search");
+            assertEquals(instance.getPort().intValue(), 8983);
+            assertEquals(instance.getState(), "ACTIVE");
+            assertEquals(instance.getMode(), "MASTER");
         }
     }
 
@@ -105,18 +105,18 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
             assertEquals(model.getShardMethod(), "DB_ID");
             assertTrue(model.getHasContent());
 
-            AssertJUnit.assertTrue(stores.contains(model.getStores()));
+            assertTrue(stores.contains(model.getStores()));
 
             List<RestShardModel> shards = model.getShards();
-            AssertJUnit.assertNotNull(shards);
+            assertNotNull(shards);
             RestShardModel shard = shards.iterator().next();
-            AssertJUnit.assertNotNull(shard);
+            assertNotNull(shard);
             List<RestInstanceModel> instances = shard.getInstances();
-            AssertJUnit.assertNotNull(instances);
+            assertNotNull(instances);
             RestInstanceModel instance = instances.iterator().next();
-            AssertJUnit.assertNotNull(instance);
+            assertNotNull(instance);
 
-            AssertJUnit.assertTrue(baseUrls.contains(instance.getBaseUrl()));
+            assertTrue(baseUrls.contains(instance.getBaseUrl()));
 
             restClient.assertStatusCodeIs(HttpStatus.OK);
         }
