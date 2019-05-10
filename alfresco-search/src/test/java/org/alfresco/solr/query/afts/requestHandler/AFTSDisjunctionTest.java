@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
-import org.alfresco.solr.query.afts.TestDataProvider;
+import org.alfresco.solr.dataload.TestDataProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
