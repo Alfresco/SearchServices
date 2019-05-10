@@ -33,7 +33,7 @@ import org.alfresco.rest.search.RestInstanceModel;
 import org.alfresco.rest.search.RestShardInfoModel;
 import org.alfresco.rest.search.RestShardInfoModelCollection;
 import org.alfresco.rest.search.RestShardModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.springframework.http.HttpStatus;
 
 /**

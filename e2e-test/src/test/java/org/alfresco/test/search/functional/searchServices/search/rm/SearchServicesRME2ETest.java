@@ -9,7 +9,7 @@ package org.alfresco.test.search.functional.searchServices.search.rm;
 
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;

@@ -35,7 +35,7 @@ import org.alfresco.rest.search.RestRequestFacetFieldsModel;
 import org.alfresco.rest.search.RestRequestPivotModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -62,7 +62,7 @@ public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks errors with pivot using Search api")
     public void searchWithPivotingErrors()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         List<RestRequestFacetFieldModel> list = new ArrayList<>();
@@ -95,7 +95,7 @@ public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks with pivot using Search api")
     public void searchWithPivoting()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         List<RestRequestFacetFieldModel> list = new ArrayList<>();
@@ -124,7 +124,7 @@ public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks nested pivot using Search api")
     public void searchWithNestedPivoting()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         List<RestRequestFacetFieldModel> list = new ArrayList<>();
@@ -181,7 +181,7 @@ public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks range pivots using Search api")
     public void searchWithRangePivoting()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
         
         String endDate = LocalDateTime.now()
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")); //the car document is created at runtime, so to include it in range facets end date must be now
@@ -245,7 +245,7 @@ public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
               description = "Checks with pivot using Search api and a label as a key")
     public void searchWithPivotingUsingLabel()
     {
-        SearchRequest query = carsQuery();
+        SearchRequest query = createQuery("cars");
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         List<RestRequestFacetFieldModel> list = new ArrayList<>();
         RestRequestFacetFieldModel creatorFacetFieldModel = new RestRequestFacetFieldModel("creator");

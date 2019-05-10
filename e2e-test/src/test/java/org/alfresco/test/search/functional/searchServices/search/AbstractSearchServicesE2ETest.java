@@ -18,17 +18,11 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
-import org.alfresco.rest.search.SearchRequest;
-import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-
-import javax.naming.AuthenticationException;
 
 /**
  * Abstract Search test class that contains useful methods
@@ -188,3 +182,6 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         return resultAsExpected;
     }
 }
+
+}
+
