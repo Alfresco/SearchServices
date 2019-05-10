@@ -119,7 +119,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check basic facet range search api")
-    public void searchWithRange()throws Exception
+    public void searchWithRangePreASS121()throws Exception
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
@@ -164,7 +164,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check date facet intervals search api")
-    public void searchWithRangeHardend()throws Exception
+    public void searchWithRangeHardendPreASS121()throws Exception
     {
         SearchRequest query = createQuery("A*");
 
@@ -222,7 +222,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check date facet intervals search api")
-    public void searchDateRange()throws Exception
+    public void searchDateRangePreASS121()throws Exception
     {
         SearchRequest query = createQuery("name:A*");
 
@@ -257,7 +257,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check date facet intervals search api")
-    public void searchDateAndSizeRanges()throws Exception
+    public void searchDateAndSizeRangesPreASS121()throws Exception
     {
         SearchRequest query = createQuery("name:A*");
         List<RestRequestRangesModel> ranges = new ArrayList<RestRequestRangesModel>();
@@ -280,7 +280,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 	@Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.PreASS_121  }, executionType = ExecutionType.REGRESSION,
               description = "Check basic facet range search api")
-    public void searchWithRangeAndIncludeUpperBound()throws Exception
+    public void searchWithRangeAndIncludeUpperBoundPreASS121()throws Exception
     {
         SearchRequest query = createQuery("A*");
 
@@ -340,7 +340,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
-    public void searchWithRangeV2()
+    public void searchWithRange()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
@@ -395,7 +395,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     @SuppressWarnings("unchecked")
-    public void searchWithRangeHardendV2()
+    public void searchWithRangeHardend()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
@@ -455,7 +455,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     @SuppressWarnings("unchecked")
-    public void searchDateRangeV2()
+    public void searchDateRange()
     {
         SearchRequest query = createQuery("name:A*");
 
@@ -490,7 +490,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
-    public void searchDateAndSizeRangesV2()
+    public void searchDateAndSizeRanges()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
         List<RestRequestRangesModel> ranges = new ArrayList<>();
@@ -513,7 +513,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_121  }, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
-    public void searchWithRangeAndIncludeUpperBoundV2()
+    public void searchWithRangeAndIncludeUpperBound()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
 
