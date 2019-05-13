@@ -1,6 +1,6 @@
 package org.alfresco.solr.query.afts.requestHandler;
 
-import org.alfresco.solr.query.afts.TestDataProvider;
+import org.alfresco.solr.dataload.TestDataProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

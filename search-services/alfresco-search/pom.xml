@@ -75,13 +75,19 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
+            <version>1.7.26</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.12</version>
+            <version>1.7.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+            <version>1.1.6</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -95,7 +101,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.23.0</version>
+            <version>2.27.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -108,28 +114,13 @@
         <dependency>
             <groupId>com.carrotsearch.randomizedtesting</groupId>
             <artifactId>randomizedtesting-runner</artifactId>
-            <version>2.5.0</version>
+            <version>2.7.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-client-impl</artifactId>
-            <version>0.11.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!--  NLP  -->
-        <dependency>
-            <groupId>edu.emory.mathcs.nlp</groupId>
-            <artifactId>nlp4j</artifactId>
-            <version>1.1.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>edu.emory.mathcs.nlp</groupId>
-            <artifactId>nlp4j-english</artifactId>
-            <version>1.1.2</version>
+            <version>1.1.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -140,7 +131,9 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <includes>
+                	<!-- Sets the VM argument line used when unit tests are run. -->
+                	<argLine>${surefireArgLine}</argLine>
+                	<includes>
                          <include>**/*Suite.java</include>
                          <include>**/*Test.java</include>
                     </includes>
@@ -267,6 +260,54 @@
                     </execution>
                 </executions>
             </plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>**/AnnotationWriter.*</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+		
+					<!-- Prepares the property pointing to the JaCoCo runtime agent which 
+						is passed as VM argument when Maven the Surefire plugin is executed. -->
+					<execution>
+						<id>pre-unit-test</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<!-- Sets the path to the file which contains the execution data. -->
+							<destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+							<!-- Sets the name of the property containing the settings for JaCoCo 
+								runtime agent. -->
+							<propertyName>surefireArgLine</propertyName>
+						</configuration>
+					</execution>
+		
+					<!-- Ensures that the code coverage report for unit tests is created after 
+						unit tests have been run. -->
+					<execution>
+						<id>post-unit-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<excludes>
+								<exclude>**/AnnotationWriter.*</exclude>
+							</excludes>
+							<!-- Sets the path to the file which contains the execution data. -->
+							<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+							<!-- Sets the output directory for the code coverage report. -->
+							<outputDirectory>${project.build.directory}/site/jacoco-ut</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
         </plugins>
     </build>
 </project>

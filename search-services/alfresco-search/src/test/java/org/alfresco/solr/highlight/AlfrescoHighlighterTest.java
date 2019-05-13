@@ -310,23 +310,6 @@ public class AlfrescoHighlighterTest extends AbstractAlfrescoSolrTests
 
 
         logger.info("######### MultiTerm ###########");
-
-        req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
-                HighlightParams.HIGHLIGHT, "true",
-                HighlightParams.Q, "lon*",
-                HighlightParams.FIELDS, "name",
-                HighlightParams.HIGHLIGHT_MULTI_TERM, "false",
-                HighlightParams.SIMPLE_PRE, "{",
-                HighlightParams.SIMPLE_POST, "}",
-                HighlightParams.SNIPPETS, String.valueOf(1),
-                HighlightParams.FRAGSIZE, String.valueOf(100)),
-                "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
-
-        assertQ(req,
-                "*[count(//lst[@name='highlighting']/lst)=2]",
-                "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=0]",
-                "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]");
-        
    
         logger.info("######### CamelCase ###########");
 

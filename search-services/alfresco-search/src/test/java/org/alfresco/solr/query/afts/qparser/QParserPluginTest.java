@@ -30,7 +30,7 @@ import static org.alfresco.model.ContentModel.TYPE_THUMBNAIL;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.query.afts.TestDataProvider;
+import org.alfresco.solr.dataload.TestDataProvider;
 import org.alfresco.util.CachingDateFormat;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
@@ -293,7 +293,8 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
         assertAQuery("TEXT:\"alf?????\"", 1);
         assertAQuery("TEXT:\"al??????\"", 1);
         assertAQuery("TEXT:\"a???????\"", 1);
-        assertAQuery("TEXT:\"????????\"", 1);
+        // it finds thirteen and fourteen in cm:names. file fourteen contains alfresco in content.
+        assertAQuery("TEXT:\"????????\"", 2);
         assertAQuery("TEXT:\"a??re???\"", 1);
         assertAQuery("TEXT:\"?lfresco\"", 1);
         assertAQuery("TEXT:\"??fresco\"", 1);
@@ -321,7 +322,8 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
         assertAQuery("TEXT:\"*esco\"", 1);
         assertAQuery("TEXT:\"*sco\"", 1);
         assertAQuery("TEXT:\"*co\"", 1);
-        assertAQuery("TEXT:\"*o\"", 1);
+        // it finds cm:name:two and file fourteen because of content
+        assertAQuery("TEXT:\"*o\"", 2);
         assertAQuery("TEXT:\"****lf**sc***\"", 1);
         assertAQuery("TEXT:\"??lf**sc***\"", 0);
         assertAQuery("TEXT:\"alfresc*tutorial\"", 0);
@@ -426,8 +428,10 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     @Test
     public void nonFields() 
     {
+        /* the query is executed on cm:name, cm:title, cm:description and cm:content
+         * TEXT:fo* finds nodes with names four and fourteen  */
         assertAQuery("TEXT:fox", 1);
-        assertAQuery("TEXT:fo*", 1);
+        assertAQuery("TEXT:fo*", 2);
         assertAQuery("TEXT:f*x", 1);
         assertAQuery("TEXT:*ox", 1);
 

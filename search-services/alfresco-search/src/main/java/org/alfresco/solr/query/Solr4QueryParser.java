@@ -38,7 +38,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -72,6 +73,7 @@ import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.component.FingerPrintComponent;
 import org.alfresco.solr.content.SolrContentStore;
+import org.alfresco.solr.utils.ThrowingFunction;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.Pair;
 import org.alfresco.util.SearchLanguageConversion;
@@ -405,22 +407,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             throw new UnsupportedOperationException("Span is not supported for " + FIELD_PATHWITHREPEATS);
         } else if (field.equals(FIELD_TEXT))
         {
-            Set<String> text = searchParameters.getTextAttributes();
-            if ((text == null) || (text.size() == 0))
-            {
-                Query query = getSpanQuery(PROPERTY_FIELD_PREFIX + ContentModel.PROP_CONTENT.toString(), first, last,
-                        slop, inOrder);
-                return query;
-            } else
-            {
-                BooleanQuery.Builder query = new BooleanQuery.Builder();
-                for (String fieldName : text)
-                {
-                    Query part = getSpanQuery(fieldName, first, last, slop, inOrder);
-                    query.add(part, Occur.SHOULD);
-                }
-                return query.build();
-            }
+            return createDefaultTextQuery(textField -> getSpanQuery(textField, first, last, slop, inOrder));
         } else if (field.equals(FIELD_CLASS))
         {
             throw new UnsupportedOperationException("Span is not supported for " + FIELD_CLASS);
@@ -1485,35 +1472,46 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         return createTermQuery(field, queryText);
     }
 
+
+
+    /**
+     *
+     *  Get generic text query
+     *
+     *
+     */
+    protected Query createDefaultTextQuery(ThrowingFunction<String, Query, ParseException> getQuery) throws ParseException
+    {
+
+        Set<String> text = searchParameters.getTextAttributes();
+        if (text == null || text.isEmpty())
+        {
+            text = Stream.of(AlfrescoDefaultTextFields.values())
+                    .map(t -> PROPERTY_FIELD_PREFIX + t.getFieldName())
+                    .collect(Collectors.toSet());
+        }
+
+        BooleanQuery.Builder query = new BooleanQuery.Builder();
+        for (String fieldName : text)
+        {
+            Query part = getQuery.apply(fieldName);
+            if (part != null)
+            {
+                query.add(part, Occur.SHOULD);
+            } else
+            {
+                query.add(createNoMatchQuery(), Occur.SHOULD);
+            }
+        }
+        return query.build();
+
+    }
+
+
     protected Query createTextQuery(String queryText, AnalysisMode analysisMode, LuceneFunction luceneFunction)
             throws ParseException
     {
-        Set<String> text = searchParameters.getTextAttributes();
-        if ((text == null) || (text.size() == 0))
-        {
-            Query query = getFieldQuery(PROPERTY_FIELD_PREFIX + ContentModel.PROP_CONTENT.toString(), queryText,
-                    analysisMode, luceneFunction);
-            if (query == null)
-            {
-                return createNoMatchQuery();
-            }
-            return query;
-        } else
-        {
-            BooleanQuery.Builder query = new BooleanQuery.Builder();
-            for (String fieldName : text)
-            {
-                Query part = getFieldQuery(fieldName, queryText, analysisMode, luceneFunction);
-                if (part != null)
-                {
-                    query.add(part, Occur.SHOULD);
-                } else
-                {
-                    query.add(createNoMatchQuery(), Occur.SHOULD);
-                }
-            }
-            return query.build();
-        }
+        return createDefaultTextQuery(textField -> getFieldQuery(textField, queryText, analysisMode, luceneFunction));
     }
 
     @SuppressWarnings("unchecked")
@@ -2951,34 +2949,10 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             throw new UnsupportedOperationException("Range Queries are not support for " + FIELD_PATHWITHREPEATS);
         } else if (field.equals(FIELD_TEXT))
         {
-            Set<String> text = searchParameters.getTextAttributes();
-            if ((text == null) || (text.size() == 0))
-            {
-                Query query = getRangeQuery(PROPERTY_FIELD_PREFIX + ContentModel.PROP_CONTENT.toString(), part1, part2,
-                        includeLower, includeUpper, analysisMode, luceneFunction);
-                if (query == null)
-                {
-                    return createNoMatchQuery();
-                }
 
-                return query;
-            } else
-            {
-                BooleanQuery.Builder query = new BooleanQuery.Builder();
-                for (String fieldName : text)
-                {
-                    Query part = getRangeQuery(fieldName, part1, part2, includeLower, includeUpper, analysisMode,
-                            luceneFunction);
-                    if (part != null)
-                    {
-                        query.add(part, Occur.SHOULD);
-                    } else
-                    {
-                        query.add(createNoMatchQuery(), Occur.SHOULD);
-                    }
-                }
-                return query.build();
-            }
+            return createDefaultTextQuery(textField -> getRangeQuery(textField, part1, part2, includeLower,
+                    includeUpper, analysisMode, luceneFunction));
+
 
         } else if (field.equals(FIELD_CASCADETX))
         {
@@ -3384,33 +3358,9 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             throw new UnsupportedOperationException("Prefix Queries are not support for " + FIELD_PATHWITHREPEATS);
         } else if (field.equals(FIELD_TEXT))
         {
-            Set<String> text = searchParameters.getTextAttributes();
-            if ((text == null) || (text.size() == 0))
-            {
-                Query query = getPrefixQuery(PROPERTY_FIELD_PREFIX + ContentModel.PROP_CONTENT.toString(), termStr,
-                        analysisMode);
-                if (query == null)
-                {
-                    return createNoMatchQuery();
-                }
 
-                return query;
-            } else
-            {
-                BooleanQuery.Builder query = new BooleanQuery.Builder();
-                for (String fieldName : text)
-                {
-                    Query part = getPrefixQuery(fieldName, termStr, analysisMode);
-                    if (part != null)
-                    {
-                        query.add(part, Occur.SHOULD);
-                    } else
-                    {
-                        query.add(createNoMatchQuery(), Occur.SHOULD);
-                    }
-                }
-                return query.build();
-            }
+            return createDefaultTextQuery(textField -> getPrefixQuery(textField, termStr, analysisMode));
+
         } else if (field.equals(FIELD_ID))
         {
             boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
@@ -3572,33 +3522,9 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             throw new UnsupportedOperationException("Wildcard Queries are not support for " + FIELD_PATHWITHREPEATS);
         } else if (field.equals(FIELD_TEXT))
         {
-            Set<String> text = searchParameters.getTextAttributes();
-            if ((text == null) || (text.size() == 0))
-            {
-                Query query = getWildcardQuery(PROPERTY_FIELD_PREFIX + ContentModel.PROP_CONTENT.toString(), termStr,
-                        analysisMode);
-                if (query == null)
-                {
-                    return createNoMatchQuery();
-                }
 
-                return query;
-            } else
-            {
-                BooleanQuery.Builder query = new BooleanQuery.Builder();
-                for (String fieldName : text)
-                {
-                    Query part = getWildcardQuery(fieldName, termStr, analysisMode);
-                    if (part != null)
-                    {
-                        query.add(part, Occur.SHOULD);
-                    } else
-                    {
-                        query.add(createNoMatchQuery(), Occur.SHOULD);
-                    }
-                }
-                return query.build();
-            }
+            return createDefaultTextQuery(textField -> getWildcardQuery(textField, termStr, analysisMode));
+
         } else if (field.equals(FIELD_ID))
         {
             boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
@@ -3755,33 +3681,9 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             throw new UnsupportedOperationException("Fuzzy Queries are not support for " + FIELD_PATHWITHREPEATS);
         } else if (field.equals(FIELD_TEXT))
         {
-            Set<String> text = searchParameters.getTextAttributes();
-            if ((text == null) || (text.size() == 0))
-            {
-                Query query = getFuzzyQuery(PROPERTY_FIELD_PREFIX + ContentModel.PROP_CONTENT.toString(), termStr,
-                        minSimilarity);
-                if (query == null)
-                {
-                    return createNoMatchQuery();
-                }
 
-                return query;
-            } else
-            {
-                BooleanQuery.Builder query = new BooleanQuery.Builder();
-                for (String fieldName : text)
-                {
-                    Query part = getFuzzyQuery(fieldName, termStr, minSimilarity);
-                    if (part != null)
-                    {
-                        query.add(part, Occur.SHOULD);
-                    } else
-                    {
-                        query.add(createNoMatchQuery(), Occur.SHOULD);
-                    }
-                }
-                return query.build();
-            }
+            return createDefaultTextQuery(textField -> getFuzzyQuery(textField, termStr, minSimilarity));
+
         } else if (field.equals(FIELD_ID) || field.equals(FIELD_DBID) || field.equals(FIELD_ISROOT)
                 || field.equals(FIELD_ISCONTAINER) || field.equals(FIELD_ISNODE) || field.equals(FIELD_TX)
                 || field.equals(FIELD_PARENT) || field.equals(FIELD_PRIMARYPARENT) || field.equals(FIELD_QNAME)

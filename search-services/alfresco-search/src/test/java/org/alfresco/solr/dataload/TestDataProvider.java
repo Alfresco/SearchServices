@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.query.afts;
+package org.alfresco.solr.dataload;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.IntStream.range;
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.model.ContentModel.ASSOC_CHILDREN;
 import static org.alfresco.model.ContentModel.PROP_NAME;
@@ -28,6 +29,8 @@ import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_
 import static org.alfresco.solr.AlfrescoSolrUtils.addNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -39,19 +42,27 @@ import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrConstants;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.MLTextPropertyValue;
 import org.alfresco.solr.client.MultiPropertyValue;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.ISO9075;
+import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.util.TestHarness;
 
+import java.util.AbstractMap;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Test datasets provider.
@@ -853,6 +864,14 @@ public class TestDataProvider implements AlfrescoSolrConstants
         orderDate = Duration.subtract(orderDate, new Duration("P1D"));
         orderTextCount++;
         return testProperties;
+    }
+
+    public static Map.Entry<List<Node>, List<NodeMetaData>> nSampleNodesWithSampleContent(Acl acl, Transaction txn, int howManyNodes) {
+
+        List<Node> nodes = range(0, howManyNodes).mapToObj(index -> getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED)).collect(Collectors.toList());
+        List<NodeMetaData> metadata = nodes.stream().map(node -> getNodeMetaData(node, txn, acl, "mike", null, false)).collect(Collectors.toList());
+
+        return new AbstractMap.SimpleImmutableEntry<>(nodes, metadata);
     }
 
     public NodeRef newNodeRef()
