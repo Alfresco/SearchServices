@@ -145,6 +145,7 @@ import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.FacetParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -1783,6 +1784,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+
     @Override
     public void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, JSONException
     {
@@ -1889,6 +1891,7 @@ public class SolrInformationServer implements InformationServer
 
                             continue;
                         }
+
 
                         AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
                         addDocCmd.overwrite = overwrite;
@@ -2352,6 +2355,10 @@ public class SolrInformationServer implements InformationServer
         
         if (cachedDoc != null)
         {
+            ofNullable(cachedDoc.getField("MINHASH"))
+                    .map(SolrInputField::getValue)
+                    .ifPresent(minHash -> newDoc.setField("MINHASH", minHash));
+
             // Builds up the new solr doc from the cached content regardless of whether or not it is current
             List<FieldInstance> fields = AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(
                         propertyQName).getFields();
@@ -2654,9 +2661,16 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+
+    /**
+     * Index information of a node that does not belong to the current shard.
+     * These information are necessary for cascade tracker to work properly.
+     * The information stored are:
+     *      nodeDocumentId, cascadeTx
+     */
     private void indexNonShardCascade(NodeMetaData nodeMetaData) throws IOException
     {
-        canUpdate();
+
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = newSolrQueryRequest())
         {
@@ -2668,7 +2682,7 @@ public class SolrInformationServer implements InformationServer
             SolrInputDocument input = new SolrInputDocument();
             input.addField(FIELD_SOLR4_ID, AlfrescoSolrDataModel.getNodeDocumentId(nodeMetaData.getTenantDomain(), nodeMetaData.getAclId(), nodeMetaData.getId()));
             input.addField(FIELD_VERSION, 0);
-            input.addField(fieldInstance.getField(), stringPropertyValue.toString());
+            input.addField(fieldInstance.getField(), stringPropertyValue.getValue());
             cmd.solrDoc = input;
             processor.processAdd(cmd);
 
