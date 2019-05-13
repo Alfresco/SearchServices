@@ -1,22 +1,26 @@
 # Docker Compose Reference for ACS 6.x
 
-This project includes a catalog of Docker Compose files for ACS 6.x Enterprise and Community versions:
+This project includes default configuration for ACS Community 6.1 and Search Services 1.2 using Plain HTTP communication between Repository and SOLR
 
-* `community`
+## Running Docker Compose
 
-  * `docker-compose.yml` Template for ACS Community 6.1 and Search Services 1.3 with plain HTTP communication between Repository and SOLR
+Docker can be started using default command.
 
-  * `docker-compose-ssl.yml` Template for ACS Community 6.1 and Search Services 1.3 with Mutual TLS communication between Repository and SOLR
+```bash
+$ docker-compose up --build
+```
 
-* `enterprise`
+Alfresco will be available at:
 
-  * `docker-compose.yml` Template for ACS Enterprise 6.1 and Insight Engine 1.1 with plain HTTP communication between Repository and SOLR
+http://localhost:8082/alfresco
 
-  * `docker-compose-ssl.yml` Template for ACS Enterprise 6.1 and Insight Engine 1.1 with Mutual TLS communication between Repository and SOLR
+http://localhost:8080/share
 
-Using **enterprise** Docker Images requires `quay.io` credentials. Every customer or partner can ask for credentials at [Alfresco Support](https://support.alfresco.com).
+http://localhost:8083/solr
+
+Plain HTTP Communication from SOLR is targeted inside Docker Network to http://alfresco:8080/alfresco
 
 
-## Generation Tool for custom SSL Certificates
+**Mutual TLS/SSL Communication**
 
-A simple Script has been included in `ssl-tool` folder in order to generate custom *truststores*, *keystores* and *certificates*.
+Folder `ssl` includes default TLS/SSL Communication between SOLR and Repository.

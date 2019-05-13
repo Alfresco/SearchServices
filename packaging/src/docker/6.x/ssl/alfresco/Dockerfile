@@ -1,4 +1,5 @@
-FROM alfresco/alfresco-content-repository-community:6.1.2-ga
+ARG ALFRESCO_TAG
+FROM alfresco/alfresco-content-repository-community:${ALFRESCO_TAG}
 
 USER root
 
