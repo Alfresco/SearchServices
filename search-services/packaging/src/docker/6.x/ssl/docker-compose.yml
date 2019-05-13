@@ -10,7 +10,10 @@ version: "2"
 
 services:
     alfresco:
-        build: ./alfresco
+        build:
+          context: ./alfresco
+          args:
+            ALFRESCO_TAG: ${ALFRESCO_TAG}
         mem_limit: 1500m
         environment:
             JAVA_OPTS : "
@@ -36,7 +39,7 @@ services:
             - 8443:8443
 
     share:
-        image: alfresco/alfresco-share:6.1.0
+        image: alfresco/alfresco-share:${SHARE_TAG}
         mem_limit: 1g
         environment:
             - REPO_HOST=alfresco
@@ -46,7 +49,7 @@ services:
             - 8080:8080
 
     postgres:
-        image: postgres:10.1
+        image: postgres:${POSTGRES_TAG}
         mem_limit: 1500m
         environment:
             - POSTGRES_PASSWORD=alfresco
@@ -57,7 +60,10 @@ services:
             - 5432:5432
 
     solr6:
-        build: ./solr6
+        build:
+          context: ./solr6
+          args:
+            - SEARCH_TAG=${SEARCH_TAG}
         mem_limit: 2500m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -94,7 +100,7 @@ services:
             - ./solr6/keystore:/opt/alfresco-search-services/keystore
 
     activemq:
-        image: alfresco/alfresco-activemq:5.15.8
+        image: alfresco/alfresco-activemq:${ACTIVE_MQ_TAG}
         mem_limit: 2048m
         ports:
             - 8161:8161 # Web Console

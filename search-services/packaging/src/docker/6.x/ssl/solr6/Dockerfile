@@ -1,4 +1,5 @@
-FROM quay.io/alfresco/insight-engine:1.1.0.1
+ARG SEARCH_TAG
+FROM alfresco/alfresco-search-services:${SEARCH_TAG}
 
 # Configure SOLR cores to run in HTTPs mode from template
 RUN sed -i '/^bash.*/i sed -i "'"s/alfresco.secureComms=none/alfresco.secureComms=https/g"'" ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
