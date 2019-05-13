@@ -184,6 +184,27 @@ services:
         volumes:
             - ./solr6/keystore:/opt/alfresco-insight-engine/keystore
 
+    zeppelin:
+        build: ./zeppelin
+        environment:
+            REPO_PROTOCOL: "https"
+            REPO_HOST: "alfresco"
+            REPO_PORT: "8443"
+            JAVA_OPTS: "
+                -Dalfresco.enable.ssl=true
+                -Dsolr.ssl.checkPeerName=false
+                -Djavax.net.ssl.keyStore=/zeppelin/keystore/ssl.repo.client.keystore
+                -Djavax.net.ssl.keyStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.keyStoreType=JCEKS
+                -Djavax.net.ssl.trustStore=/zeppelin/keystore/ssl.repo.client.truststore
+                -Djavax.net.ssl.trustStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.trustStoreType=JCEKS
+            "
+        ports:
+            - 9090:9090
+        volumes:
+            - ./zeppelin/keystore:/zeppelin/keystore
+
     activemq:
         image: alfresco/alfresco-activemq:5.15.8
         mem_limit: 1g
