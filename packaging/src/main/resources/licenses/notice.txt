@@ -35,7 +35,7 @@ json-20160212.jar       http://code.google.com/p/json-simple/
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
 neethi-3.0.3.jar        http://ws.apache.org/commons/neethi/
 commons-logging-1.2.jar http://jakarta.apache.org/commons/
-commons-lang3-3.8.1.jar   http://jakarta.apache.org/commons/
+commons-lang3-3.9.jar http://jakarta.apache.org/commons/
 mybatis-3.3.0.jar       http://www.mybatis.org/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
