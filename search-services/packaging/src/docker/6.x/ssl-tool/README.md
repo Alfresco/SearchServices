@@ -38,7 +38,7 @@ keystores
 ```
 
 * `alfresco` files must be copied to "alfresco/keystore" folder in Docker Compose template project (any existing file must be overwritten)
-* `solr` files must be copied to "solr6/keystore" folder in Docker Compose template project  (any existing file must be overwritten)
+* `solr` files must be copied to "solr6/keystore" folder and "zeppelin/keystore" folder (for Enterprise) in Docker Compose template project (any existing file must be overwritten)
 * `client` files can be used from a browser to access the server using HTTPS in port 8443
 
 ## Dependencies
