@@ -20,6 +20,8 @@ Every *truststores*, *keystores* and *certificates* are copied from sources.
 
 * **solr6** includes a `Dockerfile` to set *https* communications and to provide a volume for the keystore. The keystore folder includes default certificates for SOLR server copied from source code (`alfresco-search`)
 
+* **zeppelin** includes a `Dockerfile` to provide a volume for the keystore. The keystore folder includes default certificates for SOLR server copied from source code (`alfresco-search`)
+
 ```
 ├── alfresco
 │   ├── Dockerfile
@@ -32,11 +34,16 @@ Every *truststores*, *keystores* and *certificates* are copied from sources.
 │       └── ssl.truststore
 ├── docker-compose-ssl.yml
 ├── docker-compose.yml
-└── solr6
+├── solr6
+│   ├── Dockerfile
+│   └── keystore
+│       ├── ssl-keystore-passwords.properties
+│       ├── ssl-truststore-passwords.properties
+│       ├── ssl.repo.client.keystore
+│       └── ssl.repo.client.truststore
+└── zeppelin
     ├── Dockerfile
     └── keystore
-        ├── ssl-keystore-passwords.properties
-        ├── ssl-truststore-passwords.properties
         ├── ssl.repo.client.keystore
         └── ssl.repo.client.truststore
 ```
@@ -62,7 +69,9 @@ http://localhost:8080/share
 
 http://localhost:8083/solr
 
-Plain HTTP Communication from SOLR is targeted inside Docker Network to http://alfresco:8080/alfresco
+http://localhost:9090/zeppelin
+
+Plain HTTP Communication from SOLR and Zeppelin (JDBC Driver) is targeted inside Docker Network to http://alfresco:8080/alfresco
 
 
 **Mutual TLS (SSL)**
@@ -83,4 +92,6 @@ http://localhost:8080/share
 
 https://localhost:8083/solr
 
-SSL Communication from SOLR is targeted inside Docker Network to https://alfresco:8443/alfresco
+http://localhost:9090/zeppelin
+
+SSL Communication from SOLR and Zeppelin (JDBC Driver) is targeted inside Docker Network to https://alfresco:8443/alfresco
