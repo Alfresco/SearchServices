@@ -22,6 +22,7 @@
       <maven.compiler.source>${java.version}</maven.compiler.source>
       <maven.compiler.target>${java.version}</maven.compiler.target>
       <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+      <jackson.databind.version>2.8.3</jackson.databind.version>
    </properties>
    <build>
       <plugins>
@@ -82,7 +83,7 @@
        <dependency>
            <groupId>com.fasterxml.jackson.core</groupId>
            <artifactId>jackson-databind</artifactId>
-            <version>2.7.7</version>
+            <version>${jackson.databind.version}</version>
        </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
