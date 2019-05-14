@@ -57,7 +57,8 @@ services:
             - 5432:5432
 
     solr6:
-        image: alfresco/alfresco-search-services:${SEARCH_TAG}
+        # Also alfresco/alfresco-search-services:${SEARCH_TAG} can be used for external developers
+        image: quay.io/alfresco/search-services:${SEARCH_TAG}
         mem_limit: 2500m
         environment:
             #Solr needs to know how to register itself with Alfresco
