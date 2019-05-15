@@ -42,7 +42,7 @@ public class SpecialCharacterSearchTest extends AbstractE2EFunctionalTest
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_52n, TestGroup.ACS_60n, TestGroup.ACS_61n })
     @Bug(id = "MNT-20507")
-    public void indexDELChar() throws Exception
+    public void testIndexDELChar() throws Exception
     {
         FileModel file = new FileModel("Delete char\u007Ffile", FileType.TEXT_PLAIN, "content of \u007F file");
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
