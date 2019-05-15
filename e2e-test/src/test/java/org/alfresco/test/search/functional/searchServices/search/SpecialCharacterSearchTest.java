@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Alfresco Software Limited.
+ * Copyright (C) 2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,9 +40,9 @@ public class SpecialCharacterSearchTest extends AbstractE2EFunctionalTest
      * The goal is to check that the file is actually indexed in solr.
      * @throws Exception
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_52n, TestGroup.ACS_60n, TestGroup.ACS_61n })
     @Bug(id = "MNT-20507")
-    public void indexDeleteChar() throws Exception
+    public void indexDELChar() throws Exception
     {
         FileModel file = new FileModel("Delete char\u007Ffile", FileType.TEXT_PLAIN, "content of \u007F file");
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
