@@ -30,7 +30,7 @@ import static org.alfresco.model.ContentModel.TYPE_THUMBNAIL;
 
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.query.afts.TestDataProvider;
+import org.alfresco.solr.dataload.TestDataProvider;
 import org.alfresco.util.CachingDateFormat;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
