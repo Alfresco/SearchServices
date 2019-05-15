@@ -21,7 +21,7 @@ import javax.json.JsonArrayBuilder;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.model.RestTextResponse;
 import org.alfresco.test.search.functional.searchServices.search.AbstractSearchServicesE2ETest;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;

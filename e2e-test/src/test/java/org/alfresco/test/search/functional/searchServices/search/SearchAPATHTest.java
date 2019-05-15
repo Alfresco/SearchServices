@@ -29,7 +29,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

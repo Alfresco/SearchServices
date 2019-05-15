@@ -7,7 +7,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.QueryModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -55,7 +55,7 @@ public class SolrSearchInTreeTests extends AbstractCmisE2ETest
         dataContent.deleteSite(testSite);
     }
     
-    @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
+    @Test(groups = { TestGroup.CMIS },
             dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-in-tree.xml")
     public void executeCMISQuery(QueryModel query) throws Exception

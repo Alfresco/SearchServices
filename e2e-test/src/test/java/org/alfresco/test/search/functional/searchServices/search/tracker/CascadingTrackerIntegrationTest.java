@@ -15,7 +15,7 @@ import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +63,7 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
 
         // Find nodes where Path with new folder name matches
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + parentNewName + "\"";
-        boolean indexingInProgress = !waitForContent(parentQueryAfterRename, childFile.getName(), true);
+        boolean indexingInProgress = !isContentInSearchResults(parentQueryAfterRename, childFile.getName(), true);
 
         // Query using new parent name: Expect parent folder and child file
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
@@ -107,7 +107,7 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
         
         // Find nodes where Path with new folder name matches
         String parentQueryAfterRename = "NPATH:\"4/Company Home/Sites/" + testSite.getTitle() + "/documentLibrary/" + grandParentNewName + "\"";
-        boolean indexingInProgress = !waitForContent(parentQueryAfterRename, grandChildFile.getName(), true);
+        boolean indexingInProgress = !isContentInSearchResults(parentQueryAfterRename, grandChildFile.getName(), true);
 
         // Query using new parent name: Expect grand parent, child folder, grand child file
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
