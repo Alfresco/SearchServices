@@ -12,9 +12,9 @@ $ docker-compose up --build
 
 Alfresco will be available at:
 
-http://localhost:8082/alfresco
+http://localhost:8081/alfresco
 
-http://localhost:8080/share
+http://localhost:8082/share
 
 http://localhost:8083/solr
 
