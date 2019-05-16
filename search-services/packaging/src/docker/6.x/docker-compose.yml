@@ -32,8 +32,9 @@ services:
                 -Xms1g -Xmx1g
                 "
         ports:
-            - 8082:8080 #Browser port
-            - 8443:8443
+            - 7203:7203 # JMX
+            - 5005:5005 # Java debugging
+            - 8081:8080 # Browser port
 
     share:
         image: alfresco/alfresco-share:${SHARE_TAG}
@@ -43,7 +44,7 @@ services:
             - REPO_PORT=8080
             - "CATALINA_OPTS= -Xms500m -Xmx500m"
         ports:
-            - 8080:8080
+            - 8082:8080 # Browser port
 
     postgres:
         image: postgres:${POSTGRES_TAG}
@@ -71,7 +72,7 @@ services:
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
             SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
         ports:
-            - 8083:8983 #Browser port
+            - 8083:8983 # Browser port
 
     activemq:
         image: alfresco/alfresco-activemq:${ACTIVE_MQ_TAG}
