@@ -30,6 +30,7 @@ services:
                 -Ddeployment.method=DOCKER_COMPOSE
                 -Dcsrf.filter.enabled=false
                 -Xms1g -Xmx1g
+                -Dalfresco.restApi.basicAuthScheme=true
                 "
         ports:
             - 7203:7203 # JMX
