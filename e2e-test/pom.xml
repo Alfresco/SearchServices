@@ -12,7 +12,7 @@
    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
    <properties>
       <tas.rest.api.version>6.0.0.3</tas.rest.api.version>
-      <tas.cmis.api.version>6.0.0.1</tas.cmis.api.version>
+      <tas.cmis.api.version>6.0.0.0</tas.cmis.api.version>
       <tas.utility.version>2.0.10</tas.utility.version>
       <rm.version>2.6.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
@@ -22,6 +22,7 @@
       <maven.compiler.source>${java.version}</maven.compiler.source>
       <maven.compiler.target>${java.version}</maven.compiler.target>
       <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+      <jackson.databind.version>2.7.7</jackson.databind.version>
    </properties>
    <build>
       <plugins>
@@ -54,24 +55,24 @@
          <artifactId>restapi-test</artifactId>
          <version>${tas.rest.api.version}</version>
          <scope>test</scope>
-         <exclusions>
-         	<exclusion>
-         		<groupId>com.fasterxml.jackson.core</groupId>
-         		<artifactId>jackson-databind</artifactId>
-         	</exclusion>
-         </exclusions>
+          <exclusions>
+              <exclusion>
+                  <groupId>com.fasterxml.jackson.core</groupId>
+                  <artifactId>jackson-databind</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>cmis-test</artifactId>
          <version>${tas.cmis.api.version}</version>
          <scope>test</scope>
-         <exclusions>
-         	<exclusion>
-         		<groupId>com.fasterxml.jackson.core</groupId>
-         		<artifactId>jackson-databind</artifactId>
-         	</exclusion>
-         </exclusions>
+          <exclusions>
+              <exclusion>
+                  <groupId>com.fasterxml.jackson.core</groupId>
+                  <artifactId>jackson-databind</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
@@ -79,18 +80,23 @@
          <version>${rm.version}</version>
          <scope>test</scope>
       </dependency>
+       <dependency>
+           <groupId>com.fasterxml.jackson.core</groupId>
+           <artifactId>jackson-databind</artifactId>
+            <version>${jackson.databind.version}</version>
+       </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-rm-automation-community-rest-api</artifactId>
          <version>${rm.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
-         <exclusions>
-         	<exclusion>
-         		<groupId>com.fasterxml.jackson.core</groupId>
-         		<artifactId>jackson-databind</artifactId>
-         	</exclusion>
-         </exclusions>
+          <exclusions>
+              <exclusion>
+                  <groupId>com.fasterxml.jackson.core</groupId>
+                  <artifactId>jackson-databind</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
         <!-- alfresco tester settings -->
         <dependency>

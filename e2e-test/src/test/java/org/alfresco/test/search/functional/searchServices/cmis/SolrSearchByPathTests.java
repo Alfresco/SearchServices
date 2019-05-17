@@ -5,7 +5,7 @@ import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestData;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.QueryModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.search.TestGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -48,7 +48,7 @@ public class SolrSearchByPathTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
 
-    @Test(groups = { TestGroup.CMIS, TestGroup.QUERIES },
+    @Test(groups = { TestGroup.CMIS },
             dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-path.xml")
     public void executeSearchByPathQueries(QueryModel query) throws Exception
