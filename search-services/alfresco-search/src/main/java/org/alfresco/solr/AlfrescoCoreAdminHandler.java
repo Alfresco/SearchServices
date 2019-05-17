@@ -88,6 +88,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private static final String ARG_QUERY = "query";
     public static final String DATA_DIR_ROOT = "data.dir.root";
     public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
+    public static final String NUM_SHARDS = "num.shards";
+    public static final String REPLICATION_FACTOR = "replication.factor";
+    public static final String NODE_INSTANCE = "node.instance";
+    public static final String NUM_NODES = "num.nodes";
+    public static final String SHARD_IDS = "shard.ids";
     public static final String DEFAULT_TEMPLATE = "rerank";
 
     static final String ALFRESCO_CORE_NAME = "alfresco";
@@ -118,10 +123,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         LOGGER.info("Starting Alfresco core container services");
 
         trackerRegistry = new TrackerRegistry();
-        informationServers = new ConcurrentHashMap<String, InformationServer>();
+        informationServers = new ConcurrentHashMap<>();
         this.scheduler = new SolrTrackerScheduler(this);
 
         String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
+        int numShards = Integer.valueOf(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
+        int replicationFactor = Integer.valueOf(ConfigUtil.locateProperty(REPLICATION_FACTOR, "1"));
+        int nodeInstance = Integer.valueOf(ConfigUtil.locateProperty(NODE_INSTANCE, "1"));
+        int numNodes = Integer.valueOf(ConfigUtil.locateProperty(NUM_NODES, "1"));
+        String shardIds = ConfigUtil.locateProperty(SHARD_IDS, null);
         if (createDefaultCores != null && !createDefaultCores.isEmpty())
         {
             Runnable runnable = () ->
@@ -134,7 +144,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 {
                     //Don't care
                 }
-                setupNewDefaultCores(createDefaultCores);
+                setupNewDefaultCores(createDefaultCores, numShards, replicationFactor, nodeInstance, numNodes, shardIds);
             };
 
             Thread thread = new Thread(runnable);
@@ -149,7 +159,21 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     void setupNewDefaultCores(String names)
     {
+        setupNewDefaultCores(names, 1, 1, 1, 1, null);
+    }
 
+    /**
+     * Creates new default cores based on the "createDefaultCores" String passed in.
+     *
+     * @param names comma delimited list of core names that will be created.
+     * @param numShards The total number of shards.
+     * @param replicationFactor - Not sure why the core needs to know this.
+     * @param nodeInstance - Not sure why the core needs to know this.
+     * @param numNodes - Not sure why the core needs to know this.
+     * @param shardIds A comma separated list of shard ids for this core (or null).
+     */
+    void setupNewDefaultCores(String names, int numShards, int replicationFactor, int nodeInstance, int numNodes, String shardIds)
+    {
         try
         {
             List<String> coreNames =
@@ -163,23 +187,24 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     .map(String::trim)
                     .filter(coreName -> !coreName.isEmpty())
                     .forEach(coreName -> {
-                        LOGGER.info("Attempting to create default alfresco core: "+coreName);
+                        LOGGER.info("Attempting to create default alfresco core: {}", coreName);
+                        StoreRef storeRef;
                         switch (coreName)
                         {
                             case ARCHIVE_CORE_NAME:
-                                newDefaultCore(ARCHIVE_CORE_NAME,  StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,   DEFAULT_TEMPLATE, null, new SolrQueryResponse());
+                                storeRef = StoreRef.STORE_REF_ARCHIVE_SPACESSTORE;
                                 break;
                             case ALFRESCO_CORE_NAME:
-                                newDefaultCore(ALFRESCO_CORE_NAME, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DEFAULT_TEMPLATE, null, new SolrQueryResponse());
+                                storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
                                 break;
                             case VERSION_CORE_NAME:
-                                final String versionStoreProtocol = "workspace";
-                                final String versionStoreId = "version2Store";
-                                newDefaultCore(VERSION_CORE_NAME, new StoreRef(versionStoreProtocol, versionStoreId), DEFAULT_TEMPLATE, null, new SolrQueryResponse());
+                                storeRef = new StoreRef("workspace", "version2Store");
                                 break;
                             default:
-                                LOGGER.error("Invalid '" + ALFRESCO_DEFAULTS + "' permitted values are " + ALLOWED_CORE_NAMES);
+                                throw new AlfrescoRuntimeException("Invalid '" + ALFRESCO_DEFAULTS + "' permitted values are " + ALLOWED_CORE_NAMES);
                         }
+                        newCore(coreName, numShards, storeRef, DEFAULT_TEMPLATE, replicationFactor, nodeInstance,
+                                    numNodes, shardIds, null, new SolrQueryResponse());
                     });
         }
         catch (Exception exception)
@@ -189,7 +214,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     }
 
     /**
-     * Shutsdown services that exist outside of the core.
+     * Shut down services that exist outside of the core.
      */
     public void shutdown() 
     {
