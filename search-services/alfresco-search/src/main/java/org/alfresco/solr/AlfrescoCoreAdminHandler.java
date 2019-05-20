@@ -99,9 +99,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public static final String DATA_DIR_ROOT = "data.dir.root";
     public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
     public static final String NUM_SHARDS = "num.shards";
-    public static final String REPLICATION_FACTOR = "replication.factor";
-    public static final String NODE_INSTANCE = "node.instance";
-    public static final String NUM_NODES = "num.nodes";
     public static final String SHARD_IDS = "shard.ids";
     public static final String DEFAULT_TEMPLATE = "rerank";
 
@@ -141,9 +138,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
         int numShards = Integer.valueOf(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
-        int replicationFactor = Integer.valueOf(ConfigUtil.locateProperty(REPLICATION_FACTOR, "1"));
-        int nodeInstance = Integer.valueOf(ConfigUtil.locateProperty(NODE_INSTANCE, "1"));
-        int numNodes = Integer.valueOf(ConfigUtil.locateProperty(NUM_NODES, "1"));
         String shardIds = ConfigUtil.locateProperty(SHARD_IDS, null);
         if (createDefaultCores != null && !createDefaultCores.isEmpty())
         {
@@ -157,7 +151,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 {
                     //Don't care
                 }
-                setupNewDefaultCores(createDefaultCores, numShards, replicationFactor, nodeInstance, numNodes, shardIds);
+                setupNewDefaultCores(createDefaultCores, numShards, 1, 1, 1, shardIds);
             };
 
             Thread thread = new Thread(runnable);
