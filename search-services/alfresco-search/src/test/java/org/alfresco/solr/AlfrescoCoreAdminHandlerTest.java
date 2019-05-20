@@ -19,11 +19,20 @@
 package org.alfresco.solr;
 
 import static java.util.Arrays.asList;
+
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.ARG_TXID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
@@ -43,10 +52,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 /** Unit tests for {@link org.alfresco.solr.AlfrescoCoreAdminHandler}. */
 @RunWith(MockitoJUnitRunner.class)
@@ -181,7 +186,7 @@ public class AlfrescoCoreAdminHandlerTest
 
         // First let's try a list of invalid names, one by one
         List<String> invalidNames =
-                AlfrescoCoreAdminHandler.ALLOWED_CORE_NAMES.stream()
+                AlfrescoCoreAdminHandler.STORE_REF_MAP.keySet().stream()
                     .map(coreName -> coreName + System.currentTimeMillis())
                     .collect(Collectors.toList());
 

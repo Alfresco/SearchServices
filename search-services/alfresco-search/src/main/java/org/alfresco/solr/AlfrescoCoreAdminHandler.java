@@ -19,8 +19,8 @@
 
 package org.alfresco.solr;
 
-import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
+
 import static org.alfresco.solr.HandlerOfResources.extractCustomProperties;
 import static org.alfresco.solr.HandlerOfResources.getSafeBoolean;
 import static org.alfresco.solr.HandlerOfResources.getSafeLong;
@@ -41,9 +41,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
@@ -98,7 +108,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     static final String ALFRESCO_CORE_NAME = "alfresco";
     static final String ARCHIVE_CORE_NAME = "archive";
     static final String VERSION_CORE_NAME = "version";
-    static final List<String> ALLOWED_CORE_NAMES = asList(ALFRESCO_CORE_NAME, ARCHIVE_CORE_NAME, VERSION_CORE_NAME);
+    static final Map<String, StoreRef> STORE_REF_MAP = ImmutableMap.of(
+                ALFRESCO_CORE_NAME, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+                ARCHIVE_CORE_NAME, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,
+                VERSION_CORE_NAME, new StoreRef("workspace", "version2Store"));
 
     private SolrTrackerScheduler scheduler;
     private TrackerRegistry trackerRegistry;
@@ -188,21 +201,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     .filter(coreName -> !coreName.isEmpty())
                     .forEach(coreName -> {
                         LOGGER.info("Attempting to create default alfresco core: {}", coreName);
-                        StoreRef storeRef;
-                        switch (coreName)
+                        if (!STORE_REF_MAP.keySet().contains(coreName))
                         {
-                            case ARCHIVE_CORE_NAME:
-                                storeRef = StoreRef.STORE_REF_ARCHIVE_SPACESSTORE;
-                                break;
-                            case ALFRESCO_CORE_NAME:
-                                storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-                                break;
-                            case VERSION_CORE_NAME:
-                                storeRef = new StoreRef("workspace", "version2Store");
-                                break;
-                            default:
-                                throw new AlfrescoRuntimeException("Invalid '" + ALFRESCO_DEFAULTS + "' permitted values are " + ALLOWED_CORE_NAMES);
+                            throw new AlfrescoRuntimeException("Invalid '" + ALFRESCO_DEFAULTS + "' permitted values are " + STORE_REF_MAP.keySet());
                         }
+                        StoreRef storeRef = STORE_REF_MAP.get(coreName);
                         newCore(coreName, numShards, storeRef, DEFAULT_TEMPLATE, replicationFactor, nodeInstance,
                                     numNodes, shardIds, null, new SolrQueryResponse());
                     });
