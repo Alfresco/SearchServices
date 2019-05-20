@@ -23,6 +23,7 @@
 
     <properties>
         <dependency.alfresco-data-model.version>8.32</dependency.alfresco-data-model.version>
+        <dependency.jackson.version>2.9.9</dependency.jackson.version>
     </properties>
 
     <dependencies>
@@ -35,13 +36,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.9.9</version>
+            <version>${dependency.jackson.version}</version>
         </dependency>
         
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.9.8</version>
+            <version>${dependency.jackson.version}</version>
         </dependency>
 
         <dependency>
