@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>1.4.0-IE1.2.0-SNAPSHOT</version>
+        <version>1.4.0-SNAPSHOT</version>
     </parent>
 
     <distributionManagement>
@@ -22,7 +22,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.30</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.32</dependency.alfresco-data-model.version>
     </properties>
 
     <dependencies>
