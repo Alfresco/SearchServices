@@ -669,6 +669,11 @@ public class SOLRAPIClient
             {
                 nodeInfo.setShardPropertyValue(jsonNodeInfo.getString("shardPropertyValue"));
             }
+
+            if(jsonNodeInfo.has("explicitShardId"))
+            {
+                nodeInfo.setExplicitShardId(jsonNodeInfo.getInt("explicitShardId"));
+            }
             
             if(jsonNodeInfo.has("tenant"))
             {
