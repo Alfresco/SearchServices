@@ -18,22 +18,6 @@
         <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}-patched/solr-solr-${solr.version}-patched.zip</solr.zip>
         <solr.directory>${project.build.directory}/solr-${solr.version}-patched</solr.directory>
     </properties>
-    <distributionManagement>
-        <repository>
-            <id>alfresco-releases</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-    <scm>
-        <connection>scm:git:git@github.com:Alfresco/SearchServices.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/SearchServices.git</developerConnection>
-        <url>https://github.com/Alfresco/SearchServices.git</url>
-        <tag>HEAD</tag>
-    </scm>
     <modules>
         <module>alfresco-solrclient-lib</module>
         <module>alfresco-search</module>
