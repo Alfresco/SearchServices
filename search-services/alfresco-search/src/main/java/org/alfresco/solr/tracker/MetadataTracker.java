@@ -20,9 +20,11 @@ package org.alfresco.solr.tracker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -197,6 +199,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ShardState getShardState()
     {
         TrackerState state = super.getTrackerState();
+
+        HashMap<String, String> propertyBag = new HashMap<>();
+        propertyBag.put("coreName", coreName);
        
         ShardState shardstate =  ShardStateBuilder.shardState()
                 .withMaster(isMaster)
@@ -217,6 +222,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                             .withTemplate(shardTemplate)
                             .withHasContent(transformContent)
                             .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
+                            .withPropertyBag(propertyBag)
                             .endFloc()
                         .endShard()
                      .endShardInstance()
@@ -337,6 +343,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     gnp.setShardProperty(shardProperty);
+                    gnp.setCoreName(coreName);
 
                     List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
@@ -855,6 +862,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         gnp.setShardProperty(shardProperty);
+        gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
         
         ArrayList<Node> nodeBatch = new ArrayList<>();

@@ -610,6 +610,11 @@ public class SOLRAPIClient
         {
             body.put("shardProperty", parameters.getShardProperty().toString());
         }
+
+        if (parameters.getCoreName() != null){
+            body.put("coreName", parameters.getCoreName());
+        }
+
         
         PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
  
