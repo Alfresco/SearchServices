@@ -62,7 +62,7 @@ public class DocRouterFactory
                 return new PropertyRouter(properties.getProperty("shard.regex", ""));
             case EXPLICIT_ID:
                 log.info("Sharding via EXPLICIT_ID");
-                return new ExplicitRouter();
+                return new ExplicitElasticRouter();
             default:
                 log.info("Sharding via DB_ID (default)");
                 return new DBIDRouter();
