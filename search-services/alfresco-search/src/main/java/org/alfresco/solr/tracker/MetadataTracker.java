@@ -364,6 +364,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     gnp.setShardProperty(shardProperty);
+                    gnp.setCoreName(coreName);
 
                     List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
@@ -457,6 +458,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setTransactionIds(txs);
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
+                    gnp.setCoreName(coreName);
                     List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
                     {
@@ -882,6 +884,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         gnp.setShardProperty(shardProperty);
+        gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
         
         ArrayList<Node> nodeBatch = new ArrayList<>();
@@ -1055,6 +1058,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             gnp.setTransactionIds(txs);
             gnp.setStoreProtocol(storeRef.getProtocol());
             gnp.setStoreIdentifier(storeRef.getIdentifier());
+            gnp.setCoreName(coreName);
             return client.getNodes(gnp, Integer.MAX_VALUE);
         }
         catch (IOException e)
