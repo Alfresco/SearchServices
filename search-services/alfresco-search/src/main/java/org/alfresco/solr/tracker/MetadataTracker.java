@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -39,6 +38,7 @@ import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
@@ -55,6 +55,8 @@ import org.apache.commons.codec.EncoderException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Optional.of;
 
 /*
  * This tracks two things: transactions and metadata nodes
@@ -194,16 +196,36 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     }
 
     /**
-     * @return
+     * The {@link ShardState}, as the name suggests, encapsulates/stores the state of the shard which hosts this
+     * {@link MetadataTracker} instance.
+     *
+     * The {@link ShardState} is primarily used in two places:
+     *
+     * <ul>
+     *     <li>Transaction tracking: (see {@link #trackTransactions()}): for pulling/tracking transactions from Alfresco</li>
+     *     <li>
+     *         DynamicSharding: when the {@link MetadataTracker} is running on a slave instance it doesn't actually act
+     *         as a tracker, it calls Alfresco to register the state of the node (the shard) without pulling any transactions.
+     *         As consequence of that, Alfresco will be aware about the shard which will be included in subsequent queries.
+     *     </li>
+     * </ul>
+     *
+     * @return the {@link ShardState} instance which stores the current state of the hosting shard.
      */
-    private ShardState getShardState()
+    ShardState getShardState()
     {
-        TrackerState state = super.getTrackerState();
+        TrackerState transactionsTrackerState = super.getTrackerState();
+        TrackerState changeSetsTrackerState =
+                of(infoSrv.getAdminHandler())
+                        .map(AlfrescoCoreAdminHandler::getTrackerRegistry)
+                        .map(registry -> registry.getTrackerForCore(coreName, AclTracker.class))
+                        .map(Tracker::getTrackerState)
+                        .orElse(transactionsTrackerState);
 
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
-       
-        ShardState shardstate =  ShardStateBuilder.shardState()
+
+        return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
                 .withLastIndexedChangeSetCommitTime(state.getLastIndexedChangeSetCommitTime())
@@ -227,7 +249,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                         .endShard()
                      .endShardInstance()
                 .build();
-        return shardstate;
     }
 
     /**
@@ -343,7 +364,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     gnp.setShardProperty(shardProperty);
-                    gnp.setCoreName(coreName);
 
                     List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
@@ -862,7 +882,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         gnp.setShardProperty(shardProperty);
-        gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
         
         ArrayList<Node> nodeBatch = new ArrayList<>();
