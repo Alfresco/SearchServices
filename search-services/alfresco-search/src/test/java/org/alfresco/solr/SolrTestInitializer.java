@@ -141,9 +141,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
     private static Properties addExplicitShardingProperty(Properties solrcoreProperties)
     {
         if(solrcoreProperties == null){
-
             solrcoreProperties = new Properties();
-                
         }
         solrcoreProperties.put("shard.method", "EXPLICIT_ID");
         return solrcoreProperties;
