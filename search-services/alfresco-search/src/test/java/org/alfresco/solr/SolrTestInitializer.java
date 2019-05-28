@@ -143,7 +143,10 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         if(solrcoreProperties == null){
             solrcoreProperties = new Properties();
         }
-        solrcoreProperties.put("shard.method", "EXPLICIT_ID");
+        if(solrcoreProperties.getProperty("shard.method")==null)
+        {
+            solrcoreProperties.put("shard.method", "EXPLICIT_ID");
+        }
         return solrcoreProperties;
     }
 
