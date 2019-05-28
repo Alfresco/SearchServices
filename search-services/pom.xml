@@ -3,9 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>10</version>
+        <artifactId>alfresco-search-and-insight-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
+    <!-- The groupId and version are required by the maven pom extractor plugin on Bamboo - more details in this issue:
+    https://bitbucket.org/dehringer/bamboo-maven-pom-extractor-plugin/issues/18/groupid-not-populated-if-using-parent-pom -->
+    <groupId>org.alfresco</groupId>
     <artifactId>alfresco-search-parent</artifactId>
     <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -18,22 +21,6 @@
         <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}-patched/solr-solr-${solr.version}-patched.zip</solr.zip>
         <solr.directory>${project.build.directory}/solr-${solr.version}-patched</solr.directory>
     </properties>
-    <distributionManagement>
-        <repository>
-            <id>alfresco-releases</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-    <scm>
-        <connection>scm:git:git@github.com:Alfresco/SearchServices.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/SearchServices.git</developerConnection>
-        <url>https://github.com/Alfresco/SearchServices.git</url>
-        <tag>HEAD</tag>
-    </scm>
     <modules>
         <module>alfresco-solrclient-lib</module>
         <module>alfresco-search</module>
