@@ -19,8 +19,8 @@
 
 package org.alfresco.solr.query.afts.qparser;
 
-
 import static java.util.Arrays.stream;
+
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.alfresco.model.ContentModel.PROP_CREATED;
 import static org.alfresco.model.ContentModel.PROP_DESCRIPTION;
@@ -28,21 +28,25 @@ import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.model.ContentModel.TYPE_THUMBNAIL;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.dataload.TestDataProvider;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-
 @SolrTestCaseJ4.SuppressSSL
 public class QParserPluginTest extends AbstractQParserPluginTest implements QueryConstants
 {
+    /** The UTC time zone. */
+    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
     private final long [] msecs = {
             333,
             20000,
@@ -571,7 +575,9 @@ public class QParserPluginTest extends AbstractQParserPluginTest implements Quer
     {
         stream(CachingDateFormat.getLenientFormatters())
             .filter(formatter -> formatter.getResolution() < Calendar.DAY_OF_MONTH)
-            .map(formatter -> formatter.getSimpleDateFormat().format(FTS_TEST_DATE))
+            .map(SimpleDateFormatAndResolution::getSimpleDateFormat)
+            .peek(simpleDateFormat -> simpleDateFormat.setTimeZone(UTC))
+            .map(simpleDateFormat -> simpleDateFormat.format(FTS_TEST_DATE))
             .filter(date -> date.length() >= 9)
             .forEach(date -> assertAQuery("\\@" + escape(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + date + "\"", 1));
     }
