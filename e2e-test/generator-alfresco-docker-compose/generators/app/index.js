@@ -1,7 +1,7 @@
 'use strict';
 const Generator = require('yeoman-generator');
-const chalk = require('chalk');
-const yosay = require('yosay');
+var banner = require('./banner')
+
 /**
  * This module buids a Docker Compose template to test
  * Repository and Search Services/Insight Engine in
@@ -14,6 +14,10 @@ module.exports = class extends Generator {
 
   // Options to be chosen by the user
   prompting() {
+
+    if (!this.options['skip-install-message']) {
+      this.log(banner);
+    }
 
     const prompts = [
       {
