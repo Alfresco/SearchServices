@@ -11,9 +11,10 @@ import org.slf4j.LoggerFactory;
 public class ExplicitRouter implements DocRouter {
 
     protected final static Logger log = LoggerFactory.getLogger(ExplicitRouter.class);
-    private final DBIDRouter fallback = new DBIDRouter();
+    private final DocRouter fallbackRouter;
 
-    public ExplicitRouter() {
+    public ExplicitRouter(DocRouter fallbackRouter) {
+        this.fallbackRouter = fallbackRouter;
     }
 
     @Override
@@ -24,11 +25,6 @@ public class ExplicitRouter implements DocRouter {
 
     @Override
     public boolean routeNode(int shardCount, int shardInstance, Node node) {
-
-        if(shardCount <= 1)
-        {
-            return true;
-        }
 
         String shardBy = node.getShardPropertyValue();
 
@@ -59,6 +55,6 @@ public class ExplicitRouter implements DocRouter {
         {
             log.debug("Shard "+shardInstance+" falling back to DBID routing for node "+node.getNodeRef());
         }
-        return fallback.routeNode(shardCount, shardInstance, node);
+        return fallbackRouter.routeNode(shardCount, shardInstance, node);
     }
 }
