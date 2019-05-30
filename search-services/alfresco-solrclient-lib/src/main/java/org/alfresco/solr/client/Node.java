@@ -39,7 +39,7 @@ public class Node
     private String tenant;
     private long aclId;
     private String shardPropertyValue;
-    private int explicitShardId;
+    private Integer explicitShardId;
     
     public long getId()
     {
@@ -119,12 +119,12 @@ public class Node
         this.shardPropertyValue = shardPropertyValue;
     }
 
-    public int getExplicitShardId()
+    public Integer getExplicitShardId()
     {
         return this.explicitShardId;
     }
 
-    public void setExplicitShardId(int explicitShardId)
+    public void setExplicitShardId(Integer explicitShardId)
     {
         this.explicitShardId = explicitShardId;
     }
