@@ -122,8 +122,12 @@ module.exports = class extends Generator {
     // Add resources for SSL configuration
     if (this.props.httpMode == 'https') {
       this.fs.copy(
-        this.templatePath('keystores'),
-        this.destinationPath('keystores')
+        this.templatePath('keystores/alfresco'),
+        this.destinationPath('keystores/alfresco')
+      )
+      this.fs.copy(
+        this.templatePath('keystores/solr'),
+        this.destinationPath('keystores/solr')
       )
       this.fs.copyTpl(
         this.templatePath(this.props.acsVersion + '/alfresco-https'),
@@ -152,6 +156,10 @@ module.exports = class extends Generator {
         this.fs.copy(
           this.templatePath(this.props.acsVersion + '/zeppelin-https'),
           this.destinationPath('zeppelin-https')
+        )
+        this.fs.copy(
+          this.templatePath('keystores/zeppelin'),
+          this.destinationPath('keystores/zeppelin')
         )
       }
     }
