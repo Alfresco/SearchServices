@@ -1,4 +1,4 @@
-# generator-alfresco-docker-compose [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url] [![Coverage percentage][coveralls-image]][coveralls-url]
+# generator-alfresco-docker-compose
 > Alfresco Docker Compose Generator
 
 This project generates a collection of Docker Compose Templates to test Repository and Search Services/Insight Engine with different configurations:
