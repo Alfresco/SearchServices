@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Routes a document only if the explicitShardId matches the provided shardId
+ *
+ * @author Elia
  */
 public class LastRegisteredShardRouter implements DocRouter {
 
