@@ -53,9 +53,9 @@ import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 
 /**
- * Test Routes based on an explicit shard
+ * Test Routes based on an last registered shard
  *
- * @author Gethin James
+ * @author Elia
  */
 @SolrTestCaseJ4.SuppressSSL
 @SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
