@@ -219,6 +219,34 @@ Since both strategies (the primary and the fallback) are "elastic", this shardin
 
 ![EXPLICIT_ID_LRIS](explicit_id.png)
 
+Let's see what happens when a member in the cluster (a Solr or Alfresco node) is restarted.
+In all the examples below we have: 
+
+* an Alfresco instance, which maintains the persisted subscriptions map
+* two shards (i.e. Solr nodes): S1 subscribed at t1, S2 subscribed at t2   
+
+**Example #1: One shard is restarted**  
+
+![One Shard Restart](one_shard_is_restarted.png)
+
+In order to better explain the system behaviour we'll enumerate two sub-scenarios:
+
+* **Indexed data is not lost**: after restarting, the node will find itself already registered in the subscription map. If it is the last indexing registered shard Alfresco will continue to  use it as target indexing shard for the new incoming data    
+* **Indexed data is lost**: after restarting, the node will still find its subscription in the ShardRegistry. That means on Alfresco side, the Shard is still associated with the proper transaction range. It will request data (e.g. txn, nodes) from Alfresco and the doc router will accept only those nodes that belong to a transaction within that range.
+
+**Example #2: Two shards are restarted**  
+
+![Two shards are restarted](two_shards_are_restarted.png)
+
+Shard subscriptions are persisted on Alfresco side, so this scenario is similar to the previous one: regardless the shards have the indexed data or not after a restart, their corresponding subscription are still available on the ShardRegistry. That means the doc router will be aware about the range of transactions that must be (re)indexed in the two nodes. 
+
+**Example #3: Alfresco is restarted**  
+
+![Alfresco is restarted](alfresco_is_restarted.png)
+
+The Shard Subscriptions Map is persisted on the database. That means its whole definition can survive to a system crash. 
+After restarting, subscriptions are restored from the database so each shard will be aware about the range of transactions it belongs to.
+
 In order to use this method, the following properties are required:
 
 ```
