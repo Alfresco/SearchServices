@@ -6,6 +6,7 @@ This project generates a collection of Docker Compose Templates to test Reposito
 * Plain HTTP communications
 * TLS/SSL Mutual Authentication communications
 * Sharding (dynamic)
+* Replication (master/slave)
 
 ## Project structure
 
@@ -19,6 +20,8 @@ generators/app/templates/
 │   └── Dockerfile
 ├── docker-compose-ce.yml
 ├── docker-compose-ee.yml
+├── replication-none
+│   └── Dockerfile
 ├── search-https
 │   └── Dockerfile
 ├── sharding-https
@@ -41,6 +44,7 @@ generators/app/templates/
 * `zeppelin-https` includes a Dockerfile template to start Zeppelin with SSL
 * `sharding-none` includes a Dockerfile template for dynamic Sharding in Plain HTTP
 * `sharding-https` includes a Dockerfile template for dynamic Sharding with SSL
+* `replication-none` includes a Dockerfile template for Replication in Master/Slave mode
 * `keystores` includes every truststore and keystore required for SSL configuration
 
 
@@ -64,10 +68,13 @@ $ yo alfresco-docker-compose
 
 When using Community, Plain HTTP or TLS/SSL Mutual Auth can be selected.
 
+Additionally, if Plain HTTP is selected, SOLR Replication can be added.
+
 ```
 ? Which Alfresco version do you want to use? 6.1
 ? Would you like to use Alfresco enterprise or community? community
 ? Would you like to use http or https? http
+? Would you like to use a SOLR Cluster (2 nodes in master-slave)? Yes
 ```
 
 ## Enterprise
@@ -75,9 +82,10 @@ When using Community, Plain HTTP or TLS/SSL Mutual Auth can be selected.
 When using Enterprise, some different options can be combined:
 
 * Plain HTTP (http) or TLS/SSL Mutual Auth (https)
+* Use SOLR Replication in Master/Slave mode (only for http)
 * Insight Engine, as Search Services is selected by default
 * Deploy Zeppelin app to use JDBC Connector to SOLR
-* Use dynamic Sharding with 2 SOLR nodes pre-configured
+* Use dynamic Sharding with 2 SOLR nodes pre-configured (only when not using SOLR Replication)
 
 ```
 ? Which Alfresco version do you want to use? 6.1
@@ -112,6 +120,11 @@ http://localhost:8082/alfresco
 
 http://localhost:8083/solr
 
+When using SOLR Replication, additionally
+
+http://localhost:8084/solr
+
+
 SSL
 
 http://localhost:8080/share
@@ -133,6 +146,11 @@ http://localhost:8080/alfresco
 http://localhost:8083/solr
 
 http://localhost:9090/zeppelin
+
+When using SOLR Replication, additionally
+
+http://localhost:8084/solr
+
 
 SSL
 
