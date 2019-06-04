@@ -27,7 +27,7 @@ services:
                 -Ddb.username=alfresco
                 -Ddb.password=alfresco
                 -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
-                -Dsolr.host=solr6
+                -Dsolr.host=<%=searchSolrHost%>
                 -Dsolr.port.ssl=8983 
                 -Dsolr.secureComms=<%=secureComms%>
                 -Dsolr.base.url=/solr
@@ -47,6 +47,7 @@ services:
         volumes:
             - ./keystores/alfresco:/usr/local/tomcat/alf_data/keystore <% } %>
 
+    <% if (clustering == 'false') { %>
     solr6: <% if (httpMode == 'http') { %>
         image: alfresco/alfresco-search-services:${SEARCH_CE_TAG} <% } else { %>
         build:
@@ -81,6 +82,54 @@ services:
             - 8083:8983 <% if (httpMode == 'https') { %>
         volumes:
             - ./keystores/solr:/opt/alfresco-search-services/keystore <% } %>
+    <% } %>
+
+    <% if (clustering == 'true') { %>
+    solr6master:
+        build:
+          context: ./replication-<%=secureComms%>
+          args:
+            SEARCH_TAG: ${SEARCH_CE_TAG}
+            SOLR_HOSTNAME: solr6master
+            ENABLE_MASTER: "true"
+            ENABLE_SLAVE: "false"
+        mem_limit: 2g
+        environment:
+            #Solr needs to know how to register itself with Alfresco
+            SOLR_ALFRESCO_HOST: "alfresco"
+            SOLR_ALFRESCO_PORT: "<%=alfrescoPort%>"
+            #Alfresco needs to know how to call solr
+            SOLR_SOLR_HOST: "solr6master"
+            SOLR_SOLR_PORT: "8983"
+            #Create the default alfresco and archive cores
+            SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
+            SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
+        ports:
+            - 8083:8983
+
+    solr6slave:
+        build:
+          context: ./replication-<%=secureComms%>
+          args:
+            SEARCH_TAG: ${SEARCH_CE_TAG}
+            SOLR_HOSTNAME: solr6slave
+            ENABLE_MASTER: "false"
+            ENABLE_SLAVE: "true"
+            MASTER_HOST: solr6master
+        mem_limit: 2g
+        environment:
+            #Solr needs to know how to register itself with Alfresco
+            SOLR_ALFRESCO_HOST: "alfresco"
+            SOLR_ALFRESCO_PORT: "<%=alfrescoPort%>"
+            #Alfresco needs to know how to call solr
+            SOLR_SOLR_HOST: "solr6slave"
+            SOLR_SOLR_PORT: "8983"
+            #Create the default alfresco and archive cores
+            SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
+            SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
+        ports:
+            - 8084:8983
+    <% } %>
 
     share:
         image: alfresco/alfresco-share:${SHARE_TAG}
