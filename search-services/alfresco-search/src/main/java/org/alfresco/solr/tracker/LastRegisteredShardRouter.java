@@ -28,25 +28,30 @@ import org.slf4j.LoggerFactory;
  *
  * @author Elia
  */
-public class LastRegisteredShardRouter implements DocRouter {
+public class LastRegisteredShardRouter implements DocRouter
+{
 
     protected final static Logger log = LoggerFactory.getLogger(ExplicitRouter.class);
 
-    public LastRegisteredShardRouter() {
+    public LastRegisteredShardRouter()
+    {
     }
 
     @Override
-    public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
+    public boolean routeAcl(int shardCount, int shardInstance, Acl acl)
+    {
         //all acls go to all shards.
         return true;
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node) {
+    public boolean routeNode(int shardCount, int shardInstance, Node node)
+    {
 
         Integer explicitShardId = node.getExplicitShardId();
 
-        if (explicitShardId == null) {
+        if (explicitShardId == null)
+        {
             log.error("explicitShardId is not set for node " + node.getNodeRef());
             return false;
         }

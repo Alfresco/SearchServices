@@ -158,11 +158,13 @@ public class GetNodesParameters
         this.shardProperty = shardProperty;
     }
 
-    public String getCoreName() {
+    public String getCoreName()
+    {
         return this.coreName;
     }
 
-    public void setCoreName(String coreName){
+    public void setCoreName(String coreName)
+    {
         this.coreName = coreName;
     }
     
