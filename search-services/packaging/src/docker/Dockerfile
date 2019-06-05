@@ -8,10 +8,19 @@ ENV SOLR_ZIP ${project.build.finalName}.zip
 ENV LANG C.UTF-8
 ENV OPENSSL_VERSION 1.0.2k-8.el7
 
+ARG USERNAME=solr
+ARG USERID=33007
+
 COPY "$SOLR_ZIP" .
 
-RUN groupadd solr && useradd -s /bin/bash -g solr solr
 RUN set -x \
+   && useradd \
+        -c "Alfresco ${USERNAME}" \
+        -M \
+        -s "/bin/bash" \
+        -u "${USERID}" \
+        -o \
+        "${USERNAME}" \
    && yum update -y \
    && yum install -y unzip \
    && yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
@@ -35,5 +44,5 @@ VOLUME $DIST_DIR/data
 VOLUME $DIST_DIR/solrhome
 
 EXPOSE 8983
-USER solr
+USER ${USERNAME}
 CMD $DIST_DIR/solr/bin/search_config_setup.sh "$DIST_DIR/solr/bin/solr start -f"
