@@ -51,7 +51,8 @@ public class GetNodesParameters
     private Set<QName> excludeAspects;
     
     private QName shardProperty;
-    
+    private String coreName;
+
     public boolean getStoreFilter()
     {
         return (storeProtocol != null || storeIdentifier != null);
@@ -155,6 +156,16 @@ public class GetNodesParameters
     public void setShardProperty(QName shardProperty)
     {
         this.shardProperty = shardProperty;
+    }
+
+    public String getCoreName()
+    {
+        return this.coreName;
+    }
+
+    public void setCoreName(String coreName)
+    {
+        this.coreName = coreName;
     }
     
     
