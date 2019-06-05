@@ -203,16 +203,29 @@ module.exports = class extends Generator {
 
     // Copy sharding configuration
     if (this.props.sharding) {
-      this.fs.copyTpl(
-        this.templatePath(this.props.acsVersion + '/sharding-' + this.props.httpMode),
-        this.destinationPath('sharding-' + this.props.httpMode),
-        {
-          searchImage: (this.props.insightEngine ?
-            "quay.io/alfresco/insight-engine" :
-            "alfresco/alfresco-search-services"
-          )
-        }
-      )
+      if (this.props.httpMode == 'https') {
+        this.fs.copyTpl(
+          this.templatePath(this.props.acsVersion + '/sharding-https'),
+          this.destinationPath('sharding-https'),
+          {
+            searchImage: (this.props.insightEngine ?
+              "quay.io/alfresco/insight-engine" :
+              "alfresco/alfresco-search-services"
+            )
+          }
+        )
+      } else {
+        this.fs.copyTpl(
+          this.templatePath(this.props.acsVersion + '/sharding-none'),
+          this.destinationPath('sharding-none'),
+          {
+            searchImage: (this.props.insightEngine ?
+              "quay.io/alfresco/insight-engine" :
+              "alfresco/alfresco-search-services"
+            )
+          }
+        )
+      }
     }    
     
   }
