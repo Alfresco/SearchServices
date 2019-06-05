@@ -96,6 +96,25 @@ When using Enterprise, some different options can be combined:
 ? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
 ```
 
+## Passing parameters from command line
+
+Default values for options can be specified in the command line, using a `--name=value` pattern. When an options is specified in the command line, the question is not prompted to the user, so you can generate a Docker Compose template with no user interaction.
+
+```
+$ yo alfresco-docker-compose --acsVersion=6.1 --alfrescoVersion=community --httpMode=http --clustering=true
+```
+
+**Parameter names reference**
+
+`--acsVersion`: currently only accepting 6.1
+`--alfrescoVersion`: community or enterprise
+`--httpMode`: http or https
+`--clustering`: true or false
+`--insightEngine`: true or false
+`--zeppelin`: true or false
+`--sharding`: true or false
+
+
 ## Using Docker Compose
 
 Once the files have been generated, just start Docker Compose.

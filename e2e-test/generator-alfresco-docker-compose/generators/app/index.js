@@ -43,7 +43,7 @@ module.exports = class extends Generator {
       },
       {
         when: function (response) {
-          return response.httpMode == 'http';
+          return response.httpMode == 'http' || commandProps['httpMode'] == 'http';
         },
         type: 'confirm',
         name: 'clustering',
@@ -53,7 +53,7 @@ module.exports = class extends Generator {
       // Enterprise only options
       {
         when: function (response) {
-          return response.alfrescoVersion == 'enterprise';
+          return response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise';
         },
         type: 'confirm',
         name: 'insightEngine',
@@ -62,8 +62,8 @@ module.exports = class extends Generator {
       },
       {
         when: function (response) {
-          return response.alfrescoVersion == 'enterprise' &&
-                 response.insightEngine;
+          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
+                 (response.insightEngine || commandProps['insightEngine']);
         },
         type: 'confirm',
         name: 'zeppelin',
@@ -72,8 +72,8 @@ module.exports = class extends Generator {
       },
       {
         when: function (response) {
-          return response.alfrescoVersion == 'enterprise' &&
-                 !response.clustering;
+          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
+                 (!response.clustering || !commandProps['clustering']);
         },
         type: 'confirm',
         name: 'sharding',
@@ -82,9 +82,24 @@ module.exports = class extends Generator {
       }
     ];
 
-    return this.prompt(prompts).then(props => {
+    // Read options from command line parameters
+    const filteredPrompts = [];
+    const commandProps = new Map();
+    prompts.forEach(function prompts(prompt) {
+      const option = this.options[prompt.name];
+      if (option === undefined) {
+        filteredPrompts.push(prompt);
+      } else {      
+        commandProps[prompt.name] = normalize(option); 
+      }
+    }, this);
+
+    // Prompt only for parameters not passed by command line
+    return this.prompt(filteredPrompts).then(props => {
       this.props = props;
+      Object.assign(props, commandProps);
     });
+
   }
 
   // Generate boilerplate from "templates" folder
@@ -231,3 +246,24 @@ module.exports = class extends Generator {
   }
 
 };
+
+// Convert parameter string value to boolean value
+function normalize(option) {
+  
+  if (typeof option === 'boolean') {
+    return option;
+  }
+
+  if (typeof option === 'string'){
+    let lc = option.toLowerCase();
+    if (lc === 'true' || lc === 'false') {
+      return (lc === 'true');
+    } else {
+      return option;
+    }
+  }
+
+  return option;
+
+}
+
