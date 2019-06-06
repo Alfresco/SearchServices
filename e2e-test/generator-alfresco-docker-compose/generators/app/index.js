@@ -9,6 +9,7 @@ var banner = require('./banner')
  * - Plain HTTP communications
  * - TLS/SSL Mutual Authentication communications
  * - Sharding (dynamic)
+ * - Clustering (master-slave)
 */
 module.exports = class extends Generator {
 
@@ -40,10 +41,19 @@ module.exports = class extends Generator {
         choices: [ "http", "https" ],
         default: 'http'
       },
+      {
+        when: function (response) {
+          return response.httpMode == 'http' || commandProps['httpMode'] == 'http';
+        },
+        type: 'confirm',
+        name: 'clustering',
+        message: 'Would you like to use a SOLR Cluster (2 nodes in master-slave)?',
+        default: false
+      },
       // Enterprise only options
       {
         when: function (response) {
-          return response.alfrescoVersion == 'enterprise';
+          return response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise';
         },
         type: 'confirm',
         name: 'insightEngine',
@@ -52,8 +62,8 @@ module.exports = class extends Generator {
       },
       {
         when: function (response) {
-          return response.alfrescoVersion == 'enterprise' &&
-                 response.insightEngine;
+          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
+                 (response.insightEngine || commandProps['insightEngine']);
         },
         type: 'confirm',
         name: 'zeppelin',
@@ -62,7 +72,8 @@ module.exports = class extends Generator {
       },
       {
         when: function (response) {
-          return response.alfrescoVersion == 'enterprise';
+          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
+                 (!response.clustering || !commandProps['clustering']);
         },
         type: 'confirm',
         name: 'sharding',
@@ -71,9 +82,24 @@ module.exports = class extends Generator {
       }
     ];
 
-    return this.prompt(prompts).then(props => {
+    // Read options from command line parameters
+    const filteredPrompts = [];
+    const commandProps = new Map();
+    prompts.forEach(function prompts(prompt) {
+      const option = this.options[prompt.name];
+      if (option === undefined) {
+        filteredPrompts.push(prompt);
+      } else {      
+        commandProps[prompt.name] = normalize(option, prompt); 
+      }
+    }, this);
+
+    // Prompt only for parameters not passed by command line
+    return this.prompt(filteredPrompts).then(props => {
       this.props = props;
+      Object.assign(props, commandProps);
     });
+
   }
 
   // Generate boilerplate from "templates" folder
@@ -86,7 +112,9 @@ module.exports = class extends Generator {
         this.destinationPath('docker-compose.yml'),
         { httpMode: this.props.httpMode,
           secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
-          alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443')
+          alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
+          clustering: (this.props.clustering ? "true" : "false"),
+          searchSolrHost: (this.props.clustering ? "solr6slave" : "solr6")
         }
       );
     
@@ -112,7 +140,9 @@ module.exports = class extends Generator {
             "alfresco-search-services"
           ),
           zeppelin: (this.props.zeppelin ? "true" : "false"),
-          sharding: (this.props.sharding ? "true" : "false")
+          sharding: (this.props.sharding ? "true" : "false"),
+          clustering: (this.props.clustering ? "true" : "false"),
+          searchSolrHost: (this.props.clustering ? "solr6slave" : "solr6")
         }
       );
     }
@@ -168,6 +198,24 @@ module.exports = class extends Generator {
       }
     }
 
+    // Copy replication configuration
+    if (this.props.clustering) {
+      this.fs.copyTpl(
+        this.templatePath(this.props.acsVersion + '/replication-none'),
+        this.destinationPath('replication-none'),
+        {
+          searchImage: (this.props.insightEngine ?
+          "quay.io/alfresco/insight-engine" :
+          "alfresco/alfresco-search-services"
+          ),
+          searchPath: (this.props.insightEngine ?
+            "alfresco-insight-engine" :
+            "alfresco-search-services"
+          )
+        }
+      )
+    }
+
     // Copy sharding configuration
     if (this.props.sharding) {
       if (this.props.httpMode == 'https') {
@@ -198,3 +246,20 @@ module.exports = class extends Generator {
   }
 
 };
+
+// Convert parameter string value to boolean value
+function normalize(option, prompt) {
+  
+  if (prompt.type === 'confirm' && typeof option === 'string') {
+    let lc = option.toLowerCase();
+    if (lc === 'true' || lc === 'false') {
+      return (lc === 'true');
+    } else {
+      return option;
+    }
+  }
+
+  return option;
+
+}
+
