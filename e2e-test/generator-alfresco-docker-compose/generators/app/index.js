@@ -90,7 +90,7 @@ module.exports = class extends Generator {
       if (option === undefined) {
         filteredPrompts.push(prompt);
       } else {      
-        commandProps[prompt.name] = normalize(option); 
+        commandProps[prompt.name] = normalize(option, prompt); 
       }
     }, this);
 
@@ -248,13 +248,9 @@ module.exports = class extends Generator {
 };
 
 // Convert parameter string value to boolean value
-function normalize(option) {
+function normalize(option, prompt) {
   
-  if (typeof option === 'boolean') {
-    return option;
-  }
-
-  if (typeof option === 'string'){
+  if (prompt.type === 'confirm' && typeof option === 'string') {
     let lc = option.toLowerCase();
     if (lc === 'true' || lc === 'false') {
       return (lc === 'true');
