@@ -38,6 +38,7 @@ import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.apache.commons.httpclient.params.DefaultHttpParams;
 
 /**
  * This factory encapsulates the creation of a SOLRAPIClient and the management of that resource.
@@ -53,10 +54,6 @@ public class SOLRAPIClientFactory
 
     // encryption related parameters
     private String secureCommsType; // "none", "https"
-    private String keyStoreType;
-    private String keyStoreProvider;
-    private String passwordFileLocation;
-    private String keyStoreLocation;
 
     // ssl
     private String sslKeyStoreType;
@@ -151,24 +148,25 @@ public class SOLRAPIClientFactory
         if (client == null)
         {
             baseUrl = props.getProperty("alfresco.baseUrl", "/alfresco");
-            keyStoreType = props.getProperty("alfresco.encryption.keystore.type", "JCEKS");
-            keyStoreProvider = props.getProperty("alfresco.encryption.keystore.provider");
-            passwordFileLocation = props.getProperty("alfresco.encryption.keystore.passwordFileLocation");
-            keyStoreLocation = props.getProperty("alfresco.encryption.keystore.location");
-            sslKeyStoreType = props.getProperty("alfresco.encryption.ssl.keystore.type", "JCEKS");
-            sslKeyStoreProvider = props.getProperty("alfresco.encryption.ssl.keystore.provider", "");
-            sslKeyStoreLocation = props.getProperty("alfresco.encryption.ssl.keystore.location",
-                        "ssl.repo.client.keystore");
-            sslKeyStorePasswordFileLocation = props.getProperty(
-                        "alfresco.encryption.ssl.keystore.passwordFileLocation", "ssl-keystore-passwords.properties");
-            sslTrustStoreType = props.getProperty("alfresco.encryption.ssl.truststore.type", "JCEKS");
-            sslTrustStoreProvider = props.getProperty("alfresco.encryption.ssl.truststore.provider", "");
-            sslTrustStoreLocation = props.getProperty("alfresco.encryption.ssl.truststore.location",
-                        "ssl.repo.client.truststore");
-            sslTrustStorePasswordFileLocation = props.getProperty(
-                        "alfresco.encryption.ssl.truststore.passwordFileLocation",
-                        "ssl-truststore-passwords.properties");
+            // Load SSL settings only when using HTTPs protocol
             secureCommsType = props.getProperty("alfresco.secureComms", "none");
+            if (secureCommsType.equals("https"))
+            {
+	            sslKeyStoreType = getProperty(props, "alfresco.encryption.ssl.keystore.type", "JCEKS");
+	            sslKeyStoreProvider = getProperty(props, "alfresco.encryption.ssl.keystore.provider", "");
+	            sslKeyStoreLocation = getProperty(props, "alfresco.encryption.ssl.keystore.location",
+	                        "ssl.repo.client.keystore");
+	            sslKeyStorePasswordFileLocation = getProperty(props, 
+	                        "alfresco.encryption.ssl.keystore.passwordFileLocation", 
+	                        "ssl-keystore-passwords.properties");
+	            sslTrustStoreType = getProperty(props, "alfresco.encryption.ssl.truststore.type", "JCEKS");
+	            sslTrustStoreProvider = getProperty(props, "alfresco.encryption.ssl.truststore.provider", "");
+	            sslTrustStoreLocation = getProperty(props, "alfresco.encryption.ssl.truststore.location",
+	                        "ssl.repo.client.truststore");
+	            sslTrustStorePasswordFileLocation = getProperty(props, 
+	                        "alfresco.encryption.ssl.truststore.passwordFileLocation",
+	                        "ssl-truststore-passwords.properties");
+            }
             maxTotalConnections = Integer.parseInt(props.getProperty("alfresco.maxTotalConnections", "40"));
             maxHostConnections = Integer.parseInt(props.getProperty("alfresco.maxHostConnections", "40"));
             socketTimeout = Integer.parseInt(props.getProperty("alfresco.socketTimeout", "60000"));
@@ -182,20 +180,79 @@ public class SOLRAPIClientFactory
 
     protected AlfrescoHttpClient getRepoClient(KeyResourceLoader keyResourceLoader)
     {
-        // TODO i18n
-        KeyStoreParameters keyStoreParameters = new KeyStoreParameters("SSL Key Store", sslKeyStoreType,
-                    sslKeyStoreProvider, sslKeyStorePasswordFileLocation, sslKeyStoreLocation);
-        KeyStoreParameters trustStoreParameters = new KeyStoreParameters("SSL Trust Store", sslTrustStoreType,
-                    sslTrustStoreProvider, sslTrustStorePasswordFileLocation, sslTrustStoreLocation);
-        SSLEncryptionParameters sslEncryptionParameters = new SSLEncryptionParameters(keyStoreParameters,
-                    trustStoreParameters);
-
-        HttpClientFactory httpClientFactory = new HttpClientFactory(SecureCommsType.getType(secureCommsType),
+    	HttpClientFactory httpClientFactory = null;
+    	
+    	if (secureCommsType.equals("https"))
+    	{  
+	        KeyStoreParameters keyStoreParameters = new KeyStoreParameters("SSL Key Store", sslKeyStoreType,
+	                    sslKeyStoreProvider, sslKeyStorePasswordFileLocation, sslKeyStoreLocation);
+	        KeyStoreParameters trustStoreParameters = new KeyStoreParameters("SSL Trust Store", sslTrustStoreType,
+	                    sslTrustStoreProvider, sslTrustStorePasswordFileLocation, sslTrustStoreLocation);
+	        SSLEncryptionParameters sslEncryptionParameters = new SSLEncryptionParameters(keyStoreParameters,
+	                    trustStoreParameters);
+	        httpClientFactory = new HttpClientFactory(SecureCommsType.getType(secureCommsType),
                     sslEncryptionParameters, keyResourceLoader, null, null, alfrescoHost, alfrescoPort,
                     alfrescoPortSSL, maxTotalConnections, maxHostConnections, socketTimeout);
-        // TODO need to make port configurable depending on secure comms, or just make redirects work
+    	}
+    	else
+    	{
+    		httpClientFactory = new PlainHttpClientFactory(alfrescoHost, alfrescoPort, maxTotalConnections, maxHostConnections);
+    	}
+    	
         AlfrescoHttpClient repoClient = httpClientFactory.getRepoClient(alfrescoHost, alfrescoPortSSL);
         repoClient.setBaseUrl(baseUrl);
         return repoClient;
+        
     }
+    
+    /**
+     * Return property value from system (passed as -D argument).
+     * If the system property does not exists, return local value from solrcore.properties
+     * If the local property does not exists, return default value
+     * 
+     * @param props Local properties file (solrcore.properties)
+     * @param key The property key
+     * @return The value
+     */
+    private String getProperty(Properties props, String key, String defaultValue) 
+    {
+    	String value = System.getProperties().getProperty(key);
+    	if (value == null)
+    	{
+    		value = props.getProperty(key);
+    	}
+    	if (value == null)
+    	{
+    		value = defaultValue;
+    	}
+    	return value;
+    }
+    
+    /**
+     * Local class to avoid loading sslEntryptionParameters for plain http connections. 
+     * 
+     * @author aborroy
+     *
+     */
+    class PlainHttpClientFactory extends HttpClientFactory
+    {
+        public PlainHttpClientFactory(String host, int port, int maxTotalConnections, int maxHostConnections)
+        {
+            setSecureCommsType("none");
+            setHost(host);
+            setPort(port);
+            setMaxTotalConnections(maxTotalConnections);
+            setMaxHostConnections(maxHostConnections);
+            init();
+        }
+
+        @Override
+        public void init()
+        {
+            DefaultHttpParams.setHttpParamsFactory(new NonBlockingHttpParamsFactory());
+        }
+
+    }
+    
 }
+
