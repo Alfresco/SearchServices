@@ -105,7 +105,9 @@ $ ./solr/bin/solr start "-Dcreate.alfresco.defaults=alfresco,archive \
 -Dsolr.allow.unsafe.resourceloading=true" -f
 ```
 
-SOLR will create Alfresco cores (`alfresco` and `archive`) when starting, and configuration from `rerank` template will be copied to each core and if you also started an ACS instance running in [https://localhost:8443/alfresco](https://localhost:8443/alfresco) then the index will be populated.
+SOLR will create Alfresco cores (`alfresco` and `archive`) when starting, and configuration from `rerank` template will be copied to each core.
+
+If you also started an ACS instance running in [https://localhost:8443/alfresco](https://localhost:8443/alfresco) with the keystores provided by the SSL Tool (`keystores/alfresco` folder), then the index will be populated.
 
 SOLR Web Console will be available at:
 
