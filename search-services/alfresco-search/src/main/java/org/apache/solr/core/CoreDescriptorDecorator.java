@@ -18,12 +18,14 @@
  */
 package org.apache.solr.core;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.Properties;
+
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.Properties;
+import com.google.common.collect.ImmutableList;
 
 /**
  * This class was created solely for the purpose of exposing the coreProperties of the CoreDescriptor.
@@ -32,13 +34,16 @@ import java.util.Properties;
  * The Substitutable Properties are defined in the substitutableProperties list.
  * @author Ahmed Owian
  * @author Gethin James
+ * @author aborroy
  */
 public class CoreDescriptorDecorator 
 {
     private static Log log = LogFactory.getLog(CoreDescriptorDecorator.class); 
     private final Properties properties = new Properties();
+    
+    private static String SECURE_COMMS_PROPERTY =  "alfresco.secureComms";
 
-    public static ImmutableList<String> substitutableProperties = 
+    public static ImmutableList<String> substitutablePropertiesSecure = 
             ImmutableList.of(
                     "alfresco.host",
                     "alfresco.port",
@@ -54,18 +59,37 @@ public class CoreDescriptorDecorator
                     "alfresco.encryption.ssl.keystore.provider",
                     "alfresco.encryption.ssl.truststore.type");
 
+    public static ImmutableList<String> substitutablePropertiesNone = 
+            ImmutableList.of(
+                    "alfresco.host",
+                    "alfresco.port",
+                    "alfresco.baseUrl",
+                    "alfresco.secureComms");
+    
     public CoreDescriptorDecorator(CoreDescriptor descriptor)
     {
         properties.putAll(descriptor.coreProperties);
+        
+        List<String> coreProperties;
+        String comms = ConfigUtil.locateProperty(SECURE_COMMS_PROPERTY, "none");
+        if (comms.equals("https"))
+        {
+        	coreProperties = substitutablePropertiesSecure;
+        }
+        else 
+        {
+        	coreProperties = substitutablePropertiesNone;
+        }
+        
         try
         {
-            substitutableProperties.forEach(prop ->
+            coreProperties.forEach(prop ->
                  properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
             );
         }
         catch(Exception e)
         {
-            log.warn("Unable to locate alfresco host|port|baseUrl|ssl properties");
+            log.warn("Unable to locate alfresco host|port|baseUrl|ssl properties", e);
         }
     }
 
