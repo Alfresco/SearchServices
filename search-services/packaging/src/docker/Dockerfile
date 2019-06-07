@@ -42,6 +42,8 @@ WORKDIR $DIST_DIR
 
 VOLUME $DIST_DIR/data
 VOLUME $DIST_DIR/solrhome
+# Expose a folder to mount keystores in the host (required for Mutual TLS Auth)
+VOLUME $DIST_DIR/keystores
 
 EXPOSE 8983
 USER ${USERNAME}
