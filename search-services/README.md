@@ -221,7 +221,9 @@ $ docker run -e SOLR_ALFRESCO_HOST=localhost -e SOLR_ALFRESCO_PORT=8080 -p 8983:
 
 This Docker image is exposing as VOLUME the folder `/opt/alfresco-search-services/keystores`, that can be used to mount `keystores` folder from host.
 
-Additionally, SOLR Jetty server must be configured to start in SSL Mode using `SOLR\_SSL\_*` environment variables.
+When an environment variable `ALFRESCO_SECURE_COMMS=https` is passed to the Docker container, SOLR will be started using SSL mode.
+
+Additionally, SOLR Jetty server must be configured to start in SSL Mode using `SOLR_SSL_*` environment variables and Search Services must be configured by using Java environment variables starting with `alfresco.encryption.ssl.*` 
 
 Following command will start Search Services with SSL using keystores located at `/tmp/keystores/solr/tmp/keystores/solr`. Note that the internal folders are relative to `/opt/alfresco-search-services/keystores`, as this is the Docker container folder exposed to hold the keystores.
 
@@ -249,8 +251,96 @@ $ docker run -p 8983:8983 \
 searchservices:develop
 ```
 
+SOLR Web Console will be available at:
+
+[https://localhost:8983/solr](https://localhost:8983/solr)
+
+
+**Public Docker repository**
+
+This Docker Image is available at Alfresco Docker Hub:
+
+[https://hub.docker.com/r/alfresco/alfresco-search-services](https://hub.docker.com/r/alfresco/alfresco-search-services)
+
+To use the public image instead of the local one (`searchservices:develop`) just use `alfresco/alfresco-search-services:1.3.x.x` labels.
+
 
 ### Use Alfresco Search Services Docker Image with Docker Compose
+
+Sample configuration in a Docker Compose file using **Plain HTTP** protocol to communicate with Alfresco Repository.
+
+```
+solr6:
+      image: searchservices:develop
+      mem_limit: 2500m
+      environment:
+          # Solr needs to know how to register itself with Alfresco
+          SOLR_ALFRESCO_HOST: "alfresco"
+          SOLR_ALFRESCO_PORT: "8080"
+          # Alfresco needs to know how to call solr
+          SOLR_SOLR_HOST: "solr6"
+          SOLR_SOLR_PORT: "8983"
+          # SSL settings
+          #Create the default alfresco and archive cores
+          SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
+          SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
+      ports:
+          - 8083:8983 #Browser port
+```
+
+SOLR Web Console will be available at:
+
+[http://localhost:8983/solr](http://localhost:8983/solr)
+
+
+Sample configuration in a Docker Compose file using **Mutual Auth TLS (SSL)** protocol to communicate with Alfresco Repository.
+
+```
+solr6:
+      image: searchservices:develop
+      mem_limit: 2500m
+      environment:
+          # Solr needs to know how to register itself with Alfresco
+          SOLR_ALFRESCO_HOST: "alfresco"
+          SOLR_ALFRESCO_PORT: "8443"
+          # Alfresco needs to know how to call solr
+          SOLR_SOLR_HOST: "solr6"
+          SOLR_SOLR_PORT: "8983"
+          # SSL settings
+          ALFRESCO_SECURE_COMMS: "https"
+          SOLR_SSL_TRUST_STORE: "/opt/alfresco-search-services/keystore/ssl.repo.client.truststore"
+          SOLR_SSL_TRUST_STORE_PASSWORD: "truststore"
+          SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
+          SOLR_SSL_KEY_STORE: "/opt/alfresco-search-services/keystore/ssl.repo.client.keystore"
+          SOLR_SSL_KEY_STORE_PASSWORD: "keystore"
+          SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
+          SOLR_SSL_NEED_CLIENT_AUTH: "true"
+          #Create the default alfresco and archive cores
+          SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
+          SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
+          SOLR_OPTS: "
+              -Dsolr.ssl.checkPeerName=false
+              -Dsolr.allow.unsafe.resourceloading=true
+              -Dalfresco.encryption.ssl.keystore.type=JCEKS
+              -Dalfresco.encryption.ssl.keystore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.keystore
+              -Dalfresco.encryption.ssl.keystore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-keystore-passwords.properties
+              -Dalfresco.encryption.ssl.truststore.type=JCEKS
+              -Dalfresco.encryption.ssl.truststore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.truststore
+              -Dalfresco.encryption.ssl.truststore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-truststore-passwords.properties
+          "
+      ports:
+          - 8083:8983 #Browser port
+      volumes:
+          - ./keystores/solr:/opt/alfresco-search-services/keystores
+```
+
+SOLR Web Console will be available at:
+
+[https://localhost:8983/solr](https://localhost:8983/solr)
+
+
+
+**Samples for development use only**
 
 docker-compose files can be used to start up Search Services with Alfresco and Share. There are two docker-composes files available. Depending on the version you want to start either change to 5.x or 6.x. E.g.
 
@@ -270,6 +360,7 @@ If you start version 5.x instead you can also access the API Explorer:
  * API Explorer: http://localhost:8084/api-explorer
 
 ### License
+
 Copyright (C) 2005 - 2017 Alfresco Software Limited
 
 This file is part of the Alfresco software.
