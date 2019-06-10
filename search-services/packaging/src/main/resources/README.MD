@@ -1,28 +1,16 @@
 ## Alfresco Search Services
+
 Alfresco Search Services ${project.version} using Apache Solr ${solr.version}
 
-## Solr 6
-Solr 6 is now available as a drop in replacement for Solr 4 with Alfresco 5.2.
+Find out more about Solr 6 and how to be installed at:
 
-Solr 6 brings with it a number of new features:
+* Community users: https://docs.alfresco.com/search-community/concepts/search-home.html 
 
- - SHARDING by DATE, PROPERTY & DBID
- - FINGERPRINTS to find similar documents
- - Indexing Multiple Document Versions
- - Full SSL support with sharding
+* Enterprise users: https://docs.alfresco.com/search-enterprise/concepts/search-home.html
 
-Find out more about Solr 6 and how it differs here: http://docs.alfresco.com/5.2/concepts/solr6-home.html 
-
-### Install & Run
-**Please read the [Installation Documentation](http://docs.alfresco.com/5.2/concepts/solr6-install-config.html).** 
-
-To run, unzip then
-```
-solr/bin/solr start
-```
 
 ### License
-Copyright (C) 2005 - 2017 Alfresco Software Limited
+Copyright (C) 2005 - 2019 Alfresco Software Limited
 
 This file is part of the Alfresco software. 
 If the software was purchased under a paid Alfresco license, the terms of 
