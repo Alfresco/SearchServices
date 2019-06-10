@@ -102,14 +102,14 @@
 			expectedResults="3" />
 		<query value="SELECT F.*, O.* FROM cmis:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAF IN('10', '11', '12', '83', '99') ORDER BY cmis:name ASC" 
 			expectedResults="3" />		
-		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId" expectedResults="3" />
+		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId" expectedResults="2" />
 		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAF ='aspect folder text subfolder-1'" 
 			expectedResults="1" />
 		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAF LIKE 'aspect folder%'"
-			expectedResults="3" />
+			expectedResults="2" />
 		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAF IN('10', '11', '12') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC"
-			expectedResults="3" />
+			expectedResults="2" />
 		<query value="SELECT F.*, O.* FROM tas:folder as F JOIN tas:tasFolderAspect AS O ON F.cmis:objectId = O.cmis:objectId WHERE O.tas:IntPropertyAF = '12' ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC"
-			expectedResults="1" />
+			expectedResults="0" />
 	</queries>
 </testData> 

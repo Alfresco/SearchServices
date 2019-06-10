@@ -18,7 +18,8 @@ public class SolrSearchByAspectTests extends AbstractCmisE2ETest
     private String siteDoclibNodeRef;
     
     @BeforeClass(alwaysRun = true)
-    public void createTestData() throws Exception
+    @Override
+    public void searchServicesDataPreparation() throws Exception
     {        
         dataContent.usingAdmin().deployContentModel("model/tas-model.xml");
         
@@ -89,7 +90,7 @@ public class SolrSearchByAspectTests extends AbstractCmisE2ETest
                 .updateProperty("tas:TextPropertyAF", "aspect folder text subfolder-1")
                 .updateProperty("tas:IntPropertyAF", 11);
 
-        dataContent.usingUser(testUser).usingResource(tasFolder1).createCustomContent(stdSubFolder2, "F:tas:folder", new CustomObjectTypeProperties());
+        dataContent.usingUser(testUser).usingResource(tasFolder1).createCustomContent(stdSubFolder2, "cmis:folder", new CustomObjectTypeProperties());
 
         cmisApi.authenticateUser(testUser).usingResource(stdSubFolder2).addSecondaryTypes("P:tas:tasFolderAspect")
                 .updateProperty("tas:TextPropertyAF", "aspect folder text subfolder-2")
@@ -133,9 +134,10 @@ public class SolrSearchByAspectTests extends AbstractCmisE2ETest
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-aspect.xml")
     public void executeSearchByAspect(QueryModel query) throws Exception
     {
-        String nodeRef = query.getValue().contains("NODE_REF[f1]") ? tasFolder1.getNodeRef()
-                : query.getValue().contains("s1") ? siteDoclibNodeRef : "";
-        String currentQuery = query.getValue().replace("NODE_REF[f1]", nodeRef).replace("NODE_REF[s1]", nodeRef);
+        String currentQuery = query.getValue()
+                .replace("NODE_REF[f1]", tasFolder1.getNodeRef())
+                .replace("NODE_REF[s1]", siteDoclibNodeRef);
+
         cmisApi.authenticateUser(testUser).withQuery(currentQuery).assertResultsCount().equals(query.getResults());
     }
 }
