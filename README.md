@@ -32,6 +32,8 @@ The Docker Image source code is available at `search-services/packaging/src/dock
 
 [https://hub.docker.com/r/alfresco/alfresco-search-services](https://hub.docker.com/r/alfresco/alfresco-search-services)
 
+*Note* The root `pom.xml` living in this folder is used for packaging Search Services and Insight Engine together. This file includes URLs not available for Community users, but it allows the `search-services` module without accessing to these resources.
+
 More details are available at [search-services](/search-services) folder.
 
 ### Insight Engine
