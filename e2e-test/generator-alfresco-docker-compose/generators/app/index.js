@@ -129,7 +129,7 @@ module.exports = class extends Generator {
           alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
           searchImage: (this.props.insightEngine ?
             "quay.io/alfresco/insight-engine" :
-            "alfresco/alfresco-search-services"
+            "quay.io/alfresco/search-services"
           ),
           searchTag: (this.props.insightEngine ?
             "SEARCH_TAG" :
@@ -172,20 +172,22 @@ module.exports = class extends Generator {
           "alfresco/alfresco-content-repository")
         }
       )
-      this.fs.copyTpl(
-        this.templatePath(this.props.acsVersion + '/search-https'),
-        this.destinationPath('search-https'),
-        {
-          searchImage: (this.props.insightEngine ?
-          "quay.io/alfresco/insight-engine" :
-          "alfresco/alfresco-search-services"
-          ),
-          searchPath: (this.props.insightEngine ?
-            "alfresco-insight-engine" :
-            "alfresco-search-services"
-          )
-        }
-      )
+      if (!this.props.sharding) {
+        this.fs.copyTpl(
+          this.templatePath(this.props.acsVersion + '/search-https'),
+          this.destinationPath('search-https'),
+          {
+            searchImage: (this.props.insightEngine ?
+            "quay.io/alfresco/insight-engine" :
+            "alfresco/alfresco-search-services"
+            ),
+            searchPath: (this.props.insightEngine ?
+              "alfresco-insight-engine" :
+              "alfresco-search-services"
+            )
+          }
+        )
+      }
       if (this.props.zeppelin == true) {
         this.fs.copy(
           this.templatePath(this.props.acsVersion + '/zeppelin-https'),
@@ -225,7 +227,7 @@ module.exports = class extends Generator {
           {
             searchImage: (this.props.insightEngine ?
               "quay.io/alfresco/insight-engine" :
-              "alfresco/alfresco-search-services"
+              "quay.io/alfresco/search-services"
             )
           }
         )
@@ -236,7 +238,7 @@ module.exports = class extends Generator {
           {
             searchImage: (this.props.insightEngine ?
               "quay.io/alfresco/insight-engine" :
-              "alfresco/alfresco-search-services"
+              "quay.io/alfresco/search-services"
             )
           }
         )
