@@ -15,7 +15,6 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
 {
     private FolderModel guestf, tesf, restf, testtttf, testf, testf1, testf2, testf3, testf4;
     private FileModel guestc, restc, tesc, testtttc, testc, testc1, testc2, testc3;
-    private String siteDoclibNodeRef;
 
     @BeforeClass(alwaysRun = true)
     @Override
@@ -45,18 +44,15 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
         testc1 = new FileModel("testc1.txt");
         testc2 = new FileModel("testc2.txt");
         testc3 = new FileModel("testc3.txt");
-        
-        cmisApi.authenticateUser(testUser);
-        siteDoclibNodeRef = cmisApi.withCMISUtil().getObjectId(String.format("/Sites/%s/documentLibrary",testSite.getId()));
-        
-        //Sites
+
+        // Sites
         dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(guestf, "F:tas:folder",
                 new CustomObjectTypeProperties().addProperty("tas:TextPropertyF", "guestf text")
-                        .addProperty("tas:IntPropertyF", 222));       
+                        .addProperty("tas:IntPropertyF", 222));
         dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(tesf, "F:tas:folder",
                 new CustomObjectTypeProperties().addProperty("tas:TextPropertyF", "tesf text")
                         .addProperty("tas:IntPropertyF", 224));
-        
+
         // Sites >> Folders
         dataContent.usingUser(testUser).usingResource(guestf).createCustomContent(restf, "F:tas:folder",
                 new CustomObjectTypeProperties().addProperty("tas:TextPropertyF", "restf text")
@@ -112,8 +108,8 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
 
     @Test(groups = { TestGroup.CMIS }, dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-property.xml")
-    public void executeSearchByAspect(QueryModel query) throws Exception
-    {     
+    public void executeSearchByID(QueryModel query) throws Exception
+    {
         cmisApi.authenticateUser(testUser).withQuery(query.getValue()).assertResultsCount().equals(query.getResults());
     }
 }
