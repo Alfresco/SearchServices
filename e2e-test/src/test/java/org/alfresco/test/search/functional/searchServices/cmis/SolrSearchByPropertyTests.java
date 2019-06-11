@@ -17,6 +17,7 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
     private FileModel guestc, restc, tesc, testtttc, testc, testc1, testc2, testc3;
 
     @BeforeClass(alwaysRun = true)
+    @Override
     public void searchServicesDataPreparation() throws Exception
     {
         dataContent.usingAdmin().deployContentModel("model/tas-model.xml");
