@@ -17,7 +17,6 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
     private FileModel guestc, restc, tesc, testtttc, testc, testc1, testc2, testc3;
 
     @BeforeClass(alwaysRun = true)
-    @Override
     public void searchServicesDataPreparation() throws Exception
     {
         dataContent.usingAdmin().deployContentModel("model/tas-model.xml");
@@ -108,7 +107,7 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
 
     @Test(groups = { TestGroup.CMIS }, dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-property.xml")
-    public void executeSearchByID(QueryModel query) throws Exception
+    public void executeSearchByProperty(QueryModel query) throws Exception
     {
         cmisApi.authenticateUser(testUser).withQuery(query.getValue()).assertResultsCount().equals(query.getResults());
     }
