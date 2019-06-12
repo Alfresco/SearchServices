@@ -13,23 +13,16 @@ This project generates a collection of Docker Compose Templates to test Reposito
 Following templates are provided.
 
 ```
-$ tree generators/app/templates/
-generators/app/templates/
+$ tree generators/app/templates/6.1
 ├── .env
-├── alfresco-https
+├── alfresco
 │   └── Dockerfile
 ├── docker-compose-ce.yml
 ├── docker-compose-ee.yml
-├── replication-none
+├── search
 │   └── Dockerfile
-├── search-https
-│   └── Dockerfile
-├── sharding-https
-│   └── Dockerfile
-├── sharding-none
-│   └── Dockerfile
-├── zeppelin-https
-│   └── Dockerfile
+└── zeppelin
+|   └── Dockerfile
 └── keystores
     ├── alfresco
     ├── solr
@@ -39,12 +32,9 @@ generators/app/templates/
 * `.env` includes default values for Docker Compose environment variables
 * `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment
 * `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment
-* `alfresco-https` includes a Dockerfile template to start Alfresco Repository with SSL
-* `search-https` includes a Dockerfile template to start Search Services and Insight Engine with SSL
-* `zeppelin-https` includes a Dockerfile template to start Zeppelin with SSL
-* `sharding-none` includes a Dockerfile template for dynamic Sharding in Plain HTTP
-* `sharding-https` includes a Dockerfile template for dynamic Sharding with SSL
-* `replication-none` includes a Dockerfile template for Replication in Master/Slave mode
+* `alfresco` includes a Dockerfile template to start Alfresco Repository
+* `search` includes a Dockerfile template to start Search Services and Insight Engine
+* `zeppelin` includes a Dockerfile template to start Zeppelin with SSL
 * `keystores` includes every truststore and keystore required for SSL configuration
 
 
@@ -94,6 +84,7 @@ When using Enterprise, some different options can be combined:
 ? Would you like to use Insight Engine instead of Search Services? Yes
 ? Would you like to deploy Zeppelin? Yes
 ? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
+? Would you like to use a SOLR Cluster (2 nodes in master-slave)? Yes
 ```
 
 ## Passing parameters from command line
