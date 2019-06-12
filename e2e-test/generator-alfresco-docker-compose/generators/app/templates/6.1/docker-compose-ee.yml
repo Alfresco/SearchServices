@@ -159,6 +159,7 @@ services:
             REPO_PORT: "<%=alfrescoPort%>" <% if (httpMode == 'https') { %>
             JAVA_OPTS: "
                 -Dalfresco.enable.ssl=true
+                -Dsolr.ssl.checkPeerName=false
                 -Djavax.net.ssl.keyStore=/zeppelin/keystore/ssl.repo.client.keystore
                 -Djavax.net.ssl.keyStorePassword=kT9X6oe68t
                 -Djavax.net.ssl.keyStoreType=JCEKS
