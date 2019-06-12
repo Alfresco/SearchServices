@@ -64,7 +64,7 @@ Additionally, if Plain HTTP is selected, SOLR Replication can be added.
 ? Which Alfresco version do you want to use? 6.1
 ? Would you like to use Alfresco enterprise or community? community
 ? Would you like to use http or https? http
-? Would you like to use a SOLR Cluster (2 nodes in master-slave)? Yes
+? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
 ```
 
 ## Enterprise
@@ -84,7 +84,7 @@ When using Enterprise, some different options can be combined:
 ? Would you like to use Insight Engine instead of Search Services? Yes
 ? Would you like to deploy Zeppelin? Yes
 ? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
-? Would you like to use a SOLR Cluster (2 nodes in master-slave)? Yes
+? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
 ```
 
 ## Passing parameters from command line
