@@ -153,7 +153,8 @@ services:
           args:
             ZEPPELIN_TAG: ${ZEPPELIN_TAG}
             ALFRESCO_COMMS: <%=secureComms%>
-        environment:
+        environment: <% if (httpMode == 'https') { %>
+            REPO_PROTOCOL: "https" <% } %>
             REPO_HOST: "alfresco"
             REPO_PORT: "<%=alfrescoPort%>" <% if (httpMode == 'https') { %>
             JAVA_OPTS: "
