@@ -47,7 +47,7 @@ module.exports = class extends Generator {
         },
         type: 'confirm',
         name: 'clustering',
-        message: 'Would you like to use a SOLR Cluster (2 nodes in master-slave)?',
+        message: 'Would you like to use SOLR Replication (2 nodes in master-slave)?',
         default: false
       },
       // Enterprise only options
@@ -73,7 +73,7 @@ module.exports = class extends Generator {
       {
         when: function (response) {
           return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
-                 (!response.clustering || !commandProps['clustering']);
+                 (!response.clustering && !commandProps['clustering']);
         },
         type: 'confirm',
         name: 'sharding',
@@ -105,53 +105,93 @@ module.exports = class extends Generator {
   // Generate boilerplate from "templates" folder
   writing() {
 
-    // Base Docker Image for Community
-    if (this.props.alfrescoVersion == 'community') {
-      this.fs.copyTpl(
-        this.templatePath(this.props.acsVersion + '/docker-compose-ce.yml'),
-        this.destinationPath('docker-compose.yml'),
-        { httpMode: this.props.httpMode,
-          secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
-          alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
-          clustering: (this.props.clustering ? "true" : "false"),
-          searchSolrHost: (this.props.clustering ? "solr6slave" : "solr6")
-        }
-      );
-    
-    // Base Docker Image for Enterprise
-    } else {
-      this.fs.copyTpl(
-        this.templatePath(this.props.acsVersion + '/docker-compose-ee.yml'),
-        this.destinationPath('docker-compose.yml'),
-        { httpMode: this.props.httpMode,
-          secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
-          alfrescoProtocol: (this.props.httpMode == 'http' ? 'http' : 'https'),
-          alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
-          searchImage: (this.props.insightEngine ?
-            "quay.io/alfresco/insight-engine" :
-            "quay.io/alfresco/search-services"
-          ),
-          searchTag: (this.props.insightEngine ?
-            "SEARCH_TAG" :
-            "SEARCH_CE_TAG"
-          ),
-          searchPath: (this.props.insightEngine ?
-            "alfresco-insight-engine" :
-            "alfresco-search-services"
-          ),
-          zeppelin: (this.props.zeppelin ? "true" : "false"),
-          sharding: (this.props.sharding ? "true" : "false"),
-          clustering: (this.props.clustering ? "true" : "false"),
-          searchSolrHost: (this.props.clustering ? "solr6slave" : "solr6")
-        }
-      );
-    }
-
     // Docker Compose environment variables values
     this.fs.copy(
       this.templatePath(this.props.acsVersion + '/.env'),
       this.destinationPath('.env'),
     )
+
+    // Base Docker Compose Template
+    const dockerComposeTemplate = 
+        (this.props.alfrescoVersion == 'community' ? 
+          this.props.acsVersion + '/docker-compose-ce.yml' :
+          this.props.acsVersion + '/docker-compose-ee.yml');
+
+    // Repository Docker Image tag
+    const acsImageTag = 
+      (this.props.alfrescoVersion == 'community' ? 
+        'alfresco/alfresco-content-repository-community' :
+        'alfresco/alfresco-content-repository');
+
+    // Repository Docker Image version (from environmen variable)
+    const acsEnvTag =
+      (this.props.alfrescoVersion == 'community' ? 
+        'ALFRESCO_CE_TAG' :
+        'ALFRESCO_TAG');
+
+    // Search Docker Image tag
+    const searchImageTag = 
+    (this.props.insightEngine ? 
+      'quay.io/alfresco/insight-engine' :
+      'quay.io/alfresco/search-services');
+    
+    // Search Docker Image version (from environmen variable)
+    const searchEnvTag =
+      (this.props.insightEngine ? 
+        'SEARCH_TAG' :
+        'SEARCH_CE_TAG');
+
+    // Search Docker Image installation base path
+    const searchBasePath = 
+      (this.props.insightEngine ?
+        "alfresco-insight-engine" :
+        "alfresco-search-services");
+
+    // Copy Docker Compose applying configuration
+    this.fs.copyTpl(
+      this.templatePath(dockerComposeTemplate),
+      this.destinationPath('docker-compose.yml'),
+      { httpMode: this.props.httpMode,
+        secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
+        acsTag: acsEnvTag,
+        alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
+        clustering: (this.props.clustering ? "true" : "false"),
+        searchSolrHost: (this.props.clustering ? "solr6secondary" : "solr6"),
+        searchTag: searchEnvTag,
+        searchPath: searchBasePath,
+        zeppelin: (this.props.zeppelin ? "true" : "false"),
+        sharding: (this.props.sharding ? "true" : "false"),
+        clustering: (this.props.clustering ? "true" : "false"),
+      }
+    );
+
+    // Copy Docker Image for Repository applying configuration
+    this.fs.copyTpl(
+      this.templatePath(this.props.acsVersion + '/alfresco'),
+      this.destinationPath('alfresco'),
+      { 
+        acsImage: acsImageTag
+      }
+    );
+
+    // Copy Docker Image for Search applying configuration
+    this.fs.copyTpl(
+      this.templatePath(this.props.acsVersion + '/search'),
+      this.destinationPath('search'),
+      {
+        searchImage: searchImageTag,
+        searchTag: searchEnvTag,
+        searchPath: searchBasePath
+      }
+    );
+
+    // Copy Docker Image for Zeppelin applying configuration
+    if (this.props.zeppelin) {
+      this.fs.copy(
+        this.templatePath(this.props.acsVersion + '/zeppelin'),
+        this.destinationPath('zeppelin')
+      );
+    }
 
     // Add resources for SSL configuration
     if (this.props.httpMode == 'https') {
@@ -163,36 +203,7 @@ module.exports = class extends Generator {
         this.templatePath('keystores/solr'),
         this.destinationPath('keystores/solr')
       )
-      this.fs.copyTpl(
-        this.templatePath(this.props.acsVersion + '/alfresco-https'),
-        this.destinationPath('alfresco-https'),
-        { 
-          acsImage: (this.props.alfrescoVersion == 'community' ?
-          "alfresco/alfresco-content-repository-community" :
-          "alfresco/alfresco-content-repository")
-        }
-      )
-      if (!this.props.sharding) {
-        this.fs.copyTpl(
-          this.templatePath(this.props.acsVersion + '/search-https'),
-          this.destinationPath('search-https'),
-          {
-            searchImage: (this.props.insightEngine ?
-            "quay.io/alfresco/insight-engine" :
-            "alfresco/alfresco-search-services"
-            ),
-            searchPath: (this.props.insightEngine ?
-              "alfresco-insight-engine" :
-              "alfresco-search-services"
-            )
-          }
-        )
-      }
       if (this.props.zeppelin == true) {
-        this.fs.copy(
-          this.templatePath(this.props.acsVersion + '/zeppelin-https'),
-          this.destinationPath('zeppelin-https')
-        )
         this.fs.copy(
           this.templatePath('keystores/zeppelin'),
           this.destinationPath('keystores/zeppelin')
@@ -200,51 +211,6 @@ module.exports = class extends Generator {
       }
     }
 
-    // Copy replication configuration
-    if (this.props.clustering) {
-      this.fs.copyTpl(
-        this.templatePath(this.props.acsVersion + '/replication-none'),
-        this.destinationPath('replication-none'),
-        {
-          searchImage: (this.props.insightEngine ?
-          "quay.io/alfresco/insight-engine" :
-          "alfresco/alfresco-search-services"
-          ),
-          searchPath: (this.props.insightEngine ?
-            "alfresco-insight-engine" :
-            "alfresco-search-services"
-          )
-        }
-      )
-    }
-
-    // Copy sharding configuration
-    if (this.props.sharding) {
-      if (this.props.httpMode == 'https') {
-        this.fs.copyTpl(
-          this.templatePath(this.props.acsVersion + '/sharding-https'),
-          this.destinationPath('sharding-https'),
-          {
-            searchImage: (this.props.insightEngine ?
-              "quay.io/alfresco/insight-engine" :
-              "quay.io/alfresco/search-services"
-            )
-          }
-        )
-      } else {
-        this.fs.copyTpl(
-          this.templatePath(this.props.acsVersion + '/sharding-none'),
-          this.destinationPath('sharding-none'),
-          {
-            searchImage: (this.props.insightEngine ?
-              "quay.io/alfresco/insight-engine" :
-              "quay.io/alfresco/search-services"
-            )
-          }
-        )
-      }
-    }    
-    
   }
 
 };
