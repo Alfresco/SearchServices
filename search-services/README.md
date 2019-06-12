@@ -43,6 +43,16 @@ To set up remote debugging (on port 5005) start Alfresco Search Services with th
 ./bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
 ```
 
+DBID based sharding can be set up from the command line. For example a core containing shards 0, 1, 6 and 7 from an
+index with twelve shards can be set up by starting an instance of Alfresco Search Services with a command like:
+
+```bash
+./bin/solr start -a -Dcreate.alfresco.defaults=alfresco,archive -Dnum.shards=12 -Dshard.ids=0,1,6,7
+```
+
+Further instances should be set up to contain the other shards, and it is possible to adjust the distribution and
+replication of shards to achieve the desired index performance and redundancy.
+
 To stop Alfresco Search Services:
 
 ```bash
