@@ -1,11 +1,17 @@
 ARG ZEPPELIN_TAG
 FROM quay.io/alfresco/insight-zeppelin:${ZEPPELIN_TAG}
 
+# COMMS
+ARG ALFRESCO_COMMS
+ENV ALFRESCO_COMMS $ALFRESCO_COMMS
+
+# Useless when running in Alfresco Comms none mode
 RUN mkdir ${ZEPPELIN_HOME}/keystore \
  && chown -R zeppelin:zeppelin ${ZEPPELIN_HOME}/keystore
 
  ### Add SSL Configuration to Zeppelin Interpreter
- RUN sed -i '/"zeppelin.jdbc.principal":/i \
+ RUN if [ "$ALFRESCO_COMMS" == "https" ] ; then \
+       sed -i '/"zeppelin.jdbc.principal":/i \
          "alfresco.enable.ssl": { \n\
            "value": "true", \n\
            "type": "string" \n\
@@ -38,4 +44,5 @@ RUN mkdir ${ZEPPELIN_HOME}/keystore \
            "value": "JCEKS",\n\
            "type": "string"\n\
          \n},\
- ' ${ZEPPELIN_HOME}/conf/interpreter.json
+ ' ${ZEPPELIN_HOME}/conf/interpreter.json; \
+fi
