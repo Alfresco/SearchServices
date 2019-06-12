@@ -12,9 +12,9 @@ if [[ ! -z "$SOLR_JAVA_MEM" ]]; then
    sed -i -e "s/.*SOLR_JAVA_MEM=.*/SOLR_JAVA_MEM=\"$SOLR_JAVA_MEM\"/g" $SOLR_IN_FILE
 fi
 
-# By default Docker Image is using plain HTTP for communications with Repository
-# TLS Mutual Auth can be enabled by setting ALFRESCO_SECURE_COMMS to any value different from 'none' ('https' is recommended)
-if [[ -z "$ALFRESCO_SECURE_COMMS" || "none" == "$ALFRESCO_SECURE_COMMS" ]]; then
+# By default Docker Image is using TLS Mutual Authentication (SSL) for communications with Repository
+# Plain HTTP can be enabled by setting ALFRESCO_SECURE_COMMS to 'none'
+if [[ "none" == "$ALFRESCO_SECURE_COMMS" ]]; then
    sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' ${PWD}/solrhome/templates/rerank/conf/solrcore.properties
    sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' ${PWD}/solrhome/templates/noRerank/conf/solrcore.properties
    # Apply also the setting to existing SOLR cores property files when existing
