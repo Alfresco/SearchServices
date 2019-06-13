@@ -212,7 +212,7 @@ By default Docker image is using SSL, but an environment variable `ALFRESCO_SECU
 
 Additionally, SOLR Jetty server must be configured to start in SSL Mode using `SOLR_SSL_*` environment variables and Search Services must be configured by using Java environment variables starting with `alfresco.encryption.ssl.*`
 
-Following command will start Search Services with SSL using keystores located at `/tmp/keystores/solr/tmp/keystores/solr`. Note that the internal folders are relative to `/opt/alfresco-search-services/keystores`, as this is the Docker container folder exposed to hold the keystores.
+Following command will start Search Services with SSL using keystores located at `/tmp/keystores/solr`. Note that the internal folders are relative to `/opt/alfresco-search-services/keystores`, as this is the Docker container folder exposed to hold the keystores.
 
 ```bash
 $ docker run -p 8983:8983 \
