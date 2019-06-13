@@ -121,6 +121,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
     
     public static void initSolrServers(int numShards, String testClassName, Properties solrcoreProperties) throws Throwable
     {
+        solrcoreProperties = addExplicitShardingProperty(solrcoreProperties);
         clientShards = new ArrayList<>();
         solrShards = new ArrayList<>();
         solrCollectionNameToStandaloneClient = new HashMap<>();
@@ -135,6 +136,18 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         RandomSupplier.RandVal.uniqueValues = new HashSet(); // reset random values
         createServers(serverName, coreNames, numShards,solrcoreProperties);
         System.setProperty("solr.solr.home", testDir.toPath().resolve(serverName).toString());
+    }
+
+    private static Properties addExplicitShardingProperty(Properties solrcoreProperties)
+    {
+        if(solrcoreProperties == null){
+            solrcoreProperties = new Properties();
+        }
+        if(solrcoreProperties.getProperty("shard.method")==null)
+        {
+            solrcoreProperties.put("shard.method", "EXPLICIT_ID");
+        }
+        return solrcoreProperties;
     }
 
     public static void initSingleSolrServer(String testClassName, Properties solrcoreProperties) throws Throwable {
