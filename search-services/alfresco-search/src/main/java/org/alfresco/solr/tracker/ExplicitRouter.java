@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2019 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.solr.tracker;
 
 import org.alfresco.solr.client.Acl;
@@ -11,9 +29,10 @@ import org.slf4j.LoggerFactory;
 public class ExplicitRouter implements DocRouter {
 
     protected final static Logger log = LoggerFactory.getLogger(ExplicitRouter.class);
-    private final DBIDRouter fallback = new DBIDRouter();
+    private final DocRouter fallbackRouter;
 
-    public ExplicitRouter() {
+    public ExplicitRouter(DocRouter fallbackRouter) {
+        this.fallbackRouter = fallbackRouter;
     }
 
     @Override
@@ -24,11 +43,6 @@ public class ExplicitRouter implements DocRouter {
 
     @Override
     public boolean routeNode(int shardCount, int shardInstance, Node node) {
-
-        if(shardCount <= 1)
-        {
-            return true;
-        }
 
         String shardBy = node.getShardPropertyValue();
 
@@ -59,6 +73,6 @@ public class ExplicitRouter implements DocRouter {
         {
             log.debug("Shard "+shardInstance+" falling back to DBID routing for node "+node.getNodeRef());
         }
-        return fallback.routeNode(shardCount, shardInstance, node);
+        return fallbackRouter.routeNode(shardCount, shardInstance, node);
     }
 }

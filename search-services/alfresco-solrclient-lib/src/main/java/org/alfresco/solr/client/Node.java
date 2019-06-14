@@ -39,6 +39,7 @@ public class Node
     private String tenant;
     private long aclId;
     private String shardPropertyValue;
+    private Integer explicitShardId;
     
     public long getId()
     {
@@ -117,12 +118,24 @@ public class Node
     {
         this.shardPropertyValue = shardPropertyValue;
     }
+
+    public Integer getExplicitShardId()
+    {
+        return this.explicitShardId;
+    }
+
+    public void setExplicitShardId(Integer explicitShardId)
+    {
+        this.explicitShardId = explicitShardId;
+    }
+
     @Override
     public String toString()
     {
         return "Node [id=" + this.id + ", nodeRef=" + this.nodeRef + ", txnId=" + this.txnId
                     + ", status=" + this.status + ", tenant=" + this.tenant + ", aclId="
-                    + this.aclId + ", shardPropertyValue=" + this.shardPropertyValue + "]";
+                    + this.aclId + ", shardPropertyValue=" + this.shardPropertyValue
+                    + ", explicitShardId=" + this.explicitShardId + "]";
     }
     
     
