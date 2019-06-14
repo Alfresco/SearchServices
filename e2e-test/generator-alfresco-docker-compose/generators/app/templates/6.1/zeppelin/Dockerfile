@@ -9,8 +9,8 @@ ENV ALFRESCO_COMMS $ALFRESCO_COMMS
 RUN mkdir ${ZEPPELIN_HOME}/keystore \
  && chown -R zeppelin:zeppelin ${ZEPPELIN_HOME}/keystore
 
- ### Add SSL Configuration to Zeppelin Interpreter
- RUN if [ "$ALFRESCO_COMMS" == "https" ] ; then \
+### Add SSL Configuration to Zeppelin Interpreter
+RUN if [ "$ALFRESCO_COMMS" == "https" ] ; then \
        sed -i '/"zeppelin.jdbc.principal":/i \
          "alfresco.enable.ssl": { \n\
            "value": "true", \n\

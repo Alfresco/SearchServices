@@ -12,7 +12,7 @@ services:
             TRUSTSTORE_PASS: kT9X6oe68t
             KEYSTORE_TYPE: JCEKS
             KEYSTORE_PASS: kT9X6oe68t <% } %>
-        mem_limit: 1700m
+        mem_limit: 1800m
         environment:
             JAVA_OPTS: "
                 -Ddb.driver=org.postgresql.Driver
@@ -63,7 +63,7 @@ services:
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
             SHARD_ID: "0" <% } %>
-        mem_limit: 2500m 
+        mem_limit: 1200m 
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -73,7 +73,7 @@ services:
             SOLR_SOLR_PORT: "8983"
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
-            SOLR_JAVA_MEM: "-Xms2g -Xmx2g" <% if (httpMode == 'https') { %>
+            SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
             SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
             SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
@@ -107,12 +107,13 @@ services:
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
             TRUSTSTORE_TYPE: JCEKS
             KEYSTORE_TYPE: JCEKS <% } %> <% if (clustering == 'true') { %>
-            ENABLE_MASTER: "true"
-            ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
+            MASTER_HOST: "solr6"
+            ENABLE_MASTER: "false"
+            ENABLE_SLAVE: "true" <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
             SHARD_ID: "1" <% } %>
-        mem_limit: 2500m
+        mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -122,7 +123,7 @@ services:
             SOLR_SOLR_PORT: "8983"
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
-            SOLR_JAVA_MEM: "-Xms2g -Xmx2g" <% if (httpMode == 'https') { %>
+            SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
             SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
             SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
@@ -153,6 +154,7 @@ services:
           args:
             ZEPPELIN_TAG: ${ZEPPELIN_TAG}
             ALFRESCO_COMMS: <%=secureComms%>
+        mem_limit: 768m
         environment: <% if (httpMode == 'https') { %>
             REPO_PROTOCOL: "https" <% } %>
             REPO_HOST: "alfresco"
@@ -189,7 +191,7 @@ services:
 
     alfresco-pdf-renderer:
         image: quay.io/alfresco/alfresco-pdf-renderer:${PDF_RENDERER_TAG}
-        mem_limit: 1g
+        mem_limit: 512m
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
             ACTIVEMQ_URL: "nio://activemq:61616"
@@ -201,7 +203,7 @@ services:
 
     imagemagick:
         image: quay.io/alfresco/alfresco-imagemagick:${IMAGE_MAGICK_TAG}
-        mem_limit: 1g
+        mem_limit: 512m
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
             ACTIVEMQ_URL: "nio://activemq:61616"
@@ -225,7 +227,7 @@ services:
 
     tika:
         image: quay.io/alfresco/alfresco-tika:${TIKA_TAG}
-        mem_limit: 1g
+        mem_limit: 512m
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
             ACTIVEMQ_URL: "nio://activemq:61616"
@@ -275,7 +277,7 @@ services:
 
     activemq:
         image: alfresco/alfresco-activemq:${ACTIVE_MQ_TAG}
-        mem_limit: 1g
+        mem_limit: 512m
         ports:
             - 8161:8161 # Web Console
             - 5672:5672 # AMQP
