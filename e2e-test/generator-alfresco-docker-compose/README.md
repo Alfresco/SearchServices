@@ -5,7 +5,7 @@ This project generates a collection of Docker Compose Templates to test Reposito
 
 * Plain HTTP communications
 * TLS/SSL Mutual Authentication communications
-* Sharding (dynamic)
+* Sharding (dynamic) with DB_ID or Explicit Routing
 * Replication (master/slave)
 
 ## Project structure
@@ -16,12 +16,15 @@ Following templates are provided.
 $ tree generators/app/templates/6.1
 ├── .env
 ├── alfresco
-│   └── Dockerfile
+│   ├── Dockerfile
+│   └── model
+│       ├── sharding-content-model-context.xml
+│       └── sharding-content-model.xml
 ├── docker-compose-ce.yml
 ├── docker-compose-ee.yml
 ├── search
 │   └── Dockerfile
-└── zeppelin
+├── zeppelin
 |   └── Dockerfile
 └── keystores
     ├── alfresco
@@ -33,6 +36,7 @@ $ tree generators/app/templates/6.1
 * `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment
 * `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment
 * `alfresco` includes a Dockerfile template to start Alfresco Repository
+  * Default content model for Sharding Explicit Routing is included in folder `model`
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
 * `zeppelin` includes a Dockerfile template to start Zeppelin with SSL
 * `keystores` includes every truststore and keystore required for SSL configuration
@@ -56,36 +60,58 @@ $ yo alfresco-docker-compose
 
 ## Community
 
-When using Community, Plain HTTP or TLS/SSL Mutual Auth can be selected.
+When using Community, some different options can be combined:
 
-Additionally, if Plain HTTP is selected, SOLR Replication can be added.
+* Plain HTTP (http) or TLS/SSL Mutual Authentication (https)
+* Use SOLR Replication in Master/Slave mode (only when using http)
+* Use dynamic Sharding with 2 SOLR nodes pre-configured (only when not using SOLR Replication)
+* Use Explicit Routing for Shards instead of DB_ID (only when using Sharding)
 
 ```
 ? Which Alfresco version do you want to use? 6.1
 ? Would you like to use Alfresco enterprise or community? community
 ? Would you like to use http or https? http
 ? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
+? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
+? Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards? Yes
 ```
 
 ## Enterprise
 
-When using Enterprise, some different options can be combined:
+When using Enterprise, some options can be added to Community configuration:
 
-* Plain HTTP (http) or TLS/SSL Mutual Auth (https)
-* Use SOLR Replication in Master/Slave mode (only for http)
 * Insight Engine, as Search Services is selected by default
 * Deploy Zeppelin app to use JDBC Connector to SOLR
-* Use dynamic Sharding with 2 SOLR nodes pre-configured (only when not using SOLR Replication)
 
 ```
-? Which Alfresco version do you want to use? 6.1
-? Would you like to use Alfresco enterprise or community? enterprise
-? Would you like to use http or https? https
 ? Would you like to use Insight Engine instead of Search Services? Yes
 ? Would you like to deploy Zeppelin? Yes
-? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
-? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
 ```
+
+## Using Explicit Routing feature
+
+Custom content model is deployed to provide a property, named `shard:shardId`, holding the Shard Number (0, 1) where the content is indexed. 
+
+## Configuration catalog
+
+| Version    | Comms | Replication | Sharding | Explicit | Insight | Zeppelin |
+| -          | -     | -           | -        | -        | -       | -        |
+| community  | http  | -           | -        | -        | x       | x        |
+| community  | http  | true        | x        | x        | x       | x        |
+| community  | http  | false       | true     | false    | x       | x        |
+| community  | http  | false       | true     | true     | x       | x        |
+| community  | https | x           | -        | -        | x       | x        |
+| community  | https | x           | true     | false    | x       | x        |
+| community  | https | x           | true     | true     | x       | x        |
+| enterprise | http  | -           | -        | -        | (*)     | (*)      |
+| enterprise | http  | true        | x        | x        | (*)     | (*)      |
+| enterprise | http  | false       | true     | false    | (*)     | (*)      |
+| enterprise | http  | false       | true     | true     | (*)     | (*)      |
+| enterprise | https | x           | -        | -        | (*)     | (*)      |
+| enterprise | https | x           | true     | false    | (*)     | (*)      |
+| enterprise | https | x           | true     | true     | (*)     | (*)      |
+
+Both `community` and `enterprise` ACS deployments can be used with the same options, but `enteprise` may also use Insight Engine (replacing Search Services) and Insight Zeppelin services. 
 
 ## Passing parameters from command line
 
@@ -104,6 +130,7 @@ $ yo alfresco-docker-compose --acsVersion=6.1 --alfrescoVersion=community --http
 `--insightEngine`: true or false
 `--zeppelin`: true or false
 `--sharding`: true or false
+`--explicitRouting`: true or false
 
 
 ## Using Docker Compose
@@ -122,7 +149,7 @@ $ docker-compose down
 
 **Community URLs**
 
-HTTP
+*HTTP*
 
 http://localhost:8080/share
 
@@ -130,12 +157,12 @@ http://localhost:8082/alfresco
 
 http://localhost:8083/solr
 
-When using SOLR Replication, additionally
+When using SOLR Replication or Sharding, additionally
 
 http://localhost:8084/solr
 
 
-SSL
+*SSL*
 
 http://localhost:8080/share
 
@@ -144,10 +171,15 @@ http://localhost:8082/alfresco
 https://localhost:8443/alfresco
 
 https://localhost:8083/solr
+
+When using SOLR Sharding, additionally
+
+https://localhost:8084/solr
+
 
 **Enterprise URLs**
 
-HTTP
+*HTTP*
 
 http://localhost:8080/share
 
@@ -157,12 +189,12 @@ http://localhost:8083/solr
 
 http://localhost:9090/zeppelin
 
-When using SOLR Replication, additionally
+When using SOLR Replication or Sharding, additionally
 
 http://localhost:8084/solr
 
 
-SSL
+*SSL*
 
 http://localhost:8080/share
 
@@ -174,7 +206,6 @@ https://localhost:8083/solr
 
 http://localhost:9090/zeppelin
 
+When using SOLR Sharding, additionally
 
-## License
-
-LGPL-3.0 © [Angel Borroy]()
+https://localhost:8084/solr

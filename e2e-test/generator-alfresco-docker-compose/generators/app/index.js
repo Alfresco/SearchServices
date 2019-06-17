@@ -9,7 +9,7 @@ var banner = require('./banner')
  * - Plain HTTP communications
  * - TLS/SSL Mutual Authentication communications
  * - Sharding (dynamic)
- * - Clustering (master-slave)
+ * - Replication (master-slave)
 */
 module.exports = class extends Generator {
 
@@ -46,8 +46,27 @@ module.exports = class extends Generator {
           return response.httpMode == 'http' || commandProps['httpMode'] == 'http';
         },
         type: 'confirm',
-        name: 'clustering',
+        name: 'replication',
         message: 'Would you like to use SOLR Replication (2 nodes in master-slave)?',
+        default: false
+      },
+      ,
+      {
+        when: function (response) {
+          return !response.replication && !commandProps['replication'];
+        },
+        type: 'confirm',
+        name: 'sharding',
+        message: 'Would you like to use dynamic Sharding (2 SOLR nodes)?',
+        default: false
+      },
+      {
+        when: function (response) {
+          return response.sharding;
+        },
+        type: 'confirm',
+        name: 'explicitRouting',
+        message: 'Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards?',
         default: false
       },
       // Enterprise only options
@@ -68,16 +87,6 @@ module.exports = class extends Generator {
         type: 'confirm',
         name: 'zeppelin',
         message: 'Would you like to deploy Zeppelin?',
-        default: false
-      },
-      {
-        when: function (response) {
-          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
-                 (!response.clustering && !commandProps['clustering']);
-        },
-        type: 'confirm',
-        name: 'sharding',
-        message: 'Would you like to use dynamic Sharding (2 SOLR nodes)?',
         default: false
       }
     ];
@@ -155,13 +164,13 @@ module.exports = class extends Generator {
         secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
         acsTag: acsEnvTag,
         alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
-        clustering: (this.props.clustering ? "true" : "false"),
-        searchSolrHost: (this.props.clustering ? "solr6secondary" : "solr6"),
+        replication: (this.props.replication ? "true" : "false"),
+        searchSolrHost: (this.props.replication ? "solr6secondary" : "solr6"),
         searchTag: searchEnvTag,
         searchPath: searchBasePath,
         zeppelin: (this.props.zeppelin ? "true" : "false"),
         sharding: (this.props.sharding ? "true" : "false"),
-        clustering: (this.props.clustering ? "true" : "false"),
+        explicitRouting: (this.props.explicitRouting ? "true" : "false")
       }
     );
 

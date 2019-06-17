@@ -57,12 +57,13 @@ services:
             ALFRESCO_HOSTNAME: alfresco 
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (clustering == 'true') { %>
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
-            SHARD_ID: "0" <% } %>
+            SHARD_ID: "0" <% } %> <% if (explicitRouting == 'true') { %>
+            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
         mem_limit: 1200m 
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -96,23 +97,24 @@ services:
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
 
-    <% if (sharding == 'true' || clustering == 'true') { %>
+    <% if (sharding == 'true' || replication == 'true') { %>
     solr6secondary:
         build:
           context: ./search
           args:
-            SEARCH_TAG: ${<%=searchTag%>}
+            SEARCH_TAG: ${SEARCH_CE_TAG}
             SOLR_HOSTNAME: solr6secondary
             ALFRESCO_HOSTNAME: alfresco 
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (clustering == 'true') { %>
-            MASTER_HOST: "solr6"
-            ENABLE_MASTER: "false"
-            ENABLE_SLAVE: "true" <% } %> <% if (sharding == 'true') { %>
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            ENABLE_MASTER: "true"
+            ENABLE_SLAVE: "false"
+            MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
-            SHARD_ID: "1" <% } %>
+            SHARD_ID: "1" <% } %> <% if (explicitRouting == 'true') { %>
+            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -130,13 +132,13 @@ services:
             SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
             SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
-            SOLR_SSL_NEED_CLIENT_AUTH: "true"
+            SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
             SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
             SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
             SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
-            SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS"
+            SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true

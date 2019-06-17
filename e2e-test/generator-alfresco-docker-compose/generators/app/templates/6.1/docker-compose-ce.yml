@@ -13,7 +13,7 @@ services:
             TRUSTSTORE_PASS: kT9X6oe68t
             KEYSTORE_TYPE: JCEKS
             KEYSTORE_PASS: kT9X6oe68t <% } %>
-        mem_limit: 1500m
+        mem_limit: 1800m
         environment:
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver
@@ -23,7 +23,8 @@ services:
                 -Dsolr.host=<%=searchSolrHost%>
                 -Dsolr.port.ssl=8983 
                 -Dsolr.secureComms=<%=secureComms%>
-                -Dsolr.base.url=/solr
+                -Dsolr.base.url=/solr <% if (sharding == 'true') { %>
+                -Dsolr.useDynamicShardRegistration=true <% } %>
                 -Dindex.subsystem.name=solr6
                 -Dshare.host=localhost
                 -Dalfresco.port=8082
@@ -32,7 +33,7 @@ services:
                 -Ddeployment.method=DOCKER_COMPOSE
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
-                -Xms1g -Xmx1g
+                -Xms1500m -Xmx1500m
                 "
         ports:
             - 8082:8080 <% if (httpMode == 'https') { %>    
@@ -49,10 +50,14 @@ services:
             ALFRESCO_HOSTNAME: alfresco 
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (clustering == 'true') { %>
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
             ENABLE_MASTER: "true"
-            ENABLE_SLAVE: "false" <% } %>
-        mem_limit: 2500m
+            ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
+            ENABLE_SHARDING: "true"
+            NUM_SHARDS: "2"
+            SHARD_ID: "0" <% } %> <% if (explicitRouting == 'true') { %>
+            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
+        mem_limit: 1200m 
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -62,14 +67,20 @@ services:
             SOLR_SOLR_PORT: "8983"
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
-            SOLR_JAVA_MEM: "-Xms2g -Xmx2g" <% if (httpMode == 'https') { %>
-            SOLR_SSL_TRUST_STORE: "/opt/alfresco-search-services/keystore/ssl.repo.client.truststore"
+            SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
             SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
-            SOLR_SSL_KEY_STORE: "/opt/alfresco-search-services/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
             SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
-            SOLR_SSL_NEED_CLIENT_AUTH: "true"
+            SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
+            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
+            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true
@@ -79,7 +90,7 @@ services:
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
 
-    <% if (clustering == 'true') { %>
+    <% if (sharding == 'true' || replication == 'true') { %>
     solr6secondary:
         build:
           context: ./search
@@ -87,11 +98,17 @@ services:
             SEARCH_TAG: ${SEARCH_CE_TAG}
             SOLR_HOSTNAME: solr6secondary
             ALFRESCO_HOSTNAME: alfresco 
-            ALFRESCO_COMMS: <%=secureComms%>
-            ENABLE_MASTER: "false"
-            ENABLE_SLAVE: "true"
-            MASTER_HOST: solr6
-        mem_limit: 2g
+            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
+            TRUSTSTORE_TYPE: JCEKS
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            ENABLE_MASTER: "true"
+            ENABLE_SLAVE: "false"
+            MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
+            ENABLE_SHARDING: "true"
+            NUM_SHARDS: "2"
+            SHARD_ID: "1" <% } %> <% if (explicitRouting == 'true') { %>
+            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
+        mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -101,24 +118,50 @@ services:
             SOLR_SOLR_PORT: "8983"
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
-            SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
+            SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
+            SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
+            SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
+            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
+            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
+            SOLR_OPTS: "
+                -Dsolr.ssl.checkPeerName=false
+                -Dsolr.allow.unsafe.resourceloading=true
+            " <% } %>
         ports:
-            - 8084:8983
+            - 8084:8983  <% if (httpMode == 'https') { %>
+        volumes:
+            - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
     <% } %>
 
     share:
         image: alfresco/alfresco-share:${SHARE_TAG}
         mem_limit: 1g
         environment:
-            - REPO_HOST=alfresco
-            - REPO_PORT=8080
-            - "CATALINA_OPTS= -Xms500m -Xmx500m"
+            REPO_HOST: "alfresco"
+            REPO_PORT: "8080"
+            JAVA_OPTS: "
+                -Xms500m
+                -Xmx500m
+                -Dalfresco.host=localhost
+                -Dalfresco.port=8080
+                -Dalfresco.context=alfresco
+                -Dalfresco.protocol=http
+                "
         ports:
             - 8080:8080
 
     postgres:
         image: postgres:${POSTGRES_TAG}
-        mem_limit: 1500m
+        mem_limit: 512m
         environment:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco
@@ -129,7 +172,7 @@ services:
 
     activemq:
         image: alfresco/alfresco-activemq:${ACTIVE_MQ_TAG}
-        mem_limit: 2048m
+        mem_limit: 512m
         ports:
             - 8161:8161 # Web Console
             - 5672:5672 # AMQP
