@@ -52,7 +52,7 @@ public class ConfigUtil {
     {
 
         String propertyValue = null;
-        String propertyKey = propertyName.toLowerCase();
+        String propertyKey = propertyName;
         String jndiKey =  convertPropertyNameToJNDIPath(propertyKey);
         String envVar = convertPropertyNameToEnvironmentParam(propertyKey);
 
