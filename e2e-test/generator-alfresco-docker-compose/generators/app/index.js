@@ -62,7 +62,7 @@ module.exports = class extends Generator {
       },
       {
         when: function (response) {
-          return response.sharding;
+          return response.sharding || commandProps['sharding'];
         },
         type: 'confirm',
         name: 'explicitRouting',

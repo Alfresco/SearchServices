@@ -36,7 +36,7 @@ $ tree generators/app/templates/6.1
 * `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment
 * `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment
 * `alfresco` includes a Dockerfile template to start Alfresco Repository
-  * Default content model for Sharding Explicit Routing is included in folder `model`
+  * `model` includes a default content model for Sharding Explicit Routing
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
 * `zeppelin` includes a Dockerfile template to start Zeppelin with SSL
 * `keystores` includes every truststore and keystore required for SSL configuration
