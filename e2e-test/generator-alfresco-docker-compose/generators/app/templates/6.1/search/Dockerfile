@@ -89,6 +89,18 @@ RUN if [ "$ENABLE_SHARDING" == "true" ] ; then \
   ${DIST_DIR}/solr/bin/search_config_setup.sh; \
 fi
 
+# EXPLICIT ROUTING SHARDING
+ARG EXPLICIT_ROUTING_SHARDING
+ENV EXPLICIT_ROUTING_SHARDING $EXPLICIT_ROUTING_SHARDING
+
+# Set Shard Method and Shard Key property name
+RUN if [ "$EXPLICIT_ROUTING_SHARDING" == "true" ] ; then \
+  sed -i '/^bash.*/i sed -i "'"s/shard.method=DB_ID/shard.method=EXPLICIT_ID_FALLBACK_DBID/g"'" ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+  ${DIST_DIR}/solr/bin/search_config_setup.sh && \
+  sed -i '/^bash.*/i echo "\nshard.key=shard:shardId\n" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+  ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+fi
+
 # Useless for 'none'/'http' communications with Alfresco
 RUN mkdir ${DIST_DIR}/keystore \
     && chown -R solr:solr ${DIST_DIR}/keystore

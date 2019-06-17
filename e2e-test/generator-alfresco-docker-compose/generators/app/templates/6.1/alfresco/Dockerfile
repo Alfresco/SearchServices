@@ -23,6 +23,8 @@ ENV TRUSTSTORE_TYPE=$TRUSTSTORE_TYPE \
 # Useless for 'none'/'http' communications with SOLR
 VOLUME ["${ALF_DATA_DIR}/keystore"]
 
+USER root
+
 # Default value in "repository.properties" is "dir.keystore=classpath:alfresco/keystore"
 RUN if [ "$SOLR_COMMS" == "https" ] ; then \
         echo -e "\n\
@@ -32,7 +34,7 @@ RUN if [ "$SOLR_COMMS" == "https" ] ; then \
         " >> ${TOMCAT_DIR}/shared/classes/alfresco-global.properties; \
     fi
 
-### Enable SSL by adding the proper Connector to server.xml
+# Enable SSL by adding the proper Connector to server.xml
 RUN if [ "$SOLR_COMMS" == "https" ] ; then \
       sed -i "s/\
 [[:space:]]\+<\/Engine>/\n\
@@ -45,3 +47,6 @@ RUN if [ "$SOLR_COMMS" == "https" ] ; then \
             truststorePass=\"${TRUSTSTORE_PASS}\" truststoreType=\"${TRUSTSTORE_TYPE}\" clientAuth=\"want\" sslProtocol=\"TLS\">\n\
         <\/Connector>/g" ${TOMCAT_DIR}/conf/server.xml; \
     fi
+
+# Explicit Routing Sharding content model (useless when not using this feature)
+COPY model/sharding-content-model*.xml $TOMCAT_DIR/shared/classes/alfresco/extension/
