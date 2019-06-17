@@ -23,6 +23,8 @@ ENV TRUSTSTORE_TYPE=$TRUSTSTORE_TYPE \
 # Useless for 'none'/'http' communications with SOLR
 VOLUME ["${ALF_DATA_DIR}/keystore"]
 
+USER root
+
 # Default value in "repository.properties" is "dir.keystore=classpath:alfresco/keystore"
 RUN if [ "$SOLR_COMMS" == "https" ] ; then \
         echo -e "\n\
