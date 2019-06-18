@@ -50,10 +50,11 @@ module.exports = class extends Generator {
         message: 'Would you like to use SOLR Replication (2 nodes in master-slave)?',
         default: false
       },
-      ,
+      // Enterprise only options
       {
         when: function (response) {
-          return !response.replication && !commandProps['replication'];
+          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
+                 (!response.replication && !commandProps['replication']);
         },
         type: 'confirm',
         name: 'sharding',
@@ -62,14 +63,14 @@ module.exports = class extends Generator {
       },
       {
         when: function (response) {
-          return response.sharding || commandProps['sharding'];
+          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
+                 (response.sharding || commandProps['sharding']);
         },
         type: 'confirm',
         name: 'explicitRouting',
         message: 'Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards?',
         default: false
       },
-      // Enterprise only options
       {
         when: function (response) {
           return response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise';
@@ -176,12 +177,19 @@ module.exports = class extends Generator {
 
     // Copy Docker Image for Repository applying configuration
     this.fs.copyTpl(
-      this.templatePath(this.props.acsVersion + '/alfresco'),
-      this.destinationPath('alfresco'),
+      this.templatePath(this.props.acsVersion + '/alfresco/Dockerfile'),
+      this.destinationPath('alfresco/Dockerfile'),
       { 
-        acsImage: acsImageTag
+        acsImage: acsImageTag,
+        sharding: (this.props.sharding ? "true" : "false")
       }
     );
+    if (this.props.sharding) {
+      this.fs.copy(
+        this.templatePath(this.props.acsVersion + '/alfresco/model'),
+        this.destinationPath('alfresco/model')
+      )
+    }
 
     // Copy Docker Image for Search applying configuration
     this.fs.copyTpl(

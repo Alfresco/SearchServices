@@ -64,26 +64,26 @@ When using Community, some different options can be combined:
 
 * Plain HTTP (http) or TLS/SSL Mutual Authentication (https)
 * Use SOLR Replication in Master/Slave mode (only when using http)
-* Use dynamic Sharding with 2 SOLR nodes pre-configured (only when not using SOLR Replication)
-* Use Explicit Routing for Shards instead of DB_ID (only when using Sharding)
 
 ```
 ? Which Alfresco version do you want to use? 6.1
 ? Would you like to use Alfresco enterprise or community? community
 ? Would you like to use http or https? http
 ? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
-? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
-? Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards? Yes
 ```
 
 ## Enterprise
 
 When using Enterprise, some options can be added to Community configuration:
 
+* Use dynamic Sharding with 2 SOLR nodes pre-configured (only when not using SOLR Replication)
+* Use Explicit Routing for Shards instead of DB_ID (only when using Sharding)
 * Insight Engine, as Search Services is selected by default
 * Deploy Zeppelin app to use JDBC Connector to SOLR
 
 ```
+? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
+? Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards? Yes
 ? Would you like to use Insight Engine instead of Search Services? Yes
 ? Would you like to deploy Zeppelin? Yes
 ```
@@ -101,8 +101,6 @@ Custom content model is deployed to provide a property, named `shard:shardId`, h
 | community  | http  | false       | true     | false    | x       | x        |
 | community  | http  | false       | true     | true     | x       | x        |
 | community  | https | x           | -        | -        | x       | x        |
-| community  | https | x           | true     | false    | x       | x        |
-| community  | https | x           | true     | true     | x       | x        |
 | enterprise | http  | -           | -        | -        | (*)     | (*)      |
 | enterprise | http  | true        | x        | x        | (*)     | (*)      |
 | enterprise | http  | false       | true     | false    | (*)     | (*)      |
@@ -111,7 +109,7 @@ Custom content model is deployed to provide a property, named `shard:shardId`, h
 | enterprise | https | x           | true     | false    | (*)     | (*)      |
 | enterprise | https | x           | true     | true     | (*)     | (*)      |
 
-Both `community` and `enterprise` ACS deployments can be used with the same options, but `enteprise` may also use Insight Engine (replacing Search Services) and Insight Zeppelin services. 
+Both `community` and `enterprise` ACS deployments can be used with the same options, but `enterprise` may also use Insight Engine (replacing Search Services) and Insight Zeppelin services. 
 
 ## Passing parameters from command line
 
@@ -157,7 +155,7 @@ http://localhost:8082/alfresco
 
 http://localhost:8083/solr
 
-When using SOLR Replication or Sharding, additionally
+When using SOLR Replication, additionally
 
 http://localhost:8084/solr
 
@@ -171,10 +169,6 @@ http://localhost:8082/alfresco
 https://localhost:8443/alfresco
 
 https://localhost:8083/solr
-
-When using SOLR Sharding, additionally
-
-https://localhost:8084/solr
 
 
 **Enterprise URLs**
