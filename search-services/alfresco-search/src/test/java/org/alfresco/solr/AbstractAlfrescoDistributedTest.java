@@ -143,6 +143,67 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
     }
 
     /**
+     * This method has the responsibility of checking that each shard has at least count documents
+     * @param query - query to execute
+     * @param count - min number of results each shard must satisfy
+     * @param waitMillis - total ms to wait
+     * @return
+     * @throws Exception
+     */
+    public static boolean checkMinCountPerShard(Query query, int count, long waitMillis) throws SolrServerException,IOException
+    {
+        long begin = System.currentTimeMillis();
+        List<SolrClient> shardedClients = getShardedClients();
+        long timeout = begin + waitMillis;
+        boolean allShardCompliant = false;
+
+        for (SolrClient singleShard : shardedClients)
+        {
+            allShardCompliant = false;
+            int totalHits = 0;
+            int cycles = 1;
+            while ((new Date()).getTime() < timeout && (!allShardCompliant))
+            {
+                QueryResponse response = singleShard.query(luceneToSolrQuery(query));
+                totalHits = (int) response.getResults().getNumFound();
+                if ((long) totalHits >= count)
+                {
+                    allShardCompliant = true;
+                }
+                try
+                {
+                    Thread.sleep((long) (500 * cycles++));
+                }
+                catch (InterruptedException e)
+                {
+                    continue;
+                }
+            }
+        }
+        return allShardCompliant;
+    }
+
+    public static void waitForShardsCount(ModifiableSolrParams query, int count, long waitMillis, long start) throws Exception
+    {
+
+        long timeOut = start+waitMillis;
+        int totalCount = 0;
+        query.set("shards", shards);
+        SolrClient clientShard = clientShards.get(0);
+        while (System.currentTimeMillis() < timeOut)
+        {
+            QueryResponse response = clientShard.query(query);
+            totalCount = (int) response.getResults().getNumFound();
+            if (totalCount == count)
+            {
+                return;
+            }
+        }
+        throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
+    }
+    
+    
+    /**
      * Waits until all cores (including shards) reach a count.
      *
      * @param query
@@ -302,26 +363,6 @@ public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitialize
     {
         SolrQuery solrQuery = luceneToSolrQuery(query);
         waitForShardsCount(solrQuery, count, waitMillis, start);
-    }
-
-
-    public static void waitForShardsCount(ModifiableSolrParams query, int count, long waitMillis, long start) throws Exception
-    {
-
-        long timeOut = start+waitMillis;
-        int totalCount = 0;
-        query.set("shards", shards);
-        SolrClient clientShard = clientShards.get(0);
-        while (System.currentTimeMillis() < timeOut)
-        {
-            QueryResponse response = clientShard.query(query);
-            totalCount = (int) response.getResults().getNumFound();
-            if (totalCount == count)
-            {
-                return;
-            }
-        }
-        throw new Exception("Cluster:Wait error expected "+count+" found "+totalCount+" : "+query.toString());
     }
 
     protected static void injectDocToShards(long txnId, long aclId, long dbId, String owner) throws Exception {
