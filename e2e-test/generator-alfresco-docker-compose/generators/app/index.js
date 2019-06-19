@@ -42,8 +42,8 @@ module.exports = class extends Generator {
         default: 'http'
       },
       {
-        when: function (response) {
-          return response.httpMode == 'http' || commandProps['httpMode'] == 'http';
+        whenFunction: function (response) {
+          return response.httpMode == 'http';
         },
         type: 'confirm',
         name: 'replication',
@@ -52,9 +52,8 @@ module.exports = class extends Generator {
       },
       // Enterprise only options
       {
-        when: function (response) {
-          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
-                 (!response.replication && !commandProps['replication']);
+        whenFunction: function (response) {
+          return response.alfrescoVersion == 'enterprise' && !response.replication;
         },
         type: 'confirm',
         name: 'sharding',
@@ -62,9 +61,8 @@ module.exports = class extends Generator {
         default: false
       },
       {
-        when: function (response) {
-          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
-                 (response.sharding || commandProps['sharding']);
+        whenFunction: function (response) {
+          return response.alfrescoVersion == 'enterprise' && response.sharding;
         },
         type: 'confirm',
         name: 'explicitRouting',
@@ -72,8 +70,8 @@ module.exports = class extends Generator {
         default: false
       },
       {
-        when: function (response) {
-          return response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise';
+        whenFunction: function (response) {
+          return response.alfrescoVersion == 'enterprise';
         },
         type: 'confirm',
         name: 'insightEngine',
@@ -81,9 +79,8 @@ module.exports = class extends Generator {
         default: false
       },
       {
-        when: function (response) {
-          return (response.alfrescoVersion == 'enterprise' || commandProps['alfrescoVersion'] == 'enterprise') &&
-                 (response.insightEngine || commandProps['insightEngine']);
+        whenFunction: function (response) {
+          return response.alfrescoVersion == 'enterprise' && response.insightEngine;
         },
         type: 'confirm',
         name: 'zeppelin',
@@ -92,24 +89,26 @@ module.exports = class extends Generator {
       }
     ];
 
-    // Read options from command line parameters
-    const filteredPrompts = [];
-    const commandProps = new Map();
-    prompts.forEach(function prompts(prompt) {
+    // Create a chain of promises containing the prompts.
+    this.promise = Promise.resolve();
+    this.props = {};
+    prompts.forEach(prompt => {
+      // Check if we can answer the prompt via a command line argument.
       const option = this.options[prompt.name];
       if (option === undefined) {
-        filteredPrompts.push(prompt);
+        this.promise = this.promise.then(_ => {
+          // Check if the prompt is valid given the existing settings.
+          if (!prompt.whenFunction || prompt.whenFunction(this.props)) {
+            // Display the prompt and update this.props with the response.
+            return this.prompt(prompt).then(props => Object.assign(this.props, props));
+          }
+        });
       } else {
-        commandProps[prompt.name] = normalize(option, prompt);
+        this.props[prompt.name] = option;
       }
-    }, this);
-
-    // Prompt only for parameters not passed by command line
-    return this.prompt(filteredPrompts).then(props => {
-      this.props = props;
-      Object.assign(props, commandProps);
     });
-
+    // Provide Yeoman with the chain of promises so it will wait for answers.
+    return this.promise;
   }
 
   // Generate boilerplate from "templates" folder
