@@ -42,9 +42,7 @@ module.exports = class extends Generator {
         default: 'http'
       },
       {
-        whenFunction: function (response) {
-          return response.httpMode == 'http';
-        },
+        whenFunction: response => response.httpMode == 'http',
         type: 'confirm',
         name: 'replication',
         message: 'Would you like to use SOLR Replication (2 nodes in master-slave)?',
@@ -52,36 +50,28 @@ module.exports = class extends Generator {
       },
       // Enterprise only options
       {
-        whenFunction: function (response) {
-          return response.alfrescoVersion == 'enterprise' && !response.replication;
-        },
+        whenFunction: response => response.alfrescoVersion == 'enterprise' && !response.replication,
         type: 'confirm',
         name: 'sharding',
         message: 'Would you like to use dynamic Sharding (2 SOLR nodes)?',
         default: false
       },
       {
-        whenFunction: function (response) {
-          return response.alfrescoVersion == 'enterprise' && response.sharding;
-        },
+        whenFunction: response => response.alfrescoVersion == 'enterprise' && response.sharding,
         type: 'confirm',
         name: 'explicitRouting',
         message: 'Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards?',
         default: false
       },
       {
-        whenFunction: function (response) {
-          return response.alfrescoVersion == 'enterprise';
-        },
+        whenFunction: response => response.alfrescoVersion == 'enterprise',
         type: 'confirm',
         name: 'insightEngine',
         message: 'Would you like to use Insight Engine instead of Search Services?',
         default: false
       },
       {
-        whenFunction: function (response) {
-          return response.alfrescoVersion == 'enterprise' && response.insightEngine;
-        },
+        whenFunction: response => response.alfrescoVersion == 'enterprise' && response.insightEngine,
         type: 'confirm',
         name: 'zeppelin',
         message: 'Would you like to deploy Zeppelin?',
