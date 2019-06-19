@@ -99,8 +99,8 @@ module.exports = class extends Generator {
       const option = this.options[prompt.name];
       if (option === undefined) {
         filteredPrompts.push(prompt);
-      } else {      
-        commandProps[prompt.name] = normalize(option, prompt); 
+      } else {
+        commandProps[prompt.name] = normalize(option, prompt);
       }
     }, this);
 
@@ -122,37 +122,37 @@ module.exports = class extends Generator {
     )
 
     // Base Docker Compose Template
-    const dockerComposeTemplate = 
-        (this.props.alfrescoVersion == 'community' ? 
+    const dockerComposeTemplate =
+        (this.props.alfrescoVersion == 'community' ?
           this.props.acsVersion + '/docker-compose-ce.yml' :
           this.props.acsVersion + '/docker-compose-ee.yml');
 
     // Repository Docker Image tag
-    const acsImageTag = 
-      (this.props.alfrescoVersion == 'community' ? 
+    const acsImageTag =
+      (this.props.alfrescoVersion == 'community' ?
         'alfresco/alfresco-content-repository-community' :
         'alfresco/alfresco-content-repository');
 
     // Repository Docker Image version (from environmen variable)
     const acsEnvTag =
-      (this.props.alfrescoVersion == 'community' ? 
+      (this.props.alfrescoVersion == 'community' ?
         'ALFRESCO_CE_TAG' :
         'ALFRESCO_TAG');
 
     // Search Docker Image tag
-    const searchImageTag = 
-    (this.props.insightEngine ? 
+    const searchImageTag =
+    (this.props.insightEngine ?
       'quay.io/alfresco/insight-engine' :
       'quay.io/alfresco/search-services');
-    
+
     // Search Docker Image version (from environmen variable)
     const searchEnvTag =
-      (this.props.insightEngine ? 
+      (this.props.insightEngine ?
         'SEARCH_TAG' :
         'SEARCH_CE_TAG');
 
     // Search Docker Image installation base path
-    const searchBasePath = 
+    const searchBasePath =
       (this.props.insightEngine ?
         "alfresco-insight-engine" :
         "alfresco-search-services");
@@ -179,7 +179,7 @@ module.exports = class extends Generator {
     this.fs.copyTpl(
       this.templatePath(this.props.acsVersion + '/alfresco/Dockerfile'),
       this.destinationPath('alfresco/Dockerfile'),
-      { 
+      {
         acsImage: acsImageTag,
         sharding: (this.props.sharding ? "true" : "false")
       }
@@ -234,7 +234,7 @@ module.exports = class extends Generator {
 
 // Convert parameter string value to boolean value
 function normalize(option, prompt) {
-  
+
   if (prompt.type === 'confirm' && typeof option === 'string') {
     let lc = option.toLowerCase();
     if (lc === 'true' || lc === 'false') {
