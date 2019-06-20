@@ -94,7 +94,7 @@ module.exports = class extends Generator {
           }
         });
       } else {
-        this.props[prompt.name] = option;
+        this.props[prompt.name] = normalize(option, prompt);
       }
     });
     // Provide Yeoman with the chain of promises so it will wait for answers.
