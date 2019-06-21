@@ -12,7 +12,7 @@ The ability to search on content requires a content extraction process. This rel
 
 In order to scale this work, it is now off loaded to the Transform Service, which can be scaled to cope with the demand. This method of extracting the content is not integrated with Search Services and as a result any content transformed by the Transform Service is not searchable.
 
-The following are the suggested approach to indexing with Transform Service:
+The following are the suggested approaches to indexing with Transform Service:
 
 * Search Service to use the get rendition V1 Public API.
 
@@ -37,11 +37,12 @@ Refactoring the current API used by Search Services provides the following benef
 * Minimal refactoring on the Search Services code base.
 * Minimum disruption to product.
 * Simple setup.
+* Choice of disabling Transform Service or Embedded.
 * Delivery of the feature by fall 2019.
 
-The preferred solution of using an event base would have been ideal but neither the repo, integration, or search teams are likely to have this ready by fall 2019. This will still remain a long term goal however for the short term we will progress with option 2.
+The preferred solution of using an event base would have been ideal but neither the repo or search teams are likely to have this ready by fall 2019. This will still remain a long term goal however for the short term we will progress with option 2.
 
 ## Consequences
-This solution moves the load and stress from the transformation to the repo. The repository will have additional nodes to store, which may put some load on the system however we are confident that it is within reason. This would benefit a benchmark test to validate the claim. Based on previous benchmarking tests, we are confident we can store the information.
+This solution moves the load and stress from the repo to the Transform Service. The repository will have additional nodes to store, which may put some load on the system however we are confident that it is within reason. This would benefit a benchmark test to validate the claim. Based on previous benchmarking tests, we are confident we can store the information.
 
 Final note is the latency introduced due to the additional network calls, this is unavoidable when using the Transform Service but should not pose a problem.
