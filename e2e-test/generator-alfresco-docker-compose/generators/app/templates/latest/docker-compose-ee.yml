@@ -2,11 +2,11 @@
 version: "2"
 
 services:
-    alfresco: 
+    alfresco:
         build:
           context: ./alfresco
           args:
-            ALFRESCO_TAG: ${<%=acsTag%>}
+            ALFRESCO_TAG: ${ALFRESCO_TAG}
             SOLR_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             TRUSTSTORE_PASS: kT9X6oe68t
@@ -52,10 +52,10 @@ services:
         build:
           context: ./search
           args:
-            SEARCH_TAG: ${<%=searchTag%>}
+            SEARCH_TAG: ${SEARCH_TAG}
             SOLR_HOSTNAME: solr6
-            ALFRESCO_HOSTNAME: alfresco 
-            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
+            ALFRESCO_HOSTNAME: alfresco
+            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
             ENABLE_MASTER: "true"
@@ -64,7 +64,7 @@ services:
             NUM_SHARDS: "2"
             SHARD_ID: "0" <% } %> <% if (explicitRouting == 'true') { %>
             EXPLICIT_ROUTING_SHARDING: "true" <% } %>
-        mem_limit: 1200m 
+        mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -102,10 +102,10 @@ services:
         build:
           context: ./search
           args:
-            SEARCH_TAG: ${SEARCH_CE_TAG}
+            SEARCH_TAG: ${SEARCH_TAG}
             SOLR_HOSTNAME: solr6secondary
-            ALFRESCO_HOSTNAME: alfresco 
-            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
+            ALFRESCO_HOSTNAME: alfresco
+            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
             ENABLE_MASTER: "true"
@@ -150,7 +150,7 @@ services:
     <% } %>
 
     <% if (zeppelin == 'true') { %>
-    zeppelin: 
+    zeppelin:
         build:
           context: ./zeppelin
           args:

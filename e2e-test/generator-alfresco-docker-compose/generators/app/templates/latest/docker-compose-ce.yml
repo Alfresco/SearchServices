@@ -3,11 +3,11 @@ version: "2"
 
 services:
 
-    alfresco: 
+    alfresco:
         build:
           context: ./alfresco
           args:
-            ALFRESCO_TAG: ${<%=acsTag%>}
+            ALFRESCO_TAG: ${ALFRESCO_TAG}
             SOLR_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             TRUSTSTORE_PASS: kT9X6oe68t
@@ -21,7 +21,7 @@ services:
                 -Ddb.password=alfresco
                 -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
                 -Dsolr.host=<%=searchSolrHost%>
-                -Dsolr.port.ssl=8983 
+                -Dsolr.port.ssl=8983
                 -Dsolr.secureComms=<%=secureComms%>
                 -Dsolr.base.url=/solr
                 -Dindex.subsystem.name=solr6
@@ -35,7 +35,7 @@ services:
                 -Xms1500m -Xmx1500m
                 "
         ports:
-            - 8082:8080 <% if (httpMode == 'https') { %>    
+            - 8082:8080 <% if (httpMode == 'https') { %>
             - 8443:8443
         volumes:
             - ./keystores/alfresco:/usr/local/tomcat/alf_data/keystore <% } %>
@@ -44,15 +44,15 @@ services:
         build:
           context: ./search
           args:
-            SEARCH_TAG: ${<%=searchTag%>}
+            SEARCH_TAG: ${SEARCH_TAG}
             SOLR_HOSTNAME: solr6
-            ALFRESCO_HOSTNAME: alfresco 
-            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
+            ALFRESCO_HOSTNAME: alfresco
+            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %>
-        mem_limit: 1200m 
+        mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -84,10 +84,10 @@ services:
         build:
           context: ./search
           args:
-            SEARCH_TAG: ${SEARCH_CE_TAG}
+            SEARCH_TAG: ${SEARCH_TAG}
             SOLR_HOSTNAME: solr6secondary
-            ALFRESCO_HOSTNAME: alfresco 
-            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>    
+            ALFRESCO_HOSTNAME: alfresco
+            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
             ENABLE_MASTER: "true"
