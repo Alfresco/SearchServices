@@ -13,7 +13,7 @@ This project generates a collection of Docker Compose Templates to test Reposito
 Following templates are provided.
 
 ```
-$ tree generators/app/templates/6.1
+$ tree generators/app/templates/latest
 ├── .env
 ├── alfresco
 │   ├── Dockerfile
@@ -66,7 +66,7 @@ When using Community, some different options can be combined:
 * Use SOLR Replication in Master/Slave mode (only when using http)
 
 ```
-? Which Alfresco version do you want to use? 6.1
+? Which Alfresco version do you want to use? latest
 ? Would you like to use Alfresco enterprise or community? community
 ? Would you like to use http or https? http
 ? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
@@ -90,7 +90,7 @@ When using Enterprise, some options can be added to Community configuration:
 
 ## Using Explicit Routing feature
 
-Custom content model is deployed to provide a property, named `shard:shardId`, holding the Shard Number (0, 1) where the content is indexed. 
+Custom content model is deployed to provide a property, named `shard:shardId`, holding the Shard Number (0, 1) where the content is indexed.
 
 ## Configuration catalog
 
@@ -109,19 +109,19 @@ Custom content model is deployed to provide a property, named `shard:shardId`, h
 | enterprise | https | x           | true     | false    | (*)     | (*)      |
 | enterprise | https | x           | true     | true     | (*)     | (*)      |
 
-Both `community` and `enterprise` ACS deployments can be used with the same options, but `enterprise` may also use Insight Engine (replacing Search Services) and Insight Zeppelin services. 
+Both `community` and `enterprise` ACS deployments can be used with the same options, but `enterprise` may also use Insight Engine (replacing Search Services) and Insight Zeppelin services.
 
 ## Passing parameters from command line
 
 Default values for options can be specified in the command line, using a `--name=value` pattern. When an options is specified in the command line, the question is not prompted to the user, so you can generate a Docker Compose template with no user interaction.
 
 ```
-$ yo alfresco-docker-compose --acsVersion=6.1 --alfrescoVersion=community --httpMode=http --clustering=true
+$ yo alfresco-docker-compose --acsVersion=latest --alfrescoVersion=community --httpMode=http --clustering=true
 ```
 
 **Parameter names reference**
 
-`--acsVersion`: currently only accepting 6.1
+`--acsVersion`: default latest, but could be set to e.g. 6.1.0.5
 `--alfrescoVersion`: community or enterprise
 `--httpMode`: http or https
 `--clustering`: true or false
