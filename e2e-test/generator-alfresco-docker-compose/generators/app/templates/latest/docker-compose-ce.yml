@@ -57,6 +57,7 @@ services:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
             SOLR_ALFRESCO_PORT: "<%=alfrescoPort%>"
+            ALFRESCO_SECURE_COMMS: <%=secureComms%>
             #Alfresco needs to know how to call solr
             SOLR_SOLR_HOST: "solr6"
             SOLR_SOLR_PORT: "8983"
@@ -98,6 +99,7 @@ services:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
             SOLR_ALFRESCO_PORT: "<%=alfrescoPort%>"
+            ALFRESCO_SECURE_COMMS: <%=secureComms%>
             #Alfresco needs to know how to call solr
             SOLR_SOLR_HOST: "solr6secondary"
             SOLR_SOLR_PORT: "8983"
