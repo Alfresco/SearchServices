@@ -25,7 +25,7 @@ module.exports = class extends Generator {
         type: 'input',
         name: 'acsVersion',
         message: 'Which Alfresco version do you want to use?',
-        default: '6.1'
+        default: 'latest'
       },
       {
         type: 'list',
@@ -104,41 +104,37 @@ module.exports = class extends Generator {
   // Generate boilerplate from "templates" folder
   writing() {
 
+    // TODO: Add support for other versions of ACS.
+    // e.g. Using something like:
+    //     if (this.props.acsVersion.startsWith('6.0')) {
+    var templateDirectory = 'latest';
+
     // Docker Compose environment variables values
-    this.fs.copy(
-      this.templatePath(this.props.acsVersion + '/.env'),
+    this.fs.copyTpl(
+      this.templatePath(templateDirectory + '/.env'),
       this.destinationPath('.env'),
+      {
+        acsTag: this.props.acsVersion
+      }
     )
 
     // Base Docker Compose Template
     const dockerComposeTemplate =
         (this.props.alfrescoVersion == 'community' ?
-          this.props.acsVersion + '/docker-compose-ce.yml' :
-          this.props.acsVersion + '/docker-compose-ee.yml');
+          templateDirectory + '/docker-compose-ce.yml' :
+          templateDirectory + '/docker-compose-ee.yml');
 
-    // Repository Docker Image tag
-    const acsImageTag =
+    // Repository Docker Image name
+    const acsImageName =
       (this.props.alfrescoVersion == 'community' ?
         'alfresco/alfresco-content-repository-community' :
         'alfresco/alfresco-content-repository');
 
-    // Repository Docker Image version (from environmen variable)
-    const acsEnvTag =
-      (this.props.alfrescoVersion == 'community' ?
-        'ALFRESCO_CE_TAG' :
-        'ALFRESCO_TAG');
-
-    // Search Docker Image tag
-    const searchImageTag =
+    // Search Docker Image
+    const searchImageName =
     (this.props.insightEngine ?
       'quay.io/alfresco/insight-engine' :
       'quay.io/alfresco/search-services');
-
-    // Search Docker Image version (from environmen variable)
-    const searchEnvTag =
-      (this.props.insightEngine ?
-        'SEARCH_TAG' :
-        'SEARCH_CE_TAG');
 
     // Search Docker Image installation base path
     const searchBasePath =
@@ -150,13 +146,12 @@ module.exports = class extends Generator {
     this.fs.copyTpl(
       this.templatePath(dockerComposeTemplate),
       this.destinationPath('docker-compose.yml'),
-      { httpMode: this.props.httpMode,
+      {
+        httpMode: this.props.httpMode,
         secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
-        acsTag: acsEnvTag,
         alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
         replication: (this.props.replication ? "true" : "false"),
         searchSolrHost: (this.props.replication ? "solr6secondary" : "solr6"),
-        searchTag: searchEnvTag,
         searchPath: searchBasePath,
         zeppelin: (this.props.zeppelin ? "true" : "false"),
         sharding: (this.props.sharding ? "true" : "false"),
@@ -166,27 +161,26 @@ module.exports = class extends Generator {
 
     // Copy Docker Image for Repository applying configuration
     this.fs.copyTpl(
-      this.templatePath(this.props.acsVersion + '/alfresco/Dockerfile'),
+      this.templatePath(templateDirectory + '/alfresco/Dockerfile'),
       this.destinationPath('alfresco/Dockerfile'),
       {
-        acsImage: acsImageTag,
+        acsImage: acsImageName,
         sharding: (this.props.sharding ? "true" : "false")
       }
     );
     if (this.props.sharding) {
       this.fs.copy(
-        this.templatePath(this.props.acsVersion + '/alfresco/model'),
+        this.templatePath(templateDirectory + '/alfresco/model'),
         this.destinationPath('alfresco/model')
       )
     }
 
     // Copy Docker Image for Search applying configuration
     this.fs.copyTpl(
-      this.templatePath(this.props.acsVersion + '/search'),
+      this.templatePath(templateDirectory + '/search'),
       this.destinationPath('search'),
       {
-        searchImage: searchImageTag,
-        searchTag: searchEnvTag,
+        searchImage: searchImageName,
         searchPath: searchBasePath
       }
     );
@@ -194,7 +188,7 @@ module.exports = class extends Generator {
     // Copy Docker Image for Zeppelin applying configuration
     if (this.props.zeppelin) {
       this.fs.copy(
-        this.templatePath(this.props.acsVersion + '/zeppelin'),
+        this.templatePath(templateDirectory + '/zeppelin'),
         this.destinationPath('zeppelin')
       );
     }
