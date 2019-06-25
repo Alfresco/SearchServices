@@ -1,0 +1,10 @@
+version: '3'
+services:    
+  search:    
+    environment:
+      - VERSION=${SEARCH_TAG}
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}
+    volumes: 
+      - "./upgrade/solr-data:/opt/alfresco-search-services/data"
+      - "./upgrade/solr-contentstore:/opt/alfresco-search-services/contentstore"
+    
