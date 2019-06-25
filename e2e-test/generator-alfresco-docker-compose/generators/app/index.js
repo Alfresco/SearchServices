@@ -203,6 +203,10 @@ module.exports = class extends Generator {
         this.templatePath('keystores/solr'),
         this.destinationPath('keystores/solr')
       )
+      this.fs.copy(
+        this.templatePath('keystores/client'),
+        this.destinationPath('keystores/client')
+      )
       if (this.props.zeppelin == true) {
         this.fs.copy(
           this.templatePath('keystores/zeppelin'),
