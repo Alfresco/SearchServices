@@ -33,6 +33,7 @@ import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.search.TestGroup;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -48,14 +49,14 @@ import org.testng.annotations.Test;
  * @author Meenal Bhave
  *
  */
-public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
+public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
 {   
     private UserModel userWithNoAccess, userCanAccessTextFile;
     private SiteModel testSite;
     private String fname;
     
     @BeforeClass(alwaysRun = true)
-    public void setupEnvironment() throws Exception
+    public void dataPreparation() throws Exception
     {
         serverHealth.assertServerIsOnline();
         

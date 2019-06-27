@@ -38,6 +38,7 @@ import org.alfresco.search.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -70,6 +71,13 @@ import org.testng.annotations.Test;
  */
 public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 {
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        searchServicesDataPreparation();
+        waitForContentIndexing(file4.getContent(), true);
+    }
+
     @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
             description = "Check facet intervals mandatory fields")

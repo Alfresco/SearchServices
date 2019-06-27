@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 import org.alfresco.cmis.CmisProperties;
 import org.alfresco.cmis.CmisWrapper;
-import org.alfresco.test.search.functional.searchServices.search.AbstractSearchServicesE2ETest;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import org.testng.annotations.BeforeMethod;
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
 @Component
 @Scope(value = "prototype")
-public abstract class AbstractCmisE2ETest extends AbstractSearchServicesE2ETest
+public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
 {
     private static Logger LOGGER = LoggerFactory.getLogger(AbstractCmisE2ETest.class);
 

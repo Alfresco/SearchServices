@@ -57,8 +57,9 @@ import org.testng.annotations.Test;
 public class SearchTest extends AbstractSearchServicesE2ETest
 {
     @BeforeClass(alwaysRun = true)
-    public void setupEnvironment() throws Exception
+    public void dataPreparation() throws Exception
     {
+        searchServicesDataPreparation();
         waitForContentIndexing(file4.getContent(), true);
     }
 

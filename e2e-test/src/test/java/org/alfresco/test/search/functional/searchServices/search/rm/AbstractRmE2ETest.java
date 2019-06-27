@@ -20,7 +20,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.test.search.functional.searchServices.search.AbstractSearchServicesE2ETest;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -34,7 +34,7 @@ import org.testng.annotations.BeforeClass;
  * 
  * @author Cristina Diaconu
  */
-public abstract class AbstractRmE2ETest extends AbstractSearchServicesE2ETest
+public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
 {
     protected static final String FILE_PLAN_ALIAS = "-filePlan-";
     protected static final String RECORD_TYPE = "rma:record";

@@ -26,6 +26,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.search.TestGroup;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -36,6 +37,12 @@ import org.testng.annotations.Test;
  */
 public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 {
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        searchServicesDataPreparation();
+    }
+
     /**
      * Perform the below query 
      * {

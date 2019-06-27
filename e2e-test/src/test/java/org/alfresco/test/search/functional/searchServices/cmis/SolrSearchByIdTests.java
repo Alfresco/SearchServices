@@ -18,8 +18,7 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
     private String siteDoclibNodeRef;
     
     @BeforeClass(alwaysRun = true)
-    @Override
-    public void searchServicesDataPreparation() throws Exception
+    public void dataPreparation() throws Exception
     {        
         dataContent.usingAdmin().deployContentModel("model/tas-model.xml");
         

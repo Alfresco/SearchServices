@@ -24,6 +24,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.search.TestGroup;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.report.Bug;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -36,14 +37,14 @@ import static org.testng.Assert.assertTrue;
  * 
  * @author Michael Suzuki
  */
-public class FingerPrintTest extends AbstractSearchServicesE2ETest
+public class FingerPrintTest extends AbstractE2EFunctionalTest
 {
     private FileModel file1;
     private FileModel file2;
     private FolderModel folder;
 
     @BeforeClass(alwaysRun = true)
-    public void indexSimilarFile() throws Exception
+    public void dataPreparation() throws Exception
     {
         /*
          * Create the following file structure in the same Site  : In addition to the preconditions created in dataPreparation
