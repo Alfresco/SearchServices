@@ -43,7 +43,7 @@ public class SearchWithCustomModelTest extends AbstractE2EFunctionalTest
     protected DataContent dataContent;
 
     @BeforeClass(alwaysRun = true)
-    public void setupEnvironment() throws Exception
+    public void dataPreparation() throws Exception
     {
         serverHealth.assertServerIsOnline();
 

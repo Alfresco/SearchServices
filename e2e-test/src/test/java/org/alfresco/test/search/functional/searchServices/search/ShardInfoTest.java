@@ -29,6 +29,7 @@ import org.alfresco.rest.search.RestShardInfoModel;
 import org.alfresco.rest.search.RestShardInfoModelCollection;
 import org.alfresco.rest.search.RestShardModel;
 import org.alfresco.search.TestGroup;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -36,7 +37,7 @@ import org.springframework.http.HttpStatus;
  *
  * @author Tuna Aksoy
  */
-public class ShardInfoTest extends AbstractSearchServicesE2ETest
+public class ShardInfoTest extends AbstractE2EFunctionalTest
 {
     /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. */
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n, TestGroup.ASS_MASTER })

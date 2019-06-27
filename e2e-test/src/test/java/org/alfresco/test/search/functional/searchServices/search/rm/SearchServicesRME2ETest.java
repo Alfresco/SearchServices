@@ -10,6 +10,7 @@ package org.alfresco.test.search.functional.searchServices.search.rm;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.search.TestGroup;
+import org.alfresco.utility.model.FolderModel;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -25,8 +26,9 @@ public class SearchServicesRME2ETest extends AbstractRmE2ETest
     @Test(priority = 1, groups = { TestGroup.ASS_14 })
     public void testBasicSearch() throws Exception
     {
+        FolderModel testFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();
         // Search for a folder name
-        String query = "select * from cmis:folder where cmis:name='" + FOLDER1 + "'";
+        String query = "select * from cmis:folder where cmis:name='" + testFolder + "'";
 
         RestRequestQueryModel queryModel = new RestRequestQueryModel();
         queryModel.setQuery(query);

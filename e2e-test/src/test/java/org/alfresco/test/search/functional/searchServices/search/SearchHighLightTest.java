@@ -24,6 +24,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.search.TestGroup;
 import org.alfresco.utility.report.Bug;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -33,6 +34,12 @@ import org.testng.annotations.Test;
  */
 public class SearchHighLightTest extends AbstractSearchServicesE2ETest
 {
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        searchServicesDataPreparation();
+    }
+
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
     @Bug(id = "TAS-3220")
     public void searchWithHighLight() throws Exception

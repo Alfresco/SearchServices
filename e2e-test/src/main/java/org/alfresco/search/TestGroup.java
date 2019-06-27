@@ -43,4 +43,6 @@ public @interface TestGroup
     public static final String ACS_52n = "ACS_52n"; // Alfresco Content Services 5.2.n
     public static final String ACS_60n = "ACS_60n"; // Alfresco Content Services 6.0 or above
     public static final String ACS_61n = "ACS_61n"; // Alfresco Content Services 6.1 or above
+    public static final String ACS_611n = "ACS_611n"; // Alfresco Content Services 6.1.1 or above
+    public static final String ACS_62n = "ACS_62n"; // Alfresco Content Services 6.2 or above
 }

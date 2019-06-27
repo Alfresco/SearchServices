@@ -98,7 +98,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     }
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void setup() throws Exception
     {
         serverHealth.assertServerIsOnline();
 

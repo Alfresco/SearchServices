@@ -18,7 +18,6 @@ import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.testng.annotations.BeforeClass;
 
 /**
  * Abstract Search test class that contains useful methods
@@ -34,9 +33,8 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
 {
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
 
-    protected FileModel file, file2, file4;
+    protected FileModel file, file2, file3, file4;
 
-    @BeforeClass(alwaysRun = true)
     public void searchServicesDataPreparation() throws Exception
     {
         /*
@@ -61,7 +59,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         file2 = new FileModel("cars.txt", "cars" + title, description, FileType.TEXT_PLAIN,
                 "The landrover discovery is not a sports car ");
 
-        FileModel file3 = new FileModel("alfresco.txt", "alfresco", "alfresco", FileType.TEXT_PLAIN,
+        file3 = new FileModel("alfresco.txt", "alfresco", "alfresco", FileType.TEXT_PLAIN,
                 "Alfresco text file for search ");
 
         file4 = new FileModel(unique_searchString + ".txt", "uniquee" + title, description, FileType.TEXT_PLAIN,

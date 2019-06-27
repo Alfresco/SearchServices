@@ -20,7 +20,7 @@ import javax.json.JsonArrayBuilder;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.model.RestTextResponse;
-import org.alfresco.test.search.functional.searchServices.search.AbstractSearchServicesE2ETest;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.search.TestGroup;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
@@ -32,7 +32,7 @@ import org.testng.annotations.Test;
  * 
  * @author Meenal Bhave
  */
-public class SearchSolrAPITest extends AbstractSearchServicesE2ETest
+public class SearchSolrAPITest extends AbstractE2EFunctionalTest
 {
     @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_112 }, priority = 1)
     public void testGetSolrConfig() throws Exception

@@ -31,6 +31,7 @@ import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.search.TestGroup;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -46,6 +47,12 @@ import org.testng.annotations.Test;
  */
 public class SearchAPATHTest extends AbstractSearchServicesE2ETest
 {
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        searchServicesDataPreparation();
+        waitForContentIndexing(file4.getContent(), true);
+    }
 
     /**
      * {

@@ -37,21 +37,12 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
         }
     }
     
-    /* These tests does not require AbstractSearchServicesE2ETest common tests, 
-     * as it's focused on testing scoring function features
-     * @see org.alfresco.test.search.functional.searchServices.search.AbstractSearchServicesE2ETest#searchServicesDataPreparation()
-     */
-    @Override
-    public void searchServicesDataPreparation() throws Exception
-    {
-    }
-    
     /* These tests does not require common data preparation from AbstractE2EFunctionalTest
      * as it's including every test data required in search-score-funtion.xml
      * @see org.alfresco.test.search.functional.AbstractE2EFunctionalTest#dataPreparation()
      */
     @Override
-    public void dataPreparation() throws Exception
+    public void setup() throws Exception
     {
     }
     
