@@ -4,7 +4,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-super-pom</artifactId>
-      <version>8</version>
+      <version>10</version>
    </parent>
    <groupId>search-analytics-e2e-test</groupId>
    <artifactId>search-analytics-e2e-test</artifactId>
