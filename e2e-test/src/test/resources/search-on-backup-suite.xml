@@ -1,0 +1,10 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="SearchSuite" verbose="6" preserve-order="true">
+	<test name="Pre-Backup">
+		<classes>
+			<!-- execute this before backup -->
+			<class
+				name="org.alfresco.test.search.nonFunctional.backup.SearchServicesOnBackupTests" />
+		</classes>
+	</test>
+</suite>

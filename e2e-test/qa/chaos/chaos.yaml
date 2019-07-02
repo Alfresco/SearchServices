@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubernetes-pod-chaos-monkey
+  labels:
+    purpose: kubernetes-pod-chaos-monkey
+spec:
+  containers:
+  - name: chaos
+    image: quay.io/lsuciu/chaos
+    env:
+    - name: NAMESPACE
+      value: "stupid-server"
+    - name: KILL_NR
+      value: "3"
+    - name: DELAY_SEC   
+      value: "20"

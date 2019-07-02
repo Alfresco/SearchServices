@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: stupid-server-deployment
+  namespace: stupid-server
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: stupid-server
+    spec:
+      containers:
+      - name: stupid-server
+        image: quay.io/lsuciu/stupid-server
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+# vim: set ts=2 expandtab!:
