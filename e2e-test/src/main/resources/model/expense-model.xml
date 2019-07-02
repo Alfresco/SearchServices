@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="expense:expense">
+    <author>Administrator</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.mycompany.com/model/expense/1.0" prefix="expense"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>
+        <type name="expense:expenseReport">
+            <title>expenseReport</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="expense:ExchangeRate">
+                    <title>ExchangeRate</title>
+                    <type>d:double</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:Recorded_At">
+                    <title>RecordedAt</title>
+                    <type>d:datetime</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:ExpenseDate">
+                    <title>ExpenseDate</title>
+                    <type>d:date</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:EmpNo">
+                    <title>EmpNo</title>
+                    <type>d:long</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:Currency">
+                    <title>Currency</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>FALSE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:Amount">
+                    <title>Amount</title>
+                    <type>d:float</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:Approved">
+                    <title>Approved</title>
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+                <property name="expense:id">
+                    <title>id</title>
+                    <type>d:int</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:Notes">
+                    <title>Notes</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="expense:Location">
+                    <title>Location</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="expense:CostCentre__1">
+                    <title>CostCentre</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+    </types>
+    <aspects/>
+</model>

@@ -1,0 +1,15 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="CMISSearchSuite" verbose="10" preserve-order="true">
+
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"/>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+    </listeners>
+
+    <test name="Search">
+        <packages>
+            <package name="org.alfresco.test.search.functional.searchServices.cmis" />
+        </packages>
+    </test>
+</suite>

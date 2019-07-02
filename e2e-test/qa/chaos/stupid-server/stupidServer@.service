@@ -1,0 +1,14 @@
+[Unit]
+Description=Stupid Server
+After=docker.service
+Requires=docker.service
+
+[Service]
+User=core
+ExecStartPre=/bin/bash -c '/usr/bin/docker run --rm -v /opt/bin:/opt/bin ibuildthecloud/systemd-docker && /usr/bin/docker pull quay.io/seanmcgary/stupid-server'
+ExecStart=/bin/bash -c '/opt/bin/systemd-docker run --name stupidservice -p 9000:8000 quay.io/seanmcgary/stupid-server'
+TimeoutStartSec=0
+Restart=always
+RestartSec=10s
+Type=notify
+NotifyAccess=all

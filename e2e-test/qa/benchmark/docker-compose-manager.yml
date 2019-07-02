@@ -1,0 +1,17 @@
+version: "3"
+# This is the docker compose for Alfresco Benchmark Manager
+
+services:
+    alfresco-bm-manager:
+        image: quay.io/alfresco/alfresco-bm-manager:${ALFRESCO_BM_MANAGER_TAG}
+        environment:
+            JAVA_OPTS : "
+                -Dmongo.config.host=mongo
+                "
+        ports:
+            - 9080:9080
+
+    mongo:
+        image: mongo:${MONGO_TAG}
+        ports:
+            - ${MONGO_PORT}:27017

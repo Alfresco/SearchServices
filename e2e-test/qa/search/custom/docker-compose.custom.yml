@@ -1,0 +1,9 @@
+version: '3'
+services:  
+  search:
+    build:
+       context: ./custom
+       dockerfile: Dockerfile
+    image: quay.io/alfresco/search-services-custom:${SEARCH_TAG}
+    volumes:
+      - .:/backup
