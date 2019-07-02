@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+	<users>
+		<user id="userSearchProperties" name="userSearchProperties" password="password" />
+	</users>
+
+	<sites>
+		<site name="siteSearchScoreFunction" createdBy="userSearchProperties" visibility="PUBLIC">
+			<folders>
+				<folder name="test-folder" createdBy="userSearchProperties">
+					<files>
+						<file name="test-1.txt" createdBy="userSearchProperties">
+							<content>Quidditch</content>
+						</file>
+						<file name="test-2.txt" createdBy="userSearchProperties">
+							<content>Quidditch Quidditch</content>
+						</file>
+						<file name="test-3.txt" createdBy="userSearchProperties">
+							<content>Quidditch Quidditch Quidditch</content>
+						</file>
+						<file name="no-test.txt" createdBy="userSearchProperties">
+							<content>Some other words</content>
+						</file>
+					</files>
+				</folder>
+			</folders>
+		</site>
+	</sites>
+	
+</testData> 

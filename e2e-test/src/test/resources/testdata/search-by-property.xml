@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+
+	<queries>
+		<query
+			value="SELECT * FROM tas:document where cmis:name = 'testc.txt'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name &lt;&gt; 'testc.txt'"
+			expectedResults="7" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name &lt; 'testc.txt'"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name &lt;= 'testc.txt'"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name &gt; 'testc.txt'"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name &gt;= 'testc.txt'"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name IN('testc.txt', 'guestc.txt', 'restc.txt')"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name NOT IN('testc.txt', 'gustc.txt', 'restc.txt')"
+			expectedResults="6" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name LIKE '%testc%'"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name LIKE 'testc.txt'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name LIKE 't%tc.txt'"
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name LIKE 't__tc.txt'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name = 'testf'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name &lt;&gt; 'testf'"
+			expectedResults="8" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name &lt; 'testf'"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name &lt;= 'testf'"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name &gt; 'testf'"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name &gt;= 'testf'"
+			expectedResults="6" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name IN('testf', 'guestf', 'restf')"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name NOT IN('testf', 'gustf', 'restf')"
+			expectedResults="7" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%'"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name LIKE 'testf'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name LIKE 't%tf'"
+			expectedResults="2" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name LIKE 't__tf'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name LIKE '%testc%' ORDER BY cmis:name ASC"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name LIKE '%testc%' ORDER BY cmis:name DESC"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:document where cmis:name LIKE '%testc%' ORDER BY cmis:name DESC, cmis:creationDate ASC"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%' ORDER BY cmis:name ASC"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%' ORDER BY cmis:name DESC"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:folder where cmis:name LIKE '%testf%' ORDER BY cmis:name DESC, cmis:creationDate ASC"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:document where tas:TextPropertyC = 'restc text'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where tas:TextPropertyC &lt;&gt; 'testc1 text'"
+			expectedResults="7" />
+		<query
+			value="SELECT * FROM tas:document where tas:TextPropertyC IN('restc text', 'testc2 text', 'testc3 text')"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:document where tas:TextPropertyC NOT IN('restc text', 'testc2 text', 'testc3 text')"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:document where tas:TextPropertyC LIKE '%restc%'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where tas:TextPropertyC &gt;= 'testc'"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:document where tas:TextPropertyC LIKE 't__tc text'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where tas:TextPropertyF = 'restf text'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where tas:TextPropertyF &lt;&gt; 'testf1 text'"
+			expectedResults="8" />
+		<query
+			value="SELECT * FROM tas:folder where tas:TextPropertyF IN('restf text', 'testf2 text', 'testf3 text')"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:folder where tas:TextPropertyF NOT IN('restf text', 'testf2 text', 'testf3 text')"
+			expectedResults="6" />
+		<query
+			value="SELECT * FROM tas:folder where tas:TextPropertyF LIKE '%restf%'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where tas:TextPropertyF &gt;= 'testf text'"
+			expectedResults="6" />
+		<query
+			value="SELECT * FROM tas:folder where tas:TextPropertyF LIKE 't__tf text'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC = '222'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC &lt;&gt; '223'"
+			expectedResults="7" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC &lt; '223'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC &lt;= '224'"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC &gt;= '224'"
+			expectedResults="6" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC &gt; '224'"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC IN('222', '223', '224', '225')"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:document where tas:IntPropertyC NOT IN('222', '223', '224')"
+			expectedResults="5" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF = '222'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF &lt;&gt; '223'"
+			expectedResults="8" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF &lt; '223'"
+			expectedResults="1" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF &lt;= '224'"
+			expectedResults="3" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF &gt;= '224'"
+			expectedResults="7" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF &gt; '224'"
+			expectedResults="6" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF IN('222', '223', '224', '225')"
+			expectedResults="4" />
+		<query
+			value="SELECT * FROM tas:folder where tas:IntPropertyF NOT IN('222', '223', '224')"
+			expectedResults="6" />
+	</queries>
+</testData> 

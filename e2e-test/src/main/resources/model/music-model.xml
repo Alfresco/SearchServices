@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="music:music">
+    <author>Administrator</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="music" prefix="music"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>
+        <type name="music:song">
+            <title>song</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="music:lyricist">
+                    <title>lyricist</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="music:artist-singer-male">
+                    <title>artist-singer-male</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="music:genre">
+                    <title>genre</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="music:lyrics">
+                    <title>lyrics</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="music:popular">
+                    <title>popular</title>
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <default>false</default>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+                <property name="music:artist-singer-female">
+                    <title>artist-singer-female</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+    </types>
+    <aspects>
+        <aspect name="music:AudioVisual">
+            <title>AudioVisual</title>
+            <properties>
+                <property name="music:video">
+                    <title>video</title>
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <default>false</default>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+                <property name="music:audio">
+                    <title>audio</title>
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <default>true</default>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+
+	<queries>
+		<query value="SELECT * FROM tas:folder" expectedResults="3" />
+		<query value="SELECT * FROM tas:document" expectedResults="4" />
+		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="1" />
+		<query value="SELECT * FROM tas:document WHERE IN_TREE('NODE_REF[siteId]')" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId = 'D:tas:document'" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId &lt;&gt; 'D:tas:document' AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId IN ('D:tas:document') AND cmis:name LIKE 'tas%'" expectedResults="4" />
+		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId NOT IN ('D:tas:document') AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name LIKE 'tas%'" expectedResults="4" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name LIKE 'standard%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name IN('tas-file1.txt', 'tas-sub-file1.txt', 'standard-file2.doc')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name LIKE 'tas%' AND tas:TextPropertyC='text sub-file-3'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document WHERE cmis:name NOT IN('tas-file1.txt', 'tas-sub-file1.txt', 'standard-file2.doc')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId = 'cmis:document' AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="3" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId &lt;&gt; 'cmis:document' AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId IN ('cmis:document') AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="3" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId NOT IN ('cmis:document') AND tas:TextPropertyC LIKE 'text sub%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId = 'NODE_REF[d1]'" expectedResults="1" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId IN ('NODE_REF[d1]', 'NODE_REF[d2]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId NOT IN ('NODE_REF[d1]', 'NODE_REF[d2]')" expectedResults="2" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId = 'F:tas:folder'" expectedResults="3" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId &lt;&gt; 'F:tas:folder' AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId IN ('F:tas:folder') AND cmis:name LIKE 'tas%'" expectedResults="3" />
+		<query value="SELECT * FROM cmis:folder WHERE cmis:objectTypeId NOT IN ('F:tas:folder') AND cmis:name LIKE 'standard%'" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:name LIKE 'tas%' AND tas:TextPropertyF = 'text sub-folder-1'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:name LIKE 'standard%'" expectedResults="0" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:name IN('tas-sub-folder1', 'tas-folder2', 'standard-folder3') ORDER BY cmis:name ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId = 'NODE_REF[f1]'" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IN ('NODE_REF[f1]', 'NODE_REF[f1-1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId NOT IN ('NODE_REF[f1]', 'NODE_REF[f1-1]')" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId = 'NODE_REF[f1]' ORDER BY cmis:name DESC" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId &lt;&gt; 'NODE_REF[f1]' ORDER BY cmis:name DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId IN('NODE_REF[f1]', 'NODE_REF[f1-1]') ORDER BY cmis:name ASC" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:parentId NOT IN('NODE_REF[f1]', 'NODE_REF[f1-1]') ORDER BY cmis:name ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId='cmis:folder' ORDER BY cmis:createdBy DESC" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId &lt;&gt; 'cmis:folder' ORDER BY cmis:createdBy ASC" expectedResults="0" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId IN('cmis:folder') AND cmis:objectId='NODE_REF[f1]' ORDER BY cmis:creationDate DESC" expectedResults="1" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:baseTypeId NOT IN('cmis:folder') ORDER BY cmis:creationDate ASC" expectedResults="0" />
+		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="1" />
+		<query value="SELECT * FROM cmis:folder WHERE IN_FOLDER('NODE_REF[f1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId IS NOT NULL" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder WHERE cmis:objectId = ''" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId IS NOT NULL" expectedResults="4" />
+		<query value="SELECT * FROM tas:document WHERE cmis:objectId = ''" expectedResults="0" />
+		<query value="SELECT * FROM tas:document WHERE cmis:baseTypeId IN ('cmis:document') AND tas:TextPropertyC IS NOT NULL" expectedResults="3" />
+		<query value="SELECT * FROM tas:folder WHERE tas:TextPropertyF IS NOT NULL" expectedResults="1" />
+	</queries>
+</testData> 
