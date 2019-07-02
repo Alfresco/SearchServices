@@ -12,7 +12,7 @@ The ability to search on content requires a content extraction process. This rel
 
 In order to scale this work, it is now off loaded to the Transform Service, which can be scaled to cope with the demand. This method of extracting the content is not integrated with Search Services and as a result any content transformed by the Transform Service is not searchable.
 
-The following are the suggested approach to indexing with Transform Service:
+The following are the suggested approaches to indexing with Transform Service:
 
 * Refactor the current V0 API (in use by Search Services) to make use of RenditionService2.
 
