@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="SearchSuite" verbose="6" preserve-order="true">
+	<test name="Post-Upgrade">
+		<classes>
+			<!-- this class depends on data produce and validated by search-pre-upgrade-suite.xml. 
+				Execute it after upgrading product to new version -->
+			<class
+				name="org.alfresco.test.search.nonFunctional.upgrade.SearchServiceUpgradeTests">
+				<methods>
+					<include name="checkDataIsSearchable" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+</suite>

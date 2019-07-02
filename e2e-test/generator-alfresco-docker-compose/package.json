@@ -1,0 +1,63 @@
+{
+  "name": "generator-alfresco-docker-compose",
+  "version": "0.0.0",
+  "description": "Alfresco Docker Compose Generator",
+  "homepage": "https://github.com/Alfresco",
+  "author": {
+    "name": "Angel Borroy",
+    "email": "angel.borroy@alfresco.com"
+  },
+  "files": [
+    "generators"
+  ],
+  "main": "generators/index.js",
+  "keywords": [
+    "alfresco",
+    "docker-compose",
+    "generator",
+    "yeoman-generator"
+  ],
+  "engines": {
+    "npm": ">= 4.0.0"
+  },
+  "dependencies": {
+    "yeoman-generator": "^2.0.1",
+    "chalk": "^2.1.0",
+    "yosay": "^2.0.1"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.json": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "xo",
+      "prettier"
+    ],
+    "env": {
+      "jest": true,
+      "node": true
+    },
+    "rules": {
+      "prettier/prettier": "error"
+    },
+    "plugins": [
+      "prettier"
+    ]
+  },
+  "scripts": {
+    "pretest": "eslint .",
+    "test": "jest"
+  },
+  "repository": "alfresco/generator-alfresco-docker-compose",
+  "license": "LGPL-3.0"
+}

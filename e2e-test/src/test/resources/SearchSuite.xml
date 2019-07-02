@@ -1,0 +1,41 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="SearchSuite" verbose="6" preserve-order="true">
+
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"/>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+    </listeners>
+
+    <test name="Smoke">
+        <groups>
+            <run>
+                <include name="sanity" />
+                <include name="ASS_1.0.0" />
+                <exclude name="InsightEngine_1.0.0" />
+            </run>
+        </groups>
+        <classes>
+            <class name="org.alfresco.test.search.functional.searchServices.sanity.SetupTest" />
+        </classes>
+    </test>
+
+    <test name="E2E-SearchServices">
+        <groups>
+            <run>
+                <include name="ASS_1.0.0" />
+                <include name="ASS_1.4.0" />
+                <exclude name="InsightEngine_1.0.0" />
+                <exclude name="InsightEngine_1.1.0" />
+            </run>
+        </groups>
+        <packages>
+            <package name="org.alfresco.test.search.functional.searchServices.*">
+                <exclude name="org.alfresco.test.search.functional.searchServices.cmis"/>
+                <exclude name="org.alfresco.test.search.functional.searchServices.search.rm"/>
+            </package>
+        </packages>
+        <classes>
+        </classes>
+    </test>
+</suite>
