@@ -45,7 +45,7 @@ Creating a microservice for the content tracker adds complexity which adds littl
 Adding a new content tracker based on a message queue is the preferred solution as this provides the benefits of using the Transform Service. The existing content tacker will remain so that it will work with the community.
 Having the ability to configure the preferred content tracker, provides a solution to both community and enterprise.
 
-![Component Diagram](alfresco-search/doc/architecture/decisions/diagrams/AsyncContentTracker.jpg)
+![Component Diagram](search-services/alfresco-search/doc/architecture/decisions/diagrams/AsyncContentTracker.jpg)
 
 ## Consequences
 This solution addresses the ability to index content asynchronously and will address the known bottle necks however we may discover new problem areas such as the message queue. We recommend doing benchmark tests to validate the claim and observe the behaviour. It is worth mentioning the latency introduced is unavoidable, due to the extra calls when using the Transform Service.
