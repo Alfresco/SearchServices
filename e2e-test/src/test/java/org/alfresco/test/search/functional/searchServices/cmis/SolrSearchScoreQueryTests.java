@@ -112,7 +112,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
 	 * Verify that all SCORE results are between 0 and 1
 	 * @throws Exception
 	 */
-	@Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES }, dependsOnMethods = "prepareDataForScoreSearch")
+	@Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES, TestGroup.ACS_62n }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryInRange() throws Exception
     {
 	    
@@ -137,7 +137,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
      * Verify that all SCORE results are between 0 and 1
      * @throws Exception
      */
-    @Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES }, dependsOnMethods = "prepareDataForScoreSearch")
+    @Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES, TestGroup.ACS_62n }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryAliasInRange() throws Exception
     {
         
