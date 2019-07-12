@@ -18,8 +18,6 @@ public @interface TestGroup
   
     public static final String CMIS = "cmis";
     public static final String REST_API = "rest-api";
-    
-    public static String QUERIES = "queries";
   
     public static final String PREUPGRADE = "pre-upgrade";
     public static final String POSTUPGRADE = "post-upgrade";
