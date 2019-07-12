@@ -75,31 +75,6 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         waitForIndexing("FINGERPRINT:" + file3.getNodeRefWithoutVersion(), true);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_13 })
-    @Bug(id = "MNT-20449")
-    public void makeSureFingerprintQueryWorksAfterMetadataUpdate() throws Exception
-    {
-        // Index a new file with content
-        FileModel file = new FileModel("Project_Contract.pdf", FileType.TEXT_PLAIN, "A content which is completely different from other indexed files.");
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file);
-
-        // make sure the content has been indexed (i.e. the ContentTracker fingerprint has been correctly computed
-        assertTrue(waitForIndexing("FINGERPRINT:" + file.getNodeRefWithoutVersion(), true));
-
-        // Update some metadata attribute of the file
-        String newFileName = "Contrattazione.pdf";
-        file.setName(newFileName);
-
-        // ...and reindex it
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(file).renameContent(file);
-
-        // Make sure the new version of the file has been indexed
-        assertTrue(waitForMetadataIndexing("Contrattazione", true));
-
-        // ...and finally
-        assertTrue(waitForIndexing("FINGERPRINT:" + file.getNodeRefWithoutVersion(), true));
-    }
-
     /**
      * Search similar document based on document finger print.
      * The data prep should have loaded 2 files which one is similar
