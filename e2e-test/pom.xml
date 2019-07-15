@@ -4,7 +4,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-super-pom</artifactId>
-      <version>8</version>
+      <version>10</version>
    </parent>
    <groupId>search-analytics-e2e-test</groupId>
    <artifactId>search-analytics-e2e-test</artifactId>
@@ -21,7 +21,7 @@
       <java.version>11</java.version>
       <maven.compiler.source>${java.version}</maven.compiler.source>
       <maven.compiler.target>${java.version}</maven.compiler.target>
-      <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+      <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
       <jackson.databind.version>2.7.7</jackson.databind.version>
    </properties>
    <build>
@@ -117,7 +117,7 @@
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
-         <version>1.18.4</version>
+         <version>1.18.8</version>
          <scope>test</scope>
       </dependency>
       <dependency>
