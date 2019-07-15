@@ -1,0 +1,60 @@
+@startuml
+skinparam  sequence  {
+	ArrowColor DeepSkyBlue
+	ActorBorderColor DeepSkyBlue
+	LifeLineBorderColor blue
+	ParticipantBorderColor DeepSkyBlue
+	ParticipantBackgroundColor white
+}
+
+ [-> Scheduler : Initialise on first core load
+
+ ...
+ Scheduler -> ContentTracker: Run
+ activate ContentTracker
+ loop  
+ 	
+    ContentTracker -> ContentTracker: doTrack
+    activate ContentTracker
+    ContentTracker -> ContentTracker: aquireRunLock
+    ContentTracker -> ContentTracker: getTrackerState
+    ContentTracker -> SolrInformationServer: getDocsWithUncleanContent
+    activate SolrInformationServer  #FFBBBB
+    SolrInformationServer -> SolrInformationServer: cleanContentCache (periodically)
+    participant SolrIndexSearcher  #aqua
+    activate SolrIndexSearcher #aqua
+    SolrInformationServer -> SolrIndexSearcher: search (Search unclean documents)
+    SolrIndexSearcher -> SolrInformationServer: result docList
+    ContentTracker <- SolrInformationServer: result docList
+    loop content
+       activate ContentIndexWorkerRunnable
+       ContentTracker -> ContentIndexWorkerRunnable: load docList
+       ContentIndexWorkerRunnable -> ContentIndexWorkerRunnable: doWork
+       activate ContentIndexWorkerRunnable #lightgrey
+       ContentIndexWorkerRunnable -> SolrInformationServer: updateContentToIndexAndCache
+       SolrInformationServer -> SolrContentStore: retrieveDocFromSolrContentStore
+       activate SolrContentStore
+       SolrContentStore -> SolrInformationServer
+       deactivate SolrContentStore
+       SolrInformationServer -> SolrInformationServer: addContentToDoc
+       participant SOLRAPIClient  #green
+       activate SOLRAPIClient  #green
+       SolrInformationServer -> SOLRAPIClient: getTextContent
+       SolrInformationServer <- SOLRAPIClient: return Text
+       deactivate SOLRAPIClient
+       activate SolrInformationServer #DarkSalmon
+       SolrInformationServer -> SolrInformationServer:addContentPropertyMetadata 
+       SolrInformationServer -> SolrInformationServer:fingerprint
+       SolrInformationServer -> SolrInformationServer:addField
+       SolrInformationServer -> SolrInformationServer:markFTSStatus
+       SolrInformationServer ->o  SolrContentStore:storeDocOnSolrContentStore
+       participant UpdateRequestProcessor  #aqua
+       SolrInformationServer -> UpdateRequestProcessor:processAdd(addDocCmd)
+    end
+end    
+ ContentTracker -> Scheduler
+ deactivate ContentTracker
+...
+ center footer Copyright 2019 Alfresco Software Inc
+ 
+ @enduml

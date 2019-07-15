@@ -75,7 +75,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         waitForIndexing("FINGERPRINT:" + file3.getNodeRefWithoutVersion(), true);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_13 })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1302 })
     @Bug(id = "MNT-20449")
     public void makeSureFingerprintQueryWorksAfterMetadataUpdate() throws Exception
     {
