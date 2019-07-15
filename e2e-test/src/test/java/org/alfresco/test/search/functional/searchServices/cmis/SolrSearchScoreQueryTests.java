@@ -2,10 +2,11 @@ package org.alfresco.test.search.functional.searchServices.cmis;
 
 import java.math.BigDecimal;
 
+import org.alfresco.search.TestGroup;
 import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestData;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
-import org.alfresco.utility.model.TestGroup;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -61,7 +62,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
      * Verify that results are ordered
      * @throws Exception
      */
-    @Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES }, dependsOnMethods = "prepareDataForScoreSearch")
+    @Test(groups = { TestGroup.ASS_14 }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryOrdered() throws Exception
     {
         
@@ -87,7 +88,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
 	 * Verify that results are inverse ordered
 	 * @throws Exception
 	 */
-	@Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES }, dependsOnMethods = "prepareDataForScoreSearch")
+	@Test(groups = { TestGroup.ASS_14 }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryOrderedDesc() throws Exception
     {
 
@@ -112,7 +113,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
 	 * Verify that all SCORE results are between 0 and 1
 	 * @throws Exception
 	 */
-	@Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES }, dependsOnMethods = "prepareDataForScoreSearch")
+	@Test(groups = { TestGroup.ASS_14, TestGroup.ACS_62n }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryInRange() throws Exception
     {
 	    
@@ -137,7 +138,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
      * Verify that all SCORE results are between 0 and 1
      * @throws Exception
      */
-    @Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES }, dependsOnMethods = "prepareDataForScoreSearch")
+    @Test(groups = { TestGroup.ASS_14, TestGroup.ACS_62n }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryAliasInRange() throws Exception
     {
         
@@ -163,7 +164,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
 	 * Currently only supported with double quotes
 	 * @throws Exception
 	 */
-	@Test(groups = { TestGroup.ASS_14, TestGroup.QUERIES }, dependsOnMethods = "prepareDataForScoreSearch")
+	@Test(groups = { TestGroup.ASS_14 }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryScoreAsAlias() throws Exception
     {
     	
