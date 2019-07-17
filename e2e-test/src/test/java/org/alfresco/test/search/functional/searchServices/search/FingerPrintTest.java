@@ -81,7 +81,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
      * to the files loaded as part of this test.
      * Note that for fingerprint to work it need a 5 word sequence.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Test
     public void search()
     {
         String uuid = file1.getNodeRefWithoutVersion();
@@ -108,7 +108,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Test
     public void searchSimilar()
     {
         String uuid = file2.getNodeRefWithoutVersion();
@@ -138,7 +138,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Test
     public void searchSimilar67Percent()
     {
         String uuid = file2.getNodeRefWithoutVersion();

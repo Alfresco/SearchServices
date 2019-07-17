@@ -63,7 +63,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         waitForContentIndexing(file4.getContent(), true);
     }
 
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API})
+    @Test
     public void searchOnIndexedData() throws Exception
     {
         SearchResponse nodes =  query("cm:content:" + unique_searchString);
@@ -76,7 +76,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         Assert.assertEquals(entity.getName(),"pangram.txt");
     }
     
-    @Test(groups={TestGroup.SEARCH,TestGroup.REST_API})
+    @Test
     public void searchNonIndexedData()
     {        
         SearchResponse nodes =  query("yeti");
@@ -84,8 +84,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         nodes.assertThat().entriesListIsEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+    @Test
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
               description = "Checks its possible to include the original request in the response")
     public void searchWithRequest()
     {
@@ -101,8 +101,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         response.getContext().assertThat().field("request").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+    @Test
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
     public void searchWithOneSortClause()
     {
@@ -148,8 +148,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
      * The first clause has always the same value for all matches so the test makes sure the request is correctly
      * processed and the returned order is determined by the second clause.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1  }, executionType = ExecutionType.REGRESSION,
+    @Test
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH  }, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
     public void searchWithTwoSortClauses()
     {
@@ -193,7 +193,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     }
 
     // Test that when fields parameter is set, only restricted fields appear in the response
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Test
     public void searchWithFields()
     {
         SearchRequest query = new SearchRequest();
@@ -216,7 +216,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries.entry[0].id", Matchers.nullValue());
     }
     
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
+    @Test
     public void searchSpecialCharacters() throws Exception
     {
         // Create a file with Special Characters
