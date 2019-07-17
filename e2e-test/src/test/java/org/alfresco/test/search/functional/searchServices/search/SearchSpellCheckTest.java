@@ -72,7 +72,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
      *    "entries": [...]
      * }
      */
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=1)
+    @Test(groups={ TestGroup.ACS_60n}, priority=1)
     public void testSearchMissSpelled() throws Exception
     {        
         waitForContentIndexing(file4.getContent(), true);
@@ -127,7 +127,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
      *   "spellcheck": {"query": "alfrezco"}
      * }
      */
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=2)
+    @Test(groups={ TestGroup.ACS_60n}, priority=2)
     public void testSearchMissSpelledVersion2()
     {        
         SearchRequest searchReq = new SearchRequest();
@@ -141,7 +141,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         assertResponse(query(searchReq));
     }   
 
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=3)
+    @Test(groups={TestGroup.ACS_60n}, priority=3)
     public void testSearchWithSpellcheckerAndCorrectSpelling()
     {
         SearchRequest searchReq = new SearchRequest();
@@ -155,7 +155,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         res.assertThat().entriesListIsNotEmpty();
     }
     
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ACS_60n}, priority=4)
+    @Test(groups={ TestGroup.ACS_60n}, priority=4)
     public void testSpellCheckType() throws Exception
     {
         // Create a file with mis-spelt name, expect spellcheck type = didYouMean

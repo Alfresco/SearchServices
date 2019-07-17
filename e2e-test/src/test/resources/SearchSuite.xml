@@ -8,11 +8,6 @@
     </listeners>
 
     <test name="Smoke">
-        <groups>
-            <run>
-                <include name="sanity" />
-            </run>
-        </groups>
         <classes>
             <class name="org.alfresco.test.search.functional.searchServices.sanity.SetupTest" />
         </classes>
