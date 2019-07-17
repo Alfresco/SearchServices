@@ -119,7 +119,7 @@ public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
         assertPivotResponse(response, "creator", null);
     }
 
-    @Tes
+    @Test
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH },
               executionType = ExecutionType.REGRESSION,
               description = "Checks nested pivot using Search api")
