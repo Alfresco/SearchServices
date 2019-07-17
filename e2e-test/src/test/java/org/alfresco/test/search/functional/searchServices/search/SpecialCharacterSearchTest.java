@@ -40,7 +40,7 @@ public class SpecialCharacterSearchTest extends AbstractE2EFunctionalTest
      * The goal is to check that the file is actually indexed in solr.
      * @throws Exception
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_52n, TestGroup.ACS_60n, TestGroup.ACS_61n })
+    @Test(groups = { TestGroup.ACS_52n, TestGroup.ACS_60n, TestGroup.ACS_61n })
     @Bug(id = "MNT-20507")
     public void testIndexDELChar() throws Exception
     {

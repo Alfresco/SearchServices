@@ -51,7 +51,7 @@ public class SetupTest extends AbstractE2EFunctionalTest
     }
 
     // Test CMIS API works
-    @Test(priority = 1, groups = { TestGroup.SANITY })
+    @Test(priority = 1)
     public void testCMISFileCreation() throws Exception
     {
         // Create document in a folder in a collaboration site
@@ -60,7 +60,7 @@ public class SetupTest extends AbstractE2EFunctionalTest
     }
 
     // Test Custom Model: Music can be used
-    @Test(priority = 2, groups = { TestGroup.SANITY })
+    @Test(priority = 2)
     public void testModelMusicCanBeUsed() throws Exception
     {
         // Create document of custom type
@@ -78,7 +78,7 @@ public class SetupTest extends AbstractE2EFunctionalTest
     }
 
     // Test Custom Model: Finance can be used
-    @Test(priority = 3, groups = { TestGroup.SANITY })
+    @Test(priority = 3)
     public void testModelFinanceCanBeUsed() throws Exception
     {
         // Create document of custom type

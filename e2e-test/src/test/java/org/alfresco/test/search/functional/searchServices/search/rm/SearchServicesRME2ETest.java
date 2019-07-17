@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 public class SearchServicesRME2ETest extends AbstractRmE2ETest
 {
 
-    @Test(priority = 1, groups = { TestGroup.ASS_14 })
+    @Test(priority = 1)
     public void testBasicSearch() throws Exception
     {
         FolderModel testFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();

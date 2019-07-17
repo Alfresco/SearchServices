@@ -48,8 +48,7 @@ public class SolrSearchByPathTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
 
-    @Test(groups = { TestGroup.CMIS },
-            dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-path.xml")
     public void executeSearchByPathQueries(QueryModel query) throws Exception
     {
