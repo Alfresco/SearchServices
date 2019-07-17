@@ -95,7 +95,7 @@ public class SearchSolrAPITest extends AbstractE2EFunctionalTest
         restClient.onResponse().assertThat().content(Matchers.containsString("overlay"));
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_112 }, priority = 4)
+    @Test(priority = 4)
     public void testGetSolrConfigParams() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withSolrAPI().getConfigParams();
