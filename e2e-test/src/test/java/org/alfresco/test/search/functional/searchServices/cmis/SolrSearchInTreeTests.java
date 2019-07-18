@@ -55,8 +55,7 @@ public class SolrSearchInTreeTests extends AbstractCmisE2ETest
         dataContent.deleteSite(testSite);
     }
     
-    @Test(groups = { TestGroup.CMIS },
-            dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-in-tree.xml")
     public void executeCMISQuery(QueryModel query) throws Exception
     {
