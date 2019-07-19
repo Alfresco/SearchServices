@@ -192,7 +192,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
                         .collect(Collectors.toList()));
     }
 
-    @Test
+    @Test(groups = { TestGroup.ACS_61n })
     @TestRail(section = {
         TestGroup.REST_API, TestGroup.SEARCH,
         TestGroup.ACS_61n }, executionType = ExecutionType.REGRESSION, description = "Checks the \"include\" request parameter support the 'permissions' option")
