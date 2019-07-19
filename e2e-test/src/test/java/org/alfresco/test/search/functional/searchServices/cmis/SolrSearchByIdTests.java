@@ -86,8 +86,7 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
     
-    @Test(groups = { TestGroup.CMIS },
-            dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-id.xml")
     public void executeSearchByAspect(QueryModel query) throws Exception
     {
