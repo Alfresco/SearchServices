@@ -276,10 +276,10 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
                     }
                     else
                     {
-                        for (SearchNodeModel entry : entries)
-                        {
-                            found = (contentName.equalsIgnoreCase(entry.getModel().getName()));
-                        }
+                        found = entries.stream()
+                                .map(entry -> entry.getModel().getName())
+                                .filter(name -> name.equalsIgnoreCase(contentName))
+                                .count() > 0;
                     }
                 }
                 else
