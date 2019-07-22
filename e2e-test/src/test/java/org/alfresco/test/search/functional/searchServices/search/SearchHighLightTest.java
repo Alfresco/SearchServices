@@ -40,7 +40,7 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
         searchServicesDataPreparation();
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
+    @Test
     @Bug(id = "TAS-3220")
     public void searchWithHighLight() throws Exception
     {
@@ -63,7 +63,7 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
         hl.assertThat().field("snippets").contains("The landrover discovery is not a sports ¿car?");
     }
 
-    @Test(groups = { TestGroup.SEARCH, TestGroup.REST_API })
+    @Test
     public void searchNonIndexedData() throws Exception
     {
         RestRequestQueryModel queryReq = new RestRequestQueryModel();

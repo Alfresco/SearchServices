@@ -75,7 +75,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         waitForIndexing("FINGERPRINT:" + file3.getNodeRefWithoutVersion(), true);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1302 })
+    @Test
     @Bug(id = "MNT-20449")
     public void makeSureFingerprintQueryWorksAfterMetadataUpdate() throws Exception
     {
@@ -106,7 +106,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
      * to the files loaded as part of this test.
      * Note that for fingerprint to work it need a 5 word sequence.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Test
     public void search()
     {
         String uuid = file1.getNodeRefWithoutVersion();
@@ -133,7 +133,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Test
     public void searchSimilar()
     {
         String uuid = file2.getNodeRefWithoutVersion();
@@ -163,7 +163,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ASS_1 })
+    @Test
     public void searchSimilar67Percent()
     {
         String uuid = file2.getNodeRefWithoutVersion();

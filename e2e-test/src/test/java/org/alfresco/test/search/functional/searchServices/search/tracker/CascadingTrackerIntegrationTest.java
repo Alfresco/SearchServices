@@ -33,7 +33,7 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
     @Autowired
     protected DataContent dataContent;
 
-    @Test(priority = 1, groups = { TestGroup.ASS_13 })
+    @Test(priority = 1)
     public void testChildPathWhenParentRenamed() throws Exception
     {
         // Create Parent folder
@@ -74,7 +74,7 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
         Assert.assertEquals(descendantCountOfOriginalName, 0, "Old path still has descendants: " + parentQuery);
     }
 
-    @Test(priority = 2, groups = { TestGroup.ASS_13 })
+    @Test(priority = 2)
     public void testGrandChildPathWhenGrandParentRenamed() throws Exception
     {
         // Create grand parent folder

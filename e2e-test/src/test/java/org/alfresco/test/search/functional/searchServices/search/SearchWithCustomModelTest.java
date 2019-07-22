@@ -114,7 +114,7 @@ public class SearchWithCustomModelTest extends AbstractE2EFunctionalTest
     }
 
     // Search-1359: Search AFTS Query with Range
-    @Test(priority = 1, groups = { TestGroup.ASS_14 })
+    @Test(priority = 1)
     public void testRangeQueryTextField()
     {
         // Search Range Query
@@ -138,7 +138,7 @@ public class SearchWithCustomModelTest extends AbstractE2EFunctionalTest
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }
 
-    @Test(priority = 2, groups = { TestGroup.ASS_14 })
+    @Test(priority = 2)
     public void testRangeQueryTextFieldWhiteSpace()
     {
         SearchResponse response = queryAsUser(testUser, "finance:Emp:[* TO Daniel]");
@@ -159,7 +159,7 @@ public class SearchWithCustomModelTest extends AbstractE2EFunctionalTest
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }
 
-    @Test(priority = 3, groups = { TestGroup.ASS_14 })
+    @Test(priority = 3)
     public void testRangeQueryTextFieldNonFacetable()
     {
         // Search Range Query
@@ -186,7 +186,7 @@ public class SearchWithCustomModelTest extends AbstractE2EFunctionalTest
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }
 
-    @Test(priority = 4, groups = { TestGroup.ASS_14 })
+    @Test(priority = 4)
     public void testRangeQueryTextFieldNotTockenised()
     {
         SearchResponse response = queryAsUser(testUser, "finance:Desc:[* TO David]");
@@ -207,7 +207,7 @@ public class SearchWithCustomModelTest extends AbstractE2EFunctionalTest
         Assert.assertEquals(response.getPagination().getCount(), 2);
     }
 
-    @Test(priority = 5, groups = { TestGroup.ASS_14 })
+    @Test(priority = 5)
     public void testRangeQueryDoubleField()
     {
         // Search Range Query
