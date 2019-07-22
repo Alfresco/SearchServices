@@ -124,7 +124,7 @@
                                     <version>${project.version}</version>
                                     <classifier>libs</classifier>
                                     <outputDirectory>${project.build.directory}/solr-libs</outputDirectory>
-                                    <excludes>**/lucene-analyzers-common-*.jar,**/lucene-analyzers-kuromoji-*.jar,**/lucene-analyzers-phonetic-*.jar,**/lucene-backward-codecs-*.jar,**/lucene-classification-*.jar,**/lucene-codecs-*.jar,**/lucene-core-*.jar,**/lucene-expressions-*.jar,**/lucene-grouping-*.jar,**/lucene-highlighter-*jar,**/lucene-join-*.jar,**/lucene-memory-*.jar,**/lucene-misc-*.jar,**/lucene-queries-*.jar,**/lucene-queryparser-*.jar,**/lucene-sandbox-*.jar,**/lucene-spatial-extras-*.jar,**/lucene-suggest-*.jar,**/solr-core-*.jar,**/solr-solrj-*.jar</excludes>
+                                    <excludes>**/lucene-analyzers-common-*.jar,**/lucene-analyzers-kuromoji-*.jar,**/lucene-analyzers-phonetic-*.jar,**/lucene-backward-codecs-*.jar,**/lucene-classification-*.jar,**/lucene-codecs-*.jar,**/lucene-core-*.jar,**/lucene-expressions-*.jar,**/lucene-grouping-*.jar,**/lucene-highlighter-*jar,**/lucene-join-*.jar,**/lucene-memory-*.jar,**/lucene-misc-*.jar,**/lucene-queries-*.jar,**/lucene-queryparser-*.jar,**/lucene-sandbox-*.jar,**/lucene-spatial-extras-*.jar,**/lucene-suggest-*.jar,**/solr-core-*.jar,**/solr-solrj-*.jar,**/jackson-dataformat-smile-*.jar,**/asm-3.3.1.jar,**/jackson-core-asl-*.jar,**/jackson-mapper-asl-*.jar</excludes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -165,6 +165,10 @@
                             <target>
                                 <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-annotations-2.5.4.jar" />
                                 <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-2.5.4.jar" />
+                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-databind-2.5.4.jar" />
+                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-dataformat-smile-2.5.4.jar" />
+                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-asl-1.9.13.jar" />
+                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-mapper-asl-1.9.13.jar" />
                             </target>
                         </configuration>
                     </execution>

@@ -16,7 +16,6 @@ wsdl4j-1.6.3.jar        http://sourceforge.net/projects/wsdl4j
 
 
 === BSD 3 ===
-asm-3.3.1.jar   http://code.google.com/p/subethasmtp/
 antlr-runtime-3.5.2.jar http://www.antlr.org/
 ST4-4.0.8.jar   https://www.stringtemplate.org/license.html
 antlr-3.5.2.jar http://www.antlr.org/
@@ -142,10 +141,7 @@ httpmime-4.4.1.jar
 icu4j-56.1.jar
 isoparser-1.1.18.jar
 jackcess-2.1.8.jar
-jackson-core-asl-1.9.13.jar
-jackson-databind-2.5.4.jar
-jackson-dataformat-smile-2.5.4.jar
-jackson-mapper-asl-1.9.13.jar
+jackson-databind-2.9.9.jar
 janino-2.7.6.jar
 java-libpst-0.8.1.jar
 javax.servlet-api-3.1.0.jar
