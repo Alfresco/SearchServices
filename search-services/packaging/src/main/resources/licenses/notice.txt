@@ -163,7 +163,7 @@ httpmime-4.4.1.jar
 icu4j-56.1.jar
 isoparser-1.1.18.jar
 jackcess-2.1.8.jar
-jackson-databind-2.5.4.jar
+jackson-databind-2.9.9.jar
 janino-2.7.6.jar
 java-libpst-0.8.1.jar
 javax.servlet-api-3.1.0.jar
