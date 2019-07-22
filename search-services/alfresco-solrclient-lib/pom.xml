@@ -31,12 +31,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
             <version>${dependency.alfresco-data-model.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>asm-parent</artifactId>
-                    <groupId>asm</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         
         <dependency>
