@@ -145,7 +145,7 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
      * Check that, after parent renaming, both the children are searchable in the new path
      * (computed accordingly with the new parent folder name)
      */
-    @Test(priority = 1, groups = { TestGroup.ASS_13 })
+    @Test(priority = 1)
     public void testChildrenPathOnParentRenamedWithChildrenInDifferentShards() throws Exception{
 
 
