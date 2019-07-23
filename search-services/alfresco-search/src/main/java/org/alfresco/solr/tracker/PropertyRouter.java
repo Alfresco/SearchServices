@@ -90,7 +90,7 @@ public class PropertyRouter implements DocRouter
             try
             {
                 Matcher matcher = pattern.matcher(shardBy);
-                if (matcher.find() && matcher.groupCount() > 1 && !matcher.group(1).isEmpty())
+                if (matcher.find() && !matcher.group(1).isEmpty())
                 {
                     shardBy = matcher.group(1);
                 }

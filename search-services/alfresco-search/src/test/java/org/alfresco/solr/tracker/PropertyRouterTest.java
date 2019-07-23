@@ -179,7 +179,7 @@ public class PropertyRouterTest
                 .mapToLong(Long::valueOf)
                 .forEach(id -> {
                     Node node = new Node();
-                    node.setShardPropertyValue(String.valueOf(randomPositiveInteger()));
+                    node.setShardPropertyValue(String.valueOf(id));
                     stream(shardIdentifiers)
                             .forEach(shardId -> {
                                 if (router.routeNode(shardCount, shardId, node))
@@ -219,7 +219,7 @@ public class PropertyRouterTest
                 .mapToLong(Long::valueOf)
                 .forEach(id -> {
                     Node node = new Node();
-                    node.setShardPropertyValue(randomPositiveInteger() + "_ignoreThisPart");
+                    node.setShardPropertyValue(id + "_ignoreThisPart");
                     stream(shardIdentifiers)
                             .forEach(shardId -> {
                                 if (router.routeNode(shardCount, shardId, node))
