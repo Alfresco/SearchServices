@@ -1,0 +1,57 @@
+@startuml
+skinparam  sequence  {
+	ArrowColor DeepSkyBlue
+	ActorBorderColor DeepSkyBlue
+	LifeLineBorderColor blue
+	ParticipantBorderColor DeepSkyBlue
+	ParticipantBackgroundColor white
+}
+
+ [-> Scheduler : Initialise on first core load
+
+       participant ContentProducer
+       participant ContentConsumer
+       participant SharedFileStoreClient #green
+ ...
+ Scheduler -> ContentConsumer: Run
+    loop process messages in queue
+       activate ContentConsumer
+       ContentConsumer->ContentConsumer:createSolrDoc
+       activate ContentConsumer 
+       ContentConsumer -> SharedFileStoreClient: getTextContent
+       activate SharedFileStoreClient #green
+       ContentConsumer <- SharedFileStoreClient: return text
+       deactivate SharedFileStoreClient
+       ContentConsumer->ContentConsumer:markFTSStatus [Clean | New if error]
+       participant SolrJ #aqua
+       ContentConsumer->SolrJ:saveUpdate
+       deactivate ContentConsumer
+       deactivate ContentConsumer
+    end
+ Scheduler -> ContentProducer
+ 	loop
+ 		activate ContentProducer
+	    ContentProducer -> ContentProducer: aquireRunLock
+    	activate ContentProducer
+    	ContentProducer -> ContentProducer: getTrackerState
+    	ContentProducer -> ContentConsumer: readMessages
+	    deactivate ContentConsumer
+   	 	participant SolrInformationServer #FFBBBB
+    	ContentProducer -> SolrInformationServer: getDocsWithUncleanContent
+    	activate SolrInformationServer  #FFBBBB
+    	SolrInformationServer -> SolrInformationServer: cleanContentCache (periodically)
+    	participant SolrIndexSearcher  #aqua
+	    activate SolrIndexSearcher #aqua
+	    SolrInformationServer -> SolrIndexSearcher: search (Search unclean documents)
+	    SolrIndexSearcher -> SolrInformationServer: result docList
+	    deactivate SolrIndexSearcher
+	    ContentProducer <- SolrInformationServer: result docList
+	    deactivate SolrInformationServer
+    	ContentProducer -> ContentProducer:markFTSStatus (dirty)
+ 		ContentProducer -> Scheduler
+ 		deactivate ContentProducer
+ 	end
+...
+ center footer Copyright 2019 Alfresco Software Inc
+ 
+ @enduml
