@@ -429,8 +429,8 @@ public class AlfrescoReRankQParserPlugin extends QParserPlugin {
             // check if the score has been changed after rescoring
             boolean rescored = oldScore != null && score != oldScore;
 
-            // Set the score to 1 if all the scores are 0 (otherwise the score results in a 0/0 NaN value)
-            scoreDoc.score = maxScore == 0 ? 1 : score/maxScore;
+            // If maxScore is different from 0, the score is divided by maxscore
+            scoreDoc.score = score / (maxScore != 0? maxScore : 1);
 
             // If the document has been rescored, the score is increased by 1.
             // This results in having all the rescored element scores in (1,2] range.
