@@ -56,6 +56,7 @@ chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 quartz-2.3.1.jar http://quartz-scheduler.org/
 jackson-core-2.10.0.pr1.jar https://github.com/FasterXML/jackson
 jackson-annotations-2.10.0.pr1.jar https://github.com/FasterXML/jackson
+jackson-databind-2.10.0.pr1.jar https://github.com/FasterXML/jackson
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
 spring-aop-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-beans-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
@@ -141,7 +142,6 @@ httpmime-4.4.1.jar
 icu4j-56.1.jar
 isoparser-1.1.18.jar
 jackcess-2.1.8.jar
-jackson-databind-2.9.9.jar
 janino-2.7.6.jar
 java-libpst-0.8.1.jar
 javax.servlet-api-3.1.0.jar
