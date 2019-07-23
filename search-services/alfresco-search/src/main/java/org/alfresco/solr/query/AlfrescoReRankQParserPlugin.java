@@ -426,12 +426,14 @@ public class AlfrescoReRankQParserPlugin extends QParserPlugin {
 
             Float oldScore = scoreMap.get(scoreDoc.doc);
 
-            // check if the score has benn changed after rescoring
+            // check if the score has been changed after rescoring
             boolean rescored = oldScore != null && score != oldScore;
 
-            // If the maxScore is 1, the score is one
+            // Set the score to 1 if all the scores are 0 (otherwise the score results in a 0/0 NaN value)
             scoreDoc.score = maxScore == 0 ? 1 : score/maxScore;
 
+            // If the document has been rescored, the score is increased by 1.
+            // This results in having all the rescored element scores in (1,2] range.
             if (rescored)
             {
                 scoreDoc.score += 1;
