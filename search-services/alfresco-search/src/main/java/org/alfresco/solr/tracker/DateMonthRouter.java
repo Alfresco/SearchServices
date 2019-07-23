@@ -19,19 +19,44 @@
 package org.alfresco.solr.tracker;
 
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.solr.common.util.Hash;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Acl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-/*
-* @author Joel
-*/
-
+/**
+ * The date-based sharding assigns dates sequentially through shards based on the month.
+ * For example: If there are 12 shards, each month would be assigned sequentially to each shard, wrapping round and
+ * starting again for each year.
+ * The non-random assignment facilitates easier shard management - dropping shards or scaling out replication for some
+ * date range.
+ * Typical ageing strategies could be based on the created date or destruction date.
+ *
+ * Each shard contains copies of all the ACL information, so this information is replicated in each shard.
+ * However, if the property is not present on a node, sharding falls back to the {@link DBIDRouter} to randomly distribute
+ * these nodes.
+ *
+ * To use this method, when creating a shard add the new configuration properties:
+ *
+ * <ul>
+ *     <li>shard.key=exif:dateTimeOriginal</li>
+ *     <li>shard.method=DATE</li>
+ *     <li>shard.instance=&lt;shard.instance></li>
+ *     <li>shard.count=&lt;shard.count></li>
+ * </ul>
+ *
+ * Months can be grouped together, for example, by quarter. Each quarter of data would be assigned sequentially through the available shards.
+ *
+ * <ul>
+ *     <li>shard.date.grouping=3</li>
+ * </ul>
+ *
+ * @see <a href="https://docs.alfresco.com/search-enterprise/concepts/solr-shard-approaches.html">Search Services sharding methods</a>
+ */
 public class DateMonthRouter implements DocRouter
 {
     protected final static Logger log = LoggerFactory.getLogger(DateMonthRouter.class);
@@ -43,38 +68,52 @@ public class DateMonthRouter implements DocRouter
      * Creates a date month router
      * @param groupparam - the number of months that should be grouped together on a shard before moving to use the next shard in sequence
      */
-    public DateMonthRouter(String groupparam) {
-        try {
+    public DateMonthRouter(String groupparam)
+    {
+        try
+        {
             this.grouping = Integer.parseInt(groupparam);
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e)
+        {
             log.error("shard.date.grouping needs to be a valid integer.", e);
             throw e;
         }
     }
 
     @Override
-    public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
+    public Boolean routeAcl(int numShards, int shardInstance, Acl acl)
+    {
         return true;
     }
 
     @Override
-    public boolean routeNode(int numShards, int shardInstance, Node node) {
-        if(numShards <= 1) {
+    public Boolean routeNode(int numShards, int shardInstance, Node node)
+    {
+        if(numShards <= 1)
+        {
             return true;
         }
 
         String ISO8601Date = node.getShardPropertyValue();
 
-        if(ISO8601Date == null) {
+        if(ISO8601Date == null)
+        {
             return dbidRouter.routeNode(numShards, shardInstance, node);
         }
 
-        Date date = ISO8601DateFormat.parse(ISO8601Date);
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(date);
-        int month = cal.get(cal.MONTH);
-        int year  = cal.get(cal.YEAR);
-        return ((((year * 12) + month)/grouping) % numShards) == shardInstance;
-
+        try
+        {
+            Date date = ISO8601DateFormat.parse(ISO8601Date);
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(date);
+            int month = cal.get(Calendar.MONTH);
+            int year = cal.get(Calendar.YEAR);
+            return ((((year * 12) + month) / grouping) % numShards) == shardInstance;
+        }
+        catch (Exception exception)
+        {
+            return dbidRouter.routeNode(numShards, shardInstance, node);
+        }
     }
 }

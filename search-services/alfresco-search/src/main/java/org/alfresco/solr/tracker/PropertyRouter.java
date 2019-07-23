@@ -30,47 +30,67 @@ import java.util.regex.Pattern;
 
 /**
  * Routes based on a text property field.
+ * In this method, the value of some property is hashed and this hash is used to assign the node to a random shard.
+ * All nodes with the same property value will be assigned to the same shard.
+ * Each shard will duplicate all the ACL information.
+ *
+ * To use this method, when creating a shard add the new configuration properties:
+ *
+ * <ul>
+ *     <li>shard.key=cm:creator</li>
+ *     <li>shard.method=PROPERTY</li>
+ *     <li>shard.instance=&lt;shard.instance></li>
+ *     <li>shard.count=&lt;shard.count></li>
+ * </ul>
+ *
+ * It is possible to extract a part of the property value to use for sharding using a regular expression,
+ * for example, a year at the start of a string:
+ *
+ * <ul>
+ *     <li>shard.regex=^\d{4}</li>
+ * </ul>
  *
  * @author Gethin James
+ * @see <a href="https://docs.alfresco.com/search-enterprise/concepts/solr-shard-approaches.html">Search Services sharding methods</a>
  */
 public class PropertyRouter implements DocRouter
 {
     protected final static Logger log = LoggerFactory.getLogger(PropertyRouter.class);
 
-    Pattern pattern = null;
+    Pattern pattern;
 
     //Fallback to DB_ID routing
-    private DocRouter fallback = DocRouterFactory.getRouter(null, ShardMethodEnum.DB_ID);
+    DocRouter fallback = DocRouterFactory.getRouter(null, ShardMethodEnum.DB_ID);
 
     public PropertyRouter(String propertyRegEx)
     {
-        if (propertyRegEx != null && !propertyRegEx.isEmpty())
+        if (propertyRegEx != null && propertyRegEx.trim().length() > 0)
         {
-            pattern = Pattern.compile(propertyRegEx);
+            pattern = Pattern.compile(propertyRegEx.trim());
         }
     }
 
     @Override
-    public boolean routeAcl(int shardCount, int shardInstance, Acl acl)
+    public Boolean routeAcl(int shardCount, int shardInstance, Acl acl)
     {
         return true;
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node)
+    public Boolean routeNode(int shardCount, int shardInstance, Node node)
     {
         if(shardCount <= 1)
         {
             return true;
         }
-        String shardBy = node.getShardPropertyValue();
 
+        String shardBy = node.getShardPropertyValue();
         if (shardBy !=null && pattern != null)
         {
             try
             {
                 Matcher matcher = pattern.matcher(shardBy);
-                if (matcher.find() && !matcher.group(1).isEmpty())
+                if (matcher.find() && matcher.groupCount() > 1 && !matcher.group(1).isEmpty())
                 {
                     shardBy = matcher.group(1);
                 }

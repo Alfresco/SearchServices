@@ -24,55 +24,59 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-/*
+/**
+ * Routing strategy Factory.
+ *
  * @author Joel
  */
-
 public class DocRouterFactory
 {
-    protected final static Logger log = LoggerFactory.getLogger(DocRouterFactory.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(DocRouterFactory.class);
 
-    public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
-
-        switch(method) {
+    public static DocRouter getRouter(Properties properties, ShardMethodEnum method)
+    {
+        switch(method)
+        {
             case DB_ID:
-                log.info("Sharding via DB_ID");
+                LOGGER.info("Sharding via DB_ID");
                 return new DBIDRouter();
             case DB_ID_RANGE:
-                //
                 if(properties.containsKey("shard.range"))
                 {
-                    log.info("Sharding via DB_ID_RANGE");
+                    LOGGER.info("Sharding via DB_ID_RANGE");
                     String[] pair =properties.getProperty("shard.range").split("-");
                     long start = Long.parseLong(pair[0]);
                     long end = Long.parseLong(pair[1]);
                     return new DBIDRangeRouter(start, end);
                 }
             case ACL_ID:
-                log.info("Sharding via ACL_ID");
+                LOGGER.info("Sharding via ACL_ID");
                 return new ACLIDMurmurRouter();
             case MOD_ACL_ID:
-                log.info("Sharding via MOD_ACL_ID");
+                LOGGER.info("Sharding via MOD_ACL_ID");
                 return new ACLIDModRouter();
             case DATE:
-                log.info("Sharding via DATE");
+                LOGGER.info("Sharding via DATE");
                 return new DateMonthRouter(properties.getProperty("shard.date.grouping", "1"));
             case PROPERTY:
-                log.info("Sharding via PROPERTY");
+                LOGGER.info("Sharding via PROPERTY");
                 return new PropertyRouter(properties.getProperty("shard.regex", ""));
             case LAST_REGISTERED_INDEXING_SHARD:
-                log.info("Sharding via LAST_REGISTERED_INDEXING_SHARD");
-                return new LastRegisteredShardRouter();
+                LOGGER.info("Sharding via LAST_REGISTERED_INDEXING_SHARD");
+                return new ExplicitShardIdWithStaticPropertyRouter();
             case EXPLICIT_ID_FALLBACK_LRIS:
-                log.info("Sharding via EXPLICIT_ID_FALLBACK_LRIS");
-                return new ExplicitRouter(new LastRegisteredShardRouter());
+                LOGGER.info("Sharding via EXPLICIT_ID_FALLBACK_LRIS");
+                return new DocRouterWithFallback(
+                        new ExplicitShardIdWithDynamicPropertyRouter(false),
+                        new ExplicitShardIdWithStaticPropertyRouter());
             case EXPLICIT_ID:
-                log.info("Sharding via EXPLICIT_ID");
-                return new ExplicitRouter(new DBIDRouter());
+                LOGGER.info("Sharding via EXPLICIT_ID");
+                return new DocRouterWithFallback(
+                        new ExplicitShardIdWithDynamicPropertyRouter(false),
+                        new DBIDRouter());
             default:
-                log.info("Sharding via DB_ID (default)");
+                LOGGER.warn("WARNING! Unknown/unsupported sharding method ({}). System will fallback to DB_ID", method);
                 return new DBIDRouter();
         }
     }
-
 }
