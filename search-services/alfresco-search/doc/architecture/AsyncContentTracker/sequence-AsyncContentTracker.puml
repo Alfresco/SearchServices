@@ -31,10 +31,12 @@ skinparam  sequence  {
     SolrIndexSearcher -> SolrInformationServer: result docList
     deactivate SolrIndexSearcher
     AsyncContentTracker <- SolrInformationServer: result docList
+    deactivate SolrInformationServer
     loop content
        activate ContentIndexWorkerRunnable
        AsyncContentTracker -> ContentIndexWorkerRunnable: load docList
        ContentIndexWorkerRunnable -> ContentIndexWorkerRunnable: doWork
+       activate SolrInformationServer #FFBBBB
        activate ContentIndexWorkerRunnable #lightgrey
        ContentIndexWorkerRunnable -> SolrInformationServer: updateContentToIndexAndCache
        SolrInformationServer -> SolrContentStore: retrieveDocFromSolrContentStore
