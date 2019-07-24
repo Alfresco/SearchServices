@@ -78,7 +78,18 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
     private DocRouter docRouter;
+    
+    // Some Sharding Methods require additional configuration properties.
+    // Following fields are used to store these properties depending on the Sharding Method:
+    // - DB_ID_RANGE: shardRange
+    // - DATE: grouping, shardProperty
+    // - PROPERTY: shardRegex, shardProperty
+    // - EXPLICIT_ID (Fallback DB_ID): shardProperty
+    // - EXPLICIT_ID_FALLBACK_LRIS: shardProperty
     private QName shardProperty;
+    private String shardRange;
+    private String grouping;
+    private String shardRegex;
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -90,6 +101,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         if(shardKey != null) {
             shardProperty = getShardProperty(shardKey);
         }
+        shardRange = p.getProperty("shard.range");
+        grouping = p.getProperty("shard.date.grouping");
+        shardRegex = p.getProperty("shard.regex");
 
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
@@ -224,6 +238,24 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
+        
+        // Additional properties to be set depending on the Sharding Method
+        if (shardProperty != null)
+        {
+            propertyBag.put("shard.key", shardProperty.toPrefixString());
+        }
+        if (shardRange != null)
+        {
+           propertyBag.put("shard.range", shardRange);
+        }
+        if (grouping != null)
+        {
+            propertyBag.put("shard.date.grouping", grouping);
+        }
+        if (shardRegex != null)
+        {
+            propertyBag.put("shard.regex", shardRegex);
+        }
 
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
