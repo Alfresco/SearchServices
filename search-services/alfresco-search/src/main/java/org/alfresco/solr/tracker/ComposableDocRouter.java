@@ -54,7 +54,7 @@ public abstract class ComposableDocRouter implements DocRouter
      * </ul>
      * @return true/false or true/exception depending on the active mode of this router.
      */
-    Boolean negativeReturnValue()
+    protected Boolean negativeReturnValue()
     {
         return isRunningInStandaloneModeOrIsLeaf ? false : null;
     }

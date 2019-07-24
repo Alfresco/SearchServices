@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
  */
 public class PropertyRouter implements DocRouter
 {
-    protected final static Logger log = LoggerFactory.getLogger(PropertyRouter.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(PropertyRouter.class);
 
     Pattern pattern;
 
@@ -102,14 +102,14 @@ public class PropertyRouter implements DocRouter
             }
             catch (IndexOutOfBoundsException | NullPointerException exc)
             {
-                log.debug("Regex matched, but group 1 not found, so falling back to DBID sharding.");
+                LOGGER.debug("Regex matched, but group 1 not found, so falling back to DBID sharding.");
                 shardBy = null;
             }
         }
 
         if (shardBy == null || shardBy.isEmpty())
         {
-            log.debug("Property not found or regex not matched, so falling back to DBID sharding.");
+            LOGGER.debug("Property not found or regex not matched, so falling back to DBID sharding.");
             return fallback.routeNode(shardCount,shardInstance,node);
         }
 
