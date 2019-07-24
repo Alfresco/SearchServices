@@ -21,7 +21,6 @@ package org.alfresco.solr.tracker;
 import java.util.Properties;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
@@ -30,12 +29,6 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.LegacyNumericRangeQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
@@ -60,7 +53,7 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 @SolrTestCaseJ4.SuppressSSL
 @SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedLastRegisteredShardRouterTest extends AbstractAlfrescoDistributedTest
+public class DistributedExplicitShardIdWithStaticPropertyRouterTest extends AbstractAlfrescoDistributedTest
 {
     private static long MAX_WAIT_TIME = 80000;
     private final int timeout = 100000;
@@ -68,7 +61,7 @@ public class DistributedLastRegisteredShardRouterTest extends AbstractAlfrescoDi
     @Before
     private void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedLastRegisteredShardRoutingTest", getProperties());
+        initSolrServers(2, getClass().getSimpleName(), getProperties());
         indexData();
     }
 
@@ -76,32 +69,6 @@ public class DistributedLastRegisteredShardRouterTest extends AbstractAlfrescoDi
     private static void destroyData() throws Throwable
     {
         dismissSolrServers();
-    }
-
-
-    /**
-     * Setup, indexes and returns the ACL used within the tests.
-     *
-     * @return the ACL used within the test.
-     */
-    private Acl getTestAcl() throws Exception
-    {
-        AclChangeSet aclChangeSet = getAclChangeSet(1);
-        Acl acl = getAcl(aclChangeSet);
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
-
-        indexAclChangeSet(aclChangeSet, singletonList(acl), singletonList(aclReaders));
-
-        //Check for the ACL state stamp.
-        BooleanQuery.Builder builder =
-                new BooleanQuery.Builder()
-                        .add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST))
-                        .add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(
-                                QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
-
-        Query waitForQuery = builder.build();
-        waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
-        return acl;
     }
 
     /**
@@ -157,7 +124,6 @@ public class DistributedLastRegisteredShardRouterTest extends AbstractAlfrescoDi
         Node node4 = getNode(3, txn, acl, Node.SolrApiNodeStatus.UPDATED);
         node4.setExplicitShardId(1);
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl, "elia", null, false);
-        nodeMetaData4.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("second"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("forth"));
 
         /*
