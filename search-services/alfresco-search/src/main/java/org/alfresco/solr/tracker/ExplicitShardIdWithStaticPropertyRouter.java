@@ -24,39 +24,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Routes a document only if the explicitShardId matches the provided shardId
+ * Routes the incoming nodes (not ACLs!) on the last registered indexing shard (LRIS).
+ * The access control information is duplicated in each shard.
  *
  * @author Elia
+ * @author agazzarini
  */
-public class LastRegisteredShardRouter implements DocRouter
+public class ExplicitShardIdWithStaticPropertyRouter extends ComposableDocRouter
 {
+    private final static Logger log = LoggerFactory.getLogger(ExplicitShardIdWithStaticPropertyRouter.class);
 
-    protected final static Logger log = LoggerFactory.getLogger(ExplicitRouter.class);
-
-    public LastRegisteredShardRouter()
+    public ExplicitShardIdWithStaticPropertyRouter()
     {
+        super();
+    }
+
+    public ExplicitShardIdWithStaticPropertyRouter(boolean isInStandaloneMode)
+    {
+        super(isInStandaloneMode);
     }
 
     @Override
-    public boolean routeAcl(int shardCount, int shardInstance, Acl acl)
+    public Boolean routeAcl(int shardCount, int shardInstance, Acl acl)
     {
-        //all acls go to all shards.
         return true;
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node)
+    public Boolean routeNode(int shardCount, int shardInstance, Node node)
     {
-
         Integer explicitShardId = node.getExplicitShardId();
 
         if (explicitShardId == null)
         {
-            log.error("explicitShardId is not set for node " + node.getNodeRef());
-            return false;
+            debug("ExplicitShardId property is not set for node {} ", node.getNodeRef());
+            return negativeReturnValue();
         }
 
         return explicitShardId.equals(shardInstance);
-
     }
 }

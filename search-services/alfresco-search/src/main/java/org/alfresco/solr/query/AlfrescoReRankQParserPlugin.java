@@ -416,8 +416,8 @@ public class AlfrescoReRankQParserPlugin extends QParserPlugin {
 		}
     }
 
-    private void scaleScores(TopDocs topDocs, Map<Integer, Float> scoreMap) {
-
+    private void scaleScores(TopDocs topDocs, Map<Integer, Float> scoreMap)
+    {
         float maxScore = topDocs.getMaxScore();
         float newMax = -Float.MAX_VALUE;
 
@@ -425,13 +425,22 @@ public class AlfrescoReRankQParserPlugin extends QParserPlugin {
             float score = scoreDoc.score;
 
             Float oldScore = scoreMap.get(scoreDoc.doc);
-            if(oldScore == null || score == oldScore.floatValue()) {
-                scoreDoc.score = score / maxScore;
-            } else {
-                scoreDoc.score = (score / maxScore)+1;
+
+            // check if the score has been changed after rescoring
+            boolean rescored = oldScore != null && score != oldScore;
+
+            // If maxScore is different from 0, the score is divided by maxscore
+            scoreDoc.score = score / (maxScore != 0? maxScore : 1);
+
+            // If the document has been rescored, the score is increased by 1.
+            // This results in having all the rescored element scores in (1,2] range.
+            if (rescored)
+            {
+                scoreDoc.score += 1;
             }
 
-            if(scoreDoc.score > newMax) {
+            if(scoreDoc.score > newMax)
+            {
                 newMax = scoreDoc.score;
             }
         }
