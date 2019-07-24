@@ -9,12 +9,36 @@ skinparam  sequence  {
 
  [-> Scheduler : Initialise on first core load
 
-       participant ContentProducer
+       participant ContentMessageProducer
        participant ContentConsumer
        participant SharedFileStoreClient #green
  ...
- Scheduler -> ContentConsumer: Run
-    loop process messages in queue
+ Scheduler -> ContentMessageProducer
+ 	loop
+ 		activate ContentMessageProducer
+	    ContentMessageProducer -> ContentMessageProducer: aquireRunLock
+    	activate ContentMessageProducer
+    	ContentMessageProducer -> ContentMessageProducer: getTrackerState
+    	ContentMessageProducer -> ContentConsumer: readMessages
+	    deactivate ContentConsumer
+   	 	participant SolrInformationServer #FFBBBB
+    	ContentMessageProducer -> SolrInformationServer: getDocsWithUncleanContent
+    	activate SolrInformationServer  #FFBBBB
+    	SolrInformationServer -> SolrInformationServer: cleanContentCache (periodically)
+    	participant SolrIndexSearcher  #aqua
+	    activate SolrIndexSearcher #aqua
+	    SolrInformationServer -> SolrIndexSearcher: search (Search unclean documents)
+	    SolrIndexSearcher -> SolrInformationServer: result docList
+	    deactivate SolrIndexSearcher
+	    ContentMessageProducer <- SolrInformationServer: result docList
+	    deactivate SolrInformationServer
+    	ContentMessageProducer -> ContentMessageProducer:markFTSStatus (dirty)
+ 		ContentMessageProducer -> Scheduler
+ 		deactivate ContentMessageProducer
+ 		deactivate ContentMessageProducer
+ 	end
+ 	Scheduler -> ContentConsumer: Run
+     loop process messages in queue
        activate ContentConsumer
        ContentConsumer->ContentConsumer:createSolrDoc
        activate ContentConsumer 
@@ -28,29 +52,6 @@ skinparam  sequence  {
        deactivate ContentConsumer
        deactivate ContentConsumer
     end
- Scheduler -> ContentProducer
- 	loop
- 		activate ContentProducer
-	    ContentProducer -> ContentProducer: aquireRunLock
-    	activate ContentProducer
-    	ContentProducer -> ContentProducer: getTrackerState
-    	ContentProducer -> ContentConsumer: readMessages
-	    deactivate ContentConsumer
-   	 	participant SolrInformationServer #FFBBBB
-    	ContentProducer -> SolrInformationServer: getDocsWithUncleanContent
-    	activate SolrInformationServer  #FFBBBB
-    	SolrInformationServer -> SolrInformationServer: cleanContentCache (periodically)
-    	participant SolrIndexSearcher  #aqua
-	    activate SolrIndexSearcher #aqua
-	    SolrInformationServer -> SolrIndexSearcher: search (Search unclean documents)
-	    SolrIndexSearcher -> SolrInformationServer: result docList
-	    deactivate SolrIndexSearcher
-	    ContentProducer <- SolrInformationServer: result docList
-	    deactivate SolrInformationServer
-    	ContentProducer -> ContentProducer:markFTSStatus (dirty)
- 		ContentProducer -> Scheduler
- 		deactivate ContentProducer
- 	end
 ...
  center footer Copyright 2019 Alfresco Software Inc
  
