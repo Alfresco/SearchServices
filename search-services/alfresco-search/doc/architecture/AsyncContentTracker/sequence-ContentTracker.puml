@@ -32,7 +32,7 @@ skinparam  sequence  {
        ContentIndexWorkerRunnable -> ContentIndexWorkerRunnable: doWork
        activate ContentIndexWorkerRunnable #lightgrey
        ContentIndexWorkerRunnable -> SolrInformationServer: updateContentToIndexAndCache
-       SolrInformationServer -> SolrContentStore: retrieveDocFromSolrContentStore
+       SolrInformationServer -> SolrContentStore:  
        activate SolrContentStore
        SolrContentStore -> SolrInformationServer
        deactivate SolrContentStore
@@ -52,6 +52,7 @@ skinparam  sequence  {
        SolrInformationServer -> UpdateRequestProcessor:processAdd(addDocCmd)
     end
 end    
+ ContentTracker -> ContentTracker:releaseLock
  ContentTracker -> Scheduler
  deactivate ContentTracker
 ...
