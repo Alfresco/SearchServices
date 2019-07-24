@@ -147,8 +147,8 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
      * (computed accordingly with the new parent folder name)
      */
     @Test(priority = 1, groups = {TestGroup.NOT_BAMBOO, TestGroup.EXPLICIT_SHARDING })
-    public void testChildrenPathOnParentRenamedWithChildrenInDifferentShards() throws Exception{
-
+    public void testChildrenPathOnParentRenamedWithChildrenInDifferentShards() throws Exception
+    {
 
         // Create Parent folder. It will be indexed in shard 0
         FolderModel parentFolder = FolderModel.getRandomFolderModel();
