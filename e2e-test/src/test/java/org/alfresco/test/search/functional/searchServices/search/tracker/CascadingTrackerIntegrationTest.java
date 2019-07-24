@@ -70,7 +70,7 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
                 "/cm:documentLibrary/cm:" + parentNewName + "/*\"";
         boolean indexingInProgress = !isContentInSearchResults(parentQueryAfterRename, childFile.getName(), true);
 
-        // Query using new parent name: Expect parent folder and child file
+        // Query using new parent name: Expect child file
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
         Assert.assertEquals(descendantCountOfNewName, 1, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress, parentQueryAfterRename));
 
@@ -206,7 +206,7 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
 
         boolean indexingInProgress = !isContentInSearchResults(parentQueryAfterRename, firstChildFile.getName(), true);
 
-        // Query using new parent name: Expect parent folder and child file
+        // Query using new parent name: Expect the two children
         int descendantCountOfNewName = query(parentQueryAfterRename).getPagination().getCount();
         Assert.assertEquals(descendantCountOfNewName, 2, String.format("Indexing in progress: %s New renamed path has not the same descendants as before renaming: %s", indexingInProgress, parentQuery));
 
