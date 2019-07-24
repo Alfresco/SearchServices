@@ -19,34 +19,42 @@
 package org.alfresco.solr.tracker;
 
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.solr.common.util.Hash;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Acl;
+
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-/*
-* @author Joel
-*/
-
+/**
+ * This {@link DocRouter} has been deprecated because it is a special case of {@link DateMonthRouter} with a grouping
+ * parameter equal to 3.
+ *
+ * @see DateMonthRouter
+ * @see <a href="https://docs.alfresco.com/search-enterprise/concepts/solr-shard-approaches.html">Search Services sharding methods</a>
+ */
+@Deprecated
 public class DateQuarterRouter implements DocRouter
 {
-    public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
+    @Override
+    public Boolean routeAcl(int numShards, int shardInstance, Acl acl)
+    {
         return true;
     }
 
-    public boolean routeNode(int numShards, int shardInstance, Node node) {
-        if(numShards <= 1) {
+    public Boolean routeNode(int numShards, int shardInstance, Node node)
+    {
+        if(numShards <= 1)
+        {
             return true;
         }
 
         String ISO8601Date = node.getShardPropertyValue();
-        //TODO: we can parse the string to make this more efficient rather then creating a calendar.
         Date date = ISO8601DateFormat.parse(ISO8601Date);
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(date);
-        int month = cal.get(cal.MONTH);
-        int year  = cal.get(cal.YEAR);
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        int month = calendar.get(Calendar.MONTH);
+        int year  = calendar.get(Calendar.YEAR);
         return Math.ceil(((year * 12) + (month+1)) / 3) % numShards == shardInstance;
     }
 }

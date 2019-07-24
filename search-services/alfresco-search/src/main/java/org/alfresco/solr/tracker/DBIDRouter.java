@@ -22,29 +22,42 @@ import org.apache.solr.common.util.Hash;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Acl;
 
-
-/*
+/**
+ * DBID murmur hash based document router.
+ * This method is available in Alfresco Search Services 1.0 and later versions and is the default sharding option in Solr 6.
+ * Nodes are evenly distributed over the shards at random based on the murmur hash of the DBID.
+ * The access control information is duplicated in each shard.
+ * The distribution of nodes over each shard is very even and shards grow at the same rate.
+ * Also, this is the fall back method if any other sharding information is unavailable.
+ *
+ * To use this method, when creating a shard add a new configuration property:
+ *
+ * <ul>
+ *     <li>shard.method=DB_ID</li>
+ *     <li>shard.instance=&lt;shard.instance></li>
+ *     <li>shard.count=&lt;shard.count></li>
+ * </ul>
+ *
  * @author Joel
+ * @see <a href="https://docs.alfresco.com/search-enterprise/concepts/solr-shard-approaches.html">Search Services sharding methods</a>
  */
-
 public class DBIDRouter implements DocRouter
 {
     @Override
-    public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
-        //When routing by DBID, all acls go to all shards.
+    public Boolean routeAcl(int shardCount, int shardInstance, Acl acl)
+    {
         return true;
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node) {
-
-        if(shardCount <= 1) {
+    public Boolean routeNode(int shardCount, int shardInstance, Node node)
+    {
+        if(shardCount <= 1)
+        {
             return true;
         }
 
-        //Route the node based on nodeId
-
-        String s = Long.toString(node.getId());
-        return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % shardCount) == shardInstance;
+        String dbid = Long.toString(node.getId());
+        return (Math.abs(Hash.murmurhash3_x86_32(dbid, 0, dbid.length(), 77)) % shardCount) == shardInstance;
     }
 }

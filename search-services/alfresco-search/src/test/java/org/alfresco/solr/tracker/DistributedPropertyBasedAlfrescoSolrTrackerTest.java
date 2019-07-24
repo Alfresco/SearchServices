@@ -39,12 +39,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
@@ -92,8 +95,8 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         int numAcls = 25;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
+        List<Acl> bulkAcls = new ArrayList<>();
+        List<AclReaders> bulkAclReaders = new ArrayList<>();
 
 
         for (int i = 0; i < numAcls; i++) {
@@ -101,8 +104,8 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
                     bulkAcl,
-                    list("king" + bulkAcl.getId()),
-                    list("king" + bulkAcl.getId()),
+                    singletonList("king" + bulkAcl.getId()),
+                    singletonList("king" + bulkAcl.getId()),
                     null));
         }
 
@@ -111,19 +114,20 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
                 bulkAclReaders);
 
         int numNodes = 1000;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
         RandomizedContext context = RandomizedContext.current();
         Random ints = context.getRandom();
 
-        for (int i = 0; i < numNodes; i++) {
+        for (int i = 0; i < numNodes; i++)
+        {
             int aclIndex = i % numAcls;
             Node node = getNode(bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             String domain = DOMAINS[ints.nextInt(DOMAINS.length)];
             domainsCount.put(domain, domainsCount.get(domain)+1);
-            //String emailAddress = RANDOM_NAMES[ints.nextInt(RANDOM_NAMES.length)]+ "@"+ domain;
+
             String emailAddress = "peter.pan"+ "@"+ domain;
             node.setShardPropertyValue(emailAddress);
             nodes.add(node);
