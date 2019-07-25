@@ -6,19 +6,15 @@
  */
 package org.alfresco.test.search.functional.searchServices.search.tracker;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.search.TestGroup;
-import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +41,12 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
         // Create a file in the parent folder
         FileModel childFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
 
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(PropertyIds.NAME, childFile.getName());
-        properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
-
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(parentFolder)
-            .createFile(childFile, properties, VersioningState.MAJOR).assertThat().existsInRepo();
+            .createFile(childFile,
+                    Map.of(PropertyIds.NAME, childFile.getName(),
+                        PropertyIds.OBJECT_TYPE_ID, "cmis:document"),
+                        VersioningState.MAJOR)
+                .assertThat().existsInRepo();
         
         // Query to find nodes where Path with original folder name matches
         String parentQuery = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
@@ -90,12 +86,13 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
         
         // Create grand child file
         FileModel grandChildFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(PropertyIds.NAME, grandChildFile.getName());
-        properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
 
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(childFolder)
-            .createFile(grandChildFile, properties, VersioningState.MAJOR).assertThat().existsInRepo();
+            .createFile(grandChildFile,
+                    Map.of(PropertyIds.NAME, grandChildFile.getName(),
+                            PropertyIds.OBJECT_TYPE_ID, "cmis:document"),
+                    VersioningState.MAJOR)
+                .assertThat().existsInRepo();
 
         // Wait for file to be indexed
         waitForMetadataIndexing(grandChildFile.getName(), true);
@@ -152,32 +149,27 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
 
         // Create Parent folder. It will be indexed in shard 0
         FolderModel parentFolder = FolderModel.getRandomFolderModel();
-        Map<String, Object> parentProperties = new HashMap<>();
-        List<String> secondaryTypes = new ArrayList();
-        secondaryTypes.add("P:shard:sharding");
-        secondaryTypes.add("P:cm:titled");
-        parentProperties.put(PropertyIds.NAME, parentFolder.getName());
-        parentProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:folder");
-        parentProperties.put("cmis:secondaryObjectTypeIds", secondaryTypes);
-        parentProperties.put("shard:shardId", "0");
+
+        List<String> secondaryTypes = List.of("P:shard:sharding");
+        Map<String, Object> parentProperties = Map.of(PropertyIds.NAME, parentFolder.getName(),
+                PropertyIds.OBJECT_TYPE_ID, "cmis:folder",
+                "cmis:secondaryObjectTypeIds", secondaryTypes,
+                "shard:shardId", "0");
 
         // Create a first child in parent folder. It will be indexed in the parent shard (shard 0)
         FileModel firstChildFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
-
-        Map<String, Object> propertiesFirstChild = new HashMap<>();
-        propertiesFirstChild.put(PropertyIds.NAME, firstChildFile.getName());
-        propertiesFirstChild.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
-        propertiesFirstChild.put("cmis:secondaryObjectTypeIds", secondaryTypes);
-        propertiesFirstChild.put("shard:shardId", "0");
+        Map<String, Object> propertiesFirstChild = Map.of(PropertyIds.NAME, firstChildFile.getName(),
+                PropertyIds.OBJECT_TYPE_ID, "cmis:document",
+                "cmis:secondaryObjectTypeIds", secondaryTypes,
+                "shard:shardId", "0");
 
         // Create a second child in parent folder. It will be indexed in shard 1.
         FileModel secondChildFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
+        Map<String, Object> propertiesSecondChild = Map.of(PropertyIds.NAME, secondChildFile.getName(),
+                PropertyIds.OBJECT_TYPE_ID, "cmis:document",
+                "cmis:secondaryObjectTypeIds", secondaryTypes,
+                "shard:shardId", "1");
 
-        Map<String, Object> propertiesSecondChild = new HashMap<>();
-        propertiesSecondChild.put(PropertyIds.NAME, secondChildFile.getName());
-        propertiesSecondChild.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
-        propertiesSecondChild.put("cmis:secondaryObjectTypeIds", secondaryTypes);
-        propertiesSecondChild.put("shard:shardId", "1");
 
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFolder(parentFolder, parentProperties).then()
                 .usingResource(parentFolder)
@@ -201,6 +193,11 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
 
         String parentQueryAfterRename =  "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
                 "/cm:documentLibrary/cm:" + parentNewName + "/*\"";
+
+        // Query using new parent name: Expect the two children
+        int descendantCountOfNewNameBeforeUpdate = query(parentQueryAfterRename).getPagination().getCount();
+        Assert.assertEquals(descendantCountOfNewNameBeforeUpdate, 0, "There should be 0 results performing the new query before updating parent name");
+
 
         Assert.assertTrue(waitForMetadataIndexing(parentNewName, true), "failing while renaming " + parentFolder.getName() + " to " + parentNewName);
 
