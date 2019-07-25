@@ -31,6 +31,11 @@ import java.util.Properties;
 public class DocRouterFactory
 {
     protected final static Logger log = LoggerFactory.getLogger(DocRouterFactory.class);
+    
+    public static final String SHARD_KEY_KEY = "shard.key";
+    public static final String SHARD_RANGE_KEY = "shard.range";
+    public static final String SHARD_DATE_GROUPING_KEY = "shard.date.grouping";
+    public static final String SHARD_REGEX_KEY = "shard.regex";
 
     public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
 
@@ -40,10 +45,10 @@ public class DocRouterFactory
                 return new DBIDRouter();
             case DB_ID_RANGE:
                 //
-                if(properties.containsKey("shard.range"))
+                if(properties.containsKey(SHARD_RANGE_KEY))
                 {
                     log.info("Sharding via DB_ID_RANGE");
-                    String[] pair =properties.getProperty("shard.range").split("-");
+                    String[] pair =properties.getProperty(SHARD_RANGE_KEY).split("-");
                     long start = Long.parseLong(pair[0]);
                     long end = Long.parseLong(pair[1]);
                     return new DBIDRangeRouter(start, end);
@@ -56,10 +61,10 @@ public class DocRouterFactory
                 return new ACLIDModRouter();
             case DATE:
                 log.info("Sharding via DATE");
-                return new DateMonthRouter(properties.getProperty("shard.date.grouping", "1"));
+                return new DateMonthRouter(properties.getProperty(SHARD_DATE_GROUPING_KEY, "1"));
             case PROPERTY:
                 log.info("Sharding via PROPERTY");
-                return new PropertyRouter(properties.getProperty("shard.regex", ""));
+                return new PropertyRouter(properties.getProperty(SHARD_REGEX_KEY, ""));
             case LAST_REGISTERED_INDEXING_SHARD:
                 log.info("Sharding via LAST_REGISTERED_INDEXING_SHARD");
                 return new LastRegisteredShardRouter();

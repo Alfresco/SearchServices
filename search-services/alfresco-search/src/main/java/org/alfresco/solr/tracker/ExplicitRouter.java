@@ -18,6 +18,11 @@
  */
 package org.alfresco.solr.tracker;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
 import org.slf4j.Logger;
@@ -75,4 +80,13 @@ public class ExplicitRouter implements DocRouter {
         }
         return fallbackRouter.routeNode(shardCount, shardInstance, node);
     }
+    
+    @Override
+    public Map<String, String> getProperties(QName shardProperty)
+    {
+        return Stream.of(new String[][] {
+            { DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString() },
+          }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+    }
+
 }
