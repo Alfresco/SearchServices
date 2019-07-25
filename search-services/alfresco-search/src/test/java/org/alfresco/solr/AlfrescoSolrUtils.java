@@ -65,6 +65,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -104,14 +105,16 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.CommitUpdateCommand;
 /**
- * Alfresco Solr Utility class which provide helper methods.
- * @author Michael Suzuki
+ * Alfresco Solr Test Utility class which provide helper methods.
  *
+ * @author Michael Suzuki
+ * @author Andrea Gazzarini
  */
 public class AlfrescoSolrUtils
 {
     public static final String TEST_NAMESPACE = "http://www.alfresco.org/test/solrtest";
     public static long MAX_WAIT_TIME = 80000;
+    public static Random RANDOMIZER = new Random();
 
     /**
      * Get transaction.
@@ -141,6 +144,25 @@ public class AlfrescoSolrUtils
         return transaction;
     }
 
+    /**
+     * Returns a pseudo-random number of shards always greater than 1.
+     *
+     * @return a pseudo-random number of shards always greater than 1.
+     */
+    public static int randomShardCountGreaterThanOne()
+    {
+        return randomPositiveInteger() +  2;
+    }
+
+    /**
+     * Returns a pseudo-random number of shards always greater than 1.
+     *
+     * @return a pseudo-random number of shards always greater than 1.
+     */
+    public static int randomPositiveInteger()
+    {
+        return RANDOMIZER.nextInt(100);
+    }
 
     /**
      * Get a node.

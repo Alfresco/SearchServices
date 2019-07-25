@@ -28,11 +28,26 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
 
-
-/*
- * @author Joel
+/**
+ * This routes documents within specific DBID ranges to specific shards.
+ * It adds new shards to the cluster without requiring a reindex.
+ * The access control information is duplicated in each shard.
+ * DBID range sharding is the only option to offer auto-scaling as opposed to defining your exact shard count at the start.
+ * All the other sharding methods require repartitioning in some way.
+ *
+ * For each shard, you specify the range of DBIDs to be included. As your repository grows you can add shards.
+ *
+ * To use this method, when creating a shard add a new configuration property:
+ *
+ * <ul>
+ *     <li>shard.method=DB_ID_RANGE</li>
+ *     <li>shard.range=0-20000000</li>
+ *     <li>shard.instance=&lt;shard.instance></li>
+ * </ul>
+ *
+ * @author joel
+ * @see <a href="https://docs.alfresco.com/search-enterprise/concepts/solr-shard-approaches.html">Search Services sharding methods</a>
  */
-
 public class DBIDRangeRouter implements DocRouter
 {
     private long startRange;
@@ -40,53 +55,58 @@ public class DBIDRangeRouter implements DocRouter
     private AtomicBoolean expanded = new AtomicBoolean(false);
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
-    public DBIDRangeRouter(long startRange, long endRange) {
+    public DBIDRangeRouter(long startRange, long endRange)
+    {
         this.startRange = startRange;
         this.expandableRange = new AtomicLong(endRange);
     }
 
-    public void setEndRange(long endRange) {
+    public void setEndRange(long endRange)
+    {
         expandableRange.set(endRange);
     }
 
-    public void setExpanded(boolean expanded) {
+    public void setExpanded(boolean expanded)
+    {
         this.expanded.set(expanded);
     }
 
-    public void setInitialized(boolean initialized) {
+    public void setInitialized(boolean initialized)
+    {
         this.initialized.set(initialized);
     }
 
-    public boolean getInitialized() {
+    public boolean getInitialized()
+    {
         return this.initialized.get();
     }
 
-    public long getEndRange() {
+    public long getEndRange()
+    {
         return expandableRange.longValue();
     }
 
-    public long getStartRange() {
+    public long getStartRange()
+    {
         return this.startRange;
     }
 
-    public boolean getExpanded() {
+    public boolean getExpanded()
+    {
         return this.expanded.get();
     }
 
     @Override
-    public boolean routeAcl(int shardCount, int shardInstance, Acl acl) {
-        //When routing by DBID range, all acls go to all shards.
+    public Boolean routeAcl(int shardCount, int shardInstance, Acl acl)
+    {
         return true;
     }
 
     @Override
-    public boolean routeNode(int shardCount, int shardInstance, Node node) {
+    public Boolean routeNode(int shardCount, int shardInstance, Node node)
+    {
         long dbid = node.getId();
-        if(dbid >= startRange && dbid < expandableRange.longValue()) {
-            return true;
-        } else {
-            return false;
-        }
+        return dbid >= startRange && dbid < expandableRange.longValue();
     }
 
     @Override
