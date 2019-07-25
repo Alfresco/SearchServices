@@ -13,7 +13,6 @@ import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
-import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.LogFactory;
@@ -42,14 +41,14 @@ import lombok.Getter;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import java.util.List;
-
 /**
  * @author meenal bhave
  */
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
 public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringContextTests
 {
+    public static final int SEARCH_MAX_ATTEMPS = 6;
+
     private static Logger LOG = LogFactory.getLogger();
 
     @Autowired
@@ -249,49 +248,30 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      * @param contentToFind that's expected to be included / excluded from the results
      * @param expectedInResults
      * @return true if search returns expected results, i.e. is given content is found or excluded from the results
-     * @throws Exception
      */
-    public boolean isContentInSearchResults(String userQuery, String contentToFind, boolean expectedInResults)
-            throws Exception
-    {
-        boolean resultAsExpected = false;
-        boolean found = !expectedInResults;
+    public boolean isContentInSearchResults(String userQuery, String contentToFind, boolean expectedInResults) {
+
         String expectedStatusCode = HttpStatus.OK.toString();
         String contentName = (contentToFind == null) ? "" : contentToFind;
 
         // Repeat search until the query results are as expected or Search Retry count is hit
-        for (int searchCount = 1; searchCount <= 6; searchCount++)
+        for (int searchCount = 0; searchCount < SEARCH_MAX_ATTEMPS; searchCount++)
         {
             SearchRequest searchRequest = createQuery(userQuery);
             SearchResponse response = query(searchRequest);
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
             {
-                List<SearchNodeModel> entries = response.getEntries();
-                if (!entries.isEmpty())
-                {
-                    if (contentName.isEmpty())
-                    {
-                        found = true;
-                    }
-                    else
-                    {
-                        found = entries.stream()
-                                .map(entry -> entry.getModel().getName())
-                                .filter(name -> name.equalsIgnoreCase(contentName))
-                                .count() > 0;
-                    }
-                }
-                else
-                {
-                    found = false;
-                }
+
+                boolean found = response.getEntries().stream()
+                        .map(entry -> entry.getModel().getName())
+                        .filter(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank())
+                        .count() > 0;
 
                 // Loop again if result is not as expected: To cater for solr lag: eventual consistency
-                resultAsExpected = (expectedInResults == found);
-                if (resultAsExpected)
+                if (expectedInResults == found)
                 {
-                    break;
+                    return true;
                 }
                 else
                 {
@@ -305,7 +285,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
             }
         }
 
-        return resultAsExpected;
+        return false;
     }
 
     /**
