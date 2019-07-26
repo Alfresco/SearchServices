@@ -24,11 +24,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Routes the incoming nodes (not ACLs!) on the last registered indexing shard (LRIS).
+ * Routes the incoming nodes (not ACLs!) on the shard explicitly indicated in {@link Node#getExplicitShardId()} method.
  * The access control information is duplicated in each shard.
+ *
+ * <p><br/><b>
+ *  WARNING: This {@link DocRouter} is part of an early access/preview routing feature called
+ *  Last-Registered-Indexing-Shard (LRIS), where the {@link Node#getExplicitShardId()} is filled with the identifier of
+ *  the last Master Shard which subscribed the cluster.
+ *
+ * </b><br/><br/>
+ * </p>
+ *
+ * Specifically, until the whole feature will be officially released, the LRIS document routing feature is not compatible
+ * with the "Purge" action on the Alfresco Admin Console.
+ * Note that at time of writing, the "Purge on startup" option in the Admin Console is enabled by default so prior to
+ * build your search cluster, you have to make sure that option is unchecked.
  *
  * @author Elia
  * @author agazzarini
+ * @since 1.4
  */
 public class ExplicitShardIdWithStaticPropertyRouter extends ComposableDocRouter
 {
