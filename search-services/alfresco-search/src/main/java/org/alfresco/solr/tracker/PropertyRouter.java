@@ -34,63 +34,43 @@ import java.util.stream.Stream;
 
 /**
  * Routes based on a text property field.
- * In this method, the value of some property is hashed and this hash is used to assign the node to a random shard.
- * All nodes with the same property value will be assigned to the same shard.
- * Each shard will duplicate all the ACL information.
- *
- * To use this method, when creating a shard add the new configuration properties:
- *
- * <ul>
- *     <li>shard.key=cm:creator</li>
- *     <li>shard.method=PROPERTY</li>
- *     <li>shard.instance=&lt;shard.instance></li>
- *     <li>shard.count=&lt;shard.count></li>
- * </ul>
- *
- * It is possible to extract a part of the property value to use for sharding using a regular expression,
- * for example, a year at the start of a string:
- *
- * <ul>
- *     <li>shard.regex=^\d{4}</li>
- * </ul>
  *
  * @author Gethin James
- * @see <a href="https://docs.alfresco.com/search-enterprise/concepts/solr-shard-approaches.html">Search Services sharding methods</a>
  */
 public class PropertyRouter implements DocRouter
 {
-    private final static Logger LOGGER = LoggerFactory.getLogger(PropertyRouter.class);
+    protected final static Logger log = LoggerFactory.getLogger(PropertyRouter.class);
 
-    Pattern pattern;
-    String propertyRegEx;
+    Pattern pattern = null;
+    private String propertyRegEx;
 
     //Fallback to DB_ID routing
-    DocRouter fallback = DocRouterFactory.getRouter(null, ShardMethodEnum.DB_ID);
+    private DocRouter fallback = DocRouterFactory.getRouter(null, ShardMethodEnum.DB_ID);
 
     public PropertyRouter(String propertyRegEx)
     {
-        if (propertyRegEx != null && propertyRegEx.trim().length() > 0)
+        if (propertyRegEx != null && !propertyRegEx.isEmpty())
         {
             this.propertyRegEx = propertyRegEx;
-        	pattern = Pattern.compile(propertyRegEx.trim());
+            pattern = Pattern.compile(propertyRegEx);
         }
     }
 
     @Override
-    public Boolean routeAcl(int shardCount, int shardInstance, Acl acl)
+    public boolean routeAcl(int shardCount, int shardInstance, Acl acl)
     {
         return true;
     }
 
     @Override
-    public Boolean routeNode(int shardCount, int shardInstance, Node node)
+    public boolean routeNode(int shardCount, int shardInstance, Node node)
     {
         if(shardCount <= 1)
         {
             return true;
         }
-
         String shardBy = node.getShardPropertyValue();
+
         if (shardBy !=null && pattern != null)
         {
             try
@@ -108,14 +88,14 @@ public class PropertyRouter implements DocRouter
             }
             catch (IndexOutOfBoundsException | NullPointerException exc)
             {
-                LOGGER.debug("Regex matched, but group 1 not found, so falling back to DBID sharding.");
+                log.debug("Regex matched, but group 1 not found, so falling back to DBID sharding.");
                 shardBy = null;
             }
         }
 
         if (shardBy == null || shardBy.isEmpty())
         {
-            LOGGER.debug("Property not found or regex not matched, so falling back to DBID sharding.");
+            log.debug("Property not found or regex not matched, so falling back to DBID sharding.");
             return fallback.routeNode(shardCount,shardInstance,node);
         }
 
