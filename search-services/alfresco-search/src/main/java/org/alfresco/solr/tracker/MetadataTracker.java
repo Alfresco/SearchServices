@@ -86,10 +86,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        String shardKey = p.getProperty(DocRouterFactory.SHARD_KEY_KEY);
+        String shardKey = p.getProperty("shard.key");
         if(shardKey != null) {
             shardProperty = getShardProperty(shardKey);
         }
+
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -223,8 +224,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
-        propertyBag.putAll(docRouter.getProperties(shardProperty));
-        
+
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
