@@ -20,8 +20,6 @@ package org.alfresco.solr.tracker;
 
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Routes the incoming nodes (not ACLs!) on the last registered indexing shard (LRIS).
@@ -32,7 +30,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ExplicitShardIdWithStaticPropertyRouter extends ComposableDocRouter
 {
-    private final static Logger log = LoggerFactory.getLogger(ExplicitShardIdWithStaticPropertyRouter.class);
 
     public ExplicitShardIdWithStaticPropertyRouter()
     {
