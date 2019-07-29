@@ -27,10 +27,20 @@ import org.slf4j.LoggerFactory;
  * Routes the incoming nodes (not ACLs!) on the shard explicitly indicated in {@link Node#getExplicitShardId()} method.
  * The access control information is duplicated in each shard.
  *
- * <p><br/><b>
- *  WARNING: This {@link DocRouter} is part of an early access/preview routing feature called
- *  Last-Registered-Indexing-Shard (LRIS), where the {@link Node#getExplicitShardId()} is filled with the identifier of
- *  the last Master Shard which subscribed the cluster.
+ * <p><br/>
+ *  WARNING: This is an experimental feature that is subject to change.
+ *  The current known issues are:
+ *
+ *  <ul>
+ *      <li>Incompatibility with the "Purge" action on the Alfresco Admin Console</li>
+ *      <li>Incompatibility with the "Purge on Startup" option on the Alfresco Admin Console</li>
+ *  </ul>
+ *
+ * As a result, when this router is used and the purge action is invoked you may experience a wrong shard subscription
+ * registration order. That would cause a wrong distribution of the indexed data across the cluster.
+ *
+ * Note the "Purge on restart" option on the Admin Console is checked by default, so before building a
+ * Solr cluster which uses this router, please make sure the check has been disabled.
  *
  * </b><br/><br/>
  * </p>
