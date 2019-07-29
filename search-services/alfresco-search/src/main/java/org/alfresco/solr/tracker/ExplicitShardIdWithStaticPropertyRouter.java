@@ -45,11 +45,6 @@ import org.slf4j.LoggerFactory;
  * </b><br/><br/>
  * </p>
  *
- * Specifically, until the whole feature will be officially released, the LRIS document routing feature is not compatible
- * with the "Purge" action on the Alfresco Admin Console.
- * Note that at time of writing, the "Purge on startup" option in the Admin Console is enabled by default so prior to
- * build your search cluster, you have to make sure that option is unchecked.
- *
  * @author Elia
  * @author agazzarini
  * @since 1.4

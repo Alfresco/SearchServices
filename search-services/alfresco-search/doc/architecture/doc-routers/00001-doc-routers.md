@@ -149,6 +149,19 @@ where
 
 
 ##### Last Registered Indexing Shard (LRIS)
+
+> WARNING: This is an experimental feature that is subject to change.
+The current known issues are:
+> 
+> \- Incompatibility with the "Purge" action on the Alfresco Admin Console   
+> \- Incompatibility with the "Purge on Startup" option on the Alfresco Admin Console
+>    
+> As a result, when this router is used and the purge action is invoked you may experience a wrong shard subscription   
+> registration order. That would cause a wrong distribution of the indexed data across the cluster.   
+>   
+> Note the "Purge on restart" option on the Admin Console is checked by default, so before building a   
+> Solr cluster which uses this router, please make sure the check has been disabled.  
+
 This method uses, as the name suggests, the last indexing shard which subscribed to the Shard Registry. 
 Like the _DB_ID_RANGE_ strategy, it's possible to add new shards to the cluster without requiring a reindex. And as consequence of that, the total number of shards (i.e. the _shard.count_ attribute) isn't needed with this sharding strategy. 
 At indexing time, when the _MetadataTracker_ periodically asks for transactions and nodes, Alfresco repository creates the nodes instances and, using the associated transaction timestamp, asks to the _ShardRegistry_ which is the target Shard which should index/own the node.
@@ -212,6 +225,19 @@ where
 * shard.count is the total number of the shards composing the cluster (required by the DBID fallback strategy)
 
 ##### Explicit Shard ID with fallback on LRIS (EXPLICIT_ID_FALLBACK_LRIS)
+
+> WARNING: This is an experimental feature that is subject to change.
+The current known issues are:
+> 
+> \- Incompatibility with the "Purge" action on the Alfresco Admin Console   
+> \- Incompatibility with the "Purge on Startup" option on the Alfresco Admin Console
+>    
+> As a result, when this router is used and the purge action is invoked you may experience a wrong shard subscription   
+> registration order. That would cause a wrong distribution of the indexed data across the cluster.   
+>   
+> Note the "Purge on restart" option on the Admin Console is checked by default, so before building a   
+> Solr cluster which uses this router, please make sure the check has been disabled.  
+
 This method still belongs to the "explicit" id family, where nodes are routed to shards accordingly to a value of a node property which is supposed to contain the target shard instance identifier. 
 So it is very similar to the previous one. The important difference resides in the fallback strategy: in case the target shard cannot be determined used the supplied node property, the 
 "Last Registered Indexing Shard" is used as fallback. 
