@@ -22,11 +22,35 @@ import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
 
 /**
- * Routes the incoming nodes (not ACLs!) on the last registered indexing shard (LRIS).
+ * Routes the incoming nodes (not ACLs!) on the shard explicitly indicated in {@link Node#getExplicitShardId()} method.
  * The access control information is duplicated in each shard.
+ *
+ * <p><br/>
+ *  WARNING: This is an experimental feature that is subject to change.
+ *  The current known issues are:
+ *
+ *  <ul>
+ *      <li>Incompatibility with the "Purge" action on the Alfresco Admin Console</li>
+ *      <li>Incompatibility with the "Purge on Startup" option on the Alfresco Admin Console</li>
+ *  </ul>
+ *
+ * As a result, when this router is used and the purge action is invoked you may experience a wrong shard subscription
+ * registration order. That would cause a wrong distribution of the indexed data across the cluster.
+ *
+ * Note the "Purge on restart" option on the Admin Console is checked by default, so before building a
+ * Solr cluster which uses this router, please make sure the check has been disabled.
+ *
+ * </b><br/><br/>
+ * </p>
+ *
+ * Specifically, until the whole feature will be officially released, the LRIS document routing feature is not compatible
+ * with the "Purge" action on the Alfresco Admin Console.
+ * Note that at time of writing, the "Purge on startup" option in the Admin Console is enabled by default so prior to
+ * build your search cluster, you have to make sure that option is unchecked.
  *
  * @author Elia
  * @author agazzarini
+ * @since 1.4
  */
 public class ExplicitShardIdWithStaticPropertyRouter extends ComposableDocRouter
 {

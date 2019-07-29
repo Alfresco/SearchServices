@@ -65,10 +65,10 @@ public class DocRouterFactory
                 LOGGER.info("Sharding via PROPERTY");
                 return new PropertyRouter(properties.getProperty(SHARD_REGEX_KEY, ""));
             case LAST_REGISTERED_INDEXING_SHARD:
-                LOGGER.info("Sharding via LAST_REGISTERED_INDEXING_SHARD");
+                LOGGER.warn("Sharding via LAST_REGISTERED_INDEXING_SHARD: Note this is available at the moment as an Early Access/preview feature!");
                 return new ExplicitShardIdWithStaticPropertyRouter();
             case EXPLICIT_ID_FALLBACK_LRIS:
-                LOGGER.info("Sharding via EXPLICIT_ID_FALLBACK_LRIS");
+                LOGGER.warn("Sharding via EXPLICIT_ID_FALLBACK_LRIS: Note the LRIS Router (which is part of this composite router) is available at the moment as an Early Access/preview feature!");
                 return new DocRouterWithFallback(
                         new ExplicitShardIdWithDynamicPropertyRouter(false),
                         new ExplicitShardIdWithStaticPropertyRouter());
