@@ -1,13 +1,14 @@
 package org.alfresco.solr.tracker;
 
+import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
+
+import java.util.Map;
 
 /**
  * A composable {@link DocRouter} which consists of
@@ -21,7 +22,6 @@ import static java.util.Optional.ofNullable;
  */
 public class DocRouterWithFallback implements DocRouter
 {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ExplicitShardIdWithDynamicPropertyRouter.class);
 
     private final DocRouter primaryStrategy;
     private final DocRouter fallbackStrategy;
@@ -45,4 +45,11 @@ public class DocRouterWithFallback implements DocRouter
                 .orElseGet(() -> ofNullable(fallbackStrategy.routeNode(shardCount, shardInstance, node))
                                     .orElse(false));
     }
+    
+    @Override
+    public Map<String, String> getProperties(QName shardProperty)
+    {
+        return primaryStrategy.getProperties(shardProperty);
+    }
+
 }
