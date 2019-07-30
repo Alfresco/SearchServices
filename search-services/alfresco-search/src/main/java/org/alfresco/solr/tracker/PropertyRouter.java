@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -129,21 +128,10 @@ public class PropertyRouter implements DocRouter
     @Override
     public Map<String, String> getProperties(QName shardProperty)
     {
-        if (shardProperty == null)
-        {
-            return Collections.emptyMap();
-        }
-        else 
-        {
-            return new HashMap<String, String>()
-            {
-                private static final long serialVersionUID = -8532652155838845149L;
-                {
-                    put(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString());
-                    put(DocRouterFactory.SHARD_REGEX_KEY, propertyRegEx);
-                }
-            };
-        }
+        return (shardProperty == null ? 
+                Collections.emptyMap() : 
+                Map.of(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString(),
+                       DocRouterFactory.SHARD_REGEX_KEY, propertyRegEx));
     }
     
 }

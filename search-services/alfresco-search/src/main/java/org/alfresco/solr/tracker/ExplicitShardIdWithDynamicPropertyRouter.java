@@ -19,7 +19,6 @@
 package org.alfresco.solr.tracker;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
@@ -81,20 +80,9 @@ public class ExplicitShardIdWithDynamicPropertyRouter extends ComposableDocRoute
     @Override
     public Map<String, String> getProperties(QName shardProperty)
     {
-        if (shardProperty == null)
-        {
-            return Collections.emptyMap();
-        }
-        else 
-        {
-            return new HashMap<String, String>()
-            {
-                private static final long serialVersionUID = 2142617404056625285L;
-                {
-                    put(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString());
-                }
-            };
-        }
+        return (shardProperty == null ? 
+                Collections.emptyMap() : 
+                Map.of(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString()));
     }
 
 }
