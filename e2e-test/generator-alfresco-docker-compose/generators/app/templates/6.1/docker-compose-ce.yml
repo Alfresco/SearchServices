@@ -7,7 +7,7 @@ services:
         build:
           context: ./alfresco
           args:
-            ALFRESCO_TAG: ${ALFRESCO_TAG}
+            ALFRESCO_TAG: ${ALFRESCO_CE_TAG}
             SOLR_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             TRUSTSTORE_PASS: kT9X6oe68t
@@ -30,26 +30,12 @@ services:
                 -Daos.baseUrlOverwrite=http://localhost:8082/alfresco/aos
                 -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 -Ddeployment.method=DOCKER_COMPOSE
-
-                -Dlocal.transform.service.enabled=true
-                -DlocalTransform.pdfrenderer.url=http://alfresco-pdf-renderer:8090/
-                -DlocalTransform.imagemagick.url=http://imagemagick:8090/
-                -DlocalTransform.libreoffice.url=http://libreoffice:8090/
-                -DlocalTransform.tika.url=http://tika:8090/
-                -DlocalTransform.misc.url=http://transform-misc:8090/
-
-                -Dlegacy.transform.service.enabled=true
-                -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
-                -Djodconverter.url=http://libreoffice:8090/
-                -Dimg.url=http://imagemagick:8090/
-                -Dtika.url=http://tika:8090/
-                -Dtransform.misc.url=http://transform-misc:8090/
-
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
                 -Xms1500m -Xmx1500m
-                " <% if (httpMode == 'https') { %>
+                "
         ports:
+            - 8082:8080 <% if (httpMode == 'https') { %>
             - 8443:8443
         volumes:
             - ./keystores/alfresco:/usr/local/tomcat/alf_data/keystore <% } %>
@@ -137,46 +123,6 @@ services:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
     <% } %>
 
-    alfresco-pdf-renderer:
-        image: alfresco/alfresco-pdf-renderer:${PDF_RENDERER_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8090:8090
-
-    imagemagick:
-        image: alfresco/alfresco-imagemagick:${IMAGE_MAGICK_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8091:8090
-
-    libreoffice:
-        image: alfresco/alfresco-libreoffice:${LIBREOFFICE_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8092:8090
-
-    tika:
-        image: alfresco/alfresco-tika:${TIKA_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8093:8090
-
-    transform-misc:
-        image: alfresco/alfresco-transform-misc:${TRANSFORM_MISC_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8094:8090
-
     share:
         image: alfresco/alfresco-share:${SHARE_TAG}
         mem_limit: 1g
@@ -191,6 +137,8 @@ services:
                 -Dalfresco.context=alfresco
                 -Dalfresco.protocol=http
                 "
+        ports:
+            - 8080:8080
 
     postgres:
         image: postgres:${POSTGRES_TAG}
@@ -211,14 +159,3 @@ services:
             - 5672:5672 # AMQP
             - 61616:61616 # OpenWire
             - 61613:61613 # STOMP
-
-    proxy:
-        image: alfresco/acs-community-ngnix:${ACS_COMMUNITY_NGINX_TAG}
-        mem_limit: 128m
-        depends_on:
-            - alfresco
-        ports:
-            - 8080:8080
-        links:
-            - alfresco
-            - share 

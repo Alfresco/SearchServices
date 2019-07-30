@@ -5,7 +5,7 @@ This project generates a collection of Docker Compose Templates to test Reposito
 
 * Plain HTTP communications
 * TLS/SSL Mutual Authentication communications
-* Sharding (dynamic) with DB_ID or Explicit Routing
+* Sharding (dynamic) with different Sharding Methods
 * Replication (master/slave)
 
 ## Project structure
@@ -13,28 +13,33 @@ This project generates a collection of Docker Compose Templates to test Reposito
 Following templates are provided.
 
 ```
-$ tree generators/app/templates/latest
-├── .env
-├── alfresco
-│   ├── Dockerfile
-│   └── model
-│       ├── sharding-content-model-context.xml
-│       └── sharding-content-model.xml
-├── docker-compose-ce.yml
-├── docker-compose-ee.yml
-├── search
-│   └── Dockerfile
-├── zeppelin
-|   └── Dockerfile
-└── keystores
+$ tree generators/app/templates/
+generators/app/templates/
+├── 6.1
+│   ├── docker-compose-ce.yml
+│   └── docker-compose-ee.yml
+├── keystores
+│   ├── alfresco
+│   ├── client
+│   ├── solr
+│   └── zeppelin
+└── latest
     ├── alfresco
-    ├── solr
+    │   ├── Dockerfile
+    │   └── model
+    │       ├── sharding-content-model-context.xml
+    │       └── sharding-content-model.xml
+    ├── docker-compose-ce.yml
+    ├── docker-compose-ee.yml
+    ├── search
+    │   └── Dockerfile
     └── zeppelin
+        └── Dockerfile
 ```
 
 * `.env` includes default values for Docker Compose environment variables
-* `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment
-* `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment
+* `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment (for latest and ACS 6.1)
+* `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment (for latest and ACS 6.1)
 * `alfresco` includes a Dockerfile template to start Alfresco Repository
   * `model` includes a default content model for Sharding Explicit Routing
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
@@ -58,6 +63,17 @@ $ mkdir my-custom-docker-compose
 $ yo alfresco-docker-compose
 ```
 
+## ACS Version
+
+Currently supported ACS Version are `latest` and `6.1`
+
+This is the first choice to be selected when the generator is executed.
+```
+? Which ACS version do you want to use?
+  6.1
+❯ latest
+```
+
 ## Community
 
 When using Community, some different options can be combined:
@@ -66,7 +82,6 @@ When using Community, some different options can be combined:
 * Use SOLR Replication in Master/Slave mode (only when using http)
 
 ```
-? Which Alfresco version do you want to use? latest
 ? Would you like to use Alfresco enterprise or community? community
 ? Would you like to use http or https? http
 ? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
@@ -76,20 +91,38 @@ When using Community, some different options can be combined:
 
 When using Enterprise, some options can be added to Community configuration:
 
-* Use dynamic Sharding with 2 SOLR nodes pre-configured (only when not using SOLR Replication)
-* Use Explicit Routing for Shards instead of DB_ID (only when using Sharding)
+* Use dynamic Sharding with 2 SOLR nodes pre-configured (every sharding method is supported)
 * Insight Engine, as Search Services is selected by default
 * Deploy Zeppelin app to use JDBC Connector to SOLR
 
 ```
 ? Would you like to use dynamic Sharding (2 SOLR nodes)? Yes
-? Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards? Yes
+? Which Sharding Method do you want to use?
+❯ DB_ID
+  DB_ID_RANGE
+  ACL_ID
+  MOD_ACL_ID
+  DATE
+  PROPERTY
+  LAST_REGISTERED_INDEXING_SHARD
+  EXPLICIT_ID_FALLBACK_LRIS
+  EXPLICIT_ID  
 ? Would you like to use Insight Engine instead of Search Services? Yes
 ? Would you like to deploy Zeppelin? Yes
 ```
 
-## Using Explicit Routing feature
+## Sharding methods default parameters
 
+**DB_ID_RANGE**
+Shard range is 0-800 for the instance 0 and 801-40000 for the instance 1.
+
+**DATE**
+Shard property is `cm:created` and grouping is set to 2.
+
+**PROPERTY**
+Shard property is `shard:shardId`, belonging to a custom model deployed in the template.
+
+**EXPLICIT_ID** and **EXPLICIT_ID_FALLBACK_LRIS**
 Custom content model is deployed to provide a property, named `shard:shardId`, holding the Shard Number (0, 1) where the content is indexed.
 
 ## Configuration catalog
@@ -121,15 +154,14 @@ $ yo alfresco-docker-compose --acsVersion=latest --alfrescoVersion=community --h
 
 **Parameter names reference**
 
-`--acsVersion`: default latest, but could be set to e.g. 6.1.0.5
+`--acsVersion`: default latest, but could be set to 6.1
 `--alfrescoVersion`: community or enterprise
 `--httpMode`: http or https
 `--clustering`: true or false
 `--insightEngine`: true or false
 `--zeppelin`: true or false
 `--sharding`: true or false
-`--explicitRouting`: true or false
-
+`--shardingMethod`: DB_ID, DB_ID_RANGE, ACL_ID, MOD_ACL_ID, DATE, PROPERTY, LAST_REGISTERED_INDEXING_SHARD, EXPLICIT_ID_FALLBACK_LRIS, EXPLICIT_ID
 
 ## Using Docker Compose
 

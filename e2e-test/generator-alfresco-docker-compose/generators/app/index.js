@@ -22,9 +22,10 @@ module.exports = class extends Generator {
 
     const prompts = [
       {
-        type: 'input',
+        type: 'list',
         name: 'acsVersion',
-        message: 'Which Alfresco version do you want to use?',
+        message: 'Which ACS version do you want to use?',
+        choices: [ "6.1", "latest" ],
         default: 'latest'
       },
       {
@@ -58,10 +59,21 @@ module.exports = class extends Generator {
       },
       {
         whenFunction: response => response.alfrescoVersion == 'enterprise' && response.sharding,
-        type: 'confirm',
-        name: 'explicitRouting',
-        message: 'Would you like to use SOLR Explicit Routing instead of DB_ID for the Shards?',
-        default: false
+        type: 'list',
+        name: 'shardingMethod',
+        message: 'Which Sharding Method do you want to use?',
+        choices: [ 
+          "DB_ID", 
+          "DB_ID_RANGE", 
+          "ACL_ID", 
+          "MOD_ACL_ID", 
+          "DATE", 
+          "PROPERTY", 
+          "LAST_REGISTERED_INDEXING_SHARD",
+          "EXPLICIT_ID_FALLBACK_LRIS",
+          "EXPLICIT_ID"
+         ],
+        default: 'DB_ID'
       },
       {
         whenFunction: response => response.alfrescoVersion == 'enterprise',
@@ -104,14 +116,16 @@ module.exports = class extends Generator {
   // Generate boilerplate from "templates" folder
   writing() {
 
-    // TODO: Add support for other versions of ACS.
-    // e.g. Using something like:
-    //     if (this.props.acsVersion.startsWith('6.0')) {
     var templateDirectory = 'latest';
+
+    var dockerComposeTemplateDirectory = 'latest';
+    if (this.props.acsVersion.startsWith('6.1')) {
+      dockerComposeTemplateDirectory = '6.1';
+    }
 
     // Docker Compose environment variables values
     this.fs.copyTpl(
-      this.templatePath(templateDirectory + '/.env'),
+      this.templatePath(dockerComposeTemplateDirectory + '/.env'),
       this.destinationPath('.env'),
       {
         acsTag: this.props.acsVersion
@@ -121,8 +135,8 @@ module.exports = class extends Generator {
     // Base Docker Compose Template
     const dockerComposeTemplate =
         (this.props.alfrescoVersion == 'community' ?
-          templateDirectory + '/docker-compose-ce.yml' :
-          templateDirectory + '/docker-compose-ee.yml');
+          dockerComposeTemplateDirectory + '/docker-compose-ce.yml' :
+          dockerComposeTemplateDirectory + '/docker-compose-ee.yml');
 
     // Repository Docker Image name
     const acsImageName =
@@ -155,7 +169,7 @@ module.exports = class extends Generator {
         searchPath: searchBasePath,
         zeppelin: (this.props.zeppelin ? "true" : "false"),
         sharding: (this.props.sharding ? "true" : "false"),
-        explicitRouting: (this.props.explicitRouting ? "true" : "false")
+        shardingMethod: (this.props.shardingMethod)
       }
     );
 
