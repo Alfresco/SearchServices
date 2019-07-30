@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr.tracker;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -113,20 +112,13 @@ public class DBIDRangeRouter implements DocRouter
     public Map<String, String> getProperties(QName shardProperty)
     {
         
-        if (shardProperty == null)
+        return new HashMap<String, String>()
         {
-            return Collections.emptyMap();
-        }
-        else 
-        {
-            return new HashMap<String, String>()
+            private static final long serialVersionUID = -2255464864410358899L;
             {
-                private static final long serialVersionUID = -2255464864410358899L;
-                {
-                    put(DocRouterFactory.SHARD_RANGE_KEY, startRange + "-" + expandableRange);
-                }
-            };
-        }
+                put(DocRouterFactory.SHARD_RANGE_KEY, startRange + "-" + expandableRange);
+            }
+        };
         
     }
     
