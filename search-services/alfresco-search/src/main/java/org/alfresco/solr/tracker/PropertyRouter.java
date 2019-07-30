@@ -19,12 +19,15 @@
 package org.alfresco.solr.tracker;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
 import org.apache.solr.common.util.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +61,7 @@ public class PropertyRouter implements DocRouter
     private final static Logger LOGGER = LoggerFactory.getLogger(PropertyRouter.class);
 
     Pattern pattern;
+    String propertyRegEx;
 
     //Fallback to DB_ID routing
     DocRouter fallback = DocRouterFactory.getRouter(null, ShardMethodEnum.DB_ID);
@@ -66,7 +70,12 @@ public class PropertyRouter implements DocRouter
     {
         if (propertyRegEx != null && propertyRegEx.trim().length() > 0)
         {
-            pattern = Pattern.compile(propertyRegEx.trim());
+            this.propertyRegEx = propertyRegEx;
+            this.pattern = Pattern.compile(propertyRegEx.trim());
+        }
+        else
+        {
+            this.propertyRegEx = "";
         }
     }
 
@@ -115,4 +124,14 @@ public class PropertyRouter implements DocRouter
 
         return (Math.abs(Hash.murmurhash3_x86_32(shardBy, 0, shardBy.length(), 66)) % shardCount) == shardInstance;
     }
+    
+    @Override
+    public Map<String, String> getProperties(QName shardProperty)
+    {
+        return (shardProperty == null ? 
+                Collections.emptyMap() : 
+                Map.of(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString(),
+                       DocRouterFactory.SHARD_REGEX_KEY, propertyRegEx));
+    }
+    
 }

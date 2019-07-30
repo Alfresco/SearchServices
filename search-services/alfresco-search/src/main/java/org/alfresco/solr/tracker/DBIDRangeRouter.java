@@ -18,11 +18,13 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.Acl;
-
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.Node;
 
 /**
  * This routes documents within specific DBID ranges to specific shards.
@@ -104,4 +106,11 @@ public class DBIDRangeRouter implements DocRouter
         long dbid = node.getId();
         return dbid >= startRange && dbid < expandableRange.longValue();
     }
+
+    @Override
+    public Map<String, String> getProperties(QName shardProperty)
+    {
+        return Map.of(DocRouterFactory.SHARD_RANGE_KEY, startRange + "-" + expandableRange);
+    }
+    
 }

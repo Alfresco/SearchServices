@@ -24,27 +24,30 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-/**
- * Routing strategy Factory.
- *
+/*
  * @author Joel
  */
+
 public class DocRouterFactory
 {
-    private final static Logger LOGGER = LoggerFactory.getLogger(DocRouterFactory.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(DocRouterFactory.class);
+    
+    public static final String SHARD_KEY_KEY = "shard.key";
+    public static final String SHARD_RANGE_KEY = "shard.range";
+    public static final String SHARD_DATE_GROUPING_KEY = "shard.date.grouping";
+    public static final String SHARD_REGEX_KEY = "shard.regex";
 
-    public static DocRouter getRouter(Properties properties, ShardMethodEnum method)
-    {
-        switch(method)
-        {
+    public static DocRouter getRouter(Properties properties, ShardMethodEnum method) {
+
+        switch(method) {
             case DB_ID:
                 LOGGER.info("Sharding via DB_ID");
                 return new DBIDRouter();
             case DB_ID_RANGE:
-                if(properties.containsKey("shard.range"))
+                if(properties.containsKey(SHARD_RANGE_KEY))
                 {
                     LOGGER.info("Sharding via DB_ID_RANGE");
-                    String[] pair =properties.getProperty("shard.range").split("-");
+                    String[] pair =properties.getProperty(SHARD_RANGE_KEY).split("-");
                     long start = Long.parseLong(pair[0]);
                     long end = Long.parseLong(pair[1]);
                     return new DBIDRangeRouter(start, end);
@@ -57,15 +60,15 @@ public class DocRouterFactory
                 return new ACLIDModRouter();
             case DATE:
                 LOGGER.info("Sharding via DATE");
-                return new DateMonthRouter(properties.getProperty("shard.date.grouping", "1"));
+                return new DateMonthRouter(properties.getProperty(SHARD_DATE_GROUPING_KEY, "1"));
             case PROPERTY:
                 LOGGER.info("Sharding via PROPERTY");
-                return new PropertyRouter(properties.getProperty("shard.regex", ""));
+                return new PropertyRouter(properties.getProperty(SHARD_REGEX_KEY, ""));
             case LAST_REGISTERED_INDEXING_SHARD:
-                LOGGER.info("Sharding via LAST_REGISTERED_INDEXING_SHARD");
+                LOGGER.warn("Sharding via LAST_REGISTERED_INDEXING_SHARD: Note this is available at the moment as an Early Access/preview feature!");
                 return new ExplicitShardIdWithStaticPropertyRouter();
             case EXPLICIT_ID_FALLBACK_LRIS:
-                LOGGER.info("Sharding via EXPLICIT_ID_FALLBACK_LRIS");
+                LOGGER.warn("Sharding via EXPLICIT_ID_FALLBACK_LRIS: Note the LRIS Router (which is part of this composite router) is available at the moment as an Early Access/preview feature!");
                 return new DocRouterWithFallback(
                         new ExplicitShardIdWithDynamicPropertyRouter(false),
                         new ExplicitShardIdWithStaticPropertyRouter());
@@ -79,4 +82,5 @@ public class DocRouterFactory
                 return new DBIDRouter();
         }
     }
+
 }
