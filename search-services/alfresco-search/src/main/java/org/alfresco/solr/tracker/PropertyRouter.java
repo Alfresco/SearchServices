@@ -26,11 +26,11 @@ import org.apache.solr.common.util.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Routes based on a text property field.
@@ -129,10 +129,21 @@ public class PropertyRouter implements DocRouter
     @Override
     public Map<String, String> getProperties(QName shardProperty)
     {
-        return Stream.of(new String[][] {
-            { DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString() },
-            { DocRouterFactory.SHARD_REGEX_KEY, propertyRegEx }, 
-          }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+        if (shardProperty == null)
+        {
+            return Collections.emptyMap();
+        }
+        else 
+        {
+            return new HashMap<String, String>()
+            {
+                private static final long serialVersionUID = -8532652155838845149L;
+                {
+                    put(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString());
+                    put(DocRouterFactory.SHARD_REGEX_KEY, propertyRegEx);
+                }
+            };
+        }
     }
     
 }

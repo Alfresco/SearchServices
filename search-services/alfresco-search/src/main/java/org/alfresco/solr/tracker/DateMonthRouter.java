@@ -26,11 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The date-based sharding assigns dates sequentially through shards based on the month.
@@ -124,10 +124,21 @@ public class DateMonthRouter implements DocRouter
     @Override
     public Map<String, String> getProperties(QName shardProperty)
     {
-        return Stream.of(new String[][] {
-            { DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString() },
-            { DocRouterFactory.SHARD_DATE_GROUPING_KEY, String.valueOf(grouping) }, 
-          }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+        if (shardProperty == null)
+        {
+            return Collections.emptyMap();
+        }
+        else 
+        {
+            return new HashMap<String, String>()
+            {
+                private static final long serialVersionUID = -3201232032535256299L;
+                {
+                    put(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString());
+                    put(DocRouterFactory.SHARD_DATE_GROUPING_KEY, String.valueOf(grouping));
+                }
+            };
+        }
     }
     
 }
