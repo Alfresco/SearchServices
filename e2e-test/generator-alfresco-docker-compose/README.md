@@ -23,7 +23,7 @@ generators/app/templates/
 │   ├── client
 │   ├── solr
 │   └── zeppelin
-└── latest
+└── 6.2
     ├── alfresco
     │   ├── Dockerfile
     │   └── model
@@ -38,8 +38,8 @@ generators/app/templates/
 ```
 
 * `.env` includes default values for Docker Compose environment variables
-* `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment (for latest and ACS 6.1)
-* `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment (for latest and ACS 6.1)
+* `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment (for ACS 6.2 and ACS 6.1)
+* `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment (for ACS 6.2 and ACS 6.1)
 * `alfresco` includes a Dockerfile template to start Alfresco Repository
   * `model` includes a default content model for Sharding Explicit Routing
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
@@ -65,13 +65,13 @@ $ yo alfresco-docker-compose
 
 ## ACS Version
 
-Currently supported ACS Version are `latest` and `6.1`
+Currently supported ACS Version are `6.2` and `6.1`
 
 This is the first choice to be selected when the generator is executed.
 ```
 ? Which ACS version do you want to use?
   6.1
-❯ latest
+❯ 6.2
 ```
 
 ## Community
@@ -149,12 +149,12 @@ Both `community` and `enterprise` ACS deployments can be used with the same opti
 Default values for options can be specified in the command line, using a `--name=value` pattern. When an options is specified in the command line, the question is not prompted to the user, so you can generate a Docker Compose template with no user interaction.
 
 ```
-$ yo alfresco-docker-compose --acsVersion=latest --alfrescoVersion=community --httpMode=http --clustering=true
+$ yo alfresco-docker-compose --acsVersion=6.2 --alfrescoVersion=community --httpMode=http --clustering=true
 ```
 
 **Parameter names reference**
 
-`--acsVersion`: default latest, but could be set to 6.1
+`--acsVersion`: default 6.2, but could be set to 6.1
 `--alfrescoVersion`: community or enterprise
 `--httpMode`: http or https
 `--clustering`: true or false

@@ -25,8 +25,8 @@ module.exports = class extends Generator {
         type: 'list',
         name: 'acsVersion',
         message: 'Which ACS version do you want to use?',
-        choices: [ "6.1", "latest" ],
-        default: 'latest'
+        choices: [ "6.1", "6.2" ],
+        default: '6.2'
       },
       {
         type: 'list',
@@ -116,20 +116,15 @@ module.exports = class extends Generator {
   // Generate boilerplate from "templates" folder
   writing() {
 
-    var templateDirectory = 'latest';
-
-    var dockerComposeTemplateDirectory = 'latest';
+    var dockerComposeTemplateDirectory = '6.2';
     if (this.props.acsVersion.startsWith('6.1')) {
       dockerComposeTemplateDirectory = '6.1';
     }
 
     // Docker Compose environment variables values
-    this.fs.copyTpl(
+    this.fs.copy(
       this.templatePath(dockerComposeTemplateDirectory + '/.env'),
-      this.destinationPath('.env'),
-      {
-        acsTag: this.props.acsVersion
-      }
+      this.destinationPath('.env')
     )
 
     // Base Docker Compose Template
@@ -173,9 +168,11 @@ module.exports = class extends Generator {
       }
     );
 
+    var imagesDirectory = 'images';
+
     // Copy Docker Image for Repository applying configuration
     this.fs.copyTpl(
-      this.templatePath(templateDirectory + '/alfresco/Dockerfile'),
+      this.templatePath(imagesDirectory + '/alfresco/Dockerfile'),
       this.destinationPath('alfresco/Dockerfile'),
       {
         acsImage: acsImageName,
@@ -184,14 +181,14 @@ module.exports = class extends Generator {
     );
     if (this.props.sharding) {
       this.fs.copy(
-        this.templatePath(templateDirectory + '/alfresco/model'),
+        this.templatePath(imagesDirectory + '/alfresco/model'),
         this.destinationPath('alfresco/model')
       )
     }
 
     // Copy Docker Image for Search applying configuration
     this.fs.copyTpl(
-      this.templatePath(templateDirectory + '/search'),
+      this.templatePath(imagesDirectory + '/search'),
       this.destinationPath('search'),
       {
         searchImage: searchImageName,
@@ -202,7 +199,7 @@ module.exports = class extends Generator {
     // Copy Docker Image for Zeppelin applying configuration
     if (this.props.zeppelin) {
       this.fs.copy(
-        this.templatePath(templateDirectory + '/zeppelin'),
+        this.templatePath(imagesDirectory + '/zeppelin'),
         this.destinationPath('zeppelin')
       );
     }
