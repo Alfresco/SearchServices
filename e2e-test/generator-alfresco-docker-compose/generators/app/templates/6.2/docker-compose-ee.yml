@@ -25,20 +25,29 @@ services:
                 -Dsolr.base.url=/solr <% if (sharding == 'true') { %>
                 -Dsolr.useDynamicShardRegistration=true <% } %>
                 -Dindex.subsystem.name=solr6
+                
+                -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
+                -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+                -Ddeployment.method=DOCKER_COMPOSE
+
+                -Dtransform.service.enabled=true
+                -Dtransform.service.url=http://transform-router:8095
+                -Dsfs.url=http://shared-file-store:8099/
+
+                -Dlocal.transform.service.enabled=true
+                -DlocalTransform.pdfrenderer.url=http://alfresco-pdf-renderer:8090/
+                -DlocalTransform.imagemagick.url=http://imagemagick:8090/
+                -DlocalTransform.libreoffice.url=http://libreoffice:8090/
+                -DlocalTransform.tika.url=http://tika:8090/
+                -DlocalTransform.misc.url=http://transform-misc:8090/
+
+                -Dlegacy.transform.service.enabled=true
                 -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
                 -Djodconverter.url=http://libreoffice:8090/
                 -Dimg.url=http://imagemagick:8090/
                 -Dtika.url=http://tika:8090/
-                -Dsfs.url=http://shared-file-store:8099/
-                -Dshare.host=127.0.0.1
-                -Dshare.port=8080
-                -Dalfresco.host=localhost
-                -Dalfresco.port=8080
-                -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
-                -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
-                -Ddeployment.method=DOCKER_COMPOSE
-                -Dlocal.transform.service.enabled=true
-                -Dtransform.service.enabled=true
+                -Dtransform.misc.url=http://transform-misc:8090/
+
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
                 -Xms1500m -Xmx1500m
@@ -62,8 +71,13 @@ services:
             ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
-            SHARD_ID: "0" <% } %> <% if (explicitRouting == 'true') { %>
-            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
+            SHARD_ID: "0" <% if (shardingMethod == 'DB_ID_RANGE') { %>
+            SHARD_RANGE: "0-800" <% } %> <% if (shardingMethod == 'DATE') { %>
+            SHARD_KEY: "cm:created"
+            SHARD_DATE_GROUPING: "2" <% } %> <% if (shardingMethod == 'PROPERTY') { %>
+            SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
+            SHARD_KEY: "shard:shardId" <% } %>
+            SHARDING_METHOD: <%=shardingMethod%> <% } %>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -114,8 +128,13 @@ services:
             MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
-            SHARD_ID: "1" <% } %> <% if (explicitRouting == 'true') { %>
-            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
+            SHARD_ID: "1" <% if (shardingMethod == 'DB_ID_RANGE') { %>
+            SHARD_RANGE: "801-40000" <% } %> <% if (shardingMethod == 'DATE') { %>
+            SHARD_KEY: "cm:created"
+            SHARD_DATE_GROUPING: "2" <% } %> <% if (shardingMethod == 'PROPERTY') { %>
+            SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
+            SHARD_KEY: "shard:shardId" <% } %>
+            SHARDING_METHOD: <%=shardingMethod%> <% } %>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -190,12 +209,14 @@ services:
           LIBREOFFICE_URL : "http://libreoffice:8090"
           TIKA_URL : "http://tika:8090"
           FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8095:8095
         links:
           - activemq
 
     alfresco-pdf-renderer:
-        image: quay.io/alfresco/alfresco-pdf-renderer:${PDF_RENDERER_TAG}
-        mem_limit: 512m
+        image: alfresco/alfresco-pdf-renderer:${PDF_RENDERER_TAG}
+        mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
             ACTIVEMQ_URL: "nio://activemq:61616"
@@ -206,8 +227,8 @@ services:
         - activemq
 
     imagemagick:
-        image: quay.io/alfresco/alfresco-imagemagick:${IMAGE_MAGICK_TAG}
-        mem_limit: 512m
+        image: alfresco/alfresco-imagemagick:${IMAGE_MAGICK_TAG}
+        mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
             ACTIVEMQ_URL: "nio://activemq:61616"
@@ -218,7 +239,7 @@ services:
         - activemq
 
     libreoffice:
-        image: quay.io/alfresco/alfresco-libreoffice:${LIBREOFFICE_TAG}
+        image: alfresco/alfresco-libreoffice:${LIBREOFFICE_TAG}
         mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
@@ -230,8 +251,8 @@ services:
         - activemq
 
     tika:
-        image: quay.io/alfresco/alfresco-tika:${TIKA_TAG}
-        mem_limit: 512m
+        image: alfresco/alfresco-tika:${TIKA_TAG}
+        mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
             ACTIVEMQ_URL: "nio://activemq:61616"
@@ -239,7 +260,19 @@ services:
         ports:
             - 8093:8090
         links:
-        - activemq
+            - activemq
+
+    transform-misc:
+        image: alfresco/alfresco-transform-misc:${TRANSFORM_MISC_TAG}
+        mem_limit: 1g
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+            ACTIVEMQ_URL: "nio://activemq:61616"
+            FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8094:8090
+        links:
+            - activemq
 
     shared-file-store:
         image: alfresco/alfresco-shared-file-store:${SHARED_FILE_STORE_TAG}
@@ -295,7 +328,7 @@ services:
             BASEPATH: ./
 
     proxy:
-        image: quay.io/alfresco/alfresco-acs-nginx:${ACS_NGINX_TAG}
+        image: alfresco/alfresco-acs-nginx:${ACS_NGINX_TAG}
         mem_limit: 128m
         depends_on:
             - alfresco

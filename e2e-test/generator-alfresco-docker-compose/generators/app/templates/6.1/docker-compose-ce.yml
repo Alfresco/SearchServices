@@ -7,7 +7,7 @@ services:
         build:
           context: ./alfresco
           args:
-            ALFRESCO_TAG: ${ALFRESCO_TAG}
+            ALFRESCO_TAG: ${ALFRESCO_CE_TAG}
             SOLR_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             TRUSTSTORE_PASS: kT9X6oe68t
