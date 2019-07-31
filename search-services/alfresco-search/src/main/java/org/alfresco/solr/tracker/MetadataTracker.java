@@ -59,6 +59,8 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.Optional.of;
 
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+
 /*
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
@@ -69,7 +71,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     protected final static Logger log = LoggerFactory.getLogger(MetadataTracker.class);
     private static final int DEFAULT_TRANSACTION_DOCS_BATCH_SIZE = 100;
     private static final int DEFAULT_NODE_BATCH_SIZE = 10;
-    protected static final String SHARD_KEY = "shard.key";
     private int transactionDocsBatchSize = DEFAULT_TRANSACTION_DOCS_BATCH_SIZE;
     private int nodeBatchSize = DEFAULT_NODE_BATCH_SIZE;
     private ConcurrentLinkedQueue<Long> transactionsToReindex = new ConcurrentLinkedQueue<Long>();
@@ -88,12 +89,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        String shardKey = p.getProperty(SHARD_KEY);
+        String shardKey = p.getProperty(SHARD_KEY_KEY);
         if(shardKey != null)
         {
             shardProperty = getShardProperty(shardKey);
         }
-
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -227,7 +227,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
-
+        HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
+        extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
+        
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
@@ -235,6 +237,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 .withLastIndexedChangeSetId(changeSetsTrackerState.getLastIndexedChangeSetId())
                 .withLastIndexedTxCommitTime(transactionsTrackerState.getLastIndexedTxCommitTime())
                 .withLastIndexedTxId(transactionsTrackerState.getLastIndexedTxId())
+                .withPropertyBag(extendedPropertyBag)
                 .withShardInstance()
                     .withBaseUrl(infoSrv.getBaseUrl())
                     .withPort(infoSrv.getPort())
@@ -1190,7 +1193,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     {
         if (StringUtils.isBlank(field))
         {
-            throw new IllegalArgumentException("Sharding property " + SHARD_KEY + " has not been set.");
+            throw new IllegalArgumentException("Sharding property " + SHARD_KEY_KEY + " has not been set.");
         }
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
@@ -1201,7 +1204,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 field);
         if (propertyDef == null)
         {
-            throw new IllegalStateException("Sharding property " + SHARD_KEY + " was set to " + field + ", but no such property was found.");
+            throw new IllegalStateException("Sharding property " + SHARD_KEY_KEY + " was set to " + field + ", but no such property was found.");
         }
         return propertyDef.getName();
     }

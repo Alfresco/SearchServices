@@ -105,7 +105,7 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
 
-    @Test(groups = { TestGroup.CMIS }, dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-property.xml")
     public void executeSearchByProperty(QueryModel query) throws Exception
     {

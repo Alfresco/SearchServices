@@ -93,7 +93,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
      *}}
      *
      */
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
+    @Test
     public void searchLevel0()
     {
         SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
@@ -105,7 +105,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
         buckets.forEach(bucket -> bucket.assertThat().field("label").contains("0/"));
     }
 
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
+    @Test
     public void searchLevel0andIncludeSubLevel1()
     {
         SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
@@ -117,7 +117,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
         getFirstBucket(response).assertThat().field("label").contains("1/");
     }
 
-    @Test(groups={TestGroup.SEARCH, TestGroup.REST_API, TestGroup.ASS_1})
+    @Test
     public void searchLevel2()
     {
         String queryString = "name:cars";

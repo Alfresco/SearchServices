@@ -77,28 +77,54 @@ RUN if [ "$ENABLE_SLAVE" == "true" ] ; then \
 ARG ENABLE_SHARDING
 ARG NUM_SHARDS
 ARG SHARD_ID
+ARG SHARDING_METHOD
 ENV ENABLE_SHARDING $ENABLE_SHARDING
 ENV NUM_SHARDS $NUM_SHARDS
 ENV SHARD_ID $SHARD_ID
+ENV SHARDING_METHOD $SHARDING_METHOD
 
 # Set Port Number and Sharding ID for this Shard Service
 RUN if [ "$ENABLE_SHARDING" == "true" ] ; then \
-  sed -i '/^bash.*/i echo "\nsolr.port.ssl=8983\nshard.count=${NUM_SHARDS}\nshard.instance=${SHARD_ID}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+  sed -i '/^bash.*/i echo "\nsolr.port.ssl=8983\nshard.instance=${SHARD_ID}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
   ${DIST_DIR}/solr/bin/search_config_setup.sh && \
+  if [[ ("$SHARDING_METHOD" != "DB_ID_RANGE") && ("$SHARDING_METHOD" != "EXPLICIT_ID_FALLBACK_LRIS") ]]; then \
+    sed -i '/^bash.*/i echo "\nshard.count=${NUM_SHARDS}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+  fi; \
   sed -i '/^bash.*/i echo "\nalfresco.port=8080\nalfresco.port.ssl=8443\nalfresco.baseUrl=/alfresco" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
   ${DIST_DIR}/solr/bin/search_config_setup.sh; \
 fi
 
-# EXPLICIT ROUTING SHARDING
-ARG EXPLICIT_ROUTING_SHARDING
-ENV EXPLICIT_ROUTING_SHARDING $EXPLICIT_ROUTING_SHARDING
+# SHARDING METHODS
+ARG SHARD_RANGE
+ENV SHARD_RANGE $SHARD_RANGE
+ARG SHARD_KEY
+ENV SHARD_KEY $SHARD_KEY
+ARG SHARD_DATE_GROUPING
+ENV SHARD_DATE_GROUPING $SHARD_DATE_GROUPING
 
 # Set Shard Method and Shard Key property name
-RUN if [ "$EXPLICIT_ROUTING_SHARDING" == "true" ] ; then \
-  sed -i '/^bash.*/i sed -i "'"s/shard.method=DB_ID/shard.method=EXPLICIT_ID_FALLBACK_DBID/g"'" ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
-  ${DIST_DIR}/solr/bin/search_config_setup.sh && \
-  sed -i '/^bash.*/i echo "\nshard.key=shard:shardId\n" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+RUN if [ "$ENABLE_SHARDING" == "true" ] ; then \
+  sed -i '/^bash.*/i sed -i "'"s/shard.method=DB_ID/shard.method=${SHARDING_METHOD}/g"'" ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
   ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+  if [ "$SHARDING_METHOD" == "DB_ID_RANGE" ]; then \
+    sed -i '/^bash.*/i echo "\nshard.range=${SHARD_RANGE}\n" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+  fi; \
+  if [ "$SHARDING_METHOD" == "DATE" ]; then \
+    sed -i '/^bash.*/i echo "\nshard.key=${SHARD_KEY}\n" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh && \
+    sed -i '/^bash.*/i echo "\nshard.date.grouping=${SHARD_DATE_GROUPING}\n" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+  fi; \
+  if [ "$SHARDING_METHOD" == "PROPERTY" ]; then \
+    sed -i '/^bash.*/i echo "\nshard.key=${SHARD_KEY}\n" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+  fi; \
+  if [[ ("$SHARDING_METHOD" == "EXPLICIT_ID") || ("$SHARDING_METHOD" == "EXPLICIT_ID_FALLBACK_LRIS") ]]; then \
+    sed -i '/^bash.*/i echo "\nshard.key=${SHARD_KEY}\n" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+  fi; \
 fi
 
 # Useless for 'none'/'http' communications with Alfresco
