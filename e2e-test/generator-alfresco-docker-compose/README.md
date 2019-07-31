@@ -18,23 +18,20 @@ generators/app/templates/
 ├── 6.1
 │   ├── docker-compose-ce.yml
 │   └── docker-compose-ee.yml
-├── keystores
+├── 6.2
+│   ├── docker-compose-ce.yml
+│   └── docker-compose-ee.yml
+├── images
 │   ├── alfresco
-│   ├── client
-│   ├── solr
+│   │   ├── Dockerfile
+│   │   └── model
+│   │       ├── sharding-content-model-context.xml
+│   │       └── sharding-content-model.xml
+│   ├── search
+│   │   └── Dockerfile
 │   └── zeppelin
-└── 6.2
-    ├── alfresco
-    │   ├── Dockerfile
-    │   └── model
-    │       ├── sharding-content-model-context.xml
-    │       └── sharding-content-model.xml
-    ├── docker-compose-ce.yml
-    ├── docker-compose-ee.yml
-    ├── search
-    │   └── Dockerfile
-    └── zeppelin
-        └── Dockerfile
+│       └── Dockerfile
+└── keystores
 ```
 
 * `.env` includes default values for Docker Compose environment variables
