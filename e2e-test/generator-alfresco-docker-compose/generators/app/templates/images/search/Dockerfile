@@ -1,6 +1,5 @@
 ARG SEARCH_TAG
-# FROM <%=searchImage%>:${SEARCH_TAG}
-FROM searchservices:develop
+FROM <%=searchImage%>:${SEARCH_TAG}
 
 # COMMON
 ARG ALFRESCO_HOSTNAME
@@ -78,21 +77,25 @@ RUN if [ "$ENABLE_SLAVE" == "true" ] ; then \
 ARG ENABLE_SHARDING
 ARG NUM_SHARDS
 ARG SHARD_ID
+ARG SHARDING_METHOD
 ENV ENABLE_SHARDING $ENABLE_SHARDING
 ENV NUM_SHARDS $NUM_SHARDS
 ENV SHARD_ID $SHARD_ID
+ENV SHARDING_METHOD $SHARDING_METHOD
 
 # Set Port Number and Sharding ID for this Shard Service
 RUN if [ "$ENABLE_SHARDING" == "true" ] ; then \
-  sed -i '/^bash.*/i echo "\nsolr.port.ssl=8983\nshard.count=${NUM_SHARDS}\nshard.instance=${SHARD_ID}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+  sed -i '/^bash.*/i echo "\nsolr.port.ssl=8983\nshard.instance=${SHARD_ID}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
   ${DIST_DIR}/solr/bin/search_config_setup.sh && \
+  if [[ ("$SHARDING_METHOD" != "DB_ID_RANGE") && ("$SHARDING_METHOD" != "EXPLICIT_ID_FALLBACK_LRIS") ]]; then \
+    sed -i '/^bash.*/i echo "\nshard.count=${NUM_SHARDS}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+  fi; \
   sed -i '/^bash.*/i echo "\nalfresco.port=8080\nalfresco.port.ssl=8443\nalfresco.baseUrl=/alfresco" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
   ${DIST_DIR}/solr/bin/search_config_setup.sh; \
 fi
 
-# SHARDING METHOD
-ARG SHARDING_METHOD
-ENV SHARDING_METHOD $SHARDING_METHOD
+# SHARDING METHODS
 ARG SHARD_RANGE
 ENV SHARD_RANGE $SHARD_RANGE
 ARG SHARD_KEY
