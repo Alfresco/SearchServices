@@ -54,6 +54,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
+import static org.alfresco.solr.tracker.MetadataTracker.SHARD_KEY;
 
 /**
  * Test Routes based on a text property field.
@@ -178,7 +179,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         Properties prop = new Properties();
         prop.put("shard.method", ShardMethodEnum.PROPERTY.toString());
         prop.put("shard.regex", "^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,6})$");
-        prop.put("shard.key", ContentModel.PROP_EMAIL.toString());
+        prop.put(SHARD_KEY, ContentModel.PROP_EMAIL.toString());
         return prop;
     }
 }

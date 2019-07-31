@@ -4,6 +4,9 @@ target
 .project
 .idea/
 *.iml
+.vscode
+overlays
+*.orig
 .metadata
 alf_data_dev
 alfresco.log*

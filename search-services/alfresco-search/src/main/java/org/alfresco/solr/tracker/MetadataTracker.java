@@ -52,6 +52,7 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.client.Transactions;
 import org.apache.commons.codec.EncoderException;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ import static java.util.Optional.of;
 
 /*
  * This tracks two things: transactions and metadata nodes
- * @author Ahmed Owianå
+ * @author Ahmed Owian
  */
 public class MetadataTracker extends AbstractTracker implements Tracker
 {
@@ -68,6 +69,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     protected final static Logger log = LoggerFactory.getLogger(MetadataTracker.class);
     private static final int DEFAULT_TRANSACTION_DOCS_BATCH_SIZE = 100;
     private static final int DEFAULT_NODE_BATCH_SIZE = 10;
+    protected static final String SHARD_KEY = "shard.key";
     private int transactionDocsBatchSize = DEFAULT_TRANSACTION_DOCS_BATCH_SIZE;
     private int nodeBatchSize = DEFAULT_NODE_BATCH_SIZE;
     private ConcurrentLinkedQueue<Long> transactionsToReindex = new ConcurrentLinkedQueue<Long>();
@@ -86,8 +88,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        String shardKey = p.getProperty("shard.key");
-        if(shardKey != null) {
+        String shardKey = p.getProperty(SHARD_KEY);
+        if(shardKey != null)
+        {
             shardProperty = getShardProperty(shardKey);
         }
 
@@ -1183,15 +1186,23 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    public static QName getShardProperty(String field) {
+    public static QName getShardProperty(String field)
+    {
+        if (StringUtils.isBlank(field))
+        {
+            throw new IllegalArgumentException("Sharding property " + SHARD_KEY + " has not been set.");
+        }
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
         DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
         PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
-                                                                                  namespaceDAO,
-                                                                                  dictionaryService,
-                                                                                  field);
-
+                namespaceDAO,
+                dictionaryService,
+                field);
+        if (propertyDef == null)
+        {
+            throw new IllegalStateException("Sharding property " + SHARD_KEY + " was set to " + field + ", but no such property was found.");
+        }
         return propertyDef.getName();
     }
 }
