@@ -57,9 +57,8 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
      * @param query CMIS Query to be executed
      * @param expectedCountResults Number of results expected
      * @return true when results count is equals to expectedCountResults 
-     * @throws Exception
      */
-    protected boolean waitForIndexing(String query, long expectedCountResults) throws Exception
+    protected boolean waitForIndexing(String query, long expectedCountResults)
     {
 
         for (int searchCount = 1; searchCount <= 3; searchCount++)

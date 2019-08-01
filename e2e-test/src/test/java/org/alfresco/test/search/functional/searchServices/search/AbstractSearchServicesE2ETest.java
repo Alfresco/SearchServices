@@ -35,7 +35,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
 
     protected FileModel file, file2, file3, file4;
 
-    public void searchServicesDataPreparation() throws Exception
+    public void searchServicesDataPreparation()
     {
         /*
          * Create the following file structure for preconditions :
