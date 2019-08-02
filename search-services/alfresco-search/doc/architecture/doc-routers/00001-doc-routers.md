@@ -159,7 +159,7 @@ The current known issues are:
 > As a result, when this router is used and the purge action is invoked you may experience a wrong shard subscription   
 > registration order. That would cause a wrong distribution of the indexed data across the cluster.   
 >   
-> Note the "Purge on restart" option on the Admin Console is checked by default, so before building a   
+> Note that if "Purge on restart" option on the Admin Console is checked by default, then before building a  
 > Solr cluster which uses this router, please make sure the check has been disabled.  
 
 This method uses, as the name suggests, the last indexing shard which subscribed to the Shard Registry. 
