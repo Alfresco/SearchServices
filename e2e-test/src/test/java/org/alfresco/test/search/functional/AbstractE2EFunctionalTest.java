@@ -119,22 +119,36 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         if ((path != null) && (path.endsWith("-model.xml")))
         {
-            dataContent.usingAdmin().deployContentModel(path);
-            modelDeployed = true;
+            try
+            {
+                dataContent.usingAdmin().deployContentModel(path);
+                modelDeployed = true;
+            }
+            catch (Exception e)
+            {
+                LOGGER.warn("Error Loading Custom Model", e);
+            }
         }
         return modelDeployed;
     }
 
     public boolean deactivateCustomModel(String fileName)
     {
-        FileModel customModel = getCustomModel(fileName);
-
-        // Deactivate the model if found
-        if (customModel != null)
+        try
         {
-            cmisApi.authenticateUser(dataUser.getAdminUser()).usingResource(customModel).updateProperty("cm:modelActive", false);
+            FileModel customModel = getCustomModel(fileName);
 
-            return true;
+            // Deactivate the model if found
+            if (customModel != null)
+            {
+                cmisApi.authenticateUser(dataUser.getAdminUser()).usingResource(customModel).updateProperty("cm:modelActive", false);
+
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.warn("Error Deactivating Custom Model", e);
         }
         return false;
     }
@@ -143,18 +157,25 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     {
         Boolean modelDeleted = false;
 
-        FileModel customModel = getCustomModel(fileName);
-
-        // Delete the model if found
-        if (customModel != null)
+        try
         {
-            // cmisApi.authenticateUser(dataUser.getAdminUser()).usingResource(customModel).deleteContent();
-            dataContent.usingAdmin().usingResource(customModel).deleteContent();
-            restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingTrashcan().deleteNodeFromTrashcan(customModel);
+            FileModel customModel = getCustomModel(fileName);
 
-            modelDeleted = true;
+            // Delete the model if found
+            if (customModel != null)
+            {
+                // cmisApi.authenticateUser(dataUser.getAdminUser()).usingResource(customModel).deleteContent();
+                dataContent.usingAdmin().usingResource(customModel).deleteContent();
+                restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingTrashcan().deleteNodeFromTrashcan(customModel);
+
+                modelDeleted = true;
+            }
+            else
+            {
+                LOGGER.error("Custom Content Model [{}] is not available under [/Data Dictionary/Models/] location", fileName);
+            }
         }
-        else
+        catch (Exception e)
         {
             LOGGER.error("Custom Content Model [{}] is not available under [/Data Dictionary/Models/] location", fileName);
         }
@@ -166,25 +187,32 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     {
         FileModel customModel = null;
 
-        if ((fileName != null) && (fileName.endsWith("-model.xml")))
-
+        try
         {
-            Session session = contentService.getCMISSession(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword());
+            if ((fileName != null) && (fileName.endsWith("-model.xml")))
 
-            CmisObject modelInRepo = session.getObjectByPath(String.format("/Data Dictionary/Models/%s", fileName));
-
-            if (modelInRepo != null)
             {
-                customModel = new FileModel(modelInRepo.getName());
-                customModel.setNodeRef(modelInRepo.getId());
-                customModel.setNodeRef(customModel.getNodeRefWithoutVersion());
-                customModel.setCmisLocation(String.format("/Data Dictionary/Models/%s", fileName));
+                Session session = contentService.getCMISSession(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword());
+
+                CmisObject modelInRepo = session.getObjectByPath(String.format("/Data Dictionary/Models/%s", fileName));
+
+                if (modelInRepo != null)
+                {
+                    customModel = new FileModel(modelInRepo.getName());
+                    customModel.setNodeRef(modelInRepo.getId());
+                    customModel.setNodeRef(customModel.getNodeRefWithoutVersion());
+                    customModel.setCmisLocation(String.format("/Data Dictionary/Models/%s", fileName));
                 LOGGER.info("Custom Model file: " + customModel.getCmisLocation());
+                }
+                else
+                {
+                    LOGGER.info("Custom Content Model [{}] is not available under [/Data Dictionary/Models/] location", fileName);
+                }
             }
-            else
-            {
-                LOGGER.info("Custom Content Model [{}] is not available under [/Data Dictionary/Models/] location", fileName);
-            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.warn("Error Getting Custom Model: " + fileName, e);
         }
 
         return customModel;
@@ -192,7 +220,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     /**
      * Helper method which create an http post request to Search API end point.
-     * Executes the given search request.
+     * Executes the given search request without throwing checked exceptions (a {@link RuntimeException} will be thrown in case).
      *
      * @param query the search request.
      * @return the query execution response.
