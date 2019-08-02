@@ -80,7 +80,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
     public void makeSureFingerprintQueryWorksAfterMetadataUpdate() throws Exception
     {
         // Index a new file with content
-        FileModel file = new FileModel("Project_Contract.pdf", FileType.TEXT_PLAIN, "A content which is completely different from other indexed files.");
+        FileModel file = new FileModel("Project_Contract.txt", FileType.TEXT_PLAIN, "A content which is completely different from other indexed files.");
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file);
 
         // make sure the content has been indexed (i.e. the ContentTracker fingerprint has been correctly computed
