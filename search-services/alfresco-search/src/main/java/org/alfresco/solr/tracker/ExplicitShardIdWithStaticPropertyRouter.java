@@ -37,16 +37,11 @@ import org.alfresco.solr.client.Node;
  * As a result, when this router is used and the purge action is invoked you may experience a wrong shard subscription
  * registration order. That would cause a wrong distribution of the indexed data across the cluster.
  *
- * Note the "Purge on restart" option on the Admin Console is checked by default, so before building a
+ * Note that if "Purge on restart" option on the Admin Console is checked by default, then before building a
  * Solr cluster which uses this router, please make sure the check has been disabled.
  *
  * </b><br/><br/>
  * </p>
- *
- * Specifically, until the whole feature will be officially released, the LRIS document routing feature is not compatible
- * with the "Purge" action on the Alfresco Admin Console.
- * Note that at time of writing, the "Purge on startup" option in the Admin Console is enabled by default so prior to
- * build your search cluster, you have to make sure that option is unchecked.
  *
  * @author Elia
  * @author agazzarini
