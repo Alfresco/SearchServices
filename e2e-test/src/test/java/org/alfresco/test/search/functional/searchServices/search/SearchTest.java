@@ -72,7 +72,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         
         SearchNodeModel entity = nodes.getEntryByIndex(0);
         entity.assertThat().field("search").contains("score");
-        entity.getSearch().assertThat().field("score").isNotEmpty();
+        entity.getSearch().assertThat().field("score").isNotNull();
         Assert.assertEquals(entity.getName(),"pangram.txt");
     }
     
