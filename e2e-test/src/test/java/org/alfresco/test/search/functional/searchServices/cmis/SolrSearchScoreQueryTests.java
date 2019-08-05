@@ -43,7 +43,7 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
      * @see org.alfresco.test.search.functional.AbstractE2EFunctionalTest#dataPreparation()
      */
     @Override
-    public void setup() throws Exception
+    public void setup()
     {
     }
     

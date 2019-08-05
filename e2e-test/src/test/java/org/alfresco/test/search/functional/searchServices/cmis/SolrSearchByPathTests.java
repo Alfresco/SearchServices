@@ -38,7 +38,7 @@ public class SolrSearchByPathTests extends AbstractCmisE2ETest
 
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getAllData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-path.xml")
-    public void prepareDataForSearchByPath(XMLTestData testData) throws Exception
+    public void prepareDataForSearchByPath(XMLTestData testData)
     {
         this.testData = testData;
         testData.createUsers(dataUser);
@@ -49,7 +49,7 @@ public class SolrSearchByPathTests extends AbstractCmisE2ETest
 
     @Test(dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-path.xml")
-    public void executeSearchByPathQueries(QueryModel query) throws Exception
+    public void executeSearchByPathQueries(QueryModel query)
     {
         cmisApi.withQuery(query.getValue()).assertResultsCount().equals(query.getResults());
     }

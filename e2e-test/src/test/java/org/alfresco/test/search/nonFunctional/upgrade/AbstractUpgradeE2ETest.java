@@ -37,7 +37,7 @@ public abstract class AbstractUpgradeE2ETest extends AbstractTestNGSpringContext
     protected XMLTestData testData;
         
     @BeforeClass(alwaysRun = true)
-    public void checkServerHealth() throws Exception
+    public void checkServerHealth()
     {
         serverHealth.assertServerIsOnline();        
     }      
