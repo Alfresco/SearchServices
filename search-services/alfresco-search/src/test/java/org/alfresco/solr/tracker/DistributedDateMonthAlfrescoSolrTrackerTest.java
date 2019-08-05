@@ -42,6 +42,7 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
+import org.alfresco.util.CachingDateFormat;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
@@ -142,8 +143,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfresc
         AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
         String fieldName = fieldInstance.getField();
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        SimpleDateFormat format = CachingDateFormat.getSolrDatetimeFormatWithoutMsecs();
         for (int i = 0; i < dates.length; i++)
         {
             String startDate = format.format(dates[i]);
