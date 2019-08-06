@@ -287,7 +287,10 @@ services:
             - shared-file-store-volume:/tmp/Alfresco/sfs
 
     share:
-        image: alfresco/alfresco-share:${SHARE_TAG}
+        build:
+          context: ./share
+          args:
+            SHARE_TAG: ${SHARE_TAG}
         mem_limit: 1g
         environment:
             REPO_HOST: "alfresco"

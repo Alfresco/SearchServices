@@ -193,8 +193,7 @@ module.exports = class extends Generator {
         searchPath: searchBasePath,
         zeppelin: (this.props.zeppelin ? "true" : "false"),
         sharding: (this.props.sharding ? "true" : "false"),
-        shardingMethod: (this.props.shardingMethod),
-        shareImage: shareImageName
+        shardingMethod: (this.props.shardingMethod)
       }
     );
 
@@ -209,10 +208,37 @@ module.exports = class extends Generator {
         sharding: (this.props.sharding ? "true" : "false")
       }
     );
+    // Copy Sharding Content Model or an empty file to allow model deployments
     if (this.props.sharding) {
       this.fs.copy(
-        this.templatePath(imagesDirectory + '/alfresco/model'),
-        this.destinationPath('alfresco/model')
+        this.templatePath(imagesDirectory + '/alfresco/model/*.xml'),
+        this.destinationPath('alfresco/model/')
+      )
+    } else {
+      this.fs.copy(
+        this.templatePath(imagesDirectory + '/alfresco/model/empty'),
+        this.destinationPath('alfresco/model/empty')
+      )
+    }
+
+    // Copy Docker Image for Share applying configuration
+    this.fs.copyTpl(
+      this.templatePath(imagesDirectory + '/share/Dockerfile'),
+      this.destinationPath('share/Dockerfile'),
+      {
+        shareImage: shareImageName
+      }
+    );
+    // Copy Sharding Content Forms or an empty file to allow forms deployments
+    if (this.props.sharding) {
+      this.fs.copy(
+        this.templatePath(imagesDirectory + '/share/model/sharding-share-config-custom.xml'),
+        this.destinationPath('share/model/share-config-custom-dev.xml')
+      )
+    } else {
+      this.fs.copy(
+        this.templatePath(imagesDirectory + '/share/model/empty.xml'),
+        this.destinationPath('share/model/share-config-custom-dev.xml')
       )
     }
 

@@ -13,9 +13,11 @@
 
     <aspects>
         <aspect name="shard:sharding">
+            <title>Sharding</title>
             <properties>
                 <!-- Shard number to index this content -->
                 <property name="shard:shardId">
+                    <title>Shard Id</title>
                     <type>d:text</type>
                 </property>
             </properties>
