@@ -124,7 +124,7 @@ services:
     <% } %>
 
     share:
-        image: alfresco/alfresco-share:${SHARE_TAG}
+        image: <%=shareImage%>:${SHARE_TAG}
         mem_limit: 1g
         environment:
             REPO_HOST: "alfresco"
