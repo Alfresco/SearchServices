@@ -50,7 +50,7 @@ generators/app/templates/
 * `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment (for ACS 6.2 and ACS 6.1)
 * `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment (for ACS 6.2 and ACS 6.1)
 * `alfresco` includes a Dockerfile template to start Alfresco Repository
-  * `model` includes a default content model (Sharding Explicit Routing or empty)
+  * `model` includes a default content model (Sharding Explicit Routing or empty). This `empty` file is required for Dockerfile to work, so it should not be deleted.
 * `share` includes a Dockerfile template to start Share Web Application
   * `model` includes a default forms model (Sharding Explicit Routing or empty)
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
