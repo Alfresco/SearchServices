@@ -27,20 +27,32 @@ generators/app/templates/
 │   ├── alfresco
 │   │   ├── Dockerfile
 │   │   └── model
+│   │       ├── empty
 │   │       ├── sharding-content-model-context.xml
 │   │       └── sharding-content-model.xml
 │   ├── search
 │   │   └── Dockerfile
+│   ├── share
+│   │   ├── Dockerfile
+│   │   └── model
+│   │       ├── empty.xml
+│   │       └── sharding-share-config-custom.xml
 │   └── zeppelin
 │       └── Dockerfile
 └── keystores
+    ├── alfresco
+    ├── client
+    ├── solr
+    └── zeppelin
 ```
 
 * `.env` includes default values for Docker Compose environment variables
 * `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment (for ACS 6.2 and ACS 6.1)
 * `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment (for ACS 6.2 and ACS 6.1)
 * `alfresco` includes a Dockerfile template to start Alfresco Repository
-  * `model` includes a default content model for Sharding Explicit Routing
+  * `model` includes a default content model (Sharding Explicit Routing or empty). This `empty` file is required for Dockerfile to work, so it should not be deleted.
+* `share` includes a Dockerfile template to start Share Web Application
+  * `model` includes a default forms model (Sharding Explicit Routing or empty)
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
 * `zeppelin` includes a Dockerfile template to start Zeppelin with SSL
 * `keystores` includes every truststore and keystore required for SSL configuration
@@ -135,6 +147,30 @@ Shard property is `shard:shardId`, belonging to a custom model deployed in the t
 Custom content model is deployed to provide a property, named `shard:shardId`, holding the Shard Number (0, 1) where the content is indexed.
 
 This default configuration can be changed in the generated `docker-compose.yml` template.
+
+
+## Deploying custom content models and forms
+
+Custom content models and Share Form configurations can be added to deployment folders.
+
+**Content models**
+
+Custom content models can be copied to Repository deployment folder by using bootstrap approach. 
+
+Following XML files must be created in `alfresco/model/` folder in the Docker Compose template generated:
+
+* `content-model.xml` including an XML Alfresco Content Model file. Sample model is available in [images/alfresco/model/sharding-content-model.xml](generators/app/templates/images/alfresco/model/sharding-content-model.xml)
+* `content-model-context.xml` including an XML Spring Bean file with the `dictionaryBootstrap` bean. Sample Spring Bean declaration is available in [images/alfresco/model/sharding-content-model-context.xml](generators/app/templates/images/alfresco/model/sharding-content-model-context.xml)
+
+If *Sharding* is selected, these files will be available in deployment folder.
+
+**Share forms**
+
+Custom content forms can be added to Share configuration by modifying `share/model/share-config-custom-dev.xml` file in the Docker Compose template generated.
+
+Sample configuration is available in [images/share/model/sharding-share-config-custom.xml](generators/app/templates/images/share/model/sharding-share-config-custom.xml)
+
+If *Sharding* is selected, a default `share-config-custom-dev.xml` file with required forms configuration for Sharding custom model will be available in deployment folder. Add your configuration to this file.
 
 ## Configuration catalog
 
