@@ -16,9 +16,11 @@ Following templates are provided.
 $ tree generators/app/templates/
 generators/app/templates/
 ├── 6.1
+│   ├── .env
 │   ├── docker-compose-ce.yml
 │   └── docker-compose-ee.yml
 ├── 6.2
+│   ├── .env
 │   ├── docker-compose-ce.yml
 │   └── docker-compose-ee.yml
 ├── images
@@ -62,13 +64,23 @@ $ yo alfresco-docker-compose
 
 ## ACS Version
 
-Currently supported ACS Version are `6.2` and `6.1`
+Currently supported ACS Versions are `6.2` and `6.1`
 
 This is the first choice to be selected when the generator is executed.
+
 ```
 ? Which ACS version do you want to use?
   6.1
 ❯ 6.2
+```
+## AGS Version
+
+Currently supported AGS Version is `latest` (based in ACS 6.1).
+
+If you chose ACS 6.1, a prompt will allow you to use AGS.
+
+```
+? Would you like to use AGS? Yes
 ```
 
 ## Community
@@ -122,6 +134,8 @@ Shard property is `shard:shardId`, belonging to a custom model deployed in the t
 **EXPLICIT_ID** and **EXPLICIT_ID_FALLBACK_LRIS**
 Custom content model is deployed to provide a property, named `shard:shardId`, holding the Shard Number (0, 1) where the content is indexed.
 
+This default configuration can be changed in the generated `docker-compose.yml` template.
+
 ## Configuration catalog
 
 | Version    | Comms | Replication | Sharding | Explicit | Insight | Zeppelin |
@@ -152,6 +166,7 @@ $ yo alfresco-docker-compose --acsVersion=6.2 --alfrescoVersion=community --http
 **Parameter names reference**
 
 `--acsVersion`: default 6.2, but could be set to 6.1
+`--ags:`: only available when acsVersion=6.1
 `--alfrescoVersion`: community or enterprise
 `--httpMode`: http or https
 `--clustering`: true or false
