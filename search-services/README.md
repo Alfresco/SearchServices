@@ -100,7 +100,7 @@ SOLR_SSL_WANT_CLIENT_AUTH=false
 Once this settings are ready, start SOLR service from command line:
 
 ```
-$ ./solr/bin/solr start "-Dcreate.alfresco.defaults=alfresco,archive \
+$ ./solr/bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive \
 -Dsolr.ssl.checkPeerName=false \
 -Dsolr.allow.unsafe.resourceloading=true" -f
 ```
@@ -130,7 +130,7 @@ DBID based sharding can be set up from the command line. For example a core cont
 index with twelve shards can be set up by starting an instance of Alfresco Search Services with a command like:
 
 ```bash
-./bin/solr start -a -Dcreate.alfresco.defaults=alfresco,archive -Dnum.shards=12 -Dshard.ids=0,1,6,7
+./bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive -Dnum.shards=12 -Dshard.ids=0,1,6,7"
 ```
 
 Further instances should be set up to contain the other shards, and it is possible to adjust the distribution and
@@ -169,7 +169,7 @@ $ sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' solrhome/temp
 Start SOLR service from command line:
 
 ```
-$ ./solr/bin/solr start "-Dcreate.alfresco.defaults=alfresco,archive" -f
+$ ./solr/bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive" -f
 ```
 
 SOLR will create Alfresco cores (`alfresco` and `archive`) when starting, and configuration from `rerank` template will be copied to each core and if you also started an ACS instance running in [http://localhost:8080/alfresco](http://localhost:8080/alfresco) then the index will be populated.
