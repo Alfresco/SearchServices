@@ -174,20 +174,17 @@ If *Sharding* is selected, a default `share-config-custom-dev.xml` file with req
 
 ## Configuration catalog
 
-| Version    | Comms | Replication | Sharding | Explicit | Insight | Zeppelin |
-| -          | -     | -           | -        | -        | -       | -        |
-| community  | http  | -           | -        | -        | x       | x        |
-| community  | http  | true        | x        | x        | x       | x        |
-| community  | http  | false       | true     | false    | x       | x        |
-| community  | http  | false       | true     | true     | x       | x        |
-| community  | https | x           | -        | -        | x       | x        |
-| enterprise | http  | -           | -        | -        | (*)     | (*)      |
-| enterprise | http  | true        | x        | x        | (*)     | (*)      |
-| enterprise | http  | false       | true     | false    | (*)     | (*)      |
-| enterprise | http  | false       | true     | true     | (*)     | (*)      |
-| enterprise | https | x           | -        | -        | (*)     | (*)      |
-| enterprise | https | x           | true     | false    | (*)     | (*)      |
-| enterprise | https | x           | true     | true     | (*)     | (*)      |
+| Version    | Comms | Replication | Sharding | Insight | Zeppelin |
+| -          | -     | -           | -        | -       | -        |
+| community  | http  | -           | x        | x       | x        |
+| community  | http  | true        | x        | x       | x        |
+| community  | https | x           | x        | x       | x        |
+| enterprise | http  | -           | -        | (*)     | (*)      |
+| enterprise | http  | true        | false    | (*)     | (*)      |
+| enterprise | http  | false       | true     | (*)     | (*)      |
+| enterprise | https | x           | -        | (*)     | (*)      |
+| enterprise | https | x           | true     | (*)     | (*)      |
+| enterprise | https | x           | true     | (*)     | (*)      |
 
 Both `community` and `enterprise` ACS deployments can be used with the same options, but `enterprise` may also use Insight Engine (replacing Search Services) and Insight Zeppelin services.
 
@@ -231,7 +228,7 @@ $ docker-compose down
 
 http://localhost:8080/share
 
-http://localhost:8082/alfresco
+http://localhost:8080/alfresco
 
 http://localhost:8083/solr
 
@@ -244,7 +241,7 @@ http://localhost:8084/solr
 
 http://localhost:8080/share
 
-http://localhost:8082/alfresco
+http://localhost:8080/alfresco
 
 https://localhost:8443/alfresco
 
