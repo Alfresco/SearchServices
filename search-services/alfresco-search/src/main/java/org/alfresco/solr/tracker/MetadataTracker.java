@@ -101,7 +101,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
      */
     private void updateShardProperty()
     {
-        if(shardKey != null)
+        if(shardProperty == null && shardKey != null)
         {
             shardProperty = getShardProperty(shardKey);
         }
