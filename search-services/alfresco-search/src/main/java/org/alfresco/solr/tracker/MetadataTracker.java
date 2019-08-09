@@ -78,6 +78,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
     private DocRouter docRouter;
+    /** The string representation of the shard key. */
+    private String shardKey;
+    /** The property to use for determining the shard. */
     private QName shardProperty;
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
@@ -86,15 +89,24 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        String shardKey = p.getProperty(DocRouterFactory.SHARD_KEY_KEY);
-        if(shardKey != null) {
-            shardProperty = getShardProperty(shardKey);
-        }
+        shardKey = p.getProperty(DocRouterFactory.SHARD_KEY_KEY);
+        updateShardProperty();
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
     }
-    
+
+    /**
+     * Set the shard property using the shard key.
+     */
+    private void updateShardProperty()
+    {
+        if(shardProperty == null && shardKey != null)
+        {
+            shardProperty = getShardProperty(shardKey);
+        }
+    }
+
     MetadataTracker()
     {
         super(Tracker.Type.MetaData);
@@ -224,6 +236,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
         HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
+        updateShardProperty();
         extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
         
         return ShardStateBuilder.shardState()
@@ -365,6 +378,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setTransactionIds(txs);
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
+                    updateShardProperty();
                     gnp.setShardProperty(shardProperty);
                     gnp.setCoreName(coreName);
 
@@ -885,6 +899,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setTransactionIds(txIds);
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
+        updateShardProperty();
         gnp.setShardProperty(shardProperty);
         gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
@@ -1185,7 +1200,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    public static QName getShardProperty(String field) {
+    public static QName getShardProperty(String field)
+    {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
         DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
@@ -1194,6 +1210,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                                                                                   dictionaryService,
                                                                                   field);
 
+        if (propertyDef == null)
+        {
+            log.error("Sharding property not found: {}", field);
+            return null;
+        }
         return propertyDef.getName();
     }
 }
