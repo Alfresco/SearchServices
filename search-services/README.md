@@ -247,14 +247,7 @@ $ docker run -p 8983:8983 \
 -e SOLR_SSL_TRUST_STORE_TYPE=JCEKS \
 -e SOLR_SSL_NEED_CLIENT_AUTH=true \
 -e SOLR_OPTS="-Dsolr.ssl.checkPeerName=false \
--Dsolr.allow.unsafe.resourceloading=true \
--Dalfresco.encryption.ssl.keystore.type=JCEKS
--Dalfresco.encryption.ssl.keystore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.keystore
--Dalfresco.encryption.ssl.keystore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-keystore-passwords.properties
--Dalfresco.encryption.ssl.truststore.type=JCEKS
--Dalfresco.encryption.ssl.truststore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.truststore
--Dalfresco.encryption.ssl.truststore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-truststore-passwords.properties
-" \
+-Dsolr.allow.unsafe.resourceloading=true" \
 searchservices:develop
 ```
 
@@ -345,12 +338,6 @@ solr6:
           SOLR_OPTS: "
               -Dsolr.ssl.checkPeerName=false
               -Dsolr.allow.unsafe.resourceloading=true
-              -Dalfresco.encryption.ssl.keystore.type=JCEKS
-              -Dalfresco.encryption.ssl.keystore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.keystore
-              -Dalfresco.encryption.ssl.keystore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-keystore-passwords.properties
-              -Dalfresco.encryption.ssl.truststore.type=JCEKS
-              -Dalfresco.encryption.ssl.truststore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.truststore
-              -Dalfresco.encryption.ssl.truststore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-truststore-passwords.properties
           "
       ports:
           - 8083:8983 #Browser port
