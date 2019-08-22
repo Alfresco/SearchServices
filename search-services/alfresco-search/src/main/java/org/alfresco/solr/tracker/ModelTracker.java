@@ -289,10 +289,10 @@ public class ModelTracker extends AbstractTracker implements Tracker
             {
                 case CHANGED:
                 case NEW:
-                    AlfrescoModel changedModel = client.getModel(coreName, modelDiff.getModelName());
-                    for (M2Namespace namespace : changedModel.getModel().getNamespaces())
+                    AlfrescoModel model = client.getModel(coreName, modelDiff.getModelName());
+                    for (M2Namespace namespace : model.getModel().getNamespaces())
                     {
-                        modelMap.put(namespace.getUri(), changedModel.getModel());
+                        modelMap.put(namespace.getUri(), model.getModel());
                     }
                     break;
                 case REMOVED:
