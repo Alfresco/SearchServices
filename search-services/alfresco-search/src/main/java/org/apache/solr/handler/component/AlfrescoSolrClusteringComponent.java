@@ -280,7 +280,7 @@ public class AlfrescoSolrClusteringComponent extends SearchComponent implements
 			list.add(doc);
 
 			if (ids != null) {
-				ids.put(doc, new Integer(docid));
+				ids.put(doc, Integer.valueOf(docid));
 			}
 		}
 		return list;
@@ -356,7 +356,7 @@ public class AlfrescoSolrClusteringComponent extends SearchComponent implements
 	/**
 	 * @return Expose for tests.
 	 */
-	Map<String, SearchClusteringEngine> getSearchClusteringEngines() {
+	Map<String, SearchClusteringEngine> getSearchClusteringEnginesView() {
 		return searchClusteringEnginesView;
 	}
 

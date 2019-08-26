@@ -19,7 +19,6 @@
 package org.alfresco.solr.component;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -53,9 +52,9 @@ public class TempFileWarningLogger
             log.debug("Looking for temp files matching " + glob + " in directory " + dir);
         }
         
-        try(DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob))
+        try
         {
-            for (Path file : stream)
+            for (Path file : Files.newDirectoryStream(dir, glob))
             {
                 if (log.isDebugEnabled())
                 {
@@ -74,9 +73,9 @@ public class TempFileWarningLogger
 
     public void removeFiles()
     {
-        try(DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob))
+        try
         {
-            for (Path file : stream)
+            for (Path file : Files.newDirectoryStream(dir, glob))
             {
                 file.toFile().delete();
             }

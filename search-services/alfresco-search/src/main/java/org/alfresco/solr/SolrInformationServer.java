@@ -957,9 +957,10 @@ public class SolrInformationServer implements InformationServer
             SolrIndexSearcher solrIndexSearcher = refCounted.get();
             coreSummary.add("Searcher", solrIndexSearcher.getStatistics());
             Map<String, SolrInfoMBean> infoRegistry = core.getInfoRegistry();
-            for (String key : infoRegistry.keySet())
+            for (Entry<String, SolrInfoMBean> infos : infoRegistry.entrySet())
             {
-                SolrInfoMBean infoMBean = infoRegistry.get(key);
+                SolrInfoMBean infoMBean = infos.getValue();
+                String key = infos.getKey();
                 if (key.equals("/alfresco"))
                 {
 // TODO Do we really need to fixStats in solr4?
@@ -2117,8 +2118,9 @@ public class SolrInformationServer implements InformationServer
     static void addPropertiesToDoc(Map<QName, PropertyValue> properties, boolean isContentIndexedForNode, 
                 SolrInputDocument newDoc, SolrInputDocument cachedDoc, boolean transformContentFlag)
     {
-        for (QName propertyQName : properties.keySet())
+        for (Entry<QName, PropertyValue> property : properties.entrySet())
         {
+            QName propertyQName =  property.getKey();
             newDoc.addField(FIELD_PROPERTIES, propertyQName.toString());
             newDoc.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
             
@@ -3412,10 +3414,15 @@ public class SolrInformationServer implements InformationServer
                                         SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack)
             throws AuthenticationException, IOException, JSONException
     {
-        if ((skipDescendantDocsForSpecificTypes && typesForSkippingDescendantDocs.contains(parentNodeMetaData.getType())) ||
-                (skipDescendantDocsForSpecificAspects && shouldBeIgnoredByAnyAspect(parentNodeMetaData.getAspects())))
+        
+        // skipDescendantDocsForSpecificAspects is initialised on a synchronised method, so access must be also synchronised 
+        synchronized (this)
         {
-            return;
+            if ((skipDescendantDocsForSpecificTypes && typesForSkippingDescendantDocs.contains(parentNodeMetaData.getType())) ||
+                    (skipDescendantDocsForSpecificAspects && shouldBeIgnoredByAnyAspect(parentNodeMetaData.getAspects())))
+            {
+                return;
+            }
         }
 
         Set<Long> childIds = new HashSet<>();
