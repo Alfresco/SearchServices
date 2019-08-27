@@ -957,10 +957,9 @@ public class SolrInformationServer implements InformationServer
             SolrIndexSearcher solrIndexSearcher = refCounted.get();
             coreSummary.add("Searcher", solrIndexSearcher.getStatistics());
             Map<String, SolrInfoMBean> infoRegistry = core.getInfoRegistry();
-            for (Entry<String, SolrInfoMBean> infos : infoRegistry.entrySet())
+            for (String key : infoRegistry.keySet())
             {
-                SolrInfoMBean infoMBean = infos.getValue();
-                String key = infos.getKey();
+                SolrInfoMBean infoMBean = infoRegistry.get(key);
                 if (key.equals("/alfresco"))
                 {
 // TODO Do we really need to fixStats in solr4?
@@ -2118,9 +2117,8 @@ public class SolrInformationServer implements InformationServer
     static void addPropertiesToDoc(Map<QName, PropertyValue> properties, boolean isContentIndexedForNode, 
                 SolrInputDocument newDoc, SolrInputDocument cachedDoc, boolean transformContentFlag)
     {
-        for (Entry<QName, PropertyValue> property : properties.entrySet())
+        for (QName propertyQName : properties.keySet())
         {
-            QName propertyQName =  property.getKey();
             newDoc.addField(FIELD_PROPERTIES, propertyQName.toString());
             newDoc.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
             
@@ -3414,15 +3412,10 @@ public class SolrInformationServer implements InformationServer
                                         SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack)
             throws AuthenticationException, IOException, JSONException
     {
-        
-        // skipDescendantDocsForSpecificAspects is initialised on a synchronised method, so access must be also synchronised 
-        synchronized (this)
+        if ((skipDescendantDocsForSpecificTypes && typesForSkippingDescendantDocs.contains(parentNodeMetaData.getType())) ||
+                (skipDescendantDocsForSpecificAspects && shouldBeIgnoredByAnyAspect(parentNodeMetaData.getAspects())))
         {
-            if ((skipDescendantDocsForSpecificTypes && typesForSkippingDescendantDocs.contains(parentNodeMetaData.getType())) ||
-                    (skipDescendantDocsForSpecificAspects && shouldBeIgnoredByAnyAspect(parentNodeMetaData.getAspects())))
-            {
-                return;
-            }
+            return;
         }
 
         Set<Long> childIds = new HashSet<>();

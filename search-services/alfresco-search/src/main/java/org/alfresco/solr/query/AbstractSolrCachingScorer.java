@@ -47,7 +47,7 @@ public abstract class AbstractSolrCachingScorer extends Scorer
 	
 			static {
 				for(int i = 0; i < cache.length; i++)
-					cache[i] = Long.valueOf(i);
+					cache[i] = new Long(i);
 			}
 		}
 

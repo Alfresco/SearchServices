@@ -55,13 +55,6 @@ public class DateQuarterRouter implements DocRouter
         calendar.setTime(date);
         int month = calendar.get(Calendar.MONTH);
         int year  = calendar.get(Calendar.YEAR);
-
-        // Avoid using Math.ceil with Integer
-        int countMonths = ((year * 12) + (month+1));
-        int grouping = 3;
-        int ceilGroupInstance = countMonths / grouping + ((countMonths % grouping == 0) ? 0 : 1);
-
-        return ceilGroupInstance % numShards == shardInstance;
-        
+        return Math.ceil(((year * 12) + (month+1)) / 3) % numShards == shardInstance;
     }
 }
