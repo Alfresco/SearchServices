@@ -64,6 +64,8 @@ public class SolrCoreLoadRegistration {
     public static void registerForCore(AlfrescoCoreAdminHandler adminHandler, CoreContainer coreContainer, SolrCore core,
                                        String coreName)
     {
+
+
         TrackerRegistry trackerRegistry = adminHandler.getTrackerRegistry();
         Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
         //Prepare cores
@@ -79,10 +81,23 @@ public class SolrCoreLoadRegistration {
         props.putAll(srv.getProps());
         adminHandler.getInformationServers().put(coreName, srv);
 
+        SolrTrackerScheduler scheduler = adminHandler.getScheduler();
+
+        // Prevents other threads from registering the ModelTracker at the same time
+        // Create model tracker and load all the persisted models
+        createModelTracker(coreName,
+                trackerRegistry,
+                props,
+                coreContainer.getSolrHome(),
+                repositoryClient,
+                srv,
+                scheduler);
+
+
         log.info("Starting to track " + coreName);
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))
         {
-            SolrTrackerScheduler scheduler = adminHandler.getScheduler();
+
             if (trackerRegistry.hasTrackersForCore(coreName))
             {
                 log.info("Trackers for " + coreName+ " is already registered, shutting them down.");
@@ -91,28 +106,7 @@ public class SolrCoreLoadRegistration {
                 adminHandler.getInformationServers().remove(coreName);
             }
 
-            // Prevents other threads from registering the ModelTracker at the same time
-            synchronized (SolrCoreLoadRegistration.class)
-            {
-                ModelTracker mTracker = trackerRegistry.getModelTracker();
-                if (mTracker == null)
-                {
-                    log.debug("Creating ModelTracker when registering trackers for core " + coreName);
-                    mTracker = new ModelTracker(coreContainer.getSolrHome(), props, repositoryClient,
-                            coreName, srv);
-
-                    trackerRegistry.setModelTracker(mTracker);
-
-                    log.info("Ensuring first model sync.");
-                    mTracker.ensureFirstModelSync();
-                    log.info("Done ensuring first model sync.");
-                    
-                    //Scheduling the ModelTracker.
-                    scheduler.schedule(mTracker, coreName, props);
-                }
-            }
-
-            List<Tracker> trackers = createTrackers(coreName, trackerRegistry, props, scheduler, repositoryClient, srv);
+            List<Tracker> trackers = createCoreTrackers(coreName, trackerRegistry, props, scheduler, repositoryClient, srv);
 
             CommitTracker commitTracker = new CommitTracker(props, repositoryClient, coreName, srv, trackers);
             trackerRegistry.register(coreName, commitTracker);
@@ -120,7 +114,8 @@ public class SolrCoreLoadRegistration {
             log.info("The Trackers are now scheduled to run");
             trackers.add(commitTracker); //Add the commitTracker to the list of scheduled trackers that can be shutdown
 
-            core.addCloseHook(new CloseHook() {
+            core.addCloseHook(new CloseHook()
+            {
                 @Override
                 public void preClose(SolrCore core)
                 {
@@ -148,7 +143,12 @@ public class SolrCoreLoadRegistration {
      * @param srv
      * @return A list of trackers
      */
-    private static List<Tracker> createTrackers(String coreName, TrackerRegistry trackerRegistry, Properties props, SolrTrackerScheduler scheduler, SOLRAPIClient repositoryClient, SolrInformationServer srv) {
+    private static List<Tracker> createCoreTrackers(String coreName,
+                                                    TrackerRegistry trackerRegistry,
+                                                    Properties props,
+                                                    SolrTrackerScheduler scheduler,
+                                                    SOLRAPIClient repositoryClient,
+                                                    SolrInformationServer srv) {
         List<Tracker> trackers = new ArrayList<Tracker>();
 
         AclTracker aclTracker = new AclTracker(props, repositoryClient, coreName, srv);
@@ -176,6 +176,45 @@ public class SolrCoreLoadRegistration {
         trackers.add(metaTrkr);
         trackers.add(aclTracker);
         return trackers;
+    }
+
+
+    /**
+     * Create model tracker and load persisted models.
+     *
+     * @param coreName
+     * @param trackerRegistry
+     * @param props
+     * @param solrHome
+     * @param repositoryClient
+     * @param srv
+     * @param scheduler
+     * @return true if model tracker has been created, false if it already exists.
+     */
+    private synchronized static void createModelTracker(String coreName,
+                                                           TrackerRegistry trackerRegistry,
+                                                           Properties props,
+                                                           String solrHome,
+                                                           SOLRAPIClient repositoryClient,
+                                                           SolrInformationServer srv,
+                                                           SolrTrackerScheduler scheduler)
+    {
+        ModelTracker mTracker = trackerRegistry.getModelTracker();
+        if (mTracker == null)
+        {
+            log.debug("Creating ModelTracker");
+            mTracker = new ModelTracker(solrHome, props, repositoryClient,
+                    coreName, srv);
+
+            trackerRegistry.setModelTracker(mTracker);
+            log.info("Ensuring first model sync.");
+            mTracker.ensureFirstModelSync();
+            log.info("Done ensuring first model sync.");
+
+            //Scheduling the ModelTracker.
+            scheduler.schedule(mTracker, coreName, props);
+        }
+
     }
 
     /**

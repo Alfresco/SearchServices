@@ -32,10 +32,8 @@ services:
                 -Ddeployment.method=DOCKER_COMPOSE
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
-                -Xms1500m -Xmx1500m
-                "
+                " <% if (httpMode == 'https') { %>
         ports:
-            - 8082:8080 <% if (httpMode == 'https') { %>
             - 8443:8443
         volumes:
             - ./keystores/alfresco:/usr/local/tomcat/alf_data/keystore <% } %>
@@ -124,7 +122,10 @@ services:
     <% } %>
 
     share:
-        image: alfresco/alfresco-share:${SHARE_TAG}
+        build:
+          context: ./share
+          args:
+            SHARE_TAG: ${SHARE_TAG}
         mem_limit: 1g
         environment:
             REPO_HOST: "alfresco"
@@ -137,8 +138,6 @@ services:
                 -Dalfresco.context=alfresco
                 -Dalfresco.protocol=http
                 "
-        ports:
-            - 8080:8080
 
     postgres:
         image: postgres:${POSTGRES_TAG}
@@ -159,3 +158,14 @@ services:
             - 5672:5672 # AMQP
             - 61616:61616 # OpenWire
             - 61613:61613 # STOMP
+
+    proxy:
+        image: alfresco/acs-community-ngnix:${ACS_COMMUNITY_NGINX_TAG}
+        mem_limit: 128m
+        depends_on:
+            - alfresco
+        ports:
+            - 8080:8080
+        links:
+            - alfresco
+            - share

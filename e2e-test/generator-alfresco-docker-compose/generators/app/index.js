@@ -29,6 +29,13 @@ module.exports = class extends Generator {
         default: '6.2'
       },
       {
+        whenFunction: response => response.acsVersion == '6.1',
+        type: 'confirm',
+        name: 'ags',
+        message: 'Would you like to use AGS?',
+        default: false
+      },
+      {
         type: 'list',
         name: 'alfrescoVersion',
         message: 'Would you like to use Alfresco enterprise or community?',
@@ -122,9 +129,13 @@ module.exports = class extends Generator {
     }
 
     // Docker Compose environment variables values
-    this.fs.copy(
+    this.fs.copyTpl(
       this.templatePath(dockerComposeTemplateDirectory + '/.env'),
-      this.destinationPath('.env')
+      this.destinationPath('.env'),
+      {
+        acs: (this.props.ags ? "false" : "true"),
+        ags: (this.props.ags ? "true" : "false")
+      }
     )
 
     // Base Docker Compose Template
@@ -136,8 +147,26 @@ module.exports = class extends Generator {
     // Repository Docker Image name
     const acsImageName =
       (this.props.alfrescoVersion == 'community' ?
-        'alfresco/alfresco-content-repository-community' :
-        'alfresco/alfresco-content-repository');
+        (this.props.ags ? 
+          'alfresco/alfresco-governance-repository-community' :
+          'alfresco/alfresco-content-repository-community') :
+        (this.props.ags ? 
+          'quay.io/alfresco/alfresco-governance-repository-enterprise':
+          'alfresco/alfresco-content-repository'
+        )
+      );
+
+    // Share Docker Image name
+    const shareImageName =
+      (this.props.alfrescoVersion == 'community' ?
+        (this.props.ags ? 
+          'alfresco/alfresco-governance-share-community' :
+          'alfresco/alfresco-share') :
+        (this.props.ags ? 
+          'quay.io/alfresco/alfresco-governance-share-enterprise':
+          'alfresco/alfresco-share'
+        )
+      );
 
     // Search Docker Image
     const searchImageName =
@@ -179,10 +208,37 @@ module.exports = class extends Generator {
         sharding: (this.props.sharding ? "true" : "false")
       }
     );
+    // Copy Sharding Content Model or an empty file to allow model deployments
     if (this.props.sharding) {
       this.fs.copy(
-        this.templatePath(imagesDirectory + '/alfresco/model'),
-        this.destinationPath('alfresco/model')
+        this.templatePath(imagesDirectory + '/alfresco/model/*.xml'),
+        this.destinationPath('alfresco/model/')
+      )
+    } else {
+      this.fs.copy(
+        this.templatePath(imagesDirectory + '/alfresco/model/empty'),
+        this.destinationPath('alfresco/model/empty')
+      )
+    }
+
+    // Copy Docker Image for Share applying configuration
+    this.fs.copyTpl(
+      this.templatePath(imagesDirectory + '/share/Dockerfile'),
+      this.destinationPath('share/Dockerfile'),
+      {
+        shareImage: shareImageName
+      }
+    );
+    // Copy Sharding Content Forms or an empty file to allow forms deployments
+    if (this.props.sharding) {
+      this.fs.copy(
+        this.templatePath(imagesDirectory + '/share/model/sharding-share-config-custom.xml'),
+        this.destinationPath('share/model/share-config-custom-dev.xml')
+      )
+    } else {
+      this.fs.copy(
+        this.templatePath(imagesDirectory + '/share/model/empty.xml'),
+        this.destinationPath('share/model/share-config-custom-dev.xml')
       )
     }
 
