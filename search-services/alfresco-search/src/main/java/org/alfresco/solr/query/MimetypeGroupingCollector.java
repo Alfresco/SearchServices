@@ -20,7 +20,6 @@ package org.alfresco.solr.query;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
@@ -112,9 +111,10 @@ public class MimetypeGroupingCollector extends DelegatingCollector
         rb.rsp.add("analytics", analytics);
         NamedList<Object> fieldCounts = new NamedList<>(); 
         analytics.add("mimetype()", fieldCounts);
-        for (Entry<String, Counter> counter : counters.entrySet())
+        for(String key : counters.keySet())
         {
-            fieldCounts.add(counter.getKey(), counter.getValue().get());
+            Counter counter = counters.get(key);
+            fieldCounts.add(key, counter.get());
         }
         
         if(this.delegate instanceof DelegatingCollector) {

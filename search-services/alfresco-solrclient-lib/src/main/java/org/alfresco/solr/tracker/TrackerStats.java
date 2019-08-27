@@ -30,10 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.concurrent.NotThreadSafe;
 
 import org.alfresco.solr.InformationServerCollectionProvider;
 import org.alfresco.solr.adapters.ISimpleOrderedMap;
@@ -286,9 +283,10 @@ public class TrackerStats
             map.add("StdDev", getStandardDeviation());
             if (incdludeDetail)
             {
-                for (Entry<String, IncrementalStats> copy : copies.entrySet())
+                for (String key : copies.keySet())
                 {
-                    map.add(copy.getKey(), copy.getValue().getNamedList(includeHist, includeValues));
+                    IncrementalStats value = copies.get(key);
+                    map.add(key, value.getNamedList(includeHist, includeValues));
                 }
             }
 
@@ -384,7 +382,6 @@ public class TrackerStats
 
     }
 
-    @NotThreadSafe
     public static class IncrementalStats
     {
         Date start = new Date();
@@ -772,7 +769,7 @@ public class TrackerStats
         {
             IncrementalStats copy = new IncrementalStats(this.scale, this.buckets, this.server);
             copy.start = this.start;
-            copy.max = this.getMax();
+            copy.max = this.max;
             copy.min = this.min;
             copy.moments[0] = this.moments[0];
             copy.moments[1] = this.moments[1];

@@ -38,7 +38,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -742,7 +741,7 @@ public class SOLRAPIClient
             String localeStr = o.has("locale") && !o.isNull("locale") ? o.getString("locale") : null;
             Locale locale = (o.has("locale") && !o.isNull("locale") ? deserializer.deserializeValue(Locale.class, localeStr) : null);
 
-            long size = o.has("size") && !o.isNull("size") ? o.getLong("size") : 0;
+            Long size = o.has("size") && !o.isNull("size") ? o.getLong("size") : null;
 
             String encoding = o.has("encoding") && !o.isNull("encoding") ? o.getString("encoding") : null;
             String mimetype = o.has("mimetype") && !o.isNull("mimetype") ? o.getString("mimetype") : null;
@@ -1248,11 +1247,15 @@ public class SOLRAPIClient
             this.namespaceDAO = namespaceDAO;
 
             // add all default converters to this converter
-            for (Entry<Class<?>, Map<Class<?>, Converter<?, ?>>> source : DefaultTypeConverter.INSTANCE.getConverters().entrySet())
+            // TODO find a better way of doing this
+            Map<Class<?>, Map<Class<?>, Converter<?,?>>> converters = DefaultTypeConverter.INSTANCE.getConverters();
+            for(Class source : converters.keySet())
             {
-                for (Entry<Class<?>, Converter<?, ?>> dest : source.getValue().entrySet())
+                Map<Class<?>, Converter<?,?>> converters1 = converters.get(source);
+                for(Class dest : converters1.keySet())
                 {
-                    instance.addConverter((Class) source.getKey(), (Class) dest.getKey(), dest.getValue());
+                    Converter<?,?> converter = converters1.get(dest);
+                    instance.addConverter(source, dest, converter);
                 }
             }
             
