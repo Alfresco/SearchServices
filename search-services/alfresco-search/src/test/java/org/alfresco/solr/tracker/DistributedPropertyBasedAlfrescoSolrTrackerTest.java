@@ -18,7 +18,27 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.Collections.singletonList;
+
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+
 import com.carrotsearch.randomizedtesting.RandomizedContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
@@ -37,26 +57,6 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * Test Routes based on a text property field.
@@ -182,7 +182,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         Properties prop = new Properties();
         prop.put("shard.method", ShardMethodEnum.PROPERTY.toString());
         prop.put("shard.regex", "^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,6})$");
-        prop.put("shard.key", ContentModel.PROP_EMAIL.toString());
+        prop.put(SHARD_KEY_KEY, ContentModel.PROP_EMAIL.toString());
         return prop;
     }
 }

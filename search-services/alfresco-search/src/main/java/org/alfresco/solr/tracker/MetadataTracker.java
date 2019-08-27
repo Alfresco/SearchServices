@@ -52,15 +52,18 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.client.Transactions;
 import org.apache.commons.codec.EncoderException;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.Optional.of;
 
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+
 /*
  * This tracks two things: transactions and metadata nodes
- * @author Ahmed Owianå
+ * @author Ahmed Owian
  */
 public class MetadataTracker extends AbstractTracker implements Tracker
 {
@@ -89,7 +92,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        shardKey = p.getProperty(DocRouterFactory.SHARD_KEY_KEY);
+        shardKey = p.getProperty(SHARD_KEY_KEY);
         updateShardProperty();
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
@@ -1202,18 +1205,20 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
     public static QName getShardProperty(String field)
     {
+        if (StringUtils.isBlank(field))
+        {
+            throw new IllegalArgumentException("Sharding property " + SHARD_KEY_KEY + " has not been set.");
+        }
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
         DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
         PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
-                                                                                  namespaceDAO,
-                                                                                  dictionaryService,
-                                                                                  field);
-
+                namespaceDAO,
+                dictionaryService,
+                field);
         if (propertyDef == null)
         {
-            log.error("Sharding property not found: {}", field);
-            return null;
+            throw new IllegalStateException("Sharding property " + SHARD_KEY_KEY + " was set to " + field + ", but no such property was found.");
         }
         return propertyDef.getName();
     }
