@@ -951,7 +951,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 {
                     if (maxNodeId >= midpoint)
                     {
-                        if(density >= 1)
+                        if(density >= 1 || density == 0)
                         {
                             //This is fully dense shard. I'm not sure if it's possible to have more nodes on the shards
                             //then the offset, but if it does happen don't expand.
