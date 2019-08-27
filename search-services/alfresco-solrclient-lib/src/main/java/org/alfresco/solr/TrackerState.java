@@ -26,6 +26,8 @@
 
 package org.alfresco.solr;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,20 @@ public class TrackerState
     private volatile boolean checkedLastTransactionTime = false;
 
     private volatile boolean check = false;
-    private volatile int trackerCycles;
+    // Handle Thread Safe operations
+    private volatile TrackerCyclesInteger trackerCycles;
+    class TrackerCyclesInteger
+    {
+        private AtomicInteger value = new AtomicInteger(0);
+        private void increase()
+        {
+            value.incrementAndGet();
+        }
+        private int getValue()
+        {
+            return value.get();
+        }
+    }
     private long timeToStopIndexing;
 
     private long lastGoodChangeSetCommitTimeInIndex;
@@ -237,13 +252,13 @@ public class TrackerState
     
     public int getTrackerCycles() 
     {
-        return this.trackerCycles;
+        return this.trackerCycles.getValue();
     }
 
     public synchronized void incrementTrackerCycles() 
     {
         log.debug("incrementTrackerCycles from :" + trackerCycles);
-        this.trackerCycles++;
+        this.trackerCycles.increase();
         log.debug("incremented TrackerCycles to :" + trackerCycles);
     }
     
