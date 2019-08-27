@@ -5,6 +5,9 @@ target
 .idea/
 *.iml
 .metadata
+.vscode
+overlays
+*.orig
 alf_data_dev
 alfresco.log*
 solr.log*
