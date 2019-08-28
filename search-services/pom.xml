@@ -13,6 +13,9 @@
     <version>1.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Solr Search parent</name>
+    <properties>
+        <slf4j.version>1.7.28</slf4j.version>
+    </properties>
     <modules>
         <module>alfresco-solrclient-lib</module>
         <module>alfresco-search</module>
