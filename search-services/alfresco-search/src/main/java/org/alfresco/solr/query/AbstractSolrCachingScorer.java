@@ -19,6 +19,7 @@
 package org.alfresco.solr.query;
 
 import java.io.IOException;
+import java.util.stream.LongStream;
 
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -43,12 +44,7 @@ public abstract class AbstractSolrCachingScorer extends Scorer
 			
 			private LongCache(){}
 	
-			static final Long cache[] = new Long[CACHE_SIZE];
-	
-			static {
-				for(int i = 0; i < cache.length; i++)
-					cache[i] = Long.valueOf(i);
-			}
+			static final long cache[] = LongStream.range(0, CACHE_SIZE).toArray();
 		}
 
 	protected static Long getLong(long l) {

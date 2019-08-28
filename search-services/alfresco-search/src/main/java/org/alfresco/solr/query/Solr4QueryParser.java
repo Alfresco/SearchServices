@@ -144,6 +144,8 @@ import org.jaxen.saxpath.base.XPathReader;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * @author Andy
  *
@@ -3299,39 +3301,50 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 namespacePrefixResolver, field.substring(1));
     }
 
+    // Avoid FindBugs false positive (https://github.com/spotbugs/spotbugs/issues/756)
+    @SuppressWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     protected String getToken(String field, String value, AnalysisMode analysisMode) throws ParseException
     {
-            
-        TokenStream source = getAnalyzer().tokenStream(field, new StringReader(value));
+        try (TokenStream source = getAnalyzer().tokenStream(field, new StringReader(value)))
+        {
+            String tokenised = null;
 
-        CharTermAttribute cta = source.getAttribute(CharTermAttribute.class);
-        OffsetAttribute offsetAtt = source.getAttribute(OffsetAttribute.class);
-        TypeAttribute typeAtt = null;
-        if (source.hasAttribute(TypeAttribute.class))
+            while (source.incrementToken())
+            {
+                CharTermAttribute cta = source.getAttribute(CharTermAttribute.class);
+                OffsetAttribute offsetAtt = source.getAttribute(OffsetAttribute.class);
+                TypeAttribute typeAtt = null;
+                if (source.hasAttribute(TypeAttribute.class))
+                {
+                    typeAtt = source.getAttribute(TypeAttribute.class);
+                }
+                PositionIncrementAttribute posIncAtt = null;
+                if (source.hasAttribute(PositionIncrementAttribute.class))
+                {
+                    posIncAtt = source.getAttribute(PositionIncrementAttribute.class);
+                }
+                PackedTokenAttributeImpl token = new PackedTokenAttributeImpl();
+                token.setEmpty().copyBuffer(cta.buffer(), 0, cta.length());
+                token.setOffset(offsetAtt.startOffset(), offsetAtt.endOffset());
+                if (typeAtt != null)
+                {
+                    token.setType(typeAtt.type());
+                }
+                if (posIncAtt != null)
+                {
+                    token.setPositionIncrement(posIncAtt.getPositionIncrement());
+                }
+
+                tokenised = token.toString();
+            }
+            return tokenised;
+        } catch (IOException e)
         {
-            typeAtt = source.getAttribute(TypeAttribute.class);
-        }
-        PositionIncrementAttribute posIncAtt = null;
-        if (source.hasAttribute(PositionIncrementAttribute.class))
-        {
-            posIncAtt = source.getAttribute(PositionIncrementAttribute.class);
-        }
-        PackedTokenAttributeImpl token = new PackedTokenAttributeImpl();
-        token.setEmpty().copyBuffer(cta.buffer(), 0, cta.length());
-        token.setOffset(offsetAtt.startOffset(), offsetAtt.endOffset());
-        if (typeAtt != null)
-        {
-            token.setType(typeAtt.type());
-        }
-        if (posIncAtt != null)
-        {
-            token.setPositionIncrement(posIncAtt.getPositionIncrement());
+            throw new ParseException("IO" + e.getMessage());
         }
 
-        return token.toString();
-                
     }
-
+    
     @Override
     public Query getPrefixQuery(String field, String termStr) throws ParseException
     {
@@ -5462,14 +5475,14 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         return analyzeMultitermTerm(field, part, getAnalyzer());
     }
 
+    // Avoid FindBugs false positive (https://github.com/spotbugs/spotbugs/issues/756)
+    @SuppressWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     protected BytesRef analyzeMultitermTerm(String field, String part, Analyzer analyzerIn) {
-        
         if (analyzerIn == null) analyzerIn = getAnalyzer();
 
-        try  
-        {
+        try (TokenStream source = analyzerIn.tokenStream(field, part)) {
+            source.reset();
 
-            TokenStream source = analyzerIn.tokenStream(field, part);
             TermToBytesRefAttribute termAtt = source.getAttribute(TermToBytesRefAttribute.class);
 
             if (!source.incrementToken())
@@ -5483,7 +5496,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             throw new RuntimeException("Error analyzing multiTerm term: " + part, e);
         }
     }
-
+    
     private boolean analyzeRangeTerms = true;
 
     protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {

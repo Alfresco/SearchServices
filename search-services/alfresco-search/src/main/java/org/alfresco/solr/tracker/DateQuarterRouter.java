@@ -59,8 +59,8 @@ public class DateQuarterRouter implements DocRouter
         // Avoid using Math.ceil with Integer
         int countMonths = ((year * 12) + (month+1));
         int grouping = 3;
-        int ceilGroupInstance = countMonths / grouping + ((countMonths % grouping == 0) ? 0 : 1);
-
+        int ceilGroupInstance = (countMonths + grouping - 1) / grouping;
+        
         return ceilGroupInstance % numShards == shardInstance;
         
     }

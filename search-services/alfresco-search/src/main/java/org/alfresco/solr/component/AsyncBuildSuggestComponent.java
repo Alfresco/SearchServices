@@ -472,12 +472,7 @@ public class AsyncBuildSuggestComponent extends SearchComponent implements SolrC
   
   @Override
   public long ramBytesUsed() {
-    long sizeInBytes = 0;
-    for (Entry<String, SuggesterCache> suggester : suggesters.entrySet()) 
-    {
-        sizeInBytes += suggester.getValue().get(ASYNC_CACHE_KEY).ramBytesUsed();
-    }
-    return sizeInBytes;
+    return suggesters.values().stream().mapToLong(value -> value.get(ASYNC_CACHE_KEY).ramBytesUsed()).sum();
   }
   
   private Set<SolrSuggester> getSuggesters(SolrParams params) {

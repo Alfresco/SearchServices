@@ -68,19 +68,8 @@ public class TrackerState
 
     private volatile boolean check = false;
     // Handle Thread Safe operations
-    private volatile TrackerCyclesInteger trackerCycles;
-    class TrackerCyclesInteger
-    {
-        private AtomicInteger value = new AtomicInteger(0);
-        private void increase()
-        {
-            value.incrementAndGet();
-        }
-        private int getValue()
-        {
-            return value.get();
-        }
-    }
+    private volatile AtomicInteger trackerCycles;
+
     private long timeToStopIndexing;
 
     private long lastGoodChangeSetCommitTimeInIndex;
@@ -252,13 +241,13 @@ public class TrackerState
     
     public int getTrackerCycles() 
     {
-        return this.trackerCycles.getValue();
+        return this.trackerCycles.get();
     }
 
     public synchronized void incrementTrackerCycles() 
     {
         log.debug("incrementTrackerCycles from :" + trackerCycles);
-        this.trackerCycles.increase();
+        this.trackerCycles.incrementAndGet();
         log.debug("incremented TrackerCycles to :" + trackerCycles);
     }
     
