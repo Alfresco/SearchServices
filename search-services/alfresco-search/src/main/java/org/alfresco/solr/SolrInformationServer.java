@@ -2124,7 +2124,7 @@ public class SolrInformationServer implements InformationServer
             newDoc.addField(FIELD_PROPERTIES, propertyQName.toString());
             newDoc.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
             
-            PropertyValue value = properties.get(propertyQName);
+            PropertyValue value = property.getValue();
             if(value != null)
             {
                 if (value instanceof StringPropertyValue)

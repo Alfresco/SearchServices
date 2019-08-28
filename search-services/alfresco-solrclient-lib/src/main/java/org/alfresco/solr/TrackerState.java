@@ -68,7 +68,7 @@ public class TrackerState
 
     private volatile boolean check = false;
     // Handle Thread Safe operations
-    private volatile AtomicInteger trackerCycles;
+    private volatile AtomicInteger trackerCycles = new AtomicInteger(0);
 
     private long timeToStopIndexing;
 
