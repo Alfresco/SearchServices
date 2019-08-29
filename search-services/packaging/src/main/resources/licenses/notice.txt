@@ -29,6 +29,9 @@ xpp3-1.1.3_8.jar        http://www.extreme.indiana.edu/xgws/xsoap/xpp/
 === JSON ===
 json-20160212.jar       http://code.google.com/p/json-simple/
 
+=== LGPL ===
+annotations-1.0.0.jar   http://findbugs.sourceforge.net
+
 
 === Apache 2.0 ===
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
