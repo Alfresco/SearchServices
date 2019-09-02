@@ -35,11 +35,12 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
 {
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
 
-    protected FileModel file, file2, file3, file4, file5;
+    protected FileModel file, file2, file3, file4;
+    protected FolderModel folder;
 
     public void searchServicesDataPreparation()
     {
-        /*
+        /*W
          * Create the following file structure for preconditions :
          * |- folder
          * |-- pangram.txt
@@ -48,7 +49,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
          * |-- <uniqueFileName>
          */
 
-        FolderModel folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
+        folder = new FolderModel(SEARCH_DATA_SAMPLE_FOLDER);
         dataContent.usingUser(testUser).usingSite(testSite).createFolder(folder);
 
         // Create files
@@ -67,10 +68,8 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         file4 = new FileModel(unique_searchString + ".txt", "uniquee" + title, description, FileType.TEXT_PLAIN,
                 "Unique text file for search ");
 
-        file5 =  new FileModel("very long name", "some" + title, description, FileType.TEXT_PLAIN,
-                "Content of long name ");
 
-        of(file, file2, file3, file4, file5).forEach(
+        of(file, file2, file3, file4).forEach(
                 f -> dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(f)
         );
 

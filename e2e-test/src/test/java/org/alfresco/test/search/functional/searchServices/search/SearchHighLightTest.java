@@ -38,6 +38,10 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
     public void dataPreparation() throws Exception
     {
         searchServicesDataPreparation();
+        FileModel fileHl = new FileModel("very long name", "some title", "description", FileType.TEXT_PLAIN,
+                "Content of long name ");
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(fileHl);
+        waitForMetadataIndexing(fileHl.getName(), true);
     }
 
     @Test
