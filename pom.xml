@@ -39,4 +39,13 @@
       <module>search-services</module>
       <module>insight-engine</module>
    </modules>
+   <dependencies>
+     <!-- Used to declare false positives for FindBugs -->
+      <dependency>
+        <groupId>findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>1.0.0</version>
+        <scope>provided</scope>
+      </dependency>
+   </dependencies>
 </project>
