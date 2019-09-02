@@ -19,6 +19,8 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 
+import static java.util.List.of;
+
 /**
  * Abstract Search test class that contains useful methods
  * such as:
@@ -33,7 +35,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
 {
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
 
-    protected FileModel file, file2, file3, file4;
+    protected FileModel file, file2, file3, file4, file5;
 
     public void searchServicesDataPreparation()
     {
@@ -65,10 +67,12 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         file4 = new FileModel(unique_searchString + ".txt", "uniquee" + title, description, FileType.TEXT_PLAIN,
                 "Unique text file for search ");
 
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file);
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file2);
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file3);
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file4);
+        file5 =  new FileModel("very long name", "some" + title, description, FileType.TEXT_PLAIN,
+                "Content of long name ");
+
+        of(file, file2, file3, file4, file5).forEach(
+                f -> dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(f)
+        );
 
         waitForMetadataIndexing(file4.getName(), true);
     }

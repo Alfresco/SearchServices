@@ -16,15 +16,16 @@ package org.alfresco.test.search.functional.searchServices.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.alfresco.rest.search.ResponseHighLightModel;
-import org.alfresco.rest.search.RestRequestFieldsModel;
-import org.alfresco.rest.search.RestRequestHighlightModel;
-import org.alfresco.rest.search.RestRequestQueryModel;
-import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.rest.search.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import static org.testng.AssertJUnit.assertEquals;
 
 /**
  * Search high lighting test.
@@ -78,5 +79,36 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
         highlight.setFields(fields);
         SearchResponse nodes = query(queryReq, highlight);
         nodes.assertThat().entriesListDoesNotContain("highlight");
+    }
+
+    @Test
+    public void searchDataConjunctionGenericQuery() throws Exception
+    {
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+
+        queryReq.setQuery("very AND name");
+
+        RestRequestHighlightModel highlight = new RestRequestHighlightModel();
+        highlight.setPrefix("¿");
+        highlight.setPostfix("?");
+        highlight.setMergeContiguous(false);
+        List<RestRequestFieldsModel> fields = new ArrayList<>();
+        fields.add(new RestRequestFieldsModel("cm:name"));
+        highlight.setFields(fields);
+        SearchResponse nodes = query(queryReq, highlight);
+        nodes.assertThat().entriesListDoesNotContain("highlight");
+
+        String expectedHighlight = "¿very? long ¿name?";
+
+        assertEquals(1, nodes.getEntries().size());
+
+        nodes.getEntries().stream()
+                .map(SearchNodeModel::getModel)
+                .map(SearchNodeModel::getSearch)
+                .map(SearchScoreModel::getHighlight).forEach(( hl ->
+                     assertEquals(expectedHighlight, hl.get(0).getSnippets().get(0))
+                )
+        );
+
     }
 }
