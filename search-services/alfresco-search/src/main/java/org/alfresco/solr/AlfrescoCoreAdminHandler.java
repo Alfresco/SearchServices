@@ -953,8 +953,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     {
                         if(density >= 1 || density == 0)
                         {
-                            //This is fully dense shard. I'm not sure if it's possible to have more nodes on the shards
-                            //then the offset, but if it does happen don't expand.
+                            //This is fully dense shard or an empty shard. 
+                            // If it does happen, no expand is required.
                             bestGuess=0;
                         }
                         else
