@@ -40,7 +40,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
 
     public void searchServicesDataPreparation()
     {
-        /*W
+        /*
          * Create the following file structure for preconditions :
          * |- folder
          * |-- pangram.txt
