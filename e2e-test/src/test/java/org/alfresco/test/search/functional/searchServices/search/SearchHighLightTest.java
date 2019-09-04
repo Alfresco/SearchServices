@@ -109,9 +109,10 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
         nodes.getEntries().stream()
                 .map(SearchNodeModel::getModel)
                 .map(SearchNodeModel::getSearch)
-                .map(SearchScoreModel::getHighlight).forEach(( hl ->
-                     assertEquals(expectedHighlight, hl.get(0).getSnippets().get(0))
-                )
+                .map(SearchScoreModel::getHighlight).forEach(( hl -> {
+                    assertEquals(1, hl.size());
+                    assertEquals(expectedHighlight, hl.get(0).getSnippets().get(0));
+                })
         );
 
     }
