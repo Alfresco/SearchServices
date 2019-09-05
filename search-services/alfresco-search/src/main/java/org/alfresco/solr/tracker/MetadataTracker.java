@@ -106,11 +106,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             if (updatedShardProperty.isEmpty())
             {
-                log.warn("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKey + ", but no such property was found.");
+                log.info("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKey + ", but no such property was found.");
             }
             else
             {
-                log.warn("New SHARD_KEY_KEY property found for " + shardKey);
+                log.info("New SHARD_KEY_KEY property found for " + shardKey);
             }
         }
         shardProperty = updatedShardProperty;
