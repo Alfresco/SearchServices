@@ -19,12 +19,7 @@
 package org.alfresco.solr.tracker;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -84,7 +79,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     /** The string representation of the shard key. */
     private String shardKey;
     /** The property to use for determining the shard. */
-    private QName shardProperty;
+    private Optional<QName> shardProperty;
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -101,13 +96,24 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
     /**
      * Set the shard property using the shard key.
+     * The property has to be update ad each iteration because the model could be deactivated or changes.
      */
     private void updateShardProperty()
     {
-        if(shardProperty == null && shardKey != null)
+        Optional<QName> updatedShardProperty = getShardProperty(shardKey);
+
+        if (shardProperty == null || !shardProperty.equals(updatedShardProperty))
         {
-            shardProperty = getShardProperty(shardKey);
+            if (updatedShardProperty.isEmpty())
+            {
+                log.warn("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKey + ", but no such property was found.");
+            }
+            else
+            {
+                log.warn("New SHARD_KEY_KEY property found for " + shardKey);
+            }
         }
+        shardProperty = updatedShardProperty;
     }
 
     MetadataTracker()
@@ -174,7 +180,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             * will pull its data from a "tracking" Solr node using Solr's master/slave replication, rather then tracking the repository.
             *
             */
-            
             ShardState shardstate = getShardState();
             client.getTransactions(0L, null, 0L, null, 0, shardstate);
             return;
@@ -240,8 +245,12 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         propertyBag.put("coreName", coreName);
         HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
         updateShardProperty();
-        extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
-        
+
+        if (shardProperty.isPresent())
+        {
+            extendedPropertyBag.putAll(docRouter.getProperties(shardProperty.get()));
+        }
+
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
@@ -382,7 +391,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     updateShardProperty();
-                    gnp.setShardProperty(shardProperty);
+
+                    if (shardProperty.isPresent())
+                    {
+                        gnp.setShardProperty(shardProperty.get());
+                    }
                     gnp.setCoreName(coreName);
 
                     List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
@@ -903,7 +916,10 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         updateShardProperty();
-        gnp.setShardProperty(shardProperty);
+        if (shardProperty.isPresent())
+        {
+            gnp.setShardProperty(shardProperty.get());
+        }
         gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
         
@@ -1203,7 +1219,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    public static QName getShardProperty(String field)
+    public static Optional<QName> getShardProperty(String field)
     {
         if (StringUtils.isBlank(field))
         {
@@ -1218,8 +1234,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 field);
         if (propertyDef == null)
         {
-            throw new IllegalStateException("Sharding property " + SHARD_KEY_KEY + " was set to " + field + ", but no such property was found.");
+            return Optional.empty();
         }
-        return propertyDef.getName();
+        return of(propertyDef.getName());
     }
 }
