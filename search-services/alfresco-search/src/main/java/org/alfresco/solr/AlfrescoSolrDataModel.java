@@ -1195,8 +1195,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public void removeModel(QName modelQName)
     {
-        // FIXME: this has no effect. The method should be changed (SEARCH-1482)
-        modelErrors.remove(modelQName);
+        modelErrors.remove(getM2Model(modelQName).getName());
         dictionaryDAO.removeModel(modelQName);
     }
 

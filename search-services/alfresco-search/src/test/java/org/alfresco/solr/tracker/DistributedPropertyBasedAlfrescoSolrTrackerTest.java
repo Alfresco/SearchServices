@@ -18,7 +18,27 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.Collections.singletonList;
+
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+
 import com.carrotsearch.randomizedtesting.RandomizedContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
@@ -37,23 +57,6 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * Test Routes based on a text property field.
@@ -92,8 +95,8 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         int numAcls = 25;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
+        List<Acl> bulkAcls = new ArrayList<>();
+        List<AclReaders> bulkAclReaders = new ArrayList<>();
 
 
         for (int i = 0; i < numAcls; i++) {
@@ -101,8 +104,8 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
                     bulkAcl,
-                    list("king" + bulkAcl.getId()),
-                    list("king" + bulkAcl.getId()),
+                    singletonList("king" + bulkAcl.getId()),
+                    singletonList("king" + bulkAcl.getId()),
                     null));
         }
 
@@ -111,19 +114,20 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
                 bulkAclReaders);
 
         int numNodes = 1000;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
         RandomizedContext context = RandomizedContext.current();
         Random ints = context.getRandom();
 
-        for (int i = 0; i < numNodes; i++) {
+        for (int i = 0; i < numNodes; i++)
+        {
             int aclIndex = i % numAcls;
             Node node = getNode(bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             String domain = DOMAINS[ints.nextInt(DOMAINS.length)];
             domainsCount.put(domain, domainsCount.get(domain)+1);
-            //String emailAddress = RANDOM_NAMES[ints.nextInt(RANDOM_NAMES.length)]+ "@"+ domain;
+
             String emailAddress = "peter.pan"+ "@"+ domain;
             node.setShardPropertyValue(emailAddress);
             nodes.add(node);
@@ -178,7 +182,7 @@ public class DistributedPropertyBasedAlfrescoSolrTrackerTest extends AbstractAlf
         Properties prop = new Properties();
         prop.put("shard.method", ShardMethodEnum.PROPERTY.toString());
         prop.put("shard.regex", "^[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,6})$");
-        prop.put("shard.key", ContentModel.PROP_EMAIL.toString());
+        prop.put(SHARD_KEY_KEY, ContentModel.PROP_EMAIL.toString());
         return prop;
     }
 }

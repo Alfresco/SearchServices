@@ -100,7 +100,7 @@ SOLR_SSL_WANT_CLIENT_AUTH=false
 Once this settings are ready, start SOLR service from command line:
 
 ```
-$ ./solr/bin/solr start "-Dcreate.alfresco.defaults=alfresco,archive \
+$ ./solr/bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive \
 -Dsolr.ssl.checkPeerName=false \
 -Dsolr.allow.unsafe.resourceloading=true" -f
 ```
@@ -130,7 +130,7 @@ DBID based sharding can be set up from the command line. For example a core cont
 index with twelve shards can be set up by starting an instance of Alfresco Search Services with a command like:
 
 ```bash
-./bin/solr start -a -Dcreate.alfresco.defaults=alfresco,archive -Dnum.shards=12 -Dshard.ids=0,1,6,7
+./bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive -Dnum.shards=12 -Dshard.ids=0,1,6,7"
 ```
 
 Further instances should be set up to contain the other shards, and it is possible to adjust the distribution and
@@ -169,7 +169,7 @@ $ sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' solrhome/temp
 Start SOLR service from command line:
 
 ```
-$ ./solr/bin/solr start "-Dcreate.alfresco.defaults=alfresco,archive" -f
+$ ./solr/bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive" -f
 ```
 
 SOLR will create Alfresco cores (`alfresco` and `archive`) when starting, and configuration from `rerank` template will be copied to each core and if you also started an ACS instance running in [http://localhost:8080/alfresco](http://localhost:8080/alfresco) then the index will be populated.
@@ -211,6 +211,63 @@ $ docker build -t searchservices:develop .
 
 *Search Services* Docker image is configured with with **Mutual Authentication TLS (SSL)** by default.
 
+
+**Building Docker Image from Windows**
+
+When building Search Services or Insight Engine Docker Images from **Windows**, some steps need to be added to default building process.
+
+*Clone the repository preserving Linux line endings*
+
+```
+$ git clone git@git.alfresco.com:search_discovery/insightengine.git --config core.autocrlf=input
+```
+
+Alternatively you can use global settings before cloning the repository
+
+```
+$ git config --global core.autocrlf input
+
+$ git config --list
+core.autocrlf=input
+
+$ git clone https://git.alfresco.com/search_discovery/insightengine.git
+```
+
+*Build the Maven project*
+
+```
+$ mvn clean package -DskipTests
+```
+
+*Modify default Dockerfile*
+
+```
+$ cd insight-engine/packaging/target/docker-resources/
+```
+
+Replace the last lines (from `EXPOSE` to `CMD`) of `Dockerfile` file in this folder with the following ones:
+
+```
+EXPOSE 8983
+
+RUN chown -R solr:solr $DIST_DIR
+RUN chmod +x $DIST_DIR/solr/bin/*
+RUN set -x \
+   && yum install -y dos2unix \
+   && yum clean all
+RUN dos2unix $DIST_DIR/solr.in.sh
+
+USER ${USERNAME}
+CMD $DIST_DIR/solr/bin/search_config_setup.sh "$DIST_DIR/solr/bin/solr start -f"
+```
+
+And build the Docker Image.
+
+```
+$ docker build -t insightengine:develop .
+```
+
+
 **Configuration**
 
 To pass an environment variable, it can be used the "-e" argument:
@@ -247,14 +304,7 @@ $ docker run -p 8983:8983 \
 -e SOLR_SSL_TRUST_STORE_TYPE=JCEKS \
 -e SOLR_SSL_NEED_CLIENT_AUTH=true \
 -e SOLR_OPTS="-Dsolr.ssl.checkPeerName=false \
--Dsolr.allow.unsafe.resourceloading=true \
--Dalfresco.encryption.ssl.keystore.type=JCEKS
--Dalfresco.encryption.ssl.keystore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.keystore
--Dalfresco.encryption.ssl.keystore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-keystore-passwords.properties
--Dalfresco.encryption.ssl.truststore.type=JCEKS
--Dalfresco.encryption.ssl.truststore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.truststore
--Dalfresco.encryption.ssl.truststore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-truststore-passwords.properties
-" \
+-Dsolr.allow.unsafe.resourceloading=true" \
 searchservices:develop
 ```
 
@@ -345,12 +395,6 @@ solr6:
           SOLR_OPTS: "
               -Dsolr.ssl.checkPeerName=false
               -Dsolr.allow.unsafe.resourceloading=true
-              -Dalfresco.encryption.ssl.keystore.type=JCEKS
-              -Dalfresco.encryption.ssl.keystore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.keystore
-              -Dalfresco.encryption.ssl.keystore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-keystore-passwords.properties
-              -Dalfresco.encryption.ssl.truststore.type=JCEKS
-              -Dalfresco.encryption.ssl.truststore.location=/opt/alfresco-search-services/keystores/ssl.repo.client.truststore
-              -Dalfresco.encryption.ssl.truststore.passwordFileLocation=/opt/alfresco-search-services/keystores/ssl-truststore-passwords.properties
           "
       ports:
           - 8083:8983 #Browser port

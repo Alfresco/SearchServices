@@ -24,10 +24,28 @@
       <connection>scm:git:https://git.alfresco.com/search_discovery/insightengine.git</connection>
       <developerConnection>scm:git:https://git.alfresco.com/search_discovery/insightengine.git</developerConnection>
       <url>https://git.alfresco.com/search_discovery/insightengine.git</url>
-      <tag>HEAD</tag>
+      <tag>1.1.0</tag>
    </scm>
+   <properties>
+      <solr.base.version>6.6.5</solr.base.version>
+      <solr.version>${solr.base.version}-patched</solr.version>
+      <!-- The location to download the solr zip file from. -->
+      <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
+      <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
+      <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}/solr-solr-${solr.version}.zip</solr.zip>
+      <solr.directory>${project.build.directory}/solr-${solr.version}</solr.directory>
+   </properties>
    <modules>
       <module>search-services</module>
       <module>insight-engine</module>
    </modules>
+   <dependencies>
+     <!-- Used to declare false positives for FindBugs -->
+      <dependency>
+        <groupId>findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>1.0.0</version>
+        <scope>provided</scope>
+      </dependency>
+   </dependencies>
 </project>

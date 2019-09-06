@@ -1,13 +1,12 @@
 package org.alfresco.test.search.functional.searchServices.cmis;
 
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
+import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
-import org.alfresco.utility.model.QueryModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.search.TestGroup;
+import org.alfresco.utility.model.QueryModel;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 

@@ -91,7 +91,7 @@ public class RewriteFacetParametersComponent extends SearchComponent
         String rows = params.get("rows");
         if(rows != null && !rows.isEmpty())
         {
-            Integer row = new Integer(rows);
+            Integer row = Integer.valueOf(rows);
             // Avoid +1 in SOLR code which produces null:java.lang.NegativeArraySizeException at at org.apache.lucene.util.PriorityQueue.<init>(PriorityQueue.java:56)
             if(row >  1000000)
             {

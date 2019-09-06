@@ -1850,7 +1850,7 @@
      <str name="rq">{!alfrescoReRank reRankQuery=$rqq reRankDocs=500 scale=true reRankWeight=3}</str>
      <str name="rqq">{!rrafts}RERANK_QUERY_FROM_CONTEXT</str>
 
-     <str name="hl.qparser">rrafts</str>
+     <str name="hl.qparser">afts</str>
     </lst>
     <arr name="components">
       <str>setLocale</str>

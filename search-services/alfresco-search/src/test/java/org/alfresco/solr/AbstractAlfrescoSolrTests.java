@@ -494,7 +494,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
         return req;
     }
     
-    public void waitForDocCount(Query query, long expectedNumFound, long waitMillis)
+    public static void waitForDocCount(Query query, long expectedNumFound, long waitMillis)
             throws Exception
     {
         Date date = new Date();
@@ -571,7 +571,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
      * @param txnId
      * @throws Exception
      */
-    public void reindexTransactionId(long txnId) throws Exception
+    public static void reindexTransactionId(long txnId) throws Exception
     {
         CoreAdminHandler admin = getMultiCoreHandler();
         SolrQueryResponse resp = new SolrQueryResponse();
@@ -583,7 +583,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
                 resp);
     }
 
-    public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
+    public static void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
     {
         //First map the nodes to a transaction.
         SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
@@ -598,7 +598,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
         SOLRAPIQueueClient.transactionQueue.add(transaction);
     }
 
-    public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<String> content)
+    public static void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<String> content)
     {
         //First map the nodes to a transaction.
         SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
