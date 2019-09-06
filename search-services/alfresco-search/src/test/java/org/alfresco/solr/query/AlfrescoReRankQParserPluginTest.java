@@ -19,12 +19,9 @@
 
 package org.alfresco.solr.query;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import org.alfresco.solr.AbstractAlfrescoSolrTests;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -34,6 +31,7 @@ import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -668,7 +666,7 @@ public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
             it.next();
             float score = it.score();
             float scaledScore = scaledScores[index++];
-            assertTrue(score == scaledScore);
+            Assert.assertEquals("score should be equal to scaled score", score, scaledScore, 0.00001);
         }
 
         req.close();

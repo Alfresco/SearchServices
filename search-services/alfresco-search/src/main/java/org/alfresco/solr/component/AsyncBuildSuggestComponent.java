@@ -41,6 +41,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -471,11 +472,7 @@ public class AsyncBuildSuggestComponent extends SearchComponent implements SolrC
   
   @Override
   public long ramBytesUsed() {
-    long sizeInBytes = 0;
-    for (String key : suggesters.keySet()) {
-      sizeInBytes += suggesters.get(key).get(ASYNC_CACHE_KEY).ramBytesUsed();
-    }
-    return sizeInBytes;
+    return suggesters.values().stream().mapToLong(value -> value.get(ASYNC_CACHE_KEY).ramBytesUsed()).sum();
   }
   
   private Set<SolrSuggester> getSuggesters(SolrParams params) {

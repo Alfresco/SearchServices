@@ -4,7 +4,13 @@ target
 .project
 .idea/
 *.iml
+.vscode
+overlays
+*.orig
 .metadata
+.vscode
+overlays
+*.orig
 alf_data_dev
 alfresco.log*
 solr.log*

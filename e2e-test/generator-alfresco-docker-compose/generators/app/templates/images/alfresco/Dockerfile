@@ -48,7 +48,5 @@ RUN if [ "$SOLR_COMMS" == "https" ] ; then \
         <\/Connector>/g" ${TOMCAT_DIR}/conf/server.xml; \
     fi
 
-<% if (sharding == 'true') { %>
-# Explicit Routing Sharding content model (useless when not using this feature)
-COPY model/sharding-content-model*.xml $TOMCAT_DIR/shared/classes/alfresco/extension/
-<% } %>
+# Copy custom content model to deployment folder
+COPY model/* $TOMCAT_DIR/shared/classes/alfresco/extension/

@@ -16,11 +16,12 @@ skinparam  sequence  {
     AsyncContentTracker -> AsyncContentTracker: aquireRunLock
     activate AsyncContentTracker
     AsyncContentTracker -> AsyncContentTracker: getTrackerState
-    AsyncContentTracker -> MessageQueueReader: readMessages
-    participant MessageQueueReader  #green
-    activate MessageQueueReader  #green
-    AsyncContentTracker <- MessageQueueReader: return docList
-    deactivate MessageQueueReader
+    AsyncContentTracker -> ContentConsumer: readMessages
+    participant ContentConsumer  #green
+    activate ContentConsumer  #Green
+    AsyncContentTracker <- ContentConsumer: return docList
+    deactivate ContentConsumer
+    participant SolrInformationServer #FFBBBB
     AsyncContentTracker -> SolrInformationServer: getDocsWithUncleanContent
     activate SolrInformationServer  #FFBBBB
     SolrInformationServer -> SolrInformationServer: cleanContentCache (periodically)
@@ -28,11 +29,14 @@ skinparam  sequence  {
     activate SolrIndexSearcher #aqua
     SolrInformationServer -> SolrIndexSearcher: search (Search unclean documents)
     SolrIndexSearcher -> SolrInformationServer: result docList
+    deactivate SolrIndexSearcher
     AsyncContentTracker <- SolrInformationServer: result docList
+    deactivate SolrInformationServer
     loop content
        activate ContentIndexWorkerRunnable
        AsyncContentTracker -> ContentIndexWorkerRunnable: load docList
        ContentIndexWorkerRunnable -> ContentIndexWorkerRunnable: doWork
+       activate SolrInformationServer #FFBBBB
        activate ContentIndexWorkerRunnable #lightgrey
        ContentIndexWorkerRunnable -> SolrInformationServer: updateContentToIndexAndCache
        SolrInformationServer -> SolrContentStore: retrieveDocFromSolrContentStore
@@ -53,6 +57,14 @@ skinparam  sequence  {
        SolrInformationServer ->o  SolrContentStore:storeDocOnSolrContentStore
        participant UpdateRequestProcessor  #aqua
        SolrInformationServer -> UpdateRequestProcessor:processAdd(addDocCmd)
+       deactivate ContentIndexWorkerRunnable
+       deactivate ContentIndexWorkerRunnable
+       deactivate SolrInformationServer
+       deactivate SolrInformationServer
+    end
+    loop contentNew
+    	AsyncContentTracker -> ContentProducer:produceRequest
+    	AsyncContentTracker -> AsyncContentTracker:markFTSStatus (dirty)
     end
 end    
  AsyncContentTracker -> Scheduler

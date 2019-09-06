@@ -18,11 +18,10 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.json.Json;
 import javax.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.search.FacetFieldBucket;
@@ -32,7 +31,6 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;

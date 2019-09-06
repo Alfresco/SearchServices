@@ -1,0 +1,58 @@
+@startuml
+skinparam  sequence  {
+	ArrowColor DeepSkyBlue
+	ActorBorderColor DeepSkyBlue
+	LifeLineBorderColor blue
+	ParticipantBorderColor DeepSkyBlue
+	ParticipantBackgroundColor white
+}
+
+ [-> Scheduler : Initialise on first core load
+
+       participant ContentMessageProducer
+       participant ContentConsumer
+       participant SharedFileStoreClient #green
+ ...
+ Scheduler -> ContentMessageProducer
+ 	loop
+ 		activate ContentMessageProducer
+	    ContentMessageProducer -> ContentMessageProducer: aquireRunLock
+    	activate ContentMessageProducer
+    	ContentMessageProducer -> ContentMessageProducer: getTrackerState
+    	ContentMessageProducer -> ContentConsumer: readMessages
+	    deactivate ContentConsumer
+   	 	participant SolrInformationServer #FFBBBB
+    	ContentMessageProducer -> SolrInformationServer: getDocsWithUncleanContent
+    	activate SolrInformationServer  #FFBBBB
+    	SolrInformationServer -> SolrInformationServer: cleanContentCache (periodically)
+    	participant SolrIndexSearcher  #aqua
+	    activate SolrIndexSearcher #aqua
+	    SolrInformationServer -> SolrIndexSearcher: search (Search unclean documents)
+	    SolrIndexSearcher -> SolrInformationServer: result docList
+	    deactivate SolrIndexSearcher
+	    ContentMessageProducer <- SolrInformationServer: result docList
+	    deactivate SolrInformationServer
+    	ContentMessageProducer -> ContentMessageProducer:markFTSStatus (dirty)
+ 		ContentMessageProducer -> Scheduler
+ 		deactivate ContentMessageProducer
+ 		deactivate ContentMessageProducer
+ 	end
+ 	Scheduler -> ContentConsumer: Run
+     loop process messages in queue
+       activate ContentConsumer
+       ContentConsumer->ContentConsumer:createSolrDoc
+       activate ContentConsumer 
+       ContentConsumer -> SharedFileStoreClient: getTextContent
+       activate SharedFileStoreClient #green
+       ContentConsumer <- SharedFileStoreClient: return text
+       deactivate SharedFileStoreClient
+       ContentConsumer->ContentConsumer:markFTSStatus [Clean | New if error]
+       participant SolrJ #aqua
+       ContentConsumer->SolrJ:saveUpdate
+       deactivate ContentConsumer
+       deactivate ContentConsumer
+    end
+...
+ center footer Copyright 2019 Alfresco Software Inc
+ 
+ @enduml

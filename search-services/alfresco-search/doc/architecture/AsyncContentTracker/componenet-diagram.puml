@@ -1,0 +1,33 @@
+@startuml
+
+database "Solr" {
+  package "SolrInfrmationServer" {
+  	[UpdateIndex]
+  }
+  package "org.alfresco.tracker.content"{
+  	[ContentConsumer]
+  	[ContentMessageProducer]
+  	[SharedFileStoreClient]
+  }
+  folder "ContentStore" {
+	[UpdateFile]
+  }
+}
+node "Alfresco SharedFileStore" {
+  [GetFile]
+} 
+
+database "ActiveMQ" {
+[ContentMessageQue]
+}
+
+[ContentMessageProducer] --> [ContentMessageQue]
+[ContentConsumer] --> [ContentMessageQue]
+[ContentConsumer] --> [SharedFileStoreClient]
+[ContentConsumer] <-- [SharedFileStoreClient]
+[SharedFileStoreClient] --> [GetFile]
+[ContentConsumer] --> [UpdateIndex]
+[UpdateIndex] -->[UpdateFile]
+
+
+@enduml

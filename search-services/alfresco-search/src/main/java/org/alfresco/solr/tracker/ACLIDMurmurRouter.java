@@ -22,31 +22,35 @@ import org.apache.solr.common.util.Hash;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.Acl;
 
-
-/*
- * @author Joel
+/**
+ * Nodes are evenly distributed over the shards at random based on the murmur hash of the ACL ID.
+ * To use this method, when creating a shard add a new configuration property:
+ *
+ * <ul>
+ *     <li>shard.method=ACL_ID</li>
+ *     <li>shard.instance=&lt;shard.instance></li>
+ *     <li>shard.count=&lt;shard.count></li>
+ * </ul>
+ *
+ * @see <a href="https://docs.alfresco.com/search-enterprise/concepts/solr-shard-approaches.html">Search Services sharding methods</a>
  */
-
 public class ACLIDMurmurRouter implements DocRouter
 {
     @Override
-    public boolean routeAcl(int numShards, int shardInstance, Acl acl) {
-        if(numShards <= 1) {
-            return true;
-        }
-
-        String s = Long.toString(acl.getId());
-        return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % numShards) == shardInstance;
+    public Boolean routeAcl(int numShards, int shardInstance, Acl acl)
+    {
+        return (numShards <= 1) || route(acl.getId(), numShards, shardInstance);
     }
 
     @Override
-    public boolean routeNode(int numShards, int shardInstance, Node node) {
-        if(numShards <= 1) {
-            return true;
-        }
+    public Boolean routeNode(int numShards, int shardInstance, Node node)
+    {
+        return (numShards <= 1) || route(node.getAclId(), numShards, shardInstance);
+    }
 
-        //Route the node based on the murmur hash of the aclId
-        String s = Long.toString(node.getAclId());
-        return (Math.abs(Hash.murmurhash3_x86_32(s, 0, s.length(), 77)) % numShards) == shardInstance;
+    private boolean route(long id, int numShards, int shardInstance)
+    {
+        String value = Long.toString(id);
+        return (Math.abs(Hash.murmurhash3_x86_32(value, 0, value.length(), 77)) % numShards) == shardInstance;
     }
 }

@@ -22,8 +22,8 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.43</dependency.alfresco-data-model.version>
-        <dependency.jackson.version>2.10.0.pr1</dependency.jackson.version>
+        <dependency.alfresco-data-model.version>8.48</dependency.alfresco-data-model.version>
+        <dependency.jackson.version>2.10.0.pr2</dependency.jackson.version>
     </properties>
 
     <dependencies>
@@ -42,6 +42,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+            <version>${dependency.jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
             <version>${dependency.jackson.version}</version>
         </dependency>
 
@@ -67,7 +73,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.26</version>
+            <version>1.7.28</version>
         </dependency>
     </dependencies>
 

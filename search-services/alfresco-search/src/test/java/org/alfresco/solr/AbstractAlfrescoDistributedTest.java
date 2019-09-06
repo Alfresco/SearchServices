@@ -89,7 +89,7 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSI
 @ThreadLeakLingering(linger = 5000)
 public abstract class AbstractAlfrescoDistributedTest extends SolrTestInitializer
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
     protected String[] deadServers;
     protected static SolrResponsesComparator solrComparator = new SolrResponsesComparator();

@@ -19,12 +19,15 @@
 package org.alfresco.solr.component;
 
 import java.io.IOException;
+
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * Temp files may take up a lot of space, warn administrators
@@ -46,6 +49,8 @@ public class TempFileWarningLogger
         glob = prefix + ".{"+ StringUtils.arrayToCommaDelimitedString(extensions) + "}"; 
     }
     
+    // Avoid FindBugs false positive (https://github.com/spotbugs/spotbugs/issues/756)
+    @SuppressWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     public boolean checkFiles()
     {
         if (log.isDebugEnabled())
@@ -72,6 +77,8 @@ public class TempFileWarningLogger
         }
     }
 
+    // Avoid FindBugs false positive (https://github.com/spotbugs/spotbugs/issues/756)
+    @SuppressWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     public void removeFiles()
     {
         try(DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob))

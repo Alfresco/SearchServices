@@ -62,8 +62,13 @@ services:
             ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
-            SHARD_ID: "0" <% } %> <% if (explicitRouting == 'true') { %>
-            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
+            SHARD_ID: "0" <% if (shardingMethod == 'DB_ID_RANGE') { %>
+            SHARD_RANGE: "0-800" <% } %> <% if (shardingMethod == 'DATE') { %>
+            SHARD_KEY: "cm:created"
+            SHARD_DATE_GROUPING: "2" <% } %> <% if (shardingMethod == 'PROPERTY') { %>
+            SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
+            SHARD_KEY: "shard:shardId" <% } %>
+            SHARDING_METHOD: <%=shardingMethod%> <% } %>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -114,8 +119,13 @@ services:
             MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
-            SHARD_ID: "1" <% } %> <% if (explicitRouting == 'true') { %>
-            EXPLICIT_ROUTING_SHARDING: "true" <% } %>
+            SHARD_ID: "1" <% if (shardingMethod == 'DB_ID_RANGE') { %>
+            SHARD_RANGE: "801-40000" <% } %> <% if (shardingMethod == 'DATE') { %>
+            SHARD_KEY: "cm:created"
+            SHARD_DATE_GROUPING: "2" <% } %> <% if (shardingMethod == 'PROPERTY') { %>
+            SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
+            SHARD_KEY: "shard:shardId" <% } %>
+            SHARDING_METHOD: <%=shardingMethod%> <% } %>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -254,7 +264,10 @@ services:
             - shared-file-store-volume:/tmp/Alfresco/sfs
 
     share:
-        image: alfresco/alfresco-share:${SHARE_TAG}
+        build:
+          context: ./share
+          args:
+            SHARE_TAG: ${SHARE_TAG}
         mem_limit: 1g
         environment:
             REPO_HOST: "alfresco"
@@ -295,7 +308,7 @@ services:
             BASEPATH: ./
 
     proxy:
-        image: quay.io/alfresco/alfresco-acs-nginx:${ACS_NGINX_TAG}
+        image: alfresco/alfresco-acs-nginx:${ACS_NGINX_TAG}
         mem_limit: 128m
         depends_on:
             - alfresco

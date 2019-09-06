@@ -18,19 +18,18 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
+import static org.testng.Assert.assertTrue;
+
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.search.TestGroup;
-import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.report.Bug;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertTrue;
 
 /**
  * Search end point Public API test with finger print.
@@ -80,7 +79,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
     public void makeSureFingerprintQueryWorksAfterMetadataUpdate() throws Exception
     {
         // Index a new file with content
-        FileModel file = new FileModel("Project_Contract.pdf", FileType.TEXT_PLAIN, "A content which is completely different from other indexed files.");
+        FileModel file = new FileModel("Project_Contract.txt", FileType.TEXT_PLAIN, "A content which is completely different from other indexed files.");
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file);
 
         // make sure the content has been indexed (i.e. the ContentTracker fingerprint has been correctly computed

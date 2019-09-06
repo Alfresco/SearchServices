@@ -1,0 +1,350 @@
+# Using version 2 as 3 does not support resource constraint options (cpu_*, mem_* limits) for non swarm mode in Compose
+version: "2"
+
+services:
+    alfresco:
+        build:
+          context: ./alfresco
+          args:
+            ALFRESCO_TAG: ${ALFRESCO_TAG}
+            SOLR_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
+            TRUSTSTORE_TYPE: JCEKS
+            TRUSTSTORE_PASS: kT9X6oe68t
+            KEYSTORE_TYPE: JCEKS
+            KEYSTORE_PASS: kT9X6oe68t <% } %>
+        mem_limit: 1800m
+        environment:
+            JAVA_OPTS: "
+                -Ddb.driver=org.postgresql.Driver
+                -Ddb.username=alfresco
+                -Ddb.password=alfresco
+                -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
+                -Dsolr.host=<%=searchSolrHost%>
+                -Dsolr.port.ssl=8983
+                -Dsolr.secureComms=<%=secureComms%>
+                -Dsolr.base.url=/solr <% if (sharding == 'true') { %>
+                -Dsolr.useDynamicShardRegistration=true <% } %>
+                -Dindex.subsystem.name=solr6
+                
+                -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
+                -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+                -Ddeployment.method=DOCKER_COMPOSE
+
+                -Dtransform.service.enabled=true
+                -Dtransform.service.url=http://transform-router:8095
+                -Dsfs.url=http://shared-file-store:8099/
+
+                -Dlocal.transform.service.enabled=true
+                -DlocalTransform.pdfrenderer.url=http://alfresco-pdf-renderer:8090/
+                -DlocalTransform.imagemagick.url=http://imagemagick:8090/
+                -DlocalTransform.libreoffice.url=http://libreoffice:8090/
+                -DlocalTransform.tika.url=http://tika:8090/
+                -DlocalTransform.misc.url=http://transform-misc:8090/
+
+                -Dlegacy.transform.service.enabled=true
+                -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
+                -Djodconverter.url=http://libreoffice:8090/
+                -Dimg.url=http://imagemagick:8090/
+                -Dtika.url=http://tika:8090/
+                -Dtransform.misc.url=http://transform-misc:8090/
+
+                -Dcsrf.filter.enabled=false
+                -Dalfresco.restApi.basicAuthScheme=true
+                -Xms1500m -Xmx1500m
+                " <% if (httpMode == 'https') { %>
+        ports:
+            - 8443:8443
+        volumes:
+            - ./keystores/alfresco:/usr/local/tomcat/alf_data/keystore <% } %>
+
+    solr6:
+        build:
+          context: ./search
+          args:
+            SEARCH_TAG: ${SEARCH_TAG}
+            SOLR_HOSTNAME: solr6
+            ALFRESCO_HOSTNAME: alfresco
+            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
+            TRUSTSTORE_TYPE: JCEKS
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            ENABLE_MASTER: "true"
+            ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
+            ENABLE_SHARDING: "true"
+            NUM_SHARDS: "2"
+            SHARD_ID: "0" <% if (shardingMethod == 'DB_ID_RANGE') { %>
+            SHARD_RANGE: "0-800" <% } %> <% if (shardingMethod == 'DATE') { %>
+            SHARD_KEY: "cm:created"
+            SHARD_DATE_GROUPING: "2" <% } %> <% if (shardingMethod == 'PROPERTY') { %>
+            SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
+            SHARD_KEY: "shard:shardId" <% } %>
+            SHARDING_METHOD: <%=shardingMethod%> <% } %>
+        mem_limit: 1200m
+        environment:
+            #Solr needs to know how to register itself with Alfresco
+            SOLR_ALFRESCO_HOST: "alfresco"
+            SOLR_ALFRESCO_PORT: "<%=alfrescoPort%>"
+            ALFRESCO_SECURE_COMMS: <%=secureComms%>
+            #Alfresco needs to know how to call solr
+            SOLR_SOLR_HOST: "solr6"
+            SOLR_SOLR_PORT: "8983"
+            #Create the default alfresco and archive cores
+            SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
+            SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
+            SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
+            SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
+            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
+            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
+            SOLR_OPTS: "
+                -Dsolr.ssl.checkPeerName=false
+                -Dsolr.allow.unsafe.resourceloading=true
+            " <% } %>
+        ports:
+            - 8083:8983 <% if (httpMode == 'https') { %>
+        volumes:
+            - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
+
+    <% if (sharding == 'true' || replication == 'true') { %>
+    solr6secondary:
+        build:
+          context: ./search
+          args:
+            SEARCH_TAG: ${SEARCH_TAG}
+            SOLR_HOSTNAME: solr6secondary
+            ALFRESCO_HOSTNAME: alfresco
+            ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
+            TRUSTSTORE_TYPE: JCEKS
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            ENABLE_MASTER: "true"
+            ENABLE_SLAVE: "false"
+            MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
+            ENABLE_SHARDING: "true"
+            NUM_SHARDS: "2"
+            SHARD_ID: "1" <% if (shardingMethod == 'DB_ID_RANGE') { %>
+            SHARD_RANGE: "801-40000" <% } %> <% if (shardingMethod == 'DATE') { %>
+            SHARD_KEY: "cm:created"
+            SHARD_DATE_GROUPING: "2" <% } %> <% if (shardingMethod == 'PROPERTY') { %>
+            SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
+            SHARD_KEY: "shard:shardId" <% } %>
+            SHARDING_METHOD: <%=shardingMethod%> <% } %>
+        mem_limit: 1200m
+        environment:
+            #Solr needs to know how to register itself with Alfresco
+            SOLR_ALFRESCO_HOST: "alfresco"
+            SOLR_ALFRESCO_PORT: "<%=alfrescoPort%>"
+            ALFRESCO_SECURE_COMMS: <%=secureComms%>
+            #Alfresco needs to know how to call solr
+            SOLR_SOLR_HOST: "solr6secondary"
+            SOLR_SOLR_PORT: "8983"
+            #Create the default alfresco and archive cores
+            SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
+            SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
+            SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
+            SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
+            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
+            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
+            SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
+            SOLR_OPTS: "
+                -Dsolr.ssl.checkPeerName=false
+                -Dsolr.allow.unsafe.resourceloading=true
+            " <% } %>
+        ports:
+            - 8084:8983  <% if (httpMode == 'https') { %>
+        volumes:
+            - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
+    <% } %>
+
+    <% if (zeppelin == 'true') { %>
+    zeppelin:
+        build:
+          context: ./zeppelin
+          args:
+            ZEPPELIN_TAG: ${ZEPPELIN_TAG}
+            ALFRESCO_COMMS: <%=secureComms%>
+        mem_limit: 768m
+        environment: <% if (httpMode == 'https') { %>
+            REPO_PROTOCOL: "https" <% } %>
+            REPO_HOST: "alfresco"
+            REPO_PORT: "<%=alfrescoPort%>" <% if (httpMode == 'https') { %>
+            JAVA_OPTS: "
+                -Dalfresco.enable.ssl=true
+                -Dsolr.ssl.checkPeerName=false
+                -Djavax.net.ssl.keyStore=/zeppelin/keystore/ssl.repo.client.keystore
+                -Djavax.net.ssl.keyStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.keyStoreType=JCEKS
+                -Djavax.net.ssl.trustStore=/zeppelin/keystore/ssl.repo.client.truststore
+                -Djavax.net.ssl.trustStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.trustStoreType=JCEKS
+            " <% } %>
+        ports:
+            - 9090:9090 <% if (httpMode == 'https') { %>
+        volumes:
+            - ./keystores/zeppelin:/zeppelin/keystore <% } %>
+    <% } %>
+
+    transform-router:
+        mem_limit: 512m
+        image: quay.io/alfresco/alfresco-transform-router:${TRANSFORM_ROUTER_TAG}
+        environment:
+          JAVA_OPTS: " -Xms256m -Xmx512m"
+          ACTIVEMQ_URL: "nio://activemq:61616"
+          IMAGEMAGICK_URL: "http://imagemagick:8090"
+          PDF_RENDERER_URL : "http://alfresco-pdf-renderer:8090"
+          LIBREOFFICE_URL : "http://libreoffice:8090"
+          TIKA_URL : "http://tika:8090"
+          FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8095:8095
+        links:
+          - activemq
+
+    alfresco-pdf-renderer:
+        image: alfresco/alfresco-pdf-renderer:${PDF_RENDERER_TAG}
+        mem_limit: 1g
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+            ACTIVEMQ_URL: "nio://activemq:61616"
+            FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8090:8090
+        links:
+        - activemq
+
+    imagemagick:
+        image: alfresco/alfresco-imagemagick:${IMAGE_MAGICK_TAG}
+        mem_limit: 1g
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+            ACTIVEMQ_URL: "nio://activemq:61616"
+            FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8091:8090
+        links:
+        - activemq
+
+    libreoffice:
+        image: alfresco/alfresco-libreoffice:${LIBREOFFICE_TAG}
+        mem_limit: 1g
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+            ACTIVEMQ_URL: "nio://activemq:61616"
+            FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8092:8090
+        links:
+        - activemq
+
+    tika:
+        image: alfresco/alfresco-tika:${TIKA_TAG}
+        mem_limit: 1g
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+            ACTIVEMQ_URL: "nio://activemq:61616"
+            FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8093:8090
+        links:
+            - activemq
+
+    transform-misc:
+        image: alfresco/alfresco-transform-misc:${TRANSFORM_MISC_TAG}
+        mem_limit: 1g
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+            ACTIVEMQ_URL: "nio://activemq:61616"
+            FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+        ports:
+            - 8094:8090
+        links:
+            - activemq
+
+    shared-file-store:
+        image: alfresco/alfresco-shared-file-store:${SHARED_FILE_STORE_TAG}
+        mem_limit: 512m
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+            scheduler.content.age.millis: 86400000
+            scheduler.cleanup.interval: 86400000
+        ports:
+            - 8099:8099
+        volumes:
+            - shared-file-store-volume:/tmp/Alfresco/sfs
+
+    share:
+        build:
+          context: ./share
+          args:
+            SHARE_TAG: ${SHARE_TAG}
+        mem_limit: 1g
+        environment:
+            REPO_HOST: "alfresco"
+            REPO_PORT: "8080"
+            JAVA_OPTS: "
+                -Xms500m
+                -Xmx500m
+                -Dalfresco.host=localhost
+                -Dalfresco.port=8080
+                -Dalfresco.context=alfresco
+                -Dalfresco.protocol=http
+                "
+
+    postgres:
+        image: postgres:${POSTGRES_TAG}
+        mem_limit: 512m
+        environment:
+            - POSTGRES_PASSWORD=alfresco
+            - POSTGRES_USER=alfresco
+            - POSTGRES_DB=alfresco
+        command: postgres -c max_connections=300 -c log_min_messages=LOG
+        ports:
+            - 5432:5432
+
+    activemq:
+        image: alfresco/alfresco-activemq:${ACTIVE_MQ_TAG}
+        mem_limit: 512m
+        ports:
+            - 8161:8161 # Web Console
+            - 5672:5672 # AMQP
+            - 61616:61616 # OpenWire
+            - 61613:61613 # STOMP
+
+    digital-workspace:
+        image: quay.io/alfresco/alfresco-digital-workspace:${DIGITAL_WORKSPACE_TAG}
+        mem_limit: 128m
+        environment:
+            BASEPATH: ./
+
+    proxy:
+        image: alfresco/alfresco-acs-nginx:${ACS_NGINX_TAG}
+        mem_limit: 128m
+        depends_on:
+            - alfresco
+            - digital-workspace
+        ports:
+            - 8080:8080
+        links:
+            - digital-workspace
+            - alfresco
+            - share
+
+volumes:
+    shared-file-store-volume:
+        driver_opts:
+            type: tmpfs
+            device: tmpfs
