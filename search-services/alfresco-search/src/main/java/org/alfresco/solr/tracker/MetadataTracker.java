@@ -52,6 +52,8 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.text.html.Option;
+
 import static java.util.Optional.of;
 
 import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
@@ -79,7 +81,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     /** The string representation of the shard key. */
     private String shardKey;
     /** The property to use for determining the shard. */
-    private Optional<QName> shardProperty;
+    private Optional<QName> shardProperty = Optional.empty();
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -88,7 +90,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
         shardKey = p.getProperty(SHARD_KEY_KEY);
-        updateShardProperty();
+        firstUpdateShardProperty();
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -100,21 +102,37 @@ public class MetadataTracker extends AbstractTracker implements Tracker
      */
     private void updateShardProperty()
     {
-        Optional<QName> updatedShardProperty = getShardProperty(shardKey);
-
-        if (shardProperty == null || !shardProperty.equals(updatedShardProperty))
+        if (shardKey != null)
         {
-            if (updatedShardProperty.isEmpty())
+            Optional<QName> updatedShardProperty = getShardProperty(shardKey);
+            if (!shardProperty.equals(updatedShardProperty))
             {
-                log.info("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKey + ", but no such property was found.");
+                if (updatedShardProperty.isEmpty())
+                {
+                    log.warn("The model defining " + shardKey + " property has been disabled");
+                }
+                else
+                {
+                    log.info("New SHARD_KEY_KEY property found for " + shardKey);
+                }
             }
-            else
+            shardProperty = updatedShardProperty;
+        }
+    }
+
+    private void firstUpdateShardProperty()
+    {
+        if (shardKey != null)
+        {
+            updateShardProperty();
+            if (shardProperty.isEmpty())
             {
-                log.info("New SHARD_KEY_KEY property found for " + shardKey);
+                log.warn("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKey + ", but no such property was found.");
             }
         }
-        shardProperty = updatedShardProperty;
     }
+
+
 
     MetadataTracker()
     {
