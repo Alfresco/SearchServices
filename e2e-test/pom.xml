@@ -14,6 +14,8 @@
       <tas.rest.api.version>6.0.1.2</tas.rest.api.version>
       <tas.cmis.api.version>6.0.0.4</tas.cmis.api.version>
       <tas.utility.version>3.0.11</tas.utility.version>
+      <!-- GS V3.1-0 is not compatible with IE, but GS automation Artifacts V3.1-0 have been suggested to be used for GS-IE automation tests 
+      This version needs to be later updated with IE compatible GS version based on Alfresco 6.1.x -->
       <rm.version>3.1.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
