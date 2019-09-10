@@ -53,7 +53,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.TimeZone;
 
 @SolrTestCaseJ4.SuppressSSL
 public class DistributedDateMonthAlfrescoSolrTrackerTest extends AbstractAlfrescoDistributedTest
