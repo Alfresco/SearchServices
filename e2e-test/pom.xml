@@ -14,7 +14,7 @@
       <tas.rest.api.version>6.0.1.2</tas.rest.api.version>
       <tas.cmis.api.version>6.0.0.4</tas.cmis.api.version>
       <tas.utility.version>3.0.11</tas.utility.version>
-      <rm.version>2.6.0</rm.version>
+      <rm.version>3.1.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
       <test.include></test.include>
@@ -77,7 +77,7 @@
       </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-rm-automation-enterprise-rest-api</artifactId>
+         <artifactId>alfresco-governance-services-automation-enterprise-rest-api</artifactId>
          <version>${rm.version}</version>
          <scope>test</scope>
       </dependency>
@@ -88,7 +88,7 @@
        </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-rm-automation-community-rest-api</artifactId>
+         <artifactId>alfresco-governance-services-automation-community-rest-api</artifactId>
          <version>${rm.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
