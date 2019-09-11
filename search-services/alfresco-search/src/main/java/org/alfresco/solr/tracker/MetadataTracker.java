@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.Optional.of;
 
+import static java.util.Optional.ofNullable;
 import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
 
 /*
@@ -82,9 +84,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
     private DocRouter docRouter;
     /** The string representation of the shard key. */
-    private String shardKey;
+    private Optional<String> shardKey;
     /** The property to use for determining the shard. */
-    private QName shardProperty;
+    private Optional<QName> shardProperty = Optional.empty();
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -92,8 +94,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        shardKey = p.getProperty(SHARD_KEY_KEY);
-        updateShardProperty();
+        shardKey = ofNullable(p.getProperty(SHARD_KEY_KEY));
+        firstUpdateShardProperty();
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -104,11 +106,34 @@ public class MetadataTracker extends AbstractTracker implements Tracker
      */
     private void updateShardProperty()
     {
-        if(shardProperty == null && shardKey != null)
-        {
-            shardProperty = getShardProperty(shardKey);
-        }
+        shardKey.ifPresent(shardKeyName -> {
+            Optional<QName> updatedShardProperty = getShardProperty(shardKeyName);
+            if (!shardProperty.equals(updatedShardProperty))
+            {
+                if (updatedShardProperty.isEmpty())
+                {
+                    log.warn("The model defining " + shardKeyName + " property has been disabled");
+                }
+                else
+                {
+                    log.info("New " + SHARD_KEY_KEY + " property found for " + shardKeyName);
+                }
+            }
+            shardProperty = updatedShardProperty;
+        });
     }
+
+    private void firstUpdateShardProperty()
+    {
+        shardKey.ifPresent( shardKeyName -> {
+            updateShardProperty();
+            if (shardProperty.isEmpty())
+            {
+                log.warn("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKeyName + ", but no such property was found.");
+            }
+        });
+    }
+
 
     MetadataTracker()
     {
@@ -174,7 +199,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             * will pull its data from a "tracking" Solr node using Solr's master/slave replication, rather then tracking the repository.
             *
             */
-            
             ShardState shardstate = getShardState();
             client.getTransactions(0L, null, 0L, null, 0, shardstate);
             return;
@@ -240,8 +264,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         propertyBag.put("coreName", coreName);
         HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
         updateShardProperty();
-        extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
-        
+
+        shardProperty.ifPresent(p -> extendedPropertyBag.putAll(docRouter.getProperties(p)));
+
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
@@ -382,7 +407,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     updateShardProperty();
-                    gnp.setShardProperty(shardProperty);
+
+                    shardProperty.ifPresent(p -> gnp.setShardProperty(p));
+
                     gnp.setCoreName(coreName);
 
                     List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
@@ -478,7 +505,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     gnp.setCoreName(coreName);
-                    List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
+                    List<Node> nodes =   client.getNodes(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
                     {
                         docCount++;
@@ -903,7 +930,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         updateShardProperty();
-        gnp.setShardProperty(shardProperty);
+        shardProperty.ifPresent(p -> gnp.setShardProperty(p));
+
         gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
         
@@ -1203,7 +1231,17 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    public static QName getShardProperty(String field)
+
+    /**
+     * Given the field name, returns the name of the property definition.
+     * If the property definition is not found, Empty optional is returned.
+     *
+     * @param field
+     *
+     * @return the name of the associated property definition if present, Optional.Empty() otherwise
+     *
+     */
+    public static Optional<QName> getShardProperty(String field)
     {
         if (StringUtils.isBlank(field))
         {
@@ -1218,8 +1256,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 field);
         if (propertyDef == null)
         {
-            throw new IllegalStateException("Sharding property " + SHARD_KEY_KEY + " was set to " + field + ", but no such property was found.");
+            return Optional.empty();
         }
-        return propertyDef.getName();
+        return of(propertyDef.getName());
     }
 }
