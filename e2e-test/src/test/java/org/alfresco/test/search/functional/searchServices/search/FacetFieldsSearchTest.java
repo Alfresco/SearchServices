@@ -90,7 +90,7 @@ public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
         restClient.authenticateUser(testUser).withCoreAPI().usingNode(textFile).updateNode(putBody);
         
         // Wait for the file to be indexed
-        waitForIndexing(htmlFile.getName(), true);
+        waitForContentIndexing(htmlFile.getContent(), true);
     }
     
     @Test

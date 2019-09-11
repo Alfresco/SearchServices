@@ -20,7 +20,7 @@ services:
       - "5005:5005" #Java debugging
       - "8081:8080" #Browser port for Alfresco
   share:
-    image: alfresco/alfresco-share:${SHARE_TAG}
+    image: ${SHARE_IMAGE}:${SHARE_TAG}
     environment:
       - REPO_HOST=alfresco
       - REPO_PORT=8080
