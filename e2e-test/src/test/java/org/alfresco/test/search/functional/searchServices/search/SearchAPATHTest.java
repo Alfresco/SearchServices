@@ -105,7 +105,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * Test to test the sub-level 1/
+     * Test to test that the facet buckets are returned correctly for sub-level 1/
      * Test to search for a searchString, that's unique to the test run and hence stable for any environment
      */
     @Test
