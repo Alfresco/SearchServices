@@ -29,7 +29,6 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.search.TestGroup;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -105,14 +104,18 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
         buckets.forEach(bucket -> bucket.assertThat().field("label").contains("0/"));
     }
 
+    /**
+     * Test to test that the facet buckets are returned correctly for sub-level 1/
+     * Test to search for a searchString, that's unique to the test run and hence stable for any environment
+     */
     @Test
     public void searchLevel0andIncludeSubLevel1()
     {
-        SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "1/");
+        SearchRequest searchQuery = searchRequestWithAPATHFacet("name:" + unique_searchString, "1/");
         SearchResponse response =  query(searchQuery);
 
         List<FacetFieldBucket> buckets = getBuckets(response);
-        Assert.assertEquals(4, buckets.size());
+        Assert.assertEquals(buckets.size(), 1, "Incorrect bucket count");
 
         getFirstBucket(response).assertThat().field("label").contains("1/");
     }
