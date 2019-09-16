@@ -85,7 +85,6 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
         // Create a file in the parent folder
         FileModel childFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
 
-
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(parentFolder)
             .createFile(childFile,
                     Map.of(PropertyIds.NAME, childFile.getName(),
@@ -124,10 +123,10 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
     public void testGrandChildPathWhenGrandParentRenamed() throws Exception
     {
         // Create grand parent folder
-        FolderModel grandParentFolderSharding = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+        FolderModel grandParentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
         // Create child folder
-        FolderModel childFolder = dataContent.usingUser(testUser).usingResource(grandParentFolderSharding).createFolder();
+        FolderModel childFolder = dataContent.usingUser(testUser).usingResource(grandParentFolder).createFolder();
         
         // Create grand child file
         FileModel grandChildFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "custom content");
@@ -145,15 +144,15 @@ public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
         // Query to find nodes where Path with original folder name matches
 
         String parentQuery = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
-                "/cm:documentLibrary/cm:" + grandParentFolderSharding.getName() + "/*\"";
+                "/cm:documentLibrary/cm:" + grandParentFolder.getName() + "/*\"";
 
 
         // Rename grand parent folder
         String grandParentNewName = "grandParentRenamed";
-        grandParentFolderSharding.setName(grandParentNewName);
+        grandParentFolder.setName(grandParentNewName);
 
         ContentModel grandParentFolderRenamed = new ContentModel(grandParentNewName);
-        dataContent.usingUser(testUser).usingResource(grandParentFolderSharding).renameContent(grandParentFolderRenamed);
+        dataContent.usingUser(testUser).usingResource(grandParentFolder).renameContent(grandParentFolderRenamed);
         
         // Find nodes where Path with new folder name matches
         String childrenQueryAfterRename = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
