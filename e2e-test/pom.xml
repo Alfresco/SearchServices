@@ -3,8 +3,8 @@
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-super-pom</artifactId>
-      <version>10</version>
+      <artifactId>alfresco-search-and-insight-parent</artifactId>
+      <version>1.5.0-SNAPSHOT</version>
    </parent>
    <groupId>search-analytics-e2e-test</groupId>
    <artifactId>search-analytics-e2e-test</artifactId>
@@ -14,30 +14,16 @@
       <tas.rest.api.version>6.0.1.2</tas.rest.api.version>
       <tas.cmis.api.version>6.0.0.4</tas.cmis.api.version>
       <tas.utility.version>3.0.11</tas.utility.version>
-      <!-- GS V3.1-0 is not compatible with IE, but GS automation Artifacts V3.1-0 have been suggested to be used for GS-IE automation tests 
+      <!-- GS V3.1-0 is not compatible with IE, but GS automation Artifacts V3.1-0 have been suggested to be used for GS-IE automation tests
       This version needs to be later updated with IE compatible GS version based on Alfresco 6.1.x -->
       <rm.version>3.1.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
       <test.include></test.include>
-      <java.version>11</java.version>
-      <maven.compiler.source>${java.version}</maven.compiler.source>
-      <maven.compiler.target>${java.version}</maven.compiler.target>
-      <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
       <jackson.databind.version>2.7.7</jackson.databind.version>
    </properties>
    <build>
       <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>${maven-compiler-plugin.version}</version>
-            <configuration>
-                    <release>${java.version}</release>                    
-                    <showWarnings>true</showWarnings>
-                    <showDeprecation>true</showDeprecation>                    
-                </configuration>
-         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
@@ -54,28 +40,33 @@
    </build>
    <dependencies>
       <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-insight-jdbc</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>restapi-test</artifactId>
          <version>${tas.rest.api.version}</version>
          <scope>test</scope>
-          <exclusions>
-              <exclusion>
-                  <groupId>com.fasterxml.jackson.core</groupId>
-                  <artifactId>jackson-databind</artifactId>
-              </exclusion>
-          </exclusions>
+         <exclusions>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>cmis-test</artifactId>
          <version>${tas.cmis.api.version}</version>
          <scope>test</scope>
-          <exclusions>
-              <exclusion>
-                  <groupId>com.fasterxml.jackson.core</groupId>
-                  <artifactId>jackson-databind</artifactId>
-              </exclusion>
-          </exclusions>
+         <exclusions>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
@@ -83,40 +74,40 @@
          <version>${rm.version}</version>
          <scope>test</scope>
       </dependency>
-       <dependency>
-           <groupId>com.fasterxml.jackson.core</groupId>
-           <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
-       </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+         <version>${jackson.databind.version}</version>
+      </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-governance-services-automation-community-rest-api</artifactId>
          <version>${rm.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
-          <exclusions>
-              <exclusion>
-                  <groupId>com.fasterxml.jackson.core</groupId>
-                  <artifactId>jackson-databind</artifactId>
-              </exclusion>
-          </exclusions>
+         <exclusions>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
-        <!-- alfresco tester settings -->
-        <dependency>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>utility</artifactId>
-            <version>${tas.utility.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+      <!-- alfresco tester settings -->
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>utility</artifactId>
+         <version>${tas.utility.version}</version>
+         <exclusions>
+            <exclusion>
+               <artifactId>slf4j-api</artifactId>
+               <groupId>org.slf4j</groupId>
+            </exclusion>
+            <exclusion>
+               <groupId>junit</groupId>
+               <artifactId>junit</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
@@ -124,9 +115,9 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-           <groupId>org.openjfx</groupId>
-           <artifactId>javafx-fxml</artifactId>
-           <version>12-ea+10</version>
-       </dependency>
+         <groupId>org.openjfx</groupId>
+         <artifactId>javafx-fxml</artifactId>
+         <version>12-ea+10</version>
+      </dependency>
    </dependencies>
 </project>
