@@ -1,8 +1,8 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="CompatibilitySuite" verbose="6" preserve-order="true">
-    <test name="SS-With-RM">
+    <test name="SS-With-GS">
         <packages>
-            <package name="org.alfresco.test.search.functional.searchServices.search.rm"/>
+            <package name="org.alfresco.test.search.functional.gs.search.*"/>
         </packages>
     </test>
 </suite>

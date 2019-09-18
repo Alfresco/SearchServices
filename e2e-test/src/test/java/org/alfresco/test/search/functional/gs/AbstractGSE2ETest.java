@@ -5,11 +5,12 @@
  * agreement is prohibited.
  */
 
-package org.alfresco.test.search.functional.searchServices.search.rm;
+package org.alfresco.test.search.functional.gs;
 
+import static lombok.AccessLevel.PROTECTED;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
-
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import java.util.List;
 
 import org.alfresco.dataprep.SiteService.RMSiteCompliance;
@@ -20,8 +21,11 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
+import org.alfresco.rest.rm.enterprise.service.ClassificationService;
+import org.alfresco.test.search.functional.insightEngine.AbstractInsightEngineE2ETest;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +33,15 @@ import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 
+import lombok.Getter;
+
 /**
- * Base test class for RM tests.
+ * Base test class for GS tests.
  * 
  * @author Cristina Diaconu
+ * @author Meenal Bhave
  */
-public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
+public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
 {
     protected static final String FILE_PLAN_ALIAS = "-filePlan-";
     protected static final String RECORD_TYPE = "rma:record";
@@ -52,10 +59,24 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
     protected static final String FOLDER2 = RandomData.getRandomName("RM_folder2");
     protected static final String ELECTRONIC_FILE = RandomData.getRandomName("RM_electonic_file");
     protected static final String NON_ELECTRONIC_FILE = RandomData.getRandomName("RM_nonelectonic_file");
-    protected static final String SEARCH_LANGUAGE = "cmis";
+
+    protected static final String SEARCH_LANGUAGE_CMIS = "cmis";
+    
+    // Classification levels
+    public String TOP_SECRET_CLASSIFICATION_LEVEL_ID = "TS";
+    public String SECRET_CLASSIFICATION_LEVEL_ID = "S";
+    public String CONFIDENTIAL_CLASSIFICATION_LEVEL_ID = "C";
+    public String UNCLASSIFIED_CLASSIFICATION_LEVEL_ID = "U";
 
     @Autowired
-    protected RestAPIFactory restAPIFactory;
+    @Getter (value = PROTECTED)
+    private RestAPIFactory restAPIFactory;
+    
+    @Autowired
+    private RecordsAPI recordsAPI;
+    
+    @Autowired
+    private ClassificationService classificationService;
 
     @BeforeClass(alwaysRun = true)
     public void rmDataPreparation() throws Exception
@@ -91,6 +112,16 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
         // Add an electronic record on folder2
         createElectronicRecord(folder2.getId(), ELECTRONIC_FILE);
     }
+    
+    public RecordsAPI getRecordsAPI()
+    {
+        return recordsAPI;
+    }
+    
+    public ClassificationService getClassificationService()
+    {
+        return classificationService;
+    }
 
     /**
      * Create a new RM Site. If the site already exists then remove it and create a new one.
@@ -106,6 +137,18 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
 
         return dataSite.createRMSite(RMSiteCompliance.STANDARD);
     }
+    
+    /**
+     * Helper method to create a test user with rm role
+     *
+     * @param userRole the rm role
+     * @return the created user model
+     */
+    protected UserModel createUserWithRMRole(UserModel user, String userRole)
+    {
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(user.getUsername(), userRole);
+        return user;
+    }
 
     /**
      * Helper method to create root category as the admin user
@@ -116,7 +159,7 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      */
     public RecordCategory createRootCategory(String categoryName) throws Exception
     {
-        return createRootCategory(dataUser.getAdminUser(), categoryName, RECORD_CATEGORY_TITLE);
+        return createRootCategory(adminUserModel, categoryName, RECORD_CATEGORY_TITLE);
     }
 
     /**
@@ -145,7 +188,7 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      */
     public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name) throws Exception
     {
-        return createRecordCategoryChild(dataUser.getAdminUser(), recordCategoryId, name, RECORD_CATEGORY_TYPE);
+        return createRecordCategoryChild(adminUserModel, recordCategoryId, name, RECORD_CATEGORY_TYPE);
     }
 
     /**
@@ -176,7 +219,7 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      */
     public RecordCategoryChild createRecordFolder(String recordCategoryId, String name) throws Exception
     {
-        return createRecordCategoryChild(dataUser.getAdminUser(), recordCategoryId, name, RECORD_FOLDER_TYPE);
+        return createRecordCategoryChild(adminUserModel, recordCategoryId, name, RECORD_FOLDER_TYPE);
     }
 
     /**
@@ -259,5 +302,54 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
         restAPIFactory.getRmRestWrapper().assertStatusCodeIs(HttpStatus.OK);
 
         return updateRecord;
+    }
+    
+    /**
+     * Helper method to create root category
+     *
+     * @param userModel The user under whose privileges this structure is going to be created
+     * @param categoryName The name of the category
+     * @return The created category
+     * @throws Exception 
+     * @throws RuntimeException on unsuccessful component creation
+     */
+    public RecordCategoryChild createCategoryFolderInFilePlan() throws Exception
+    {
+        // create root category
+        RecordCategory recordCategory = createRootCategory("Category " + getRandomAlphanumeric());
+
+        return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
+    }
+    
+    /**
+     * Helper method to create record folder
+     *
+     * @param user The user under whose privileges this structure is going to be created
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the folder
+     * @return The created folder
+     * @throws RuntimeException on unsuccessful component creation
+     */
+    public RecordCategoryChild createFolder(String recordCategoryId, String name)
+    {
+        UserModel asUser = dataContent.getAdminUser();
+        RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
+        return getRestAPIFactory().getRecordCategoryAPI(asUser).createRecordCategoryChild(recordFolderModel, recordCategoryId);
+    }
+    
+    /**
+     * Create a new file and classify it
+     *
+     * @param classificationLevel the file classification level
+     * @return the classified file name
+     * @throws Exception
+     */
+    public String createClassifiedFile(String classificationLevel) throws Exception
+    {
+        UserModel asUser = dataContent.getAdminUser();
+        FileModel file = new FileModel(RandomData.getRandomName("classified") + ".txt", FileType.TEXT_PLAIN);
+        file = dataContent.usingUser(asUser).usingSite(testSite).createContent(file);
+        classificationService.classifyNodeAsAdmin(file.getNodeRefWithoutVersion(), classificationLevel);
+        return file.getName();
     }
 }

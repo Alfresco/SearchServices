@@ -109,8 +109,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         testSite = dataSite.usingUser(testUser).createSite(testSite);
 
         unique_searchString = testSite.getTitle().replace("SiteSearch", "Unique");
-
-        dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
     }
 
     public boolean deployCustomModel(String path)
