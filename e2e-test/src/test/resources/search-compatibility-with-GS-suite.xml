@@ -5,4 +5,9 @@
             <package name="org.alfresco.test.search.functional.gs.search.*"/>
         </packages>
     </test>
+    <test name="IE-With-GS">
+        <packages>
+            <package name="org.alfresco.test.search.functional.gs.sql.*"/>
+        </packages>
+    </test>
 </suite>

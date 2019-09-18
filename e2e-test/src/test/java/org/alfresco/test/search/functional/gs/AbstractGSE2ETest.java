@@ -73,9 +73,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
     private RestAPIFactory restAPIFactory;
     
     @Autowired
-    private RecordsAPI recordsAPI;
-    
-    @Autowired
     private ClassificationService classificationService;
 
     @BeforeClass(alwaysRun = true)
@@ -111,11 +108,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
 
         // Add an electronic record on folder2
         createElectronicRecord(folder2.getId(), ELECTRONIC_FILE);
-    }
-    
-    public RecordsAPI getRecordsAPI()
-    {
-        return recordsAPI;
     }
     
     public ClassificationService getClassificationService()
