@@ -67,7 +67,7 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
     private ClassificationService classificationService;
 
     @BeforeClass(alwaysRun = true)
-    public void rmDataPreparation() throws Exception
+    public void rmDataPreparation()
     {
         serverHealth.assertServerIsOnline();
 
@@ -109,7 +109,7 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
     /**
      * Create a new RM Site. If the site already exists then remove it and create a new one.
      */
-    public SiteModel createRMSite() throws Exception
+    public SiteModel createRMSite()
     {
         RMSiteAPI rmSiteAPI = restAPIFactory.getRMSiteAPI();
 
@@ -142,7 +142,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      *
      * @param categoryName The name of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
      */
     public RecordCategory createRootCategory(String categoryName)
     {
@@ -156,7 +155,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param categoryName The name of the category
      * @param categoryTitle The title of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
      */
     public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle)
     {
@@ -170,9 +168,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @return The created child category
-     * @throws Exception on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name)
     {
         return createRecordCategoryChild(adminUserModel, recordCategoryId, name, RECORD_CATEGORY_TYPE);
     }
@@ -185,10 +182,9 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param name The name of the record category child
      * @param type The type of the record category child
      * @return The created child category
-     * @throws Exception on unsuccessful component creation
      */
     public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name,
-                String type) throws Exception
+                String type)
     {
         RecordCategoryChild recordCategoryChildModel = createRecordCategoryChildModel(name, type);
         return restAPIFactory.getRecordCategoryAPI(user).createRecordCategoryChild(recordCategoryChildModel,
@@ -201,9 +197,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @return The created record folder.
-     * @throws Exception on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name)
     {
         return createRecordCategoryChild(adminUserModel, recordCategoryId, name, RECORD_FOLDER_TYPE);
     }
@@ -214,9 +209,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param parentId The id of the parent
      * @param name The name of the record
      * @return The created record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createElectronicRecord(String parentId, String name) throws Exception
+    public Record createElectronicRecord(String parentId, String name)
     {
         return createElectronicRecord(parentId, name, null);
     }
@@ -227,9 +221,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param parentId The id of the parent
      * @param name The name of the record
      * @return The created electronic record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    public Record createElectronicRecord(String parentId, String name, UserModel user)
     {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
         Record recordModel = Record.builder().name(name).nodeType(CONTENT_TYPE).build();
@@ -242,9 +235,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param parentId The id of the parent
      * @param name The name of the record
      * @return The created non electronic record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createNonElectronicRecord(String parentId, String name) throws Exception
+    public Record createNonElectronicRecord(String parentId, String name)
     {
         return createNonElectronicRecord(parentId, name, null);
     }
@@ -256,9 +248,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param name The name of the record
      * @param user The user who creates the non-electronic record
      * @return The created non electronic record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createNonElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    public Record createNonElectronicRecord(String parentId, String name, UserModel user)
     {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
         Record recordModel = Record.builder().name(name).nodeType(NON_ELECTRONIC_RECORD_TYPE).build();
@@ -270,9 +261,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      *
      * @param recordId The id of the record to complete
      * @return The completed record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record completeRecord(String recordId) throws Exception
+    public Record completeRecord(String recordId)
     {
         RecordsAPI recordsAPI = restAPIFactory.getRecordsAPI();
         List<String> aspects = recordsAPI.getRecord(recordId).getAspectNames();
@@ -296,10 +286,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param userModel The user under whose privileges this structure is going to be created
      * @param categoryName The name of the category
      * @return The created category
-     * @throws Exception 
-     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createCategoryFolderInFilePlan() throws Exception
+    public RecordCategoryChild createCategoryFolderInFilePlan()
     {
         // create root category
         RecordCategory recordCategory = createRootCategory("Category " + getRandomAlphanumeric());
@@ -314,7 +302,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @param recordCategoryId The id of the record category
      * @param name The name of the folder
      * @return The created folder
-     * @throws RuntimeException on unsuccessful component creation
      */
     public RecordCategoryChild createFolder(String recordCategoryId, String name)
     {
@@ -328,9 +315,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      *
      * @param classificationLevel the file classification level
      * @return the classified file name
-     * @throws Exception
      */
-    public String createClassifiedFile(String classificationLevel) throws Exception
+    public String createClassifiedFile(String classificationLevel)
     {
         UserModel asUser = dataContent.getAdminUser();
         FileModel file = new FileModel(RandomData.getRandomName("classified") + ".txt", FileType.TEXT_PLAIN);
