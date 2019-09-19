@@ -7,7 +7,6 @@
 
 package org.alfresco.test.search.functional.gs;
 
-import static lombok.AccessLevel.PROTECTED;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
@@ -32,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
-
-import lombok.Getter;
 
 /**
  * Base test class for GS tests.
@@ -62,15 +59,9 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
 
     protected static final String SEARCH_LANGUAGE_CMIS = "cmis";
     
-    // Classification levels
-    public String TOP_SECRET_CLASSIFICATION_LEVEL_ID = "TS";
-    public String SECRET_CLASSIFICATION_LEVEL_ID = "S";
-    public String CONFIDENTIAL_CLASSIFICATION_LEVEL_ID = "C";
-    public String UNCLASSIFIED_CLASSIFICATION_LEVEL_ID = "U";
 
     @Autowired
-    @Getter (value = PROTECTED)
-    private RestAPIFactory restAPIFactory;
+    protected RestAPIFactory restAPIFactory;
     
     @Autowired
     private ClassificationService classificationService;
@@ -142,6 +133,10 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
         return user;
     }
 
+    protected RestAPIFactory getRestAPIFactory()
+    {
+        return restAPIFactory;
+    }
     /**
      * Helper method to create root category as the admin user
      *
@@ -149,7 +144,7 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(String categoryName) throws Exception
+    public RecordCategory createRootCategory(String categoryName)
     {
         return createRootCategory(adminUserModel, categoryName, RECORD_CATEGORY_TITLE);
     }
@@ -164,7 +159,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
      * @throws Exception on unsuccessful component creation
      */
     public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle)
-                throws Exception
     {
         RecordCategory recordCategoryModel = createRecordCategoryModel(categoryName, categoryTitle);
         return restAPIFactory.getFilePlansAPI(userModel).createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS);

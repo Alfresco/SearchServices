@@ -11,6 +11,7 @@ import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.enterprise.core.ClassificationData;
 import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.gs.AbstractGSE2ETest;
@@ -52,9 +53,9 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         testUserNoAccess = dataUser.createRandomTestUser("UserSearchNoAccess");
 
         // Create classified files
-        fileClassifiedAsTopSecret = createClassifiedFile(TOP_SECRET_CLASSIFICATION_LEVEL_ID);
-        fileClassifiedAsSecret = createClassifiedFile(SECRET_CLASSIFICATION_LEVEL_ID);
-        fileClassifiedAsConfidential = createClassifiedFile(CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
+        fileClassifiedAsTopSecret = createClassifiedFile(ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
+        fileClassifiedAsSecret = createClassifiedFile(ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
+        fileClassifiedAsConfidential = createClassifiedFile(ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
 
         // Create unclassified file
         fileUnclassified = new FileModel(unique_searchString + "Unclassified-1.txt", "Unclassified1", "Unclassified1", FileType.TEXT_PLAIN, "Unclassified1");
