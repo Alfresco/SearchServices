@@ -56,7 +56,7 @@ public class SearchServicesGSE2ETest extends AbstractGSE2ETest
         response = queryAsUser(dataUser.getAdminUser(), queryModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        Assert.assertEquals(response.getPagination().getCount(), 1, "Expected folder is not found: " + testFolder.getName());
+        Assert.assertEquals(response.getPagination().getCount(), 1, "Expected file is not found: " + NON_ELECTRONIC_FILE);
     }
 
 }
