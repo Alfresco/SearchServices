@@ -86,7 +86,6 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         // Search using sql: userNoAccess is not expected to find the record
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select * from alfresco where cm_name = '" + fileRecord.getName() + "'");
-        sqlRequest.setLimit(10);
 
         RestResponse response = searchSql(sqlRequest, testUserNoAccess);
 
