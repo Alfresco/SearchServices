@@ -25,7 +25,7 @@ public class SearchServicesGSE2ETest extends AbstractGSE2ETest
 {
 
     @Test(priority = 1)
-    public void testBasicSearch() throws Exception
+    public void testBasicSearch()
     {
         // Create a new folder
         FolderModel testFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();

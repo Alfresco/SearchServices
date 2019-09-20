@@ -72,7 +72,7 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
     }
     
     @Test(priority = 1, groups = {TestGroup.ACS_611n})
-    public void testSQLRespectsSitePermissions() throws Exception
+    public void testSQLRespectsSitePermissions()
     {
         // Search for a file name to ensure content is indexed
         boolean indexingInProgress = isContentInSearchResults(fileRecord.getName(), fileRecord.getName(), true);
@@ -103,7 +103,7 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
     }
     
     @Test(priority = 2, groups = {TestGroup.ACS_611n}, enabled = false)
-    public void testSQLFiltersClassifiedFiles() throws Exception
+    public void testSQLFiltersClassifiedFiles()
     {
         // TODO: Relevant tests to be implemented
     }
