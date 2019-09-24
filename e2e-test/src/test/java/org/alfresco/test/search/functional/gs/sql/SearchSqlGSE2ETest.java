@@ -8,6 +8,9 @@
 package org.alfresco.test.search.functional.gs.sql;
 
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
+
+import java.util.List;
+
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
@@ -33,14 +36,12 @@ import org.testng.annotations.Test;
  */
 public class SearchSqlGSE2ETest extends AbstractGSE2ETest
 {
-    private UserModel testUserGSAccess, testUserNoAccess;
+    private UserModel testUserGSTopSecret, testUserSecret, testUserConfidential, testUserNoAccess;
     
     private FolderModel testFolder;
     private RecordCategoryChild recordFolder;
 
-    private FileModel fileRecord, fileUnclassified;
-
-    private String fileClassifiedAsTopSecret, fileClassifiedAsSecret, fileClassifiedAsConfidential;
+    private FileModel fileRecord, fileUnclassified, fileClassifiedAsTopSecret, fileClassifiedAsSecret, fileClassifiedAsConfidential;
 
     private Record elecRecord;
 
@@ -48,18 +49,22 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
     public void dataPreparation() throws Exception
     {
         super.setup();
+
         // Create other users to check access permissions
-        testUserGSAccess = createUserWithRMRole(testUser, ROLE_RM_USER.roleId);;
+        testUserGSTopSecret = createUserWithRMRole(testUser, ROLE_RM_USER.roleId);
+        testUserSecret = dataUser.createRandomTestUser("UserSecret");
+        testUserConfidential = dataUser.createRandomTestUser("UserConfidential");
         testUserNoAccess = dataUser.createRandomTestUser("UserSearchNoAccess");
+        
+        // Add users to testSite
+        getDataUser().addUserToSite(testUserSecret, testSite, UserRole.SiteContributor);
+        getDataUser().addUserToSite(testUserConfidential, testSite, UserRole.SiteConsumer);
 
-        // Create classified files
-        fileClassifiedAsTopSecret = createClassifiedFile(ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
-        fileClassifiedAsSecret = createClassifiedFile(ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
-        fileClassifiedAsConfidential = createClassifiedFile(ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
-
-        // Create unclassified file
-        fileUnclassified = new FileModel(unique_searchString + "Unclassified-1.txt", "Unclassified1", "Unclassified1", FileType.TEXT_PLAIN, "Unclassified1");
-        dataContent.usingUser(testUser).usingSite(testSite).createContent(fileUnclassified);
+        // Assign classification levels
+        getClassificationService().assignClearance(dataContent.getAdminUser(), testUserGSTopSecret, ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().assignClearance(dataContent.getAdminUser(), testUserSecret, ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().assignClearance(dataContent.getAdminUser(), testUserConfidential, ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().assignClearance(dataContent.getAdminUser(), testUserNoAccess, ClassificationData.UNCLASSIFIED_CLASSIFICATION_LEVEL_ID);
 
         // Create a folder and a file
         testFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();
@@ -69,6 +74,19 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         // File a Electronic Record
         recordFolder = createCategoryFolderInFilePlan();
         elecRecord = createElectronicRecord(recordFolder.getId(), fileRecord.getName());
+        
+        // Create Files to be classified later      
+        fileClassifiedAsTopSecret = new FileModel(unique_searchString + "TopS-1.txt", "top", "top", FileType.TEXT_PLAIN, "top");
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(fileClassifiedAsTopSecret);
+        
+        fileClassifiedAsSecret = new FileModel(unique_searchString + "Secret-1.txt", "secret", "secret", FileType.TEXT_PLAIN, "secret");
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(fileClassifiedAsSecret);
+        
+        fileClassifiedAsConfidential = new FileModel(unique_searchString + "conf-1.txt", "conf", "conf", FileType.TEXT_PLAIN, "conf");
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(fileClassifiedAsConfidential);
+
+        fileUnclassified = new FileModel(unique_searchString + "Unclassified-1.txt", "Unclassified1", "Unclassified1", FileType.TEXT_PLAIN, "Unclassified1");
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(fileUnclassified);
     }
     
     @Test(priority = 1, groups = {TestGroup.ACS_611n})
@@ -87,23 +105,92 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select * from alfresco where cm_name = '" + fileRecord.getName() + "'");
 
+        // Verify that testUserNoAccess can't see content of the Private site that he is not a member of
         RestResponse response = searchSql(sqlRequest, testUserNoAccess);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
-        
-        // Add user as a SiteMember
-        dataUser.addUserToSite(testUserNoAccess, testSite, UserRole.SiteConsumer);
-        
-        response = searchSql(sqlRequest, testUserNoAccess);
+
+        // Verify that the site member can see the content: Contributor
+        response = searchSql(sqlRequest, testUserSecret);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
+
+        // Verify that the site member can see the content: Consumer
+        response = searchSql(sqlRequest, testUserConfidential);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(1));        
     }
     
-    @Test(priority = 2, groups = {TestGroup.ACS_611n}, enabled = false)
+    @Test(priority = 2, groups = {TestGroup.ACS_611n})
     public void testSQLFiltersClassifiedFiles()
-    {
-        // TODO: Relevant tests to be implemented
+    {        
+        // Create classified files as testUser        
+        getClassificationService().classifyNode(dataContent.getAdminUser(), fileClassifiedAsTopSecret.getNodeRefWithoutVersion(), ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().classifyNode(testUserGSTopSecret, fileClassifiedAsSecret.getNodeRefWithoutVersion(), ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().classifyNode(testUserGSTopSecret, fileClassifiedAsConfidential.getNodeRefWithoutVersion(), ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
+
+        // Wait for the files to be indexed
+        boolean fileFound = isContentInSearchResults("sc_classification:c", fileClassifiedAsConfidential.getName(), true);
+        Assert.assertTrue(fileFound, "Expected confidential file, not found");
+
+        // Check Aggregate query response doesn't bring up classification levels the user should not see
+        SearchSqlRequest sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql("select sc_classification, count(*) from alfresco where SITE = '" + testSite.getId() + "' group by sc_classification");
+
+        RestResponse response = searchSql(sqlRequest, testUserGSTopSecret);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(3));
+
+        response = searchSql(sqlRequest, testUserSecret);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
+ 
+        response = searchSql(sqlRequest, testUserConfidential);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
+
+        response = searchSql(sqlRequest, testUserNoAccess);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
+        
+        // Check Query results, in a Solr format
+        sqlRequest = new SearchSqlRequest();
+        sqlRequest.setSql("select cm_name from alfresco where sc_classification = '*' and SITE = '" + testSite.getId() + "'");
+        sqlRequest.setFormat("solr");
+
+        response = searchSql(sqlRequest, testUserGSTopSecret);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        List<String> results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
+        Assert.assertTrue(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file not included in the results");
+        Assert.assertTrue(results.contains(fileClassifiedAsSecret.getName()), "Secret file not included in the results");
+        Assert.assertTrue(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file not included in the results");
+        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
+        
+        response = searchSql(sqlRequest, testUserSecret);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
+        Assert.assertFalse(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file is included in the results when not expected");
+        Assert.assertTrue(results.contains(fileClassifiedAsSecret.getName()), "Secret file not included in the results");
+        Assert.assertTrue(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file not included in the results");
+        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
+ 
+        response = searchSql(sqlRequest, testUserConfidential);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
+        Assert.assertFalse(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file is included in the results when not expected");
+        Assert.assertFalse(results.contains(fileClassifiedAsSecret.getName()), "Secret file is included in the results when not expected");
+        Assert.assertTrue(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file not included in the results");
+        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
+
+        response = searchSql(sqlRequest, testUserNoAccess);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
+        Assert.assertFalse(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file is included in the results when not expected");
+        Assert.assertFalse(results.contains(fileClassifiedAsSecret.getName()), "Secret file is included in the results when not expected");
+        Assert.assertFalse(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file is included in the results when not expected");
+        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
     }
 }

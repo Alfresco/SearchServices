@@ -309,19 +309,4 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
         RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
         return getRestAPIFactory().getRecordCategoryAPI(asUser).createRecordCategoryChild(recordFolderModel, recordCategoryId);
     }
-    
-    /**
-     * Create a new file and classify it
-     *
-     * @param classificationLevel the file classification level
-     * @return the classified file name
-     */
-    public String createClassifiedFile(String classificationLevel)
-    {
-        UserModel asUser = dataContent.getAdminUser();
-        FileModel file = new FileModel(RandomData.getRandomName("classified") + ".txt", FileType.TEXT_PLAIN);
-        file = dataContent.usingUser(asUser).usingSite(testSite).createContent(file);
-        classificationService.classifyNodeAsAdmin(file.getNodeRefWithoutVersion(), classificationLevel);
-        return file.getName();
-    }
 }
