@@ -1,8 +1,11 @@
-## (Solr)ContentStore Replication
+# 1. (Solr)ContentStore Replication
 
-![Completeness Badge](https://img.shields.io/badge/Document_Level-In_Progress-yellow.svg?style=flat-square)
+Date: 2019-24-09
 
-### Introduction
+## Status
+Accepted
+
+## Context
 Solr Index Replication distributes a copy of a master index to one or more slave servers. 
 The master server is in charge to manage updates to the index while all querying is handled by the slaves. 
 This division of labor enables Solr to scale to provide adequate responsiveness to queries against large search volumes.      
@@ -17,7 +20,7 @@ However, there's an external part of data which is managed out of the plain Luce
 A ContentStore is composed by several files, specifically one for each indexed document; each of them is a SolrInputDocument instance stored on filesystem using a 
 serialized and compressed form.   
 
-![ContentStore - Filesystem view](filesystem.png)
+![ContentStore - Filesystem view](images/filesystem.png)
 
 The ContentStore is where SearchServices maintains the input data in its original form, before entering in Solr and therefore before 
 applying any text analysis. This source of data is needed for managing some search-related capabilities like: 
@@ -26,6 +29,14 @@ applying any text analysis. This source of data is needed for managing some sear
 - highlighting
 - clustering 
 - stored (i.e. original) field value retrieval at query time 
+
+In a master/slave(s) infrastructure, the ContentStore must be managed on the master and it must be replicated on each slaves.    
+Unfortunately, the default built-in Solr replication mechanism considers only: 
+
+- the Lucene index datafiles
+- the configuration files under the core "conf" folder (e.g. schema.xml. stopwords.txt) 
+
+As consequence of that, if we use the default Solr ReplicationHandler the ContentStore won't be replicated on slaves.  
 
 ### How the built-in Solr ReplicationHandler works
 The index replication mechanism is provided by org.apache.solr.handler.ReplicationHandler. 
@@ -86,6 +97,10 @@ In the "Slave" mode, other than providing more or less the same endpoints seen a
 
 Internally, the set of downloaded data files could change, because Solr could decide to download only a part of the index or a full copy. 
 
+## Decision
+The SearchServices replication mechanism needs to include also the ContentStore as part of the synchronization workflow.
+In order to do that, the additional behaviour requires a customisation of the workflow provided by the default Solr ReplicationHandler, as explained below. 
+
 ### Alfresco Replication Handler Design
 The Alfresco ReplicationHandler is, as the name suggests, a customisation of the default Solr ReplicationHandler described above. 
 The customisation injects some additional logic on both side of the replication mechanism in order to efficiently replicate the content store.   
@@ -121,11 +136,11 @@ The existing endpoints on the master side described in SEARCH-1838 would be slig
 |indexversion|Returns the version (index version + generation) of the latest replicatable index on the specified master or slave.|NO|
 |filecontent|The command itself won't change. The difference will be in the additional content store stream handler|YES|
 |filelist|There will be an additional "content store" section which would list the content store changes that must be synchronized. Specifically, the "deletes" section will be a list of items, while the "upserts" would be a virtual file (something like contentstore://blalbalba) that corresponds on the master side to the optimized stream used for transferring upserts (new adds or updates)   |YES|
-|backup| |NO|
-|restore| | NO |
-|status| | NO|
-|restorestatus| |NO|
-|deletebackup| |NO|
+|backup| |NO*|
+|restore| | NO* |
+|status| | NO*|
+|restorestatus| |NO*|
+|deletebackup| |NO*|
 |fetchindex|We will include also a configurable option where the fetch will include also the content store.  |YES|
 |enablepoll| |NO|
 |disablepoll| |NO|
@@ -134,7 +149,8 @@ The existing endpoints on the master side described in SEARCH-1838 would be slig
 |details|We will include some detail about the content store.|NO|
 |commits| |NO|
 
-Commands related with backup/restore are not part of this ticket. As consequence of that, unless we will do that in a subsequent implementation, the content store backup (and restore) will still be a manual process. 
+_* Commands related with backup/restore are not part of this ticket. As consequence of that, unless we will do that in a subsequent implementation, the content store backup (and restore) will still be a manual process._ 
+
 #### Slave
    
 The slave configuration (from the Alfresco replication perspective) would be exactly the same on slave nodes.
@@ -155,7 +171,10 @@ The workflow on the slave node would follow the existing path: 
 _* the Solr replication handler actually uses 2 numbers for indicating the version: the first is called "indexversion" and it is mainly responsible for triggering the replication process. The second is the Lucene generation, that is: the number of the last active segment in the lucene index. For our purposes, we can ignore the generation and use only the indexversion._      
  ** _if the master version is lesser than the slave version, then something strange happened between the two indexes: the only thing we can do is to replicate the whole content store (the same thing happens with the Lucene index)_    
 
-### Links
-    
-Spike: https://issues.alfresco.com/jira/browse/SEARCH-1607    
-Implementation: https://issues.alfresco.com/jira/browse/SEARCH-1850    
+## Consequences
+The new replication mechanism will be able to properly synchronize, from master to slave(s), the whole logical "index" belonging to 
+the SearchServices master node. As explained above, that includes:
+
+- the Lucene index datafiles 
+- the configuration files under the "conf" folder
+- the ContentStore  
