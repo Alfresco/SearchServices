@@ -31,6 +31,7 @@ import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.SolrKeyResourceLoader;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
+import org.alfresco.solr.content.ContentStoreCache;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.CascadeTracker;
@@ -77,6 +78,12 @@ public class SolrCoreLoadRegistration {
                 AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
         //Start content store
         SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
+
+        ContentStoreCache.get().init(contentStore.getContentStoreRootPath());
+
+        ContentStoreCache contentStoreCache = new ContentStoreCache();
+
+
         SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
         props.putAll(srv.getProps());
         adminHandler.getInformationServers().put(coreName, srv);
@@ -92,6 +99,7 @@ public class SolrCoreLoadRegistration {
                 repositoryClient,
                 srv,
                 scheduler);
+
 
 
         log.info("Starting to track " + coreName);

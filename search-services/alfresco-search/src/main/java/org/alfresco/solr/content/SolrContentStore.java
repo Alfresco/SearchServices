@@ -18,13 +18,6 @@
  */
 package org.alfresco.solr.content;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -39,6 +32,13 @@ import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.core.SolrResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * A content store specific to SOLR's requirements: The URL is generated from a
@@ -95,19 +95,21 @@ public class SolrContentStore implements ContentStore
         this.root = rootFile.getAbsolutePath();
     }
 
+
+    public String getContentStoreRootPath(){
+        return this.root;
+    }
+
+
     // write a BytesRef as a byte array
-    private JavaBinCodec.ObjectResolver resolver = new JavaBinCodec.ObjectResolver()
-    {
-        @Override public Object resolve(Object o,JavaBinCodec codec)throws IOException
+    private JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
+        if(o instanceof BytesRef)
         {
-            if(o instanceof BytesRef)
-            {
-                BytesRef br=(BytesRef)o;
-                codec.writeByteArray(br.bytes,br.offset,br.length);
-                return null;
-            }
-            return o;
+            BytesRef br=(BytesRef)o;
+            codec.writeByteArray(br.bytes,br.offset,br.length);
+            return null;
         }
+        return o;
     };
 
     /**
@@ -115,10 +117,8 @@ public class SolrContentStore implements ContentStore
      * @param tenant identifier
      * @param dbId identifier
      * @return {@link SolrInputDocument} searched document
-     * @throws IOException if error
      */
-    public SolrInputDocument retrieveDocFromSolrContentStore(String tenant, long dbId) throws IOException
-    {
+    public SolrInputDocument retrieveDocFromSolrContentStore(String tenant, long dbId) {
         String contentUrl = SolrContentUrlBuilder.start().add(SolrContentUrlBuilder.KEY_TENANT, tenant)
                 .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId)).get();
         ContentReader reader = this.getReader(contentUrl);
@@ -186,7 +186,7 @@ public class SolrContentStore implements ContentStore
     /**
      * Convert a content URL into a File, whether it exists or not
      */
-    private File getFileFromUrl(String contentUrl)
+    private File  getFileFromUrl(String contentUrl)
     {
         String path = contentUrl.replace(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX, root + "/");
         return new File(path);
@@ -261,6 +261,8 @@ public class SolrContentStore implements ContentStore
             // A failure to write to the store is acceptable as long as it's logged
             log.warn("Failed to write to store using URL: " + contentContext.getContentUrl(), e);
         }
+
+
     }
     /**
      * Store {@link SolrInputDocument} in to Alfresco solr content store.
