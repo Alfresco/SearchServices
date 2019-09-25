@@ -149,8 +149,10 @@ The existing endpoints on the master side described in SEARCH-1838 would be slig
 |details|We will include some detail about the content store.|NO|
 |commits| |NO|
 
-_* Commands related with backup/restore are not part of this ticket. As consequence of that, unless we will do that in a subsequent implementation, the content store backup (and restore) will still be a manual process._ 
-
+The content store is an Alfresco concept and it is currently manually backed up.   
+In terms of design we would want it to the backup as well; however, the design described in this document is not related with that set of functionalities; 
+although the backup management consists of a set of services provided by the ReplicationHandler, we believe it's better to create a dedicated issue that will focus on that complex aspect.       
+ 
 #### Slave
    
 The slave configuration (from the Alfresco replication perspective) would be exactly the same on slave nodes.
