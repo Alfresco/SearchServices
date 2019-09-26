@@ -18,7 +18,6 @@ import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;

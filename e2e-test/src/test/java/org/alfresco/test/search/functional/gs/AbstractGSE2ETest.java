@@ -59,6 +59,8 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
 
     protected static final String SEARCH_LANGUAGE_CMIS = "cmis";
     
+    protected RecordCategory rootCategory;
+    protected Record electronicRecord, nonElectronicRecord;
 
     @Autowired
     protected RestAPIFactory restAPIFactory;
@@ -74,7 +76,7 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
         testSite = createRMSite();
 
         // create the Root category
-        RecordCategory rootCategory = createRootCategory(ROOT_CATEGORY_NAME);
+        rootCategory = createRootCategory(ROOT_CATEGORY_NAME);
         Assert.assertNotNull(rootCategory, "Root category was not created!");
 
         // Add two children (categories) on Root category
@@ -93,9 +95,10 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
         createRecordFolder(childCategory2.getId(), FOLDER2);
 
         // Complete a file
-        Record electronicRecord = createElectronicRecord(folder1.getId(), ELECTRONIC_FILE);
+        electronicRecord = createElectronicRecord(folder1.getId(), ELECTRONIC_FILE);
         completeRecord(electronicRecord.getId());
-        createNonElectronicRecord(folder1.getId(), NON_ELECTRONIC_FILE);
+        
+        nonElectronicRecord = createNonElectronicRecord(folder1.getId(), NON_ELECTRONIC_FILE);
 
         // Add an electronic record on folder2
         createElectronicRecord(folder2.getId(), ELECTRONIC_FILE);
@@ -119,18 +122,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
         }
 
         return dataSite.createRMSite(RMSiteCompliance.STANDARD);
-    }
-    
-    /**
-     * Helper method to create a test user with rm role
-     *
-     * @param userRole the rm role
-     * @return the created user model
-     */
-    protected UserModel createUserWithRMRole(UserModel user, String userRole)
-    {
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(user.getUsername(), userRole);
-        return user;
     }
 
     protected RestAPIFactory getRestAPIFactory()
@@ -308,5 +299,18 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
         UserModel asUser = dataContent.getAdminUser();
         RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
         return getRestAPIFactory().getRecordCategoryAPI(asUser).createRecordCategoryChild(recordFolderModel, recordCategoryId);
+    }
+    
+    
+    /**
+     * Helper method to create a test user with rm role
+     *
+     * @param userRole the rm role
+     * @return the created user model
+     */
+    protected UserModel createUserWithRMRole(UserModel user, String userRole)
+    {
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(user.getUsername(), userRole);
+        return user;
     }
 }
