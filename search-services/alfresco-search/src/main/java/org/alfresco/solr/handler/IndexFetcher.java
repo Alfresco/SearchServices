@@ -61,6 +61,7 @@ import org.apache.solr.util.RefCounted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -76,6 +77,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -95,6 +97,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import java.util.zip.InflaterInputStream;
@@ -125,6 +128,7 @@ import static org.alfresco.solr.handler.ReplicationHandler.PACKET_SZ;
 import static org.alfresco.solr.handler.ReplicationHandler.SIZE;
 import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILE;
 import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILES;
+import static org.alfresco.solr.handler.ReplicationHandler.getCheckSum;
 import static org.apache.solr.common.params.CommonParams.JAVABIN;
 import static org.apache.solr.common.params.CommonParams.NAME;
 
@@ -144,6 +148,7 @@ public class IndexFetcher {
   public static final String INDEX_PROPERTIES = "index.properties";
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  public static final int CONTENT_STORE_PARTITION_SIZE = 50;
 
   private final String masterUrl;
 
@@ -365,8 +370,6 @@ public class IndexFetcher {
     boolean deleteTmpIdxDir = true;
     File tmpTlogDir = null;
 
-    File tmpContentStoreDir = null;
-
     if (!solrCore.getSolrCoreState().getLastReplicateIndexSuccess()) {
       // if the last replication was not a success, we force a full replication
       // when we are a bit more confident we may want to try a partial replication
@@ -534,11 +537,10 @@ public class IndexFetcher {
           LOG.info("Starting download (fullCopy={}) to {}", isFullCopyNeeded, tmpIndexDir);
           successfulInstall = false;
 
-
-          long local = downloadContentStoreFiles(new File(ContentStoreCache.get().getContentStoreRootPath()), 0L);
-
-
           long bytesDownloaded = downloadIndexFiles(isFullCopyNeeded, indexDir, tmpIndexDir, latestGeneration);
+          if (contentStoreFilesToDownload != null){
+            bytesDownloaded += downloadContentStoreFiles(ContentStoreCache.get().getContentStoreRootPath(), latestGeneration);
+          }
           if (tlogFilesToDownload != null) {
             bytesDownloaded += downloadTlogFiles(tmpTlogDir, latestGeneration);
             reloadCore = true; // reload update log
@@ -656,23 +658,38 @@ public class IndexFetcher {
 
 
   /**
-   * Download all the tlog files to the temp tlog directory.
+   * Download content store required files.
    */
-  private long downloadContentStoreFiles(File contentStoreDirectory, long latestGeneration) throws Exception {
-    LOG.info("Starting download of tlog files from master: " + tlogFilesToDownload);
+  private long downloadContentStoreFiles(String contentStoreDirectory, long latestGeneration) throws Exception {
+    LOG.info("Starting download of content store files from master: " + tlogFilesToDownload);
     contentStoreFilesDownloaded = Collections.synchronizedList(new ArrayList<>());
     long bytesDownloaded = 0;
 
-    for (List<Map<String, Object>> partition : Lists.partition(contentStoreFilesToDownload, 50)) {
-      contentStoreFileFetcher = new ContentStoreFetcher(
-              contentStoreDirectory,
-              ReplicationHandler.CONTENT_STORE_FILES,
-              latestGeneration,
-              partition);
+    File tmpContentStoreDirectory = new File(contentStoreDirectory, "contentstore." + getDateAsStr(new Date()));
 
-      contentStoreFileFetcher.fetchFile(); // TODO change name
-      bytesDownloaded += contentStoreFileFetcher.getBytesDownloaded();
-      contentStoreFilesDownloaded.addAll(partition);
+    contentStoreFilesToDownload = contentStoreFilesToDownload.stream().filter(
+            file -> compareContentStoreFiles(new File(contentStoreDirectory),
+                    (String) file.get(NAME),
+                    (Long) file.get(SIZE),
+                    (Long) file.get(CHECKSUM))).collect(Collectors.toList());
+
+
+    if (!contentStoreFilesToDownload.isEmpty()) {
+      for (List<Map<String, Object>> partition : Lists.partition(contentStoreFilesToDownload, CONTENT_STORE_PARTITION_SIZE)) {
+        contentStoreFileFetcher = new ContentStoreFetcher(
+                tmpContentStoreDirectory,
+                ReplicationHandler.CONTENT_STORE_FILES,
+                latestGeneration,
+                partition);
+
+        contentStoreFileFetcher.fetchFile(); // TODO change name
+        bytesDownloaded += contentStoreFileFetcher.getBytesDownloaded();
+        contentStoreFilesDownloaded.addAll(partition);
+      }
+
+      terminateAndWaitFsyncService();
+      copyTmpContentStoreToContentStore(tmpContentStoreDirectory);
+      delTree(tmpContentStoreDirectory);
     }
     return bytesDownloaded;
   }
@@ -1024,6 +1041,34 @@ public class IndexFetcher {
     boolean checkSummed = false;
   }
 
+
+  /**
+   *
+   * Check if the same version of the file to download is already in the contentstore.
+   *
+   * @param contentStoreDirectoryRoot
+   * @param filename
+   * @param length
+   * @param checksum
+   * @return
+   */
+  protected static boolean compareContentStoreFiles(File contentStoreDirectoryRoot, String filename, long length, long checksum){
+      File f = new File(contentStoreDirectoryRoot.getAbsolutePath() + "/" + filename);
+      if (f.length() != length) {
+        return true;
+      }
+
+      Checksum localCheckSum = new Adler32();
+
+      if (getCheckSum(localCheckSum, f) != checksum)
+      {
+        return true;
+      }
+
+      LOG.warn("{} already in contentstore", filename);
+      return false;
+  }
+
   protected static CompareResult compareFile(Directory indexDir, String filename, Long backupIndexFileLen, Long backupIndexFileChecksum) {
     CompareResult compareResult = new CompareResult();
     try {
@@ -1278,6 +1323,33 @@ public class IndexFetcher {
     }
   }
 
+
+
+  private void copyTmpContentStoreToContentStore(File tmpContentStoreDir)
+  {
+
+    String tmpContentStorePath = tmpContentStoreDir.getPath();
+    String contentStoreDir = ContentStoreCache.get().getContentStoreRootPath();;
+
+    try
+    {
+      Files.walk(tmpContentStoreDir.toPath()).forEach(p -> {
+        File tmpFile = new File(p.toUri());
+        if (!tmpFile.isDirectory()) {
+          File csFile = new File(p.toString().replaceFirst(tmpContentStorePath, contentStoreDir));
+          try {
+            Files.createDirectories(Paths.get(csFile.getParent()));
+            tmpFile.renameTo(csFile);
+          } catch (IOException e) {
+            LOG.error("impossible to copy {}", csFile.toString());
+          }
+        }
+      });
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   /**
    * The tlog files are moved from the tmp dir to the tlog dir as an atomic filesystem operation.
    * A backup of the old directory is maintained. If the directory move fails, it will try to revert back the original
@@ -1467,24 +1539,24 @@ public class IndexFetcher {
   }
 
   private interface FileInterface {
-    public void sync() throws IOException;
-    public void write(byte[] buf, int packetSize) throws IOException;
-    public void close() throws Exception;
-    public void delete() throws Exception;
+    void sync() throws IOException;
+    void write(byte[] buf, int packetSize) throws IOException;
+    void close() throws Exception;
+    void delete() throws Exception;
   }
 
   /**
    * The class acts as a client for ReplicationHandler.FileStream. It understands the protocol of wt=filestream
    */
   public class FileFetcher {
-    protected final FileInterface file;
-    protected boolean includeChecksum = false;
-    protected final String fileName;
-    protected final String saveAs;
+    protected FileInterface file;
+    protected String fileName;
+    protected String saveAs;
+    protected boolean includeChecksum = true;
     protected final String solrParamOutput;
     protected final Long indexGen;
 
-    protected final long size;
+    protected long size;
     protected long bytesDownloaded = 0;
     protected byte[] buf = new byte[1024 * 1024];
     protected final Checksum checksum;
@@ -1494,18 +1566,23 @@ public class IndexFetcher {
     FileFetcher(FileInterface file, Map<String, Object> fileDetails, String saveAs,
                 String solrParamOutput, long latestGen) throws IOException {
       this.file = file;
-
-      if (fileDetails != null) {
-        this.fileName = (String) fileDetails.get(NAME);
-        this.size = (Long) fileDetails.get(SIZE);
-      }
-      else {
-        this.fileName = "somename";
-        this.size = 0;
-      }
-
+      this.fileName = (String) fileDetails.get(NAME);
+      this.size = (Long) fileDetails.get(SIZE);
       this.solrParamOutput = solrParamOutput;
       this.saveAs = saveAs;
+      indexGen = latestGen;
+
+      if (includeChecksum) {
+        checksum = new Adler32();
+      } else {
+        checksum = null;
+      }
+    }
+
+
+    FileFetcher( String solrParamOutput, long latestGen) throws IOException {
+
+      this.solrParamOutput = solrParamOutput;
       indexGen = latestGen;
       if (includeChecksum) {
         checksum = new Adler32();
@@ -1513,6 +1590,7 @@ public class IndexFetcher {
         checksum = null;
       }
     }
+
 
     public long getBytesDownloaded() {
       return bytesDownloaded;
@@ -1545,7 +1623,6 @@ public class IndexFetcher {
             //fetch packets one by one in a single request
             result = fetchPackets(is);
             if (result == 0 || result == NO_CONTENT) {
-
               return;
             }
             //if there is an error continue. But continue from the point where it got broken
@@ -1696,7 +1773,7 @@ public class IndexFetcher {
       }
 //      use checksum
       if (this.includeChecksum) {
-        params.set(CHECKSUM, false);
+        params.set(CHECKSUM, true);
       }
       //wt=filestream this is a custom protocol
       params.set(CommonParams.WT, FILE_STREAM);
@@ -1820,15 +1897,16 @@ public class IndexFetcher {
 
   class ContentStoreFetcher extends FileFetcher {
     private final File dir;
-    private final List<Map<String, Object>> filesToDownload;
+    private final Set<String> filesToDownload;
 
     ContentStoreFetcher(File dir,
                         String solrParamOutput,
                         long latestGen,
                         List<Map<String, Object>> filesDetails) throws IOException {
-      super(null, null, null, solrParamOutput, latestGen);
+      super(solrParamOutput, latestGen);
       this.dir = dir;
-      this.filesToDownload = filesDetails;
+      this.filesToDownload = new HashSet<>();
+      filesDetails.forEach( e -> filesToDownload.add((String) e.get(NAME)));
     }
 
     @Override
@@ -1850,7 +1928,7 @@ public class IndexFetcher {
         }
       } finally {
 //        cleanup();
-        //if cleanup succeeds . The file is downloaded fully. do an fsync
+////        if cleanup succeeds . The file is downloaded fully. do an fsync
 //        fsyncService.submit(() -> {
 //          try {
 //            file.sync();
@@ -1873,9 +1951,7 @@ public class IndexFetcher {
 
       List<String> l = new ArrayList<>();
       params.set(CONTENT_STORE_FILE_LIST,
-              filesToDownload.stream()
-                      .map(f -> (String) f.get(NAME))
-                      .toArray(String[]::new));
+              filesToDownload.toArray(String[]::new));
 
       //add the version to download. This is used to reserve the download
 //      params.set(solrParamOutput, fileName);
@@ -1921,21 +1997,32 @@ public class IndexFetcher {
     }
 
 
-    // FIXME fetchpacket for stream of multiple files is not using checksum now.
     @Override
     protected int fetchPackets(FastInputStream fis) throws Exception {
       byte[] intbytes = new byte[4];
       byte[] longbytes = new byte[8];
       try {
+        while (true) {
 
-        while(true) {
-          fis.readFully(intbytes);
-          int fileNameSize = readInt(intbytes);
+          int fileNameSize;
+
+          try {
+            fis.readFully(intbytes);
+            fileNameSize = readInt(intbytes);
+          } catch (EOFException e) {
+            LOG.warn("Fetched the whole batch of files");
+            return 0;
+          }
 
           byte[] filenameBytes = new byte[fileNameSize];
           fis.readFully(filenameBytes, 0, fileNameSize);
 
           String fileName = new String(filenameBytes);
+
+          // Error, file not requested
+          if (!filesToDownload.contains(fileName)){
+            return 1; //TODO throw an exception here?
+          }
 
           FileInterface file = new LocalFsFile(dir, fileName);
           fis.readFully(intbytes);
@@ -1944,7 +2031,7 @@ public class IndexFetcher {
 
 
           long fileSizeDownloaded = 0;
-          if (fileSize == 0){
+          if (fileSize == 0) {
             file.close();
             return 0;
           }
@@ -1955,67 +2042,78 @@ public class IndexFetcher {
               aborted = true;
               throw new ReplicationHandlerException("User aborted replication");
             }
-//            long checkSumServer = -1;
-//            fis.readFully(intbytes);
+            long checkSumServer = -1;
+            fis.readFully(intbytes);
             //read the size of the packet
-            int packetSize = (int) Math.min(PACKET_SZ, fileSize - fileSizeDownloaded);
+            int packetSize = readInt(intbytes);
             if (packetSize <= 0) {
-              LOG.warn("No content received for file: {}", this.fileName);
+              LOG.warn("No content received");
               file.close();
               return NO_CONTENT;
             }
 
-            if (buf.length < packetSize)
+            if (buf.length < packetSize) {
               buf = new byte[packetSize];
-//            if (checksum != null) {
-//              //read the checksum
-//              fis.readFully(longbytes);
-//              checkSumServer = readLong(longbytes);
-//            }
+            }
+
+            if (checksum != null) {
+              //read the checksum
+              fis.readFully(longbytes);
+              checkSumServer = readLong(longbytes);
+            }
+
             //then read the packet of bytes
             fis.readFully(buf, 0, packetSize);
             //compare the checksum as sent from the master
-//            if (includeChecksum) {
-//              checksum.reset();
-//              checksum.update(buf, 0, packetSize);
-//              long checkSumClient = checksum.getValue();
-//              if (checkSumClient != checkSumServer) {
-//                LOG.error("Checksum not matched between client and server for file: {}", this.fileName);
-//                //if checksum is wrong it is a problem return for retry
-//                return 1;
-//              }
-//            }
+            if (includeChecksum) {
+              checksum.reset();
+              checksum.update(buf, 0, packetSize);
+              long checkSumClient = checksum.getValue();
+              if (checkSumClient != checkSumServer) {
+                LOG.error("Checksum not matched between client and server for file: {}", this.fileName);
+                //if checksum is wrong it is a problem return for retry
+                file.close();
+                return ERR;
+              }
+            }
             //if everything is fine, write down the packet to the file
             file.write(buf, packetSize);
             fileSizeDownloaded += packetSize;
-            LOG.warn("Fetched and wrote {} bytes of file: {}", fileSizeDownloaded, this.fileName);
+
             if (fileSizeDownloaded >= fileSize) {
               file.close();
+              bytesDownloaded += fileSizeDownloaded;
+
+              //Todo check if it is necessary
+              fsyncService.submit(() -> {
+                try {
+                  file.sync();
+                } catch (IOException e) {
+                  fsyncException = e;
+                }
+              });
+              filesToDownload.remove(fileName);
               break;
             }
             //errorCount is always set to zero after a successful packet
             errorCount = 0;
           }
-
-          bytesDownloaded += fileSizeDownloaded;
-
         }
       } catch (ReplicationHandlerException e) {
         throw e;
       } catch (Exception e) {
-//        LOG.warn("Error in fetching file: {} (downloaded {} of {} bytes)",
-//                new Object[]{ fileName, bytesDownloaded, size, e});
-//        //for any failure, increment the error count
-//        errorCount++;
-//        //if it fails for the same packet for MAX_RETRIES fail and come out
-//        if (errorCount > MAX_RETRIES) {
-//          throw new SolrException(SolrException.ErrorCode.SERVER_ERROR,
-//                  "Failed to fetch file: " + fileName +
-//                          " (downloaded " + bytesDownloaded + " of " + size + " bytes" +
-//                          ", error count: " + errorCount + " > " + MAX_RETRIES + ")", e);
-//        }
-//        return ERR;
-        return 0;
+        LOG.warn("Error in fetching file: {} (downloaded {} of {} bytes)",
+                new Object[]{ fileName, bytesDownloaded, size, e});
+        //for any failure, increment the error count
+        errorCount++;
+        //if it fails for the same packet for MAX_RETRIES fail and come out
+        if (errorCount > MAX_RETRIES) {
+          throw new SolrException(SolrException.ErrorCode.SERVER_ERROR,
+                  "Failed to fetch file: " + fileName +
+                          " (downloaded " + bytesDownloaded + " of " + size + " bytes" +
+                          ", error count: " + errorCount + " > " + MAX_RETRIES + ")", e);
+        }
+        return ERR;
       }
     }
   }
@@ -2041,12 +2139,6 @@ public class IndexFetcher {
 
   String getMasterUrl() {
     return masterUrl;
-  }
-
-  // TODO: ADDITIONAL METHOD
-  LocalFsFileFetcher newFileFetcher(File dir, Map<String, Object> fileDetails, String saveAs,
-                                    String solrParamOutput, long latestGen) throws IOException {
-    return new LocalFsFileFetcher(dir, fileDetails, saveAs, CONTENT_STORE_FILE, latestGen);
   }
 
   private static final int MAX_RETRIES = 5;

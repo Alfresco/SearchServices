@@ -372,7 +372,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     return l;
   }
 
-  static Long getCheckSum(Checksum checksum, File f) {
+  public static Long getCheckSum(Checksum checksum, File f) {
     FileInputStream fis = null;
     checksum.reset();
     byte[] buffer = new byte[1024 * 1024];
@@ -744,9 +744,9 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
         }
       });
     } catch (IOException e) {
-      e.printStackTrace();
+      e.printStackTrace(); //TODO manage edge cases
     } catch (Exception e) {
-        e.printStackTrace();
+      e.printStackTrace();
     }
 
     return contentStoreFiles;
@@ -1617,7 +1617,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
 
   /**This is used to write files in the conf directory.
    */
-  private abstract class LocalFsFileStream extends DirectoryFileStream {
+  protected abstract class LocalFsFileStream extends DirectoryFileStream {
 
     private File file;
 
@@ -1672,81 +1672,85 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     }
   }
 
-    private class ContentStoreFilesStream extends LocalFsFileStream {
-      public ContentStoreFilesStream(SolrParams solrParams) {
-        super(solrParams);
-      }
+  protected class ContentStoreFilesStream extends DirectoryFileStream {
+    public ContentStoreFilesStream(SolrParams solrParams) {
+      super(solrParams);
+    }
 
-      protected File initFile() {
-        return new File("some");//FIXME
-      }
-
-
-      @Override
-      public void write(OutputStream out) throws IOException {
-        createOutputStream(out);
-        FileInputStream inputStream = null;
-        String contentStoreRoot = ContentStoreCache.get().getContentStoreRootPath();
-        try {
-          for (String fileName : params.getParams(CONTENT_STORE_FILE_LIST))
-          {
-            Map<String, Object> fileMeta = new HashMap<>();
-            File f = new File(contentStoreRoot + fileName);
-            if (f.exists() && !f.isDirectory()) {
-              try {
-                writeFile(f, fileName);
-              } catch (IOException e) {
-                e.printStackTrace();
-              }
+    @Override
+    public void write(OutputStream out) throws IOException {
+      createOutputStream(out);
+      FileInputStream inputStream = null;
+      String contentStoreRoot = ContentStoreCache.get().getContentStoreRootPath();
+      try {
+        for (String fileName : params.getParams(CONTENT_STORE_FILE_LIST))
+        {
+          Map<String, Object> fileMeta = new HashMap<>();
+          File f = new File(contentStoreRoot + fileName);
+          if (f.exists() && !f.isDirectory()) {
+            try {
+              writeFile(f, fileName);
+            } catch (IOException e) {
+              e.printStackTrace();
             }
           }
-        } catch (Exception e) {
-          e.printStackTrace();
-        } finally {
-          fos.close();
-          extendReserveAndReleaseCommitPoint();
         }
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        fos.close();
+        extendReserveAndReleaseCommitPoint();
       }
+    }
 
 
-      @Override
-      protected void writeNothingAndFlush() throws IOException {
-        fos.flush();
-      }
+    @Override
+    protected void writeNothingAndFlush() throws IOException {
+      fos.flush();
+    }
 
-      public void writeFile(File file, String fileName) throws IOException {
+    protected void writeFile(File file, String fileName) throws IOException {
 
-        buf = new byte[PACKET_SZ];
-        if (file.exists() && file.canRead()) {
-          FileInputStream inputStream = new FileInputStream(file);
-          FileChannel channel = inputStream.getChannel();
-          //if offset is mentioned move the pointer to that point
-          if (offset != -1)
-            channel.position(offset);
-          ByteBuffer bb = ByteBuffer.wrap(buf);
-          channel.size();
+      buf = new byte[PACKET_SZ];
+      if (file.exists() && file.canRead()) {
+        FileInputStream inputStream = new FileInputStream(file);
+        FileChannel channel = inputStream.getChannel();
+        //if offset is mentioned move the pointer to that point
+        if (offset != -1)
+          channel.position(offset);
+        ByteBuffer bb = ByteBuffer.wrap(buf);
+        channel.size();
 
-          fos.writeInt( fileName.length());
-          fos.write(fileName.getBytes());
-          fos.writeInt((int) channel.size());
+        fos.writeInt( fileName.length());
+        fos.write(fileName.getBytes());
+        fos.writeInt((int) channel.size());
 
-          if (channel.size() != 0) {
+        Random r = new Random();
+        if (channel.size() != 0) {
 
-            while (true) {
-              bb.clear();
-              long bytesRead = channel.read(bb);
-              if (bytesRead <= 0) {
-                writeNothingAndFlush();
-                break;
-              }
-
-              fos.write(buf, 0, (int) bytesRead);
-              fos.flush();
+          while (true) {
+            bb.clear();
+            long bytesRead = channel.read(bb);
+            if (bytesRead <= 0) {
+              writeNothingAndFlush();
+              break;
             }
+
+            fos.writeInt((int) bytesRead);
+
+            if (useChecksum) {
+              checksum.reset();
+              checksum.update(buf, 0, (int) bytesRead);
+              fos.writeLong(checksum.getValue());
+            }
+
+            fos.write(buf, 0, (int) bytesRead);
+            fos.flush();
           }
         }
       }
     }
+  }
 
 
   private class LocalContentStoreFileStream extends LocalFsFileStream {
