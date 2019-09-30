@@ -19,6 +19,7 @@
 package org.alfresco.solr.content;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.zip.CRC32;
@@ -45,7 +46,6 @@ public class SolrContentUrlBuilder
 {
     /**
      * <b>solr</b> is the prefix for SOLR content URLs
-     * @see #isContentUrlSupported(String)
      */
     public static final String SOLR_PROTOCOL = "solr";
     public static final String SOLR_PROTOCOL_PREFIX = SOLR_PROTOCOL + ContentStore.PROTOCOL_DELIMITER;
@@ -169,21 +169,13 @@ public class SolrContentUrlBuilder
             sb.append("misc/");
             // Calculate the CRC
             CRC32 crc = new CRC32();
-            try
+            for (Map.Entry<String, String> entry : metadata.entrySet())
             {
-                for (Map.Entry<String, String> entry : metadata.entrySet())
-                {
-                    // This is ordered, so just add each entry as "key = value".
-                    // DO NOT USE entry.toString() because the format is not a contract
-                    // and we have to have the same string for the same metadata
-                    String entryStr = entry.getKey() + "=" + entry.getValue() + "; ";
-                    crc.update(entryStr.getBytes("UTF-8"));
-                }
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                // Yeah, right.
-                throw new RuntimeException("UTF-8 is not supported.", e);
+                // This is ordered, so just add each entry as "key = value".
+                // DO NOT USE entry.toString() because the format is not a contract
+                // and we have to have the same string for the same metadata
+                String entryStr = entry.getKey() + "=" + entry.getValue() + "; ";
+                crc.update(entryStr.getBytes(StandardCharsets.UTF_8));
             }
             numSb.append(crc.getValue());
         }
