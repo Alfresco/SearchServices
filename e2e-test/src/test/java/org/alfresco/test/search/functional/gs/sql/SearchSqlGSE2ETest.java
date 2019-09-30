@@ -143,9 +143,8 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
 
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select sc_classification, count(*) from alfresco where SITE = '" + testSite.getId() + "' group by sc_classification");
-        // TODO: Investigate: Actual count = 3, TS, S, C: Why U is omitted if Site is not specified
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(4));
 
+        // TODO: Investigate: Actual count after adding Site = 3, TS, S, C: Why U is omitted if Site is not specified
         response = searchSql(sqlRequest, testUserGSTopSecret);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(3));
 
