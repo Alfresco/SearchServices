@@ -79,9 +79,10 @@ public class SolrCoreLoadRegistration {
         //Start content store
         SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
 
-        ContentStoreCache.get().init(contentStore.getContentStoreRootPath());
+        ContentStoreCache.get().init(contentStore.getRootLocation());
 
         ContentStoreCache contentStoreCache = new ContentStoreCache();
+
 
 
         SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);

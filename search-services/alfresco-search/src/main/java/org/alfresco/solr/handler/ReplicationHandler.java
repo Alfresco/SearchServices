@@ -713,7 +713,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     //if configuration files need to be included get their details
     rsp.add(CONF_FILES, getConfFileInfoFromCache(confFileNameAlias, confFileInfoCache));
 
-    rsp.add(CONTENT_STORE_FILES, contentStore.getFileList(commit));
+    rsp.add(CONTENT_STORE_FILES, contentStore.getChanges(commit));
   }
 
   /**

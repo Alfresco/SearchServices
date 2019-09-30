@@ -27,7 +27,14 @@ import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.handler.ReplicationHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.JavaBinCodec;
@@ -35,19 +42,25 @@ import org.apache.solr.core.SolrResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static java.util.Collections.emptyList;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
 
@@ -64,16 +77,25 @@ import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
  * 
  * @author Derek Hulley
  * @author Michael Suzuki
+ * @author Andrea Gazzarini
  * @since 5.0
  */
 public class SolrContentStore implements ContentStore
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
+
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
 
     private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
+    private final String root;
+    private final ChangeSet changes;
 
+    /**
+     * Builds a new {@link SolrContentStore} instance with the given SOLR HOME.
+     *
+     * @param solrHome the Solr HOME.
+     */
     public SolrContentStore(String solrHome)
     {
         if (solrHome == null || solrHome.isEmpty())
@@ -89,7 +111,7 @@ public class SolrContentStore implements ContentStore
             log.error(solrHomeFile.getAbsolutePath() + " does not exist.");
         }
         
-        String path = solrHomeFile.getParent()+"/"+CONTENT_STORE;
+        String path = solrHomeFile.getParent() + "/" + CONTENT_STORE;
         log.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
         File rootFile = new File(ConfigUtil.locateProperty(SOLR_CONTENT_DIR, path));
 
@@ -102,13 +124,45 @@ public class SolrContentStore implements ContentStore
             throw new RuntimeException("Failed to create directory for content store: " + rootFile, e);
         }
         this.root = rootFile.getAbsolutePath();
+
+        changes = new ChangeSet.Builder().withContentStoreRoot(root).build();
     }
 
-
-    public String getContentStoreRootPath(){
-        return this.root;
+    /**
+     * Returns the content store changes associated with the given index commit.
+     *
+     * @param commit the {@link IndexCommit} instance used as reference.
+     * @return the content store changes associated with the given index commit.
+     */
+    public Map<String, List<Map<String, Object>>> getChanges(IndexCommit commit)
+    {
+        return Map.of(
+                "adds", newFilesSince(commit),
+                "deletes", deletedFilesSince(commit));
     }
-    public List<Map<String, Object>> getFileList(IndexCommit commit)
+
+    /**
+     * Returns the content store deletes associated with the given index commit.
+     *
+     * @param commit the {@link IndexCommit} instance used as reference.
+     * @return the content store deletes associated with the given index commit.
+     *
+     * TODO: IMPLEMENT
+     */
+    private List<Map<String, Object>> deletedFilesSince(IndexCommit commit)
+    {
+        return emptyList();
+    }
+
+    /**
+     * Returns the content store adds/updates associated with the given index commit.
+     *
+     * @param commit the {@link IndexCommit} instance used as reference.
+     * @return the content store adds/updates associated with the given index commit.
+     *
+     * TODO: IMPLEMENT
+     */
+    private List<Map<String, Object>> newFilesSince(IndexCommit commit)
     {
         try
         {
@@ -123,7 +177,7 @@ public class SolrContentStore implements ContentStore
                     "An exception occurred while creating the ContentStore filelist associated with index version {}. " +
                             "As consequence of that an empty list will be returned (i.e. no ContentStore synch will happen).",
                     ReplicationHandler.CommitVersionInfo.build(commit));
-            return Collections.emptyList();
+            return emptyList();
         }
     }
 
@@ -131,7 +185,7 @@ public class SolrContentStore implements ContentStore
     private JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
         if(o instanceof BytesRef)
         {
-            BytesRef br=(BytesRef)o;
+            BytesRef br = (BytesRef)o;
             codec.writeByteArray(br.bytes,br.offset,br.length);
             return null;
         }
@@ -140,32 +194,37 @@ public class SolrContentStore implements ContentStore
 
     /**
      * Retrieve document from SolrContentStore.
+     *
      * @param tenant identifier
      * @param dbId identifier
      * @return {@link SolrInputDocument} searched document
      */
-    public SolrInputDocument retrieveDocFromSolrContentStore(String tenant, long dbId) {
-        String contentUrl = SolrContentUrlBuilder.start().add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId)).get();
-        ContentReader reader = this.getReader(contentUrl);
-        SolrInputDocument cachedDoc = null;
-        if (reader.exists())
-        {
-            try (InputStream contentInputStream = reader.getContentInputStream();
-                 InputStream gzip = new GZIPInputStream(contentInputStream))
-            {
-                cachedDoc = (SolrInputDocument) new JavaBinCodec(resolver).unmarshal(gzip);
-            } catch (Exception e)
-            {
-                // Don't fail for this
-                log.warn("Failed to get doc from store using URL: " + contentUrl, e);
-                return null;
-            }
-        }
-        return cachedDoc;
-    }
+    public SolrInputDocument retrieveDocFromSolrContentStore(String tenant, long dbId)
+    {
+        String contentUrl =
+                SolrContentUrlBuilder.start()
+                        .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
+                        .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
+                        .get();
 
-    private final String root;
+        ContentReader reader = this.getReader(contentUrl);
+        if (!reader.exists())
+        {
+            return null;
+        }
+
+        try (InputStream contentInputStream = reader.getContentInputStream();
+             InputStream gzip = new GZIPInputStream(contentInputStream))
+        {
+            return (SolrInputDocument) new JavaBinCodec(resolver).unmarshal(gzip);
+        }
+        catch (Exception exception)
+        {
+            // Don't fail for this
+            log.warn("Failed to get doc from store using URL: " + contentUrl, exception);
+            return null;
+        }
+    }
 
     @Override
     public boolean isContentUrlSupported(String contentUrl)
@@ -173,34 +232,29 @@ public class SolrContentStore implements ContentStore
         return (contentUrl != null && contentUrl.startsWith(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX));
     }
 
-
-    /**
-     * @return <tt>true</tt> always
-     */
     @Override
     public boolean isWriteSupported()
     {
         return true;
     }
 
-    /**
-     * @return -1 always
-     */
     @Override
     public long getSpaceFree()
     {
         return -1L;
     }
 
-    /**
-     * @return -1 always
-     */
     @Override
     public long getSpaceTotal()
     {
         return -1L;
     }
 
+    /**
+     * Returns the absolute path of the content store root folder.
+     *
+     * @return the absolute path of the content store root folder.
+     */
     @Override
     public String getRootLocation()
     {
@@ -210,10 +264,9 @@ public class SolrContentStore implements ContentStore
     /**
      * Convert a content URL into a File, whether it exists or not
      */
-    private File  getFileFromUrl(String contentUrl)
+    private File getFileFromUrl(String contentUrl)
     {
-        String path = contentUrl.replace(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX, root + "/");
-        return new File(path);
+        return new File(contentUrl.replace(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX, root + "/"));
     }
 
     @Override
@@ -233,11 +286,6 @@ public class SolrContentStore implements ContentStore
     @Override
     public ContentWriter getWriter(ContentContext context)
     {
-        // Ensure that there is a context and that it has a URL
-        if (context == null || context.getContentUrl() == null)
-        {
-            throw new IllegalArgumentException("Retrieve a writer with a URL-providing ContentContext.");
-        }
         String url = context.getContentUrl();
         File file = getFileFromUrl(url);
         return new SolrFileContentWriter(file, url);
@@ -247,7 +295,13 @@ public class SolrContentStore implements ContentStore
     public boolean delete(String contentUrl)
     {
         File file = getFileFromUrl(contentUrl);
-        return file.delete();
+
+        // TODO: Asynch
+        boolean deleted = file.delete();
+
+        if (deleted) changes.delete(relativePath(file));
+
+        return deleted;
     }
     /**
      * Stores a {@link SolrInputDocument} into Alfresco solr content store.
@@ -258,31 +312,36 @@ public class SolrContentStore implements ContentStore
      */
     public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
     {
-        ContentContext contentContext = SolrContentUrlBuilder
-                    .start()
-                    .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId))
-                .getContentContext();
+        ContentContext contentContext =
+                of(SolrContentUrlBuilder
+                            .start()
+                            .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
+                            .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId)))
+                   .map(SolrContentUrlBuilder::getContentContext)
+                   .orElseThrow(() -> new IllegalArgumentException("Unable to build a Content Context from tenant " + tenant + " and DBID " + dbId));
+
         this.delete(contentContext.getContentUrl());
+
         ContentWriter writer = this.getWriter(contentContext);
-        if (log.isDebugEnabled())
-        {
-            log.debug("Writing doc to " + contentContext.getContentUrl());
-        }
+
+        log.debug("Writing {}/{} to {}", tenant, dbId, contentContext.getContentUrl());
+
         try (OutputStream contentOutputStream = writer.getContentOutputStream();
              GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream))
         {
             JavaBinCodec codec = new JavaBinCodec(resolver);
             codec.marshal(doc, gzip);
+
+            // TODO: Asynch
+            File file = getFileFromUrl(contentContext.getContentUrl());
+            changes.addOrReplace(relativePath(file));
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            // A failure to write to the store is acceptable as long as it's logged
-            log.warn("Failed to write to store using URL: " + contentContext.getContentUrl(), e);
+            log.warn("Unable to write to Content Store using URL: {}", contentContext.getContentUrl(), exception);
         }
-
-
     }
+
     /**
      * Store {@link SolrInputDocument} in to Alfresco solr content store.
      *
@@ -294,6 +353,7 @@ public class SolrContentStore implements ContentStore
         String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
         storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), doc);
     }
+
     /**
      * Removes {@link SolrInputDocument} from Alfresco solr content store.
      *
@@ -311,4 +371,14 @@ public class SolrContentStore implements ContentStore
         this.delete(contentUrl);
     }
 
+    /**
+     * Assuming the input file belongs to the content store, it returns the corresponding relative path.
+     *
+     * @param file the content store file.
+     * @return the relative file path.
+     */
+    private String relativePath(File file)
+    {
+        return file.getAbsolutePath().replace(root, "");
+    }
 }
