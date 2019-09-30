@@ -9,6 +9,7 @@ package org.alfresco.test.search.functional.gs.search;
 
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.gs.AbstractGSE2ETest;
 import org.alfresco.utility.model.FolderModel;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ import org.testng.annotations.Test;
 public class SearchServicesGSE2ETest extends AbstractGSE2ETest
 {
 
-    @Test(priority = 1)
+    @Test(priority = 1, groups = {TestGroup.AGS_302})
     public void testBasicSearch()
     {
         // Create a new folder

@@ -16,6 +16,8 @@ import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.enterprise.core.ClassificationData;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.gs.AbstractGSE2ETest;
@@ -52,16 +54,19 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         super.setup();
 
         // Create other users to check access permissions
-        testUserGSTopSecret = createUserWithRMRole(testUser, ROLE_RM_USER.roleId);
+        testUser = createUserWithRMRole(testUser, ROLE_RM_USER.roleId);
+        testUserGSTopSecret = dataUser.createRandomTestUser("UserTopSecret");
         testUserSecret = dataUser.createRandomTestUser("UserSecret");
         testUserConfidential = dataUser.createRandomTestUser("UserConfidential");
         testUserNoAccess = dataUser.createRandomTestUser("UserSearchNoAccess");
         
         // Add users to testSite
-        getDataUser().addUserToSite(testUserSecret, testSite, UserRole.SiteCollaborator);
+        getDataUser().addUserToSite(testUserGSTopSecret, testSite, UserRole.SiteCollaborator);
+        getDataUser().addUserToSite(testUserSecret, testSite, UserRole.SiteContributor);
         getDataUser().addUserToSite(testUserConfidential, testSite, UserRole.SiteConsumer);
 
         // Assign classification levels
+        getClassificationService().assignClearance(adminUserModel, testUser, ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
         getClassificationService().assignClearance(adminUserModel, testUserGSTopSecret, ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
         getClassificationService().assignClearance(adminUserModel, testUserSecret, ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
         getClassificationService().assignClearance(adminUserModel, testUserConfidential, ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
@@ -90,7 +95,7 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         dataContent.usingUser(testUser).usingSite(testSite).createContent(fileUnclassified);
     }
     
-    @Test(priority = 1, groups = {TestGroup.ACS_611n})
+    @Test(priority = 1, groups = {TestGroup.AGS_302})
     public void testSQLRespectsSitePermissions()
     {
         // Search for a file name to ensure content is indexed
@@ -125,13 +130,13 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         response.assertThat().body("list.pagination.count", Matchers.equalTo(1));        
     }
     
-    @Test(priority = 2, groups = {TestGroup.ACS_611n})
+    @Test(priority = 2, groups = {TestGroup.AGS_302})
     public void testSQLFiltersClassifiedFiles()
     {        
         // Classify files as testUserGSTopSecret        
         getClassificationService().classifyNode(adminUserModel, fileClassifiedAsTopSecret.getNodeRefWithoutVersion(), ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
-        getClassificationService().classifyNode(testUserGSTopSecret, fileClassifiedAsSecret.getNodeRefWithoutVersion(), ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
-        getClassificationService().classifyNode(testUserGSTopSecret, fileClassifiedAsConfidential.getNodeRefWithoutVersion(), ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().classifyNode(testUser, fileClassifiedAsSecret.getNodeRefWithoutVersion(), ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().classifyNode(testUser, fileClassifiedAsConfidential.getNodeRefWithoutVersion(), ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
 
         // Wait for the files to be indexed
         boolean fileFound = isContentInSearchResults("sc_classification:c", fileClassifiedAsConfidential.getName(), true);
@@ -203,7 +208,7 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
     }
     
-    @Test(priority = 3, groups = {TestGroup.ACS_611n})
+    @Test(priority = 3, groups = {TestGroup.AGS_302})
     public void testSQLFiltersElectronicRecords()
     { 
         // File a Electronic Record
@@ -211,19 +216,27 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         elecRecord = createElectronicRecord(recordFolder.getId(), fileRecord.getName());        
 
         // Add permission for the GS user to Read Records
-        getRestAPIFactory().getRMUserAPI().addUserPermission(recordFolder.getParentId(), testUserGSTopSecret, UserPermissions.PERMISSION_READ_RECORDS);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(recordFolder.getParentId(), testUser, UserPermissions.PERMISSION_READ_RECORDS);
 
         // Wait for the record to be indexed and check that it can be found
         boolean fileFound = isContentInSearchResults("rma:identifier:'*'", elecRecord.getName(), true);
         Assert.assertTrue(fileFound, "Expected record file, not found");
 
+        SearchResponse result = queryAsUser(testUserGSTopSecret, "rma:identifier:'*'");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertTrue(result.getPagination().getCount() == 0, "Expected count of entries 0, found more");
+
         // Verify that user can see the electronic record with minimum read records permissions 
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select cm_name, PATH from alfresco where rma_identifier = '*' and type = 'cm:content'");
 
-        RestResponse response = searchSql(sqlRequest, testUserGSTopSecret);
+        RestResponse response = searchSql(sqlRequest, testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
+
+        response = searchSql(sqlRequest, testUserGSTopSecret);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
         
         // Verify that user can not see the electronic record with no read permissions 
         response = searchSql(sqlRequest, testUserConfidential);
@@ -231,7 +244,7 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
     }
     
-    @Test(priority = 4, groups = {TestGroup.ACS_611n})
+    @Test(priority = 4, groups = {TestGroup.AGS_302})
     public void testSQLFiltersInPlaceRecords()
     { 
         // Declare a file as Record
@@ -245,12 +258,17 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select cm_name from alfresco where rma_identifier = '*' and Site = '" + testSite.getId() + "'");
 
-        RestResponse response = searchSql(sqlRequest, testUserGSTopSecret);
+        RestResponse response = searchSql(sqlRequest, testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
         response.assertThat().body("list.entries.entry[0].value", Matchers.contains(inPlaceRecord.getName()));
         
         // Verify that other site members can see the in place record with no additional permissions 
+        response = searchSql(sqlRequest, testUserGSTopSecret);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
+        response.assertThat().body("list.entries.entry[0].value", Matchers.contains(inPlaceRecord.getName()));
+
         response = searchSql(sqlRequest, testUserConfidential);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
@@ -261,32 +279,44 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
     }
     
-    @Test(priority = 5, groups = {TestGroup.ACS_611n}, enabled = false)
+    @Test(priority = 5, groups = {TestGroup.AGS_302})
     public void testSQLFiltersRecordsCascadedPermissions()
     { 
         // Search for records when user does not have read permission
-        boolean fileFound = isContentInSearchResults(NON_ELECTRONIC_FILE, NON_ELECTRONIC_FILE, false);
+        boolean fileFound = isContentInSearchResults(NON_ELECTRONIC_FILE, nonElectronicRecord.getName(), false);
         Assert.assertTrue(fileFound, "Non electronic record file found in the results, when user doesn't have read permissions");
         
         // Search for records when user does not have read permission
-        fileFound = isContentInSearchResults(ELECTRONIC_FILE, ELECTRONIC_FILE, false);
+        fileFound = isContentInSearchResults(ELECTRONIC_FILE, electronicRecord.getName(), false);
         Assert.assertTrue(fileFound, "Electronic record file found in the results, when user doesn't have read permissions");
         
         // Assign Read permissions to the user at rootCategory level
+        getRestAPIFactory().getRMUserAPI().addUserPermission(rootCategory.getId(), testUser, UserPermissions.PERMISSION_READ_RECORDS);
         getRestAPIFactory().getRMUserAPI().addUserPermission(rootCategory.getId(), testUserGSTopSecret, UserPermissions.PERMISSION_READ_RECORDS);
-
-        // Check that the record can now be found
-        isContentInSearchResults(NON_ELECTRONIC_FILE, NON_ELECTRONIC_FILE, true);
+        
+        // Check that the non electronic record can now be found
+        isContentInSearchResults(NON_ELECTRONIC_FILE, nonElectronicRecord.getName(), true);
         Assert.assertTrue(fileFound, "Expected non electronic record file, not found");
         
-        // TODO: Add sql test for ELECTRONIC_FILE and Non ELECTRONIC_FILE
-        fileFound = isContentInSearchResults(ELECTRONIC_FILE, ELECTRONIC_FILE, true);
+        // Check that the electronic record can now be found
+        fileFound = isContentInSearchResults(ELECTRONIC_FILE, electronicRecord.getName(), true);
         Assert.assertTrue(fileFound, "Expected electronic record file, not found");
         
+        // Check that the electronic record and non electronic record both can be found with cascaded permissions
+        String recordFiles = String.format("('%s' , '%s')", nonElectronicRecord.getName(), electronicRecord.getName());
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
-        sqlRequest.setSql("select cm_name from alfresco where rma_identifier = '*' and cm_name in (" + ELECTRONIC_FILE  + " , " + NON_ELECTRONIC_FILE + ")");
+        sqlRequest.setSql("select cm_name from alfresco where rma_identifier = '*' and cm_name in " + recordFiles + " order by cm_name");
 
-        RestResponse response = searchSql(sqlRequest, testUserGSTopSecret);
+        RestResponse response = searchSql(sqlRequest, testUser);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
+        response.assertThat().body("list.entries.entry[0].value", Matchers.contains(electronicRecord.getName()));
+        response.assertThat().body("list.entries.entry[1].value", Matchers.contains(nonElectronicRecord.getName()));
+
+        response = searchSql(sqlRequest, testUserGSTopSecret);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
+        response.assertThat().body("list.entries.entry[0].value", Matchers.contains(electronicRecord.getName()));
+        response.assertThat().body("list.entries.entry[1].value", Matchers.contains(nonElectronicRecord.getName()));    
     }
 }
