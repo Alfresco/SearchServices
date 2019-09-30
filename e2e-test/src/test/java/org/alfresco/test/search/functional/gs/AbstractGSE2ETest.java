@@ -274,8 +274,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
     /**
      * Helper method to create root category
      *
-     * @param userModel The user under whose privileges this structure is going to be created
-     * @param categoryName The name of the category
      * @return The created category
      */
     public RecordCategoryChild createCategoryFolderInFilePlan()
@@ -289,7 +287,6 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
     /**
      * Helper method to create record folder
      *
-     * @param user The user under whose privileges this structure is going to be created
      * @param recordCategoryId The id of the record category
      * @param name The name of the folder
      * @return The created folder
@@ -305,6 +302,7 @@ public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
     /**
      * Helper method to create a test user with rm role
      *
+     * @param user to which the rm role is to be assigned
      * @param userRole the rm role
      * @return the created user model
      */
