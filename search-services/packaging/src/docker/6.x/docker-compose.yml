@@ -48,7 +48,7 @@ services:
       #HTTP by default
       - ALFRESCO_SECURE_COMMS=none
       #Enable Spellcheck by setting to true
-      - ENABLE_SPELLCHECK=false
+      - ENABLE_SPELLCHECK=${SEARCH_ENABLE_SPELLCHECK}
     ports:
       - 8083:8983 #Browser port
   activemq:
