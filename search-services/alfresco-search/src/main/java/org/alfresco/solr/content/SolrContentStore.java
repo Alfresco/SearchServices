@@ -25,7 +25,9 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.config.ConfigUtil;
+import org.alfresco.solr.handler.ReplicationHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.JavaBinCodec;
@@ -34,11 +36,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import static java.util.stream.Collectors.toList;
+import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
 
 /**
  * A content store specific to SOLR's requirements: The URL is generated from a
@@ -61,10 +72,8 @@ public class SolrContentStore implements ContentStore
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
 
-    /**
-     * Constructor.
-     * @param solrHome
-     */
+    private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
+
     public SolrContentStore(String solrHome)
     {
         if (solrHome == null || solrHome.isEmpty())
@@ -99,7 +108,24 @@ public class SolrContentStore implements ContentStore
     public String getContentStoreRootPath(){
         return this.root;
     }
-
+    public List<Map<String, Object>> getFileList(IndexCommit commit)
+    {
+        try
+        {
+            return Files.walk(Paths.get(root))
+                    .map(Path::toFile)
+                    .filter(onlyDatafiles)
+                    .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
+                    .map(ReplicationHandler.FileInfo::getAsMap)
+                    .collect(toList());
+        } catch (Exception e) {
+            log.error(
+                    "An exception occurred while creating the ContentStore filelist associated with index version {}. " +
+                            "As consequence of that an empty list will be returned (i.e. no ContentStore synch will happen).",
+                    ReplicationHandler.CommitVersionInfo.build(commit));
+            return Collections.emptyList();
+        }
+    }
 
     // write a BytesRef as a byte array
     private JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
@@ -125,10 +151,8 @@ public class SolrContentStore implements ContentStore
         SolrInputDocument cachedDoc = null;
         if (reader.exists())
         {
-            // try-with-resources statement closes all these InputStreams
             try (InputStream contentInputStream = reader.getContentInputStream();
-                    // Uncompresses the document
-                    GZIPInputStream gzip = new GZIPInputStream(contentInputStream);)
+                 InputStream gzip = new GZIPInputStream(contentInputStream))
             {
                 cachedDoc = (SolrInputDocument) new JavaBinCodec(resolver).unmarshal(gzip);
             } catch (Exception e)
@@ -216,9 +240,7 @@ public class SolrContentStore implements ContentStore
         }
         String url = context.getContentUrl();
         File file = getFileFromUrl(url);
-        SolrFileContentWriter writer = new SolrFileContentWriter(file, url);
-        // Done
-        return writer;
+        return new SolrFileContentWriter(file, url);
     }
 
     @Override
@@ -229,12 +251,12 @@ public class SolrContentStore implements ContentStore
     }
     /**
      * Stores a {@link SolrInputDocument} into Alfresco solr content store.
-     * @param tenant
-     * @param dbId
-     * @param doc
-     * @throws IOException
+     *
+     * @param tenant the owning tenant.
+     * @param dbId the document DBID
+     * @param doc the document itself.
      */
-    public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc) throws IOException
+    public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
     {
         ContentContext contentContext = SolrContentUrlBuilder
                     .start()
@@ -247,11 +269,8 @@ public class SolrContentStore implements ContentStore
         {
             log.debug("Writing doc to " + contentContext.getContentUrl());
         }
-        try (
-                    OutputStream contentOutputStream = writer.getContentOutputStream();
-                    // Compresses the document
-                    GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream);
-            )
+        try (OutputStream contentOutputStream = writer.getContentOutputStream();
+             GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream))
         {
             JavaBinCodec codec = new JavaBinCodec(resolver);
             codec.marshal(doc, gzip);
@@ -266,18 +285,19 @@ public class SolrContentStore implements ContentStore
     }
     /**
      * Store {@link SolrInputDocument} in to Alfresco solr content store.
-     * @param nodeMetaData identifier
-     * @param doc to store
-     * @throws IOException if error
+     *
+     * @param nodeMetaData the incoming node metadata.
+     * @param doc the document itself.
      */
-    public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc) throws IOException
+    public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
         storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), doc);
     }
     /**
      * Removes {@link SolrInputDocument} from Alfresco solr content store.
-     * @param nodeMetaData
+     *
+     * @param nodeMetaData the incoming node metadata.
      */
     public void removeDocFromContentStore(NodeMetaData nodeMetaData)
     {

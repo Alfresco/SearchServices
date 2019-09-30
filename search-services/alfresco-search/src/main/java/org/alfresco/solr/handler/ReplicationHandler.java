@@ -16,7 +16,10 @@
  */
 package org.alfresco.solr.handler;
 
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.content.ContentStoreCache;
+import org.alfresco.solr.content.SolrContentStore;
 import org.apache.commons.io.IOUtils;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.index.DirectoryReader;
@@ -134,16 +137,24 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   SolrCore core;
-  
+
+  private SolrContentStore contentStore;
+
   private volatile boolean closed = false;
 
-  private static final class CommitVersionInfo {
+  public static final class CommitVersionInfo {
     public final long version;
     public final long generation;
     private CommitVersionInfo(long g, long v) {
       generation = g;
       version = v;
     }
+
+    @Override
+    public String toString() {
+      return "Commit [version = " + version + ", generation = " + generation + "]";
+    }
+
     /**
      * builds a CommitVersionInfo data for the specified IndexCommit.
      * Will never be null, ut version and generation may be zero if
@@ -702,8 +713,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     //if configuration files need to be included get their details
     rsp.add(CONF_FILES, getConfFileInfoFromCache(confFileNameAlias, confFileInfoCache));
 
-    rsp.add(CONTENT_STORE_FILES, getContentStoreFileList(commit));
-
+    rsp.add(CONTENT_STORE_FILES, contentStore.getFileList(commit));
   }
 
   /**
@@ -726,30 +736,6 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       }
     }
     return tlogFiles;
-  }
-
-  List<Map<String, Object>> getContentStoreFileList(IndexCommit commit) {
-
-    List<Map<String, Object>> contentStoreFiles = new ArrayList<>();
-    String contentStoreDirectory = ContentStoreCache.get().getContentStoreRootPath();
-
-    try {
-      Files.walk(Paths.get(contentStoreDirectory)).forEach(p -> {
-        String filename = p.toString().replaceFirst(contentStoreDirectory, "");
-        File f = new File(p.toUri());
-        if (!f.isDirectory()) {
-          Checksum checksum = new Adler32();
-          FileInfo info = new FileInfo(f.lastModified(), filename, f.length(), getCheckSum(checksum, f));
-          contentStoreFiles.add(info.getAsMap());
-        }
-      });
-    } catch (IOException e) {
-      e.printStackTrace(); //TODO manage edge cases
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return contentStoreFiles;
   }
 
   /**
@@ -796,20 +782,30 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
 
 
 
-  static class FileInfo {
+  public static class FileInfo {
     long lastmodified;
     String name;
     long size;
     long checksum;
 
-    public FileInfo(long lasmodified, String name, long size, long checksum) {
+    public FileInfo(File file, String name)
+    {
+      Checksum checksum = new Adler32();
+
+      this.lastmodified = file.lastModified();
+      this.name = name;
+      this.size = file.length();
+      this.checksum = getCheckSum(checksum, file);
+    }
+
+    FileInfo(long lasmodified, String name, long size, long checksum) {
       this.lastmodified = lasmodified;
       this.name = name;
       this.size = size;
       this.checksum = checksum;
     }
 
-    Map<String, Object> getAsMap() {
+    public Map<String, Object> getAsMap() {
       Map<String, Object> map = new HashMap<>();
       map.put(NAME, name);
       map.put(SIZE, size);
@@ -1212,6 +1208,17 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   @SuppressWarnings("unchecked")
   public void inform(SolrCore core) {
     this.core = core;
+
+    CoreContainer coreContainer = core.getCoreContainer();
+    AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
+
+    contentStore =
+            ofNullable(coreAdminHandler.getInformationServers())
+              .map(informationServersMap -> informationServersMap.get(core.getName()))
+              .map(SolrInformationServer.class::cast)
+              .map(SolrInformationServer::getSolrContentStore)
+              .orElseThrow(() -> new SolrException(ErrorCode.SERVER_ERROR, "Alfresco ReplicationHandler seems not properly configured. The SolrInformationServer instance wasn't found or the SolrContentStore is null."));
+
     registerCloseHook();
     Object nbtk = initArgs.get(NUMBER_BACKUPS_TO_KEEP_INIT_PARAM);
     if(nbtk!=null) {
