@@ -713,7 +713,8 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     //if configuration files need to be included get their details
     rsp.add(CONF_FILES, getConfFileInfoFromCache(confFileNameAlias, confFileInfoCache));
 
-    rsp.add(CONTENT_STORE_FILES, contentStore.getFileList(commit));
+    // FIXME: replace the dummy value with the slave version
+    rsp.add(CONTENT_STORE_FILES, contentStore.getChanges(-1L));
   }
 
   /**
@@ -1194,8 +1195,6 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
         TimeUnit.MILLISECONDS.convert(pollIntervalNs, TimeUnit.NANOSECONDS));
   }
 
-  //TODO: CUSTOM
-    private File contentStorePath;
     public static final String CONTENT_STORE_FILE = "csf";
 
     @Override
