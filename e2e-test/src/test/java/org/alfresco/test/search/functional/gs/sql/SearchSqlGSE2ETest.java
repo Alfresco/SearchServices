@@ -150,8 +150,15 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select sc_classification, count(*) from alfresco group by sc_classification");
 
-        RestResponse response = searchSql(sqlRequest, testUserConfidential);
-        // response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
+        // User should only see aggregate results for security level he can access
+        RestResponse response = searchSql(sqlRequest, testUserGSTopSecret);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(4));
+
+        response = searchSql(sqlRequest, testUserSecret);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(3));
+
+        response = searchSql(sqlRequest, testUserConfidential);
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
 
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select sc_classification, count(*) from alfresco where SITE = '" + testSite.getId() + "' group by sc_classification");
