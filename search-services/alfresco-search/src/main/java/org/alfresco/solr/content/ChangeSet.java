@@ -19,26 +19,45 @@
 package org.alfresco.solr.content;
 
 import org.alfresco.solr.handler.ReplicationHandler;
+import org.alfresco.util.Pair;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortedNumericSortField;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Encapsulates changes occurred in the hosting content store since the last commit.
@@ -47,12 +66,16 @@ import static java.util.Optional.ofNullable;
  */
 class ChangeSet implements AutoCloseable
 {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ChangeSet.class);
+    private final static ChangeSet EMPTY_CHANGESET = new ChangeSet.Builder().empty().build();
+
     /**
      * Builds class for creating {@link ChangeSet} instances.
      */
     static class Builder
     {
         private String root;
+        private boolean immutable;
 
         Builder withContentStoreRoot(String root)
         {
@@ -63,22 +86,44 @@ class ChangeSet implements AutoCloseable
             return this;
         }
 
+        Builder empty()
+        {
+            this.immutable = true;
+            return this;
+        }
+
         ChangeSet build()
         {
-            // Necessary Evil: needed for making sure the Lucene stuff will be closed
+            // Creates a transient changeset (no persistence); mainly used for reducing the changes during replication.
+            if (root == null)
+            {
+                return new ChangeSet(
+                            immutable ? emptySet() : new HashSet<>(),
+                            immutable ? emptySet() : new HashSet<>());
+            }
+
+            // Necessary evil: needed for making sure the Lucene stuff will be closed
             // in case of initialisation exception.
             IndexWriter writer = null;
             IndexSearcher searcher = null;
             try
             {
                 File file = new File(root, CHANGESETS_ROOT_FOLDER_NAME);
+
                 Directory indexDirectory = FSDirectory.open(file.toPath());
 
                 writer = new IndexWriter(indexDirectory, new IndexWriterConfig());
                 writer.commit();
 
                 searcher = new IndexSearcher(DirectoryReader.open(indexDirectory));
-                return new ChangeSet(searcher, writer);
+
+                LOGGER.info("ContentStore Changeset index correctly mounted on {}", file.getAbsolutePath());
+
+                return new ChangeSet(
+                        searcher,
+                        writer,
+                        immutable ? emptySet() : new HashSet<>(),
+                        immutable ? emptySet() : new HashSet<>());
             }
             catch (Exception exception)
             {
@@ -89,27 +134,49 @@ class ChangeSet implements AutoCloseable
         }
     }
 
-    public final static String VERSION_FIELD_NAME = "version";
-    public final static String ADDS_FIELD_NAME = "adds";
-    public final static String DELETES_FIELD_NAME = "deletes";
-    public final static String CHANGESETS_ROOT_FOLDER_NAME = "changeSets";
+    final static String VERSION_FIELD_NAME = "version";
+    final static String RVERSION_FIELD_NAME = "rversion";
+    final static String ADDS_FIELD_NAME = "adds";
+    final static String DELETES_FIELD_NAME = "deletes";
+    final static String CHANGESETS_ROOT_FOLDER_NAME = "changeSets";
 
-    final Set<String> deletes = new HashSet<>();
-    final Set<String> adds = new HashSet<>();
+    final Set<String> deletes;
+    final Set<String> adds;
 
     private final IndexSearcher searcher;
     private final IndexWriter writer;
+
+    /**
+     * Builds a new transient {@link ChangeSet} with the given Lucene facades.
+     *
+     * @param deletesContainer the container which will hold the deletes.
+     * @param addsContainer the container which will hold the adds/updates.
+     */
+    private ChangeSet(
+            final Set<String> deletesContainer,
+            final Set<String> addsContainer)
+    {
+        this(null, null, deletesContainer, addsContainer);
+    }
 
     /**
      * Builds a new {@link ChangeSet} with the given Lucene facades.
      *
      * @param searcher the index searcher.
      * @param writer the index writer.
+     * @param deletesContainer the container which will hold the deletes.
+     * @param addsContainer the container which will hold the adds/updates.
      */
-    private ChangeSet(final IndexSearcher searcher, final IndexWriter writer)
+    private ChangeSet(
+            final IndexSearcher searcher,
+            final IndexWriter writer,
+            final Set<String> deletesContainer,
+            final Set<String> addsContainer)
     {
         this.searcher = searcher;
         this.writer = writer;
+        this.deletes = deletesContainer;
+        this.adds = addsContainer;
     }
 
     /**
@@ -121,6 +188,10 @@ class ChangeSet implements AutoCloseable
     {
         adds.remove(path);
         deletes.add(path);
+
+        LOGGER.debug("ContentStore change recorded: item {} has been deleted.", path);
+
+        debugPendingChanges();
     }
 
     /**
@@ -132,24 +203,36 @@ class ChangeSet implements AutoCloseable
     {
         deletes.remove(path);
         adds.add(path);
+
+        LOGGER.debug("ContentStore change recorded: item {} has been added/updated.", path);
+
+        debugPendingChanges();
     }
 
     /**
      * Flushes all pending collected content store changes.
      *
-     * @param commit the {@link IndexCommit} instance belonging to the main index.
      * @throws IOException in case of I/O failure.
      */
-    public void flush(IndexCommit commit) throws IOException
+    public void flush() throws IOException
     {
-        ReplicationHandler.CommitVersionInfo commitInfo = ReplicationHandler.CommitVersionInfo.build(commit);
-        Document document = new Document();
-        document.add(new LongPoint(VERSION_FIELD_NAME, commitInfo.version));
-        deletes.forEach(delete -> document.add(new StoredField(DELETES_FIELD_NAME, delete)));
-        adds.forEach(addOrReplace -> document.add(new StoredField(ADDS_FIELD_NAME, addOrReplace)));
+        final long version = System.currentTimeMillis();
+
+        final Document document = new Document();
+        document.add(new NumericDocValuesField(VERSION_FIELD_NAME, version));
+        document.add(new LongPoint(RVERSION_FIELD_NAME, version));
+        deletes.stream()
+                .map(item -> new StoredField(DELETES_FIELD_NAME, item))
+                .forEach(document::add);
+
+        adds.stream()
+                .map(item -> new StoredField(ADDS_FIELD_NAME, item))
+                .forEach(document::add);
 
         writer.addDocument(document);
         writer.commit();
+
+        LOGGER.debug("New Changeset entry added (version = {}, deletes = {}, adds = {})", version, deletes.size(), adds.size());
     }
 
     @Override
@@ -157,6 +240,114 @@ class ChangeSet implements AutoCloseable
     {
         ofNullable(writer).ifPresent(ChangeSet::silentyClose);
         ofNullable(searcher).map(IndexSearcher::getIndexReader).ifPresent(ChangeSet::silentyClose);
+    }
+
+    /**
+     * Returns the last persisted content store version.
+     *
+     * @return the last persisted content store version, SolrContentStore#NO_VERSION_AVAILABLE in case the version isn't available.
+     */
+    public long getLastCommittedVersion()
+    {
+        try
+        {
+            TopDocs hits = searcher.search(
+                    new MatchAllDocsQuery(),
+                    1,
+                    new Sort(new SortedNumericSortField(VERSION_FIELD_NAME, SortField.Type.LONG, true)),
+                    false,
+                    false);
+
+            return ofNullable(hits.scoreDocs)
+                    .filter(docs -> docs.length > 0)
+                    .map(docs -> docs[0])
+                    .map(this::toDoc)
+                    .flatMap(doc -> ofNullable(doc.get(VERSION_FIELD_NAME)).map(Long::parseLong))
+                    .orElse(SolrContentStore.NO_VERSION_AVAILABLE);
+        }
+        catch(Exception exception)
+        {
+            LOGGER.error("Unable to retrieve the last committed content store changeset version. " +
+                            "As consequence of that a dummy value of " + SolrContentStore.NO_VERSION_AVAILABLE +
+                            " will be returned. See further details in the stacktrack below.",
+                    exception);
+            return SolrContentStore.NO_VERSION_AVAILABLE;
+        }
+    }
+
+    /**
+     * Returns the content store changes (adds / deletes) since the given version (exclusive).
+     *
+     * @param version the start offset version (exclusive).
+     * @return the content store changes (adds / deletes) since the given version (exclusive).
+     */
+    public ChangeSet since(long version)
+    {
+        try
+        {
+            Query query = LongPoint.newRangeQuery(VERSION_FIELD_NAME, Math.addExact(version, 1), Long.MAX_VALUE);
+            TopDocs hits = searcher.search(
+                    query,
+                    100,
+                    new Sort(new SortedNumericSortField(VERSION_FIELD_NAME, SortField.Type.LONG)),
+                    false,
+                    false);
+
+            final BiFunction<ChangeSet, ? super Pair<List<String>,List<String>>, ChangeSet> accumulator =
+                    (partial, nth) -> {
+                        final List<String> nthDeletes = nth.getFirst();
+                        final List<String> nthAdds = nth.getSecond();
+
+                        nthDeletes.forEach(partial::delete);
+                        nthAdds.forEach(partial::addOrReplace);
+
+                        return partial;
+                    };
+
+            final BinaryOperator<ChangeSet> combiner = (c1, c2) -> {
+                c1.deletes.forEach(c2::delete);
+                c1.adds.forEach(c2::addOrReplace);
+                return c1;
+            };
+
+            return stream(hits.scoreDocs)
+                        .map(this::toDoc)
+                        .map(doc ->
+                            new Pair<>(
+                                    asList(doc.getValues(DELETES_FIELD_NAME)),
+                                    asList(doc.getValues(ADDS_FIELD_NAME))))
+                        .reduce(new ChangeSet.Builder().build(), accumulator, combiner);
+        }
+        catch(Exception exception)
+        {
+            LOGGER.error("Unable to retrieve the changeset since version {}. " +
+                    "As consequence of that an empty result will be returned. " +
+                    "See further details in the stacktrack below.",
+                    version,
+                    exception);
+            return EMPTY_CHANGESET;
+        }
+    }
+
+    private Document toDoc(ScoreDoc hit)
+    {
+        try
+        {
+            return searcher.doc(hit.doc);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void debugPendingChanges()
+    {
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug("ContentStore pending deletes: " + deletes);
+            LOGGER.debug("ContentStore pending adds/updates: " + adds);
+        }
     }
 
     /**
@@ -172,7 +363,7 @@ class ChangeSet implements AutoCloseable
         }
         catch (Exception exception)
         {
-            // Ignore
+           LOGGER.error("Unable to properly close the resource instance {}. See further details in the stacktrace below.", resource, exception);
         }
     }
 }

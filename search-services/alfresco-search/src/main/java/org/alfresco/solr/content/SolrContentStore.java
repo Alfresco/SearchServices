@@ -18,6 +18,11 @@
  */
 package org.alfresco.solr.content;
 
+import static java.util.Collections.emptyList;
+import static java.util.Optional.of;
+import static java.util.stream.Collectors.toList;
+import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
+
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -27,14 +32,6 @@ import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.handler.ReplicationHandler;
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexCommit;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.JavaBinCodec;
@@ -42,27 +39,17 @@ import org.apache.solr.core.SolrResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import static java.util.Collections.emptyList;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
-import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
 
 /**
  * A content store specific to SOLR's requirements: The URL is generated from a
@@ -83,13 +70,14 @@ import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
 public class SolrContentStore implements ContentStore
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
+    static final long NO_VERSION_AVAILABLE = -1L;
 
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
 
     private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
     private final String root;
-    private final ChangeSet changes;
+    private static ChangeSet changes;
 
     /**
      * Builds a new {@link SolrContentStore} instance with the given SOLR HOME.
@@ -125,44 +113,51 @@ public class SolrContentStore implements ContentStore
         }
         this.root = rootFile.getAbsolutePath();
 
-        changes = new ChangeSet.Builder().withContentStoreRoot(root).build();
+        // FIXME
+        if (changes == null)
+            changes = new ChangeSet.Builder().withContentStoreRoot(root).build();
     }
 
     /**
-     * Returns the content store changes associated with the given index commit.
+     * Returns the last persisted content store version.
      *
-     * @param commit the {@link IndexCommit} instance used as reference.
-     * @return the content store changes associated with the given index commit.
+     * @return the last persisted content store version, SolrContentStore#NO_VERSION_AVAILABLE in case the version isn't available.
      */
-    public Map<String, List<Map<String, Object>>> getChanges(IndexCommit commit)
+    public long getLastCommittedVersion()
     {
+        return changes.getLastCommittedVersion();
+    }
+
+    /**
+     * Returns the content store changes since the given (requestor) version.
+     *
+     * @param version the requestor version.
+     * @return the content store changes since the given (requestor) version.
+     */
+    public Map<String, List<Map<String, Object>>> getChanges(long version)
+    {
+        if (version == NO_VERSION_AVAILABLE)
+        {
+            return Map.of(
+                    "adds", fullContentStore(),
+                    "deletes", emptyList());
+        }
+
         return Map.of(
-                "adds", newFilesSince(commit),
-                "deletes", deletedFilesSince(commit));
+                "deletes",
+                changes.deletes.stream()
+                        .map(path -> Map.<String, Object>of("name", path))
+                        .collect(toList()),
+                "adds",
+                changes.adds.stream()
+                        .map(relativePath -> root + relativePath)
+                        .map(File::new)
+                        .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
+                        .map(ReplicationHandler.FileInfo::getAsMap)
+                        .collect(toList()));
     }
 
-    /**
-     * Returns the content store deletes associated with the given index commit.
-     *
-     * @param commit the {@link IndexCommit} instance used as reference.
-     * @return the content store deletes associated with the given index commit.
-     *
-     * TODO: IMPLEMENT
-     */
-    private List<Map<String, Object>> deletedFilesSince(IndexCommit commit)
-    {
-        return emptyList();
-    }
-
-    /**
-     * Returns the content store adds/updates associated with the given index commit.
-     *
-     * @param commit the {@link IndexCommit} instance used as reference.
-     * @return the content store adds/updates associated with the given index commit.
-     *
-     * TODO: IMPLEMENT
-     */
-    private List<Map<String, Object>> newFilesSince(IndexCommit commit)
+    private List<Map<String, Object>> fullContentStore()
     {
         try
         {
@@ -172,11 +167,11 @@ public class SolrContentStore implements ContentStore
                     .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
                     .map(ReplicationHandler.FileInfo::getAsMap)
                     .collect(toList());
-        } catch (Exception e) {
-            log.error(
-                    "An exception occurred while creating the ContentStore filelist associated with index version {}. " +
-                            "As consequence of that an empty list will be returned (i.e. no ContentStore synch will happen).",
-                    ReplicationHandler.CommitVersionInfo.build(commit));
+        }
+        catch (Exception e)
+        {
+            log.error("An exception occurred while retrieving the whole ContentStore filelist. " +
+                            "As consequence of that an empty list will be returned (i.e. no ContentStore synch will happen).");
             return emptyList();
         }
     }
@@ -332,7 +327,6 @@ public class SolrContentStore implements ContentStore
             JavaBinCodec codec = new JavaBinCodec(resolver);
             codec.marshal(doc, gzip);
 
-            // TODO: Asynch
             File file = getFileFromUrl(contentContext.getContentUrl());
             changes.addOrReplace(relativePath(file));
         }
