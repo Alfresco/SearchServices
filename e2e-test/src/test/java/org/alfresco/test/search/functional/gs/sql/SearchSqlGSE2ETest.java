@@ -7,8 +7,10 @@
 
 package org.alfresco.test.search.functional.gs.sql;
 
+import static java.util.Arrays.asList;
+
+import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
@@ -169,35 +171,21 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         // Check Query results include content based on classification level, starting with unclassified file
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select cm_name from alfresco where sc_classification = '*' and SITE = '" + testSite.getId() + "'");
-        sqlRequest.setFormat("solr");
 
-        response = searchSql(sqlRequest, testUserGSTopSecret);
-        List<String> results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
-        assertTrue(results.contains(TOPSECRET_FILE), "Top Secret file not in the results");
-        assertTrue(results.contains(SECRET_FILE), "Secret file not in the results");
-        assertTrue(results.contains(CONFIDENTIAL_FILE), "Confidential file not in the results");
-        assertTrue(results.contains(UNCLASSIFIED_FILE), "Unclassified file not in the results");
+        List<String> expectedResult = asList(TOPSECRET_FILE, SECRET_FILE, CONFIDENTIAL_FILE, UNCLASSIFIED_FILE);
+        List<String> results = getContentListForSolrRequest(sqlRequest, testUserGSTopSecret);
+        assertTrue(isEqualCollection(expectedResult, results), "Unexpected files in the response: " + results.toString());
 
-        response = searchSql(sqlRequest, testUserSecret);
-        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
-        assertFalse(results.contains(TOPSECRET_FILE), "Top Secret file  in the results when not expected");
-        assertTrue(results.contains(SECRET_FILE), "Secret file not in the results");
-        assertTrue(results.contains(CONFIDENTIAL_FILE), "Confidential file not in the results");
-        assertTrue(results.contains(UNCLASSIFIED_FILE), "Unclassified file not in the results");
+        expectedResult = asList(SECRET_FILE, CONFIDENTIAL_FILE, UNCLASSIFIED_FILE);
+        results = getContentListForSolrRequest(sqlRequest, testUserSecret);
+        assertTrue(isEqualCollection(expectedResult, results), "Unexpected files in the response: " + results.toString());
 
-        response = searchSql(sqlRequest, testUserConfidential);
-        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");        
-        assertFalse(results.contains(TOPSECRET_FILE), "Top Secret file in the results when not expected");
-        assertFalse(results.contains(SECRET_FILE), "Secret file in the results when not expected");
-        assertTrue(results.contains(CONFIDENTIAL_FILE), "Confidential file not in the results");
-        assertTrue(results.contains(UNCLASSIFIED_FILE), "Unclassified file not in the results");
+        expectedResult = asList(CONFIDENTIAL_FILE, UNCLASSIFIED_FILE);
+        results = getContentListForSolrRequest(sqlRequest, testUserConfidential);
+        assertTrue(isEqualCollection(expectedResult, results), "Unexpected files in the response: " + results.toString());
 
-        response = searchSql(sqlRequest, testUserNoAccess);
-        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
-        assertFalse(results.contains(TOPSECRET_FILE), "Top Secret file in the results when not expected");
-        assertFalse(results.contains(SECRET_FILE), "Secret file in the results when not expected");
-        assertFalse(results.contains(CONFIDENTIAL_FILE), "Confidential file in the results when not expected");
-        assertFalse(results.contains(UNCLASSIFIED_FILE), "Unclassified file in the results when not expected");
+        results = getContentListForSolrRequest(sqlRequest, testUserNoAccess);
+        assertTrue(results.isEmpty(), "Unexpected files in the response: " + results.toString());
     }
 
     @Test(priority = 3, groups = { TestGroup.AGS_302 })
