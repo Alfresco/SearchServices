@@ -8,6 +8,8 @@
 package org.alfresco.test.search.functional.gs.sql;
 
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.util.List;
 
@@ -43,6 +45,8 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
 
     private FileModel fileRecord, fileRecordElectronic, fileUnclassified, fileClassifiedAsTopSecret,
             fileClassifiedAsSecret, fileClassifiedAsConfidential;
+    
+    private String TOPSECRET_FILE, SECRET_FILE, CONFIDENTIAL_FILE, UNCLASSIFIED_FILE;
     
     private final String RECORD_IDENTIFIER = "rma:identifier:'*'";
 
@@ -96,6 +100,12 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         getClassificationService().classifyNode(adminUserModel, fileClassifiedAsTopSecret.getNodeRefWithoutVersion(), ClassificationData.TOP_SECRET_CLASSIFICATION_LEVEL_ID);
         getClassificationService().classifyNode(testUser, fileClassifiedAsSecret.getNodeRefWithoutVersion(), ClassificationData.SECRET_CLASSIFICATION_LEVEL_ID);
         getClassificationService().classifyNode(testUser, fileClassifiedAsConfidential.getNodeRefWithoutVersion(), ClassificationData.CONFIDENTIAL_CLASSIFICATION_LEVEL_ID);
+        getClassificationService().classifyNode(testUser, fileUnclassified.getNodeRefWithoutVersion(), ClassificationData.UNCLASSIFIED_CLASSIFICATION_LEVEL_ID);
+        
+        TOPSECRET_FILE = fileClassifiedAsTopSecret.getName();
+        SECRET_FILE = fileClassifiedAsSecret.getName();
+        CONFIDENTIAL_FILE = fileClassifiedAsConfidential.getName();
+        UNCLASSIFIED_FILE = fileUnclassified.getName();
     }
 
     @Test(priority = 1, groups = { TestGroup.AGS_302 })
@@ -104,11 +114,11 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         // Search for a file name to ensure content is indexed
         boolean indexingInProgress = isContentInSearchResults(fileRecord.getName(), fileRecord.getName(), true);
 
-        Assert.assertTrue(indexingInProgress, "Expected record file, not found");
+        assertTrue(indexingInProgress, "Expected record file, not found");
         
         indexingInProgress = isContentInSearchResults(testFolder.getName(), testFolder.getName(), true);
 
-        Assert.assertTrue(indexingInProgress, "Expected folder, not found");
+        assertTrue(indexingInProgress, "Expected folder, not found");
 
         // Search using sql: userNoAccess is not expected to find the record
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
@@ -131,64 +141,63 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
     public void testSQLFiltersClassifiedFiles()
     {
         // Wait for the files to be indexed
-        boolean fileFound = isContentInSearchResults("sc_classification:c", fileClassifiedAsConfidential.getName(), true);
-        Assert.assertTrue(fileFound, "Expected confidential file, not found");
+        boolean fileFound = isContentInSearchResults("sc_classification:c", CONFIDENTIAL_FILE, true);
+        assertTrue(fileFound, "Expected confidential file, not found");
 
         // Check Aggregate query response doesn't bring up classification levels the user should not see
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select sc_classification, count(*) from alfresco group by sc_classification");
 
-        RestResponse response = searchSql(sqlRequest, testUserGSTopSecret);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(4)); // Actual count = 4, TS, S, C, U
+        RestResponse response = searchSql(sqlRequest, testUserConfidential);
+        // response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
 
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select sc_classification, count(*) from alfresco where SITE = '" + testSite.getId() + "' group by sc_classification");
 
-        // TODO: Investigate: Actual count after adding Site = 3, TS, S, C: Why U is omitted if Site is not specified
         response = searchSql(sqlRequest, testUserGSTopSecret);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(3));
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(4));
 
         response = searchSql(sqlRequest, testUserSecret);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(3));
 
         response = searchSql(sqlRequest, testUserConfidential);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
+        response.assertThat().body("list.pagination.count", Matchers.equalTo(2));
 
         response = searchSql(sqlRequest, testUserNoAccess);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
 
-        // Check Query results, in a Solr format
+        // Check Query results include content based on classification level, starting with unclassified file
         sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select cm_name from alfresco where sc_classification = '*' and SITE = '" + testSite.getId() + "'");
         sqlRequest.setFormat("solr");
 
         response = searchSql(sqlRequest, testUserGSTopSecret);
         List<String> results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
-        Assert.assertTrue(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file not included in the results");
-        Assert.assertTrue(results.contains(fileClassifiedAsSecret.getName()), "Secret file not included in the results");
-        Assert.assertTrue(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file not included in the results");
-        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
+        assertTrue(results.contains(TOPSECRET_FILE), "Top Secret file not in the results");
+        assertTrue(results.contains(SECRET_FILE), "Secret file not in the results");
+        assertTrue(results.contains(CONFIDENTIAL_FILE), "Confidential file not in the results");
+        assertTrue(results.contains(UNCLASSIFIED_FILE), "Unclassified file not in the results");
 
         response = searchSql(sqlRequest, testUserSecret);
         results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
-        Assert.assertFalse(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file is included in the results when not expected");
-        Assert.assertTrue(results.contains(fileClassifiedAsSecret.getName()), "Secret file not included in the results");
-        Assert.assertTrue(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file not included in the results");
-        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
+        assertFalse(results.contains(TOPSECRET_FILE), "Top Secret file  in the results when not expected");
+        assertTrue(results.contains(SECRET_FILE), "Secret file not in the results");
+        assertTrue(results.contains(CONFIDENTIAL_FILE), "Confidential file not in the results");
+        assertTrue(results.contains(UNCLASSIFIED_FILE), "Unclassified file not in the results");
 
         response = searchSql(sqlRequest, testUserConfidential);
-        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
-        Assert.assertFalse(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file is included in the results when not expected");
-        Assert.assertFalse(results.contains(fileClassifiedAsSecret.getName()), "Secret file is included in the results when not expected");
-        Assert.assertTrue(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file not included in the results");
-        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
+        results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");        
+        assertFalse(results.contains(TOPSECRET_FILE), "Top Secret file in the results when not expected");
+        assertFalse(results.contains(SECRET_FILE), "Secret file in the results when not expected");
+        assertTrue(results.contains(CONFIDENTIAL_FILE), "Confidential file not in the results");
+        assertTrue(results.contains(UNCLASSIFIED_FILE), "Unclassified file not in the results");
 
         response = searchSql(sqlRequest, testUserNoAccess);
         results = response.getResponse().getBody().jsonPath().getList("result-set.docs.cm_name");
-        Assert.assertFalse(results.contains(fileClassifiedAsTopSecret.getName()), "Top Secret file is included in the results when not expected");
-        Assert.assertFalse(results.contains(fileClassifiedAsSecret.getName()), "Secret file is included in the results when not expected");
-        Assert.assertFalse(results.contains(fileClassifiedAsConfidential.getName()), "Confidential file is included in the results when not expected");
-        Assert.assertFalse(results.contains(fileUnclassified.getName()), "Unclassified file included in the results when not expected");
+        assertFalse(results.contains(TOPSECRET_FILE), "Top Secret file in the results when not expected");
+        assertFalse(results.contains(SECRET_FILE), "Secret file in the results when not expected");
+        assertFalse(results.contains(CONFIDENTIAL_FILE), "Confidential file in the results when not expected");
+        assertFalse(results.contains(UNCLASSIFIED_FILE), "Unclassified file in the results when not expected");
     }
 
     @Test(priority = 3, groups = { TestGroup.AGS_302 })
@@ -203,24 +212,20 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
 
         // Wait for the record to be indexed and check that it can be found
         boolean fileFound = isContentInSearchResults(RECORD_IDENTIFIER, elecRecord.getName(), true);
-        Assert.assertTrue(fileFound, "Expected record file, not found");
+        assertTrue(fileFound, "Expected record file, not found");
 
         SearchResponse result = queryAsUser(testUserGSTopSecret, RECORD_IDENTIFIER);
         Assert.assertEquals(result.getPagination().getCount(), 0, "Expected count of entries 0, found more");
 
-        // Verify that user can see the electronic record with minimum read records permissions
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
         sqlRequest.setSql("select cm_name, PATH from alfresco where rma_identifier = '*' and type = 'cm:content'");
 
+        // Verify that user can see the electronic record with minimum read records permissions
         RestResponse response = searchSql(sqlRequest, testUser);
-
         response.assertThat().body("list.pagination.count", Matchers.equalTo(1));
 
+        // Verify that users can not see the electronic record without read record permissions
         response = searchSql(sqlRequest, testUserGSTopSecret);
-        response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
-
-        // Verify that user can not see the electronic record with no read permissions
-        response = searchSql(sqlRequest, testUserConfidential);
         response.assertThat().body("list.pagination.count", Matchers.equalTo(0));
     }
 
@@ -232,7 +237,7 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
 
         // Wait for the record to be indexed
         boolean fileFound = isContentInSearchResults(RECORD_IDENTIFIER, inPlaceRecord.getName(), true);
-        Assert.assertTrue(fileFound, "Expected in place record file, not found");
+        assertTrue(fileFound, "Expected in place record file, not found");
 
         // Verify that user can see the in place record without any additional permissions
         SearchSqlRequest sqlRequest = new SearchSqlRequest();
@@ -260,12 +265,12 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
     {
         // Search for records when user does not have read permission
         boolean fileFound = isContentInSearchResults(NON_ELECTRONIC_FILE, nonElectronicRecord.getName(), false);
-        Assert.assertTrue(fileFound, "Non electronic record file found in the results, when user doesn't have read permissions");
+        assertTrue(fileFound, "Non electronic record file found in the results, when user doesn't have read permissions");
         
 
         // Search for records when user does not have read permission
         fileFound = isContentInSearchResults(ELECTRONIC_FILE, electronicRecord.getName(), false);
-        Assert.assertTrue(fileFound, "Electronic record file found in the results, when user doesn't have read permissions");
+        assertTrue(fileFound, "Electronic record file found in the results, when user doesn't have read permissions");
         
 
         // Assign Read permissions to the user at rootCategory level
@@ -274,11 +279,11 @@ public class SearchSqlGSE2ETest extends AbstractGSE2ETest
         
         // Check that the non electronic record can now be found
         isContentInSearchResults(NON_ELECTRONIC_FILE, nonElectronicRecord.getName(), true);
-        Assert.assertTrue(fileFound, "Expected non electronic record file, not found");
+        assertTrue(fileFound, "Expected non electronic record file, not found");
 
         // Check that the electronic record can now be found
         fileFound = isContentInSearchResults(ELECTRONIC_FILE, electronicRecord.getName(), true);
-        Assert.assertTrue(fileFound, "Expected electronic record file, not found");
+        assertTrue(fileFound, "Expected electronic record file, not found");
 
         // Check that the electronic record and non electronic record both can be found with cascaded permissions
         String recordFiles = String.format("('%s' , '%s')", nonElectronicRecord.getName(), electronicRecord.getName());
