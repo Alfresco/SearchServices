@@ -31,7 +31,6 @@ import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.SolrKeyResourceLoader;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
-import org.alfresco.solr.content.ContentStoreCache;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.CascadeTracker;
@@ -55,18 +54,16 @@ import org.slf4j.LoggerFactory;
  *
  * @author Gethin James
  */
-public class SolrCoreLoadRegistration {
+class SolrCoreLoadRegistration {
 
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Registers with the admin handler the information server and the trackers.
      */
-    public static void registerForCore(AlfrescoCoreAdminHandler adminHandler, CoreContainer coreContainer, SolrCore core,
+    static void registerForCore(AlfrescoCoreAdminHandler adminHandler, CoreContainer coreContainer, SolrCore core,
                                        String coreName)
     {
-
-
         TrackerRegistry trackerRegistry = adminHandler.getTrackerRegistry();
         Properties props = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
         //Prepare cores
@@ -76,14 +73,8 @@ public class SolrCoreLoadRegistration {
         SOLRAPIClient repositoryClient = clientFactory.getSOLRAPIClient(props, keyResourceLoader,
                 AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                 AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
-        //Start content store
-        SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
 
-        ContentStoreCache.get().init(contentStore.getRootLocation());
-
-        ContentStoreCache contentStoreCache = new ContentStoreCache();
-
-
+        SolrContentStore contentStore = adminHandler.getSolrContentStore();
 
         SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
         props.putAll(srv.getProps());
@@ -100,8 +91,6 @@ public class SolrCoreLoadRegistration {
                 repositoryClient,
                 srv,
                 scheduler);
-
-
 
         log.info("Starting to track " + coreName);
         if (Boolean.parseBoolean(props.getProperty("enable.alfresco.tracking", "false")))

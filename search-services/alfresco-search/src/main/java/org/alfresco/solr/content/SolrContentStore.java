@@ -39,7 +39,9 @@ import org.apache.solr.core.SolrResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -55,19 +57,19 @@ import java.util.zip.GZIPOutputStream;
  * A content store specific to SOLR's requirements: The URL is generated from a
  * set of properties such as:
  * <ul>
- * <li>ACL ID</li>
- * <li>DB ID</li>
- * <li>Other metadata</li>
+ *  <li>ACL ID</li>
+ *  <li>DB ID</li>
+ *  <li>Other metadata</li>
  * </ul>
- * The URL, if not known, can be reliably regenerated using the
- * {@link SolrContentUrlBuilder}.
+ *
+ * The URL, if not known, can be reliably regenerated using the {@link SolrContentUrlBuilder}.
  * 
  * @author Derek Hulley
  * @author Michael Suzuki
  * @author Andrea Gazzarini
  * @since 5.0
  */
-public class SolrContentStore implements ContentStore
+public class SolrContentStore implements ContentStore, Closeable
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
     static final long NO_VERSION_AVAILABLE = -1L;
@@ -77,7 +79,7 @@ public class SolrContentStore implements ContentStore
 
     private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
     private final String root;
-    private static ChangeSet changes;
+    private final ChangeSet changeSet;
 
     /**
      * Builds a new {@link SolrContentStore} instance with the given SOLR HOME.
@@ -98,24 +100,22 @@ public class SolrContentStore implements ContentStore
             //but continue because solr.content.dir may be specified, so it keeps working
             log.error(solrHomeFile.getAbsolutePath() + " does not exist.");
         }
-        
+
         String path = solrHomeFile.getParent() + "/" + CONTENT_STORE;
         log.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
         File rootFile = new File(ConfigUtil.locateProperty(SOLR_CONTENT_DIR, path));
 
+
         try
         {
             FileUtils.forceMkdir(rootFile);
-        } 
-        catch (Exception e)
-        {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Failed to create directory for content store: " + rootFile, e);
         }
-        this.root = rootFile.getAbsolutePath();
 
-        // FIXME
-        if (changes == null)
-            changes = new ChangeSet.Builder().withContentStoreRoot(root).build();
+        this.root = rootFile.getAbsolutePath();
+        this.changeSet = new ChangeSet.Builder().withContentStoreRoot(root).build();
     }
 
     /**
@@ -125,7 +125,7 @@ public class SolrContentStore implements ContentStore
      */
     public long getLastCommittedVersion()
     {
-        return changes.getLastCommittedVersion();
+        return changeSet.getLastCommittedVersion();
     }
 
     /**
@@ -145,11 +145,11 @@ public class SolrContentStore implements ContentStore
 
         return Map.of(
                 "deletes",
-                changes.deletes.stream()
+                changeSet.deletes.stream()
                         .map(path -> Map.<String, Object>of("name", path))
                         .collect(toList()),
                 "adds",
-                changes.adds.stream()
+                changeSet.adds.stream()
                         .map(relativePath -> root + relativePath)
                         .map(File::new)
                         .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
@@ -294,7 +294,7 @@ public class SolrContentStore implements ContentStore
         // TODO: Asynch
         boolean deleted = file.delete();
 
-        if (deleted) changes.delete(relativePath(file));
+        if (deleted) changeSet.delete(relativePath(file));
 
         return deleted;
     }
@@ -328,7 +328,7 @@ public class SolrContentStore implements ContentStore
             codec.marshal(doc, gzip);
 
             File file = getFileFromUrl(contentContext.getContentUrl());
-            changes.addOrReplace(relativePath(file));
+            changeSet.addOrReplace(relativePath(file));
         }
         catch (Exception exception)
         {
@@ -374,5 +374,10 @@ public class SolrContentStore implements ContentStore
     private String relativePath(File file)
     {
         return file.getAbsolutePath().replace(root, "");
+    }
+
+    @Override
+    public void close() throws IOException {
+        changeSet.close();
     }
 }

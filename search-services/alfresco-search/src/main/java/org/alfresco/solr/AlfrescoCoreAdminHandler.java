@@ -61,6 +61,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
+import org.alfresco.solr.content.ChangeSet;
+import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.DBIDRangeRouter;
 import org.alfresco.solr.tracker.DocRouter;
@@ -113,7 +115,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private SolrTrackerScheduler scheduler;
     private TrackerRegistry trackerRegistry;
     private ConcurrentHashMap<String, InformationServer> informationServers = null;
-    
+    private SolrContentStore contentStore;
+
     public AlfrescoCoreAdminHandler()
     {
         super();
@@ -135,6 +138,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         trackerRegistry = new TrackerRegistry();
         informationServers = new ConcurrentHashMap<>();
         this.scheduler = new SolrTrackerScheduler(this);
+        this.contentStore = new SolrContentStore(coreContainer.getSolrHome());
 
         String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
         int numShards = Integer.valueOf(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
@@ -241,9 +245,18 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 scheduler.shutdown();
             }
         } 
-        catch(Exception e) 
+        catch(Exception exception)
         {
-            LOGGER.error("Problem shutting down", e);
+            LOGGER.error("Unable to properly shute down the SearchServices Tracker Subsystem. See the exception below for further details.", exception);
+        }
+
+        try
+        {
+            contentStore.close();
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Unable to properly shut down the ContentStore. See the exception below for further details.", exception);
         }
     }
 
@@ -1239,5 +1252,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public SolrTrackerScheduler getScheduler()
     {
         return scheduler;
+    }
+
+    public SolrContentStore getSolrContentStore()
+    {
+        return contentStore;
     }
 }

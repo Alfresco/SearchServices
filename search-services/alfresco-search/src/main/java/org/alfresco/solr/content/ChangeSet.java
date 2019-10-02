@@ -18,14 +18,17 @@
  */
 package org.alfresco.solr.content;
 
-import org.alfresco.solr.handler.ReplicationHandler;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptySet;
+import static java.util.Optional.ofNullable;
+
 import org.alfresco.util.Pair;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.IndexSearcher;
@@ -44,27 +47,18 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
-
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.Collections.emptySet;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
 /**
  * Encapsulates changes occurred in the hosting content store since the last commit.
  *
  * @author Andrea Gazzarini
  */
-class ChangeSet implements AutoCloseable
+public class ChangeSet implements AutoCloseable
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(ChangeSet.class);
     private final static ChangeSet EMPTY_CHANGESET = new ChangeSet.Builder().empty().build();
@@ -72,7 +66,7 @@ class ChangeSet implements AutoCloseable
     /**
      * Builds class for creating {@link ChangeSet} instances.
      */
-    static class Builder
+    public static class Builder
     {
         private String root;
         private boolean immutable;
@@ -88,6 +82,7 @@ class ChangeSet implements AutoCloseable
 
         Builder empty()
         {
+            this.root = null;
             this.immutable = true;
             return this;
         }
@@ -214,7 +209,7 @@ class ChangeSet implements AutoCloseable
      *
      * @throws IOException in case of I/O failure.
      */
-    public void flush() throws IOException
+    void flush() throws IOException
     {
         final long version = System.currentTimeMillis();
 
@@ -247,7 +242,7 @@ class ChangeSet implements AutoCloseable
      *
      * @return the last persisted content store version, SolrContentStore#NO_VERSION_AVAILABLE in case the version isn't available.
      */
-    public long getLastCommittedVersion()
+    long getLastCommittedVersion()
     {
         try
         {
