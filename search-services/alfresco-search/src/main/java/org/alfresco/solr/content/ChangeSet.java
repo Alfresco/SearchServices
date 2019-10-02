@@ -28,18 +28,17 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortedNumericSortField;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,30 +88,23 @@ public class ChangeSet implements AutoCloseable
 
         ChangeSet build()
         {
-            // Creates a transient changeset (no persistence); mainly used for reducing the changes during replication.
             if (root == null)
             {
+                // Creates a transient changeset (no persistence); mainly used for reducing the changes during replication.
                 return new ChangeSet(
                             immutable ? emptySet() : new HashSet<>(),
                             immutable ? emptySet() : new HashSet<>());
             }
 
-            // Necessary evil: needed for making sure the Lucene stuff will be closed
-            // in case of initialisation exception.
             IndexWriter writer = null;
-            IndexSearcher searcher = null;
             try
             {
-                File file = new File(root, CHANGESETS_ROOT_FOLDER_NAME);
-
-                Directory indexDirectory = FSDirectory.open(file.toPath());
-
-                writer = new IndexWriter(indexDirectory, new IndexWriterConfig());
+                File indexDirectory = new File(root, CHANGESETS_ROOT_FOLDER_NAME);
+                writer = new IndexWriter(FSDirectory.open(indexDirectory.toPath()), new IndexWriterConfig());
                 writer.commit();
 
-                searcher = new IndexSearcher(DirectoryReader.open(indexDirectory));
-
-                LOGGER.info("ContentStore Changeset index correctly mounted on {}", file.getAbsolutePath());
+                final SearcherManager searcher = new SearcherManager(writer, null);
+                LOGGER.info("ContentStore Changeset index has been correctly mounted on {}", indexDirectory.getAbsolutePath());
 
                 return new ChangeSet(
                         searcher,
@@ -123,8 +115,7 @@ public class ChangeSet implements AutoCloseable
             catch (Exception exception)
             {
                 ofNullable(writer).ifPresent(ChangeSet::silentyClose);
-                ofNullable(searcher).map(IndexSearcher::getIndexReader).ifPresent(ChangeSet::silentyClose);
-                throw new IllegalArgumentException("Unable to create the ContentStore ChangeSet data structure.", exception);
+                throw new IllegalArgumentException("Unable to create a ContentStore ChangeSet data structure. See further details in the stacktrack below.", exception);
             }
         }
     }
@@ -138,7 +129,7 @@ public class ChangeSet implements AutoCloseable
     final Set<String> deletes;
     final Set<String> adds;
 
-    private final IndexSearcher searcher;
+    private final SearcherManager searcher;
     private final IndexWriter writer;
 
     /**
@@ -157,13 +148,13 @@ public class ChangeSet implements AutoCloseable
     /**
      * Builds a new {@link ChangeSet} with the given Lucene facades.
      *
-     * @param searcher the index searcher.
-     * @param writer the index writer.
+     * @param searcher the searcher reference (actually a {@link SearcherManager} instance instead of dealing with {@link IndexSearcher} directly.
+     * @param writer the {@link IndexWriter} instance used for persisting the content store changes.
      * @param deletesContainer the container which will hold the deletes.
      * @param addsContainer the container which will hold the adds/updates.
      */
     private ChangeSet(
-            final IndexSearcher searcher,
+            final SearcherManager searcher,
             final IndexWriter writer,
             final Set<String> deletesContainer,
             final Set<String> addsContainer)
@@ -213,6 +204,8 @@ public class ChangeSet implements AutoCloseable
     {
         final long version = System.currentTimeMillis();
 
+        LOGGER.debug("About to add a new Changeset entry (version = {}, deletes = {}, adds = {})", version, deletes.size(), adds.size());
+
         final Document document = new Document();
         document.add(new NumericDocValuesField(VERSION_FIELD_NAME, version));
         document.add(new LongPoint(RVERSION_FIELD_NAME, version));
@@ -226,15 +219,16 @@ public class ChangeSet implements AutoCloseable
 
         writer.addDocument(document);
         writer.commit();
+        searcher.maybeRefresh();
 
-        LOGGER.debug("New Changeset entry added (version = {}, deletes = {}, adds = {})", version, deletes.size(), adds.size());
+        LOGGER.debug("New Changeset entry have been added (version = {}, deletes = {}, adds = {})", version, deletes.size(), adds.size());
     }
 
     @Override
     public void close()
     {
         ofNullable(writer).ifPresent(ChangeSet::silentyClose);
-        ofNullable(searcher).map(IndexSearcher::getIndexReader).ifPresent(ChangeSet::silentyClose);
+        ofNullable(searcher).ifPresent(ChangeSet::silentyClose);
     }
 
     /**
@@ -246,7 +240,7 @@ public class ChangeSet implements AutoCloseable
     {
         try
         {
-            TopDocs hits = searcher.search(
+            TopDocs hits = searcher().search(
                     new MatchAllDocsQuery(),
                     1,
                     new Sort(new SortedNumericSortField(VERSION_FIELD_NAME, SortField.Type.LONG, true)),
@@ -281,7 +275,7 @@ public class ChangeSet implements AutoCloseable
         try
         {
             Query query = LongPoint.newRangeQuery(VERSION_FIELD_NAME, Math.addExact(version, 1), Long.MAX_VALUE);
-            TopDocs hits = searcher.search(
+            TopDocs hits = searcher().search(
                     query,
                     100,
                     new Sort(new SortedNumericSortField(VERSION_FIELD_NAME, SortField.Type.LONG)),
@@ -328,7 +322,7 @@ public class ChangeSet implements AutoCloseable
     {
         try
         {
-            return searcher.doc(hit.doc);
+            return searcher().doc(hit.doc);
         }
         catch (IOException e)
         {
@@ -360,5 +354,10 @@ public class ChangeSet implements AutoCloseable
         {
            LOGGER.error("Unable to properly close the resource instance {}. See further details in the stacktrace below.", resource, exception);
         }
+    }
+
+    private IndexSearcher searcher() throws IOException
+    {
+        return searcher.acquire();
     }
 }
