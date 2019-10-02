@@ -1,0 +1,22 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="IEGSCompatibilitySuite" verbose="6" preserve-order="true">
+
+	<listeners>
+		<listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+		<listener class-name="org.alfresco.utility.report.log.LogsListener"/>
+	</listeners>
+	
+    <test name="SS-With-GS">
+        <packages>
+            <package name="org.alfresco.test.search.functional.gs.search.*"/>
+        </packages>
+    </test>
+    <test name="IE-With-GS">
+        <packages>
+            <package name="org.alfresco.test.search.functional.gs.sql.*"/>
+        </packages>
+    </test>
+    <suite-files>
+        <suite-file path="src/test/resources/InsightSuite.xml"></suite-file>
+    </suite-files>   
+</suite>
