@@ -5,11 +5,11 @@
  * agreement is prohibited.
  */
 
-package org.alfresco.test.search.functional.searchServices.search.rm;
+package org.alfresco.test.search.functional.gs;
 
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
-
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import java.util.List;
 
 import org.alfresco.dataprep.SiteService.RMSiteCompliance;
@@ -20,8 +20,11 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
+import org.alfresco.rest.rm.enterprise.service.ClassificationService;
+import org.alfresco.test.search.functional.insightEngine.AbstractInsightEngineE2ETest;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +33,12 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 
 /**
- * Base test class for RM tests.
+ * Base test class for GS tests.
  * 
  * @author Cristina Diaconu
+ * @author Meenal Bhave
  */
-public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
+public abstract class AbstractGSE2ETest extends AbstractInsightEngineE2ETest
 {
     protected static final String FILE_PLAN_ALIAS = "-filePlan-";
     protected static final String RECORD_TYPE = "rma:record";
@@ -52,20 +56,27 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
     protected static final String FOLDER2 = RandomData.getRandomName("RM_folder2");
     protected static final String ELECTRONIC_FILE = RandomData.getRandomName("RM_electonic_file");
     protected static final String NON_ELECTRONIC_FILE = RandomData.getRandomName("RM_nonelectonic_file");
-    protected static final String SEARCH_LANGUAGE = "cmis";
+
+    protected static final String SEARCH_LANGUAGE_CMIS = "cmis";
+    
+    protected RecordCategory rootCategory;
+    protected Record electronicRecord, nonElectronicRecord;
 
     @Autowired
     protected RestAPIFactory restAPIFactory;
+    
+    @Autowired
+    private ClassificationService classificationService;
 
     @BeforeClass(alwaysRun = true)
-    public void rmDataPreparation() throws Exception
+    public void rmDataPreparation()
     {
         serverHealth.assertServerIsOnline();
 
         testSite = createRMSite();
 
         // create the Root category
-        RecordCategory rootCategory = createRootCategory(ROOT_CATEGORY_NAME);
+        rootCategory = createRootCategory(ROOT_CATEGORY_NAME);
         Assert.assertNotNull(rootCategory, "Root category was not created!");
 
         // Add two children (categories) on Root category
@@ -84,18 +95,24 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
         createRecordFolder(childCategory2.getId(), FOLDER2);
 
         // Complete a file
-        Record electronicRecord = createElectronicRecord(folder1.getId(), ELECTRONIC_FILE);
+        electronicRecord = createElectronicRecord(folder1.getId(), ELECTRONIC_FILE);
         completeRecord(electronicRecord.getId());
-        createNonElectronicRecord(folder1.getId(), NON_ELECTRONIC_FILE);
+        
+        nonElectronicRecord = createNonElectronicRecord(folder1.getId(), NON_ELECTRONIC_FILE);
 
         // Add an electronic record on folder2
         createElectronicRecord(folder2.getId(), ELECTRONIC_FILE);
+    }
+    
+    public ClassificationService getClassificationService()
+    {
+        return classificationService;
     }
 
     /**
      * Create a new RM Site. If the site already exists then remove it and create a new one.
      */
-    public SiteModel createRMSite() throws Exception
+    public SiteModel createRMSite()
     {
         RMSiteAPI rmSiteAPI = restAPIFactory.getRMSiteAPI();
 
@@ -107,16 +124,19 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
         return dataSite.createRMSite(RMSiteCompliance.STANDARD);
     }
 
+    protected RestAPIFactory getRestAPIFactory()
+    {
+        return restAPIFactory;
+    }
     /**
      * Helper method to create root category as the admin user
      *
      * @param categoryName The name of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(String categoryName) throws Exception
+    public RecordCategory createRootCategory(String categoryName)
     {
-        return createRootCategory(dataUser.getAdminUser(), categoryName, RECORD_CATEGORY_TITLE);
+        return createRootCategory(adminUserModel, categoryName, RECORD_CATEGORY_TITLE);
     }
 
     /**
@@ -126,10 +146,8 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param categoryName The name of the category
      * @param categoryTitle The title of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
      */
     public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle)
-                throws Exception
     {
         RecordCategory recordCategoryModel = createRecordCategoryModel(categoryName, categoryTitle);
         return restAPIFactory.getFilePlansAPI(userModel).createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS);
@@ -141,11 +159,10 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @return The created child category
-     * @throws Exception on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name)
     {
-        return createRecordCategoryChild(dataUser.getAdminUser(), recordCategoryId, name, RECORD_CATEGORY_TYPE);
+        return createRecordCategoryChild(adminUserModel, recordCategoryId, name, RECORD_CATEGORY_TYPE);
     }
 
     /**
@@ -156,10 +173,9 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param name The name of the record category child
      * @param type The type of the record category child
      * @return The created child category
-     * @throws Exception on unsuccessful component creation
      */
     public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name,
-                String type) throws Exception
+                String type)
     {
         RecordCategoryChild recordCategoryChildModel = createRecordCategoryChildModel(name, type);
         return restAPIFactory.getRecordCategoryAPI(user).createRecordCategoryChild(recordCategoryChildModel,
@@ -172,11 +188,10 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @return The created record folder.
-     * @throws Exception on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name)
     {
-        return createRecordCategoryChild(dataUser.getAdminUser(), recordCategoryId, name, RECORD_FOLDER_TYPE);
+        return createRecordCategoryChild(adminUserModel, recordCategoryId, name, RECORD_FOLDER_TYPE);
     }
 
     /**
@@ -185,9 +200,8 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param parentId The id of the parent
      * @param name The name of the record
      * @return The created record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createElectronicRecord(String parentId, String name) throws Exception
+    public Record createElectronicRecord(String parentId, String name)
     {
         return createElectronicRecord(parentId, name, null);
     }
@@ -198,9 +212,8 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param parentId The id of the parent
      * @param name The name of the record
      * @return The created electronic record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    public Record createElectronicRecord(String parentId, String name, UserModel user)
     {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
         Record recordModel = Record.builder().name(name).nodeType(CONTENT_TYPE).build();
@@ -213,9 +226,8 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param parentId The id of the parent
      * @param name The name of the record
      * @return The created non electronic record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createNonElectronicRecord(String parentId, String name) throws Exception
+    public Record createNonElectronicRecord(String parentId, String name)
     {
         return createNonElectronicRecord(parentId, name, null);
     }
@@ -227,9 +239,8 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      * @param name The name of the record
      * @param user The user who creates the non-electronic record
      * @return The created non electronic record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record createNonElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    public Record createNonElectronicRecord(String parentId, String name, UserModel user)
     {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
         Record recordModel = Record.builder().name(name).nodeType(NON_ELECTRONIC_RECORD_TYPE).build();
@@ -241,9 +252,8 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
      *
      * @param recordId The id of the record to complete
      * @return The completed record
-     * @throws Exception on unsuccessful component creation
      */
-    public Record completeRecord(String recordId) throws Exception
+    public Record completeRecord(String recordId)
     {
         RecordsAPI recordsAPI = restAPIFactory.getRecordsAPI();
         List<String> aspects = recordsAPI.getRecord(recordId).getAspectNames();
@@ -259,5 +269,46 @@ public abstract class AbstractRmE2ETest extends AbstractE2EFunctionalTest
         restAPIFactory.getRmRestWrapper().assertStatusCodeIs(HttpStatus.OK);
 
         return updateRecord;
+    }
+    
+    /**
+     * Helper method to create root category
+     *
+     * @return The created category
+     */
+    public RecordCategoryChild createCategoryFolderInFilePlan()
+    {
+        // create root category
+        RecordCategory recordCategory = createRootCategory("Category " + getRandomAlphanumeric());
+
+        return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
+    }
+    
+    /**
+     * Helper method to create record folder
+     *
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the folder
+     * @return The created folder
+     */
+    public RecordCategoryChild createFolder(String recordCategoryId, String name)
+    {
+        UserModel asUser = dataContent.getAdminUser();
+        RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
+        return getRestAPIFactory().getRecordCategoryAPI(asUser).createRecordCategoryChild(recordFolderModel, recordCategoryId);
+    }
+    
+    
+    /**
+     * Helper method to create a test user with rm role
+     *
+     * @param user to which the rm role is to be assigned
+     * @param userRole the rm role
+     * @return the created user model
+     */
+    protected UserModel createUserWithRMRole(UserModel user, String userRole)
+    {
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(user.getUsername(), userRole);
+        return user;
     }
 }
