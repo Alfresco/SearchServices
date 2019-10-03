@@ -30,24 +30,30 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.config.ConfigUtil;
+import org.alfresco.solr.handler.IndexFetcher;
 import org.alfresco.solr.handler.ReplicationHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.core.SolrResourceLoader;
+import org.apache.solr.handler.SnapShooter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
@@ -76,6 +82,10 @@ public class SolrContentStore implements ContentStore, Closeable
 
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
+    private static final String VERSION_FILE = ".version";
+
+    public static final String DELETES = "deletes";
+    public static final String ADDS = "adds";
 
     private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
     private final String root;
@@ -143,13 +153,15 @@ public class SolrContentStore implements ContentStore, Closeable
                     "deletes", emptyList());
         }
 
+        ChangeSet requestedVersion = changeSet.since(version);
+
         return Map.of(
-                "deletes",
-                changeSet.deletes.stream()
+                DELETES,
+                requestedVersion.deletes.stream()
                         .map(path -> Map.<String, Object>of("name", path))
                         .collect(toList()),
-                "adds",
-                changeSet.adds.stream()
+                ADDS,
+                requestedVersion.adds.stream()
                         .map(relativePath -> root + relativePath)
                         .map(File::new)
                         .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
@@ -380,4 +392,46 @@ public class SolrContentStore implements ContentStore, Closeable
     public void close() throws IOException {
         changeSet.close();
     }
+
+    /**
+     * Set a new version of content store version
+     * @param contentStoreVersion
+     */
+    public void setContentStoreVersion(Long contentStoreVersion) {
+        try {
+            File tmpFile = new File(root, ".version-"
+                    + new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(new Date()));
+            FileWriter wr = new FileWriter(tmpFile);
+            wr.write(Long.toString(contentStoreVersion));
+            wr.close();
+
+            tmpFile.renameTo(new File(root, ".version"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public Long getContentStoreVersion() {
+        return getPersistedContentStoreVersion();
+    }
+
+
+
+    private Long getPersistedContentStoreVersion(){
+        try {
+            return Files.lines(Paths.get(root, VERSION_FILE))
+                    .map(Long::parseLong)
+                    .findFirst().orElseThrow();
+        } catch (IOException e) {
+            return 0l;
+        }
+    }
+
+    public void flushChangeSet() throws IOException {
+        changeSet.flush();
+    }
+
+
 }

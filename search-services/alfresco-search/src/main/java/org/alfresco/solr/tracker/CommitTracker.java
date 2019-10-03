@@ -151,6 +151,8 @@ public class CommitTracker extends AbstractTracker
                 maintenance();
             }
 
+            infoSrv.flushContentStore();
+
             //Do the commit opening the searcher if needed. This will commit all the work done by indexing trackers.
             //This will return immediately and not wait for searchers to warm
             //System.out.println("################### Commit:"+openSearcherNeeded);

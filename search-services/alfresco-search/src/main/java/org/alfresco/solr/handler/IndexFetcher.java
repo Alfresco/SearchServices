@@ -18,7 +18,7 @@ package org.alfresco.solr.handler;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.alfresco.solr.content.ContentStoreCache;
+import org.alfresco.solr.content.SolrContentStore;
 import org.apache.http.client.HttpClient;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.index.IndexCommit;
@@ -102,7 +102,6 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import java.util.zip.InflaterInputStream;
 
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONTENT_STORE_FILE;
 import static org.alfresco.solr.handler.ReplicationHandler.ALIAS;
 import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILES;
 import static org.alfresco.solr.handler.ReplicationHandler.CHECKSUM;
@@ -116,6 +115,7 @@ import static org.alfresco.solr.handler.ReplicationHandler.COMPRESSION;
 import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILES;
 import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILE_SHORT;
 import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILE_LIST;
+import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_VERSION;
 import static org.alfresco.solr.handler.ReplicationHandler.EXTERNAL;
 import static org.alfresco.solr.handler.ReplicationHandler.FILE;
 import static org.alfresco.solr.handler.ReplicationHandler.FILE_STREAM;
@@ -124,7 +124,6 @@ import static org.alfresco.solr.handler.ReplicationHandler.GENERATION;
 import static org.alfresco.solr.handler.ReplicationHandler.INTERNAL;
 import static org.alfresco.solr.handler.ReplicationHandler.MASTER_URL;
 import static org.alfresco.solr.handler.ReplicationHandler.OFFSET;
-import static org.alfresco.solr.handler.ReplicationHandler.PACKET_SZ;
 import static org.alfresco.solr.handler.ReplicationHandler.SIZE;
 import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILE;
 import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILES;
@@ -143,6 +142,8 @@ import static org.apache.solr.common.params.CommonParams.NAME;
  *
  */
 public class IndexFetcher {
+
+
   private static final int _100K = 100000;
 
   public static final String INDEX_PROPERTIES = "index.properties";
@@ -153,6 +154,7 @@ public class IndexFetcher {
   private final String masterUrl;
 
   final ReplicationHandler replicationHandler;
+  private final SolrContentStore contentStore;
 
   private volatile Date replicationStartTimeStamp;
   private RTimer replicationTimer;
@@ -166,6 +168,8 @@ public class IndexFetcher {
   private volatile List<Map<String, Object>> tlogFilesToDownload;
 
   private volatile List<Map<String, Object>> contentStoreFilesToDownload;
+
+  private volatile List<Map<String, Object>> contentStoreFilesToDelete;
 
   private volatile List<Map<String, Object>> filesDownloaded;
 
@@ -194,6 +198,8 @@ public class IndexFetcher {
   private final HttpClient myHttpClient;
 
   private static final String INTERRUPT_RESPONSE_MESSAGE = "Interrupted while waiting for modify lock";
+
+  private static boolean contentStoreReplicating = false;
 
 
   public static class IndexFetchResult {
@@ -250,7 +256,8 @@ public class IndexFetcher {
     return HttpClientUtil.createClient(httpClientParams, core.getCoreContainer().getUpdateShardHandler().getConnectionManager());
   }
 
-  public IndexFetcher(final NamedList initArgs, final ReplicationHandler handler, final SolrCore sc) {
+  public IndexFetcher(final NamedList initArgs, final ReplicationHandler handler, final SolrCore sc, SolrContentStore contentStore) {
+    this.contentStore = contentStore;
     solrCore = sc;
     String masterUrl = (String) initArgs.get(MASTER_URL);
     if (masterUrl == null)
@@ -303,10 +310,11 @@ public class IndexFetcher {
   /**
    * Fetches the list of files in a given index commit point and updates internal list of files to download.
    */
-  private void fetchFileList(long gen) throws IOException {
+  private void fetchFileList(long indexGeneration, long contentStoreGeneration) throws IOException {
     ModifiableSolrParams params = new ModifiableSolrParams();
     params.set(COMMAND,  CMD_GET_FILE_LIST);
-    params.set(GENERATION, String.valueOf(gen));
+    params.set(GENERATION, String.valueOf(indexGeneration));
+    params.set(CONTENT_STORE_VERSION, String.valueOf(contentStoreGeneration));
     params.set(CommonParams.WT, JAVABIN);
     params.set(CommonParams.QT, ReplicationHandler.PATH);
     QueryRequest req = new QueryRequest(params);
@@ -322,7 +330,7 @@ public class IndexFetcher {
         filesToDownload = Collections.synchronizedList(files);
       else {
         filesToDownload = Collections.emptyList();
-        LOG.error("No files to download for index generation: "+ gen);
+        LOG.error("No files to download for index generation: "+ indexGeneration);
       }
 
       files = (List<Map<String,Object>>) response.get(CONF_FILES);
@@ -334,10 +342,12 @@ public class IndexFetcher {
         tlogFilesToDownload = Collections.synchronizedList(files);
       }
 
-      files = (List<Map<String, Object>>) response.get(CONTENT_STORE_FILES);
+      Map<String, List<Map<String, Object>>> contentStoreMap =
+              (Map<String, List<Map<String, Object> > >) response.get(CONTENT_STORE_FILES);
 
-      if (files != null) {
-        contentStoreFilesToDownload = Collections.synchronizedList(files);
+      if (contentStoreMap != null) {
+        contentStoreFilesToDownload = Collections.synchronizedList(contentStoreMap.get(SolrContentStore.ADDS));
+        contentStoreFilesToDelete = Collections.synchronizedList(contentStoreMap.get(SolrContentStore.DELETES));
       }
 
     } catch (SolrServerException e) {
@@ -345,8 +355,8 @@ public class IndexFetcher {
     }
   }
 
-  IndexFetchResult fetchLatestIndex(boolean forceReplication) throws IOException, InterruptedException {
-    return fetchLatestIndex(forceReplication, false);
+  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean replicateContentStore) throws IOException, InterruptedException {
+    return fetchLatestIndex(forceReplication, false, replicateContentStore);
   }
 
   /**
@@ -355,10 +365,12 @@ public class IndexFetcher {
    *
    * @param forceReplication force a replication in all cases
    * @param forceCoreReload force a core reload in all cases
+   * @param contentStoreReplication replicate contentStore
    * @return true on success, false if slave is already in sync
    * @throws IOException if an exception occurs
    */
-  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload) throws IOException, InterruptedException {
+  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload, boolean contentStoreReplication)
+          throws IOException, InterruptedException {
 
     boolean cleanupDone = false;
     boolean successfulInstall = false;
@@ -393,8 +405,14 @@ public class IndexFetcher {
         }
       }
 
+
+
+      long slaveContentStoreVersion = contentStore.getContentStoreVersion();
       long latestVersion = (Long) response.get(CMD_INDEX_VERSION);
+      long masterContentStoreVersion = contentStoreReplication? (Long) response.get(CONTENT_STORE_VERSION) : -1;
       long latestGeneration = (Long) response.get(GENERATION);
+
+      boolean contentStoreReplicationNeeded = contentStoreReplication && (masterContentStoreVersion != slaveContentStoreVersion);
 
       LOG.info("Master's generation: " + latestGeneration);
       LOG.info("Master's version: " + latestVersion);
@@ -447,8 +465,10 @@ public class IndexFetcher {
         return IndexFetchResult.ALREADY_IN_SYNC;
       }
       LOG.info("Starting replication process");
+
+
       // get the list of files first
-      fetchFileList(latestGeneration);
+      fetchFileList(latestGeneration, slaveContentStoreVersion);
       // this can happen if the commit point is deleted before we fetch the file list.
       if (filesToDownload.isEmpty()) {
         return IndexFetchResult.PEER_INDEX_COMMIT_DELETED;
@@ -538,9 +558,24 @@ public class IndexFetcher {
           successfulInstall = false;
 
           long bytesDownloaded = downloadIndexFiles(isFullCopyNeeded, indexDir, tmpIndexDir, latestGeneration);
-          if (contentStoreFilesToDownload != null){
-            bytesDownloaded += downloadContentStoreFiles(ContentStoreCache.get().getContentStoreRootPath(), latestGeneration);
+
+
+          if (contentStoreReplicationNeeded)
+          {
+
+            if (contentStoreFilesToDownload != null){
+              bytesDownloaded += downloadContentStoreFiles(contentStore.getRootLocation(), latestGeneration);
+            }
+
+            if (contentStoreFilesToDelete != null)
+            {
+              deleteContentStoreFiles(contentStore.getRootLocation(), contentStoreFilesToDelete);
+            }
+
+            contentStore.setContentStoreVersion(masterContentStoreVersion);
           }
+
+
           if (tlogFilesToDownload != null) {
             bytesDownloaded += downloadTlogFiles(tmpTlogDir, latestGeneration);
             reloadCore = true; // reload update log
@@ -633,7 +668,7 @@ public class IndexFetcher {
           LOG.warn(
                   "Replication attempt was not successful - trying a full index replication reloadCore={}",
                   reloadCore);
-          successfulInstall = fetchLatestIndex(true, reloadCore).getSuccessful();
+          successfulInstall = fetchLatestIndex(true, reloadCore, contentStoreReplication).getSuccessful();
         }
 
         markReplicationStop();
@@ -667,28 +702,27 @@ public class IndexFetcher {
 
     File tmpContentStoreDirectory = new File(contentStoreDirectory, "contentstore." + getDateAsStr(new Date()));
 
-    contentStoreFilesToDownload = contentStoreFilesToDownload.stream().filter(
+    List<Map<String, Object>> contentStoreFilesToDownloadFiltered = contentStoreFilesToDownload.stream().filter(
             file -> compareContentStoreFiles(new File(contentStoreDirectory),
                     (String) file.get(NAME),
                     (Long) file.get(SIZE),
                     (Long) file.get(CHECKSUM))).collect(Collectors.toList());
 
 
-    if (!contentStoreFilesToDownload.isEmpty()) {
-      for (List<Map<String, Object>> partition : Lists.partition(contentStoreFilesToDownload, CONTENT_STORE_PARTITION_SIZE)) {
+    if (!contentStoreFilesToDownloadFiltered.isEmpty()) {
+      for (List<Map<String, Object>> partition : Lists.partition(contentStoreFilesToDownloadFiltered, CONTENT_STORE_PARTITION_SIZE)) {
         contentStoreFileFetcher = new ContentStoreFetcher(
                 tmpContentStoreDirectory,
                 ReplicationHandler.CONTENT_STORE_FILES,
-                latestGeneration,
                 partition);
 
-        contentStoreFileFetcher.fetchFile(); // TODO change name
+        contentStoreFileFetcher.fetchFile(); // TODO change method
         bytesDownloaded += contentStoreFileFetcher.getBytesDownloaded();
         contentStoreFilesDownloaded.addAll(partition);
       }
 
       terminateAndWaitFsyncService();
-      copyTmpContentStoreToContentStore(tmpContentStoreDirectory);
+      copyTmpContentStoreToContentStore(tmpContentStoreDirectory, contentStoreDirectory);
       delTree(tmpContentStoreDirectory);
     }
     return bytesDownloaded;
@@ -1325,18 +1359,17 @@ public class IndexFetcher {
 
 
 
-  private void copyTmpContentStoreToContentStore(File tmpContentStoreDir)
+  private void copyTmpContentStoreToContentStore(File tmpContentStoreDir, String contentStorePath)
   {
 
     String tmpContentStorePath = tmpContentStoreDir.getPath();
-    String contentStoreDir = ContentStoreCache.get().getContentStoreRootPath();;
 
     try
     {
       Files.walk(tmpContentStoreDir.toPath()).forEach(p -> {
         File tmpFile = new File(p.toUri());
         if (!tmpFile.isDirectory()) {
-          File csFile = new File(p.toString().replaceFirst(tmpContentStorePath, contentStoreDir));
+          File csFile = new File(p.toString().replaceFirst(tmpContentStorePath, contentStorePath));
           try {
             Files.createDirectories(Paths.get(csFile.getParent()));
             tmpFile.renameTo(csFile);
@@ -1348,6 +1381,17 @@ public class IndexFetcher {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+
+  private void deleteContentStoreFiles(String contentStorePath, List<Map<String, Object>> filesToDelete)
+  {
+    filesToDelete.stream().map(f -> (String) f.get(NAME)).forEach( p ->
+            {
+              File f = new File(contentStorePath, p);
+              f.delete();
+            }
+    );
   }
 
   /**
@@ -1387,7 +1431,8 @@ public class IndexFetcher {
     return true;
   }
 
-  private String getDateAsStr(Date d) {
+
+  public String getDateAsStr(Date d) {
     return new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(d);
   }
 
@@ -1901,9 +1946,8 @@ public class IndexFetcher {
 
     ContentStoreFetcher(File dir,
                         String solrParamOutput,
-                        long latestGen,
                         List<Map<String, Object>> filesDetails) throws IOException {
-      super(solrParamOutput, latestGen);
+      super(solrParamOutput, 0);
       this.dir = dir;
       this.filesToDownload = new HashSet<>();
       filesDetails.forEach( e -> filesToDownload.add((String) e.get(NAME)));

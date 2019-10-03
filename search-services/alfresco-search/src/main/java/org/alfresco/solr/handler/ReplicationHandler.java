@@ -17,8 +17,6 @@
 package org.alfresco.solr.handler;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.content.ContentStoreCache;
 import org.alfresco.solr.content.SolrContentStore;
 import org.apache.commons.io.IOUtils;
 import org.apache.lucene.codecs.CodecUtil;
@@ -85,7 +83,6 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -106,6 +103,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,6 +181,10 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   private IndexFetcher pollingIndexFetcher;
 
   private ReentrantLock indexFetchLock = new ReentrantLock();
+
+  private static Lock contentStoreReplicationLock = new ReentrantLock();
+
+  private static boolean isContentStoreReplicating = false;
 
   private ExecutorService restoreExecutor = ExecutorUtil.newMDCAwareSingleThreadExecutor(
       new DefaultSolrThreadFactory("restoreExecutor"));
@@ -266,6 +268,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
         core.getDeletionPolicy().setReserveDuration(commitPoint.getGeneration(), reserveCommitDuration);
         rsp.add(CMD_INDEX_VERSION, IndexDeletionPolicyWrapper.getCommitTimestamp(commitPoint));
         rsp.add(GENERATION, commitPoint.getGeneration());
+        rsp.add(CONTENT_STORE_VERSION, contentStore.getLastCommittedVersion());
       } else {
         // This happens when replication is not configured to happen after startup and no commit/optimize
         // has happened yet.
@@ -404,19 +407,32 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   private volatile IndexFetcher currentIndexFetcher;
 
   public IndexFetcher.IndexFetchResult doFetch(SolrParams solrParams, boolean forceReplication) {
+
+    boolean contentStoreReplication = false;
     String masterUrl = solrParams == null ? null : solrParams.get(MASTER_URL);
     if (!indexFetchLock.tryLock())
       return IndexFetcher.IndexFetchResult.LOCK_OBTAIN_FAILED;
     try {
+
+      contentStoreReplicationLock.lock();
+      if (!isContentStoreReplicating)
+      {
+        contentStoreReplication = true;
+        isContentStoreReplicating = true;
+      }
+
+      contentStoreReplicationLock.unlock();
+
+
       if (masterUrl != null) {
         if (currentIndexFetcher != null && currentIndexFetcher != pollingIndexFetcher) {
           currentIndexFetcher.destroy();
         }
-        currentIndexFetcher = new IndexFetcher(solrParams.toNamedList(), this, core);
+        currentIndexFetcher = new IndexFetcher(solrParams.toNamedList(), this, core, contentStore);
       } else {
         currentIndexFetcher = pollingIndexFetcher;
       }
-      return currentIndexFetcher.fetchLatestIndex(forceReplication);
+      return currentIndexFetcher.fetchLatestIndex(forceReplication, contentStoreReplication);
     } catch (Exception e) {
       SolrException.log(LOG, "Index fetch failed ", e);
       return new IndexFetcher.IndexFetchResult(IndexFetcher.IndexFetchResult.FAILED_BY_EXCEPTION_MESSAGE, false, e);
@@ -424,6 +440,14 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       if (pollingIndexFetcher != null) {
         currentIndexFetcher = pollingIndexFetcher;
       }
+
+      if (contentStoreReplication)
+      {
+        contentStoreReplicationLock.lock();
+        isContentStoreReplicating = false;
+        contentStoreReplicationLock.unlock();
+      }
+
       indexFetchLock.unlock();
     }
   }
@@ -603,7 +627,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     String contentStoreFileName = solrParams.get(CONTENT_STORE_FILE);
     if (cfileName != null) {
       rsp.add(FILE_STREAM, new LocalFsConfFileStream(solrParams));
-    } else if (tlogFileName != null) {
+    } else if (tlogFileName != null ) {
       rsp.add(FILE_STREAM, new LocalFsTlogFileStream(solrParams));
     }
     else if (contentStoreFileName != null) {
@@ -622,12 +646,24 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   @SuppressWarnings("unchecked")
   private void getFileList(SolrParams solrParams, SolrQueryResponse rsp) {
     String v = solrParams.get(GENERATION);
+
     if (v == null) {
       rsp.add("status", "no index generation specified");
       return;
     }
-    long gen = Long.parseLong(v);
-    IndexCommit commit = core.getDeletionPolicy().getCommitPoint(gen);
+
+    long indexGeneration = Long.parseLong(v);
+
+    v = solrParams.get(CONTENT_STORE_VERSION);
+    if (v == null){
+      rsp.add("status", "no content store generation specified");
+      return;
+    }
+
+    long contentStoreGeneration = Long.parseLong(v);
+
+
+    IndexCommit commit = core.getDeletionPolicy().getCommitPoint(indexGeneration);
 
     //System.out.println("ask for files for gen:" + commit.getGeneration() + core.getCoreDescriptor().getCoreContainer().getZkController().getNodeName());
     if (commit == null) {
@@ -636,7 +672,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     }
 
     // reserve the indexcommit for sometime
-    core.getDeletionPolicy().setReserveDuration(gen, reserveCommitDuration);
+    core.getDeletionPolicy().setReserveDuration(indexGeneration, reserveCommitDuration);
     List<Map<String, Object>> result = new ArrayList<>();
     Directory dir = null;
     try {
@@ -680,7 +716,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     } catch (IOException e) {
       rsp.add("status", "unable to get file names for given index generation");
       rsp.add(EXCEPTION, e);
-      LOG.error("Unable to get file names for indexCommit generation: " + gen, e);
+      LOG.error("Unable to get file names for indexCommit generation: " + indexGeneration, e);
     } finally {
       if (dir != null) {
         try {
@@ -703,7 +739,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       catch (IOException e) {
         rsp.add("status", "unable to get tlog file names for given index generation");
         rsp.add(EXCEPTION, e);
-        LOG.error("Unable to get tlog file names for indexCommit generation: " + gen, e);
+        LOG.error("Unable to get tlog file names for indexCommit generation: " + indexGeneration, e);
       }
     }
 
@@ -713,8 +749,11 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     //if configuration files need to be included get their details
     rsp.add(CONF_FILES, getConfFileInfoFromCache(confFileNameAlias, confFileInfoCache));
 
-    // FIXME: replace the dummy value with the slave version
-    rsp.add(CONTENT_STORE_FILES, contentStore.getChanges(-1L));
+    if (contentStoreGeneration != -1)
+    {
+      Map<String, List<Map<String, Object>>> changes = contentStore.getChanges(contentStoreGeneration);
+      rsp.add(CONTENT_STORE_FILES, changes);
+    }
   }
 
   /**
@@ -1211,13 +1250,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     CoreContainer coreContainer = core.getCoreContainer();
     AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
 
-    contentStore =
-            ofNullable(coreAdminHandler.getInformationServers())
-              .map(informationServersMap -> informationServersMap.get(core.getName()))
-              .map(SolrInformationServer.class::cast)
-              .map(SolrInformationServer::getSolrContentStore)
-              .orElseThrow(() -> new SolrException(ErrorCode.SERVER_ERROR, "Alfresco ReplicationHandler seems not properly configured. The SolrInformationServer instance wasn't found or the SolrContentStore is null."));
-
+    contentStore = coreAdminHandler.getSolrContentStore();
     registerCloseHook();
     Object nbtk = initArgs.get(NUMBER_BACKUPS_TO_KEEP_INIT_PARAM);
     if(nbtk!=null) {
@@ -1228,7 +1261,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     NamedList slave = (NamedList) initArgs.get("slave");
     boolean enableSlave = isEnabled( slave );
     if (enableSlave) {
-      currentIndexFetcher = pollingIndexFetcher = new IndexFetcher(slave, this, core);
+      currentIndexFetcher = pollingIndexFetcher = new IndexFetcher(slave, this, core, contentStore);
       setupPolling((String) slave.get(POLL_INTERVAL));
       isSlave = true;
     }
@@ -1687,7 +1720,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     public void write(OutputStream out) throws IOException {
       createOutputStream(out);
       FileInputStream inputStream = null;
-      String contentStoreRoot = ContentStoreCache.get().getContentStoreRootPath();
+      String contentStoreRoot = contentStore.getRootLocation();
       try {
         for (String fileName : params.getParams(CONTENT_STORE_FILE_LIST))
         {
@@ -1765,7 +1798,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     }
 
     protected File initFile() {
-      return new File(ContentStoreCache.get().getContentStoreRootPath() + "/" + contentStoreFilename);
+      return new File(contentStore.getRootLocation() + "/" + contentStoreFilename);
     }
 
   }
@@ -1870,6 +1903,8 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   public static final String CMD_DELETE_BACKUP = "deletebackup";
 
   public static final String GENERATION = "generation";
+
+  public static final String CONTENT_STORE_VERSION = "contentstoreversion";
 
   public static final String OFFSET = "offset";
 

@@ -30,6 +30,7 @@ import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -126,8 +127,8 @@ public class ChangeSet implements AutoCloseable
     final static String DELETES_FIELD_NAME = "deletes";
     final static String CHANGESETS_ROOT_FOLDER_NAME = "changeSets";
 
-    final Set<String> deletes;
-    final Set<String> adds;
+    Set<String> deletes;
+    Set<String> adds;
 
     private final SearcherManager searcher;
     private final IndexWriter writer;
@@ -170,7 +171,7 @@ public class ChangeSet implements AutoCloseable
      *
      * @param path the relative path of the file which has been deleted.
      */
-    void delete(String path)
+    synchronized void delete(String path)
     {
         adds.remove(path);
         deletes.add(path);
@@ -185,7 +186,7 @@ public class ChangeSet implements AutoCloseable
      *
      * @param path the relative path of the file which has been updated or added.
      */
-    void addOrReplace(String path)
+    synchronized void addOrReplace(String path)
     {
         deletes.remove(path);
         adds.add(path);
@@ -202,6 +203,13 @@ public class ChangeSet implements AutoCloseable
      */
     void flush() throws IOException
     {
+
+        if (adds.isEmpty() && deletes.isEmpty())
+        {
+            LOGGER.debug("no changes in contentstore to flush");
+            return;
+        }
+
         final long version = System.currentTimeMillis();
 
         LOGGER.debug("About to add a new Changeset entry (version = {}, deletes = {}, adds = {})", version, deletes.size(), adds.size());
@@ -209,11 +217,23 @@ public class ChangeSet implements AutoCloseable
         final Document document = new Document();
         document.add(new NumericDocValuesField(VERSION_FIELD_NAME, version));
         document.add(new LongPoint(RVERSION_FIELD_NAME, version));
-        deletes.stream()
+
+        Set<String> tmpDel;
+        Set<String> tmpAdd;
+
+        synchronized (this) {
+            tmpDel = deletes;
+            deletes = new HashSet<>();
+
+            tmpAdd = adds;
+            adds = new HashSet<>();
+        }
+
+        tmpDel.stream()
                 .map(item -> new StoredField(DELETES_FIELD_NAME, item))
                 .forEach(document::add);
 
-        adds.stream()
+        tmpAdd.stream()
                 .map(item -> new StoredField(ADDS_FIELD_NAME, item))
                 .forEach(document::add);
 
@@ -249,9 +269,9 @@ public class ChangeSet implements AutoCloseable
 
             return ofNullable(hits.scoreDocs)
                     .filter(docs -> docs.length > 0)
-                    .map(docs -> docs[0])
-                    .map(this::toDoc)
-                    .flatMap(doc -> ofNullable(doc.get(VERSION_FIELD_NAME)).map(Long::parseLong))
+                    .map(docs -> ((FieldDoc) docs[0]).fields)
+                    .filter(fields -> fields.length > 0)
+                    .map(fields -> (Long)fields[0])
                     .orElse(SolrContentStore.NO_VERSION_AVAILABLE);
         }
         catch(Exception exception)
@@ -274,7 +294,7 @@ public class ChangeSet implements AutoCloseable
     {
         try
         {
-            Query query = LongPoint.newRangeQuery(VERSION_FIELD_NAME, Math.addExact(version, 1), Long.MAX_VALUE);
+            Query query = LongPoint.newRangeQuery(RVERSION_FIELD_NAME, Math.addExact(version, 1), Long.MAX_VALUE);
             TopDocs hits = searcher().search(
                     query,
                     100,
