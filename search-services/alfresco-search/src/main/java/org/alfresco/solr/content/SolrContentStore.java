@@ -79,6 +79,7 @@ public class SolrContentStore implements ContentStore, Closeable
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
     static final long NO_VERSION_AVAILABLE = -1L;
+    static final long NO_CONTENT_STORE_REPLICATION_REQUIRED = -2L;
 
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
@@ -389,7 +390,8 @@ public class SolrContentStore implements ContentStore, Closeable
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException
+    {
         changeSet.close();
     }
 
@@ -397,8 +399,10 @@ public class SolrContentStore implements ContentStore, Closeable
      * Set a new version of content store version
      * @param contentStoreVersion
      */
-    public void setContentStoreVersion(Long contentStoreVersion) {
-        try {
+    public void setContentStoreVersion(Long contentStoreVersion)
+    {
+        try
+        {
             File tmpFile = new File(root, ".version-"
                     + new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(new Date()));
             FileWriter wr = new FileWriter(tmpFile);
@@ -407,29 +411,35 @@ public class SolrContentStore implements ContentStore, Closeable
 
             tmpFile.renameTo(new File(root, ".version"));
 
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
-
     }
 
-    public Long getContentStoreVersion() {
+    public Long getContentStoreVersion()
+    {
         return getPersistedContentStoreVersion();
     }
 
 
-
-    private Long getPersistedContentStoreVersion(){
-        try {
+    private Long getPersistedContentStoreVersion()
+    {
+        try
+        {
             return Files.lines(Paths.get(root, VERSION_FILE))
                     .map(Long::parseLong)
-                    .findFirst().orElseThrow();
-        } catch (IOException e) {
-            return 0l;
+                    .findFirst().orElse(NO_VERSION_AVAILABLE);
+        }
+        catch (IOException e)
+        {
+            return NO_VERSION_AVAILABLE;
         }
     }
 
-    public void flushChangeSet() throws IOException {
+    public void flushChangeSet() throws IOException
+    {
         changeSet.flush();
     }
 
