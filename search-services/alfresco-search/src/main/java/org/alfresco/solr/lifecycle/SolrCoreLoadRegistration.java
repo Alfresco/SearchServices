@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
@@ -41,18 +43,26 @@ import org.alfresco.solr.tracker.ModelTracker;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
+import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.StrUtils;
 import org.apache.solr.core.CloseHook;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.CoreDescriptorDecorator;
+import org.apache.solr.core.PluginInfo;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
+import org.apache.solr.request.SolrRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Deals with core registration when the core is loaded.
  *
  * @author Gethin James
+ * @author Andrea Gazzarini
  */
 class SolrCoreLoadRegistration {
 
@@ -75,6 +85,7 @@ class SolrCoreLoadRegistration {
                 AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
 
         SolrContentStore contentStore = adminHandler.getSolrContentStore();
+//        contentStore.toggleReadOnlyMode(isContentStoreInReadOnlyModeFor(core));
 
         SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
         props.putAll(srv.getProps());
@@ -131,15 +142,47 @@ class SolrCoreLoadRegistration {
     }
 
     /**
-     * Creates the trackers
+     * Checks if the content store belonging to the hosting Solr node must be set in read only mode.
      *
-     * @param coreName
-     * @param trackerRegistry
-     * @param props
-     * @param scheduler
-     * @param repositoryClient
-     * @param srv
-     * @return A list of trackers
+     * @param core the hosting {@link SolrCore} instance.
+     * @return true if the content store must be set in read only mode, false otherwise.
+     */
+    static boolean isContentStoreInReadOnlyModeFor(SolrCore core)
+    {
+        Predicate<PluginInfo> onlyReplicationHandler =
+                plugin -> "/replication".equals(plugin.name)
+                        || plugin.className.endsWith("ReplicationHandler");
+
+        Function<NamedList, Boolean> isSlaveModeEnabled =
+                params ->  ofNullable(params)
+                        .map(configuration -> {
+                            Object enable = configuration.get("enable");
+                            return enable == null ||
+                                    (enable instanceof String ? StrUtils.parseBool((String)enable) : Boolean.TRUE.equals(enable));})
+                        .orElse(false);
+
+        return core.getSolrConfig().getPluginInfos(SolrRequestHandler.class.getName())
+                    .stream()
+                    .filter(PluginInfo::isEnabled)
+                    .filter(onlyReplicationHandler)
+                    .findFirst()
+                    .map(plugin -> plugin.initArgs)
+                    .map(params -> params.get("slave"))
+                    .map(NamedList.class::cast)
+                    .map(isSlaveModeEnabled)
+                    .orElse(false);
+    }
+
+    /**
+     * Setup the trackers subsystem.
+     *
+     * @param coreName the name of the owning {@link SolrCore} instance.
+     * @param trackerRegistry the {@link TrackerRegistry} instance which will be host the trackers.
+     * @param props configuration properties.
+     * @param scheduler the trackers scheduler.
+     * @param repositoryClient the interface to Alfresco Repo.
+     * @param srv the information server reference.
+     * @return a list of enabled trackers.
      */
     private static List<Tracker> createCoreTrackers(String coreName,
                                                     TrackerRegistry trackerRegistry,
@@ -147,7 +190,7 @@ class SolrCoreLoadRegistration {
                                                     SolrTrackerScheduler scheduler,
                                                     SOLRAPIClient repositoryClient,
                                                     SolrInformationServer srv) {
-        List<Tracker> trackers = new ArrayList<Tracker>();
+        List<Tracker> trackers = new ArrayList<>();
 
         AclTracker aclTracker = new AclTracker(props, repositoryClient, coreName, srv);
         trackerRegistry.register(coreName, aclTracker);
@@ -180,14 +223,13 @@ class SolrCoreLoadRegistration {
     /**
      * Create model tracker and load persisted models.
      *
-     * @param coreName
-     * @param trackerRegistry
-     * @param props
-     * @param solrHome
-     * @param repositoryClient
-     * @param srv
-     * @param scheduler
-     * @return true if model tracker has been created, false if it already exists.
+     * @param coreName the name of the owning {@link SolrCore} instance.
+     * @param trackerRegistry the {@link TrackerRegistry} instance which will be host the trackers.
+     * @param props configuration properties.
+     * @param solrHome the Solr HOME directory.
+     * @param scheduler the trackers scheduler.
+     * @param repositoryClient the interface to Alfresco Repo.
+     * @param srv the information server reference.
      */
     private synchronized static void createModelTracker(String coreName,
                                                            TrackerRegistry trackerRegistry,
@@ -232,7 +274,7 @@ class SolrCoreLoadRegistration {
      * @param coreTrackers A collection of trackers
      * @param scheduler The scheduler
      */
-    public static void shutdownTrackers(String coreName, Collection<Tracker> coreTrackers, SolrTrackerScheduler scheduler)
+    static void shutdownTrackers(String coreName, Collection<Tracker> coreTrackers, SolrTrackerScheduler scheduler)
     {
         try
         {
@@ -246,7 +288,7 @@ class SolrCoreLoadRegistration {
                 coreTrackers.forEach(tracker -> scheduler.deleteJobForTrackerInstance(coreName,tracker) );
             }
 
-            coreTrackers.forEach(tracker -> tracker.shutdown());
+            coreTrackers.forEach(Tracker::shutdown);
         }
         catch (Exception e)
         {

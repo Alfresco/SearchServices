@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    <luceneMatchVersion>6.6.5</luceneMatchVersion>
+    <dataDir>/tmp/test</dataDir>
+    <schemaFactory class="ClassicIndexSchemaFactory" />
+    <indexConfig>
+        <lockType>${solr.lock.type:native}</lockType>
+    </indexConfig>
+
+    <requestDispatcher handleSelect="true">
+        <requestParsers
+                enableRemoteStreaming="true"
+                multipartUploadLimitInKB="2048000"
+                formdataUploadLimitInKB="2048" />
+        <httpCaching never304="true" />
+    </requestDispatcher>
+
+    <requestHandler name="/replication" class="solr.ReplicationHandler">
+        <lst name="slave">
+            <str name="enable">false</str>
+            <str name="masterUrl">http://localhost:8983/solr/alfresco</str>
+            <str name="pollInterval">00:00:20</str>
+        </lst>
+    </requestHandler>
+
+    <requestHandler name="/def" class="solr.SearchHandler" default="true">
+        <lst name="defaults">
+            <bool name="sow">false</bool>
+            <str name="df">id</str>
+            <str name="defType">lucene</str>
+        </lst>
+    </requestHandler>
+
+    <admin>
+        <defaultQuery>Query me!</defaultQuery>
+    </admin>
+</config>

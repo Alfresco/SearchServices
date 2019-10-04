@@ -485,7 +485,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
     @Override
     public ReplicationRole enableMasterMode()
     {
-        return currentRole.enableMasterMode();
+        return currentRole = currentRole.enableMasterMode();
     }
 
     /**
