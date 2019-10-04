@@ -365,7 +365,6 @@ public class IndexFetcher {
    *
    * @param forceReplication force a replication in all cases
    * @param forceCoreReload force a core reload in all cases
-   * @param replicateContentStore replicate contentStore
    * @return true on success, false if slave is already in sync
    * @throws IOException if an exception occurs
    */
@@ -455,7 +454,7 @@ public class IndexFetcher {
       // The following session should make sure that if replication is happening in more cores at the same time,
       // the contentStore replication is done only once.
       boolean replicateContentStore = replicationHandler.acquireContentStoreReplicationTask();
-      long slaveContentStoreVersion = replicateContentStore? contentStore.getContentStoreVersion() : -1;
+      long slaveContentStoreVersion = replicateContentStore? contentStore.getContentStoreVersion() : SolrContentStore.NO_CONTENT_STORE_REPLICATION_REQUIRED;
       boolean contentStoreReplicationNeeded = replicateContentStore && (masterContentStoreVersion != slaveContentStoreVersion);
 
 
@@ -1957,32 +1956,21 @@ public class IndexFetcher {
 
     @Override
     protected void fetch() throws Exception {
-      try {
-        while (true) {
-          final FastInputStream is = getStream();
-          int result;
-          try {
-            //fetch packets one by one in a single request
-            result = fetchPackets(is);
-            if (result == 0 || result == NO_CONTENT) {
-              return;
-            }
-            //if there is an error continue. But continue from the point where it got broken
-          } finally {
-            IOUtils.closeQuietly(is);
+      while (true) {
+        final FastInputStream is = getStream();
+        int result;
+        try {
+          //fetch packets one by one in a single request
+          result = fetchPackets(is);
+          if (result == 0 || result == NO_CONTENT) {
+            return;
           }
+          //if there is an error continue. But continue from the point where it got broken
+        } finally {
+          IOUtils.closeQuietly(is);
         }
-      } finally {
-//        cleanup();
-////        if cleanup succeeds . The file is downloaded fully. do an fsync
-//        fsyncService.submit(() -> {
-//          try {
-//            file.sync();
-//          } catch (IOException e) {
-//            fsyncException = e;
-//          }
-//        });
       }
+
     }
 
 

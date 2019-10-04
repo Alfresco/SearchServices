@@ -78,8 +78,8 @@ import java.util.zip.GZIPOutputStream;
 public class SolrContentStore implements ContentStore, Closeable
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
-    static final long NO_VERSION_AVAILABLE = -1L;
-    static final long NO_CONTENT_STORE_REPLICATION_REQUIRED = -2L;
+    public static final long NO_VERSION_AVAILABLE = -1L;
+    public static final long NO_CONTENT_STORE_REPLICATION_REQUIRED = -2L;
 
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
