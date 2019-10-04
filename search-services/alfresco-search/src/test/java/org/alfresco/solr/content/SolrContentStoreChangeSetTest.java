@@ -19,6 +19,8 @@
 package org.alfresco.solr.content;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.Query;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +30,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.File;
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Solr ContentStore {@link ChangeSet} test case.
@@ -103,5 +110,105 @@ public class SolrContentStoreChangeSetTest
 
         assertTrue(String.valueOf(changeSet.deletes), changeSet.deletes.contains(path));
         assertTrue(String.valueOf(changeSet.adds),changeSet.adds.isEmpty());
+    }
+
+    @Test
+    public void transientChangeset_doesNothingOnFlush() throws IOException
+    {
+        ChangeSet changeset = new ChangeSet.Builder().build();
+        changeset.addOrReplace("A");
+        changeset.delete("B");
+
+        assertEquals(1, changeset.deletes.size());
+        assertEquals(1, changeset.adds.size());
+
+        changeset.flush();
+
+        assertEquals(1, changeset.deletes.size());
+        assertEquals(1, changeset.adds.size());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void emptyChangeset_isImmutableDoesntAllowAdds()
+    {
+        ChangeSet changeset = new ChangeSet.Builder().empty().build();
+        changeset.addOrReplace("A");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void emptyChangeset_isImmutableDoesntAllowDeletes()
+    {
+        ChangeSet changeset = new ChangeSet.Builder().empty().build();
+        changeset.delete("A");
+    }
+
+    @Test
+    public void lastCommittedVersionNotPresentAtVeryBeginning()
+    {
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+    }
+
+    @Test
+    public void lastCommittedVersionNotAvailable_shouldReturnNO_AVAILABLE_VERSION() throws IOException
+    {
+        changeSet.selectEverything = mock(Query.class);
+        when(changeSet.selectEverything.rewrite(any(IndexReader.class))).thenThrow(new RuntimeException());
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+    }
+
+    @Test
+    public void flushDoesNothingIfThereAreNoChanges() throws IOException
+    {
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+
+        changeSet.flush();
+
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+    }
+
+    @Test
+    public void persistentChangesetsAreMergedBeforeReturningToRequestor() throws IOException
+    {
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+
+        changeSet.addOrReplace("A1");
+        changeSet.addOrReplace("A2");
+        changeSet.delete("A3");
+        changeSet.delete("A1");
+
+        changeSet.flush();
+
+        long lastCommittedVersionAfterFirstFlush = changeSet.getLastCommittedVersion();
+        assertNotEquals(SolrContentStore.NO_VERSION_AVAILABLE, lastCommittedVersionAfterFirstFlush);
+
+        changeSet.addOrReplace("A1");
+        changeSet.addOrReplace("A3");
+        changeSet.delete("A4");
+
+        changeSet.flush();
+
+        long lastCommittedVersionAfterSecondFlush = changeSet.getLastCommittedVersion();
+        assertNotEquals(lastCommittedVersionAfterFirstFlush, lastCommittedVersionAfterSecondFlush);
+
+        ChangeSet changesSinceTheVeryBeginning = changeSet.since(SolrContentStore.NO_VERSION_AVAILABLE);
+
+        // ADDS = [A1, A2, A3]
+        // DELS = [A4]
+        assertEquals(3, changesSinceTheVeryBeginning.adds.size());
+        assertEquals(1, changesSinceTheVeryBeginning.deletes.size());
+        assertTrue(changesSinceTheVeryBeginning.adds.contains("A1"));
+        assertTrue(changesSinceTheVeryBeginning.adds.contains("A2"));
+        assertTrue(changesSinceTheVeryBeginning.adds.contains("A3"));
+        assertTrue(changesSinceTheVeryBeginning.deletes.contains("A4"));
+
+        ChangeSet changesAfterSecondFlush = changeSet.since(lastCommittedVersionAfterFirstFlush);
+
+        // ADDS = [A1, A3]
+        // DELS = [A4]
+        assertEquals(2, changesAfterSecondFlush.adds.size());
+        assertEquals(1, changesAfterSecondFlush.deletes.size());
+        assertTrue(changesAfterSecondFlush.adds.contains("A1"));
+        assertTrue(changesAfterSecondFlush.adds.contains("A3"));
+        assertTrue(changesAfterSecondFlush.deletes.contains("A4"));
     }
 }

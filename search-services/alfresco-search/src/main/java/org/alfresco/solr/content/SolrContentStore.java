@@ -19,18 +19,19 @@
 package org.alfresco.solr.content;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
+import static org.alfresco.solr.content.SolrContentUrlBuilder.logger;
 
 import org.alfresco.repo.content.ContentContext;
-import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.config.ConfigUtil;
-import org.alfresco.solr.handler.IndexFetcher;
 import org.alfresco.solr.handler.ReplicationHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.util.BytesRef;
@@ -75,9 +76,10 @@ import java.util.zip.GZIPOutputStream;
  * @author Andrea Gazzarini
  * @since 5.0
  */
-public class SolrContentStore implements ContentStore, Closeable
+public class SolrContentStore implements Closeable, ReplicationRole
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
+
     static final long NO_VERSION_AVAILABLE = -1L;
 
     static final String CONTENT_STORE = "contentstore";
@@ -89,7 +91,245 @@ public class SolrContentStore implements ContentStore, Closeable
 
     private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
     private final String root;
-    private final ChangeSet changeSet;
+
+    private final ReplicationRole slave = new ReplicationRole()
+    {
+        @Override
+        public ReplicationRole enableMasterMode()
+        {
+            return master.enableMasterMode();
+        }
+
+        @Override
+        public long getLastCommittedVersion()
+        {
+            try
+            {
+                return Files.lines(Paths.get(root, VERSION_FILE))
+                        .map(Long::parseLong)
+                        .findFirst()
+                        .orElse(NO_VERSION_AVAILABLE);
+            }
+            catch (IOException e)
+            {
+                return NO_VERSION_AVAILABLE;
+            }
+        }
+
+        @Override
+        public void setLastCommittedVersion(long version)
+        {
+            try
+            {
+                File tmpFile = new File(root, ".version-" + new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(new Date()));
+                FileWriter wr = new FileWriter(tmpFile);
+                wr.write(Long.toString(version));
+                wr.close();
+
+                tmpFile.renameTo(new File(root, ".version"));
+            }
+            catch (IOException exception)
+            {
+                logger.error("Unable to persist the last committed content store version {}. See the stacktrace below for furtger details.", version, exception);
+            }
+        }
+
+        @Override
+        public Map<String, List<Map<String, Object>>> getChanges(long version)
+        {
+            return emptyMap();
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
+        {
+            logger.warn("NoOp SolrContentStore write call on slave side: this shouldn't happen because the ContentStore is in read-only mode when the hosting node is a slave.");
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc)
+        {
+            logger.warn("NoOp SolrContentStore write call on slave side: this shouldn't happen because the ContentStore is in read-only mode when the hosting node is a slave.");
+        }
+
+        @Override
+        public void removeDocFromContentStore(NodeMetaData nodeMetaData)
+        {
+            logger.warn("NoOp SolrContentStore write call on slave side: this shouldn't happen because the ContentStore is in read-only mode when the hosting node is a slave.");
+        }
+
+        @Override
+        public void flushChangeSet() throws IOException
+        {
+            logger.warn("NoOp ChangeSet tracking call on slave side: this shouldn't happen because the ContentStore is in read-only mode when the hosting node is a slave.");
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+            // There's nothing to close on slave side
+        }
+    };
+
+    private final ReplicationRole master = new ReplicationRole()
+    {
+        private ChangeSet changeSet;
+
+        @Override
+        public ReplicationRole enableMasterMode()
+        {
+            changeSet = ofNullable(changeSet).orElseGet(() -> new ChangeSet.Builder().withContentStoreRoot(root).build());
+            return master;
+        }
+
+        @Override
+        public long getLastCommittedVersion()
+        {
+            return changeSet.getLastCommittedVersion();
+        }
+
+        @Override
+        public void setLastCommittedVersion(long version)
+        {
+            // Do nothing here, as we are on master-side
+        }
+
+        @Override
+        public Map<String, List<Map<String, Object>>> getChanges(long version)
+        {
+            if (version == NO_VERSION_AVAILABLE)
+            {
+                return Map.of(
+                        "adds", fullContentStore(),
+                        "deletes", emptyList());
+            }
+
+            ChangeSet requestedVersion = changeSet.since(version);
+
+            return Map.of(
+                    DELETES,
+                    requestedVersion.deletes.stream()
+                            .map(path -> Map.<String, Object>of("name", path))
+                            .collect(toList()),
+                    ADDS,
+                    requestedVersion.adds.stream()
+                            .map(relativePath -> root + relativePath)
+                            .map(File::new)
+                            .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
+                            .map(ReplicationHandler.FileInfo::getAsMap)
+                            .collect(toList()));
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
+        {
+            ContentContext contentContext =
+                    of(SolrContentUrlBuilder
+                            .start()
+                            .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
+                            .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId)))
+                            .map(SolrContentUrlBuilder::getContentContext)
+                            .orElseThrow(() -> new IllegalArgumentException("Unable to build a Content Context from tenant " + tenant + " and DBID " + dbId));
+
+            this.delete(contentContext.getContentUrl());
+
+            ContentWriter writer = this.getWriter(contentContext);
+
+            log.debug("Writing {}/{} to {}", tenant, dbId, contentContext.getContentUrl());
+
+            try (OutputStream contentOutputStream = writer.getContentOutputStream();
+                 GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream))
+            {
+                JavaBinCodec codec = new JavaBinCodec(resolver);
+                codec.marshal(doc, gzip);
+
+                File file = getFileFromUrl(contentContext.getContentUrl());
+                changeSet.addOrReplace(relativePath(file));
+            }
+            catch (Exception exception)
+            {
+                log.warn("Unable to write to Content Store using URL: {}", contentContext.getContentUrl(), exception);
+            }
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc) {
+            String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
+            storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), doc);
+        }
+
+        @Override
+        public void removeDocFromContentStore(NodeMetaData nodeMetaData)
+        {
+            String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
+            String contentUrl = SolrContentUrlBuilder
+                    .start()
+                    .add(SolrContentUrlBuilder.KEY_TENANT, fixedTenantDomain)
+                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(nodeMetaData.getId()))
+                    .getContentContext()
+                    .getContentUrl();
+            delete(contentUrl);
+        }
+
+        @Override
+        public void flushChangeSet() throws IOException {
+            changeSet.flush();
+        }
+
+        @Override
+        public void close()
+        {
+            changeSet.close();
+        }
+
+        private List<Map<String, Object>> fullContentStore()
+        {
+            try
+            {
+                return Files.walk(Paths.get(root))
+                        .map(Path::toFile)
+                        .filter(onlyDatafiles)
+                        .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
+                        .map(ReplicationHandler.FileInfo::getAsMap)
+                        .collect(toList());
+            }
+            catch (Exception e)
+            {
+                log.error("An exception occurred while retrieving the whole ContentStore filelist. " +
+                        "As consequence of that an empty list will be returned (i.e. no ContentStore synch will happen).");
+                return emptyList();
+            }
+        }
+
+        private boolean delete(String contentUrl)
+        {
+            File file = getFileFromUrl(contentUrl);
+            boolean deleted = file.delete();
+
+            if (deleted) changeSet.delete(relativePath(file));
+
+            return deleted;
+        }
+
+        private ContentWriter getWriter(ContentContext context)
+        {
+            String url = context.getContentUrl();
+            File file = getFileFromUrl(url);
+            return new SolrFileContentWriter(file, url);
+        }
+    };
+
+    private ReplicationRole currentRole = slave;
+
+    private final JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
+        if(o instanceof BytesRef)
+        {
+            BytesRef br = (BytesRef)o;
+            codec.writeByteArray(br.bytes,br.offset,br.length);
+            return null;
+        }
+        return o;
+    };
 
     /**
      * Builds a new {@link SolrContentStore} instance with the given SOLR HOME.
@@ -115,7 +355,6 @@ public class SolrContentStore implements ContentStore, Closeable
         log.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
         File rootFile = new File(ConfigUtil.locateProperty(SOLR_CONTENT_DIR, path));
 
-
         try
         {
             FileUtils.forceMkdir(rootFile);
@@ -125,17 +364,6 @@ public class SolrContentStore implements ContentStore, Closeable
         }
 
         this.root = rootFile.getAbsolutePath();
-        this.changeSet = new ChangeSet.Builder().withContentStoreRoot(root).build();
-    }
-
-    /**
-     * Returns the last persisted content store version.
-     *
-     * @return the last persisted content store version, SolrContentStore#NO_VERSION_AVAILABLE in case the version isn't available.
-     */
-    public long getLastCommittedVersion()
-    {
-        return changeSet.getLastCommittedVersion();
     }
 
     /**
@@ -144,60 +372,11 @@ public class SolrContentStore implements ContentStore, Closeable
      * @param version the requestor version.
      * @return the content store changes since the given (requestor) version.
      */
+    @Override
     public Map<String, List<Map<String, Object>>> getChanges(long version)
     {
-        if (version == NO_VERSION_AVAILABLE)
-        {
-            return Map.of(
-                    "adds", fullContentStore(),
-                    "deletes", emptyList());
-        }
-
-        ChangeSet requestedVersion = changeSet.since(version);
-
-        return Map.of(
-                DELETES,
-                requestedVersion.deletes.stream()
-                        .map(path -> Map.<String, Object>of("name", path))
-                        .collect(toList()),
-                ADDS,
-                requestedVersion.adds.stream()
-                        .map(relativePath -> root + relativePath)
-                        .map(File::new)
-                        .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
-                        .map(ReplicationHandler.FileInfo::getAsMap)
-                        .collect(toList()));
+        return currentRole.getChanges(version);
     }
-
-    private List<Map<String, Object>> fullContentStore()
-    {
-        try
-        {
-            return Files.walk(Paths.get(root))
-                    .map(Path::toFile)
-                    .filter(onlyDatafiles)
-                    .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
-                    .map(ReplicationHandler.FileInfo::getAsMap)
-                    .collect(toList());
-        }
-        catch (Exception e)
-        {
-            log.error("An exception occurred while retrieving the whole ContentStore filelist. " +
-                            "As consequence of that an empty list will be returned (i.e. no ContentStore synch will happen).");
-            return emptyList();
-        }
-    }
-
-    // write a BytesRef as a byte array
-    private JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
-        if(o instanceof BytesRef)
-        {
-            BytesRef br = (BytesRef)o;
-            codec.writeByteArray(br.bytes,br.offset,br.length);
-            return null;
-        }
-        return o;
-    };
 
     /**
      * Retrieve document from SolrContentStore.
@@ -234,27 +413,15 @@ public class SolrContentStore implements ContentStore, Closeable
     }
 
     @Override
-    public boolean isContentUrlSupported(String contentUrl)
+    public long getLastCommittedVersion()
     {
-        return (contentUrl != null && contentUrl.startsWith(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX));
+        return currentRole.getLastCommittedVersion();
     }
 
     @Override
-    public boolean isWriteSupported()
+    public void setLastCommittedVersion(long version)
     {
-        return true;
-    }
-
-    @Override
-    public long getSpaceFree()
-    {
-        return -1L;
-    }
-
-    @Override
-    public long getSpaceTotal()
-    {
-        return -1L;
+        currentRole.setLastCommittedVersion(version);
     }
 
     /**
@@ -262,21 +429,11 @@ public class SolrContentStore implements ContentStore, Closeable
      *
      * @return the absolute path of the content store root folder.
      */
-    @Override
     public String getRootLocation()
     {
         return root;
     }
 
-    /**
-     * Convert a content URL into a File, whether it exists or not
-     */
-    private File getFileFromUrl(String contentUrl)
-    {
-        return new File(contentUrl.replace(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX, root + "/"));
-    }
-
-    @Override
     public boolean exists(String contentUrl)
     {
         File file = getFileFromUrl(contentUrl);
@@ -284,68 +441,9 @@ public class SolrContentStore implements ContentStore, Closeable
     }
 
     @Override
-    public ContentReader getReader(String contentUrl)
-    {
-        File file = getFileFromUrl(contentUrl);
-        return new SolrFileContentReader(file, contentUrl);
-    }
-
-    @Override
-    public ContentWriter getWriter(ContentContext context)
-    {
-        String url = context.getContentUrl();
-        File file = getFileFromUrl(url);
-        return new SolrFileContentWriter(file, url);
-    }
-
-    @Override
-    public boolean delete(String contentUrl)
-    {
-        File file = getFileFromUrl(contentUrl);
-
-        // TODO: Asynch
-        boolean deleted = file.delete();
-
-        if (deleted) changeSet.delete(relativePath(file));
-
-        return deleted;
-    }
-    /**
-     * Stores a {@link SolrInputDocument} into Alfresco solr content store.
-     *
-     * @param tenant the owning tenant.
-     * @param dbId the document DBID
-     * @param doc the document itself.
-     */
     public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
     {
-        ContentContext contentContext =
-                of(SolrContentUrlBuilder
-                            .start()
-                            .add(SolrContentUrlBuilder.KEY_TENANT, tenant)
-                            .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(dbId)))
-                   .map(SolrContentUrlBuilder::getContentContext)
-                   .orElseThrow(() -> new IllegalArgumentException("Unable to build a Content Context from tenant " + tenant + " and DBID " + dbId));
-
-        this.delete(contentContext.getContentUrl());
-
-        ContentWriter writer = this.getWriter(contentContext);
-
-        log.debug("Writing {}/{} to {}", tenant, dbId, contentContext.getContentUrl());
-
-        try (OutputStream contentOutputStream = writer.getContentOutputStream();
-             GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream))
-        {
-            JavaBinCodec codec = new JavaBinCodec(resolver);
-            codec.marshal(doc, gzip);
-
-            File file = getFileFromUrl(contentContext.getContentUrl());
-            changeSet.addOrReplace(relativePath(file));
-        }
-        catch (Exception exception)
-        {
-            log.warn("Unable to write to Content Store using URL: {}", contentContext.getContentUrl(), exception);
-        }
+        currentRole.storeDocOnSolrContentStore(tenant, dbId, doc);
     }
 
     /**
@@ -354,10 +452,10 @@ public class SolrContentStore implements ContentStore, Closeable
      * @param nodeMetaData the incoming node metadata.
      * @param doc the document itself.
      */
+    @Override
     public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
-        String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
-        storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), doc);
+        currentRole.storeDocOnSolrContentStore(nodeMetaData, doc);
     }
 
     /**
@@ -365,16 +463,28 @@ public class SolrContentStore implements ContentStore, Closeable
      *
      * @param nodeMetaData the incoming node metadata.
      */
+    @Override
     public void removeDocFromContentStore(NodeMetaData nodeMetaData)
     {
-        String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
-        String contentUrl = SolrContentUrlBuilder
-                    .start()
-                    .add(SolrContentUrlBuilder.KEY_TENANT, fixedTenantDomain)
-                    .add(SolrContentUrlBuilder.KEY_DB_ID, String.valueOf(nodeMetaData.getId()))
-                    .getContentContext()
-                .getContentUrl();
-        this.delete(contentUrl);
+        currentRole.removeDocFromContentStore(nodeMetaData);
+    }
+
+    @Override
+    public void flushChangeSet() throws IOException
+    {
+        currentRole.flushChangeSet();
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        currentRole.close();
+    }
+
+    @Override
+    public ReplicationRole enableMasterMode()
+    {
+        return currentRole.enableMasterMode();
     }
 
     /**
@@ -388,50 +498,17 @@ public class SolrContentStore implements ContentStore, Closeable
         return file.getAbsolutePath().replace(root, "");
     }
 
-    @Override
-    public void close() throws IOException {
-        changeSet.close();
-    }
-
     /**
-     * Set a new version of content store version
-     * @param contentStoreVersion
+     * Convert a content URL into a File, whether it exists or not
      */
-    public void setContentStoreVersion(Long contentStoreVersion) {
-        try {
-            File tmpFile = new File(root, ".version-"
-                    + new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(new Date()));
-            FileWriter wr = new FileWriter(tmpFile);
-            wr.write(Long.toString(contentStoreVersion));
-            wr.close();
-
-            tmpFile.renameTo(new File(root, ".version"));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    private File getFileFromUrl(String contentUrl)
+    {
+        return new File(contentUrl.replace(SolrContentUrlBuilder.SOLR_PROTOCOL_PREFIX, root + "/"));
     }
 
-    public Long getContentStoreVersion() {
-        return getPersistedContentStoreVersion();
+    private ContentReader getReader(String contentUrl)
+    {
+        File file = getFileFromUrl(contentUrl);
+        return new SolrFileContentReader(file, contentUrl);
     }
-
-
-
-    private Long getPersistedContentStoreVersion(){
-        try {
-            return Files.lines(Paths.get(root, VERSION_FILE))
-                    .map(Long::parseLong)
-                    .findFirst().orElseThrow();
-        } catch (IOException e) {
-            return 0l;
-        }
-    }
-
-    public void flushChangeSet() throws IOException {
-        changeSet.flush();
-    }
-
-
 }

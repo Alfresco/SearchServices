@@ -57,11 +57,12 @@ import java.util.function.BinaryOperator;
  * Encapsulates changes occurred in the hosting content store since the last commit.
  *
  * @author Andrea Gazzarini
+ * @since 1.5
  */
 public class ChangeSet implements AutoCloseable
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(ChangeSet.class);
-    private final static ChangeSet EMPTY_CHANGESET = new ChangeSet.Builder().empty().build();
+    final static ChangeSet EMPTY_CHANGESET = new ChangeSet.Builder().empty().build();
 
     /**
      * Builds class for creating {@link ChangeSet} instances.
@@ -133,6 +134,8 @@ public class ChangeSet implements AutoCloseable
     private final SearcherManager searcher;
     private final IndexWriter writer;
 
+    Query selectEverything = new MatchAllDocsQuery();
+
     /**
      * Builds a new transient {@link ChangeSet} with the given Lucene facades.
      *
@@ -203,6 +206,10 @@ public class ChangeSet implements AutoCloseable
      */
     void flush() throws IOException
     {
+        // No ops if this is a transient changeset
+        if (searcher == null || writer == null) {
+            return;
+        }
 
         if (adds.isEmpty() && deletes.isEmpty())
         {
@@ -261,7 +268,7 @@ public class ChangeSet implements AutoCloseable
         try
         {
             TopDocs hits = searcher().search(
-                    new MatchAllDocsQuery(),
+                    selectEverything,
                     1,
                     new Sort(new SortedNumericSortField(VERSION_FIELD_NAME, SortField.Type.LONG, true)),
                     false,
