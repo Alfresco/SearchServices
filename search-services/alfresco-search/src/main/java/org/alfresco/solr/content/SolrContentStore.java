@@ -160,13 +160,13 @@ public class SolrContentStore implements Closeable, ReplicationRole
         }
 
         @Override
-        public void flushChangeSet() throws IOException
+        public void flushChangeSet()
         {
             logger.warn("NoOp ChangeSet tracking call on slave side: this shouldn't happen because the ContentStore is in read-only mode when the hosting node is a slave.");
         }
 
         @Override
-        public void close() throws IOException
+        public void close()
         {
             // There's nothing to close on slave side
         }
@@ -320,7 +320,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
         }
     };
 
-    private ReplicationRole currentRole = slave;
+    private ReplicationRole currentRole = ReplicationRole.NO_OP;
 
     private final JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
         if(o instanceof BytesRef)

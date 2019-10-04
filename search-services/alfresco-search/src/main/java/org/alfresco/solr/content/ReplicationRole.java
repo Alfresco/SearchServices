@@ -42,6 +42,63 @@ import java.util.Map;
  */
 public interface ReplicationRole extends Closeable
 {
+    ReplicationRole NO_OP = new ReplicationRole()
+    {
+        @Override
+        public long getLastCommittedVersion()
+        {
+            return 0;
+        }
+
+        @Override
+        public void setLastCommittedVersion(long version)
+        {
+
+        }
+
+        @Override
+        public Map<String, List<Map<String, Object>>> getChanges(long version)
+        {
+            return null;
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
+        {
+
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc)
+        {
+
+        }
+
+        @Override
+        public void removeDocFromContentStore(NodeMetaData nodeMetaData)
+        {
+
+        }
+
+        @Override
+        public void flushChangeSet()
+        {
+
+        }
+
+        @Override
+        public ReplicationRole enableMasterMode()
+        {
+            return null;
+        }
+
+        @Override
+        public void close()
+        {
+
+        }
+    };
+
     /**
      * Returns the last persisted content store version.
      *
