@@ -355,8 +355,8 @@ public class IndexFetcher {
     }
   }
 
-  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean replicateContentStore) throws IOException, InterruptedException {
-    return fetchLatestIndex(forceReplication, false, replicateContentStore);
+  IndexFetchResult fetchLatestIndex(boolean forceReplication) throws IOException, InterruptedException {
+    return fetchLatestIndex(forceReplication, false);
   }
 
   /**
@@ -365,11 +365,10 @@ public class IndexFetcher {
    *
    * @param forceReplication force a replication in all cases
    * @param forceCoreReload force a core reload in all cases
-   * @param contentStoreReplication replicate contentStore
    * @return true on success, false if slave is already in sync
    * @throws IOException if an exception occurs
    */
-  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload, boolean contentStoreReplication)
+  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload)
           throws IOException, InterruptedException {
 
     boolean cleanupDone = false;
@@ -405,14 +404,9 @@ public class IndexFetcher {
         }
       }
 
-
-
-      long slaveContentStoreVersion = contentStore.getContentStoreVersion();
       long latestVersion = (Long) response.get(CMD_INDEX_VERSION);
-      long masterContentStoreVersion = contentStoreReplication? (Long) response.get(CONTENT_STORE_VERSION) : -1;
+      long masterContentStoreVersion = (Long) response.get(CONTENT_STORE_VERSION);
       long latestGeneration = (Long) response.get(GENERATION);
-
-      boolean contentStoreReplicationNeeded = contentStoreReplication && (masterContentStoreVersion != slaveContentStoreVersion);
 
       LOG.info("Master's generation: " + latestGeneration);
       LOG.info("Master's version: " + latestVersion);
@@ -456,6 +450,13 @@ public class IndexFetcher {
         successfulInstall = true;
         return IndexFetchResult.MASTER_VERSION_ZERO;
       }
+
+      // The following session should make sure that if replication is happening in more cores at the same time,
+      // the contentStore replication is done only once.
+      boolean replicateContentStore = replicationHandler.acquireContentStoreReplicationTask();
+      long slaveContentStoreVersion = replicateContentStore? contentStore.getLastCommittedVersion() : SolrContentStore.NO_CONTENT_STORE_REPLICATION_REQUIRED;
+      boolean contentStoreReplicationNeeded = replicateContentStore && (masterContentStoreVersion != slaveContentStoreVersion);
+
 
       // TODO: Should we be comparing timestamps (across machines) here?
       if (!forceReplication && IndexDeletionPolicyWrapper.getCommitTimestamp(commit) == latestVersion) {
@@ -572,7 +573,7 @@ public class IndexFetcher {
               deleteContentStoreFiles(contentStore.getRootLocation(), contentStoreFilesToDelete);
             }
 
-            contentStore.setContentStoreVersion(masterContentStoreVersion);
+            contentStore.setLastCommittedVersion(masterContentStoreVersion);
           }
 
 
@@ -668,7 +669,7 @@ public class IndexFetcher {
           LOG.warn(
                   "Replication attempt was not successful - trying a full index replication reloadCore={}",
                   reloadCore);
-          successfulInstall = fetchLatestIndex(true, reloadCore, contentStoreReplication).getSuccessful();
+          successfulInstall = fetchLatestIndex(true, reloadCore).getSuccessful();
         }
 
         markReplicationStop();
@@ -1955,32 +1956,21 @@ public class IndexFetcher {
 
     @Override
     protected void fetch() throws Exception {
-      try {
-        while (true) {
-          final FastInputStream is = getStream();
-          int result;
-          try {
-            //fetch packets one by one in a single request
-            result = fetchPackets(is);
-            if (result == 0 || result == NO_CONTENT) {
-              return;
-            }
-            //if there is an error continue. But continue from the point where it got broken
-          } finally {
-            IOUtils.closeQuietly(is);
+      while (true) {
+        final FastInputStream is = getStream();
+        int result;
+        try {
+          //fetch packets one by one in a single request
+          result = fetchPackets(is);
+          if (result == 0 || result == NO_CONTENT) {
+            return;
           }
+          //if there is an error continue. But continue from the point where it got broken
+        } finally {
+          IOUtils.closeQuietly(is);
         }
-      } finally {
-//        cleanup();
-////        if cleanup succeeds . The file is downloaded fully. do an fsync
-//        fsyncService.submit(() -> {
-//          try {
-//            file.sync();
-//          } catch (IOException e) {
-//            fsyncException = e;
-//          }
-//        });
       }
+
     }
 
 

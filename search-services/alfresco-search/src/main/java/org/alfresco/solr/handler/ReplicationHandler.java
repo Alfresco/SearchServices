@@ -139,6 +139,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   private SolrContentStore contentStore;
 
   private volatile boolean closed = false;
+  private boolean contentStoreReplication = false;
 
   public static final class CommitVersionInfo {
     public final long version;
@@ -406,23 +407,36 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
 
   private volatile IndexFetcher currentIndexFetcher;
 
+  public boolean acquireContentStoreReplicationTask(){
+    contentStoreReplicationLock.lock();
+    if (!isContentStoreReplicating)
+    {
+      contentStoreReplication = true;
+      isContentStoreReplicating = true;
+    }
+
+    contentStoreReplicationLock.unlock();
+    return contentStoreReplication;
+  }
+
+  public void releaseContentStoreReplicationTask()
+  {
+    if (contentStoreReplication)
+    {
+      contentStoreReplicationLock.lock();
+      isContentStoreReplicating = false;
+      contentStoreReplication = false;
+      contentStoreReplicationLock.unlock();
+    }
+  }
+
+
   public IndexFetcher.IndexFetchResult doFetch(SolrParams solrParams, boolean forceReplication) {
 
-    boolean contentStoreReplication = false;
     String masterUrl = solrParams == null ? null : solrParams.get(MASTER_URL);
     if (!indexFetchLock.tryLock())
       return IndexFetcher.IndexFetchResult.LOCK_OBTAIN_FAILED;
     try {
-
-      contentStoreReplicationLock.lock();
-      if (!isContentStoreReplicating)
-      {
-        contentStoreReplication = true;
-        isContentStoreReplicating = true;
-      }
-
-      contentStoreReplicationLock.unlock();
-
 
       if (masterUrl != null) {
         if (currentIndexFetcher != null && currentIndexFetcher != pollingIndexFetcher) {
@@ -432,7 +446,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       } else {
         currentIndexFetcher = pollingIndexFetcher;
       }
-      return currentIndexFetcher.fetchLatestIndex(forceReplication, contentStoreReplication);
+      return currentIndexFetcher.fetchLatestIndex(forceReplication);
     } catch (Exception e) {
       SolrException.log(LOG, "Index fetch failed ", e);
       return new IndexFetcher.IndexFetchResult(IndexFetcher.IndexFetchResult.FAILED_BY_EXCEPTION_MESSAGE, false, e);
@@ -441,13 +455,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
         currentIndexFetcher = pollingIndexFetcher;
       }
 
-      if (contentStoreReplication)
-      {
-        contentStoreReplicationLock.lock();
-        isContentStoreReplicating = false;
-        contentStoreReplicationLock.unlock();
-      }
-
+      releaseContentStoreReplicationTask();
       indexFetchLock.unlock();
     }
   }
@@ -749,7 +757,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     //if configuration files need to be included get their details
     rsp.add(CONF_FILES, getConfFileInfoFromCache(confFileNameAlias, confFileInfoCache));
 
-    if (contentStoreGeneration != -1)
+    if (contentStoreGeneration != SolrContentStore.NO_CONTENT_STORE_REPLICATION_REQUIRED)
     {
       Map<String, List<Map<String, Object>>> changes = contentStore.getChanges(contentStoreGeneration);
       rsp.add(CONTENT_STORE_FILES, changes);
