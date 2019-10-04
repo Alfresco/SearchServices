@@ -39,5 +39,7 @@ public class TestGroup
     public static final String ACS_611n = "ACS_611n"; // Alfresco Content Services 6.1.1 or above
     public static final String ACS_62n = "ACS_62n"; // Alfresco Content Services 6.2 or above
 
+    public static final String AGS_302 = "AGS_302"; // Alfresco governance Services 3.0.2 or above
+    
     public static final String NOT_BAMBOO = "Not_Bamboo"; // The does not run on bamboo
 }
