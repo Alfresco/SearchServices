@@ -18,14 +18,6 @@
  */
 package org.alfresco.solr.content;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
-import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
-import static org.alfresco.solr.content.SolrContentUrlBuilder.logger;
-
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -60,6 +52,14 @@ import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static org.alfresco.solr.content.SolrContentUrlBuilder.FILE_EXTENSION;
+import static org.alfresco.solr.content.SolrContentUrlBuilder.logger;
+
 /**
  * A content store specific to SOLR's requirements: The URL is generated from a
  * set of properties such as:
@@ -93,12 +93,12 @@ public class SolrContentStore implements Closeable, ReplicationRole
     private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
     private final String root;
 
+
     private final ReplicationRole slave = new ReplicationRole()
     {
         @Override
-        public ReplicationRole enableMasterMode()
+        public void enable()
         {
-            return master.enableMasterMode();
         }
 
         @Override
@@ -177,10 +177,9 @@ public class SolrContentStore implements Closeable, ReplicationRole
         private ChangeSet changeSet;
 
         @Override
-        public ReplicationRole enableMasterMode()
+        public synchronized void enable()
         {
             changeSet = ofNullable(changeSet).orElseGet(() -> new ChangeSet.Builder().withContentStoreRoot(root).build());
-            return master;
         }
 
         @Override
@@ -273,7 +272,8 @@ public class SolrContentStore implements Closeable, ReplicationRole
         }
 
         @Override
-        public void flushChangeSet() throws IOException {
+        public void flushChangeSet() throws IOException
+        {
             changeSet.flush();
         }
 
@@ -482,10 +482,16 @@ public class SolrContentStore implements Closeable, ReplicationRole
         currentRole.close();
     }
 
-    @Override
     public ReplicationRole enableMasterMode()
     {
-        return currentRole = currentRole.enableMasterMode();
+        master.enable();
+        return currentRole = master;
+    }
+
+    public ReplicationRole enableSlaveMode()
+    {
+        slave.enable();
+        return currentRole = slave;
     }
 
     /**
@@ -511,5 +517,15 @@ public class SolrContentStore implements Closeable, ReplicationRole
     {
         File file = getFileFromUrl(contentUrl);
         return new SolrFileContentReader(file, contentUrl);
+    }
+
+    @Override
+    public void enable()
+    {
+    }
+
+    public void toggleReadOnlyMode(boolean contentStoreInReadOnlyModeFor) {
+        currentRole = contentStoreInReadOnlyModeFor? slave : master;
+        currentRole.enable();
     }
 }

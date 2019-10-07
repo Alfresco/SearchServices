@@ -87,9 +87,8 @@ public interface ReplicationRole extends Closeable
         }
 
         @Override
-        public ReplicationRole enableMasterMode()
+        public void enable()
         {
-            return null;
         }
 
         @Override
@@ -148,10 +147,6 @@ public interface ReplicationRole extends Closeable
      */
     void flushChangeSet() throws IOException;
 
-    /**
-     * Enables the master mode.
-     *
-     * @return the master {@link ReplicationRole} instance.
-     */
-    ReplicationRole enableMasterMode();
+
+    void enable();
 }

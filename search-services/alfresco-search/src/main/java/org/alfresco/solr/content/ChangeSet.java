@@ -40,6 +40,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortedNumericSortField;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,6 +103,7 @@ public class ChangeSet implements AutoCloseable
             try
             {
                 File indexDirectory = new File(root, CHANGESETS_ROOT_FOLDER_NAME);
+
                 writer = new IndexWriter(FSDirectory.open(indexDirectory.toPath()), new IndexWriterConfig());
                 writer.commit();
 

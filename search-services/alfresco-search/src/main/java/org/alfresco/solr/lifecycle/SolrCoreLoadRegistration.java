@@ -85,7 +85,7 @@ class SolrCoreLoadRegistration {
                 AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
 
         SolrContentStore contentStore = adminHandler.getSolrContentStore();
-//        contentStore.toggleReadOnlyMode(isContentStoreInReadOnlyModeFor(core));
+        contentStore.toggleReadOnlyMode(isContentStoreInReadOnlyModeFor(core));
 
         SolrInformationServer srv = new SolrInformationServer(adminHandler, core, repositoryClient, contentStore);
         props.putAll(srv.getProps());
