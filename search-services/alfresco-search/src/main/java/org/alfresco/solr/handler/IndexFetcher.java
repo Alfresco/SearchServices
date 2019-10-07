@@ -103,7 +103,6 @@ import java.util.zip.Checksum;
 import java.util.zip.InflaterInputStream;
 
 import static org.alfresco.solr.handler.ReplicationHandler.ALIAS;
-import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILES;
 import static org.alfresco.solr.handler.ReplicationHandler.CHECKSUM;
 import static org.alfresco.solr.handler.ReplicationHandler.CMD_CONTENT_STORE_FILES;
 import static org.alfresco.solr.handler.ReplicationHandler.CMD_DETAILS;
@@ -114,6 +113,7 @@ import static org.alfresco.solr.handler.ReplicationHandler.COMMAND;
 import static org.alfresco.solr.handler.ReplicationHandler.COMPRESSION;
 import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILES;
 import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILE_SHORT;
+import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILES;
 import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILE_LIST;
 import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_VERSION;
 import static org.alfresco.solr.handler.ReplicationHandler.EXTERNAL;
@@ -457,6 +457,12 @@ public class IndexFetcher {
       long slaveContentStoreVersion = replicateContentStore? contentStore.getLastCommittedVersion() : SolrContentStore.NO_CONTENT_STORE_REPLICATION_REQUIRED;
       boolean contentStoreReplicationNeeded = replicateContentStore && (masterContentStoreVersion != slaveContentStoreVersion);
 
+      if (masterContentStoreVersion < slaveContentStoreVersion)
+      {
+        LOG.error("slave content store version is not valid. Full content store replication required");
+        slaveContentStoreVersion = SolrContentStore.NO_VERSION_AVAILABLE;
+      }
+
 
       // TODO: Should we be comparing timestamps (across machines) here?
       if (!forceReplication && IndexDeletionPolicyWrapper.getCommitTimestamp(commit) == latestVersion) {
@@ -703,11 +709,18 @@ public class IndexFetcher {
 
     File tmpContentStoreDirectory = new File(contentStoreDirectory, "contentstore." + getDateAsStr(new Date()));
 
+    LOG.info("content store replication: {} files to downlad", contentStoreFilesToDownload.size());
+
     List<Map<String, Object>> contentStoreFilesToDownloadFiltered = contentStoreFilesToDownload.stream().filter(
             file -> compareContentStoreFiles(new File(contentStoreDirectory),
                     (String) file.get(NAME),
                     (Long) file.get(SIZE),
                     (Long) file.get(CHECKSUM))).collect(Collectors.toList());
+
+    if (contentStoreFilesToDownloadFiltered.size() != contentStoreFilesToDownload.size())
+    {
+      LOG.warn("content store replication: some of the files are already in sync. {} files to download", contentStoreFilesToDownloadFiltered.size());
+    }
 
 
     if (!contentStoreFilesToDownloadFiltered.isEmpty()) {
@@ -717,15 +730,19 @@ public class IndexFetcher {
                 ReplicationHandler.CONTENT_STORE_FILES,
                 partition);
 
-        contentStoreFileFetcher.fetchFile(); // TODO change method
+        contentStoreFileFetcher.fetchContentStore();
         bytesDownloaded += contentStoreFileFetcher.getBytesDownloaded();
         contentStoreFilesDownloaded.addAll(partition);
       }
 
       terminateAndWaitFsyncService();
       copyTmpContentStoreToContentStore(tmpContentStoreDirectory, contentStoreDirectory);
+
       delTree(tmpContentStoreDirectory);
+      LOG.info("content store files successfully downloaded");
     }
+
+
     return bytesDownloaded;
   }
 
@@ -1393,6 +1410,8 @@ public class IndexFetcher {
               f.delete();
             }
     );
+
+    LOG.info("deleted {} files from content store", filesToDelete.size());
   }
 
   /**
@@ -1944,6 +1963,7 @@ public class IndexFetcher {
   class ContentStoreFetcher extends FileFetcher {
     private final File dir;
     private final Set<String> filesToDownload;
+    private final Set<String> filesDownloaded;
 
     ContentStoreFetcher(File dir,
                         String solrParamOutput,
@@ -1951,11 +1971,13 @@ public class IndexFetcher {
       super(solrParamOutput, 0);
       this.dir = dir;
       this.filesToDownload = new HashSet<>();
+      this.filesDownloaded = new HashSet<>();
       filesDetails.forEach( e -> filesToDownload.add((String) e.get(NAME)));
     }
 
     @Override
     protected void fetch() throws Exception {
+
       while (true) {
         final FastInputStream is = getStream();
         int result;
@@ -1970,7 +1992,11 @@ public class IndexFetcher {
           IOUtils.closeQuietly(is);
         }
       }
+    }
 
+
+    public void fetchContentStore() throws Exception {
+      this.fetchFile();
     }
 
 
@@ -2044,7 +2070,7 @@ public class IndexFetcher {
             fis.readFully(intbytes);
             fileNameSize = readInt(intbytes);
           } catch (EOFException e) {
-            LOG.warn("Fetched the whole batch of files");
+            LOG.debug("Fetched the whole batch of files");
             return 0;
           }
 
@@ -2055,7 +2081,7 @@ public class IndexFetcher {
 
           // Error, file not requested
           if (!filesToDownload.contains(fileName)){
-            return 1; //TODO throw an exception here?
+           throw new Exception("file " + fileName + " not requested");
           }
 
           FileInterface file = new LocalFsFile(dir, fileName);
@@ -2104,7 +2130,7 @@ public class IndexFetcher {
               checksum.update(buf, 0, packetSize);
               long checkSumClient = checksum.getValue();
               if (checkSumClient != checkSumServer) {
-                LOG.error("Checksum not matched between client and server for file: {}", this.fileName);
+                LOG.warn("Checksum not matched between client and server for file: {}", this.fileName);
                 //if checksum is wrong it is a problem return for retry
                 file.close();
                 return ERR;
@@ -2127,11 +2153,14 @@ public class IndexFetcher {
                 }
               });
               filesToDownload.remove(fileName);
+              filesDownloaded.add(fileName);
               break;
             }
             //errorCount is always set to zero after a successful packet
             errorCount = 0;
           }
+
+          LOG.debug("downloaded content store file: {}", fileName);
         }
       } catch (ReplicationHandlerException e) {
         throw e;
@@ -2143,12 +2172,16 @@ public class IndexFetcher {
         //if it fails for the same packet for MAX_RETRIES fail and come out
         if (errorCount > MAX_RETRIES) {
           throw new SolrException(SolrException.ErrorCode.SERVER_ERROR,
-                  "Failed to fetch file: " + fileName +
-                          " (downloaded " + bytesDownloaded + " of " + size + " bytes" +
+                  "Failed to fetch content store bucket: " +
+                          " (downloaded " + filesDownloaded.size() + " files out of " + filesToDownload.size() + filesDownloaded.size() +
                           ", error count: " + errorCount + " > " + MAX_RETRIES + ")", e);
         }
         return ERR;
       }
+    }
+
+    public Set<String> getFilesDownloaded() {
+      return filesDownloaded;
     }
   }
 

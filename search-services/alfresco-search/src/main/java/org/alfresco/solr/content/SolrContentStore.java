@@ -80,7 +80,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
 
-    static final long NO_VERSION_AVAILABLE = -1L;
+    public static final long NO_VERSION_AVAILABLE = -1L;
     public static final long NO_CONTENT_STORE_REPLICATION_REQUIRED = -2L;
 
     static final String CONTENT_STORE = "contentstore";
