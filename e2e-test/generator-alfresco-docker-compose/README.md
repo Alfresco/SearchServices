@@ -1,12 +1,7 @@
 # generator-alfresco-docker-compose
 > Alfresco Docker Compose Generator
 
-This project generates a collection of Docker Compose Templates to test Repository and Search Services/Insight Engine with different configurations:
-
-* Plain HTTP communications
-* TLS/SSL Mutual Authentication communications
-* Sharding (dynamic) with different Sharding Methods
-* Replication (master/slave)
+This project generates a collection of Docker Compose Templates to test Repository and Search Services/Insight Engine with different configurations.
 
 ## Project structure
 
@@ -14,7 +9,6 @@ Following templates are provided.
 
 ```
 $ tree generators/app/templates/
-generators/app/templates/
 ├── 6.1
 │   ├── .env
 │   ├── docker-compose-ce.yml
@@ -30,6 +24,13 @@ generators/app/templates/
 │   │       ├── empty
 │   │       ├── sharding-content-model-context.xml
 │   │       └── sharding-content-model.xml
+│   ├── config
+│   │   ├── cert
+│   │   │   ├── localhost.cer
+│   │   │   └── localhost.key
+│   │   └── nginx
+│   │       ├── nginx.conf
+│   │       └── nginx.htpasswd
 │   ├── search
 │   │   └── Dockerfile
 │   ├── share
@@ -54,6 +55,7 @@ generators/app/templates/
 * `share` includes a Dockerfile template to start Share Web Application
   * `model` includes a default forms model (Sharding Explicit Routing or empty)
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
+* `config` includes configuration for HTTP Web Proxy (NGINX)
 * `zeppelin` includes a Dockerfile template to start Zeppelin with SSL
 * `keystores` includes every truststore and keystore required for SSL configuration
 
@@ -99,13 +101,17 @@ If you chose ACS 6.1, a prompt will allow you to use AGS.
 
 When using Community, some different options can be combined:
 
-* Plain HTTP (http) or TLS/SSL Mutual Authentication (https)
+* Plain HTTP (http) or TLS/SSL Mutual Authentication (https) for communication between Alfresco and SOLR
+* Plain HTTP (http) or HTTPs (https) for Http Web Proxy for HTTP access to services
+* Protect the access to SOLR REST API in the Http WebProxy to forbid direct access to Alfresco Web Proxy port
 * Use SOLR Replication in Master/Slave mode (only when using http)
 
 ```
 ? Would you like to use Alfresco enterprise or community? community
-? Would you like to use http or https? http
-? Would you like to use a SOLR Replication (2 nodes in master-slave)? Yes
+? Would you like to use HTTP or mTLS for Alfresco-SOLR communication? http
+? Would you like to use HTTP or HTTPs for Web Proxy? http
+? Would you like to protect the access to SOLR REST API? Yes
+? Would you like to use a SOLR Replication (2 nodes in master-slave)? No
 ```
 
 ## Enterprise
@@ -172,22 +178,6 @@ Sample configuration is available in [images/share/model/sharding-share-config-c
 
 If *Sharding* is selected, a default `share-config-custom-dev.xml` file with required forms configuration for Sharding custom model will be available in deployment folder. Add your configuration to this file.
 
-## Configuration catalog
-
-| Version    | Comms | Replication | Sharding | Insight | Zeppelin |
-| -          | -     | -           | -        | -       | -        |
-| community  | http  | -           | x        | x       | x        |
-| community  | http  | true        | x        | x       | x        |
-| community  | https | x           | x        | x       | x        |
-| enterprise | http  | -           | -        | (*)     | (*)      |
-| enterprise | http  | true        | false    | (*)     | (*)      |
-| enterprise | http  | false       | true     | (*)     | (*)      |
-| enterprise | https | x           | -        | (*)     | (*)      |
-| enterprise | https | x           | true     | (*)     | (*)      |
-| enterprise | https | x           | true     | (*)     | (*)      |
-
-Both `community` and `enterprise` ACS deployments can be used with the same options, but `enterprise` may also use Insight Engine (replacing Search Services) and Insight Zeppelin services.
-
 ## Passing parameters from command line
 
 Default values for options can be specified in the command line, using a `--name=value` pattern. When an options is specified in the command line, the question is not prompted to the user, so you can generate a Docker Compose template with no user interaction.
@@ -202,6 +192,8 @@ $ yo alfresco-docker-compose --acsVersion=6.2 --alfrescoVersion=community --http
 `--ags:`: only available when acsVersion=6.1
 `--alfrescoVersion`: community or enterprise
 `--httpMode`: http or https
+`--httpWebMode`: http or https
+`--protectSolr`: true or false
 `--clustering`: true or false
 `--insightEngine`: true or false
 `--zeppelin`: true or false
@@ -224,20 +216,24 @@ $ docker-compose down
 
 **Community URLs**
 
-*HTTP*
+*WebProxy HTTP and Alfresco-SOLR HTTP*
 
 http://localhost:8080/share
 
 http://localhost:8080/alfresco
 
+http://localhost:8080/solr (with HTTP basic auth)
+
 http://localhost:8083/solr
+
+http://localhost:8080/
 
 When using SOLR Replication, additionally
 
 http://localhost:8084/solr
 
 
-*SSL*
+*WebProxy HTTP and Alfresco-SOLR mTLS*
 
 http://localhost:8080/share
 
@@ -247,25 +243,57 @@ https://localhost:8443/alfresco
 
 https://localhost:8083/solr
 
+http://localhost:8080/
+
+
+*WebProxy HTTPs and Alfresco-SOLR HTTP*
+
+https://localhost/share
+
+https://localhost/alfresco
+
+https://localhost/solr (with HTTP basic auth)
+
+https://localhost/
+
+When using SOLR Replication, additionally
+
+http://localhost:8084/solr
+
+
+*WebProxy HTTPs and Alfresco-SOLR mTLS*
+
+https://localhost/share
+
+https://localhost/alfresco
+
+https://localhost:8083/solr
+
+https://localhost/
+
 
 **Enterprise URLs**
 
-*HTTP*
+*WebProxy HTTP and Alfresco-SOLR HTTP*
 
 http://localhost:8080/share
 
 http://localhost:8080/alfresco
 
+http://localhost:8080/solr (with HTTP basic auth)
+
 http://localhost:8083/solr
 
 http://localhost:9090/zeppelin
+
+http://localhost:8080/
 
 When using SOLR Replication or Sharding, additionally
 
 http://localhost:8084/solr
 
 
-*SSL*
+*WebProxy HTTP and Alfresco-SOLR mTLS*
 
 http://localhost:8080/share
 
@@ -277,6 +305,34 @@ https://localhost:8083/solr
 
 http://localhost:9090/zeppelin
 
-When using SOLR Sharding, additionally
+http://localhost:8080/
 
-https://localhost:8084/solr
+
+*WebProxy HTTPs and Alfresco-SOLR HTTP*
+
+https://localhost/share
+
+https://localhost/alfresco
+
+https://localhost/solr (with HTTP basic auth)
+
+http://localhost:9090/zeppelin
+
+https://localhost/
+
+When using SOLR Replication, additionally
+
+http://localhost:8084/solr
+
+
+*WebProxy HTTPs and Alfresco-SOLR mTLS*
+
+https://localhost/share
+
+https://localhost/alfresco
+
+https://localhost:8083/solr
+
+http://localhost:9090/zeppelin
+
+https://localhost/
