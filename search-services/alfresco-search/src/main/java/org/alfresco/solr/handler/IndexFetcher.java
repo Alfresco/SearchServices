@@ -16,6 +16,35 @@
  */
 package org.alfresco.solr.handler;
 
+import static org.alfresco.solr.handler.ReplicationHandler.ALIAS;
+import static org.alfresco.solr.handler.ReplicationHandler.CHECKSUM;
+import static org.alfresco.solr.handler.ReplicationHandler.CMD_CONTENT_STORE_FILES;
+import static org.alfresco.solr.handler.ReplicationHandler.CMD_DETAILS;
+import static org.alfresco.solr.handler.ReplicationHandler.CMD_GET_FILE;
+import static org.alfresco.solr.handler.ReplicationHandler.CMD_GET_FILE_LIST;
+import static org.alfresco.solr.handler.ReplicationHandler.CMD_INDEX_VERSION;
+import static org.alfresco.solr.handler.ReplicationHandler.COMMAND;
+import static org.alfresco.solr.handler.ReplicationHandler.COMPRESSION;
+import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILES;
+import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILE_SHORT;
+import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILES;
+import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILE_LIST;
+import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_VERSION;
+import static org.alfresco.solr.handler.ReplicationHandler.EXTERNAL;
+import static org.alfresco.solr.handler.ReplicationHandler.FILE;
+import static org.alfresco.solr.handler.ReplicationHandler.FILE_STREAM;
+import static org.alfresco.solr.handler.ReplicationHandler.FileInfo;
+import static org.alfresco.solr.handler.ReplicationHandler.GENERATION;
+import static org.alfresco.solr.handler.ReplicationHandler.INTERNAL;
+import static org.alfresco.solr.handler.ReplicationHandler.MASTER_URL;
+import static org.alfresco.solr.handler.ReplicationHandler.OFFSET;
+import static org.alfresco.solr.handler.ReplicationHandler.SIZE;
+import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILE;
+import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILES;
+import static org.alfresco.solr.handler.ReplicationHandler.getCheckSum;
+import static org.apache.solr.common.params.CommonParams.JAVABIN;
+import static org.apache.solr.common.params.CommonParams.NAME;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.alfresco.solr.content.SolrContentStore;
@@ -102,58 +131,21 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import java.util.zip.InflaterInputStream;
 
-import static org.alfresco.solr.handler.ReplicationHandler.ALIAS;
-import static org.alfresco.solr.handler.ReplicationHandler.CHECKSUM;
-import static org.alfresco.solr.handler.ReplicationHandler.CMD_CONTENT_STORE_FILES;
-import static org.alfresco.solr.handler.ReplicationHandler.CMD_DETAILS;
-import static org.alfresco.solr.handler.ReplicationHandler.CMD_GET_FILE;
-import static org.alfresco.solr.handler.ReplicationHandler.CMD_GET_FILE_LIST;
-import static org.alfresco.solr.handler.ReplicationHandler.CMD_INDEX_VERSION;
-import static org.alfresco.solr.handler.ReplicationHandler.COMMAND;
-import static org.alfresco.solr.handler.ReplicationHandler.COMPRESSION;
-import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILES;
-import static org.alfresco.solr.handler.ReplicationHandler.CONF_FILE_SHORT;
-import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILES;
-import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_FILE_LIST;
-import static org.alfresco.solr.handler.ReplicationHandler.CONTENT_STORE_VERSION;
-import static org.alfresco.solr.handler.ReplicationHandler.EXTERNAL;
-import static org.alfresco.solr.handler.ReplicationHandler.FILE;
-import static org.alfresco.solr.handler.ReplicationHandler.FILE_STREAM;
-import static org.alfresco.solr.handler.ReplicationHandler.FileInfo;
-import static org.alfresco.solr.handler.ReplicationHandler.GENERATION;
-import static org.alfresco.solr.handler.ReplicationHandler.INTERNAL;
-import static org.alfresco.solr.handler.ReplicationHandler.MASTER_URL;
-import static org.alfresco.solr.handler.ReplicationHandler.OFFSET;
-import static org.alfresco.solr.handler.ReplicationHandler.SIZE;
-import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILE;
-import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILES;
-import static org.alfresco.solr.handler.ReplicationHandler.getCheckSum;
-import static org.apache.solr.common.params.CommonParams.JAVABIN;
-import static org.apache.solr.common.params.CommonParams.NAME;
-
 /**
  * <p> Provides functionality of downloading changed index files as well as config files and a timer for scheduling fetches from the
  * master. </p>
  *
- *
  * @since solr 1.4
- *
- *
- *
  */
-public class IndexFetcher {
-
-
+class IndexFetcher {
   private static final int _100K = 100000;
 
-  public static final String INDEX_PROPERTIES = "index.properties";
-
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  public static final int CONTENT_STORE_PARTITION_SIZE = 50;
+  private static final int CONTENT_STORE_PARTITION_SIZE = 50;
 
   private final String masterUrl;
 
-  final ReplicationHandler replicationHandler;
+  private final ReplicationHandler replicationHandler;
   private final SolrContentStore contentStore;
 
   private volatile Date replicationStartTimeStamp;
@@ -191,34 +183,30 @@ public class IndexFetcher {
 
   private volatile boolean stop = false;
 
-  private boolean useInternalCompression = false;
+  private boolean useInternalCompression;
 
-  private boolean useExternalCompression = false;
+  private boolean useExternalCompression;
 
   private final HttpClient myHttpClient;
 
   private static final String INTERRUPT_RESPONSE_MESSAGE = "Interrupted while waiting for modify lock";
-
-  private static boolean contentStoreReplicating = false;
-
 
   public static class IndexFetchResult {
     private final String message;
     private final boolean successful;
     private final Throwable exception;
 
-    public static final String FAILED_BY_INTERRUPT_MESSAGE = "Fetching index failed by interrupt";
-    public static final String FAILED_BY_EXCEPTION_MESSAGE = "Fetching index failed by exception";
+    static final String FAILED_BY_INTERRUPT_MESSAGE = "Fetching index failed by interrupt";
+    static final String FAILED_BY_EXCEPTION_MESSAGE = "Fetching index failed by exception";
 
     /** pre-defined results */
-    public static final IndexFetchResult ALREADY_IN_SYNC = new IndexFetchResult("Local index commit is already in sync with peer", true, null);
-    public static final IndexFetchResult INDEX_FETCH_FAILURE = new IndexFetchResult("Fetching lastest index is failed", false, null);
-    public static final IndexFetchResult INDEX_FETCH_SUCCESS = new IndexFetchResult("Fetching latest index is successful", true, null);
-    public static final IndexFetchResult LOCK_OBTAIN_FAILED = new IndexFetchResult("Obtaining SnapPuller lock failed", false, null);
-    public static final IndexFetchResult MASTER_VERSION_ZERO = new IndexFetchResult("Index in peer is empty and never committed yet", true, null);
-    public static final IndexFetchResult NO_INDEX_COMMIT_EXIST = new IndexFetchResult("No IndexCommit in local index", false, null);
-    public static final IndexFetchResult PEER_INDEX_COMMIT_DELETED = new IndexFetchResult("No files to download because IndexCommit in peer was deleted", false, null);
-    public static final IndexFetchResult LOCAL_ACTIVITY_DURING_REPLICATION = new IndexFetchResult("Local index modification during replication", false, null);
+    static final IndexFetchResult ALREADY_IN_SYNC = new IndexFetchResult("Local index commit is already in sync with peer", true, null);
+    static final IndexFetchResult INDEX_FETCH_FAILURE = new IndexFetchResult("Fetching lastest index is failed", false, null);
+    static final IndexFetchResult INDEX_FETCH_SUCCESS = new IndexFetchResult("Fetching latest index is successful", true, null);
+    static final IndexFetchResult LOCK_OBTAIN_FAILED = new IndexFetchResult("Obtaining SnapPuller lock failed", false, null);
+    static final IndexFetchResult MASTER_VERSION_ZERO = new IndexFetchResult("Index in peer is empty and never committed yet", true, null);
+    static final IndexFetchResult NO_INDEX_COMMIT_EXIST = new IndexFetchResult("No IndexCommit in local index", false, null);
+    static final IndexFetchResult PEER_INDEX_COMMIT_DELETED = new IndexFetchResult("No files to download because IndexCommit in peer was deleted", false, null);
 
     IndexFetchResult(String message, boolean successful, Throwable exception) {
       this.message = message;
@@ -236,7 +224,7 @@ public class IndexFetcher {
     /*
      * @return true if index fetch was successful, false otherwise
      */
-    public boolean getSuccessful() {
+    boolean getSuccessful() {
       return this.successful;
     }
 
@@ -256,7 +244,7 @@ public class IndexFetcher {
     return HttpClientUtil.createClient(httpClientParams, core.getCoreContainer().getUpdateShardHandler().getConnectionManager());
   }
 
-  public IndexFetcher(final NamedList initArgs, final ReplicationHandler handler, final SolrCore sc, SolrContentStore contentStore) {
+  IndexFetcher(final NamedList initArgs, final ReplicationHandler handler, final SolrCore sc, SolrContentStore contentStore) {
     this.contentStore = contentStore;
     solrCore = sc;
     String masterUrl = (String) initArgs.get(MASTER_URL);
@@ -288,8 +276,7 @@ public class IndexFetcher {
   /**
    * Gets the latest commit version and generation from the master
    */
-  @SuppressWarnings("unchecked")
-  NamedList getLatestVersion() throws IOException {
+  private NamedList getLatestVersion() throws IOException {
     ModifiableSolrParams params = new ModifiableSolrParams();
     params.set(COMMAND, CMD_INDEX_VERSION);
     params.set(CommonParams.WT, JAVABIN);
@@ -310,6 +297,7 @@ public class IndexFetcher {
   /**
    * Fetches the list of files in a given index commit point and updates internal list of files to download.
    */
+  @SuppressWarnings("unchecked")
   private void fetchFileList(long indexGeneration, long contentStoreGeneration) throws IOException {
     ModifiableSolrParams params = new ModifiableSolrParams();
     params.set(COMMAND,  CMD_GET_FILE_LIST);
@@ -368,7 +356,7 @@ public class IndexFetcher {
    * @return true on success, false if slave is already in sync
    * @throws IOException if an exception occurs
    */
-  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload)
+  private IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload)
           throws IOException, InterruptedException {
 
     boolean cleanupDone = false;
@@ -696,8 +684,6 @@ public class IndexFetcher {
       }
     }
   }
-
-
 
   /**
    * Download content store required files.
@@ -1064,7 +1050,9 @@ public class IndexFetcher {
       long size = (Long) file.get(SIZE);
       CompareResult compareResult = compareFile(indexDir, filename, size, (Long) file.get(CHECKSUM));
       boolean alwaysDownload = filesToAlwaysDownloadIfNoChecksums(filename, size, compareResult);
-      LOG.debug("Downloading file={} size={} checksum={} alwaysDownload={}", new Object[]{filename, size, file.get(CHECKSUM), alwaysDownload});
+
+      LOG.debug("Downloading file={} size={} checksum={} alwaysDownload={}", filename, size, file.get(CHECKSUM), alwaysDownload);
+
       if (!compareResult.equal || downloadCompleteIndex || alwaysDownload) {
         dirFileFetcher = new DirectoryFileFetcher(tmpIndexDir, file,
                 (String) file.get(NAME), FILE, latestGeneration);
@@ -1080,8 +1068,8 @@ public class IndexFetcher {
     return bytesDownloaded;
   }
 
-  static boolean filesToAlwaysDownloadIfNoChecksums(String filename,
-                                                    long size, CompareResult compareResult) {
+  private static boolean filesToAlwaysDownloadIfNoChecksums(String filename,
+                                                            long size, CompareResult compareResult) {
     // without checksums to compare, we always download .si, .liv, segments_N,
     // and any very small files
     return !compareResult.checkSummed && (filename.endsWith(".si") || filename.endsWith(".liv")
@@ -1098,13 +1086,13 @@ public class IndexFetcher {
    *
    * Check if the same version of the file to download is already in the contentstore.
    *
-   * @param contentStoreDirectoryRoot
-   * @param filename
-   * @param length
-   * @param checksum
-   * @return
+   * @param contentStoreDirectoryRoot the content store top directory.
+   * @param filename the filename.
+   * @param length the file length.
+   * @param checksum the file chechsum.
+   * @return true if the same file already exists in the contentstore.
    */
-  protected static boolean compareContentStoreFiles(File contentStoreDirectoryRoot, String filename, long length, long checksum){
+  private static boolean compareContentStoreFiles(File contentStoreDirectoryRoot, String filename, long length, long checksum){
       File f = new File(contentStoreDirectoryRoot.getAbsolutePath() + "/" + filename);
       if (f.length() != length) {
         return true;
@@ -1121,7 +1109,7 @@ public class IndexFetcher {
       return false;
   }
 
-  protected static CompareResult compareFile(Directory indexDir, String filename, Long backupIndexFileLen, Long backupIndexFileChecksum) {
+  private static CompareResult compareFile(Directory indexDir, String filename, Long backupIndexFileLen, Long backupIndexFileChecksum) {
     CompareResult compareResult = new CompareResult();
     try {
       try (final IndexInput indexInput = indexDir.openInput(filename, IOContext.READONCE)) {
@@ -1145,7 +1133,7 @@ public class IndexFetcher {
             return compareResult;
           } else {
             LOG.info(
-                    "File {} did not match. expected length is {} and actual length is {}", new Object[]{filename, backupIndexFileLen, indexFileLen});
+                    "File {} did not match. expected length is {} and actual length is {}", filename, backupIndexFileLen, indexFileLen);
             compareResult.equal = false;
             return compareResult;
           }
@@ -1158,8 +1146,8 @@ public class IndexFetcher {
           return compareResult;
         } else {
           LOG.warn("File {} did not match. expected checksum is {} and actual is checksum {}. " +
-                  "expected length is {} and actual length is {}", new Object[]{filename, backupIndexFileChecksum, indexFileChecksum,
-                  backupIndexFileLen, indexFileLen});
+                  "expected length is {} and actual length is {}", filename, backupIndexFileChecksum, indexFileChecksum,
+                  backupIndexFileLen, indexFileLen);
           compareResult.equal = false;
           return compareResult;
         }
@@ -1207,8 +1195,7 @@ public class IndexFetcher {
           }
         } else {
           if (length != dir.fileLength(filename)) {
-            LOG.warn("File {} did not match. expected length is {} and actual length is {}",new Object[]{
-                    filename, length, dir.fileLength(filename)});
+            LOG.warn("File {} did not match. expected length is {} and actual length is {}", filename, length, dir.fileLength(filename));
             return true;
           }
         }
@@ -1273,7 +1260,7 @@ public class IndexFetcher {
     }
     //copy the segments file last
     if (segmentsFile != null) {
-      if (!moveAFile(tmpIdxDir, indexDir, segmentsFile)) return false;
+      return moveAFile(tmpIdxDir, indexDir, segmentsFile);
     }
     return true;
   }
@@ -1452,7 +1439,7 @@ public class IndexFetcher {
   }
 
 
-  public String getDateAsStr(Date d) {
+  private String getDateAsStr(Date d) {
     return new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(d);
   }
 
@@ -1465,9 +1452,10 @@ public class IndexFetcher {
    *
    * @return a list of configuration files which have changed on the master and need to be downloaded.
    */
+  @SuppressWarnings("unchecked")
   private Collection<Map<String, Object>> getModifiedConfFiles(List<Map<String, Object>> confFilesToDownload) {
     if (confFilesToDownload == null || confFilesToDownload.isEmpty())
-      return Collections.EMPTY_LIST;
+      return Collections.emptyList();
     //build a map with alias/name as the key
     Map<String, Map<String, Object>> nameVsFile = new HashMap<>();
     NamedList names = new NamedList();
@@ -1550,39 +1538,39 @@ public class IndexFetcher {
     //make a copy first because it can be null later
     List<Map<String, Object>> tmp = tlogFilesToDownload;
     //create a new instance. or else iterator may fail
-    return tmp == null ? Collections.EMPTY_LIST : new ArrayList<>(tmp);
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
 
   List<Map<String, Object>> getTlogFilesDownloaded() {
     //make a copy first because it can be null later
     List<Map<String, Object>> tmp = tlogFilesDownloaded;
     // NOTE: it's safe to make a copy of a SynchronizedCollection(ArrayList)
-    return tmp == null ? Collections.EMPTY_LIST : new ArrayList<>(tmp);
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
 
   List<Map<String, Object>> getConfFilesToDownload() {
     //make a copy first because it can be null later
     List<Map<String, Object>> tmp = confFilesToDownload;
     //create a new instance. or else iterator may fail
-    return tmp == null ? Collections.EMPTY_LIST : new ArrayList<>(tmp);
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
 
   List<Map<String, Object>> getConfFilesDownloaded() {
     //make a copy first because it can be null later
     List<Map<String, Object>> tmp = confFilesDownloaded;
     // NOTE: it's safe to make a copy of a SynchronizedCollection(ArrayList)
-    return tmp == null ? Collections.EMPTY_LIST : new ArrayList<>(tmp);
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
 
   List<Map<String, Object>> getFilesToDownload() {
     //make a copy first because it can be null later
     List<Map<String, Object>> tmp = filesToDownload;
-    return tmp == null ? Collections.EMPTY_LIST : new ArrayList<>(tmp);
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
 
   List<Map<String, Object>> getFilesDownloaded() {
     List<Map<String, Object>> tmp = filesDownloaded;
-    return tmp == null ? Collections.EMPTY_LIST : new ArrayList<>(tmp);
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
 
   // TODO: currently does not reflect conf files
@@ -1598,7 +1586,7 @@ public class IndexFetcher {
   }
 
   private static class ReplicationHandlerException extends InterruptedException {
-    public ReplicationHandlerException(String message) {
+    ReplicationHandlerException(String message) {
       super(message);
     }
   }
@@ -1615,21 +1603,21 @@ public class IndexFetcher {
    */
   public class FileFetcher {
     protected FileInterface file;
-    protected String fileName;
-    protected String saveAs;
-    protected boolean includeChecksum = true;
-    protected final String solrParamOutput;
-    protected final Long indexGen;
+    String fileName;
+    String saveAs;
+    boolean includeChecksum = true;
+    final String solrParamOutput;
+    final Long indexGen;
 
     protected long size;
-    protected long bytesDownloaded = 0;
+    long bytesDownloaded = 0;
     protected byte[] buf = new byte[1024 * 1024];
-    protected final Checksum checksum;
-    protected int errorCount = 0;
-    protected boolean aborted = false;
+    final Checksum checksum;
+    int errorCount = 0;
+    boolean aborted = false;
 
     FileFetcher(FileInterface file, Map<String, Object> fileDetails, String saveAs,
-                String solrParamOutput, long latestGen) throws IOException {
+                String solrParamOutput, long latestGen) {
       this.file = file;
       this.fileName = (String) fileDetails.get(NAME);
       this.size = (Long) fileDetails.get(SIZE);
@@ -1645,7 +1633,7 @@ public class IndexFetcher {
     }
 
 
-    FileFetcher( String solrParamOutput, long latestGen) throws IOException {
+    FileFetcher( String solrParamOutput, long latestGen) {
 
       this.solrParamOutput = solrParamOutput;
       indexGen = latestGen;
@@ -1656,15 +1644,14 @@ public class IndexFetcher {
       }
     }
 
-
-    public long getBytesDownloaded() {
+    long getBytesDownloaded() {
       return bytesDownloaded;
     }
 
     /**
      * The main method which downloads file
      */
-    public void fetchFile() throws Exception {
+    void fetchFile() throws Exception {
       bytesDownloaded = 0;
       try {
         fetch();
@@ -1759,8 +1746,7 @@ public class IndexFetcher {
       } catch (ReplicationHandlerException e) {
         throw e;
       } catch (Exception e) {
-        LOG.warn("Error in fetching file: {} (downloaded {} of {} bytes)",
-                new Object[]{ fileName, bytesDownloaded, size, e});
+        LOG.warn("Error in fetching file: {} (downloaded {} of {} bytes)", fileName, bytesDownloaded, size, e);
         //for any failure, increment the error count
         errorCount++;
         //if it fails for the same packet for MAX_RETRIES fail and come out
@@ -1778,7 +1764,7 @@ public class IndexFetcher {
      * The webcontainer flushes the data only after it fills the buffer size. So, all data has to be read as readFully()
      * other wise it fails. So read everything as bytes and then extract an integer out of it
      */
-    protected int readInt(byte[] b) {
+    int readInt(byte[] b) {
       return (((b[0] & 0xff) << 24) | ((b[1] & 0xff) << 16)
               | ((b[2] & 0xff) << 8) | (b[3] & 0xff));
 
@@ -1787,7 +1773,7 @@ public class IndexFetcher {
     /**
      * Same as above but to read longs from a byte array
      */
-    protected long readLong(byte[] b) {
+    long readLong(byte[] b) {
       return (((long) (b[0] & 0xff)) << 56) | (((long) (b[1] & 0xff)) << 48)
               | (((long) (b[2] & 0xff)) << 40) | (((long) (b[3] & 0xff)) << 32)
               | (((long) (b[4] & 0xff)) << 24) | ((b[5] & 0xff) << 16)
