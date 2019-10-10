@@ -69,7 +69,7 @@ spring-jdbc-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-orm-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-tx-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-web-5.1.8.RELEASE.jar   http://projects.spring.io/spring-framework/
-xercesImpl-2.11.0-alfresco-patched-20180402.jar http://xerces.apache.org/xerces2-j
+xercesImpl-2.12.0-alfresco-patched-20191004.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
