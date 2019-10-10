@@ -40,7 +40,6 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortedNumericSortField;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,7 @@ import java.util.function.BinaryOperator;
 public class ChangeSet implements AutoCloseable
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(ChangeSet.class);
-    final static ChangeSet EMPTY_CHANGESET = new ChangeSet.Builder().empty().build();
+    private final static ChangeSet EMPTY_CHANGESET = new ChangeSet.Builder().empty().build();
 
     /**
      * Builds class for creating {@link ChangeSet} instances.
@@ -124,16 +123,16 @@ public class ChangeSet implements AutoCloseable
         }
     }
 
-    final static String VERSION_FIELD_NAME = "version";
-    final static String RVERSION_FIELD_NAME = "rversion";
-    final static String ADDS_FIELD_NAME = "adds";
-    final static String DELETES_FIELD_NAME = "deletes";
+    private final static String VERSION_FIELD_NAME = "version";
+    private final static String RVERSION_FIELD_NAME = "rversion";
+    private final static String ADDS_FIELD_NAME = "adds";
+    private final static String DELETES_FIELD_NAME = "deletes";
     final static String CHANGESETS_ROOT_FOLDER_NAME = "changeSets";
 
     Set<String> deletes;
     Set<String> adds;
 
-    private final SearcherManager searcher;
+    SearcherManager searcher;
     private final IndexWriter writer;
 
     Query selectEverything = new MatchAllDocsQuery();
@@ -251,6 +250,20 @@ public class ChangeSet implements AutoCloseable
         searcher.maybeRefresh();
 
         LOGGER.debug("New Changeset entry have been added (version = {}, deletes = {}, adds = {})", version, deletes.size(), adds.size());
+    }
+
+    boolean isUnknownVersion(long version)
+    {
+        try
+        {
+            TopDocs hits = searcher().search(LongPoint.newExactQuery(RVERSION_FIELD_NAME, version), 1);
+            return hits.totalHits != 1;
+        }
+        catch(Exception exception)
+        {
+            LOGGER.error("Unable to check the requested version ({}) in the local versioning store. See further details in the stacktrace below.", version, exception);
+            return true;
+        }
     }
 
     @Override

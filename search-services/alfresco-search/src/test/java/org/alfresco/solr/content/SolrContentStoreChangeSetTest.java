@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -164,6 +165,81 @@ public class SolrContentStoreChangeSetTest
         changeSet.flush();
 
         assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+    }
+
+    @Test
+    public void invalidOrUnknownVersion() throws IOException
+    {
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+
+        assertTrue(changeSet.isUnknownVersion(SolrContentStore.NO_VERSION_AVAILABLE));
+        assertTrue(changeSet.isUnknownVersion(SolrContentStore.NO_VERSION_AVAILABLE - 1L));
+        assertTrue(changeSet.isUnknownVersion(System.currentTimeMillis()));
+
+        changeSet.addOrReplace("A1");
+        changeSet.addOrReplace("A2");
+        changeSet.delete("A3");
+        changeSet.delete("A1");
+
+        changeSet.flush();
+
+        long lastCommittedVersionAfterFirstFlush = changeSet.getLastCommittedVersion();
+        assertNotEquals(SolrContentStore.NO_VERSION_AVAILABLE, lastCommittedVersionAfterFirstFlush);
+
+        assertTrue(changeSet.isUnknownVersion(System.currentTimeMillis()));
+    }
+
+    @Test
+    public void validVersion() throws IOException
+    {
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+
+        assertTrue(changeSet.isUnknownVersion(System.currentTimeMillis()));
+
+        changeSet.addOrReplace("A1");
+        changeSet.addOrReplace("A2");
+        changeSet.delete("A3");
+        changeSet.delete("A1");
+
+        changeSet.flush();
+
+        long lastCommittedVersionAfterFirstFlush = changeSet.getLastCommittedVersion();
+
+        changeSet.addOrReplace("B1");
+        changeSet.addOrReplace("B2");
+        changeSet.delete("B3");
+        changeSet.delete("B1");
+
+        changeSet.flush();
+
+        long lastCommittedVersionAfterSecondFlush = changeSet.getLastCommittedVersion();
+        assertNotEquals(lastCommittedVersionAfterSecondFlush, lastCommittedVersionAfterFirstFlush);
+
+        assertFalse(changeSet.isUnknownVersion(lastCommittedVersionAfterFirstFlush));
+        assertFalse(changeSet.isUnknownVersion(lastCommittedVersionAfterSecondFlush));
+    }
+
+    @Test
+    public void inCaseOfFailure_inputVersionIsConsideredUnknown() throws IOException
+    {
+        assertEquals(SolrContentStore.NO_VERSION_AVAILABLE, changeSet.getLastCommittedVersion());
+
+        assertTrue(changeSet.isUnknownVersion(System.currentTimeMillis()));
+
+        changeSet.addOrReplace("A1");
+        changeSet.addOrReplace("A2");
+        changeSet.delete("A3");
+        changeSet.delete("A1");
+
+        changeSet.flush();
+
+        long lastCommittedVersion = changeSet.getLastCommittedVersion();
+
+        // Force a NPE exception...
+        changeSet.searcher = null;
+
+        // ...so a valid version is considered unknown even if it is valid
+        assertTrue(changeSet.isUnknownVersion(lastCommittedVersion));
     }
 
     @Test

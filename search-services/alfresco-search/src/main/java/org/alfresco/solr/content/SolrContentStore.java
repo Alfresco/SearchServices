@@ -54,6 +54,7 @@ import java.util.zip.GZIPOutputStream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -87,6 +88,8 @@ public class SolrContentStore implements Closeable, ReplicationRole
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
     private static final String VERSION_FILE = ".version";
 
+    private static final String INFO = "info";
+    private static final String FULL_REPLICATION = "full-replication";
     public static final String DELETES = "deletes";
     public static final String ADDS = "adds";
 
@@ -138,6 +141,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
         @Override
         public Map<String, List<Map<String, Object>>> getChanges(long version)
         {
+            logger.warn("NoOp SolrContentStore changes call on slave side: this shouldn't happen because the ContentStore is in read-only mode when the hosting node is a slave.");
             return emptyMap();
         }
 
@@ -197,22 +201,33 @@ public class SolrContentStore implements Closeable, ReplicationRole
         @Override
         public Map<String, List<Map<String, Object>>> getChanges(long version)
         {
-            if (version == NO_VERSION_AVAILABLE)
+            // The slave doesn't have a version, we are listing the whole content store
+            if (version <= NO_VERSION_AVAILABLE || changeSet.isUnknownVersion(version))
             {
+                String message = "A slave requested the content store synchronization " +
+                        ((version <= NO_VERSION_AVAILABLE)
+                                ? " without providing any local version (actually {})."
+                                : " with an invalid/unknown local version number ({}).") +
+                        "As consequence of that this master will list the whole content store because a full replication is needed.";
+
+                logger.info(message, version);
+
                 return Map.of(
-                        "adds", fullContentStore(),
-                        "deletes", emptyList());
+                        INFO, singletonList(Map.of(FULL_REPLICATION, true)),
+                        ADDS, fullContentStore(),
+                        DELETES, emptyList());
             }
 
-            ChangeSet requestedVersion = changeSet.since(version);
+            ChangeSet changes = changeSet.since(version);
 
             return Map.of(
+                    INFO, singletonList(Map.of(FULL_REPLICATION, false)),
                     DELETES,
-                    requestedVersion.deletes.stream()
+                    changes.deletes.stream()
                             .map(path -> Map.<String, Object>of("name", path))
                             .collect(toList()),
                     ADDS,
-                    requestedVersion.adds.stream()
+                    changes.adds.stream()
                             .map(relativePath -> root + relativePath)
                             .map(File::new)
                             .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
