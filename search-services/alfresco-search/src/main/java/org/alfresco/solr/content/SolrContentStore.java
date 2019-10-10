@@ -71,22 +71,31 @@ import static org.alfresco.solr.content.SolrContentUrlBuilder.logger;
  * </ul>
  *
  * The URL, if not known, can be reliably regenerated using the {@link SolrContentUrlBuilder}.
- * 
+ * <br/>
+ * Since version 1.5 this class acts as a singleton, there will be just one instance for each hosting Solr node.
+ * The unique instance is created at startup in {@link org.alfresco.solr.AlfrescoCoreAdminHandler} and then given to
+ * each registered core.
+ * The state pattern implemented by means of the {@link AccessMode} interface allows for a given instance to act:
+ *
+ * <ul>
+ *     <li>in READ/WRITE mode: when <b>at least one core</b> of the hosting node is a master or it is a standalone shard/instance.</li>
+ *     <li>in READ ONLY mode: when <b>all cores</b>  of the hosting node are slaves.</li>
+ * </ul>
+ *
  * @author Derek Hulley
  * @author Michael Suzuki
  * @author Andrea Gazzarini
- * @since 5.0
+ * @since 1.5
  */
-public class SolrContentStore implements Closeable, ReplicationRole
+public final class SolrContentStore implements Closeable, AccessMode
 {
-    protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SolrContentStore.class);
 
     public static final long NO_VERSION_AVAILABLE = -1L;
     public static final long NO_CONTENT_STORE_REPLICATION_REQUIRED = -2L;
 
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
-    private static final String VERSION_FILE = ".version";
 
     private static final String INFO = "info";
     private static final String FULL_REPLICATION = "full-replication";
@@ -96,12 +105,99 @@ public class SolrContentStore implements Closeable, ReplicationRole
     private final Predicate<File> onlyDatafiles = file -> file.isFile() && file.getName().endsWith(FILE_EXTENSION);
     private final String root;
 
-
-    private final ReplicationRole slave = new ReplicationRole()
+    /**
+     * Used for denoting the very beginning state, when the {@link SolrContentStore} has been created
+     * but we don't know (yet) which is the role played by the cores that will register on the hosting Solr node.
+     */
+    AccessMode notYetSet = new AccessMode()
     {
         @Override
-        public void enable()
+        public long getLastCommittedVersion()
         {
+            throw new IllegalStateException("ContentStore hasn't been properly initialised.");
+        }
+
+        @Override
+        public void setLastCommittedVersion(long version)
+        {
+            throw new IllegalStateException("ContentStore hasn't been properly initialised.");
+        }
+
+        @Override
+        public Map<String, List<Map<String, Object>>> getChanges(long version)
+        {
+            throw new IllegalStateException("ContentStore hasn't been properly initialised.");
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
+        {
+            throw new IllegalStateException("ContentStore hasn't been properly initialised.");
+        }
+
+        @Override
+        public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc)
+        {
+            throw new IllegalStateException("ContentStore hasn't been properly initialised.");
+        }
+
+        @Override
+        public void removeDocFromContentStore(NodeMetaData nodeMetaData)
+        {
+            throw new IllegalStateException("ContentStore hasn't been properly initialised.");
+        }
+
+        @Override
+        public void flushChangeSet()
+        {
+            throw new IllegalStateException("ContentStore hasn't been properly initialised.");
+        }
+
+        @Override
+        public void switchOnReadOnlyMode()
+        {
+            logger.info("Switching the content store to ReadOnly mode.");
+            currentAccessMode = readOnly;
+        }
+
+        @Override
+        public void switchOnReadWriteMode()
+        {
+            logger.info("Switching the content store to Read/Write mode.");
+            readWrite.init();
+            currentAccessMode = readWrite;
+        }
+
+        @Override
+        public void close()
+        {
+            // Nothing to close here
+        }
+    };
+
+    final InitialisableAccessMode readOnly = new InitialisableAccessMode()
+    {
+        @Override
+        public void init()
+        {
+            // Nothing to be done here...
+        }
+
+        @Override
+        public void switchOnReadWriteMode()
+        {
+            logger.info("Switching from ReadOnly to Read/Write Content Store.");
+
+            readWrite.init();
+            currentAccessMode = readWrite;
+
+            logger.info("Switching from ReadOnly to Read/Write Content Store.");
+        }
+
+        @Override
+        public void switchOnReadOnlyMode()
+        {
+            logger.info("The content store is already in ReadOnly mode so this call won't have any effect.");
         }
 
         @Override
@@ -109,7 +205,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
         {
             try
             {
-                return Files.lines(Paths.get(root, VERSION_FILE))
+                return Files.lines(Paths.get(root, ".version"))
                         .map(Long::parseLong)
                         .findFirst()
                         .orElse(NO_VERSION_AVAILABLE);
@@ -176,12 +272,12 @@ public class SolrContentStore implements Closeable, ReplicationRole
         }
     };
 
-    private final ReplicationRole master = new ReplicationRole()
+    final InitialisableAccessMode readWrite = new InitialisableAccessMode()
     {
         private ChangeSet changeSet;
 
         @Override
-        public synchronized void enable()
+        public void init()
         {
             changeSet = ofNullable(changeSet).orElseGet(() -> new ChangeSet.Builder().withContentStoreRoot(root).build());
         }
@@ -250,7 +346,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
 
             ContentWriter writer = this.getWriter(contentContext);
 
-            log.debug("Writing {}/{} to {}", tenant, dbId, contentContext.getContentUrl());
+            LOGGER.debug("Writing {}/{} to {}", tenant, dbId, contentContext.getContentUrl());
 
             try (OutputStream contentOutputStream = writer.getContentOutputStream();
                  GZIPOutputStream gzip = new GZIPOutputStream(contentOutputStream))
@@ -263,7 +359,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
             }
             catch (Exception exception)
             {
-                log.warn("Unable to write to Content Store using URL: {}", contentContext.getContentUrl(), exception);
+                LOGGER.warn("Unable to write to Content Store using URL: {}", contentContext.getContentUrl(), exception);
             }
         }
 
@@ -293,6 +389,19 @@ public class SolrContentStore implements Closeable, ReplicationRole
         }
 
         @Override
+        public void switchOnReadWriteMode()
+        {
+            logger.debug("The content store is already in ReadWrite mode; as consequence of that, the incoming \"SET-TO-RW-MODE\" call won't have any effect.");
+        }
+
+        @Override
+        public void switchOnReadOnlyMode()
+        {
+            logger.debug("A writable content store cannot switch in ReadOnly mode. This could happen in an edge case where" +
+                    " on the same Solr node we have masters and slaves nodes");
+        }
+
+        @Override
         public void close()
         {
             changeSet.close();
@@ -311,20 +420,16 @@ public class SolrContentStore implements Closeable, ReplicationRole
             }
             catch (Exception e)
             {
-                log.error("An exception occurred while retrieving the whole ContentStore filelist. " +
+                LOGGER.error("An exception occurred while retrieving the whole ContentStore filelist. " +
                         "As consequence of that an empty list will be returned (i.e. no ContentStore synch will happen).");
                 return emptyList();
             }
         }
 
-        private boolean delete(String contentUrl)
+        private void delete(String contentUrl)
         {
             File file = getFileFromUrl(contentUrl);
-            boolean deleted = file.delete();
-
-            if (deleted) changeSet.delete(relativePath(file));
-
-            return deleted;
+            if (file.delete()) changeSet.delete(relativePath(file));
         }
 
         private ContentWriter getWriter(ContentContext context)
@@ -335,7 +440,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
         }
     };
 
-    private ReplicationRole currentRole = ReplicationRole.NO_OP;
+    AccessMode currentAccessMode = notYetSet;
 
     private final JavaBinCodec.ObjectResolver resolver = (o, codec) -> {
         if(o instanceof BytesRef)
@@ -364,11 +469,11 @@ public class SolrContentStore implements Closeable, ReplicationRole
         {
             //Its very unlikely that solrHome would not exist so we will log an error
             //but continue because solr.content.dir may be specified, so it keeps working
-            log.error(solrHomeFile.getAbsolutePath() + " does not exist.");
+            LOGGER.error(solrHomeFile.getAbsolutePath() + " does not exist.");
         }
 
         String path = solrHomeFile.getParent() + "/" + CONTENT_STORE;
-        log.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
+        LOGGER.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
         File rootFile = new File(ConfigUtil.locateProperty(SOLR_CONTENT_DIR, path));
 
         try
@@ -391,7 +496,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
     @Override
     public Map<String, List<Map<String, Object>>> getChanges(long version)
     {
-        return currentRole.getChanges(version);
+        return currentAccessMode.getChanges(version);
     }
 
     /**
@@ -423,7 +528,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
         catch (Exception exception)
         {
             // Don't fail for this
-            log.warn("Failed to get doc from store using URL: " + contentUrl, exception);
+            LOGGER.warn("Failed to get doc from store using URL: " + contentUrl, exception);
             return null;
         }
     }
@@ -431,13 +536,13 @@ public class SolrContentStore implements Closeable, ReplicationRole
     @Override
     public long getLastCommittedVersion()
     {
-        return currentRole.getLastCommittedVersion();
+        return currentAccessMode.getLastCommittedVersion();
     }
 
     @Override
     public void setLastCommittedVersion(long version)
     {
-        currentRole.setLastCommittedVersion(version);
+        currentAccessMode.setLastCommittedVersion(version);
     }
 
     /**
@@ -459,7 +564,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
     @Override
     public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
     {
-        currentRole.storeDocOnSolrContentStore(tenant, dbId, doc);
+        currentAccessMode.storeDocOnSolrContentStore(tenant, dbId, doc);
     }
 
     /**
@@ -471,7 +576,7 @@ public class SolrContentStore implements Closeable, ReplicationRole
     @Override
     public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
-        currentRole.storeDocOnSolrContentStore(nodeMetaData, doc);
+        currentAccessMode.storeDocOnSolrContentStore(nodeMetaData, doc);
     }
 
     /**
@@ -482,31 +587,31 @@ public class SolrContentStore implements Closeable, ReplicationRole
     @Override
     public void removeDocFromContentStore(NodeMetaData nodeMetaData)
     {
-        currentRole.removeDocFromContentStore(nodeMetaData);
+        currentAccessMode.removeDocFromContentStore(nodeMetaData);
     }
 
     @Override
     public void flushChangeSet() throws IOException
     {
-        currentRole.flushChangeSet();
+        currentAccessMode.flushChangeSet();
     }
 
     @Override
     public void close() throws IOException
     {
-        currentRole.close();
+        currentAccessMode.close();
     }
 
-    public ReplicationRole enableMasterMode()
+    @Override
+    public void switchOnReadWriteMode()
     {
-        master.enable();
-        return currentRole = master;
+        currentAccessMode = readWrite;
     }
 
-    public ReplicationRole enableSlaveMode()
+    @Override
+    public void switchOnReadOnlyMode()
     {
-        slave.enable();
-        return currentRole = slave;
+        currentAccessMode = readOnly;
     }
 
     /**
@@ -534,13 +639,24 @@ public class SolrContentStore implements Closeable, ReplicationRole
         return new SolrFileContentReader(file, contentUrl);
     }
 
-    @Override
-    public void enable()
+    /**
+     * Enables/disables the content store access mode.
+     * The term "toggles" is just for indicating that this method will be called several times (one for each registered
+     * core). The underlying FSM makes sure this call will be idempotent so in case of read/write content store the
+     * data structure used for maintaining the content store versioning will be initialised only once, even if this
+     * method is called repeatedly.
+     *
+     * @param enableReadOnlyMode a flag indicating if the requesting core requires a readOnly (true) or readWrite (false) content store.
+     */
+    public synchronized void toggleReadOnlyMode(boolean enableReadOnlyMode)
     {
-    }
-
-    public void toggleReadOnlyMode(boolean contentStoreInReadOnlyModeFor) {
-        currentRole = contentStoreInReadOnlyModeFor? slave : master;
-        currentRole.enable();
+        if (enableReadOnlyMode)
+        {
+            currentAccessMode.switchOnReadOnlyMode();
+        }
+        else
+        {
+            currentAccessMode.switchOnReadWriteMode();
+        }
     }
 }

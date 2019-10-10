@@ -18,25 +18,22 @@
  */
 package org.alfresco.solr.content;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
-import org.alfresco.repo.content.ContentContext;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.solr.client.NodeMetaData;
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertSame;
 
 /**
  * Tests {@link SolrContentStoreTest}
@@ -47,17 +44,107 @@ import static org.hamcrest.core.Is.is;
 @RunWith(MockitoJUnitRunner.class) 
 public class SolrContentStoreTest
 {
-
     private static final String DEFAULT_TENANT = "_DEFAULT_";
-    private String solrHome = new File("./target/contentstoretest/").getAbsolutePath();
-    private long dbid = 111;
-    private String tenant = "me";
+
+    private String solrHome;
+    private SolrContentStore contentStore;
+
+    @Before
+    public void setUp()
+    {
+        solrHome = new File("./target/contentstoretest/" + System.currentTimeMillis()).getAbsolutePath();
+        contentStore = new SolrContentStore(solrHome);
+    }
 
     @After 
     public void tearDown() throws IOException
     {
+        contentStore.close();
+
         File rootDir = new File(new SolrContentStore(solrHome).getRootLocation());
         FileUtils.deleteDirectory(rootDir);
+    }
+
+    @Test
+    public void atVeryBeginningAccessModeIsNotSet()
+    {
+        assertSame(contentStore.notYetSet, contentStore.currentAccessMode);
+    }
+
+    @Test
+    public void transitionFromNotSetToReadOnlyMode()
+    {
+        assertSame(contentStore.notYetSet, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(true);
+
+        assertSame(contentStore.readOnly, contentStore.currentAccessMode);
+    }
+
+    @Test
+    public void transitionFromNotSetToReadWriteMode()
+    {
+        assertSame(contentStore.notYetSet, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(false);
+
+        assertSame(contentStore.readWrite, contentStore.currentAccessMode);
+    }
+
+    @Test
+    public void transitionFromReadOnlyToReadWriteMode()
+    {
+        assertSame(contentStore.notYetSet, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(true);
+
+        assertSame(contentStore.readOnly, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(false);
+
+        assertSame(contentStore.readWrite, contentStore.currentAccessMode);
+    }
+
+    @Test
+    public void transitionFromReadOnlyToReadOnlyHasNoEffect()
+    {
+        assertSame(contentStore.notYetSet, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(true);
+
+        assertSame(contentStore.readOnly, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(true);
+
+        assertSame(contentStore.readOnly, contentStore.currentAccessMode);
+    }
+
+    @Test
+    public void transitionFromReadWriteToReadOnlyModeHasNoEffect()
+    {
+        assertSame(contentStore.notYetSet, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(false);
+
+        assertSame(contentStore.readWrite, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(true);
+
+        assertSame(contentStore.readWrite, contentStore.currentAccessMode);
+    }
+
+    @Test
+    public void transitionFromReadWriteToReadWriteHasNoEffect()
+    {
+        assertSame(contentStore.notYetSet, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(false);
+
+        assertSame(contentStore.readWrite, contentStore.currentAccessMode);
+
+        contentStore.toggleReadOnlyMode(false);
+
+        assertSame(contentStore.readWrite, contentStore.currentAccessMode);
     }
 
     @Test(expected = RuntimeException.class) 
@@ -118,59 +205,58 @@ public class SolrContentStoreTest
         Assert.assertThat(solrContentStore.getRootLocation(), is(solrHome + "/" + SolrContentStore.CONTENT_STORE));
     }
 
-
     @Test 
     public void rootLocation()
     {
-        SolrContentStore store = new SolrContentStore(solrHome);
-        File rootDir = new File(store.getRootLocation());
+        File rootDir = new File(contentStore.getRootLocation());
+
         Assert.assertTrue(rootDir.exists());
         Assert.assertTrue(rootDir.isDirectory());
     }
 
 
     @Test
-    public void storeDocOnSolrContentStore() throws IOException
+    public void storeDocOnSolrContentStore()
     {
-        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
-        solrContentStore.enableMasterMode();
+        contentStore.toggleReadOnlyMode(false);
+
         SolrInputDocument doc = Mockito.mock(SolrInputDocument.class);
-        SolrInputDocument document = solrContentStore.retrieveDocFromSolrContentStore(tenant, dbid);
+        long dbid = 111;
+        String tenant = "me";
+        SolrInputDocument document = contentStore.retrieveDocFromSolrContentStore(tenant, dbid);
         Assert.assertNull(document);
-        solrContentStore.storeDocOnSolrContentStore(tenant, dbid, doc);
-        document = solrContentStore.retrieveDocFromSolrContentStore(tenant, dbid);
+
+        contentStore.storeDocOnSolrContentStore(tenant, dbid, doc);
+        document = contentStore.retrieveDocFromSolrContentStore(tenant, dbid);
         Assert.assertNotNull(document);
-        solrContentStore.close();
     }
 
     @Test
-    public void storeDocOnSolrContentStoreNodeMetaData() throws IOException
+    public void storeDocOnSolrContentStoreNodeMetaData()
     {
-        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
-        solrContentStore.enableMasterMode();
+        contentStore.toggleReadOnlyMode(false);
         SolrInputDocument doc = Mockito.mock(SolrInputDocument.class);
         NodeMetaData nodeMetaData = Mockito.mock(NodeMetaData.class);
-        SolrInputDocument document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+        SolrInputDocument document = contentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNull(document);
-        solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
-        document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+
+        contentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
+        document = contentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNotNull(document);
-        solrContentStore.close();
     }
 
     @Test
-    public void removeDocFromContentStore() throws IOException
+    public void removeDocFromContentStore()
     {
-        SolrContentStore solrContentStore = new SolrContentStore(solrHome);
-        solrContentStore.enableMasterMode();
+        contentStore.toggleReadOnlyMode(false);
         SolrInputDocument doc = Mockito.mock(SolrInputDocument.class);
         NodeMetaData nodeMetaData = Mockito.mock(NodeMetaData.class);
-        solrContentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
-        SolrInputDocument document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+        contentStore.storeDocOnSolrContentStore(nodeMetaData, doc);
+        SolrInputDocument document = contentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNotNull(document);
-        solrContentStore.removeDocFromContentStore(nodeMetaData);
-        document = solrContentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
+
+        contentStore.removeDocFromContentStore(nodeMetaData);
+        document = contentStore.retrieveDocFromSolrContentStore(DEFAULT_TENANT, 0);
         Assert.assertNull(document);
-        solrContentStore.close();
     }
 }

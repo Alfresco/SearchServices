@@ -33,71 +33,15 @@ import java.util.Map;
  * Despite the same interface, the behaviour of the content store management changes depending on the node kind:
  *
  * <ul>
- *     <li>Master Node: read, write and changes tracking</li>
- *     <li>Slave Node: read only</li>
+ *     <li>Master Node: READ + WRITE and changes tracking</li>
+ *     <li>Slave Node: READ ONLY</li>
  * </ul>
  *
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public interface ReplicationRole extends Closeable
+interface AccessMode extends Closeable
 {
-    ReplicationRole NO_OP = new ReplicationRole()
-    {
-        @Override
-        public long getLastCommittedVersion()
-        {
-            return 0;
-        }
-
-        @Override
-        public void setLastCommittedVersion(long version)
-        {
-
-        }
-
-        @Override
-        public Map<String, List<Map<String, Object>>> getChanges(long version)
-        {
-            return null;
-        }
-
-        @Override
-        public void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc)
-        {
-
-        }
-
-        @Override
-        public void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc)
-        {
-
-        }
-
-        @Override
-        public void removeDocFromContentStore(NodeMetaData nodeMetaData)
-        {
-
-        }
-
-        @Override
-        public void flushChangeSet()
-        {
-
-        }
-
-        @Override
-        public void enable()
-        {
-        }
-
-        @Override
-        public void close()
-        {
-
-        }
-    };
-
     /**
      * Returns the last persisted content store version.
      *
@@ -120,8 +64,8 @@ public interface ReplicationRole extends Closeable
      * Stores a {@link SolrInputDocument} into Alfresco solr content store.
      *
      * @param tenant the owning tenant.
-     * @param dbId the document DBID
-     * @param doc the document itself.
+     * @param dbId   the document DBID
+     * @param doc    the document itself.
      */
     void storeDocOnSolrContentStore(String tenant, long dbId, SolrInputDocument doc);
 
@@ -129,7 +73,7 @@ public interface ReplicationRole extends Closeable
      * Stores a {@link SolrInputDocument} into Alfresco solr content store.
      *
      * @param nodeMetaData the node metadata.
-     * @param doc the document itself.
+     * @param doc          the document itself.
      */
     void storeDocOnSolrContentStore(NodeMetaData nodeMetaData, SolrInputDocument doc);
 
@@ -147,6 +91,13 @@ public interface ReplicationRole extends Closeable
      */
     void flushChangeSet() throws IOException;
 
+    /**
+     * Tries to transition from this mode to the readOnlyMode.
+     */
+    void switchOnReadOnlyMode();
 
-    void enable();
+    /**
+     * Tries to transition from this mode to the read/write mode.
+     */
+    void switchOnReadWriteMode();
 }
