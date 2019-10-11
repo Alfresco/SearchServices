@@ -131,6 +131,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   public static final String PATH = "/replication";
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   private SolrCore core;
 
   private SolrContentStore contentStore;
@@ -436,7 +437,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       } else {
         currentIndexFetcher = pollingIndexFetcher;
       }
-      return currentIndexFetcher.fetchLatestIndex(forceReplication);
+      return currentIndexFetcher.fetchLatestIndex(forceReplication, acquireContentStoreReplicationTask());
     } catch (Exception e) {
       SolrException.log(LOG, "Index fetch failed ", e);
       return new IndexFetcher.IndexFetchResult(IndexFetcher.IndexFetchResult.FAILED_BY_EXCEPTION_MESSAGE, false, e);
@@ -656,90 +657,96 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
 
     long contentStoreGeneration = Long.parseLong(v);
 
-    IndexCommit commit = core.getDeletionPolicy().getCommitPoint(indexGeneration);
 
-    if (commit == null) {
-      rsp.add("status", "invalid index generation");
-      return;
-    }
+    if (indexGeneration != NO_INDEX_REPLICATION_REQUIRED){
 
-    // reserve the indexcommit for sometime
-    core.getDeletionPolicy().setReserveDuration(indexGeneration, reserveCommitDuration);
-    List<Map<String, Object>> result = new ArrayList<>();
-    Directory dir = null;
-    try {
-      dir = core.getDirectoryFactory().get(core.getNewIndexDir(), DirContext.DEFAULT, core.getSolrConfig().indexConfig.lockType);
-      SegmentInfos infos = SegmentInfos.readCommit(dir, commit.getSegmentsFileName());
 
-      for (SegmentCommitInfo commitInfo : infos) {
-        for (String file : commitInfo.files()) {
-          Map<String, Object> fileMeta = new HashMap<>();
-          fileMeta.put(NAME, file);
-          fileMeta.put(SIZE, dir.fileLength(file));
+      IndexCommit commit = core.getDeletionPolicy().getCommitPoint(indexGeneration);
 
-          try (final IndexInput in = dir.openInput(file, IOContext.READONCE)) {
+      if (commit == null) {
+        rsp.add("status", "invalid index generation");
+        return;
+      }
+
+      // reserve the indexcommit for sometime
+      core.getDeletionPolicy().setReserveDuration(indexGeneration, reserveCommitDuration);
+      List<Map<String, Object>> result = new ArrayList<>();
+      Directory dir = null;
+      try {
+        dir = core.getDirectoryFactory().get(core.getNewIndexDir(), DirContext.DEFAULT, core.getSolrConfig().indexConfig.lockType);
+        SegmentInfos infos = SegmentInfos.readCommit(dir, commit.getSegmentsFileName());
+
+        for (SegmentCommitInfo commitInfo : infos) {
+          for (String file : commitInfo.files()) {
+            Map<String, Object> fileMeta = new HashMap<>();
+            fileMeta.put(NAME, file);
+            fileMeta.put(SIZE, dir.fileLength(file));
+
+            try (final IndexInput in = dir.openInput(file, IOContext.READONCE)) {
+              try {
+                long checksum = CodecUtil.retrieveChecksum(in);
+                fileMeta.put(CHECKSUM, checksum);
+              } catch (Exception e) {
+                LOG.warn("Could not read checksum from index file: " + file, e);
+              }
+            }
+
+            result.add(fileMeta);
+          }
+        }
+
+        // add the segments_N file
+
+        Map<String, Object> fileMeta = new HashMap<>();
+        fileMeta.put(NAME, infos.getSegmentsFileName());
+        fileMeta.put(SIZE, dir.fileLength(infos.getSegmentsFileName()));
+        if (infos.getId() != null) {
+          try (final IndexInput in = dir.openInput(infos.getSegmentsFileName(), IOContext.READONCE)) {
             try {
-              long checksum = CodecUtil.retrieveChecksum(in);
-              fileMeta.put(CHECKSUM, checksum);
+              fileMeta.put(CHECKSUM, CodecUtil.retrieveChecksum(in));
             } catch (Exception e) {
-              LOG.warn("Could not read checksum from index file: " + file, e);
+              LOG.warn("Could not read checksum from index file: " + infos.getSegmentsFileName(), e);
             }
           }
-
-          result.add(fileMeta);
         }
-      }
-
-      // add the segments_N file
-
-      Map<String, Object> fileMeta = new HashMap<>();
-      fileMeta.put(NAME, infos.getSegmentsFileName());
-      fileMeta.put(SIZE, dir.fileLength(infos.getSegmentsFileName()));
-      if (infos.getId() != null) {
-        try (final IndexInput in = dir.openInput(infos.getSegmentsFileName(), IOContext.READONCE)) {
+        result.add(fileMeta);
+      } catch (IOException e) {
+        rsp.add("status", "unable to get file names for given index generation");
+        rsp.add(EXCEPTION, e);
+        LOG.error("Unable to get file names for indexCommit generation: " + indexGeneration, e);
+      } finally {
+        if (dir != null) {
           try {
-            fileMeta.put(CHECKSUM, CodecUtil.retrieveChecksum(in));
-          } catch (Exception e) {
-            LOG.warn("Could not read checksum from index file: " + infos.getSegmentsFileName(), e);
+            core.getDirectoryFactory().release(dir);
+          } catch (IOException e) {
+            SolrException.log(LOG, "Could not release directory after fetching file list", e);
           }
         }
       }
-      result.add(fileMeta);
-    } catch (IOException e) {
-      rsp.add("status", "unable to get file names for given index generation");
-      rsp.add(EXCEPTION, e);
-      LOG.error("Unable to get file names for indexCommit generation: " + indexGeneration, e);
-    } finally {
-      if (dir != null) {
+      rsp.add(CMD_GET_FILE_LIST, result);
+
+      // fetch list of tlog files only if cdcr is activated
+      if (solrParams.getBool(TLOG_FILES, true) && core.getUpdateHandler().getUpdateLog() != null
+              && core.getUpdateHandler().getUpdateLog() instanceof CdcrUpdateLog) {
         try {
-          core.getDirectoryFactory().release(dir);
-        } catch (IOException e) {
-          SolrException.log(LOG, "Could not release directory after fetching file list", e);
+          List<Map<String, Object>> tlogfiles = getTlogFileList(commit);
+          LOG.info("Adding tlog files to list: " + tlogfiles);
+          rsp.add(TLOG_FILES, tlogfiles);
+        }
+        catch (IOException e) {
+          rsp.add("status", "unable to get tlog file names for given index generation");
+          rsp.add(EXCEPTION, e);
+          LOG.error("Unable to get tlog file names for indexCommit generation: " + indexGeneration, e);
         }
       }
-    }
-    rsp.add(CMD_GET_FILE_LIST, result);
 
-    // fetch list of tlog files only if cdcr is activated
-    if (solrParams.getBool(TLOG_FILES, true) && core.getUpdateHandler().getUpdateLog() != null
-        && core.getUpdateHandler().getUpdateLog() instanceof CdcrUpdateLog) {
-      try {
-        List<Map<String, Object>> tlogfiles = getTlogFileList(commit);
-        LOG.info("Adding tlog files to list: " + tlogfiles);
-        rsp.add(TLOG_FILES, tlogfiles);
+      if (confFileNameAlias.size() < 1 || core.getCoreContainer().isZooKeeperAware()) {
+        return;
       }
-      catch (IOException e) {
-        rsp.add("status", "unable to get tlog file names for given index generation");
-        rsp.add(EXCEPTION, e);
-        LOG.error("Unable to get tlog file names for indexCommit generation: " + indexGeneration, e);
-      }
+      LOG.debug("Adding config files to list: " + includeConfFiles);
+      //if configuration files need to be included get their details
+      rsp.add(CONF_FILES, getConfFileInfoFromCache(confFileNameAlias, confFileInfoCache));
     }
-
-    if (confFileNameAlias.size() < 1 || core.getCoreContainer().isZooKeeperAware())
-      return;
-    LOG.debug("Adding config files to list: " + includeConfFiles);
-    //if configuration files need to be included get their details
-    rsp.add(CONF_FILES, getConfFileInfoFromCache(confFileNameAlias, confFileInfoCache));
 
     if (contentStoreGeneration != SolrContentStore.NO_CONTENT_STORE_REPLICATION_REQUIRED)
     {
@@ -976,6 +983,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
     details.add("isSlave", String.valueOf(isSlave));
     CommitVersionInfo vInfo = getIndexVersion();
     details.add("indexVersion", null == vInfo ? 0 : vInfo.version);
+    details.add("robavaria", 50);
     details.add(GENERATION, null == vInfo ? 0 : vInfo.generation);
 
     IndexCommit commit = indexCommitPoint;  // make a copy so it won't change
@@ -1047,6 +1055,12 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
             bytesToDownload += (Long) file.get(SIZE);
           }
 
+          //get list of conf files to download
+          for (Map<String, Object> file : fetcher.getContentStoreFileToDownload()) {
+            filesToDownload.add((String) file.get(NAME));
+            bytesToDownload += (Long) file.get(SIZE);
+          }
+
           slave.add("filesToDownload", filesToDownload);
           slave.add("numFilesToDownload", String.valueOf(filesToDownload.size()));
           slave.add("bytesToDownload", NumberUtils.readableSize(bytesToDownload));
@@ -1060,6 +1074,11 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
 
           //get list of conf files downloaded
           for (Map<String, Object> file : fetcher.getConfFilesDownloaded()) {
+            filesDownloaded.add((String) file.get(NAME));
+            bytesDownloaded += (Long) file.get(SIZE);
+          }
+
+          for (Map<String, Object> file : fetcher.getContentStoreFilesDownloaded()) {
             filesDownloaded.add((String) file.get(NAME));
             bytesDownloaded += (Long) file.get(SIZE);
           }
@@ -1930,6 +1949,8 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   static final String CONTENT_STORE_FILE_LIST = "contentStoreFiles";
 
   static final String CMD_CONTENT_STORE_FILES = "cmdContentStoreFiles";
+
+  static final long NO_INDEX_REPLICATION_REQUIRED = -3;
 
   /**
    * Boolean param for tests that can be specified when using

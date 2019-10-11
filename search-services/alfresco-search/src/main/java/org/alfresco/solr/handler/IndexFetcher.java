@@ -16,6 +16,7 @@
  */
 package org.alfresco.solr.handler;
 
+import static java.util.List.of;
 import static org.alfresco.solr.handler.ReplicationHandler.ALIAS;
 import static org.alfresco.solr.handler.ReplicationHandler.CHECKSUM;
 import static org.alfresco.solr.handler.ReplicationHandler.CMD_CONTENT_STORE_FILES;
@@ -37,6 +38,7 @@ import static org.alfresco.solr.handler.ReplicationHandler.FileInfo;
 import static org.alfresco.solr.handler.ReplicationHandler.GENERATION;
 import static org.alfresco.solr.handler.ReplicationHandler.INTERNAL;
 import static org.alfresco.solr.handler.ReplicationHandler.MASTER_URL;
+import static org.alfresco.solr.handler.ReplicationHandler.NO_INDEX_REPLICATION_REQUIRED;
 import static org.alfresco.solr.handler.ReplicationHandler.OFFSET;
 import static org.alfresco.solr.handler.ReplicationHandler.SIZE;
 import static org.alfresco.solr.handler.ReplicationHandler.TLOG_FILE;
@@ -126,6 +128,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
@@ -190,6 +193,9 @@ class IndexFetcher {
   private final HttpClient myHttpClient;
 
   private static final String INTERRUPT_RESPONSE_MESSAGE = "Interrupted while waiting for modify lock";
+
+  private boolean fullContentStoreReplication = false;
+
 
   public static class IndexFetchResult {
     private final String message;
@@ -307,7 +313,6 @@ class IndexFetcher {
     params.set(CommonParams.QT, ReplicationHandler.PATH);
     QueryRequest req = new QueryRequest(params);
 
-    // TODO modify to use shardhandler
     try (HttpSolrClient client = new HttpSolrClient.Builder(masterUrl).withHttpClient(myHttpClient).build()) {
       client.setSoTimeout(60000);
       client.setConnectionTimeout(15000);
@@ -318,24 +323,33 @@ class IndexFetcher {
         filesToDownload = Collections.synchronizedList(files);
       else {
         filesToDownload = Collections.emptyList();
-        LOG.error("No files to download for index generation: "+ indexGeneration);
+        LOG.info("No files to download for index generation: "+ indexGeneration);
       }
 
       files = (List<Map<String,Object>>) response.get(CONF_FILES);
-      if (files != null)
+      if (files != null) {
         confFilesToDownload = Collections.synchronizedList(files);
+      }
 
       files = (List<Map<String, Object>>) response.get(TLOG_FILES);
       if (files != null) {
         tlogFilesToDownload = Collections.synchronizedList(files);
       }
-
       Map<String, List<Map<String, Object>>> contentStoreMap =
               (Map<String, List<Map<String, Object> > >) response.get(CONTENT_STORE_FILES);
 
       if (contentStoreMap != null) {
         contentStoreFilesToDownload = Collections.synchronizedList(contentStoreMap.get(SolrContentStore.ADDS));
         contentStoreFilesToDelete = Collections.synchronizedList(contentStoreMap.get(SolrContentStore.DELETES));
+
+        List<Map<String, Object>> infomap = contentStoreMap.get(SolrContentStore.INFO);
+        fullContentStoreReplication = of(infomap).stream()
+                        .flatMap(List::stream)
+                        .map(e -> e.get(SolrContentStore.FULL_REPLICATION))
+                        .map(e -> Boolean.class.isInstance(e)? (Boolean) e : false)
+                        .findFirst()
+                        .orElse(false);
+
       }
 
     } catch (SolrServerException e) {
@@ -343,8 +357,8 @@ class IndexFetcher {
     }
   }
 
-  IndexFetchResult fetchLatestIndex(boolean forceReplication) throws IOException, InterruptedException {
-    return fetchLatestIndex(forceReplication, false);
+  IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean replicateContentStore) throws IOException, InterruptedException {
+    return fetchLatestIndex(forceReplication, false, replicateContentStore);
   }
 
   /**
@@ -356,7 +370,7 @@ class IndexFetcher {
    * @return true on success, false if slave is already in sync
    * @throws IOException if an exception occurs
    */
-  private IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload)
+  private IndexFetchResult fetchLatestIndex(boolean forceReplication, boolean forceCoreReload, boolean replicateContentStore)
           throws IOException, InterruptedException {
 
     boolean cleanupDone = false;
@@ -395,6 +409,14 @@ class IndexFetcher {
       long latestVersion = (Long) response.get(CMD_INDEX_VERSION);
       long masterContentStoreVersion = (Long) response.get(CONTENT_STORE_VERSION);
       long latestGeneration = (Long) response.get(GENERATION);
+
+
+      // The following session should make sure that if replication is happening in more cores at the same time,
+      // the contentStore replication is done only once.
+      long slaveContentStoreVersion = replicateContentStore? contentStore.getLastCommittedVersion() : SolrContentStore.NO_CONTENT_STORE_REPLICATION_REQUIRED;
+      boolean contentStoreReplicationNeeded = replicateContentStore && (masterContentStoreVersion != slaveContentStoreVersion);
+      boolean indexReplicationNeeded = true;
+
 
       LOG.info("Master's generation: " + latestGeneration);
       LOG.info("Master's version: " + latestVersion);
@@ -439,11 +461,25 @@ class IndexFetcher {
         return IndexFetchResult.MASTER_VERSION_ZERO;
       }
 
-      // The following session should make sure that if replication is happening in more cores at the same time,
-      // the contentStore replication is done only once.
-      boolean replicateContentStore = replicationHandler.acquireContentStoreReplicationTask();
-      long slaveContentStoreVersion = replicateContentStore? contentStore.getLastCommittedVersion() : SolrContentStore.NO_CONTENT_STORE_REPLICATION_REQUIRED;
-      boolean contentStoreReplicationNeeded = replicateContentStore && (masterContentStoreVersion != slaveContentStoreVersion);
+
+
+      // TODO: Should we be comparing timestamps (across machines) here?
+      if (!forceReplication && IndexDeletionPolicyWrapper.getCommitTimestamp(commit) == latestVersion) {
+        //master and slave are already in sync just return
+        LOG.info("Slave index in sync with master.");
+        successfulInstall = true;
+        indexReplicationNeeded = false;
+      }
+
+      if (!indexReplicationNeeded && !contentStoreReplicationNeeded){
+        return IndexFetchResult.ALREADY_IN_SYNC;
+      }
+
+      if (indexReplicationNeeded)
+        LOG.info("Starting index replication process");
+
+      if (contentStoreReplicationNeeded)
+        LOG.info("Starting content store replication process");
 
       if (masterContentStoreVersion < slaveContentStoreVersion)
       {
@@ -452,36 +488,32 @@ class IndexFetcher {
       }
 
 
-      // TODO: Should we be comparing timestamps (across machines) here?
-      if (!forceReplication && IndexDeletionPolicyWrapper.getCommitTimestamp(commit) == latestVersion) {
-        //master and slave are already in sync just return
-        LOG.info("Slave in sync with master.");
-        successfulInstall = true;
-        return IndexFetchResult.ALREADY_IN_SYNC;
-      }
-      LOG.info("Starting replication process");
-
-
       // get the list of files first
-      fetchFileList(latestGeneration, slaveContentStoreVersion);
+      fetchFileList(indexReplicationNeeded? latestGeneration : NO_INDEX_REPLICATION_REQUIRED, slaveContentStoreVersion);
       // this can happen if the commit point is deleted before we fetch the file list.
-      if (filesToDownload.isEmpty()) {
+      if (filesToDownload.isEmpty() && indexReplicationNeeded) {
         return IndexFetchResult.PEER_INDEX_COMMIT_DELETED;
       }
-      LOG.info("Number of files in latest index in master: " + filesToDownload.size());
-      if (tlogFilesToDownload != null) {
-        LOG.info("Number of tlog files in master: " + tlogFilesToDownload.size());
+
+      if (indexReplicationNeeded)
+      {
+
+        LOG.info("Number of files in latest index in master: " + filesToDownload.size());
+        if (tlogFilesToDownload != null) {
+          LOG.info("Number of tlog files in master: " + tlogFilesToDownload.size());
+        }
       }
 
       // Create the sync service
       fsyncService = ExecutorUtil.newMDCAwareSingleThreadExecutor(new DefaultSolrThreadFactory("fsyncService"));
       // use a synchronized list because the list is read by other threads (to show details)
-      filesDownloaded = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
+      filesDownloaded = Collections.synchronizedList(new ArrayList<>());
+
       // if the generation of master is older than that of the slave , it means they are not compatible to be copied
       // then a new index directory to be created and all the files need to be copied
-      boolean isFullCopyNeeded = IndexDeletionPolicyWrapper
+      boolean isFullCopyNeeded = indexReplicationNeeded && (IndexDeletionPolicyWrapper
               .getCommitTimestamp(commit) >= latestVersion
-              || commit.getGeneration() >= latestGeneration || forceReplication;
+              || commit.getGeneration() >= latestGeneration || forceReplication);
 
       String timestamp = new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(new Date());
       String tmpIdxDirName = "index." + timestamp;
@@ -500,47 +532,52 @@ class IndexFetcher {
 
       try {
 
-        //We will compare all the index files from the master vs the index files on disk to see if there is a mismatch
-        //in the metadata. If there is a mismatch for the same index file then we download the entire index again.
-        if (!isFullCopyNeeded && isIndexStale(indexDir)) {
-          isFullCopyNeeded = true;
-        }
+        if (indexReplicationNeeded)
+        {
 
-        if (!isFullCopyNeeded) {
-          // a searcher might be using some flushed but not committed segments
-          // because of soft commits (which open a searcher on IW's data)
-          // so we need to close the existing searcher on the last commit
-          // and wait until we are able to clean up all unused lucene files
-          if (solrCore.getCoreContainer().isZooKeeperAware()) {
-            solrCore.closeSearcher();
+          //We will compare all the index files from the master vs the index files on disk to see if there is a mismatch
+          //in the metadata. If there is a mismatch for the same index file then we download the entire index again.
+          if (!isFullCopyNeeded && isIndexStale(indexDir)) {
+            isFullCopyNeeded = true;
           }
 
-          // rollback and reopen index writer and wait until all unused files
-          // are successfully deleted
-          solrCore.getUpdateHandler().newIndexWriter(true);
-          RefCounted<IndexWriter> writer = solrCore.getUpdateHandler().getSolrCoreState().getIndexWriter(null);
-          try {
-            IndexWriter indexWriter = writer.get();
-            int c = 0;
-            indexWriter.deleteUnusedFiles();
-            while (hasUnusedFiles(indexDir, commit)) {
+          if (!isFullCopyNeeded) {
+            // a searcher might be using some flushed but not committed segments
+            // because of soft commits (which open a searcher on IW's data)
+            // so we need to close the existing searcher on the last commit
+            // and wait until we are able to clean up all unused lucene files
+            if (solrCore.getCoreContainer().isZooKeeperAware()) {
+              solrCore.closeSearcher();
+            }
+
+            // rollback and reopen index writer and wait until all unused files
+            // are successfully deleted
+            solrCore.getUpdateHandler().newIndexWriter(true);
+            RefCounted<IndexWriter> writer = solrCore.getUpdateHandler().getSolrCoreState().getIndexWriter(null);
+            try {
+              IndexWriter indexWriter = writer.get();
+              int c = 0;
               indexWriter.deleteUnusedFiles();
-              LOG.info("Sleeping for 1000ms to wait for unused lucene index files to be delete-able");
-              Thread.sleep(1000);
-              c++;
-              if (c >= 30)  {
-                LOG.warn("IndexFetcher unable to cleanup unused lucene index files so we must do a full copy instead");
-                isFullCopyNeeded = true;
-                break;
+              while (hasUnusedFiles(indexDir, commit)) {
+                indexWriter.deleteUnusedFiles();
+                LOG.info("Sleeping for 1000ms to wait for unused lucene index files to be delete-able");
+                Thread.sleep(1000);
+                c++;
+                if (c >= 30)  {
+                  LOG.warn("IndexFetcher unable to cleanup unused lucene index files so we must do a full copy instead");
+                  isFullCopyNeeded = true;
+                  break;
+                }
               }
+              if (c > 0)  {
+                LOG.info("IndexFetcher slept for " + (c * 1000) + "ms for unused lucene index files to be delete-able");
+              }
+            } finally {
+              writer.decref();
             }
-            if (c > 0)  {
-              LOG.info("IndexFetcher slept for " + (c * 1000) + "ms for unused lucene index files to be delete-able");
-            }
-          } finally {
-            writer.decref();
           }
         }
+
         boolean reloadCore = false;
 
         try {
@@ -552,14 +589,23 @@ class IndexFetcher {
           LOG.info("Starting download (fullCopy={}) to {}", isFullCopyNeeded, tmpIndexDir);
           successfulInstall = false;
 
-          long bytesDownloaded = downloadIndexFiles(isFullCopyNeeded, indexDir, tmpIndexDir, latestGeneration);
+          long bytesDownloaded = 0;
+
+          if (indexReplicationNeeded){
+            downloadIndexFiles(isFullCopyNeeded, indexDir, tmpIndexDir, latestGeneration);
+
+            if (tlogFilesToDownload != null) {
+              bytesDownloaded += downloadTlogFiles(tmpTlogDir, latestGeneration);
+              reloadCore = true; // reload update log
+            }
+          }
 
 
           if (contentStoreReplicationNeeded)
           {
 
             if (contentStoreFilesToDownload != null){
-              bytesDownloaded += downloadContentStoreFiles(contentStore.getRootLocation(), latestGeneration);
+              bytesDownloaded += downloadContentStoreFiles(contentStore.getRootLocation());
             }
 
             if (contentStoreFilesToDelete != null)
@@ -567,103 +613,115 @@ class IndexFetcher {
               deleteContentStoreFiles(contentStore.getRootLocation(), contentStoreFilesToDelete);
             }
 
+            if (fullContentStoreReplication)
+            {
+              deleteUnnecessaryContentStoreFiles(contentStore.getRootLocation());
+            }
+
             contentStore.setLastCommittedVersion(masterContentStoreVersion);
           }
 
 
-          if (tlogFilesToDownload != null) {
-            bytesDownloaded += downloadTlogFiles(tmpTlogDir, latestGeneration);
-            reloadCore = true; // reload update log
-          }
+
           final long timeTakenSeconds = getReplicationTimeElapsed();
           final Long bytesDownloadedPerSecond = (timeTakenSeconds != 0 ? new Long(bytesDownloaded/timeTakenSeconds) : null);
-          LOG.info("Total time taken for download (fullCopy={},bytesDownloaded={}) : {} secs ({} bytes/sec) to {}",
-                  new Object[]{isFullCopyNeeded, bytesDownloaded, timeTakenSeconds, bytesDownloadedPerSecond, tmpIndexDir});
+          LOG.info("Total time taken for download (fullCopy={},bytesDownloaded={}) : {} secs ({} bytes/sec)",
+                  new Object[]{isFullCopyNeeded, bytesDownloaded, timeTakenSeconds, bytesDownloadedPerSecond});
 
-          Collection<Map<String,Object>> modifiedConfFiles = getModifiedConfFiles(confFilesToDownload);
-          if (!modifiedConfFiles.isEmpty()) {
-            reloadCore = true;
-            downloadConfFiles(confFilesToDownload, latestGeneration);
-            if (isFullCopyNeeded) {
-              successfulInstall = solrCore.modifyIndexProps(tmpIdxDirName);
-              if (successfulInstall) deleteTmpIdxDir = false;
-            } else {
-              successfulInstall = moveIndexFiles(tmpIndexDir, indexDir);
-            }
-            if (tlogFilesToDownload != null) {
-              // move tlog files and refresh ulog only if we successfully installed a new index
-              successfulInstall &= moveTlogFiles(tmpTlogDir);
-            }
-            if (successfulInstall) {
+          if (indexReplicationNeeded)
+          {
+
+
+            Collection<Map<String,Object>> modifiedConfFiles = getModifiedConfFiles(confFilesToDownload);
+            if (!modifiedConfFiles.isEmpty()) {
+              reloadCore = true;
+              downloadConfFiles(confFilesToDownload, latestGeneration);
               if (isFullCopyNeeded) {
-                // let the system know we are changing dir's and the old one
-                // may be closed
-                if (indexDir != null) {
-                  solrCore.getDirectoryFactory().doneWithDirectory(indexDir);
-                  // Cleanup all index files not associated with any *named* snapshot.
-                  solrCore.deleteNonSnapshotIndexFiles(indexDirPath);
-                }
+                successfulInstall = solrCore.modifyIndexProps(tmpIdxDirName);
+                if (successfulInstall) deleteTmpIdxDir = false;
+              } else {
+                successfulInstall = moveIndexFiles(tmpIndexDir, indexDir);
               }
+              if (tlogFilesToDownload != null) {
+                // move tlog files and refresh ulog only if we successfully installed a new index
+                successfulInstall &= moveTlogFiles(tmpTlogDir);
+              }
+              if (successfulInstall) {
+                if (isFullCopyNeeded) {
+                  // let the system know we are changing dir's and the old one
+                  // may be closed
+                  if (indexDir != null) {
+                    solrCore.getDirectoryFactory().doneWithDirectory(indexDir);
+                    // Cleanup all index files not associated with any *named* snapshot.
+                    solrCore.deleteNonSnapshotIndexFiles(indexDirPath);
+                  }
+                }
 
-              LOG.info("Configuration files are modified, core will be reloaded");
-              logReplicationTimeAndConfFiles(modifiedConfFiles,
-                      successfulInstall);// write to a file time of replication and
-              // conf files.
-            }
-          } else {
-            terminateAndWaitFsyncService();
-            if (isFullCopyNeeded) {
-              successfulInstall = solrCore.modifyIndexProps(tmpIdxDirName);
-              if (successfulInstall) deleteTmpIdxDir = false;
+                LOG.info("Configuration files are modified, core will be reloaded");
+                logReplicationTimeAndConfFiles(modifiedConfFiles,
+                        successfulInstall);// write to a file time of replication and
+                // conf files.
+              }
             } else {
-              successfulInstall = moveIndexFiles(tmpIndexDir, indexDir);
-            }
-            if (tlogFilesToDownload != null) {
-              // move tlog files and refresh ulog only if we successfully installed a new index
-              successfulInstall &= moveTlogFiles(tmpTlogDir);
-            }
-            if (successfulInstall) {
-              logReplicationTimeAndConfFiles(modifiedConfFiles,
-                      successfulInstall);
+              terminateAndWaitFsyncService();
+              if (isFullCopyNeeded) {
+                successfulInstall = solrCore.modifyIndexProps(tmpIdxDirName);
+                if (successfulInstall) deleteTmpIdxDir = false;
+              } else {
+                successfulInstall = moveIndexFiles(tmpIndexDir, indexDir);
+              }
+              if (tlogFilesToDownload != null) {
+                // move tlog files and refresh ulog only if we successfully installed a new index
+                successfulInstall &= moveTlogFiles(tmpTlogDir);
+              }
+              if (successfulInstall) {
+                logReplicationTimeAndConfFiles(modifiedConfFiles,
+                        successfulInstall);
+              }
             }
           }
         } finally {
-          if (!isFullCopyNeeded) {
+          if (!isFullCopyNeeded && indexReplicationNeeded) {
             solrCore.getUpdateHandler().getSolrCoreState().openIndexWriter(solrCore);
           }
         }
 
-        // we must reload the core after we open the IW back up
-        if (successfulInstall && (reloadCore || forceCoreReload)) {
-          LOG.info("Reloading SolrCore {}", solrCore.getName());
-          reloadCore();
-        }
 
-        if (successfulInstall) {
-          if (isFullCopyNeeded) {
-            // let the system know we are changing dir's and the old one
-            // may be closed
-            if (indexDir != null) {
-              LOG.info("removing old index directory " + indexDir);
-              solrCore.getDirectoryFactory().doneWithDirectory(indexDir);
-              solrCore.getDirectoryFactory().remove(indexDir);
+        if (indexReplicationNeeded)
+        {
+
+          // we must reload the core after we open the IW back up
+          if (successfulInstall && (reloadCore || forceCoreReload)) {
+            LOG.info("Reloading SolrCore {}", solrCore.getName());
+            reloadCore();
+          }
+
+          if (successfulInstall) {
+            if (isFullCopyNeeded) {
+              // let the system know we are changing dir's and the old one
+              // may be closed
+              if (indexDir != null) {
+                LOG.info("removing old index directory " + indexDir);
+                solrCore.getDirectoryFactory().doneWithDirectory(indexDir);
+                solrCore.getDirectoryFactory().remove(indexDir);
+              }
             }
-          }
-          if (isFullCopyNeeded) {
-            solrCore.getUpdateHandler().newIndexWriter(isFullCopyNeeded);
+            if (isFullCopyNeeded) {
+              solrCore.getUpdateHandler().newIndexWriter(isFullCopyNeeded);
+            }
+
+            openNewSearcherAndUpdateCommitPoint();
           }
 
-          openNewSearcherAndUpdateCommitPoint();
-        }
-
-        if (!isFullCopyNeeded && !forceReplication && !successfulInstall) {
-          cleanup(solrCore, tmpIndexDir, indexDir, deleteTmpIdxDir, tmpTlogDir, successfulInstall);
-          cleanupDone = true;
-          // we try with a full copy of the index
-          LOG.warn(
-                  "Replication attempt was not successful - trying a full index replication reloadCore={}",
-                  reloadCore);
-          successfulInstall = fetchLatestIndex(true, reloadCore).getSuccessful();
+          if (!isFullCopyNeeded && !forceReplication && !successfulInstall) {
+            cleanup(solrCore, tmpIndexDir, indexDir, deleteTmpIdxDir, tmpTlogDir, successfulInstall);
+            cleanupDone = true;
+            // we try with a full copy of the index
+            LOG.warn(
+                    "Replication attempt was not successful - trying a full index replication reloadCore={}",
+                    reloadCore);
+            successfulInstall = fetchLatestIndex(true, reloadCore).getSuccessful();
+          }
         }
 
         markReplicationStop();
@@ -688,7 +746,7 @@ class IndexFetcher {
   /**
    * Download content store required files.
    */
-  private long downloadContentStoreFiles(String contentStoreDirectory, long latestGeneration) throws Exception {
+  private long downloadContentStoreFiles(String contentStoreDirectory) throws Exception {
     LOG.info("Starting download of content store files from master: " + tlogFilesToDownload);
     contentStoreFilesDownloaded = Collections.synchronizedList(new ArrayList<>());
     long bytesDownloaded = 0;
@@ -1105,7 +1163,7 @@ class IndexFetcher {
         return true;
       }
 
-      LOG.warn("{} already in contentstore", filename);
+      LOG.debug("{} already in contentstore", filename);
       return false;
   }
 
@@ -1364,8 +1422,7 @@ class IndexFetcher {
 
 
 
-  private void copyTmpContentStoreToContentStore(File tmpContentStoreDir, String contentStorePath)
-  {
+  private void copyTmpContentStoreToContentStore(File tmpContentStoreDir, String contentStorePath) throws IOException {
 
     String tmpContentStorePath = tmpContentStoreDir.getPath();
 
@@ -1384,7 +1441,8 @@ class IndexFetcher {
         }
       });
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("impossible tmp content store");
+      throw e;
     }
   }
 
@@ -1399,6 +1457,31 @@ class IndexFetcher {
     );
 
     LOG.info("deleted {} files from content store", filesToDelete.size());
+  }
+
+  private void deleteUnnecessaryContentStoreFiles(String contentStorePath)
+  {
+
+    AtomicInteger fileDeleted = new AtomicInteger();
+    Set<String> fileNames = contentStoreFilesToDownload.stream().map(e -> (String) e.get(NAME)).collect(Collectors.toSet());
+    try
+    {
+      Files.walk(Paths.get(contentStorePath)).forEach(p -> {
+          File f = new File(p.toUri());
+          if (!f.isDirectory() && !fileNames.contains(p.toString().replaceFirst(contentStorePath, ""))) {
+            try {
+              Files.delete(p);
+              fileDeleted.getAndIncrement();
+            } catch (IOException ex) {
+              LOG.error("Impossible delete file {}", p);
+            }
+          }
+        });
+    } catch (IOException e) {
+      LOG.error("Impossible to delete unnecessary files. Content store may contains unused contents");
+    }
+
+    LOG.info("deleted {} unnecessary files from content store", fileDeleted);
   }
 
   /**
@@ -1562,11 +1645,25 @@ class IndexFetcher {
     return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
 
+  List<Map<String, Object>> getContentStoreFilesDownloaded() {
+    //make a copy first because it can be null later
+    List<Map<String, Object>> tmp = contentStoreFilesDownloaded;
+    // NOTE: it's safe to make a copy of a SynchronizedCollection(ArrayList)
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
+  }
+
   List<Map<String, Object>> getFilesToDownload() {
     //make a copy first because it can be null later
     List<Map<String, Object>> tmp = filesToDownload;
     return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
   }
+
+  List<Map<String, Object>> getContentStoreFileToDownload() {
+    //make a copy first because it can be null later
+    List<Map<String, Object>> tmp = contentStoreFilesToDownload;
+    return tmp == null ? Collections.emptyList() : new ArrayList<>(tmp);
+  }
+
 
   List<Map<String, Object>> getFilesDownloaded() {
     List<Map<String, Object>> tmp = filesDownloaded;

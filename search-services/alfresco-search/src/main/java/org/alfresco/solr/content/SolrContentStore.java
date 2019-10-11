@@ -97,8 +97,8 @@ public final class SolrContentStore implements Closeable, AccessMode
     static final String CONTENT_STORE = "contentstore";
     static final String SOLR_CONTENT_DIR = "solr.content.dir";
 
-    private static final String INFO = "info";
-    private static final String FULL_REPLICATION = "full-replication";
+    public static final String INFO = "info";
+    public static final String FULL_REPLICATION = "full-replication";
     public static final String DELETES = "deletes";
     public static final String ADDS = "adds";
 
