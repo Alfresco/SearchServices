@@ -210,7 +210,7 @@ public final class SolrContentStore implements Closeable, AccessMode
                         .findFirst()
                         .orElse(NO_VERSION_AVAILABLE);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 return NO_VERSION_AVAILABLE;
             }
