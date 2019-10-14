@@ -73,7 +73,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected CmisWrapper cmisApi;
 
     @Autowired
-    @Getter(value = PROTECTED)
+  //  @Getter(value = PROTECTED)
     protected DataUser dataUser;
 
     @Autowired
@@ -386,4 +386,10 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         query.setQuery(queryReq);
         return query;
     }
+    
+    protected DataUser getDataUser()
+    {
+        return dataUser;
+    }
+
 }

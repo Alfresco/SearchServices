@@ -156,19 +156,12 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
     }
     
     @Test(groups={TestGroup.ACS_60n}, priority=4)
-    public void testSpellCheckType() throws Exception
+    public void testSpellCheckTypeSearchInsteadFor() throws Exception
     {
-        // Create a file with mis-spelt name, expect spellcheck type = didYouMean
-        FileModel file = new FileModel(unique_searchString + "-1.txt", "uniquee" + "uniquee", "uniquee", FileType.TEXT_PLAIN, "Unique text file for search ");
-        dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
-
-        waitForIndexing(file.getName(), true);
-        
-        // Search
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:title:uniquee");
-        queryReq.setUserQuery("uniquee");
+        queryReq.setQuery("cm:title:uniqueee");
+        queryReq.setUserQuery("uniqueee");
         searchReq.setQuery(queryReq);
         searchReq.setSpellcheck(new RestRequestSpellcheckModel());
         SearchResponse nodes = query(searchReq);
@@ -176,6 +169,29 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         nodes.assertThat().entriesListIsNotEmpty();
         nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
         nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("unique");
+        nodes.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+    }
+    
+    @Test(groups={TestGroup.ACS_60n}, priority=5)
+    public void testSpellCheckTypeDidYouMean() throws Exception
+    {  
+    	// Create a file with mis-spelt name, expect spellcheck type = didYouMean
+        FileModel file = new FileModel(unique_searchString + ".txt", "carz" + "carz", "carz", FileType.TEXT_PLAIN, "Unique text file for carz search ");
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
+
+        waitForIndexing(file.getName(), true);
+        
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("carz");
+        queryReq.setUserQuery("carz");
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
+        SearchResponse nodes = query(searchReq);
+        
+        nodes.assertThat().entriesListIsNotEmpty();
+        nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
+        nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("car");
         nodes.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
     }
 }
