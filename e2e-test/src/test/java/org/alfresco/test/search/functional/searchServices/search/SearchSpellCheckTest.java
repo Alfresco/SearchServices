@@ -160,8 +160,8 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
     {
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:title:uniqueee");
-        queryReq.setUserQuery("uniqueee");
+        queryReq.setQuery("cm:title:uniquee");
+        queryReq.setUserQuery("uniquee");
         searchReq.setQuery(queryReq);
         searchReq.setSpellcheck(new RestRequestSpellcheckModel());
         SearchResponse nodes = query(searchReq);
@@ -176,7 +176,8 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
     public void testSpellCheckTypeDidYouMean() throws Exception
     {  
     	// Create a file with mis-spelt name, expect spellcheck type = didYouMean
-        FileModel file = new FileModel(unique_searchString + ".txt", "carz" + "carz", "carz", FileType.TEXT_PLAIN, "Unique text file for carz search ");
+        FileModel file = new FileModel("carz.txt", "carz" + "carz", "carz", FileType.TEXT_PLAIN,
+                "The landrover discovery is not a sports car ");
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
 
         waitForIndexing(file.getName(), true);
