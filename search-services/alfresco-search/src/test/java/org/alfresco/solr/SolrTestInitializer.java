@@ -231,7 +231,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
      * @return
      * @throws Exception
      */
-    private static JettySolrRunner createJetty(String jettyKey, boolean basicAuth) throws Exception
+    protected static JettySolrRunner createJetty(String jettyKey, boolean basicAuth) throws Exception
     {
         if (jettyContainers.containsKey(jettyKey))
         {
@@ -355,7 +355,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
                 props.put("shard.range", ranges[i]);
             }
 
-            String shardKey = jettyKey+"_shard_"+i;
+            String shardKey = jettyKey+"_shard_"+i+"/solrhome";
             JettySolrRunner j =  createJetty(shardKey, basicAuth);
             //use the first corename specified as the Share template
             addCoreToJetty(shardKey, coreNames[0], shardname, props);
