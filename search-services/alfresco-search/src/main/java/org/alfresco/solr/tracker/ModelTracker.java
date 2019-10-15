@@ -115,12 +115,16 @@ public class ModelTracker extends AbstractTracker implements Tracker
         loadPersistedModels();
     }
 
-    public boolean hasMaintenance() {
+    @Override
+    public boolean hasMaintenance()
+    {
         return false;
     }
 
-    public void maintenance() {
-
+    @Override
+    public void maintenance()
+    {
+        // Nothing to be done here
     }
 
     /**
@@ -203,7 +207,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
 
     public void trackModels(boolean onlyFirstTime) throws AuthenticationException, IOException, JSONException
     {
-        boolean requiresWriteLock = false;
+        boolean requiresWriteLock;
         modelLock.readLock().lock();
         try
         {
@@ -271,10 +275,6 @@ public class ModelTracker extends AbstractTracker implements Tracker
 
     /**
      * Tracks models. Reflects changes and updates on disk copy
-     * 
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws JSONException
      */
     private void trackModelsImpl() throws AuthenticationException, IOException, JSONException
     {
@@ -480,16 +480,10 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
 
         return expandedQName;
-
     }
 
-    /**
-     * @param alfrescoModelDir
-     * @param modelName
-     */
     private void removeMatchingModels(File alfrescoModelDir, QName modelName)
     {
-
         final String prefix = modelName.toPrefixString(this.infoSrv.getNamespaceDAO()).replace(":", ".") + ".";
         final String postFix = ".xml";
 
