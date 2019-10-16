@@ -217,9 +217,9 @@ public class AlfrescoSolrUtils
         nodeMetaData.setAclId(acl.getId());
         nodeMetaData.setTxnId(txn.getId());
         nodeMetaData.setOwner(owner);
-        nodeMetaData.setAspects(new HashSet<QName>());
+        nodeMetaData.setAspects(new HashSet<>());
         nodeMetaData.setAncestors(ancestors);
-        Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
+        Map<QName, PropertyValue> props = new HashMap<>();
         props.put(ContentModel.PROP_IS_INDEXED, new StringPropertyValue("true"));
         props.put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.US, 0l, "UTF-8", "text/plain", null));
         nodeMetaData.setProperties(props);
@@ -230,8 +230,8 @@ public class AlfrescoSolrUtils
         }
         nodeMetaData.setType(QName.createQName(TEST_NAMESPACE, "testSuperType"));
         nodeMetaData.setAncestors(ancestors);
-        nodeMetaData.setPaths(new ArrayList<Pair<String, QName>>());
-        nodeMetaData.setNamePaths(new ArrayList<List<String>>());
+        nodeMetaData.setPaths(new ArrayList<>());
+        nodeMetaData.setNamePaths(new ArrayList<>());
         return nodeMetaData;
     }
     /**
