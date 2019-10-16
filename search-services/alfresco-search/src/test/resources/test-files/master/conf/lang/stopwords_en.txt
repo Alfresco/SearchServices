@@ -1,0 +1,332 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+### Top 200 words based on frequency in common use + stemmed versions 
+### > 1000 per million words
+the
+of
+and
+a
+in
+to
+it
+is
+was
+wa
+I
+for
+that
+you
+he
+be
+with
+on
+by
+at
+have
+are
+ar
+not
+this
+thi
+but
+had
+they
+thei
+his
+hi
+from
+
+### > 3000 PMW
+she
+which
+or
+we
+an
+were
+as
+
+### > 2000 PMW
+do
+been
+their
+has
+ha
+would
+there
+what
+will
+all
+if
+can
+her
+#said
+who
+
+### Top 50
+### > 1000 PMW
+#one
+#on
+so
+up
+them
+some
+when
+could
+him
+into
+its
+it
+then
+#two
+out
+#time
+my
+about
+#did
+#your
+#now
+me
+no
+other
+only
+onli
+#just
+more
+these
+also
+#people
+#peopl
+#know
+any
+ani
+#first
+#see
+very
+veri
+new
+#may
+#mai
+#well
+should
+#like
+than
+how
+
+### Top 90
+### > 900 PMW
+#get
+#way
+#wai
+our
+#made
+#got
+after
+#think
+between
+#many
+#mani
+#years
+#year
+
+### Top 100
+### > 800 PMW
+er
+those
+#go
+being
+be
+because
+becaus
+down
+#yeah
+
+### > 700 PMW
+#three
+#good
+#back
+#make
+such
+#through
+#year
+#over
+#must
+#still
+#even
+#take
+#too
+
+### Top 120 above 
+
+### > 600 PMW
+#here
+#come
+#own
+#last
+#does
+#doe
+#oh
+#say
+#sai
+#work
+#where
+#erm
+#us
+#government
+#govern
+#same
+#man
+#might
+#day
+#dai
+#yes
+#ye
+#however
+#howev
+
+### > 500 PMW 
+#put
+#world
+#another
+#anoth
+#want
+#life
+#most
+#against
+#again
+#never
+#under
+#old
+#much
+#something
+#someth
+#Mr
+#why
+#each
+#while
+#house
+#hous
+
+### > 400 PMW
+#part
+#number
+#out of
+#found
+#off
+#different
+#differ
+#went
+#really
+#realli
+#thought
+#came
+#used
+#us
+#children
+#always
+#alwai
+#four
+#without
+#give
+#few
+#within
+#system
+#local
+#place
+#great
+#during
+#dure
+#although
+#small
+#before
+#befor
+#look
+#case
+#next
+#end
+#things
+#thing
+#social
+#find
+#group
+#quite
+#quit
+#mean
+#five
+#party
+#parti
+#company
+#compani
+#every
+#everi
+
+### > 300 PMW
+#women
+#says
+#sai
+#important
+#import
+#took
+
+### Top 200 
+
+
+
+
+
+
+###################### Lucene defaults ....
+
+
+# Standard english stop words taken from Lucene's StopAnalyzer
+# - Added stemmed varients - are -> ar, they -> thei, this -> thi, was -> wa
+#a
+#an
+#and
+#are
+#ar
+#as
+#at
+#be
+#but
+#by
+#for
+#if
+#in
+#into
+#is
+#it
+#no
+#not
+#of
+#on
+#or
+#such
+#that
+#the
+#their
+#then
+#there
+#these
+#they
+#thei
+#this
+#thi
+#to
+#was
+#wa
+#will
+#with
