@@ -28,6 +28,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.ServerHealth;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Session;
+import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ import org.testng.annotations.BeforeSuite;
 
 import lombok.Getter;
 
+import static java.util.Optional.ofNullable;
 import static lombok.AccessLevel.PROTECTED;
 
 /**
@@ -84,6 +86,14 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected SiteModel testSite;
 
     protected static String unique_searchString;
+    
+    protected static final String SEARCH_LANGUAGE_CMIS = "cmis";
+    
+    protected enum SearchLanguage {
+        CMIS,
+        AFTS
+      }
+
 
     @BeforeSuite(alwaysRun = true)
     public void beforeSuite() throws Exception
@@ -385,5 +395,34 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         queryReq.setQuery(term);
         query.setQuery(queryReq);
         return query;
+    }
+    
+    /**
+     * Helper method to test if the search query works and count matches where provided
+     * @param query: AFTS or cmis query string
+     * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified), 
+     * @param setCmis: Query language is set to cmis when setCmis is true, AFTS when false
+     * @return SearchResponse
+     */
+    protected SearchResponse testSearchQuery(String query, Integer expectedCount, SearchLanguage queryLanguage)
+    {
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(query);
+
+        if (ofNullable(queryLanguage).isPresent())
+        {
+            queryModel.setLanguage(queryLanguage.toString());
+        }
+
+        SearchResponse response = queryAsUser(testUser, queryModel);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        if (ofNullable(expectedCount).isPresent())
+        {
+            restClient.onResponse().assertThat().body("list.pagination.count", Matchers.equalTo(expectedCount));
+        }
+
+        return response;
     }
 }
