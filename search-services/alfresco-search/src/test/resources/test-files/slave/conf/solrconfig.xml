@@ -188,13 +188,10 @@
     <queryResponseWriter name="xml" default="true"
                          class="solr.XMLResponseWriter" />
 
-    <!-- <requestHandler name="/replication" class="solr.ReplicationHandler" startup="lazy" /> -->
-
     <requestHandler name="/replication" class="org.alfresco.solr.handler.ReplicationHandler">
         <lst name="slave">
-            <str name="masterUrl">http://127.0.0.1:8983/solr/${solr.core.name}</str>
-            <str name="pollInterval">00:00:20</str>
-            <str name="content.store.root.folder">/Users/agazzarini/workspaces/alfresco/spike-custom-replication-handler/src/test/resources/contentstore</str>
+            <str name="masterUrl">http://127.0.0.1:2345/solr/master</str>
+            <str name="pollInterval">00:00:02</str>
         </lst>
     </requestHandler>
 
