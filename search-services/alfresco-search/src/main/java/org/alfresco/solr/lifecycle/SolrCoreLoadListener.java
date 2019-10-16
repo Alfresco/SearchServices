@@ -118,12 +118,12 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                     scheduler);
         }
 
-        boolean trackersHaveBeenExplicitlyDisabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "false"));
+        boolean trackersHaveBeenEnabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "false"));
         boolean owningCoreIsSlave = isSlaveModeEnabledFor(core);
 
         // Guard conditions: if trackers must be disabled then immediately return, we've done here.
         // Case #1: trackers have been explicitly disabled.
-        if (trackersHaveBeenExplicitlyDisabled)
+        if (!trackersHaveBeenEnabled)
         {
             LOGGER.info("SearchServices Core Trackers have been explicitly disabled on core \"{}\" through \"enable.alfresco.tracking\" configuration property.", core.getName());
             return;
