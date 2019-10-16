@@ -225,13 +225,24 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         SOLRAPIQueueClient.aclMap.clear();
         SOLRAPIQueueClient.nodeMap.clear();
     }
-    
+
+
     /**
      * Creates a JettySolrRunner (if one didn't exist already). DOES NOT START IT.
      * @return
      * @throws Exception
      */
     protected static JettySolrRunner createJetty(String jettyKey, boolean basicAuth) throws Exception
+    {
+        return createJetty(jettyKey, basicAuth, 0);
+    }
+    
+    /**
+     * Creates a JettySolrRunner (if one didn't exist already). DOES NOT START IT.
+     * @return
+     * @throws Exception
+     */
+    protected static JettySolrRunner createJetty(String jettyKey, boolean basicAuth, int port) throws Exception
     {
         if (jettyContainers.containsKey(jettyKey))
         {
@@ -241,7 +252,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         {
             Path jettySolrHome = testDir.toPath().resolve(jettyKey);
             seedSolrHome(jettySolrHome);
-            JettySolrRunner jetty = createJetty(jettySolrHome.toFile(), null, null, false, getSchemaFile(), basicAuth);
+            JettySolrRunner jetty = createJetty(jettySolrHome.toFile(), null, null, false, port, getSchemaFile(), basicAuth);
             return jetty;
         }
     }
@@ -255,7 +266,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
      * @param additionalProperties
      * @throws Exception
      */
-    private static void addCoreToJetty(String jettyKey, String sourceConfigName, String coreName, Properties additionalProperties) throws Exception
+    protected static void addCoreToJetty(String jettyKey, String sourceConfigName, String coreName, Properties additionalProperties) throws Exception
     {
         Path jettySolrHome = testDir.toPath().resolve(jettyKey);
         Path coreSourceConfig = new File(getTestFilesHome() + "/"+sourceConfigName).toPath();
@@ -297,7 +308,7 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
      * @param jsr
      * @throws Exception
      */
-    private static void startJetty(JettySolrRunner jsr) throws Exception {
+    protected static void startJetty(JettySolrRunner jsr) throws Exception {
         if (!jsr.isRunning())
         {
             jsr.start();
@@ -406,9 +417,9 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
         solrCollectionNameToStandaloneClient.clear();
     }
 
-    public static JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, String schemaOverride, boolean basicAuth) throws Exception
+    public static JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, int port, String schemaOverride, boolean basicAuth) throws Exception
     {
-        return createJetty(solrHome, dataDir, shardList, sslEnabled, schemaOverride, useExplicitNodeNames, basicAuth);
+        return createJetty(solrHome, dataDir, shardList, sslEnabled, port, schemaOverride, useExplicitNodeNames, basicAuth);
     }
 
     /**
@@ -417,12 +428,13 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
      * @param solrHome
      * @param dataDir
      * @param shardList
+     * @param port
      * @param schemaOverride
      * @param explicitCoreNodeName
      * @return
      * @throws Exception
      */
-    public static JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled,
+    public static JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, int port,
             String schemaOverride, boolean explicitCoreNodeName, boolean basicAuth) throws Exception
     {
         Properties props = new Properties();
@@ -445,10 +457,10 @@ public abstract class SolrTestInitializer extends SolrTestCaseJ4
 
         if(basicAuth) {
             System.out.println("###### adding basic auth ######");
-            config = JettyConfig.builder().setContext("/solr").withFilter(BasicAuthFilter.class, "/sql/*").stopAtShutdown(true).withSSLConfig(sslConfig).build();
+            config = JettyConfig.builder().setContext("/solr").setPort(port).withFilter(BasicAuthFilter.class, "/sql/*").stopAtShutdown(true).withSSLConfig(sslConfig).build();
         } else {
             System.out.println("###### no basic auth ######");
-            config = JettyConfig.builder().setContext("/solr").stopAtShutdown(true).withSSLConfig(sslConfig).build();
+            config = JettyConfig.builder().setContext("/solr").setPort(port).stopAtShutdown(true).withSSLConfig(sslConfig).build();
         }
 
         JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
