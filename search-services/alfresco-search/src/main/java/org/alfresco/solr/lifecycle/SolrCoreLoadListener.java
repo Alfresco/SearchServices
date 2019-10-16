@@ -279,7 +279,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
      * @param core the hosting {@link SolrCore} instance.
      * @return true if the content store must be set in read only mode, false otherwise.
      */
-    private boolean isSlaveModeEnabledFor(SolrCore core)
+    boolean isSlaveModeEnabledFor(SolrCore core)
     {
         Predicate<PluginInfo> onlyReplicationHandler =
                 plugin -> "/replication".equals(plugin.name)

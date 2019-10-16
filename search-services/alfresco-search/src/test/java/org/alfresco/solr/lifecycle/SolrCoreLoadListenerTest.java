@@ -27,18 +27,22 @@ import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
+import org.apache.solr.core.SolrConfig;
 import org.apache.solr.core.SolrCore;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.xml.sax.InputSource;
 
 import java.util.List;
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
@@ -82,7 +86,7 @@ public class SolrCoreLoadListenerTest
         listener = new SolrCoreLoadListener(core);
         when(core.getName()).thenReturn(coreName);
 
-         coreProperties = new Properties();
+        coreProperties = new Properties();
     }
 
     @Test
@@ -114,5 +118,53 @@ public class SolrCoreLoadListenerTest
         coreTrackers.forEach(tracker -> verify(tracker).setShutdown(true));
         coreTrackers.forEach(tracker -> verify(scheduler).deleteJobForTrackerInstance(core.getName(), tracker));
         coreTrackers.forEach(tracker -> verify(tracker).shutdown());
+    }
+
+    @Test
+    public void noReplicationHandlerDefined_thenContentStoreIsInReadWriteMode() throws Exception
+    {
+        prepare("solrconfig_no_replication_handler_defined.xml");
+        assertFalse("If no replication handler is defined, then we expect to run a RW content store.", listener.isSlaveModeEnabledFor(core));
+    }
+
+    @Test
+    public void emptyReplicationHandlerDefined_thenContentStoreIsInReadWriteMode() throws Exception
+    {
+        prepare("solrconfig_empty_replication_handler.xml");
+        assertFalse("If an empty replication handler is defined, then we expect to run a RW content store.", listener.isSlaveModeEnabledFor(core));
+    }
+
+    @Test
+    public void slaveReplicationHandlerDefinedButDisabled_thenContentStoreIsInReadWriteMode() throws Exception
+    {
+        prepare("solrconfig_slave_disabled_replication_handler.xml");
+        assertFalse("If a slave replication handler is defined but disabled, then we expect to run a RW content store.", listener.isSlaveModeEnabledFor(core));
+    }
+
+    @Test
+    public void masterReplicationHandlerDefined_thenContentStoreIsInReadWriteMode() throws Exception
+    {
+        prepare("solrconfig_master_replication_handler.xml");
+        assertFalse("If a master replication handler is defined but disabled, then we expect to run a RW content store.", listener.isSlaveModeEnabledFor(core));
+    }
+
+    @Test
+    public void masterReplicationHandlerDefinedButDisabled_thenContentStoreIsInReadWriteMode() throws Exception
+    {
+        prepare("solrconfig_master_disabled_replication_handler.xml");
+        assertFalse("If a master replication handler is defined but disabled, then we expect to run a RW content store.", listener.isSlaveModeEnabledFor(core));
+    }
+
+    @Test
+    public void slaveReplicationHandlerDefined_thenContentStoreIsInReadOnlyMode() throws Exception
+    {
+        prepare("solrconfig_slave_replication_handler.xml");
+        assertTrue("If a slave replication handler is defined, then we expect to run a RO content store.", listener.isSlaveModeEnabledFor(core));
+    }
+
+    private void prepare(String configName) throws Exception
+    {
+        SolrConfig solrConfig = new SolrConfig(configName, new InputSource(getClass().getResourceAsStream("/test-files/" + configName)));
+        when(core.getSolrConfig()).thenReturn(solrConfig);
     }
 }
