@@ -136,7 +136,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
             return;
         }
 
-        LOGGER.info("SearchServices Core Tracking Subsystem starts on core {}", core.getName());
+        LOGGER.info("SearchServices Tracking Subsystem starts on core {}", core.getName());
         if (trackerRegistry.hasTrackersForCore(core.getName()))
         {
             LOGGER.info("Trackers for " + core.getName()+ " is already registered, shutting them down.");
