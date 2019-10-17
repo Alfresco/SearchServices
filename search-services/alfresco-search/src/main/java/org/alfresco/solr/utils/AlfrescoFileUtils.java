@@ -33,6 +33,16 @@ import java.util.stream.Collectors;
  * @author Elia Porciani
  */
 public class AlfrescoFileUtils {
+
+    /**
+     * Check if two directories contains the same files
+     *
+     * @param dir
+     * @param dir2
+     * @param extensions Limits the search to the extensions provided
+     * @param recursive Check recursively in all subdirs
+     * @return
+     */
     public static boolean areDirectoryEquals(Path dir, Path dir2, String[] extensions, boolean recursive) {
 
         Map<String, File> filesDir1 = FileUtils.listFiles(new File(dir.toUri()), extensions, recursive)
