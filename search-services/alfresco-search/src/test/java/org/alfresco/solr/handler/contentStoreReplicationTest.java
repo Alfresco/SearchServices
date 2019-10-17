@@ -58,6 +58,8 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
 
 /**
  * @author Elia Porciani
+ *
+ * This test check if the synchronization of contentstore between master and slave is done correctly.
  */
 public class contentStoreReplicationTest extends AbstractAlfrescoDistributedTest {
 
@@ -125,6 +127,7 @@ public class contentStoreReplicationTest extends AbstractAlfrescoDistributedTest
                 of(aclReaders));
     }
 
+
     @AfterClass
     public static void cleanupMasterSlave() throws Exception {
         master.stop();
@@ -132,7 +135,6 @@ public class contentStoreReplicationTest extends AbstractAlfrescoDistributedTest
         FileUtils.forceDelete(new File(masterSolrHome.getParent().toUri()));
         FileUtils.forceDelete(new File(slaveSolrHome.getParent().toUri()));
     }
-
 
 
     @Test

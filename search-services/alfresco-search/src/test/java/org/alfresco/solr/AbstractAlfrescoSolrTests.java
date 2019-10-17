@@ -27,7 +27,6 @@ import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.tracker.Tracker;
-import org.alfresco.util.SearchLanguageConversion;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONArray;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONObject;
 import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
@@ -67,6 +66,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Paths;
@@ -118,6 +118,26 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
     protected static NodeRef TEST_ROOT_NODEREF;
     protected static NodeRef TEST_NODEREF;
     protected static Date FTS_TEST_DATE;
+
+
+
+    protected static void copyTestFiles() throws IOException {
+
+        //Add solr home conf folder with alfresco based configuration.
+
+        File testExecutionFolder = Paths.get(TEST_EXECUTION_SOLRHOME).toFile();
+
+        for (String s : List.of("/conf", "/alfrescoModels", "/templates", "/collection1")) {
+            FileUtils.copyDirectory(Paths.get(TEST_FILES_LOCATION + s).toFile(), Paths.get(testExecutionFolder + s).toFile());
+        }
+    }
+
+    @AfterClass
+    public static void deleteTestDirectory() throws IOException {
+        FileUtils.forceDelete(Paths.get(TEST_EXECUTION_FOLDER).toFile());
+    }
+
+
 
     /* Bunch of methods that wrap testHarness object usage.
      * TestHarness is a class for internal solr test and should not be use outside Solr.
@@ -218,9 +238,9 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
     @Deprecated
     public static void initAlfrescoCore(String schema) throws Exception
     {
+
         LOG.info("##################################### init Alfresco core ##############");
         LOG.info("####initCore");
-        System.setProperty("solr.solr.home", TEST_FILES_LOCATION);
         System.setProperty("solr.directoryFactory","solr.RAMDirectoryFactory");
         System.setProperty("solr.tests.maxBufferedDocs", "1000");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
@@ -231,17 +251,22 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
         System.setProperty("solr.tests.mergePolicy", "org.apache.lucene.index.TieredMergePolicy");
+
+        copyTestFiles();
         if (CORE_NOT_YET_CREATED)
         {
             createAlfrescoCore(schema);
         }
         LOG.info("####initCore end");
 
+
+
         admin = of(h).map(TestHarness::getCoreContainer)
                     .map(CoreContainer::getMultiCoreHandler)
                     .map(AlfrescoCoreAdminHandler.class::cast)
                     .orElseThrow(RuntimeException::new);
     }
+
 
     /**
      * @deprecated as testHarness is used
@@ -267,7 +292,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
                     Paths.get(TEST_SOLR_CONF + schema).toFile());
         }
 
-        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_FILES_LOCATION), null, properties);
+        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_EXECUTION_SOLRHOME), null, properties);
         TestCoresLocator locator = new TestCoresLocator(SolrTestCaseJ4.DEFAULT_TEST_CORENAME,
                                                         "data", 
                                                         "solrconfig.xml",
@@ -309,7 +334,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
     /**
      * Validates an update XML String is successful
      */
-    public void assertU(String update) 
+    public void assertU(String update)
     {
         assertU(null, update);
     }
@@ -325,7 +350,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
     /**
      * Validates an update XML String failed
      */
-    public void assertFailedU(String update) 
+    public void assertFailedU(String update)
     {
         assertFailedU(null, update);
     }
@@ -434,6 +459,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
         }
         catch (Exception e2)
         {
+            e2.printStackTrace();
             throw new RuntimeException("Exception during query", e2);
         }
     }
@@ -498,7 +524,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
             throws Exception
     {
         Date date = new Date();
-        long timeout = (long)date.getTime() + waitMillis;
+        long timeout = date.getTime() + waitMillis;
 
         RefCounted<SolrIndexSearcher> ref = null;
         int totalHits = 0;
@@ -738,6 +764,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
         }
         catch(Exception exception)
         {
+            exception.printStackTrace();
             throw new RuntimeException(exception);
         }
         finally
@@ -785,7 +812,7 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
     {
         public SolrServletRequest(SolrCore core, HttpServletRequest req)
         {
-            super(core, new MultiMapSolrParams(Collections.<String, String[]> emptyMap()));
+            super(core, new MultiMapSolrParams(Collections.emptyMap()));
         }
     }
 
