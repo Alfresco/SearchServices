@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2016 Alfresco Software Limited.
+ * Copyright (C) 2005-2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -52,7 +52,6 @@ import org.apache.solr.search.SolrIndexSearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -68,7 +67,7 @@ import java.util.function.Predicate;
  */
 public class SolrCoreLoadListener extends AbstractSolrEventListener
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrCoreLoadListener.class);
 
     /**
      * Builds a new listener instance with the given {@link SolrCore} (event source).
