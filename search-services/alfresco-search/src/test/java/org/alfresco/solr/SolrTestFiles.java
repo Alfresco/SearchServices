@@ -26,8 +26,4 @@ public interface SolrTestFiles
 {
     String TEST_FILES_LOCATION = "target/test-classes/test-files";
     String TEST_EXECUTION_FOLDER = "target/test-execution-folder";
-    String TEST_EXECUTION_SOLRHOME = TEST_EXECUTION_FOLDER + "/solrhome";
-    String TEST_SOLR_COLLECTION = TEST_EXECUTION_SOLRHOME + "/collection1";
-    String TEST_SOLR_CONF = TEST_SOLR_COLLECTION + "/conf/";
-    String TEMPLATE_CONF = TEST_EXECUTION_SOLRHOME + "/templates/%s/conf/";
 }

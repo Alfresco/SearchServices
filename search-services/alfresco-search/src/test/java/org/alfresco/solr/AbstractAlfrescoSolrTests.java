@@ -33,6 +33,7 @@ import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.util.Time;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
@@ -97,6 +98,12 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
     private static Log LOG = LogFactory.getLog(AbstractAlfrescoSolrTests.class);
     private static boolean CORE_NOT_YET_CREATED = true;
 
+
+    private static String testExecutionSolrHome;
+    private static String testSolrCollection;
+    private static String testSolrConf;
+    private static String templateConf;
+
     /**
      * Harness initialized by initTestHarness.
      * <p/>
@@ -125,18 +132,12 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
 
         //Add solr home conf folder with alfresco based configuration.
 
-        File testExecutionFolder = Paths.get(TEST_EXECUTION_SOLRHOME).toFile();
+        File testExecutionFolder = Paths.get(testExecutionSolrHome).toFile();
 
         for (String s : List.of("/conf", "/alfrescoModels", "/templates", "/collection1")) {
             FileUtils.copyDirectory(Paths.get(TEST_FILES_LOCATION + s).toFile(), Paths.get(testExecutionFolder + s).toFile());
         }
     }
-
-    @AfterClass
-    public static void deleteTestDirectory() throws IOException {
-        FileUtils.forceDelete(Paths.get(TEST_EXECUTION_FOLDER).toFile());
-    }
-
 
 
     /* Bunch of methods that wrap testHarness object usage.
@@ -252,9 +253,15 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
         System.setProperty("solr.tests.mergeScheduler", "org.apache.lucene.index.ConcurrentMergeScheduler");
         System.setProperty("solr.tests.mergePolicy", "org.apache.lucene.index.TieredMergePolicy");
 
-        copyTestFiles();
         if (CORE_NOT_YET_CREATED)
         {
+
+            testExecutionSolrHome = TEST_EXECUTION_FOLDER + "/" + Time.now() + "/solrhome";
+            testSolrCollection = testExecutionSolrHome + "/collection1";
+            testSolrConf = testSolrCollection + "/conf/";
+            templateConf = testExecutionSolrHome + "/templates/%s/conf/";
+
+            copyTestFiles();
             createAlfrescoCore(schema);
         }
         LOG.info("####initCore end");
@@ -288,11 +295,11 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
         {
             String templateName = System.getProperty("templateName", "rerank");
             FileUtils.copyFile(
-                    Paths.get(String.format(TEMPLATE_CONF, templateName) + schema).toFile(),
-                    Paths.get(TEST_SOLR_CONF + schema).toFile());
+                    Paths.get(String.format(templateConf, templateName) + schema).toFile(),
+                    Paths.get(testSolrConf + schema).toFile());
         }
 
-        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(TEST_EXECUTION_SOLRHOME), null, properties);
+        SolrResourceLoader resourceLoader = new SolrResourceLoader(Paths.get(testExecutionSolrHome), null, properties);
         TestCoresLocator locator = new TestCoresLocator(SolrTestCaseJ4.DEFAULT_TEST_CORENAME,
                                                         "data", 
                                                         "solrconfig.xml",
@@ -317,9 +324,9 @@ public abstract class AbstractAlfrescoSolrTests implements SolrTestFiles, Alfres
     }
 
     @AfterClass()
-    public static void tearDown()
-    {
+    public static void tearDown() throws IOException {
         h.close();
+        FileUtils.forceDelete(Paths.get(TEST_EXECUTION_FOLDER).toFile());
         CORE_NOT_YET_CREATED = true;
     }
     /**
