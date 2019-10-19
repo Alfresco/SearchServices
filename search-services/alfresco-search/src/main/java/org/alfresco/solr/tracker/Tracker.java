@@ -51,12 +51,14 @@ public interface Tracker
     
     Type getType();
     
-    enum Type{
-        Model,
-        Content,
+    enum Type
+    {
+        MODEL,
+        CONTENT,
         ACL,
-        Cascade,
-        Commit,
-        MetaData
+        CASCADE,
+        COMMIT,
+        METADATA,
+        NODE_STATE_PUBLISHER
     }
 }
