@@ -327,15 +327,17 @@ public abstract class AbstractTracker implements Tracker
             throw new IndexTrackingShutdownException();
         }
     }
-    
+
+    @Override
     public void setShutdown(boolean shutdown)
     {
         this.shutdown = shutdown;
     }
 
+    @Override
     public void shutdown()
     {
-        log.warn("Core "+ coreName+" shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
+        log.warn("Core " + coreName + " shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
         setShutdown(true);
         if(this.threadHandler != null)
         {
