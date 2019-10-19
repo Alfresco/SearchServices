@@ -1,10 +1,15 @@
 package org.alfresco.solr.tracker;
 
+import static org.alfresco.solr.tracker.Tracker.Type.NODE_STATE_PUBLISHER;
+
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardState;
+import org.alfresco.solr.SolrInformationServer;
+import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.commons.codec.EncoderException;
 
 import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Despite belonging to the Tracker ecosystem, this component is actually a publisher, which periodically informs
@@ -21,8 +26,13 @@ import java.io.IOException;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public class SlaveNodeStateProvider extends MetadataTracker
+public class SlaveNodeStateProvider extends NodeStateProvider
 {
+    public SlaveNodeStateProvider(Properties coreProperties, SOLRAPIClient repositoryClient, String name, SolrInformationServer informationServer)
+    {
+        super(coreProperties, repositoryClient, name, informationServer, NODE_STATE_PUBLISHER);
+    }
+
     @Override
     protected void doTrack()
     {

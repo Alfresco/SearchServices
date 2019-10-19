@@ -25,6 +25,10 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
@@ -44,10 +48,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Properties;
-
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
 
 /**
  * Superclass for all components which are able to inform Alfresco about the hosting node state.

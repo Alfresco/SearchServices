@@ -34,6 +34,7 @@ import org.alfresco.solr.tracker.CommitTracker;
 import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.ModelTracker;
+import org.alfresco.solr.tracker.SlaveNodeStateProvider;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -117,6 +118,31 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                     scheduler);
         }
 
+        /*
+         * The shutdown hook needs to be registered regardless we are slave or masters.
+         * This because if we are master all trackers will be scheduled, if we are slave the node state publisher
+         * will be scheduled.
+         *
+         * As consequence of that, regardless the node role, we will always have something to shutdown in the tracker
+         * registry.
+         */
+        final List<Tracker> trackers = new ArrayList<>();
+        core.addCloseHook(new CloseHook()
+        {
+            @Override
+            public void preClose(SolrCore core)
+            {
+                LOGGER.info("Tracking Subsystem shutdown procedure for core {} has been started.", core.getName());
+                shutdownTrackers(core.getName(), trackers, scheduler);
+            }
+
+            @Override
+            public void postClose(SolrCore core)
+            {
+                LOGGER.info("Tracking Subsystem shutdown procedure for core {} has been completed.", core.getName());
+            }
+        });
+
         boolean trackersHaveBeenEnabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "true"));
         boolean owningCoreIsSlave = isSlaveModeEnabledFor(core);
 
@@ -132,6 +158,13 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         if (owningCoreIsSlave)
         {
             LOGGER.info("SearchServices Core Trackers have been disabled on core \"{}\" because it is a slave core.", core.getName());
+
+            SlaveNodeStateProvider stateProvider = new SlaveNodeStateProvider(coreProperties, repositoryClient, core.getName(), informationServer);
+            trackerRegistry.register(core.getName(), stateProvider);
+            scheduler.schedule(stateProvider, core.getName(), coreProperties);
+
+            LOGGER.info("SearchServices Slave Node Provider have been created and scheduled for core \"{}\".", core.getName());
+
             return;
         }
 
@@ -144,7 +177,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
             admin.getInformationServers().remove(core.getName());
         }
 
-        final List<Tracker> trackers = createCoreTrackers(core.getName(), trackerRegistry, coreProperties, scheduler, repositoryClient, informationServer);
+        trackers.addAll(createCoreTrackers(core.getName(), trackerRegistry, coreProperties, scheduler, repositoryClient, informationServer));
 
         CommitTracker commitTracker = new CommitTracker(coreProperties, repositoryClient, core.getName(), informationServer, trackers);
         trackerRegistry.register(core.getName(), commitTracker);
@@ -154,23 +187,6 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         //Add the commitTracker to the list of scheduled trackers that can be shutdown
         trackers.add(commitTracker);
-
-        core.addCloseHook(new CloseHook()
-        {
-            @Override
-            public void preClose(SolrCore core)
-            {
-                LOGGER.info("Tracking Subsystem shutdown procedure for core {} has been started.", core.getName());
-                shutdownTrackers(core.getName(), trackers, scheduler);
-            }
-
-            @Override
-            public void postClose(SolrCore core)
-            {
-                LOGGER.info("Shutdown procedure for core {} has been completed.", core.getName());
-            }
-        });
-
     }
 
     List<Tracker> createCoreTrackers(String coreName,

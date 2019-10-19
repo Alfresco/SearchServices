@@ -67,7 +67,7 @@ public class MetadataTracker extends NodeStateProvider implements Tracker
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.MetaData);
+        super(p, client, coreName, informationServer, Tracker.Type.METADATA);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -75,7 +75,7 @@ public class MetadataTracker extends NodeStateProvider implements Tracker
 
     MetadataTracker()
     {
-        super(Tracker.Type.MetaData);
+        super(Tracker.Type.METADATA);
     }
 
     @Override

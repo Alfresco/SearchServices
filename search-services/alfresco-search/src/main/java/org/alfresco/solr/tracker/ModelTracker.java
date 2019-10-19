@@ -103,7 +103,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
     public ModelTracker(String solrHome, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.Model);
+        super(p, client, coreName, informationServer, Tracker.Type.MODEL);
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
         log.info("Alfresco Model dir " + alfrescoModelDir);
@@ -187,7 +187,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
      */
     ModelTracker()
     {
-        super(Tracker.Type.Model);
+        super(Tracker.Type.MODEL);
     }
 
     @Override
