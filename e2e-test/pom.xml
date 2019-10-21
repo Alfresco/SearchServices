@@ -13,7 +13,7 @@
    <properties>
       <tas.rest.api.version>6.0.1.2</tas.rest.api.version>
       <tas.cmis.api.version>6.0.0.4</tas.cmis.api.version>
-      <tas.utility.version>3.0.12</tas.utility.version>
+      <tas.utility.version>3.0.13</tas.utility.version>
       <!-- GS V3.2-0-SNAPSHOT will have to be used for GS-IE automation tests due to the dependencies in TAS Rest API project
       This version needs to be later updated when GS V3.2-0 is released -->
       <rm.version>3.2.0-SNAPSHOT</rm.version>
