@@ -64,10 +64,10 @@ public class MetadataTracker extends NodeStateProvider implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
 
-    public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
+    public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.METADATA);
+        super(isMaster, p, client, coreName, informationServer, Tracker.Type.METADATA);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");

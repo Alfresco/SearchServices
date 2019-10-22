@@ -62,6 +62,7 @@ import java.util.Properties;
 public abstract class NodeStateProvider extends AbstractTracker
 {
     DocRouter docRouter;
+    private final boolean isMaster;
 
     /** The string representation of the shard key. */
     private Optional<String> shardKey;
@@ -70,6 +71,7 @@ public abstract class NodeStateProvider extends AbstractTracker
     protected Optional<QName> shardProperty = Optional.empty();
 
     NodeStateProvider(
+            boolean isMaster,
             Properties p,
             SOLRAPIClient client,
             String coreName,
@@ -77,15 +79,19 @@ public abstract class NodeStateProvider extends AbstractTracker
             Type type)
     {
         super(p, client, coreName, informationServer, type);
+        this.isMaster = isMaster;
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
         shardKey = ofNullable(p.getProperty(SHARD_KEY_KEY));
+
         firstUpdateShardProperty();
+
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
     }
 
     NodeStateProvider(Type type)
     {
         super(type);
+        this.isMaster = false;
     }
 
     private void firstUpdateShardProperty()
@@ -168,7 +174,7 @@ public abstract class NodeStateProvider extends AbstractTracker
      */
     ShardState getShardState()
     {
-        TrackerState transactionsTrackerState = super.getTrackerState();
+        TrackerState transactionsTrackerState = getTrackerState();
         TrackerState changeSetsTrackerState =
                 of(infoSrv.getAdminHandler())
                         .map(AlfrescoCoreAdminHandler::getTrackerRegistry)

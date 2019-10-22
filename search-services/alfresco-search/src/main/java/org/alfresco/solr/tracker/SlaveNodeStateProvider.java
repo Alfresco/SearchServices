@@ -5,6 +5,7 @@ import static org.alfresco.solr.tracker.Tracker.Type.NODE_STATE_PUBLISHER;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.solr.SolrInformationServer;
+import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.commons.codec.EncoderException;
 
@@ -28,9 +29,14 @@ import java.util.Properties;
  */
 public class SlaveNodeStateProvider extends NodeStateProvider
 {
-    public SlaveNodeStateProvider(Properties coreProperties, SOLRAPIClient repositoryClient, String name, SolrInformationServer informationServer)
+    public SlaveNodeStateProvider(
+            boolean isMaster,
+            Properties coreProperties,
+            SOLRAPIClient repositoryClient,
+            String name,
+            SolrInformationServer informationServer)
     {
-        super(coreProperties, repositoryClient, name, informationServer, NODE_STATE_PUBLISHER);
+        super(isMaster, coreProperties, repositoryClient, name, informationServer, NODE_STATE_PUBLISHER);
     }
 
     @Override
@@ -71,5 +77,18 @@ public class SlaveNodeStateProvider extends NodeStateProvider
     public boolean hasMaintenance()
     {
         return false;
+    }
+
+    /**
+     * When running in a slave mode, we need to recreate the tracker state every time.
+     * This because in that context we don't have any tracker updating the state (e.g. lastIndexedChangeSetCommitTime,
+     * lastIndexedChangeSetId)
+     *
+     * @return a new, fresh and up to date instance of {@link TrackerState}.
+     */
+    @Override
+    public TrackerState getTrackerState()
+    {
+        return infoSrv.getTrackerInitialState();
     }
 }

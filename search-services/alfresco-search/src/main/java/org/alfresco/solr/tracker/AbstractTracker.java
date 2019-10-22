@@ -31,7 +31,6 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Abstract base class that provides common {@link Tracker} behaviour.
  * 
@@ -39,20 +38,17 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractTracker implements Tracker
 {
-    public static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
-    public static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
-    public static final String SHARD_METHOD_ACLID = "ACL_ID";
-    public static final String SHARD_METHOD_DBID = "DB_ID";
+    static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
+    static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
+    static final String SHARD_METHOD_DBID = "DB_ID";
     protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
     protected SOLRAPIClient client;
-    protected InformationServer infoSrv;
+    InformationServer infoSrv;
     protected String coreName;
     protected StoreRef storeRef;
     protected long batchCount;
-    protected boolean isSlave = false;
-    protected boolean isMaster = true;
     protected String alfrescoVersion;
     protected TrackerStats trackerStats;
     protected boolean runPostModelLoadInit = true;
@@ -71,14 +67,10 @@ public abstract class AbstractTracker implements Tracker
     protected volatile boolean rollback;
     protected final Type type;
 
-    
     /*
      * A thread handler can be used by subclasses, but they have to intentionally instantiate it.
      */
-    protected ThreadHandler threadHandler;
-   
-   
-   
+    ThreadHandler threadHandler;
 
     /**
      * Default constructor, strictly for testing.
@@ -98,8 +90,6 @@ public abstract class AbstractTracker implements Tracker
         storeRef = new StoreRef(p.getProperty("alfresco.stores", "workspace://SpacesStore"));
         batchCount = Integer.parseInt(p.getProperty("alfresco.batch.count", "5000"));
         maxLiveSearchers =  Integer.parseInt(p.getProperty("alfresco.maxLiveSearchers", "2"));
-        isSlave =  Boolean.parseBoolean(p.getProperty("enable.slave", "false"));
-        isMaster =  Boolean.parseBoolean(p.getProperty("enable.master", "true"));
         
         shardCount =  Integer.parseInt(p.getProperty("shard.count", "1"));
         shardInstance =  Integer.parseInt(p.getProperty("shard.instance", "0"));

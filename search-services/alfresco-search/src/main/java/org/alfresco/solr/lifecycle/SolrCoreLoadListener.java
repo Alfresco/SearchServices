@@ -159,7 +159,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been disabled on core \"{}\" because it is a slave core.", core.getName());
 
-            SlaveNodeStateProvider stateProvider = new SlaveNodeStateProvider(coreProperties, repositoryClient, core.getName(), informationServer);
+            SlaveNodeStateProvider stateProvider = new SlaveNodeStateProvider(false, coreProperties, repositoryClient, core.getName(), informationServer);
             trackerRegistry.register(core.getName(), stateProvider);
             scheduler.schedule(stateProvider, core.getName(), coreProperties);
 
@@ -206,7 +206,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         trackerRegistry.register(coreName, contentTrkr);
         scheduler.schedule(contentTrkr, coreName, props);
 
-        MetadataTracker metaTrkr = new MetadataTracker(props, repositoryClient, coreName, srv);
+        MetadataTracker metaTrkr = new MetadataTracker(true, props, repositoryClient, coreName, srv);
         trackerRegistry.register(coreName, metaTrkr);
         scheduler.schedule(metaTrkr, coreName, props);
 
@@ -289,7 +289,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
     }
 
     /**
-     * Checks if the content store belonging to the hosting Solr node must be set in read only mode.
+     * Checks if the configuration declares this node as a slave.
      *
      * @param core the hosting {@link SolrCore} instance.
      * @return true if the content store must be set in read only mode, false otherwise.
