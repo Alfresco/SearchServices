@@ -190,7 +190,7 @@
 
     <requestHandler name="/replication" class="org.alfresco.solr.handler.ReplicationHandler">
         <lst name="slave">
-            <str name="masterUrl">http://127.0.0.1:2345/solr/master</str>
+            <str name="masterUrl">{masterURL}</str>
             <str name="pollInterval">00:00:02</str>
         </lst>
     </requestHandler>

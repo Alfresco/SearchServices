@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.handler;
 
+import java.io.IOException;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
@@ -68,8 +69,6 @@ public class contentStoreReplicationTest extends AbstractAlfrescoDistributedTest
     protected static SolrClient masterClient;
     protected static SolrClient slaveClient;
 
-    protected final static int MASTER_PORT = 2345;
-
     protected static Path masterSolrHome;
     protected static Path slaveSolrHome;
 
@@ -79,7 +78,6 @@ public class contentStoreReplicationTest extends AbstractAlfrescoDistributedTest
     private static Acl acl;
 
     private static final int MILLIS_TIMOUT = 80000;
-
 
     @BeforeClass
     public static void createMasterSlaveEnv() throws Exception
@@ -97,13 +95,16 @@ public class contentStoreReplicationTest extends AbstractAlfrescoDistributedTest
         String masterKey = "master/solrHome";
         String slaveKey = "slave/solrHome";
 
-        master = createJetty(masterKey, basicAuth, MASTER_PORT);
+        master = createJetty(masterKey, basicAuth);
         addCoreToJetty(masterKey, coreName, coreName, null);
         startJetty(master);
+
 
         String slaveCoreName = "slave";
         slave = createJetty(slaveKey, basicAuth);
         addCoreToJetty(slaveKey, slaveCoreName, slaveCoreName, null);
+        setMasterUrl(slaveKey, slaveCoreName, master.getBaseUrl().toString() + "/master");
+
         startJetty(slave);
 
         String masterStr = buildUrl(master.getLocalPort()) + "/" + coreName;
@@ -249,6 +250,18 @@ public class contentStoreReplicationTest extends AbstractAlfrescoDistributedTest
         }
 
         return false;
+    }
+
+    private static void setMasterUrl(String jettyKey, String coreName, String masterUrl) throws IOException {
+        Path jettySolrHome = testDir.toPath().resolve(jettyKey);
+        Path coreHome = jettySolrHome.resolve(coreName);
+        Path confDir = coreHome.resolve("conf");
+
+        Path solrConfigPath = confDir.resolve("solrconfig.xml");
+
+        String content = new String(Files.readAllBytes(solrConfigPath));
+        content = content.replaceAll("\\{masterURL\\}", masterUrl);
+        Files.write(solrConfigPath, content.getBytes());
     }
 
 }
