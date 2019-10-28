@@ -97,7 +97,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                     AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                     AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
 
-        SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
+        SolrContentStore contentStore = admin.getSolrContentStore();
         SolrInformationServer informationServer = new SolrInformationServer(admin, core, repositoryClient, contentStore);
         coreProperties.putAll(informationServer.getProps());
         admin.getInformationServers().put(core.getName(), informationServer);
