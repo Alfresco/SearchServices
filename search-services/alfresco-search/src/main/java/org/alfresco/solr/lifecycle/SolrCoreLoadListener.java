@@ -119,6 +119,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         boolean trackersHaveBeenEnabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "true"));
         boolean owningCoreIsSlave = isSlaveModeEnabledFor(core);
+        contentStore.toggleReadOnlyMode(owningCoreIsSlave);
 
         // Guard conditions: if trackers must be disabled then immediately return, we've done here.
         // Case #1: trackers have been explicitly disabled.
