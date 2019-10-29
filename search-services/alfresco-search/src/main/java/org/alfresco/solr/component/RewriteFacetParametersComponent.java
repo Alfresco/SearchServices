@@ -439,7 +439,11 @@ public class RewriteFacetParametersComponent extends SearchComponent
                 Map<String, String> fieldMappings, SolrQueryRequest req)
     {
         String shardPurpose = req.getParams().get(ShardParams.SHARDS_PURPOSE);
-        boolean isRefinementRequest = (shardPurpose!=null)?(shardPurpose.equals(String.valueOf(ShardRequest.PURPOSE_REFINE_FACETS))) || (shardPurpose.equals(String.valueOf(ShardRequest.PURPOSE_REFINE_PIVOT_FACETS))):false;
+        boolean isRefinementRequest = false;
+        if(shardPurpose!=null){
+            int shardPurposeCode = Integer.parseInt(shardPurpose);
+            isRefinementRequest = ((shardPurposeCode & ShardRequest.PURPOSE_REFINE_FACETS) != 0) || ((shardPurposeCode & ShardRequest.PURPOSE_REFINE_PIVOT_FACETS) != 0);
+        }
         String[] facetFieldsOrig = params.getParams(paramName);
         List<String> facetFieldList = new ArrayList<>();
         if(facetFieldsOrig != null)
