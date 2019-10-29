@@ -329,6 +329,12 @@ public abstract class AbstractTracker implements Tracker
     }
 
     @Override
+    public boolean isAlreadyInShutDownMode()
+    {
+        return shutdown;
+    }
+
+    @Override
     public void setShutdown(boolean shutdown)
     {
         this.shutdown = shutdown;
@@ -337,7 +343,6 @@ public abstract class AbstractTracker implements Tracker
     @Override
     public void shutdown()
     {
-        log.warn("Core " + coreName + " shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
         setShutdown(true);
         if(this.threadHandler != null)
         {

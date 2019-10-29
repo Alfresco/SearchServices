@@ -36,7 +36,9 @@ public interface Tracker
     String getAlfrescoVersion();
     
     void setShutdown(boolean shutdown);
-    
+
+    boolean isAlreadyInShutDownMode();
+
     void shutdown();
 
     boolean getRollback();
