@@ -27,9 +27,9 @@ import java.util.Properties;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public class SlaveNodeStateProvider extends NodeStateProvider
+public class SlaveNodeStatePublisher extends NodeStateProvider
 {
-    public SlaveNodeStateProvider(
+    public SlaveNodeStatePublisher(
             boolean isMaster,
             Properties coreProperties,
             SOLRAPIClient repositoryClient,

@@ -34,7 +34,7 @@ import org.alfresco.solr.tracker.CommitTracker;
 import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.ModelTracker;
-import org.alfresco.solr.tracker.SlaveNodeStateProvider;
+import org.alfresco.solr.tracker.SlaveNodeStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -92,8 +92,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         }
         else
         {
-            LOGGER.info("Solr Core {}, instance {}, has been registered for the first time. " +
-                    "Tracking subsystem will be registered on this new instance.",
+            LOGGER.info("Solr Core {}, instance {}, has been registered for the first time.",
                     getCore().getName(),
                     getCore().hashCode());
         }
@@ -163,11 +162,32 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         boolean trackersHaveBeenEnabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "true"));
         boolean owningCoreIsSlave = isSlaveModeEnabledFor(core);
 
+        if (trackerRegistry.hasTrackersForCore(core.getName()))
+        {
+            LOGGER.info("Trackers (it could be only the node state publisher in case this node is a slave) for " + core.getName() + " are already registered, shutting them down.");
+            Collection<Tracker> alreadyRegisteredTrackers = trackerRegistry.getTrackersForCore(core.getName());
+            trackerRegistry.removeTrackersForCore(core.getName());
+
+            shutdownTrackers(core, alreadyRegisteredTrackers, scheduler, core.isReloaded());
+            admin.getInformationServers().remove(core.getName());
+        }
+
+        // Re-put the information server in the map because a Core reload (see above) could have removed the reference.
+        admin.getInformationServers().put(core.getName(), informationServer);
+
         // Guard conditions: if trackers must be disabled then immediately return, we've done here.
         // Case #1: trackers have been explicitly disabled.
         if (!trackersHaveBeenEnabled)
         {
             LOGGER.info("SearchServices Core Trackers have been explicitly disabled on core \"{}\" through \"enable.alfresco.tracking\" configuration property.", core.getName());
+
+            SlaveNodeStatePublisher statePublisher = new SlaveNodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            trackerRegistry.register(core.getName(), statePublisher);
+            scheduler.schedule(statePublisher, core.getName(), coreProperties);
+            trackers.add(statePublisher);
+
+            LOGGER.info("SearchServices Slave Node Provider have been created and scheduled for core \"{}\".", core.getName());
+
             return;
         }
 
@@ -176,31 +196,19 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been disabled on core \"{}\" because it is a slave core.", core.getName());
 
-            SlaveNodeStateProvider stateProvider = new SlaveNodeStateProvider(false, coreProperties, repositoryClient, core.getName(), informationServer);
-            trackerRegistry.register(core.getName(), stateProvider);
-            scheduler.schedule(stateProvider, core.getName(), coreProperties);
+            SlaveNodeStatePublisher statePublisher = new SlaveNodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            trackerRegistry.register(core.getName(), statePublisher);
+            scheduler.schedule(statePublisher, core.getName(), coreProperties);
+            trackers.add(statePublisher);
 
-            LOGGER.info("SearchServices Slave Node Provider have been created and scheduled for core \"{}\".", core.getName());
+            LOGGER.info("SearchServices Slave Node Provider have been created and scheduled for Core instance {} with name {}.", core.hashCode(), core.getName());
 
             return;
         }
 
-        if (trackerRegistry.hasTrackersForCore(core.getName()))
-        {
-            LOGGER.info("Trackers for " + core.getName() + " are already registered, shutting them down.");
-            Collection<Tracker> alreadyRegisteredTrackers = trackerRegistry.getTrackersForCore(core.getName());
-            trackerRegistry.removeTrackersForCore(core.getName());
-
-            shutdownTrackers(core, alreadyRegisteredTrackers, scheduler, core.isReloaded());
-            admin.getInformationServers().remove(core.getName());
-        }
-
         LOGGER.info("SearchServices Tracking Subsystem starts on Solr Core instance {} with name {}", core.hashCode(), core.getName());
 
-        // Re-put the information server in the map because a Core reload (see above) could have removed the reference.
-        admin.getInformationServers().put(core.getName(), informationServer);
-
-        final List<Tracker> trackers = createAndScheduleCoreTrackers(core, trackerRegistry, coreProperties, scheduler, repositoryClient, informationServer);
+        trackers.addAll(createAndScheduleCoreTrackers(core, trackerRegistry, coreProperties, scheduler, repositoryClient, informationServer));
 
         CommitTracker commitTracker = new CommitTracker(coreProperties, repositoryClient, core.getName(), informationServer, trackers);
         trackerRegistry.register(core.getName(), commitTracker);
