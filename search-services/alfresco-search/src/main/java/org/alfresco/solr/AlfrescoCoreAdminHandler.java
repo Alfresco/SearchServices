@@ -224,10 +224,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             MultiThreadedHttpConnectionManager.shutdownAll();
 
             //Remove any core trackers still hanging around
-            trackerRegistry.getCoreNames().forEach(coreName ->
-            {
-                trackerRegistry.removeTrackersForCore(coreName);
-            });
+            trackerRegistry.getCoreNames().forEach(coreName -> trackerRegistry.removeTrackersForCore(coreName));
 
             //Remove any information servers
             informationServers.clear();
