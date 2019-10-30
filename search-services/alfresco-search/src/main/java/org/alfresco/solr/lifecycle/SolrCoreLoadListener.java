@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.lifecycle;
 
+import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -220,8 +221,6 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                 core.getName(),
                 core.hashCode());
 
-        LOGGER.info("SearchServices Core Trackers have been correctly registered and scheduled on Solr Core instance {} with name {}", core.hashCode(), core.getName());
-
         //Add the commitTracker to the list of scheduled trackers that can be shutdown
         trackers.add(commitTracker);
     }
@@ -233,58 +232,68 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                                                 SOLRAPIClient repositoryClient,
                                                 SolrInformationServer srv)
     {
-        List<Tracker> trackers = new ArrayList<>();
-        String coreName = core.getName();
+        AclTracker aclTracker =
+                registerAndSchedule(
+                        new AclTracker(props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
-        AclTracker aclTracker = new AclTracker(props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, aclTracker);
-        scheduler.schedule(aclTracker, coreName, props);
+        ContentTracker contentTracker =
+                registerAndSchedule(
+                    new ContentTracker(props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
-        LOGGER.info("Tracker {}, instance {}, belonging to Core {}, instance {} has been registered and scheduled.",
-                aclTracker.getClass().getSimpleName(),
-                aclTracker.hashCode(),
-                core.getName(),
-                core.hashCode());
+        MetadataTracker metadataTracker =
+                registerAndSchedule(
+                    new MetadataTracker(true, props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
-        ContentTracker contentTrkr = new ContentTracker(props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, contentTrkr);
-        scheduler.schedule(contentTrkr, coreName, props);
-
-        LOGGER.info("Tracker {}, instance {}, belonging to Core {}, instance {} has been registered and scheduled.",
-                contentTrkr.getClass().getSimpleName(),
-                contentTrkr.hashCode(),
-                core.getName(),
-                core.hashCode());
-
-        MetadataTracker metaTrkr = new MetadataTracker(true, props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, metaTrkr);
-        scheduler.schedule(metaTrkr, coreName, props);
-
-        LOGGER.info("Tracker {}, instance {}, belonging to Core {}, instance {} has been registered and scheduled.",
-                metaTrkr.getClass().getSimpleName(),
-                metaTrkr.hashCode(),
-                core.getName(),
-                core.hashCode());
-
-        CascadeTracker cascadeTrkr = new CascadeTracker(props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, cascadeTrkr);
-        scheduler.schedule(cascadeTrkr, coreName, props);
-
-        LOGGER.info("Tracker {}, instance {}, belonging to Core {}, instance {} has been registered and scheduled.",
-                cascadeTrkr.getClass().getSimpleName(),
-                cascadeTrkr.hashCode(),
-                core.getName(),
-                core.hashCode());
+        CascadeTracker cascadeTracker =
+                registerAndSchedule(
+                    new CascadeTracker(props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
         //The CommitTracker will acquire these locks in order
         //The ContentTracker will likely have the longest runs so put it first to ensure the MetadataTracker is not paused while
         //waiting for the ContentTracker to release it's lock.
         //The aclTracker will likely have the shortest runs so put it last.
-        trackers.add(cascadeTrkr);
-        trackers.add(contentTrkr);
-        trackers.add(metaTrkr);
-        trackers.add(aclTracker);
-        return trackers;
+        return asList(cascadeTracker, contentTracker, metadataTracker, aclTracker);
+    }
+
+    /**
+     * Accepts a {@link Tracker} instance, registers and schedules it.
+     *
+     * @param tracker the tracker that will be scheduled and registered.
+     * @param core the owning core.
+     * @param properties configuration properties.
+     * @param registry the tracker registry instance.
+     * @param scheduler the tracker schedule instance.
+     * @param <T> the tracker instance.
+     * @return the registered and scheduled tracker instance.
+     */
+    private <T extends Tracker> T registerAndSchedule(T tracker, SolrCore core, Properties properties, TrackerRegistry registry, SolrTrackerScheduler scheduler)
+    {
+        registry.register(core.getName(), tracker);
+        scheduler.schedule(tracker, core.getName(), properties);
+
+        LOGGER.info("Tracker {}, instance {}, belonging to Core {}, instance {} has been registered and scheduled.",
+                tracker.getClass().getSimpleName(),
+                tracker.hashCode(),
+                core.getName(),
+                core.hashCode());
+
+        return tracker;
     }
 
     private void createModelTracker(String coreName,
@@ -353,35 +362,22 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
      */
     private void shutdownTracker(SolrCore core, Tracker tracker, SolrTrackerScheduler scheduler, boolean coreHasBeenReloaded)
     {
+        // In case of reload the input core is not the owner: the owner is instead the previous (closed) core and we don't have its reference here.
+        String coreReference = core.getName() + (coreHasBeenReloaded ? "" : ", instance " + core.hashCode());
+
         if (tracker.isAlreadyInShutDownMode())
         {
-            LOGGER.info("Tracker {}, instance {} belonging to core {}, instance {}, is already in shutdown mode.",
+            LOGGER.info("Tracker {}, instance {} belonging to core {}, is already in shutdown mode.",
                     tracker.getClass().getSimpleName(),
                     tracker.hashCode(),
-                    core.getName(),
-                    core.hashCode());
+                    coreReference);
             return;
         }
 
-        // Just differentiate the log message: in case of reload the input core is not the owner: the owner
-        // is instead the previous (closed) core and we don't have its reference here.
-        if (coreHasBeenReloaded)
-        {
-            LOGGER.info("Tracker {}, instance {} belonging to core {} shutdown procedure initiated." +
-                            " If you reloaded the core that is probably the reason you're seeing this message.",
-                    tracker.getClass().getSimpleName(),
-                    tracker.hashCode(),
-                    core.getName());
-        }
-        else
-        {
-            LOGGER.info("Tracker {}, instance {} belonging to core {}, instance {}, shutdown procedure initiated.",
-                    tracker.getClass().getSimpleName(),
-                    tracker.hashCode(),
-                    core.getName(),
-                    core.hashCode());
-        }
-
+        LOGGER.info("Tracker {}, instance {} belonging to core {} shutdown procedure initiated.",
+                tracker.getClass().getSimpleName(),
+                tracker.hashCode(),
+                coreReference);
         try
         {
             tracker.setShutdown(true);
@@ -392,40 +388,19 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
             tracker.shutdown();
 
-            if (coreHasBeenReloaded)
-            {
-                LOGGER.info("Tracker {}, instance {}, belonging to core {} shutdown procedure correctly terminated.",
-                        tracker.getClass().getSimpleName(),
-                        tracker.hashCode(),
-                        core.getName());
-            }
-            else
-            {
-                LOGGER.info("Tracker {}, instance {} belonging to core {}, instance {}, shutdown procedure correctly terminated.",
-                        tracker.getClass().getSimpleName(),
-                        tracker.hashCode(),
-                        core.getName(),
-                        core.hashCode());
-            }
+            LOGGER.info("Tracker {}, instance {}, belonging to core {} shutdown procedure correctly terminated.",
+                    tracker.getClass().getSimpleName(),
+                    tracker.hashCode(),
+                    coreReference);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            if (coreHasBeenReloaded)
-            {
-                LOGGER.info("Tracker {}, instance {} belonging to core {} shutdown procedure correctly terminated.",
-                        tracker.getClass().getSimpleName(),
-                        tracker.hashCode(),
-                        core.getName());
-            }
-            else
-            {
-                LOGGER.error("Tracker {}, instance {} belonging to core {}, instance {}, shutdown procedure failed. " +
-                                "See the stacktrace below for further details.",
-                        tracker.getClass().getSimpleName(),
-                        tracker.hashCode(),
-                        core.getName(),
-                        core.hashCode(), e);
-            }
+            LOGGER.error("Tracker {}, instance {} belonging to core {}, shutdown procedure failed. " +
+                            "See the stacktrace below for further details.",
+                    tracker.getClass().getSimpleName(),
+                    tracker.hashCode(),
+                    coreReference,
+                    exception);
         }
     }
 

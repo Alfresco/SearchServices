@@ -27,7 +27,7 @@ import java.util.Properties;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public class SlaveNodeStatePublisher extends NodeStateProvider
+public class SlaveNodeStatePublisher extends NodeStatePublisher
 {
     public SlaveNodeStatePublisher(
             boolean isMaster,
@@ -47,22 +47,10 @@ public class SlaveNodeStatePublisher extends NodeStateProvider
             ShardState shardstate = getShardState();
             client.getTransactions(0L, null, 0L, null, 0, shardstate);
         }
-        catch (EncoderException exception )
+        catch (EncoderException | IOException | AuthenticationException exception )
         {
-            log.error("Unable to publish this node state. " +
+            LOGGER.error("Unable to publish this node state. " +
                     "A failure condition has been met during the outbound subscription message encoding process. " +
-                    "See the stacktrace below for further details.", exception);
-        }
-        catch (IOException exception )
-        {
-            log.error("Unable to publish this node state. " +
-                    "Detected an I/O failure while sending the subscription state message. " +
-                    "See the stacktrace below for further details.", exception);
-        }
-        catch (AuthenticationException exception)
-        {
-            log.error("Unable to publish this node state. " +
-                    "Authentication failure detected while sending the subscription state message. " +
                     "See the stacktrace below for further details.", exception);
         }
     }

@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
  */
-public class MetadataTracker extends NodeStateProvider implements Tracker
+public class MetadataTracker extends NodeStatePublisher implements Tracker
 {
     protected final static Logger log = LoggerFactory.getLogger(MetadataTracker.class);
     private static final int DEFAULT_TRANSACTION_DOCS_BATCH_SIZE = 100;

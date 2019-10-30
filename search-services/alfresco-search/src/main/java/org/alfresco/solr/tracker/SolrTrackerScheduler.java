@@ -121,7 +121,7 @@ public class SolrTrackerScheduler
             case COMMIT:
                 cron = getCron(props,"alfresco.commit.tracker.cron");
                 break;
-                case NODE_STATE_PUBLISHER:
+            case NODE_STATE_PUBLISHER:
                 cron = getCron(props,"alfresco.nodestate.tracker.cron");
                 break;
             default: 

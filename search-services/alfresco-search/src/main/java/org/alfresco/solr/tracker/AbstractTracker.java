@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
+import java.lang.invoke.MethodHandles;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
@@ -41,7 +42,8 @@ public abstract class AbstractTracker implements Tracker
     static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
     static final String SHARD_METHOD_DBID = "DB_ID";
-    protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
+
+    protected final static Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
     protected Properties props;    
     protected SOLRAPIClient client;
@@ -105,7 +107,7 @@ public abstract class AbstractTracker implements Tracker
         
         this.type = type;
         
-        log.info("Solr built for Alfresco version: " + alfrescoVersion);
+        LOGGER.info("Solr built for Alfresco version: " + alfrescoVersion);
     }
 
     
@@ -164,7 +166,7 @@ public abstract class AbstractTracker implements Tracker
     public void track()
     {
         if(runLock.availablePermits() == 0) {
-            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
+            LOGGER.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
             return;
         }
 
@@ -182,7 +184,7 @@ public abstract class AbstractTracker implements Tracker
                 assert(assertTrackerStateRemainsNull());
             }
 
-            log.info("... Running " + this.getClass().getSimpleName() + " for core [" + coreName + "].");
+            LOGGER.info("... Running " + this.getClass().getSimpleName() + " for core [" + coreName + "].");
             
             if(this.state == null)
             {
@@ -190,8 +192,8 @@ public abstract class AbstractTracker implements Tracker
                 * Set the global state for the tracker here.
                 */
                 this.state = getTrackerState();
-                log.debug("##### Setting tracker global state.");
-                log.debug("State set: " + this.state.toString());
+                LOGGER.debug("##### Setting tracker global state.");
+                LOGGER.debug("State set: " + this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -209,33 +211,33 @@ public abstract class AbstractTracker implements Tracker
             catch(IndexTrackingShutdownException t)
             {
                 setRollback(true);
-                log.info("Stopping index tracking for " + getClass().getSimpleName() + " - " + coreName);
+                LOGGER.info("Stopping index tracking for " + getClass().getSimpleName() + " - " + coreName);
             }
             catch(Throwable t)
             {
                 setRollback(true);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
-                    if (log.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
                         // DEBUG, so give the whole stack trace
-                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName, t);
+                        LOGGER.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName, t);
                     }
                     else
                     {
                         // We don't need the stack trace.  It timed out.
-                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName);
+                        LOGGER.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName);
                     }
                 }
                 else
                 {
-                    log.error("Tracking failed for " + getClass().getSimpleName() + " - " + coreName, t);
+                    LOGGER.error("Tracking failed for " + getClass().getSimpleName() + " - " + coreName, t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            log.error("Semaphore interrupted for " + getClass().getSimpleName() + " - " + coreName, e);
+            LOGGER.error("Semaphore interrupted for " + getClass().getSimpleName() + " - " + coreName, e);
         }
         finally
         {

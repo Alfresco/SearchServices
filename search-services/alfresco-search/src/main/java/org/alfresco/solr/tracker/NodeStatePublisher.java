@@ -59,7 +59,7 @@ import java.util.Properties;
  * @since 1.5
  * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-1752">SEARCH-1752</a>
  */
-public abstract class NodeStateProvider extends AbstractTracker
+public abstract class NodeStatePublisher extends AbstractTracker
 {
     DocRouter docRouter;
     private final boolean isMaster;
@@ -70,7 +70,7 @@ public abstract class NodeStateProvider extends AbstractTracker
     /** The property to use for determining the shard. */
     protected Optional<QName> shardProperty = Optional.empty();
 
-    NodeStateProvider(
+    NodeStatePublisher(
             boolean isMaster,
             Properties p,
             SOLRAPIClient client,
@@ -88,7 +88,7 @@ public abstract class NodeStateProvider extends AbstractTracker
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
     }
 
-    NodeStateProvider(Type type)
+    NodeStatePublisher(Type type)
     {
         super(type);
         this.isMaster = false;
@@ -100,7 +100,7 @@ public abstract class NodeStateProvider extends AbstractTracker
             updateShardProperty();
             if (shardProperty.isEmpty())
             {
-                log.warn("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKeyName + ", but no such property was found.");
+                LOGGER.warn("Sharding property {} was set to {}, but no such property was found.", SHARD_KEY_KEY, shardKeyName);
             }
         });
     }
@@ -116,11 +116,11 @@ public abstract class NodeStateProvider extends AbstractTracker
             {
                 if (updatedShardProperty.isEmpty())
                 {
-                    log.warn("The model defining " + shardKeyName + " property has been disabled");
+                    LOGGER.warn("The model defining {} property has been disabled", shardKeyName);
                 }
                 else
                 {
-                    log.info("New " + SHARD_KEY_KEY + " property found for " + shardKeyName);
+                    LOGGER.info("New {} property found for {} ", SHARD_KEY_KEY, shardKeyName);
                 }
             }
             shardProperty = updatedShardProperty;
@@ -148,11 +148,8 @@ public abstract class NodeStateProvider extends AbstractTracker
                 namespaceDAO,
                 dictionaryService,
                 field);
-        if (propertyDef == null)
-        {
-            return Optional.empty();
-        }
-        return of(propertyDef.getName());
+
+        return ofNullable(propertyDef).map(PropertyDefinition::getName);
     }
 
     /**
