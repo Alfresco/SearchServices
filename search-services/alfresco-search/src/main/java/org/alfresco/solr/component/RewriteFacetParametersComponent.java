@@ -40,6 +40,8 @@ import org.apache.solr.handler.component.ResponseBuilder;
 import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.handler.component.ShardRequest;
 import org.apache.solr.request.SolrQueryRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -49,6 +51,8 @@ import org.apache.solr.request.SolrQueryRequest;
  */
 public class RewriteFacetParametersComponent extends SearchComponent
 {
+    private static final Logger log = LoggerFactory.getLogger(RewriteFacetParametersComponent.class);
+    
     /* (non-Javadoc)
      * @see org.apache.solr.handler.component.SearchComponent#prepare(org.apache.solr.handler.component.ResponseBuilder)
      */
@@ -440,8 +444,10 @@ public class RewriteFacetParametersComponent extends SearchComponent
     {
         String shardPurpose = req.getParams().get(ShardParams.SHARDS_PURPOSE);
         boolean isRefinementRequest = false;
-        if(shardPurpose!=null){
+        //Fix for https://issues.alfresco.com/jira/browse/MNT-21015
+        if (shardPurpose != null) {
             int shardPurposeCode = Integer.parseInt(shardPurpose);
+            log.debug("ShardPurpose: " + shardPurpose);
             isRefinementRequest = ((shardPurposeCode & ShardRequest.PURPOSE_REFINE_FACETS) != 0) || ((shardPurposeCode & ShardRequest.PURPOSE_REFINE_PIVOT_FACETS) != 0);
         }
         String[] facetFieldsOrig = params.getParams(paramName);
