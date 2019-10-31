@@ -92,7 +92,7 @@ public class SolrCoreLoadListenerTest
     @Test
     public void coreTrackersRegistrationAndScheduling()
     {
-        List<Tracker> coreTrackers = listener.createCoreTrackers(core.getName(), registry, coreProperties, scheduler, api, informationServer);
+        List<Tracker> coreTrackers = listener.createAndScheduleCoreTrackers(core, registry, coreProperties, scheduler, api, informationServer);
 
         verify(registry).register(eq(coreName), any(AclTracker.class));
         verify(registry).register(eq(coreName), any(ContentTracker.class));
@@ -113,7 +113,7 @@ public class SolrCoreLoadListenerTest
         List<Tracker> coreTrackers =
                 asList(mock(AclTracker.class), mock(ContentTracker.class), mock(MetadataTracker.class), mock(CascadeTracker.class));
 
-        listener.shutdownTrackers(coreName, coreTrackers, scheduler);
+        listener.shutdownTrackers(core, coreTrackers, scheduler, false);
 
         coreTrackers.forEach(tracker -> verify(tracker).setShutdown(true));
         coreTrackers.forEach(tracker -> verify(scheduler).deleteJobForTrackerInstance(core.getName(), tracker));

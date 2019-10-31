@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MetadataTrackerTest
@@ -58,20 +58,23 @@ public class MetadataTrackerTest
 
     @Mock
     private SOLRAPIClient repositoryClient;
-    private String coreName = "theCoreName";
+
     @Mock
     private InformationServer srv;
+
     @Spy
     private Properties props;
+
     @Mock
     private TrackerStats trackerStats;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         doReturn("workspace://SpacesStore").when(props).getProperty("alfresco.stores");
         when(srv.getTrackerStats()).thenReturn(trackerStats);
-        this.metadataTracker = spy(new MetadataTracker(props, repositoryClient, coreName, srv));
+        String coreName = "theCoreName";
+        this.metadataTracker = spy(new MetadataTracker(true, props, repositoryClient, coreName, srv));
 
         ModelTracker modelTracker = mock(ModelTracker.class);
         when(modelTracker.hasModels()).thenReturn(true);
@@ -197,6 +200,4 @@ public class MetadataTrackerTest
         
         assertSame(nodes4Tx, nodes);
     }
-    
-    
 }
